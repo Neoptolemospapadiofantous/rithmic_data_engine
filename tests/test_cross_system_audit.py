@@ -399,3 +399,49 @@ class TestCheckRiskParamsConsistency:
         _redirect(monkeypatch, "CONFIG_PATH", tmp_path / "no_config.json")
         findings = csa.check_risk_params_consistency()
         assert findings[0]["status"] == "FAIL"
+
+
+# ---------------------------------------------------------------------------
+# run_audit — integration test
+# ---------------------------------------------------------------------------
+
+class TestRunAuditIntegration:
+    """Verify run_audit() orchestrates all check functions and returns valid findings."""
+
+    @pytest.mark.fast
+    def test_run_audit_returns_list_of_valid_dicts(self, monkeypatch):
+        """run_audit() with all checks stubbed → list of dicts with required keys."""
+        required_keys = {"status", "check", "message"}
+
+        # Patch every check_* function to return a single stub finding.
+        stub_checks = [
+            "check_cpp_tick_value",
+            "check_cpp_point_value",
+            "check_symbol_consistency",
+            "check_python_point_value_default",
+            "check_micro_orb_point_value",
+            "check_trade_route",
+            "check_risk_params_consistency",
+        ]
+        for fn_name in stub_checks:
+            domain = fn_name.replace("check_", "")
+            monkeypatch.setattr(
+                csa,
+                fn_name,
+                lambda _domain=domain: [
+                    {"check": _domain, "status": "PASS", "message": "stub", "severity": "INFO"}
+                ],
+            )
+
+        findings = csa.run_audit()
+
+        assert isinstance(findings, list), "run_audit() must return a list"
+        assert len(findings) >= 6, (
+            f"Expected at least 6 findings (one per check domain), got {len(findings)}"
+        )
+        for f in findings:
+            missing = required_keys - f.keys()
+            assert not missing, f"Finding {f!r} is missing keys: {missing}"
+            assert f["status"] in ("PASS", "FAIL", "WARN", "INFO"), (
+                f"Invalid status {f['status']!r} in finding {f!r}"
+            )
