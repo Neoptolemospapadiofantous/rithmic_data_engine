@@ -166,6 +166,12 @@ class TestGoLiveGates(unittest.TestCase):
         (self.tmp / "certs" / "rithmic_ssl_cert_auth_params").touch()
         (self.tmp / "models" / "orb_xgb_latest.pkl").touch()
 
+        # Create a dummy C++ binary so _gate_cpp_build passes by default
+        (self.tmp / "build").mkdir()
+        cpp_bin = self.tmp / "build" / "orb_strategy"
+        cpp_bin.touch()
+        cpp_bin.chmod(0o755)
+
         import go_live
         importlib.reload(go_live)
         self.go_live = go_live
@@ -497,6 +503,148 @@ class TestGateAccountEquity(unittest.TestCase):
         # If no trailing drawdown limit configured, minimum=0; any positive equity passes
         result = self._gate(equity_env="1", cfg={"prop_firm": {"trailing_drawdown_limit": 0}})
         self.assertTrue(result.passed)
+
+
+# ---------------------------------------------------------------------------
+# Gate G — disk space unit tests (direct function calls)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateDiskSpaceUnit(unittest.TestCase):
+    """Direct unit tests for _gate_disk_space(); mock shutil.disk_usage."""
+
+    def _gate(self, free_bytes: int):
+        import go_live as gl
+        mock_usage = MagicMock()
+        mock_usage.free = free_bytes
+        with patch("shutil.disk_usage", return_value=mock_usage):
+            return gl._gate_disk_space({})
+
+    def test_passes_when_free_space_above_threshold(self):
+        """10 GB free: gate must pass."""
+        result = self._gate(10 * 1024 ** 3)
+        self.assertTrue(result.passed)
+        self.assertIn("GB free", result.detail)
+
+    def test_passes_at_exact_threshold(self):
+        """Exactly 5 GB free: gate must pass (boundary condition)."""
+        result = self._gate(5 * 1024 ** 3)
+        self.assertTrue(result.passed)
+
+    def test_fails_when_free_space_below_threshold(self):
+        """1 GB free: gate must fail."""
+        result = self._gate(1 * 1024 ** 3)
+        self.assertFalse(result.passed)
+        self.assertIn("below 5 GB minimum", result.detail)
+
+    def test_detail_shows_gb_value(self):
+        """Detail string must report free space in GB."""
+        result = self._gate(8 * 1024 ** 3)
+        self.assertIn("8.0 GB free", result.detail)
+
+
+# ---------------------------------------------------------------------------
+# Gate RAM — RAM availability unit tests (direct function calls)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateRAMUnit(unittest.TestCase):
+    """Direct unit tests for _gate_ram(); mock psutil.virtual_memory."""
+
+    def _gate(self, available_bytes: int):
+        import go_live as gl
+        mock_vm = MagicMock()
+        mock_vm.available = available_bytes
+        mock_psutil = MagicMock()
+        mock_psutil.virtual_memory.return_value = mock_vm
+        with patch.dict(sys.modules, {"psutil": mock_psutil}):
+            return gl._gate_ram({})
+
+    def test_passes_when_ram_above_threshold(self):
+        """4 GB available: gate must pass."""
+        result = self._gate(4 * 1024 ** 3)
+        self.assertTrue(result.passed)
+        self.assertIn("GB available", result.detail)
+
+    def test_passes_at_exact_threshold(self):
+        """Exactly 2 GB available: gate must pass (boundary condition)."""
+        result = self._gate(2 * 1024 ** 3)
+        self.assertTrue(result.passed)
+
+    def test_fails_when_ram_below_threshold(self):
+        """512 MB available: gate must fail."""
+        result = self._gate(512 * 1024 ** 2)
+        self.assertFalse(result.passed)
+        self.assertIn("below 2 GB minimum", result.detail)
+
+    def test_detail_shows_gb_value(self):
+        """Detail string must report available RAM in GB."""
+        result = self._gate(3 * 1024 ** 3)
+        self.assertIn("3.0 GB available", result.detail)
+
+    def test_skips_gracefully_when_psutil_missing(self):
+        """When psutil is not installed the gate must pass with a SKIP note."""
+        import go_live as gl
+        # Setting a module to None in sys.modules causes 'import <name>' to raise ImportError
+        with patch.dict(sys.modules, {"psutil": None}):
+            result = gl._gate_ram({})
+        self.assertTrue(result.passed)
+        self.assertIn("SKIP", result.detail)
+
+
+# ---------------------------------------------------------------------------
+# Gate C++ build — binary existence unit tests (direct function calls)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateCppBuildUnit(unittest.TestCase):
+    """Direct unit tests for _gate_cpp_build(); mock filesystem."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        import go_live
+        importlib.reload(go_live)
+        self.go_live = go_live
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _gate(self, binary_path: Path | None = None, exists: bool = True, executable: bool = True):
+        """Run _gate_cpp_build with a patched CPP_BINARY_PATH."""
+        import go_live as gl
+        original = gl.CPP_BINARY_PATH
+        if binary_path is None:
+            binary_path = self.tmp / "orb_strategy"
+            if exists:
+                binary_path.touch()
+                if executable:
+                    binary_path.chmod(0o755)
+                else:
+                    binary_path.chmod(0o644)
+        gl.CPP_BINARY_PATH = binary_path
+        try:
+            return gl._gate_cpp_build({})
+        finally:
+            gl.CPP_BINARY_PATH = original
+
+    def test_passes_when_binary_exists_and_is_executable(self):
+        """Binary present and executable: gate must pass."""
+        result = self._gate(exists=True, executable=True)
+        self.assertTrue(result.passed)
+        self.assertIn("orb_strategy", result.detail)
+
+    def test_fails_when_binary_does_not_exist(self):
+        """Binary absent: gate must fail with a helpful message."""
+        result = self._gate(exists=False)
+        self.assertFalse(result.passed)
+        self.assertIn("not found", result.detail)
+        self.assertIn("make orb_strategy", result.detail)
+
+    def test_fails_when_binary_exists_but_not_executable(self):
+        """Binary exists but has no execute bit: gate must fail."""
+        result = self._gate(exists=True, executable=False)
+        self.assertFalse(result.passed)
+        self.assertIn("not executable", result.detail)
 
 
 # ---------------------------------------------------------------------------

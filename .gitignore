@@ -36,3 +36,6 @@ models/*.joblib
 *.png
 *.wal
 *.docx
+
+# Preflight test artifact — never commit
+NO_DEPLOY_DOES_NOT_EXIST_TEST

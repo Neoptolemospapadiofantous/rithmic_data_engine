@@ -436,6 +436,7 @@ class LiveTrader:
         self._last_watchdog = time.monotonic()
         self._eod_flatten_done = False
         self._orb_bars: list[dict] = []
+        self._session_summary_written: bool = False
 
         # Register signal handlers for clean shutdown
         signal.signal(signal.SIGTERM, self._handle_shutdown)
@@ -475,6 +476,7 @@ class LiveTrader:
             if self._conn is not None and self._session_date is not None:
                 _write_session_summary(self._conn, self._session_date,
                                        self._dry_run, reason)
+                self._session_summary_written = True
         except Exception as exc:
             self._log.error("emergency_flatten error: %s", exc)
             _send_alert(self._config,
@@ -514,7 +516,10 @@ class LiveTrader:
         _sd_notify("READY=1")
         self._replay_historical_bars()
         self._log.info("startup complete — entering trading loop")
-        self._loop()
+        try:
+            self._loop()
+        finally:
+            self._write_session_summary_on_exit()
 
     # ── main loop ─────────────────────────────────────────────────────
 
@@ -677,8 +682,28 @@ class LiveTrader:
             if self._session_date is not None:
                 _write_session_summary(self._conn, self._session_date,
                                        self._dry_run, "EOD_FLATTEN")
+                self._session_summary_written = True
             self._eod_flatten_done = True
             self._running = False  # Stop after EOD
+
+    def _write_session_summary_on_exit(self) -> None:
+        """Write session summary on unexpected exit if not already written.
+
+        Called from the finally block in start() so that crashes do not silently
+        drop the day's session record.  Guarded by _session_summary_written so
+        clean EOD shutdown never double-writes.
+        """
+        if self._session_summary_written:
+            return
+        if self._conn is None or self._session_date is None:
+            return
+        try:
+            _write_session_summary(self._conn, self._session_date,
+                                   self._dry_run, "UNEXPECTED_EXIT")
+            self._session_summary_written = True
+            self._log.info("session summary written on exit for %s", self._session_date)
+        except Exception as exc:
+            self._log.error("failed to write session summary on exit: %s", exc)
 
     def _maybe_watchdog(self) -> None:
         now = time.monotonic()

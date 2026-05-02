@@ -796,5 +796,196 @@ class TestBarLoopReconnectLimit(unittest.TestCase):
                              "_running must be False after max reconnect failures")
 
 
+# ── _write_trade_close tests ──────────────────────────────────────────────────
+
+@pytest.mark.live_trader
+@pytest.mark.fast
+class TestWriteTradeClose(unittest.TestCase):
+
+    def _make_mock_conn(self, fetchone_return):
+        """Return a mock psycopg2 connection whose cursor yields fetchone_return."""
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__ = lambda s: mock_cursor
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_cursor.fetchone.return_value = fetchone_return
+        mock_conn.cursor.return_value = mock_cursor
+        return mock_conn, mock_cursor
+
+    def test_long_trade_close_pnl_correct(self):
+        """LONG close: pnl = (exit - entry) * point_value - commission."""
+        import live_trader
+        mock_conn, mock_cursor = self._make_mock_conn(
+            {"direction": "LONG", "entry_price": 17000.0}
+        )
+        # +10 pts * 2.0 - 4.0 commission = 16.0
+        result = live_trader._write_trade_close(
+            mock_conn, 1, 17010.0, datetime.datetime.now(tz=ET), "TARGET_HIT", 2.0
+        )
+        self.assertIsInstance(result, float)
+        self.assertAlmostEqual(result, 16.0, places=2)
+        mock_conn.commit.assert_called_once()
+
+    def test_short_trade_close_pnl_correct(self):
+        """SHORT close: pnl = (entry - exit) * point_value - commission."""
+        import live_trader
+        mock_conn, _ = self._make_mock_conn(
+            {"direction": "SHORT", "entry_price": 17050.0}
+        )
+        # +20 pts * 20.0 - 4.0 commission = 396.0
+        result = live_trader._write_trade_close(
+            mock_conn, 2, 17030.0, datetime.datetime.now(tz=ET), "TARGET_HIT", 20.0
+        )
+        self.assertAlmostEqual(result, 396.0, places=2)
+
+    def test_losing_trade_returns_negative_pnl(self):
+        """A losing LONG trade must return a negative P&L."""
+        import live_trader
+        mock_conn, _ = self._make_mock_conn(
+            {"direction": "LONG", "entry_price": 17000.0}
+        )
+        # -4 pts * 2.0 - 4.0 commission = -12.0
+        result = live_trader._write_trade_close(
+            mock_conn, 3, 16996.0, datetime.datetime.now(tz=ET), "SL_HIT", 2.0
+        )
+        self.assertAlmostEqual(result, -12.0, places=2)
+
+    def test_missing_trade_returns_zero(self):
+        """When trade_id not found in DB, return 0.0 without committing."""
+        import live_trader
+        mock_conn, _ = self._make_mock_conn(None)
+        result = live_trader._write_trade_close(
+            mock_conn, 999, 17000.0, datetime.datetime.now(tz=ET), "EOD", 2.0
+        )
+        self.assertEqual(result, 0.0)
+        mock_conn.commit.assert_not_called()
+
+    def test_db_update_executed_for_found_trade(self):
+        """For a found trade, the cursor must execute an UPDATE statement."""
+        import live_trader
+        mock_conn, mock_cursor = self._make_mock_conn(
+            {"direction": "LONG", "entry_price": 17000.0}
+        )
+        live_trader._write_trade_close(
+            mock_conn, 5, 17010.0, datetime.datetime.now(tz=ET), "TARGET_HIT", 2.0
+        )
+        # SELECT + UPDATE = 2 execute calls
+        self.assertEqual(mock_cursor.execute.call_count, 2)
+
+
+# ── _write_session_summary tests ──────────────────────────────────────────────
+
+@pytest.mark.live_trader
+@pytest.mark.fast
+class TestWriteSessionSummary(unittest.TestCase):
+
+    def test_calls_trade_for_date_and_save(self):
+        """_write_session_summary must call Trade.for_date and SessionSummary.save."""
+        import live_trader
+        session_date = datetime.date.today()
+        mock_conn = MagicMock()
+        mock_summary = MagicMock()
+
+        with patch("live_trader.Trade.for_date", return_value=[]) as mock_for_date, \
+             patch("live_trader.SessionSummary.build_from_trades",
+                   return_value=mock_summary) as mock_build:
+
+            live_trader._write_session_summary(mock_conn, session_date, True, "EOD")
+
+            mock_for_date.assert_called_once_with(mock_conn, session_date)
+            mock_build.assert_called_once()
+            mock_summary.save.assert_called_once_with(mock_conn)
+
+    def test_notes_set_to_exit_reason(self):
+        """_write_session_summary must set summary.notes = exit_reason."""
+        import live_trader
+        session_date = datetime.date.today()
+        mock_conn = MagicMock()
+        exit_reason = "SIGTERM"
+
+        with patch("live_trader.Trade.for_date", return_value=[]):
+            mock_summary = MagicMock()
+            with patch("live_trader.SessionSummary.build_from_trades",
+                       return_value=mock_summary):
+                live_trader._write_session_summary(
+                    mock_conn, session_date, False, exit_reason
+                )
+                self.assertEqual(mock_summary.notes, exit_reason)
+
+    def test_only_completed_trades_passed_to_build(self):
+        """Only trades with exit_time set must be passed to build_from_trades."""
+        import live_trader
+        from models import Trade
+
+        session_date = datetime.date.today()
+        mock_conn = MagicMock()
+
+        # Build minimal Trade-like objects (no DB needed — just duck-type)
+        closed_trade = MagicMock(spec=Trade)
+        closed_trade.exit_time = datetime.datetime.now(tz=ET)
+        open_trade = MagicMock(spec=Trade)
+        open_trade.exit_time = None
+
+        with patch("live_trader.Trade.for_date",
+                   return_value=[closed_trade, open_trade]):
+            mock_summary = MagicMock()
+            with patch("live_trader.SessionSummary.build_from_trades",
+                       return_value=mock_summary) as mock_build:
+                live_trader._write_session_summary(
+                    mock_conn, session_date, True, "EOD"
+                )
+                called_trades = mock_build.call_args[0][0]
+                self.assertIn(closed_trade, called_trades)
+                self.assertNotIn(open_trade, called_trades)
+
+
+# ── _cancel_trade_open tests ──────────────────────────────────────────────────
+
+@pytest.mark.live_trader
+@pytest.mark.fast
+class TestCancelTradeOpen(unittest.TestCase):
+
+    def _make_mock_conn(self):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__ = lambda s: mock_cursor
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_conn.cursor.return_value = mock_cursor
+        return mock_conn, mock_cursor
+
+    def test_executes_update_with_trade_id(self):
+        """_cancel_trade_open must execute an UPDATE using the given trade_id."""
+        import live_trader
+        mock_conn, mock_cursor = self._make_mock_conn()
+        live_trader._cancel_trade_open(mock_conn, 42)
+        mock_cursor.execute.assert_called_once()
+        sql, params = mock_cursor.execute.call_args[0]
+        self.assertIn("UPDATE", sql.upper())
+        self.assertIn(42, params)
+
+    def test_commits_after_update(self):
+        """_cancel_trade_open must commit the transaction."""
+        import live_trader
+        mock_conn, _ = self._make_mock_conn()
+        live_trader._cancel_trade_open(mock_conn, 7)
+        mock_conn.commit.assert_called_once()
+
+    def test_sets_order_failed_exit_reason(self):
+        """_cancel_trade_open must set exit_reason = 'ORDER_FAILED'."""
+        import live_trader
+        mock_conn, mock_cursor = self._make_mock_conn()
+        live_trader._cancel_trade_open(mock_conn, 10)
+        sql, _ = mock_cursor.execute.call_args[0]
+        self.assertIn("ORDER_FAILED", sql)
+
+    def test_sets_exit_time_on_cancel(self):
+        """_cancel_trade_open must set exit_time (so the trade appears closed)."""
+        import live_trader
+        mock_conn, mock_cursor = self._make_mock_conn()
+        live_trader._cancel_trade_open(mock_conn, 15)
+        sql, _ = mock_cursor.execute.call_args[0]
+        self.assertIn("exit_time", sql)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -58,6 +58,8 @@ CONFIG_PATH      = Path("config/live_config.json")
 CHECKSUMS_PATH   = Path("config/model_checksums.json")
 DRIFT_HALT       = Path("data/DRIFT_HALT")
 DISK_MIN_BYTES   = 5 * 1024 ** 3   # 5 GiB
+RAM_MIN_BYTES    = 2 * 1024 ** 3   # 2 GiB
+CPP_BINARY_PATH  = Path("build/orb_strategy")
 
 _GREEN  = "\033[32m"
 _RED    = "\033[31m"
@@ -284,6 +286,49 @@ def _gate_disk_space(_cfg: dict) -> GateResult:
     )
 
 
+def _gate_ram(_cfg: dict) -> GateResult:
+    """Gate: at least 2 GiB of RAM must be available to the process."""
+    try:
+        import psutil
+        available = psutil.virtual_memory().available
+    except ImportError:
+        # psutil not installed — skip gracefully rather than hard-fail
+        return GateResult(
+            "RAM available > 2 GB",
+            True,
+            "SKIP — psutil not installed; install it to enable this gate",
+        )
+    free_gb = available / 1024 ** 3
+    ok = available >= RAM_MIN_BYTES
+    return GateResult(
+        "RAM available > 2 GB",
+        ok,
+        f"{free_gb:.1f} GB available" + ("" if ok else " — below 2 GB minimum"),
+    )
+
+
+def _gate_cpp_build(_cfg: dict) -> GateResult:
+    """Gate: C++ strategy binary must exist and be executable."""
+    binary = CPP_BINARY_PATH
+    if not binary.exists():
+        return GateResult(
+            "C++ orb_strategy binary exists and is executable",
+            False,
+            f"not found: {binary} — run: cd build && make orb_strategy",
+        )
+    if not os.access(binary, os.X_OK):
+        return GateResult(
+            "C++ orb_strategy binary exists and is executable",
+            False,
+            f"not executable: {binary} — run: chmod +x {binary}",
+        )
+    return GateResult(
+        "C++ orb_strategy binary exists and is executable",
+        True,
+        str(binary),
+    )
+
+
 def _gate_drift_halt(_cfg: dict) -> GateResult:
     if DRIFT_HALT.exists():
         try:
@@ -433,6 +478,8 @@ _ALL_GATES = [
     _gate_cert,
     _gate_ml_model,
     _gate_disk_space,
+    _gate_ram,
+    _gate_cpp_build,
     _gate_drift_halt,
     _gate_prop_firm,
     _gate_account_equity,
