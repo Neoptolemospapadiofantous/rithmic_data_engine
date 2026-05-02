@@ -691,5 +691,108 @@ class TestGoLiveCLI(unittest.TestCase):
         self.assertEqual(results, [])
 
 
+# ---------------------------------------------------------------------------
+# Gate K — trade_route unit tests  (M4)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateTradeRouteUnit(unittest.TestCase):
+    """Direct unit tests for _gate_trade_route()."""
+
+    def _gate(self, cfg: dict):
+        import go_live as gl
+        return gl._gate_trade_route(cfg)
+
+    def test_simulator_value_fails(self):
+        """trade_route='simulator' must fail gate K."""
+        result = self._gate({"trade_route": "simulator"})
+        self.assertFalse(result.passed)
+        self.assertIn("simulator", result.detail)
+
+    def test_simulator_value_case_insensitive_fails(self):
+        """trade_route='SIMULATOR' (upper-case) must also fail gate K."""
+        result = self._gate({"trade_route": "SIMULATOR"})
+        self.assertFalse(result.passed)
+
+    def test_non_simulator_value_passes(self):
+        """trade_route='live' must pass gate K."""
+        result = self._gate({"trade_route": "live"})
+        self.assertTrue(result.passed)
+        self.assertIn("live", result.detail)
+
+    def test_missing_key_passes(self):
+        """When trade_route key is absent cfg.get returns ''; empty string is not 'simulator' → pass."""
+        result = self._gate({})
+        self.assertTrue(result.passed)
+
+
+# ---------------------------------------------------------------------------
+# Gate L — audit_daemon / AUDIT_HALT unit tests  (M5)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateAuditDaemonUnit(unittest.TestCase):
+    """Direct unit tests for _gate_audit_daemon(); controls AUDIT_HALT via monkeypatch."""
+
+    def _gate(self, cfg: dict, audit_halt_path: Path):
+        """Run _gate_audit_daemon with audit_halt resolved to a controlled path.
+
+        The gate hard-codes Path("data/AUDIT_HALT") relative to cwd.
+        We set cwd to the directory *above* data/ so that Path("data/AUDIT_HALT")
+        resolves to our tmp sentinel file at <project_root>/data/AUDIT_HALT.
+        audit_halt_path is expected to be <tmp>/data/AUDIT_HALT.
+        """
+        import go_live as gl
+
+        # audit_halt_path == <tmp>/data/AUDIT_HALT
+        # .parent           == <tmp>/data
+        # .parent.parent    == <tmp>  ← this is the fake project root
+        project_root = audit_halt_path.parent.parent
+        old_cwd = os.getcwd()
+        try:
+            os.chdir(project_root)
+            return gl._gate_audit_daemon(cfg)
+        finally:
+            os.chdir(old_cwd)
+
+    def test_audit_halt_file_present_fails(self):
+        """AUDIT_HALT sentinel file must cause gate L to fail with a clear message."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            data_dir = tmp / "data"
+            data_dir.mkdir()
+            halt = data_dir / "AUDIT_HALT"
+            halt.write_text(json.dumps({"message": "schema drift detected"}))
+
+            result = self._gate({}, halt)
+            self.assertFalse(result.passed)
+            self.assertIn("AUDIT_HALT", result.detail)
+
+    def test_no_audit_halt_file_checks_daemon(self):
+        """Without AUDIT_HALT the gate delegates to _check_audit_daemon_running()."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            data_dir = tmp / "data"
+            data_dir.mkdir()
+            halt = data_dir / "AUDIT_HALT"  # does NOT exist
+
+            with patch("go_live._check_audit_daemon_running", return_value=(True, "mocked")):
+                result = self._gate({}, halt)
+            self.assertTrue(result.passed)
+            self.assertIn("mocked", result.detail)
+
+    def test_audit_halt_plain_text_still_fails(self):
+        """AUDIT_HALT with plain-text content (not JSON) must still fail gate L."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            data_dir = tmp / "data"
+            data_dir.mkdir()
+            halt = data_dir / "AUDIT_HALT"
+            halt.write_text("critical: equity drawdown exceeded limit")
+
+            result = self._gate({}, halt)
+            self.assertFalse(result.passed)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -440,8 +440,8 @@ def _check_audit_daemon_running() -> tuple[bool, str]:
         if pr.returncode == 0 and pr.stdout.strip():
             pid = pr.stdout.strip().split()[0]
             return True, f"local process PID {pid}"
-    except Exception:
-        pass
+    except Exception as exc:
+        log.warning("pgrep check failed: %s", exc)
 
     return False, ("audit_daemon not running — start with: "
                    "python scripts/audit_daemon.py  or  sudo systemctl start audit_daemon")

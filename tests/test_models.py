@@ -395,5 +395,77 @@ def test_for_date_returns_summary_when_found():
     assert s.win_count == 2
 
 
+# ── Trade.for_date and Trade.get unit tests  (M6) ────────────────────────────
+
+def _full_trade_row(**overrides) -> dict:
+    """Return a complete row dict matching all Trade dataclass fields."""
+    row = {
+        "id": 1,
+        "session_date": date(2026, 4, 23),
+        "symbol": "NQ",
+        "direction": "LONG",
+        "entry_price": 17850.0,
+        "entry_time": datetime(2026, 4, 23, 9, 35, tzinfo=timezone.utc),
+        "exit_price": 17900.0,
+        "exit_time": datetime(2026, 4, 23, 10, 0, tzinfo=timezone.utc),
+        "quantity": 1,
+        "pnl": 250.0,
+        "pnl_points": 50.0,
+        "stop_loss": 17820.0,
+        "target": 17900.0,
+        "exit_reason": "TARGET_HIT",
+        "dry_run": False,
+        "source": "python",
+        "session_id": "2026-04-23_python",
+        "ml_prediction": None,
+        "ml_confidence": None,
+    }
+    row.update(overrides)
+    return row
+
+
+@pytest.mark.fast
+def test_trade_for_date_returns_empty_when_no_rows():
+    """Trade.for_date returns [] when cursor.fetchall() returns no rows."""
+    conn, cur = _make_conn(fetchall_return=[])
+    result = Trade.for_date(conn, date(2026, 4, 23))
+    assert result == []
+
+
+@pytest.mark.fast
+def test_trade_for_date_returns_list_when_found():
+    """Trade.for_date returns a list with one Trade when one row is returned."""
+    row = _full_trade_row()
+    conn, cur = _make_conn(fetchall_return=[row])
+    results = Trade.for_date(conn, date(2026, 4, 23))
+    assert len(results) == 1
+    t = results[0]
+    assert isinstance(t, Trade)
+    assert t.direction == "LONG"
+    assert t.entry_price == 17850.0
+    assert t.pnl == 250.0
+
+
+@pytest.mark.fast
+def test_trade_get_returns_none_when_missing():
+    """Trade.get returns None when cursor.fetchone() returns None."""
+    conn, cur = _make_conn(fetchone_return=None)
+    result = Trade.get(conn, trade_id=999)
+    assert result is None
+
+
+@pytest.mark.fast
+def test_trade_get_returns_trade_when_found():
+    """Trade.get returns a Trade object when cursor.fetchone() returns a row dict."""
+    row = _full_trade_row(id=42, direction="SHORT", entry_price=18000.0)
+    conn, cur = _make_conn(fetchone_return=row)
+    result = Trade.get(conn, trade_id=42)
+    assert result is not None
+    assert isinstance(result, Trade)
+    assert result.id == 42
+    assert result.direction == "SHORT"
+    assert result.entry_price == 18000.0
+
+
 if __name__ == "__main__":
     unittest.main()

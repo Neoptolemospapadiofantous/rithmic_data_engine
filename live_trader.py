@@ -427,7 +427,7 @@ class LiveTrader:
         self._config = config
         self._dry_run = dry_run
         self._symbol: str = config.get("symbol", "MNQ")
-        self._point_value: float = float(config["orb"].get("point_value", 2.0))
+        self._point_value: float = float(config.get("orb", {}).get("point_value", 2.0))
         self._log = logging.getLogger("live_trader")
         self._strategy = MicroORBStrategy(config)
         self._conn: Optional[psycopg2.extensions.connection] = None
@@ -475,9 +475,12 @@ class LiveTrader:
                 _cur_pos = self._strategy.current_position()
                 exit_price = (float(latest_tick["price"]) if latest_tick
                               else (float(_cur_pos.entry_price) if _cur_pos else 0.0))
+                if latest_tick is None:
+                    self._log.error("closing trade with no tick available — PnL will be wrong (price=0.0)")
                 exit_ts = datetime.datetime.now(tz=datetime.timezone.utc)
                 _write_trade_close(self._conn, self._active_trade_id,
-                                   exit_price, exit_ts, reason, self._point_value)
+                                   exit_price, exit_ts, reason, self._point_value,
+                                   float(self._config.get("commission_rt", 4.0)))
                 self._active_trade_id = None
             self._strategy.eod_flatten()
 
@@ -498,8 +501,8 @@ class LiveTrader:
                     "message": f"emergency_flatten failed: {exc}",
                     "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 }))
-            except Exception:
-                pass
+            except Exception as exc:
+                self._log.warning("failed to write AUDIT_HALT sentinel: %s", exc)
 
     # ── startup ───────────────────────────────────────────────────────
 
@@ -681,13 +684,15 @@ class LiveTrader:
         if self._eod_flatten_done:
             return
         eod_time = datetime.time.fromisoformat(
-            self._config["orb"].get("rth_close", "16:00:00"))
+            self._config.get("orb", {}).get("rth_close", "16:00:00"))
         if now_et.time() >= eod_time:
             self._log.info("EOD: flattening all positions at %s", now_et)
             had_position = self._strategy.eod_flatten()
             if had_position and self._active_trade_id is not None:
                 latest_tick = _poll_latest_tick(self._conn, self._symbol, None)
                 exit_price = float(latest_tick["price"]) if latest_tick else 0.0
+                if latest_tick is None:
+                    self._log.error("closing trade with no tick available — PnL will be wrong (price=0.0)")
                 self._on_exit(exit_price, datetime.datetime.now(tz=datetime.timezone.utc), "EOD_FLATTEN")
             if self._session_date is not None:
                 _write_session_summary(self._conn, self._session_date,
@@ -824,8 +829,8 @@ class LiveTrader:
             try:
                 if self._conn is not None:
                     self._conn.rollback()
-            except Exception:
-                pass
+            except Exception as exc:
+                self._log.debug("rollback failed: %s", exc)
 
 
 # ── feature computation (delegates to strategy.features for parity with backtest) ─

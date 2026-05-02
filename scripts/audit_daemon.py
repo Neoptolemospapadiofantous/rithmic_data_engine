@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import re
 import shutil
@@ -74,7 +75,8 @@ def _load_live_config() -> dict | None:
     cfg_path = ENGINE_DIR / "config" / "live_config.json"
     try:
         return json.loads(cfg_path.read_text())
-    except Exception:
+    except Exception as exc:
+        logging.getLogger("audit").warning("failed to load live config: %s", exc)
         return None
 
 
@@ -331,12 +333,10 @@ def check_data_freshness(conn) -> dict:
         return {"check": "data_freshness", "status": "WARN",
                 "message": "No ticks in database", "value": -1}
 
-    from datetime import timezone as tz
     latest = row[0]
     if latest.tzinfo is None:
-        import pytz
-        latest = latest.replace(tzinfo=pytz.UTC)
-    now_utc = datetime.now(tz.utc)
+        latest = latest.replace(tzinfo=timezone.utc)
+    now_utc = datetime.now(timezone.utc)
     age_sec = (now_utc - latest).total_seconds()
     weekday = now_utc.weekday()   # 5=Sat 6=Sun
     hour_utc = now_utc.hour
