@@ -40,13 +40,22 @@ from audit_daemon import (
     check_data_freshness,
     check_disk_space,
     check_drift_halt,
+    check_gap_count,
+    check_hermes_session_freshness,
     check_model_staleness,
     check_pnl_sanity,
     check_ram_usage,
+    check_rejection_rate,
+    check_session_health,
     check_slippage_sanity,
     check_trade_table_consistency,
     check_trading_constants,
     check_wal_health,
+    check_zombie_trader,
+    run_cpp_tests,
+    run_lint_check,
+    run_python_tests,
+    run_type_check,
 )
 
 
@@ -707,3 +716,370 @@ def test_escalation_result_check_names_preserved(escalation_engine):
     results = engine.process(inputs, conn=None)
     assert len(results) == 3
     assert [r["check"] for r in results] == ["data_freshness", "gap_count", "cpp_tests"]
+
+
+# ── check_zombie_trader ───────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_zombie_trader_not_running():
+    """pgrep returns '0' (count=0) → INFO (not running outside RTH)."""
+    fake = MagicMock()
+    fake.returncode = 0
+    fake.stdout = "0\n"
+    with patch.object(audit_daemon, "_run", return_value=fake):
+        r = check_zombie_trader()
+    assert r["check"] == "zombie_trader"
+    assert r["status"] == "INFO"
+    assert r["value"] == pytest.approx(0.0)
+
+
+@pytest.mark.fast
+def test_zombie_trader_one_process():
+    """pgrep returns '1' (count=1) → PASS (single healthy process)."""
+    fake = MagicMock()
+    fake.returncode = 0
+    fake.stdout = "1\n"
+    with patch.object(audit_daemon, "_run", return_value=fake):
+        r = check_zombie_trader()
+    assert r["check"] == "zombie_trader"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(1.0)
+
+
+@pytest.mark.fast
+def test_zombie_trader_duplicate_processes():
+    """pgrep returns '2' (count=2) → FAIL (double-trading detected)."""
+    fake = MagicMock()
+    fake.returncode = 0
+    fake.stdout = "2\n"
+    with patch.object(audit_daemon, "_run", return_value=fake):
+        r = check_zombie_trader()
+    assert r["check"] == "zombie_trader"
+    assert r["status"] == "FAIL"
+    assert r["value"] == pytest.approx(2.0)
+    assert "2" in r["message"]
+
+
+@pytest.mark.fast
+def test_zombie_trader_pgrep_missing():
+    """pgrep binary not found (returncode=-2) → INFO (tool unavailable)."""
+    fake = MagicMock()
+    fake.returncode = -2
+    fake.stdout = ""
+    with patch.object(audit_daemon, "_run", return_value=fake):
+        r = check_zombie_trader()
+    assert r["check"] == "zombie_trader"
+    assert r["status"] == "INFO"
+    assert "unavailable" in r["message"]
+
+
+# ── check_hermes_session_freshness ────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_hermes_session_freshness_log_missing(tmp_path, monkeypatch):
+    """Log file absent → WARN."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    # Ensure the log directory exists but the file does not
+    (tmp_path / "data" / "logs").mkdir(parents=True, exist_ok=True)
+    r = check_hermes_session_freshness()
+    assert r["check"] == "hermes_session_freshness"
+    assert r["status"] == "WARN"
+    assert "missing" in r["message"]
+
+
+@pytest.mark.fast
+def test_hermes_session_freshness_weekend(tmp_path, monkeypatch):
+    """Weekend day → INFO (no session required on weekends)."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    log_dir = tmp_path / "data" / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "hermes_session.log"
+    log_file.write_text("some old log line\n")
+
+    # isoweekday() returns 6 for Saturday
+    saturday = dt_module.datetime(2026, 5, 2, 12, 0, 0, tzinfo=dt_module.timezone.utc)
+    with patch("audit_daemon.datetime") as mock_dt:
+        mock_dt.now.return_value = saturday
+        mock_dt.side_effect = lambda *a, **kw: dt_module.datetime(*a, **kw)
+        r = check_hermes_session_freshness()
+    assert r["check"] == "hermes_session_freshness"
+    assert r["status"] == "INFO"
+    assert "weekend" in r["message"]
+
+
+@pytest.mark.fast
+def test_hermes_session_freshness_weekday_found(tmp_path, monkeypatch):
+    """Weekday, today's date appears in the last 20 lines → PASS."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    log_dir = tmp_path / "data" / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "hermes_session.log"
+
+    # Use a known weekday: 2026-05-04 is a Monday (isoweekday=1)
+    today_str = "2026-05-04"
+    log_file.write_text(f"[{today_str} 09:00:00] hermes session PASS\n")
+
+    monday = dt_module.datetime(2026, 5, 4, 14, 0, 0, tzinfo=dt_module.timezone.utc)
+    with patch("audit_daemon.datetime") as mock_dt:
+        mock_dt.now.return_value = monday
+        mock_dt.side_effect = lambda *a, **kw: dt_module.datetime(*a, **kw)
+        r = check_hermes_session_freshness()
+    assert r["check"] == "hermes_session_freshness"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(1.0)
+
+
+@pytest.mark.fast
+def test_hermes_session_freshness_weekday_not_found(tmp_path, monkeypatch):
+    """Weekday, today's date NOT in last 20 lines → WARN."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    log_dir = tmp_path / "data" / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "hermes_session.log"
+
+    # File has yesterday's date only
+    log_file.write_text("[2026-05-03 09:00:00] hermes session PASS\n")
+
+    monday = dt_module.datetime(2026, 5, 4, 14, 0, 0, tzinfo=dt_module.timezone.utc)
+    with patch("audit_daemon.datetime") as mock_dt:
+        mock_dt.now.return_value = monday
+        mock_dt.side_effect = lambda *a, **kw: dt_module.datetime(*a, **kw)
+        r = check_hermes_session_freshness()
+    assert r["check"] == "hermes_session_freshness"
+    assert r["status"] == "WARN"
+    assert r["value"] == pytest.approx(0.0)
+
+
+# ── check_rejection_rate ──────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_rejection_rate_no_data():
+    """No rows in quality_metrics → INFO."""
+    r = check_rejection_rate(_mock_conn(fetchone_value=None))
+    assert r["check"] == "rejection_rate"
+    assert r["status"] == "INFO"
+    assert "no" in r["message"].lower()
+    assert r["value"] == 0
+
+
+@pytest.mark.fast
+def test_rejection_rate_pass():
+    """rejection_rate_pct=3.0 (< 5%) → PASS."""
+    r = check_rejection_rate(_mock_conn(fetchone_value=(3.0,)))
+    assert r["check"] == "rejection_rate"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(3.0)
+
+
+@pytest.mark.fast
+def test_rejection_rate_fail():
+    """rejection_rate_pct=8.0 (>= 5%) → WARN (threshold is WARN in the code)."""
+    r = check_rejection_rate(_mock_conn(fetchone_value=(8.0,)))
+    assert r["check"] == "rejection_rate"
+    assert r["status"] == "WARN"
+    assert r["value"] == pytest.approx(8.0)
+    assert "8.00" in r["message"]
+
+
+# ── check_gap_count ───────────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_gap_count_no_data():
+    """No rows in quality_metrics → INFO."""
+    r = check_gap_count(_mock_conn(fetchone_value=None))
+    assert r["check"] == "gap_count"
+    assert r["status"] == "INFO"
+    assert r["value"] == 0
+
+
+@pytest.mark.fast
+def test_gap_count_pass():
+    """sentinel_gaps=10 (< 50) → PASS."""
+    r = check_gap_count(_mock_conn(fetchone_value=(10.0,)))
+    assert r["check"] == "gap_count"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(10.0)
+    assert "10" in r["message"]
+
+
+@pytest.mark.fast
+def test_gap_count_fail():
+    """sentinel_gaps=60 (>= 50) → WARN (threshold is WARN in the code)."""
+    r = check_gap_count(_mock_conn(fetchone_value=(60.0,)))
+    assert r["check"] == "gap_count"
+    assert r["status"] == "WARN"
+    assert r["value"] == pytest.approx(60.0)
+    assert "60" in r["message"]
+
+
+# ── check_session_health ──────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_session_health_no_rows():
+    """No sessions in DB → INFO."""
+    r = check_session_health(_mock_conn(fetchone_value=None))
+    assert r["check"] == "session_health"
+    assert r["status"] == "INFO"
+    assert r["value"] == 0
+    assert "no sessions" in r["message"].lower()
+
+
+@pytest.mark.fast
+def test_session_health_with_row():
+    """Session row present → PASS with tick count in message."""
+    # (id, mode, started_at, tick_count, rejected_count, gap_count, alert_count)
+    row = (42, "live", dt_module.datetime(2026, 5, 4, 13, 30, tzinfo=dt_module.timezone.utc),
+           1500, 3, 0, 0)
+    r = check_session_health(_mock_conn(fetchone_value=row))
+    assert r["check"] == "session_health"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(1500.0)
+    assert "42" in r["message"]
+    assert "1500" in r["message"]
+
+
+# ── Helpers for subprocess-based checks ───────────────────────────────────────
+
+def _make_proc(returncode: int, stdout: str = "", stderr: str = "") -> MagicMock:
+    """Return a mock CompletedProcess with the given returncode and stdout."""
+    proc = MagicMock()
+    proc.returncode = returncode
+    proc.stdout = stdout
+    proc.stderr = stderr
+    return proc
+
+
+# ── run_cpp_tests ─────────────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_cpp_tests_binary_not_found():
+    """_run returns returncode=-2 → INFO (ctest binary missing, not a code failure)."""
+    with patch.object(audit_daemon, "_run", return_value=_make_proc(-2, "")):
+        r = run_cpp_tests()
+    assert r["check"] == "cpp_tests"
+    assert r["status"] == "INFO"
+    assert "not found" in r["message"].lower()
+
+
+@pytest.mark.fast
+def test_cpp_tests_all_pass():
+    """_run returns rc=0 with ctest '100% tests passed' output → PASS."""
+    output = "100% tests passed, 0 tests failed out of 5"
+    with patch.object(audit_daemon, "_run", return_value=_make_proc(0, output)):
+        r = run_cpp_tests()
+    assert r["check"] == "cpp_tests"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(0.0)
+
+
+@pytest.mark.fast
+def test_cpp_tests_some_fail():
+    """_run returns rc=1 with '3 tests failed' output → FAIL."""
+    output = "67% tests passed, 3 tests failed out of 9\nFAIL: test_orb_strategy"
+    with patch.object(audit_daemon, "_run", return_value=_make_proc(1, output)):
+        r = run_cpp_tests()
+    assert r["check"] == "cpp_tests"
+    assert r["status"] == "FAIL"
+    assert r["value"] == pytest.approx(3.0)
+
+
+# ── run_python_tests ──────────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_python_tests_binary_not_found():
+    """subprocess.run raises FileNotFoundError (pytest not on PATH) → WARN via except Exception."""
+    with patch.object(audit_daemon.subprocess, "run", side_effect=FileNotFoundError("pytest")):
+        r = run_python_tests()
+    assert r["check"] == "python_tests"
+    # run_python_tests catches FileNotFoundError via bare except Exception — returns WARN
+    assert r["status"] == "WARN"
+
+
+@pytest.mark.fast
+def test_python_tests_all_pass():
+    """subprocess.run returns rc=0 with '42 passed' output → PASS."""
+    output = "42 passed in 3.14s"
+    with patch.object(audit_daemon.subprocess, "run", return_value=_make_proc(0, output)):
+        r = run_python_tests()
+    assert r["check"] == "python_tests"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(0.0)
+
+
+@pytest.mark.fast
+def test_python_tests_some_fail():
+    """subprocess.run returns rc=1 with '1 failed' output → FAIL."""
+    output = "1 failed, 41 passed in 3.50s"
+    with patch.object(audit_daemon.subprocess, "run", return_value=_make_proc(1, output)):
+        r = run_python_tests()
+    assert r["check"] == "python_tests"
+    assert r["status"] == "FAIL"
+    assert r["value"] == pytest.approx(1.0)
+
+
+# ── run_type_check ────────────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_type_check_mypy_not_found():
+    """subprocess.run raises FileNotFoundError (mypy not installed) → INFO."""
+    with patch.object(audit_daemon.subprocess, "run", side_effect=FileNotFoundError("mypy")):
+        r = run_type_check()
+    assert r["check"] == "type_check"
+    assert r["status"] == "INFO"
+    assert "mypy" in r["message"].lower()
+
+
+@pytest.mark.fast
+def test_type_check_no_errors():
+    """subprocess.run returns rc=0 with no ':error:' lines in output → PASS."""
+    with patch.object(audit_daemon.subprocess, "run", return_value=_make_proc(0, "Success: no issues")):
+        r = run_type_check()
+    assert r["check"] == "type_check"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(0.0)
+
+
+@pytest.mark.fast
+def test_type_check_with_errors():
+    """subprocess.run returns rc=1 with ':error:' lines → WARN or FAIL."""
+    error_output = "live_trader.py:42: error: Argument 1 to 'foo' has incompatible type"
+    with patch.object(audit_daemon.subprocess, "run",
+                      return_value=_make_proc(1, error_output)):
+        r = run_type_check()
+    assert r["check"] == "type_check"
+    assert r["status"] in ("WARN", "FAIL")
+    assert r["value"] >= 1.0
+
+
+# ── run_lint_check ────────────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_lint_check_ruff_not_found():
+    """subprocess.run raises FileNotFoundError (ruff not installed) → INFO."""
+    with patch.object(audit_daemon.subprocess, "run", side_effect=FileNotFoundError("ruff")):
+        r = run_lint_check()
+    assert r["check"] == "lint_check"
+    assert r["status"] == "INFO"
+    assert "ruff" in r["message"].lower()
+
+
+@pytest.mark.fast
+def test_lint_check_no_issues():
+    """subprocess.run returns rc=0 with empty output → PASS."""
+    with patch.object(audit_daemon.subprocess, "run", return_value=_make_proc(0, "")):
+        r = run_lint_check()
+    assert r["check"] == "lint_check"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(0.0)
+
+
+@pytest.mark.fast
+def test_lint_check_with_issues():
+    """subprocess.run returns rc=1 with lint violations → WARN or FAIL."""
+    lint_output = "live_trader.py:42:5: F401 'os' imported but unused"
+    with patch.object(audit_daemon.subprocess, "run",
+                      return_value=_make_proc(1, lint_output)):
+        r = run_lint_check()
+    assert r["check"] == "lint_check"
+    assert r["status"] in ("WARN", "FAIL")
+    assert r["value"] >= 1.0
