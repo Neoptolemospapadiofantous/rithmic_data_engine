@@ -11,6 +11,73 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-02 — Hermes iteration 15 — _gate_db unit tests, cross_system_audit coverage (50285a0)
+
+### Added
+- **`TestGateDBUnit` (5 tests)** (`tests/`): covers `_check_db_connection` in
+  `go_live.py` — env-var resolution, port fallback to `5432` when `PGPORT` is
+  absent, missing required keys, psycopg2 connection error, and gate result
+  wrapping (PASS / FAIL return shape).
+- **`tests/test_cross_system_audit.py` (30 fast tests)**: first direct test
+  coverage for all 7 check functions in `scripts/cross_system_audit.py` —
+  `tick_value`, `point_value`, `symbol` consistency, Python defaults, micro-ORB
+  point value, `trade_route`, and `risk_params_consistency`.  All tests are
+  marked `@pytest.mark.fast` and run in under 2 s total.
+
+### Metrics
+- Test count: 562 → 597
+
+---
+
+## 2026-05-02 — Hermes iteration 14 — gate tests, eod_sync tests, CLAUDE.md fix (52813ad)
+
+### Added
+- **`TestGateAccountEquityUnit` (6 tests)**: unit tests for `_gate_account_equity`
+  in `go_live.py` — equity above threshold (PASS), below threshold (FAIL), missing
+  env var, DB unreachable, zero-equity edge case, and gate result shape.
+- **`TestGateMlModelUnit` (5 tests)**: unit tests for `_gate_ml_model` in
+  `go_live.py` — model file absent (FAIL), model fresh within 30 days (PASS),
+  model stale beyond 30 days (FAIL), boundary at exactly 29 days 23 hours (PASS),
+  and gate result wrapping.
+- **`TestRunCppSync` (4 tests)** (`tests/test_eod_summary.py`): cover
+  `run_cpp_sync` — script missing (WARN), exit 0 (PASS), nonzero exit (FAIL), and
+  `--dry-run` flag forwarding.
+
+### Changed
+- **`go_live.py` — `_gate_ml_model`**: now enforces a 30-day staleness check on
+  the ML model file (previously only checked for existence); stale models are
+  blocked from live promotion.
+
+### Fixed
+- **`CLAUDE.md` — key files table**: "18-check quality daemon" corrected to
+  "22-check quality daemon" to match current audit surface.
+
+### Metrics
+- Test count: 547 → 562
+
+---
+
+## 2026-05-02 — Hermes iteration 13 — complete audit check coverage, final cleanup (eec69e0)
+
+### Added
+- **`check_process_liveness` tests** (3): outside RTH window → INFO (no check
+  performed), inside RTH with processes present → PASS, inside RTH with no
+  processes → WARN.
+- **`run_contamination_audit` tests** (4): script missing → WARN, script raises
+  error → WARN, all checks pass → PASS, some checks fail → FAIL.
+
+### Fixed
+- **`requirements.txt`**: `psutil` entry moved from the `# Database` section to
+  the correct `# System monitoring` section.
+
+### Updated
+- **`CHANGES.md`**: added changelog entries for Hermes iterations 10–12.
+
+### Metrics
+- Test count: 540 → 547
+
+---
+
 ## 2026-05-02 — Hermes iteration 12 — full audit check test coverage 22/22 (f975c31)
 
 ### Added
