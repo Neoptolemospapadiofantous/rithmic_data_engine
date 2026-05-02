@@ -401,3 +401,80 @@ class TestMainFunction:
              patch("sys.argv", ["eod_summary.py"]):
             with pytest.raises((SystemExit, Exception)):
                 mod.main()
+
+
+# ---------------------------------------------------------------------------
+# _run_cpp_sync — behavioral unit tests (M6-C)
+# ---------------------------------------------------------------------------
+
+class TestRunCppSync:
+    """Behavioral tests for _run_cpp_sync() using subprocess mocking."""
+
+    def _fn(self):
+        """Import eod_summary and return _run_cpp_sync with subprocess accessible."""
+        return _import_eod_summary()
+
+    def test_script_not_found_returns_false(self, tmp_path):
+        """When sync_cpp_trades.py does not exist, _run_cpp_sync must return False."""
+        mod = self._fn()
+        # Point _SCRIPT_DIR to a directory that does NOT contain sync_cpp_trades.py
+        with patch.object(mod, "_SCRIPT_DIR", tmp_path):
+            result = mod._run_cpp_sync(date(2026, 4, 22), dry_run=False)
+        assert result is False
+
+    def test_script_exits_zero_returns_true(self, tmp_path):
+        """When the sync script exits with code 0, _run_cpp_sync must return True."""
+        mod = self._fn()
+        # Create the script file so the existence check passes
+        sync_script = tmp_path / "sync_cpp_trades.py"
+        sync_script.write_text("# stub")
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = ""
+        mock_result.stderr = ""
+
+        with patch.object(mod, "_SCRIPT_DIR", tmp_path), \
+             patch("subprocess.run", return_value=mock_result):
+            result = mod._run_cpp_sync(date(2026, 4, 22), dry_run=False)
+        assert result is True
+
+    def test_script_exits_nonzero_returns_false(self, tmp_path):
+        """When the sync script exits with code 1, _run_cpp_sync must return False."""
+        mod = self._fn()
+        sync_script = tmp_path / "sync_cpp_trades.py"
+        sync_script.write_text("# stub")
+
+        mock_result = MagicMock()
+        mock_result.returncode = 1
+        mock_result.stdout = ""
+        mock_result.stderr = "error: something went wrong"
+
+        with patch.object(mod, "_SCRIPT_DIR", tmp_path), \
+             patch("subprocess.run", return_value=mock_result):
+            result = mod._run_cpp_sync(date(2026, 4, 22), dry_run=False)
+        assert result is False
+
+    def test_dry_run_flag_forwarded_to_subprocess(self, tmp_path):
+        """When dry_run=True, the '--dry-run' flag must appear in the subprocess command."""
+        mod = self._fn()
+        sync_script = tmp_path / "sync_cpp_trades.py"
+        sync_script.write_text("# stub")
+
+        captured_cmd: list[list[str]] = []
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = ""
+        mock_result.stderr = ""
+
+        def capture_run(cmd, **kwargs):
+            captured_cmd.append(cmd)
+            return mock_result
+
+        with patch.object(mod, "_SCRIPT_DIR", tmp_path), \
+             patch("subprocess.run", side_effect=capture_run):
+            mod._run_cpp_sync(date(2026, 4, 22), dry_run=True)
+
+        assert len(captured_cmd) == 1
+        assert "--dry-run" in captured_cmd[0]

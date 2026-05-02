@@ -38,6 +38,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -62,9 +63,10 @@ _load_dotenv()
 CONFIG_PATH      = Path("config/live_config.json")
 CHECKSUMS_PATH   = Path("config/model_checksums.json")
 DRIFT_HALT       = Path("data/DRIFT_HALT")
-DISK_MIN_BYTES   = 5 * 1024 ** 3   # 5 GiB
-RAM_MIN_BYTES    = 2 * 1024 ** 3   # 2 GiB
-CPP_BINARY_PATH  = Path("build/orb_strategy")
+DISK_MIN_BYTES      = 5 * 1024 ** 3   # 5 GiB
+RAM_MIN_BYTES       = 2 * 1024 ** 3   # 2 GiB
+CPP_BINARY_PATH     = Path("build/orb_strategy")
+ML_MODEL_MAX_AGE_S  = 30 * 24 * 3600  # 30 days in seconds
 
 _GREEN  = "\033[32m"
 _RED    = "\033[31m"
@@ -222,6 +224,16 @@ def _gate_ml_model(cfg: dict) -> GateResult:
     model_path = Path(ml.get("model_path", ""))
     if not (model_path and model_path.exists()):
         return GateResult("F. ML model file + checksum", False, f"not found: {model_path}")
+
+    # Staleness check: model file must not be older than ML_MODEL_MAX_AGE_S (30 days).
+    age_s = time.time() - model_path.stat().st_mtime
+    if age_s > ML_MODEL_MAX_AGE_S:
+        age_days = int(age_s // 86400)
+        return GateResult(
+            "F. ML model file + checksum",
+            False,
+            f"model is {age_days} days old — exceeds 30-day staleness limit; retrain or re-deploy",
+        )
 
     # Checksum verification — skipped gracefully if checksums file doesn't exist yet.
     if not CHECKSUMS_PATH.exists():

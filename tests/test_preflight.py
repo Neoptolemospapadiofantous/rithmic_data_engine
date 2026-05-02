@@ -13,6 +13,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -963,6 +964,130 @@ class TestGateAuditDaemonUnit(unittest.TestCase):
 
             result = self._gate({}, halt)
             self.assertFalse(result.passed)
+
+
+# ---------------------------------------------------------------------------
+# Gate J — account equity unit tests using monkeypatch (M6-A)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateAccountEquityUnit:
+    """Unit tests for _gate_account_equity() using pytest monkeypatch / tmp_path."""
+
+    def _gate(self, cfg: dict | None = None):
+        import go_live as gl
+        return gl._gate_account_equity(cfg or {"prop_firm": {"trailing_drawdown_limit": 2500.0}})
+
+    def test_env_var_set_to_valid_equity_passes(self, monkeypatch):
+        """PNL_PLANT_EQUITY set to a high equity value → gate passes."""
+        monkeypatch.setenv("PNL_PLANT_EQUITY", "75000")
+        result = self._gate()
+        assert result.passed
+        assert "≥" in result.detail
+
+    def test_env_var_missing_skips(self, monkeypatch):
+        """PNL_PLANT_EQUITY absent → gate skips (passes with SKIP note).
+
+        Gate J is designed to be optional: if the operator has not set the env var
+        the gate passes with a SKIP note rather than blocking the pre-flight check.
+        """
+        monkeypatch.delenv("PNL_PLANT_EQUITY", raising=False)
+        result = self._gate()
+        assert result.passed
+        assert "SKIP" in result.detail
+
+    def test_env_var_set_to_zero_fails(self, monkeypatch):
+        """PNL_PLANT_EQUITY='0' when trailing_drawdown_limit>0 yields minimum>0 → gate fails."""
+        # trailing_drawdown_limit=2500 → minimum=1250; 0 < 1250 → fail
+        monkeypatch.setenv("PNL_PLANT_EQUITY", "0")
+        result = self._gate()
+        assert not result.passed
+        assert "<" in result.detail
+
+    def test_env_var_set_to_negative_fails(self, monkeypatch):
+        """PNL_PLANT_EQUITY='-500' with a positive trailing drawdown limit → gate fails."""
+        monkeypatch.setenv("PNL_PLANT_EQUITY", "-500")
+        result = self._gate()
+        assert not result.passed
+
+    def test_env_var_non_numeric_fails(self, monkeypatch):
+        """PNL_PLANT_EQUITY='bad' is not a valid float → gate fails."""
+        monkeypatch.setenv("PNL_PLANT_EQUITY", "bad")
+        result = self._gate()
+        assert not result.passed
+        assert "not a valid number" in result.detail
+
+    def test_env_var_below_minimum_fails(self, monkeypatch):
+        """Equity below the trailing_drawdown_limit * 0.5 minimum → gate fails."""
+        # minimum = 2500 * 0.5 = 1250; equity=500 < 1250 → fail
+        monkeypatch.setenv("PNL_PLANT_EQUITY", "500")
+        result = self._gate()
+        assert not result.passed
+
+
+# ---------------------------------------------------------------------------
+# Gate F — ML model unit tests using tmp_path / controlled timestamps (M6-B)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateMlModelUnit:
+    """Unit tests for _gate_ml_model() using tmp_path and controlled file timestamps."""
+
+    def _gate(self, cfg: dict, checksums_path=None):
+        import go_live as gl
+        original = gl.CHECKSUMS_PATH
+        if checksums_path is not None:
+            gl.CHECKSUMS_PATH = checksums_path
+        try:
+            return gl._gate_ml_model(cfg)
+        finally:
+            gl.CHECKSUMS_PATH = original
+
+    def _cfg(self, model_path: Path, enabled: bool = True) -> dict:
+        return {"ml": {"enabled": enabled, "model_path": str(model_path)}}
+
+    def test_model_exists_and_recent_passes(self, tmp_path):
+        """Model file present and freshly created (age ≈ 0 s) → gate passes."""
+        model = tmp_path / "model.pkl"
+        model.write_bytes(b"fake-model-data")
+        # No checksums file → passes with 'no checksum file' note
+        result = self._gate(self._cfg(model), checksums_path=tmp_path / "nonexistent.json")
+        assert result.passed
+
+    def test_model_file_missing_fails(self, tmp_path):
+        """Model file does not exist → gate must fail."""
+        model = tmp_path / "missing_model.pkl"
+        result = self._gate(self._cfg(model), checksums_path=tmp_path / "nonexistent.json")
+        assert not result.passed
+        assert "not found" in result.detail
+
+    def test_model_file_too_old_fails(self, tmp_path):
+        """Model file older than 30 days → gate must fail with a staleness message."""
+        model = tmp_path / "old_model.pkl"
+        model.write_bytes(b"old-model-data")
+        # Set mtime to 31 days ago
+        old_mtime = time.time() - (31 * 24 * 3600)
+        os.utime(model, (old_mtime, old_mtime))
+        result = self._gate(self._cfg(model), checksums_path=tmp_path / "nonexistent.json")
+        assert not result.passed
+        assert "staleness" in result.detail or "days old" in result.detail
+
+    def test_ml_disabled_always_passes(self, tmp_path):
+        """When ml.enabled=False the gate must pass regardless of model state."""
+        model = tmp_path / "nonexistent.pkl"
+        result = self._gate(self._cfg(model, enabled=False))
+        assert result.passed
+        assert "skipped" in result.detail.lower()
+
+    def test_model_exactly_at_age_limit_passes(self, tmp_path):
+        """Model file exactly at 30-day boundary (29d 23h 59m) → gate still passes."""
+        model = tmp_path / "just_fresh_model.pkl"
+        model.write_bytes(b"borderline-model")
+        # Set mtime to just under 30 days ago (29 days + 23 hours)
+        near_limit_mtime = time.time() - ((30 * 24 - 1) * 3600)
+        os.utime(model, (near_limit_mtime, near_limit_mtime))
+        result = self._gate(self._cfg(model), checksums_path=tmp_path / "nonexistent.json")
+        assert result.passed
 
 
 if __name__ == "__main__":
