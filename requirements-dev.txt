@@ -2,4 +2,5 @@
 pytest>=7.0
 pytest-xdist>=3.0         # parallel test execution (-n auto)
 pytest-timeout>=2.0        # per-test timeouts
+anyio>=4.0                 # async test support (pytest-anyio marker in pytest.ini)
 flask>=3.0                 # web UI for live dashboard
