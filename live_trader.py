@@ -473,8 +473,8 @@ class LiveTrader:
         # Clean up PID file so the service monitor knows this process is gone
         try:
             self._pid_path.unlink(missing_ok=True)
-        except Exception:
-            pass
+        except Exception as exc:
+            self._log.debug("PID file unlink failed (non-critical): %s", exc)
         try:
             if (self._strategy.state.name == "IN_POSITION"
                     and self._active_trade_id is not None and self._conn is not None):

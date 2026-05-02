@@ -13,22 +13,28 @@ Escalation policy (from quality_rules/escalation.yaml):
   2 consecutive clean passes          →  auto-resolve, alert once
 
 Checks each cycle:
-  1.  data_freshness         — last tick recency (72h grace on weekends)
-  2.  rejection_rate         — percentage of ticks rejected by validator
-  3.  gap_count              — timestamp gaps in recent data
-  4.  session_health         — latest session row stats
-  5.  wal_health             — WAL file size vs 1 MB threshold
-  6.  disk_space             — free disk vs 5 GB floor
-  7.  contamination_audit    — runs contamination_audit.py --json
-  8.  cpp_tests              — runs ctest (INFO on timeout, not WARN)
-  9.  trading_constants      — point_value, tick_value, symbol, commission_rt
-  10. pnl_sanity             — |pnl_usd| > $500 in live_trades last 24h
-  11. ram_usage              — system RAM % used
-  12. process_liveness       — nq_executor / live_trader running during RTH
-  13. model_staleness        — ML model file age vs 30-day threshold
-  14. drift_halt             — data/DRIFT_HALT sentinel present
-  15. slippage_sanity        — avg fill slippage vs 6-tick threshold (7d)
-  16. python_tests           — pytest tests/ suite (regression gate)
+  1.  data_freshness              — last tick recency (72h grace on weekends)
+  2.  rejection_rate              — percentage of ticks rejected by validator
+  3.  gap_count                   — timestamp gaps in recent data
+  4.  session_health              — latest session row stats
+  5.  wal_health                  — WAL file size vs 1 MB threshold
+  6.  disk_space                  — free disk vs 5 GB floor
+  7.  ram_usage                   — system RAM % used
+  8.  process_liveness            — nq_executor / live_trader running during RTH
+  9.  trading_constants           — point_value, tick_value, symbol, commission_rt
+  10. pnl_sanity                  — |pnl_usd| > $500 in live_trades last 24h
+  11. model_staleness             — ML model file age vs 30-day threshold
+  12. drift_halt                  — data/DRIFT_HALT sentinel present
+  13. slippage_sanity             — avg fill slippage vs 6-tick threshold (7d)
+  14. trade_table_consistency     — duplicate open positions across trade tables
+  15. config_schema               — Pydantic validation of live_config.json
+  16. contamination_audit         — runs contamination_audit.py --json
+  17. cpp_tests                   — runs ctest (INFO on timeout, not WARN)
+  18. python_tests                — pytest tests/ suite (regression gate)
+  19. type_check                  — mypy on key Python files
+  20. lint_check                  — ruff F,E7,E9,W6 correctness checks
+  21. zombie_trader               — duplicate live_trader.py processes (double-trading guard)
+  22. hermes_session_freshness    — verifies make hermes was run today (weekdays)
 
 Usage:
   python scripts/audit_daemon.py                 # Run forever, check every 5 min
@@ -925,6 +931,71 @@ def check_config_schema(live_cfg: dict | None) -> dict:
                 "value": 1.0}
 
 
+def check_zombie_trader() -> dict:
+    """Detect duplicate live_trader processes running simultaneously.
+
+    More than one live_trader.py process is catastrophic for a prop firm account —
+    it means double-trading.  A single process is PASS; zero is INFO (outside RTH
+    or the trader was stopped intentionally).
+    """
+    try:
+        result = _run(
+            ["pgrep", "-c", "-f", "live_trader.py"],
+            capture_output=True, text=True,
+        )
+        if result.returncode == -2:
+            return {"check": "zombie_trader", "status": "INFO",
+                    "message": "pgrep unavailable", "value": 0}
+        try:
+            count = int(result.stdout.strip())
+        except ValueError:
+            count = 0
+        if count > 1:
+            return {"check": "zombie_trader", "status": "FAIL",
+                    "message": f"{count} live_trader.py processes running (expected 1)",
+                    "value": float(count)}
+        if count == 1:
+            return {"check": "zombie_trader", "status": "PASS",
+                    "message": "1 process", "value": 1.0}
+        return {"check": "zombie_trader", "status": "INFO",
+                "message": "not running (outside RTH or stopped)", "value": 0.0}
+    except Exception as exc:
+        logging.getLogger("audit").warning("check_zombie_trader failed: %s", exc)
+        return {"check": "zombie_trader", "status": "INFO",
+                "message": f"check error: {exc}", "value": 0}
+
+
+def check_hermes_session_freshness() -> dict:
+    """Verify that `make hermes` was run today (weekdays only).
+
+    Reads the last 20 lines of hermes_session.log and looks for today's UTC date
+    string.  On weekends the check is INFO — no session is required.
+    """
+    log_path = ENGINE_DIR / "data" / "logs" / "hermes_session.log"
+    if not log_path.exists():
+        return {"check": "hermes_session_freshness", "status": "WARN",
+                "message": "hermes_session.log missing", "value": 0}
+    try:
+        today = datetime.now(timezone.utc).date()
+        today_str = today.isoformat()  # e.g. "2026-05-02"
+
+        if today.isoweekday() in (6, 7):  # Saturday=6, Sunday=7
+            return {"check": "hermes_session_freshness", "status": "INFO",
+                    "message": "weekend — no session required", "value": 0}
+
+        lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        recent = lines[-20:] if len(lines) >= 20 else lines
+        if any(today_str in line for line in recent):
+            return {"check": "hermes_session_freshness", "status": "PASS",
+                    "message": "session run today", "value": 1.0}
+        return {"check": "hermes_session_freshness", "status": "WARN",
+                "message": "no hermes session recorded today", "value": 0}
+    except Exception as exc:
+        logging.getLogger("audit").warning("check_hermes_session_freshness failed: %s", exc)
+        return {"check": "hermes_session_freshness", "status": "INFO",
+                "message": f"check error: {exc}", "value": 0}
+
+
 # ── Main loop ──────────────────────────────────────────────────────
 
 def run_all_checks(conn, live_cfg: dict | None) -> list[dict]:
@@ -990,6 +1061,12 @@ def run_all_checks(conn, live_cfg: dict | None) -> list[dict]:
     log("Running lint check...")
     results.append(run_lint_check())
 
+    log("Checking zombie trader processes...")
+    results.append(check_zombie_trader())
+
+    log("Checking hermes session freshness...")
+    results.append(check_hermes_session_freshness())
+
     return results
 
 
@@ -997,7 +1074,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Continuous audit daemon for rithmic_engine. "
-            "Runs 16 data-health checks every INTERVAL seconds, escalates persistent "
+            "Runs 22 data-health checks every INTERVAL seconds, escalates persistent "
             "failures to Slack, writes quality metrics to PostgreSQL, and writes "
             "data/AUDIT_HALT when a CRITICAL trading-constant issue is detected."
         ),
