@@ -519,8 +519,8 @@ def _promote_config(cfg: dict) -> None:
     except Exception:
         try:
             os.unlink(tmp_path)
-        except OSError:
-            pass
+        except OSError as exc:
+            log.debug("could not clean up temp config file %s: %s", tmp_path, exc)
         raise
 
 

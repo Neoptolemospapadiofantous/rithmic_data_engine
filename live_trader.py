@@ -130,7 +130,7 @@ def _send_alert(config: dict, message: str) -> None:
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
 
-def _pg_connect(config: dict):
+def _pg_connect(config: dict) -> psycopg2.extensions.connection:
     """Return a psycopg2 connection using env vars specified in config."""
     db_cfg = config.get("db", {})
     host = os.environ.get(db_cfg.get("host_env", "PG_HOST"), "127.0.0.1")
@@ -145,7 +145,7 @@ def _pg_connect(config: dict):
     )
 
 
-def _pg_connect_with_retry(config: dict, log: logging.Logger):
+def _pg_connect_with_retry(config: dict, log: logging.Logger) -> psycopg2.extensions.connection:
     """Connect to PG with exponential backoff. Raises on exhaustion."""
     db_cfg = config.get("db", {})
     max_retries = int(db_cfg.get("max_retries", 5))
@@ -166,7 +166,8 @@ def _pg_connect_with_retry(config: dict, log: logging.Logger):
 
 # ── position reconciliation ───────────────────────────────────────────────────
 
-def _reconcile_position(conn, config: dict, strategy: MicroORBStrategy,
+def _reconcile_position(conn: psycopg2.extensions.connection, config: dict,
+                        strategy: MicroORBStrategy,
                         log: logging.Logger) -> Optional[dict]:
     """Query DB for any open position from today's session.
 
@@ -267,8 +268,9 @@ def _submit_order(signal: Signal, config: dict, dry_run: bool, log: logging.Logg
 
 # ── trade DB writes ───────────────────────────────────────────────────────────
 
-def _write_trade_open(conn, session_date: datetime.date, signal: Signal,
-                      order_id: str, dry_run: bool, symbol: str = "MNQ") -> int:
+def _write_trade_open(conn: psycopg2.extensions.connection, session_date: datetime.date,
+                      signal: Signal, order_id: str, dry_run: bool,
+                      symbol: str = "MNQ") -> int:
     t = Trade(
         session_date=session_date,
         symbol=symbol,
@@ -282,7 +284,7 @@ def _write_trade_open(conn, session_date: datetime.date, signal: Signal,
     return t.save(conn)
 
 
-def _cancel_trade_open(conn, trade_id: int) -> None:
+def _cancel_trade_open(conn: psycopg2.extensions.connection, trade_id: int) -> None:
     """Mark a pending trade record as cancelled (order submission failed)."""
     with conn.cursor() as cur:
         cur.execute(
@@ -292,7 +294,7 @@ def _cancel_trade_open(conn, trade_id: int) -> None:
     conn.commit()
 
 
-def _update_trade_order_id(conn, trade_id: int, order_id: str) -> None:
+def _update_trade_order_id(conn: psycopg2.extensions.connection, trade_id: int, order_id: str) -> None:
     try:
         with conn.cursor() as cur:
             cur.execute("UPDATE trades SET order_id = %s WHERE id = %s", (order_id, trade_id))
@@ -302,8 +304,10 @@ def _update_trade_order_id(conn, trade_id: int, order_id: str) -> None:
         conn.rollback()
 
 
-def _write_trade_close(conn, trade_id: int, exit_price: float, exit_ts: datetime.datetime,
-                       exit_reason: str, point_value: float, commission_rt: float = 4.0) -> float:
+def _write_trade_close(conn: psycopg2.extensions.connection, trade_id: int,
+                       exit_price: float, exit_ts: datetime.datetime,
+                       exit_reason: str, point_value: float,
+                       commission_rt: float = 4.0) -> float:
     """Close a trade in the DB and return realized P&L in USD (0.0 if trade not found)."""
     with conn.cursor() as cur:
         cur.execute("SELECT direction, entry_price FROM trades WHERE id = %s", (trade_id,))
@@ -330,8 +334,8 @@ def _write_trade_close(conn, trade_id: int, exit_price: float, exit_ts: datetime
     return pnl_usd
 
 
-def _write_session_summary(conn, session_date: datetime.date, dry_run: bool,
-                            exit_reason: str) -> None:
+def _write_session_summary(conn: psycopg2.extensions.connection, session_date: datetime.date,
+                           dry_run: bool, exit_reason: str) -> None:
     trades = Trade.for_date(conn, session_date)
     completed = [t for t in trades if t.exit_time is not None]
     summary = SessionSummary.build_from_trades(completed)
@@ -353,7 +357,8 @@ _BARS_SELECT = """\
 """
 
 
-def _poll_bars_since(conn, symbol: str, since_ts: datetime.datetime) -> list[dict]:
+def _poll_bars_since(conn: psycopg2.extensions.connection, symbol: str,
+                     since_ts: datetime.datetime) -> list[dict]:
     """Return all completed 1-min bars from since_ts onwards, in chronological order.
 
     ask_volume = buy-initiated volume (aggressor hit the ask).
@@ -371,7 +376,8 @@ def _poll_bars_since(conn, symbol: str, since_ts: datetime.datetime) -> list[dic
         return [dict(row) for row in cur.fetchall()]
 
 
-def _poll_latest_bar(conn, symbol: str, since_ts: Optional[datetime.datetime]) -> Optional[dict]:
+def _poll_latest_bar(conn: psycopg2.extensions.connection, symbol: str,
+                     since_ts: Optional[datetime.datetime]) -> Optional[dict]:
     """Return the most recent completed 1-min bar, or None if none newer than since_ts."""
     with conn.cursor() as cur:
         if since_ts:
@@ -396,7 +402,8 @@ def _poll_latest_bar(conn, symbol: str, since_ts: Optional[datetime.datetime]) -
         return cur.fetchone()
 
 
-def _poll_latest_tick(conn, symbol: str, since_ts: Optional[datetime.datetime]) -> Optional[dict]:
+def _poll_latest_tick(conn: psycopg2.extensions.connection, symbol: str,
+                      since_ts: Optional[datetime.datetime]) -> Optional[dict]:
     """Return the most recent tick newer than since_ts."""
     with conn.cursor() as cur:
         if since_ts:
@@ -857,7 +864,7 @@ def compute_live_features(bars: list, config: dict | None = None) -> dict:
 
 # ── position restoration helper (monkey-patched onto strategy) ────────────────
 
-def _make_position_from_db(self, row: dict):
+def _make_position_from_db(self, row: dict) -> _Position:
     """Restore a _Position from a DB trade row."""
     p = _Position(
         direction=row["direction"],

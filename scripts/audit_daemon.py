@@ -48,6 +48,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 ENGINE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = ENGINE_DIR / "data" / "logs"
@@ -60,7 +61,7 @@ ESCALATION_STATE_FILE = ENGINE_DIR / "data" / "escalation_state.json"
 
 # ── Environment + config ───────────────────────────────────────────
 
-def _load_env():
+def _load_env() -> None:
     env_file = ENGINE_DIR / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
@@ -80,7 +81,7 @@ def _load_live_config() -> dict | None:
         return None
 
 
-def _pg_connect():
+def _pg_connect() -> Any:
     import psycopg2
     return psycopg2.connect(
         host=os.environ.get("PG_HOST", "localhost"),
@@ -109,7 +110,7 @@ def _send_alert(message: str) -> None:
 
 # ── Logging + DB helpers ───────────────────────────────────────────
 
-def log(msg: str, level: str = "INFO"):
+def log(msg: str, level: str = "INFO") -> None:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{ts}] [{level}] {msg}"
     print(line, flush=True)
@@ -120,7 +121,7 @@ def log(msg: str, level: str = "INFO"):
             f.write(line + "\n")
 
 
-def log_failure(msg: str):
+def log_failure(msg: str) -> None:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{ts}] FAILURE: {msg}"
     LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -128,7 +129,7 @@ def log_failure(msg: str):
         f.write(line + "\n")
 
 
-def write_metric(conn, metric: str, value: float, labels: dict | None = None):
+def write_metric(conn: Any, metric: str, value: float, labels: dict | None = None):
     try:
         cur = conn.cursor()
         cur.execute(
@@ -140,7 +141,7 @@ def write_metric(conn, metric: str, value: float, labels: dict | None = None):
         log(f"write_metric({metric}) failed: {e}", "WARN")
 
 
-def write_event(conn, severity: str, event: str, details: str = ""):
+def write_event(conn: Any, severity: str, event: str, details: str = ""):
     try:
         cur = conn.cursor()
         cur.execute(
@@ -171,7 +172,7 @@ class EscalationEngine:
     # Checks that were escalated WARN→ERROR→CRITICAL do NOT write the sentinel.
     HALT_CHECKS = {"trading_constants"}
 
-    def __init__(self, state_file: Path = ESCALATION_STATE_FILE):
+    def __init__(self, state_file: Path = ESCALATION_STATE_FILE) -> None:
         self._state_file = state_file
         self._warn_ts: dict[str, list[float]] = {}
         self._error_since: dict[str, float] = {}
@@ -991,7 +992,7 @@ def run_all_checks(conn, live_cfg: dict | None) -> list[dict]:
     return results
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Continuous audit daemon for rithmic_engine. "
