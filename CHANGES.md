@@ -11,6 +11,99 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-02 — Hermes iteration 3 — reconcile_position, help text, session logging, model tests (ecef05f)
+
+### Fixed
+- **`_reconcile_position()`** (`live_trader.py`): replaced the stub implementation
+  with a real query against the `live_trades` DB table; on startup the method
+  finds any open trade for today's session date and returns it so the engine
+  resumes the correct position state without manual intervention.
+- **`start()` — active trade ID restore**: `_active_trade_id` is now set from
+  the reconciled open trade returned by `_reconcile_position()`, eliminating a
+  class of bugs where a restarted process treated an existing open position as
+  flat.
+
+### Added
+- **`strategy/micro_orb.py` — `restore_position()`**: new state-hook called by
+  `live_trader` during startup reconciliation; allows the strategy object to
+  re-synchronise its internal state from a persisted trade record without
+  altering any signal logic.
+- **4 reconciliation tests** (`tests/`): cover the full startup-reconciliation
+  path — open trade found, no open trade, malformed row, and DB error handling.
+- **4 `models.py` tests** (`tests/`): cover `write_crash_safe` round-trip,
+  `for_date` query, `_Date` type alias, and `SessionSummary` field validation.
+- **`hermes_session.py` — per-iteration diff block**: each Hermes run now
+  appends a `git diff HEAD~1..HEAD` block to `data/logs/hermes_session.log` so
+  the exact changes for every iteration are preserved in the session history.
+- **`--help` text** across 11 scripts (`go_live.py`, `live_trader.py`,
+  `audit_daemon.py`, `use_env.py`, `hermes_session.py`, and six supporting
+  scripts): all entry points now expose a consistent `--help` interface
+  describing flags, environment variables, and exit codes.
+
+### Metrics
+- Test count: 371 → 379
+
+---
+
+## 2026-05-02 — Hermes iteration 2 — audit hardening, integration tests, architecture doc (46941c3)
+
+### Fixed
+- **`audit_daemon.py` — ctest handling**: `run_ctest_check` now distinguishes
+  between a missing test binary (result: `SKIP`) and an actual test failure
+  (result: `FAIL`); previously both cases were reported as `FAIL`, masking
+  environment issues.
+- **`audit_daemon.py` — silent except blocks**: three bare `except: pass` blocks
+  replaced with `except Exception` handlers that log at `WARN` level, ensuring
+  errors in `check_pnl_sanity`, `check_open_position`, and
+  `check_trade_table_consistency` are always observable.
+
+### Added
+- **5 integration tests** (`tests/test_integration.py`): cover the full
+  tick → signal → DB write path for both LONG and SHORT entries; each test
+  spins up an in-process `live_trader` instance against a test database, feeds
+  synthetic bars, and asserts that a `live_trades` row is written with the
+  correct direction, entry price, and trade ID.
+- **`engine_architecture.html` v4**: updated architecture diagram now includes
+  the Hermes improvement loop, end-of-day deploy pipeline, all 14 preflight
+  gates in `go_live.py`, and all 20 audit daemon checks.
+
+### Metrics
+- Test count: 366 → 371
+
+---
+
+## 2026-05-02 — Hermes iteration 1 — crash safety, gate hardening, test coverage (5bbbf81)
+
+### Fixed
+- **`live_trader.py` — crash-safe session write**: `start()` now wraps the main
+  run loop in a `try/finally` block that guarantees `_write_session_summary()`
+  is called even if an unhandled exception escapes the loop.  A
+  `_session_summary_written` boolean flag prevents the summary from being
+  written twice when the `finally` block runs after a clean shutdown path that
+  already called the method.
+
+### Added
+- **`go_live.py` — Gate: RAM check (`_gate_ram`)**: preflight now asserts that
+  at least 2 GiB of free RAM is available before promoting to live; exits with
+  a clear error message if the threshold is not met.
+- **`go_live.py` — Gate: C++ build check (`_gate_cpp_build`)**: preflight
+  verifies that the C++ executor binary exists and is executable; blocks
+  promotion if the build artefact is absent or stale.
+- **13 new unit tests**: cover `_write_trade_close` (commission deduction, zero
+  qty guard, DB error path), `_write_session_summary` (normal write, crash-safe
+  finally path, duplicate-write guard via `_session_summary_written`), and
+  `_cancel_trade_open` (success, already-cancelled, network error).
+- **`CHANGES.md`**: added this changelog with full project history from initial
+  commit through the Hermes loop foundation (see commit `4d8ef9a`).
+- **`.gitignore`**: added `NO_DEPLOY_DOES_NOT_EXIST_TEST` to prevent the test
+  artefact created by `tests/test_go_live.py` from appearing as an untracked
+  file in `git status`.
+
+### Metrics
+- Test count: 290 → 366
+
+---
+
 ## 2026-05-02 — Hermes quality loop + audit checks #17/#18
 
 ### Added

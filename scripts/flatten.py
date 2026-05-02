@@ -1,8 +1,15 @@
 """
 flatten.py — Cancel open stop order and market-sell to go flat.
-Usage: python scripts/flatten.py [basket_id_to_cancel]
+
+Usage:
+    python scripts/flatten.py [--basket-id BASKET_ID]
+    python scripts/flatten.py --help
 """
-import asyncio, logging, sys, uuid
+import argparse
+import asyncio
+import logging
+import sys
+import uuid
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "bot"))
@@ -15,9 +22,31 @@ log = logging.getLogger("flatten")
 ACCOUNT_ID = "LTARAPAPA502114908626"
 SYMBOL     = "NQM6"
 EXCHANGE   = "CME"
-STOP_BASKET = sys.argv[1] if len(sys.argv) > 1 else "1275735"
+_DEFAULT_STOP_BASKET = "1275735"
 
-async def run():
+
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="flatten.py",
+        description=(
+            "Cancel an open stop order and submit a market SELL to go flat. "
+            "Connects to Rithmic via ORDER_PLANT using credentials from the environment."
+        ),
+    )
+    parser.add_argument(
+        "basket_id",
+        nargs="?",
+        default=_DEFAULT_STOP_BASKET,
+        metavar="BASKET_ID",
+        help=(
+            "Basket ID of the stop order to cancel before flattening. "
+            f"Defaults to {_DEFAULT_STOP_BASKET!r} when omitted."
+        ),
+    )
+    return parser.parse_args(argv)
+
+
+async def run(stop_basket: str):
     from async_rithmic import SysInfraType, TransactionType, OrderType
 
     cfg = RithmicConfig.from_env()
@@ -36,11 +65,11 @@ async def run():
     order_plant = client.plants["order"]
 
     # Step 1: cancel the stop order
-    if STOP_BASKET:
-        log.info(f"Cancelling stop basket={STOP_BASKET}")
+    if stop_basket:
+        log.info(f"Cancelling stop basket={stop_basket}")
         try:
             await order_plant.cancel_order(
-                basket_id=STOP_BASKET,
+                basket_id=stop_basket,
                 account_id=ACCOUNT_ID,
             )
             log.info("Cancel submitted")
@@ -69,4 +98,7 @@ async def run():
     log.info("Done — position should be flat")
     await client.disconnect()
 
-asyncio.run(run())
+
+if __name__ == "__main__":
+    args = parse_args()
+    asyncio.run(run(stop_basket=args.basket_id))
