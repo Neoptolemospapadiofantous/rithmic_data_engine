@@ -11,6 +11,33 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-02 — Hermes iteration 17 — audit_log noise, fast test marks, log size check (f77380c)
+
+### Fixed
+- **`write_event()` log level** (`scripts/audit_daemon.py`): demoted from `WARN`
+  to `DEBUG` when the `audit_log` table does not yet exist.  Previously every
+  standalone Python audit run (C++ engine not started) emitted a spurious WARN;
+  the message is now only visible at `--log-level DEBUG`.
+- **`tests/test_models.py` — `pytest.mark.fast`**: added module-level
+  `pytestmark = pytest.mark.fast`; 26 `unittest.TestCase` tests were previously
+  invisible to the pre-commit gate (`make test-unit`) and are now included.
+- **`tests/test_ui_kill.py` — `pytest.mark.fast`**: added module-level
+  `pytestmark = pytest.mark.fast`; 10 Flask endpoint tests are now included in
+  the pre-commit gate.
+
+### Added
+- **Audit check #23 — `check_log_file_sizes()`** (`scripts/audit_daemon.py`):
+  scans all files matching `data/logs/*.log` and emits a `WARN` result for any
+  file that exceeds 200 MB, catching runaway log growth before disk space is
+  exhausted on the Oracle VM.
+
+### Metrics
+- Fast tests in pre-commit gate: +36 (26 from `test_models.py` + 10 from
+  `test_ui_kill.py`)
+- Audit checks: 22 → 23
+
+---
+
 ## 2026-05-02 — Hermes iteration 16 — run_audit coverage, migrate_parquet tests, dev deps (a82fe68)
 
 ### Added
