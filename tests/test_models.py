@@ -21,6 +21,10 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
+
+pytestmark = pytest.mark.fast
+
 REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
@@ -330,7 +334,6 @@ class TestRowToTradeKwargs(unittest.TestCase):
 # These four tests are tagged @pytest.mark.fast so they run in the
 # pre-commit fast gate (pytest -m fast).
 
-import pytest  # noqa: E402  (placed after unittest imports already at top)
 
 
 @pytest.mark.fast

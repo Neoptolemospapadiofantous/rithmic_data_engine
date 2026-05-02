@@ -12,7 +12,7 @@ Escalation policy (from quality_rules/escalation.yaml):
   CRITICAL on trading_constants       →  write data/AUDIT_HALT + alert
   2 consecutive clean passes          →  auto-resolve, alert once
 
-Checks each cycle:
+Checks each cycle (23 total):
   1.  data_freshness              — last tick recency (72h grace on weekends)
   2.  rejection_rate              — percentage of ticks rejected by validator
   3.  gap_count                   — timestamp gaps in recent data
@@ -35,6 +35,7 @@ Checks each cycle:
   20. lint_check                  — ruff F,E7,E9,W6 correctness checks
   21. zombie_trader               — duplicate live_trader.py processes (double-trading guard)
   22. hermes_session_freshness    — verifies make hermes was run today (weekdays)
+  23. log_file_sizes              — warns if any log file in data/logs/ exceeds 200 MB
 
 Usage:
   python scripts/audit_daemon.py                 # Run forever, check every 5 min
@@ -154,9 +155,13 @@ def write_event(conn: Any, severity: str, event: str, details: str = ""):
             "INSERT INTO audit_log (event, severity, details) VALUES (%s, %s, %s)",
             (event, severity, details))
         conn.commit()
-    except Exception as e:
+    except Exception as exc:
         conn.rollback()
-        log(f"write_event({event}) failed: {e}", "WARN")
+        err_str = str(exc).lower()
+        if "does not exist" in err_str or "undefined" in err_str:
+            log(f"write_event({event}) skipped — table not ready: {exc}", "DEBUG")
+        else:
+            log(f"write_event({event}) failed: {exc}", "WARN")
 
 
 # ── Escalation engine ──────────────────────────────────────────────
@@ -996,6 +1001,45 @@ def check_hermes_session_freshness() -> dict:
                 "message": f"check error: {exc}", "value": 0}
 
 
+def check_log_file_sizes() -> dict:
+    """Scan data/logs/ for *.log files and warn if any single file exceeds 200 MB."""
+    SIZE_LIMIT = 200 * 1024 * 1024  # 200 MB in bytes
+    try:
+        if not LOG_DIR.exists():
+            return {"check": "log_file_sizes", "status": "INFO",
+                    "message": "data/logs/ directory does not exist", "value": 0.0}
+
+        log_files = list(LOG_DIR.glob("*.log"))
+        if not log_files:
+            return {"check": "log_file_sizes", "status": "INFO",
+                    "message": "No *.log files found in data/logs/", "value": 0.0}
+
+        sizes = {f: f.stat().st_size for f in log_files}
+        total_bytes = sum(sizes.values())
+        largest_file = max(sizes, key=lambda f: sizes[f])
+        largest_bytes = sizes[largest_file]
+
+        oversized = {f: s for f, s in sizes.items() if s > SIZE_LIMIT}
+        if oversized:
+            details = ", ".join(
+                f"{f.name} ({s / (1024 ** 2):.0f} MB)" for f, s in oversized.items()
+            )
+            return {"check": "log_file_sizes", "status": "WARN",
+                    "message": f"Log file(s) exceed 200 MB: {details}",
+                    "value": float(largest_bytes)}
+
+        return {"check": "log_file_sizes", "status": "PASS",
+                "message": (f"All {len(log_files)} log files within limit — "
+                            f"total {total_bytes / (1024 ** 2):.1f} MB, "
+                            f"largest: {largest_file.name} "
+                            f"({largest_bytes / (1024 ** 2):.1f} MB)"),
+                "value": float(largest_bytes)}
+    except Exception as exc:
+        log(f"check_log_file_sizes failed: {exc}", "WARNING")
+        return {"check": "log_file_sizes", "status": "INFO",
+                "message": f"check error: {exc}", "value": 0.0}
+
+
 # ── Main loop ──────────────────────────────────────────────────────
 
 def run_all_checks(conn, live_cfg: dict | None) -> list[dict]:
@@ -1067,6 +1111,9 @@ def run_all_checks(conn, live_cfg: dict | None) -> list[dict]:
     log("Checking hermes session freshness...")
     results.append(check_hermes_session_freshness())
 
+    log("Checking log file sizes...")
+    results.append(check_log_file_sizes())
+
     return results
 
 
@@ -1074,7 +1121,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Continuous audit daemon for rithmic_engine. "
-            "Runs 22 data-health checks every INTERVAL seconds, escalates persistent "
+            "Runs 23 data-health checks every INTERVAL seconds, escalates persistent "
             "failures to Slack, writes quality metrics to PostgreSQL, and writes "
             "data/AUDIT_HALT when a CRITICAL trading-constant issue is detected."
         ),
