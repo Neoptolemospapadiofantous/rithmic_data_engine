@@ -25,6 +25,7 @@ Usage:
 """
 import argparse
 import json
+import logging
 import os
 import re
 import sys
@@ -32,6 +33,8 @@ from pathlib import Path
 
 ENGINE_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = ENGINE_DIR / "src"
+
+log = logging.getLogger(__name__)
 
 
 def _load_env():
@@ -229,7 +232,8 @@ def check_bar_ohlc_integrity(conn):
         if bad == 0:
             return [_pass("bar_ohlc", "All 1min bars have high >= low")]
         return [_fail("bar_ohlc", f"{bad} bars with high < low", "ERROR")]
-    except Exception:
+    except Exception as exc:
+        log.debug("optional view not available: %s", exc)
         conn.rollback()
         return [_pass("bar_ohlc", "bars_1min not available (TimescaleDB required)")]
 
@@ -291,7 +295,8 @@ def check_walk_forward_windows(conn):
                 "Walk-forward windows: train_end <= test_start (no overlap)")]
         return [_fail("wf_no_overlap",
             f"{overlaps} walk-forward windows have train/test overlap", "CRITICAL")]
-    except Exception:
+    except Exception as exc:
+        log.debug("optional view not available: %s", exc)
         conn.rollback()
         return [_pass("wf_no_overlap",
             "v_walk_forward_windows not available (insufficient data)")]
@@ -311,7 +316,8 @@ def check_oot_holdout_isolation(conn):
         return [_fail("oot_isolation",
             f"OOT violation: pipeline_end ({row[0]}) > holdout_start ({row[1]})",
             "CRITICAL")]
-    except Exception:
+    except Exception as exc:
+        log.debug("optional view not available: %s", exc)
         conn.rollback()
         return [_pass("oot_isolation", "v_oot_partition not available")]
 
