@@ -11,6 +11,32 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-02 — Hermes iteration 16 — run_audit coverage, migrate_parquet tests, dev deps (a82fe68)
+
+### Added
+- **`TestRunAuditIntegration`** (`tests/`): verifies `run_audit()` orchestrates all
+  6 check domains and returns a valid findings list whose entries contain the
+  correct keys.
+- **`tests/test_migrate_parquet.py` (11 fast tests)**: first direct test coverage
+  for `scripts/migrate_parquet.py`, organised into three groups:
+  - `_load_progress` (3): missing-file default, valid JSON round-trip, corrupt-file
+    fallback to empty state.
+  - `_save_progress` (3): JSON write correctness, automatic directory creation,
+    tmp-file cleanup on success.
+  - `_prep_df` (5): dtype coercion, column aliasing (`aggressor_side` → `side`),
+    within-file deduplication, missing columns coerced to `None`, empty DataFrame
+    passthrough, invalid `side` value handling.
+
+### Fixed
+- **`requirements-dev.txt`**: added `mypy>=1.0` and `ruff>=0.4`, which are invoked
+  by the `make hermes` gates but were previously absent — fresh installs would
+  silently fail those gates.
+
+### Metrics
+- Test count: 597 → 613
+
+---
+
 ## 2026-05-02 — Hermes iteration 15 — _gate_db unit tests, cross_system_audit coverage (50285a0)
 
 ### Added
