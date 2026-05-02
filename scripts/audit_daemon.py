@@ -133,8 +133,9 @@ def write_metric(conn, metric: str, value: float, labels: dict | None = None):
             "INSERT INTO quality_metrics (metric, value, labels_json) VALUES (%s, %s, %s)",
             (metric, value, json.dumps(labels) if labels else None))
         conn.commit()
-    except Exception:
+    except Exception as e:
         conn.rollback()
+        log(f"write_metric({metric}) failed: {e}", "WARN")
 
 
 def write_event(conn, severity: str, event: str, details: str = ""):
@@ -144,8 +145,9 @@ def write_event(conn, severity: str, event: str, details: str = ""):
             "INSERT INTO audit_log (event, severity, details) VALUES (%s, %s, %s)",
             (event, severity, details))
         conn.commit()
-    except Exception:
+    except Exception as e:
         conn.rollback()
+        log(f"write_event({event}) failed: {e}", "WARN")
 
 
 # ── Escalation engine ──────────────────────────────────────────────
@@ -513,49 +515,65 @@ def run_contamination_audit() -> dict:
                 "message": f"Error: {e}", "value": -1}
 
 
+def _run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
+    """Run a subprocess command, returning returncode=-2 if the binary is missing."""
+    try:
+        return subprocess.run(cmd, **kwargs)
+    except FileNotFoundError:
+        return subprocess.CompletedProcess(cmd, returncode=-2,
+                                           stdout="", stderr="")
+
+
 def run_cpp_tests() -> dict:
     build_dir = ENGINE_DIR / "build"
     if not build_dir.exists():
         return {"check": "cpp_tests", "status": "INFO",
                 "message": "build/ not found — skip", "value": 0}
     try:
-        result = subprocess.run(
+        result = _run(
             ["ctest", "--output-on-failure", "--test-dir", str(build_dir)],
             capture_output=True, text=True, timeout=120,
         )
-        m = re.search(r"(\d+)% tests passed, (\d+) tests failed out of (\d+)",
-                      result.stdout)
-        if m:
-            failed = int(m.group(2))
-            passed = int(m.group(3)) - failed
-        else:
-            passed = result.stdout.count("Passed")
-            failed = result.stdout.count("Failed")
-
-        # Downgrade to WARN when failures are purely DB connectivity — these are
-        # infrastructure failures (wrong PG port/creds in dev), not code bugs.
-        if failed > 0 and "PostgreSQL connection failed" in result.stdout:
-            real_fail_lines = [ln for ln in result.stdout.splitlines()
-                               if "FAIL:" in ln and "PostgreSQL connection failed" not in ln]
-            if not real_fail_lines:
-                return {"check": "cpp_tests", "status": "WARN",
-                        "message": (f"{passed} passed, {failed} DB-connectivity-only "
-                                    "failures (not code bugs)"),
-                        "value": float(failed)}
-
-        return {"check": "cpp_tests",
-                "status": "PASS" if failed == 0 else "FAIL",
-                "message": f"{passed} passed, {failed} failed",
-                "value": float(failed)}
     except subprocess.TimeoutExpired:
         return {"check": "cpp_tests", "status": "INFO",
-                "message": "Timed out after 120s", "value": -1}
-    except FileNotFoundError:
+                "message": "ctest timed out after 120s", "value": -1}
+
+    # Binary not on PATH — configuration issue, not a test failure.
+    if result.returncode == -2:
+        log("ctest binary not found — C++ tests skipped", "WARN")
         return {"check": "cpp_tests", "status": "INFO",
-                "message": "ctest not found", "value": 0}
-    except Exception as e:
-        return {"check": "cpp_tests", "status": "WARN",
-                "message": f"Error: {e}", "value": -1}
+                "message": "ctest not found — C++ tests skipped", "value": 0}
+
+    m = re.search(r"(\d+)% tests passed, (\d+) tests failed out of (\d+)",
+                  result.stdout)
+    if m:
+        failed = int(m.group(2))
+        passed = int(m.group(3)) - failed
+    else:
+        passed = result.stdout.count("Passed")
+        failed = result.stdout.count("Failed")
+
+    # Downgrade to WARN when failures are purely DB connectivity — these are
+    # infrastructure failures (wrong PG port/creds in dev), not code bugs.
+    if failed > 0 and "PostgreSQL connection failed" in result.stdout:
+        real_fail_lines = [ln for ln in result.stdout.splitlines()
+                           if "FAIL:" in ln and "PostgreSQL connection failed" not in ln]
+        if not real_fail_lines:
+            return {"check": "cpp_tests", "status": "WARN",
+                    "message": (f"{passed} passed, {failed} DB-connectivity-only "
+                                "failures (not code bugs)"),
+                    "value": float(failed)}
+
+    if failed > 0:
+        # Capture test output for diagnosis (first 500 chars to avoid flooding).
+        output_snippet = (result.stdout + result.stderr).strip()[:500]
+        return {"check": "cpp_tests", "status": "FAIL",
+                "message": f"{passed} passed, {failed} failed: {output_snippet}",
+                "value": float(failed)}
+
+    return {"check": "cpp_tests", "status": "PASS",
+            "message": f"{passed} passed, 0 failed",
+            "value": 0.0}
 
 
 def run_python_tests() -> dict:
@@ -849,8 +867,9 @@ def check_trade_table_consistency(conn) -> dict:
             WHERE trade_date = %s AND exit_time IS NULL
         """, (today,))
         cpp_open = cur.fetchone()[0] or 0
-    except Exception:
+    except Exception as e:
         conn.rollback()
+        log(f"live_trades query skipped (table may not exist yet): {e}", "WARN")
         cpp_open = 0  # live_trades may not exist in all environments
 
     if py_open > 0 and cpp_open > 0:

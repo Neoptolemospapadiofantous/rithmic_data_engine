@@ -118,17 +118,20 @@
 <header>
   <h1>Rithmic Engine Architecture</h1>
   <span>MNQ / ORB Strategy</span>
-  <span style="background:#2e2a1a;border-color:#d29922;color:#d29922;" title="Updated 2026-05-02: systemd wired, order-flow features live, Slack alerts">v2 · 2026-05-02</span>
+  <span style="background:#2e2a1a;border-color:#d29922;color:#d29922;" title="Updated 2026-05-02: Hermes loop, 20-check audit daemon, new preflight gates, crash-safe session write">v4 · 2026-05-02</span>
   <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">systemd ✓</span>
   <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">order-flow ✓</span>
   <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">alerts ✓</span>
   <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">audit ✓</span>
-  <span style="background:#2e1a2e;border-color:#bc8cff;color:#bc8cff;">v3 · 2026-05-02</span>
+  <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">hermes ✓</span>
+  <span style="background:#2e1a2e;border-color:#bc8cff;color:#bc8cff;">v4 · 2026-05-02</span>
   <span style="margin-left:auto;color:var(--text2);font-size:11px;">Oracle VM · 170.9.233.177</span>
 </header>
 
 <nav>
   <a href="#overview">System Overview</a>
+  <a href="#hermes">Hermes Loop</a>
+  <a href="#deploy">Deploy Pipeline</a>
   <a href="#dataflow">Data Flow</a>
   <a href="#processcontrol">Process Control</a>
   <a href="#alerts">Alerts</a>
@@ -183,8 +186,8 @@ graph TB
         end
 
         subgraph AUDIT ["audit_daemon.py  (Python) · 24/7"]
-            AD["AuditDaemon\n10 checks / 2-5 min"]
-            ESCOV["EscalationEngine\nWARN→ERROR→CRITICAL"]
+            AD["AuditDaemon\n20 checks / 2-10 min adaptive"]
+            ESCOV["EscalationEngine\nWARN→ERROR→CRITICAL\nstate persisted to escalation_state.json"]
             AH["data/AUDIT_HALT\nsentinel file"]
         end
 
@@ -251,6 +254,137 @@ graph TB
     style LOCAL fill:#1a1410,stroke:#d29922,stroke-width:1px
     style SLACK fill:#1a2e1a,stroke:#3fb950,stroke-width:1px
     style AH fill:#2e1a1a,stroke:#f85149,stroke-width:2px
+    </div>
+  </div>
+</section>
+
+<!-- ─── HERMES CONTINUOUS IMPROVEMENT LOOP ───────────────────────────── -->
+<section id="hermes">
+  <h2>Hermes Continuous Improvement Loop <span class="tag tag-py">scripts/hermes_session.py</span></h2>
+  <div class="card">
+    <div class="mermaid">
+flowchart TD
+    START(["make hermes\nhermes_session.py"])
+    START --> TESTS["pytest\nfast or full suite"]
+    TESTS --> MYPY["mypy\nlive_trader.py · models.py\ngo_live.py · audit_daemon.py\nstrategy/features.py"]
+    MYPY --> RUFF["ruff check\n--select=F,E7,E9,W6\n--exclude=build"]
+    RUFF --> AUDIT_FULL{"--fast flag?"}
+    AUDIT_FULL -->|"no (full)"| AUDIT["audit_daemon.py --once\n20 checks"]
+    AUDIT_FULL -->|"yes (fast)"| SKIP_AUDIT["audit + cpp skipped"]
+
+    AUDIT --> FINDINGS
+    SKIP_AUDIT --> FINDINGS
+
+    FINDINGS["write data/hermes_findings.json\nappend data/logs/hermes_session.log"]
+
+    FINDINGS --> RESULT{"overall\nPASS or FAIL?"}
+    RESULT -->|"FAIL"| FIX["fix failures\n↳ type errors first\n↳ then lint\n↳ then test gaps"]
+    FIX --> START
+    RESULT -->|"PASS"| IMPROVE["find improvements\n↳ silent failures\n↳ missing tests\n↳ infrastructure gaps\n↳ dead code / unclear errors"]
+    IMPROVE --> CHANGE["make the improvement"]
+    CHANGE --> START
+
+    EODPASS["all green all session?"] --> PUSH["make push-eod\ngit push → Oracle git pull"]
+
+    style START fill:#1f1a2e,stroke:#bc8cff,stroke-width:2px
+    style FINDINGS fill:#0d1b2e,stroke:#58a6ff
+    style FIX fill:#2e1a1a,stroke:#f85149,stroke-width:2px
+    style IMPROVE fill:#0d2818,stroke:#3fb950
+    style PUSH fill:#0d2818,stroke:#3fb950,stroke-width:2px
+    style RESULT fill:#21262d,stroke:#30363d
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">hermes_session.py — what each check produces</div>
+    <div class="grid3">
+      <div style="font-size:11px;color:var(--text2);">
+        <span style="color:var(--blue);font-family:monospace;">tests_fast / tests_full</span><br>
+        pytest -q --tb=short<br>
+        marks: fast, feature_parity, preflight, live_trader<br>
+        writes: passed / failed / skipped counts + failure lines
+      </div>
+      <div style="font-size:11px;color:var(--text2);">
+        <span style="color:var(--blue);font-family:monospace;">mypy</span><br>
+        --ignore-missing-imports<br>
+        --disable-error-code=import-untyped<br>
+        reports: first 10 type errors
+      </div>
+      <div style="font-size:11px;color:var(--text2);">
+        <span style="color:var(--blue);font-family:monospace;">ruff</span><br>
+        --select=F,E7,E9,W6<br>
+        F = undefined names / unused imports<br>
+        E7/E9 = syntax / runtime errors&nbsp;&nbsp;W6 = deprecated
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text2);">
+      <span style="color:var(--blue);font-family:monospace;">audit</span> (full run only) — invokes
+      <code style="color:var(--green);">audit_daemon.py --once</code> → 20 checks → PASS / FAIL / warned counts.<br>
+      Output: <code style="color:var(--blue);">data/hermes_findings.json</code> (machine-readable for the Hermes agent)
+      + <code style="color:var(--blue);">data/logs/hermes_session.log</code> (timestamped history).
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">Improvement priority order (CLAUDE.md)</div>
+    <div style="font-family:monospace;font-size:11px;line-height:2.2;">
+      <span style="color:var(--red);">1.</span> <span style="color:var(--text);">Failing tests or audit checks</span> <span style="color:var(--text2);">— fix these first, always</span><br>
+      <span style="color:var(--yellow);">2.</span> <span style="color:var(--text);">Type errors (mypy)</span> <span style="color:var(--text2);">— fix before adding new code</span><br>
+      <span style="color:var(--yellow);">3.</span> <span style="color:var(--text);">Lint issues (ruff F,E7,E9,W6)</span> <span style="color:var(--text2);">— real correctness issues only</span><br>
+      <span style="color:var(--blue);">4.</span> <span style="color:var(--text);">Silent failures</span> <span style="color:var(--text2);">— bare except: pass, swallowed exceptions with no log</span><br>
+      <span style="color:var(--blue);">5.</span> <span style="color:var(--text);">Missing tests</span> <span style="color:var(--text2);">— any public function without test coverage</span><br>
+      <span style="color:var(--purple);">6.</span> <span style="color:var(--text);">Infrastructure gaps</span> <span style="color:var(--text2);">— missing service files, config validation, logging</span><br>
+      <span style="color:var(--purple);">7.</span> <span style="color:var(--text);">Code quality</span> <span style="color:var(--text2);">— dead code, duplicate logic, unclear error messages</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DEPLOY PIPELINE ───────────────────────────────────────────────── -->
+<section id="deploy">
+  <h2>Deploy Pipeline <span class="tag tag-py">make push-eod</span><span class="tag tag-cpp">Oracle VM</span></h2>
+  <div class="card">
+    <div class="mermaid">
+flowchart LR
+    subgraph LOCAL ["💻 Local Development"]
+        DEV["edit code\nfix failures\nadd tests"]
+        HERMES["make hermes\nall checks PASS"]
+        COMMIT["git commit\n(signed, no --no-verify)"]
+    end
+
+    subgraph PUSH ["make push-eod"]
+        PUSH_CMD["git push origin main\n(only when fully green\nnever mid-session)"]
+    end
+
+    subgraph ORACLE ["🖥 Oracle VM · 170.9.233.177"]
+        PULL["git pull\n(opc user, ~/.ssh/id_ed25519)"]
+        REBUILD["make / cmake --build build\n(if C++ changed)"]
+        RESTART_SVC["sudo systemctl restart nq_executor\nor: sudo systemctl reload"]
+        AUDIT_SVC["sudo systemctl start audit_daemon\n(24/7 quality checks)"]
+    end
+
+    DEV --> HERMES
+    HERMES -->|"PASS"| COMMIT
+    COMMIT --> PUSH_CMD
+    PUSH_CMD --> PULL
+    PULL --> REBUILD
+    REBUILD --> RESTART_SVC
+    RESTART_SVC -.->|"optional"| AUDIT_SVC
+
+    style LOCAL fill:#1f1a2e,stroke:#bc8cff,stroke-width:1px
+    style PUSH fill:#0d2818,stroke:#3fb950,stroke-width:2px
+    style ORACLE fill:#161b22,stroke:#30363d,stroke-width:1px
+    style PUSH_CMD fill:#0d2818,stroke:#3fb950
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">Key rules</div>
+    <div style="font-family:monospace;font-size:11px;color:var(--text2);line-height:2;">
+      <span style="color:var(--red);">NEVER</span> push mid-session — all changes stay local until <span style="color:var(--green);">make push-eod</span><br>
+      <span style="color:var(--red);">NEVER</span> touch <span style="color:var(--blue);">strategy/</span>, <span style="color:var(--blue);">config/live_config.json</span>, or <span style="color:var(--blue);">src/execution/orb_strategy.hpp</span><br>
+      <span style="color:var(--red);">NEVER</span> skip hooks (<code>--no-verify</code>, <code>--no-gpg-sign</code>) or amend published commits<br>
+      Oracle SSH: <span style="color:var(--green);">opc@170.9.233.177</span> via <span style="color:var(--blue);">~/.ssh/id_ed25519</span><br>
+      Audit daemon on Oracle: <span style="color:var(--green);">sudo systemctl start audit_daemon</span> — do not start until explicitly asked
     </div>
   </div>
 </section>
@@ -487,21 +621,31 @@ flowchart LR
 flowchart TD
     LOAD["_load_live_config()\nlive_config.json"] --> C1
 
-    subgraph CHECKS ["10 checks per cycle"]
+    subgraph CHECKS ["20 checks per cycle"]
         direction LR
-        C1["data_freshness\nlast tick recency vs RTH threshold"]
+        C1["data_freshness\nlast tick recency · 5min RTH / 18h off-hours / 72h weekend"]
         C2["rejection_rate\nquality_metrics rejection_rate_pct"]
         C3["gap_count\nsentinel_gaps metric"]
         C4["session_health\nlatest sessions row"]
         C5["wal_health\nwal.bin size vs 1 MB"]
         C6["disk_space\nfree disk vs 5 GB floor"]
-        C7["contamination_audit\ncontamination_audit.py --json"]
-        C8["cpp_tests\nctest --output-on-failure"]
-        C9["trading_constants\npoint_value tick_value symbol commission_rt"]
+        C7["ram_usage\nsystem RAM % used · warn above 90%"]
+        C8["process_liveness\nnq_executor + live_trader running during RTH"]
+        C9["trading_constants\npoint_value tick_value symbol commission_rt · CRITICAL if wrong"]
         C10["pnl_sanity\nlive_trades ABS pnl_usd > 500 last 24h"]
+        C11["model_staleness\nML model file age vs 30-day threshold"]
+        C12["drift_halt\ndata/DRIFT_HALT sentinel present"]
+        C13["slippage_sanity\navg fill slippage vs 6-tick threshold 7d"]
+        C14["trade_table_consistency\nduplicate open positions across Python + C++ tables"]
+        C15["config_schema\nPydantic schema validation on live_config.json"]
+        C16["contamination_audit\ncontamination_audit.py --json"]
+        C17["cpp_tests\nctest --output-on-failure · INFO on timeout"]
+        C18["python_tests\npytest tests/ suite · regression gate"]
+        C19["type_check\nmypy on key Python files"]
+        C20["lint_check\nruff --select=F,E7,E9,W6 --exclude=build"]
     end
 
-    CHECKS --> ESC["EscalationEngine.process(results)\nenforces quality_rules/escalation.yaml"]
+    CHECKS --> ESC["EscalationEngine.process(results)\nescalation state persisted to data/escalation_state.json"]
 
     ESC --> DB2["write_metric() → quality_metrics\nwrite_event() → audit_log"]
     ESC --> STAT["atomic write\ndata/audit_status.json\n{status, checks, audit_halt, run_count}"]
@@ -510,7 +654,7 @@ flowchart TD
 
     ESC -->|"3 WARNs in 60 min\nalert once"| W2E["status promoted ERROR\nSlack WARN→ERROR alert"]
     ESC -->|"ERROR unresolved 30 min\nalert once"| E2C["status promoted CRITICAL\nSlack CRITICAL alert"]
-    E2C -->|"check = trading_constants"| HALT["write data/AUDIT_HALT\n{check, message, timestamp}\nlive_trader refuses start"]
+    E2C -->|"check = trading_constants\nnative_critical only"| HALT["write data/AUDIT_HALT\n{check, message, timestamp}\nlive_trader refuses start"]
     ESC -->|"2 consecutive clean passes\nalert once"| RESOLVE["all errors auto-resolved\nSlack resolved alert\ncounters reset"]
 
     SLEEP["sleep 120-600s\nadaptive: x2 after 10 consecutive clean passes"] --> LOAD
@@ -702,6 +846,7 @@ classDiagram
         -last_tick_ts datetime
         -daily_pnl float
         -reconnect_failures int
+        -session_summary_written bool
         +start()
         +_loop()
         +_replay_historical_bars()
@@ -712,6 +857,7 @@ classDiagram
         +_maybe_eod(now_et)
         +_maybe_watchdog()
         +_write_state(connection)
+        +_write_session_summary_on_exit()
         -_handle_shutdown(signum, frame)
         -_emergency_flatten(reason)
     }
@@ -785,11 +931,12 @@ graph LR
         PLB["_poll_latest_bar(conn, symbol, since_ts)\n→ dict | None\nsame fields as _poll_bars_since"]
         PLT["_poll_latest_tick(conn, symbol, since_ts)\n→ dict | None"]
     end
-    subgraph Startup ["Startup + Alerts"]
+    subgraph Startup ["Startup + Alerts + Crash Safety"]
         RP["_reconcile_position(conn, config,\nstrategy, log) → dict | None"]
         SO["_submit_order(signal, config,\ndry_run, log) → order_id | None"]
         CLF["compute_live_features(bars) → dict"]
         SA["_send_alert(config, message)\n→ Slack webhook\ngated by alerts.enabled +\nSLACK_WEBHOOK_URL env var"]
+        WSOE["_write_session_summary_on_exit()\ncalled from finally block in start()\nguarded by _session_summary_written\nensures crashes never silently\ndrop the day's session record"]
     end
 
     style DB fill:#0d1b2e,stroke:#58a6ff33
@@ -1251,22 +1398,22 @@ erDiagram
 
 <!-- ─── PREFLIGHT GATES ──────────────────────────────────────────────── -->
 <section id="preflight">
-  <h2>go_live.py — Preflight Gates</h2>
+  <h2>go_live.py — Preflight Gates <span class="tag tag-py">14 gates A–N</span></h2>
   <div class="card">
     <div class="mermaid">
 flowchart TD
-    START([go_live.py main])
+    START(["go_live.py\n[--confirm-live]"])
     START --> A
 
     A{"Gate A\nNO_DEPLOY\nfile absent?"}
-    A -->|FAIL| HALT([❌ Abort])
+    A -->|FAIL| HALT([" Abort "])
     A -->|PASS| B
 
-    B{"Gate B\nPydantic schema\nvalid?"}
+    B{"Gate B\nConfig JSON\nloads OK?"}
     B -->|FAIL| HALT
     B -->|PASS| C
 
-    C{"Gate C\ndry_run = false?"}
+    C{"Gate C\ndry_run = true\n(paper mode)?"}
     C -->|FAIL| HALT
     C -->|PASS| D
 
@@ -1274,11 +1421,11 @@ flowchart TD
     D -->|FAIL| HALT
     D -->|PASS| E
 
-    E{"Gate E\nSSL cert\nexists?"}
+    E{"Gate E\nRithmic SSL cert\nexists?"}
     E -->|FAIL| HALT
     E -->|PASS| F
 
-    F{"Gate F\nML model\nchecksums match?"}
+    F{"Gate F\nML model file\nchecksum matches?"}
     F -->|FAIL| HALT
     F -->|PASS| G
 
@@ -1286,32 +1433,68 @@ flowchart TD
     G -->|FAIL| HALT
     G -->|PASS| H
 
-    H{"Gate H\nDRIFT_HALT\nabsent?"}
+    H{"Gate H\nRAM ≥ 2 GiB\navailable?"}
     H -->|FAIL| HALT
     H -->|PASS| I
 
-    I{"Gate I\nProp firm\nlimits sane?"}
+    I{"Gate I\nC++ orb_strategy\nbinary exists + executable?"}
     I -->|FAIL| HALT
     I -->|PASS| J
 
-    J{"Gate J\nequity >\ntrailing_dd_cap?"}
+    J{"Gate J\ndata/DRIFT_HALT\nabsent?"}
     J -->|FAIL| HALT
     J -->|PASS| K
 
-    K{"Gate K\ntrade_route ≠\nsimulator?"}
+    K{"Gate K\nProp firm limits\ndll > 0 + max_pos > 0?"}
     K -->|FAIL| HALT
     K -->|PASS| L
 
-    L{"Gate L\naudit_daemon active\nno AUDIT_HALT?"}
+    L{"Gate L\nAccount equity\n≥ 50% trailing_dd_cap?"}
     L -->|FAIL| HALT
-    L -->|PASS| LAUNCH
+    L -->|PASS| M
 
-    LAUNCH([✅ Promote dry_run=false\nlive_trader.py starts])
+    M{"Gate M\ntrade_route ≠\n'simulator'?"}
+    M -->|FAIL| HALT
+    M -->|PASS| N
+
+    N{"Gate N\naudit_daemon active\nno AUDIT_HALT?"}
+    N -->|FAIL| HALT
+    N -->|PASS| LAUNCH
+
+    LAUNCH([" Promote dry_run=false\nconfig written atomically\nSlack alert fired "])
 
     style HALT fill:#2e1a1a,stroke:#f85149,color:#f85149
     style LAUNCH fill:#0d2818,stroke:#3fb950,color:#3fb950
     style START fill:#1f1a2e,stroke:#bc8cff
-    style L fill:#1a1020,stroke:#bc8cff,stroke-width:2px
+    style H fill:#1a1020,stroke:#bc8cff,stroke-width:2px
+    style I fill:#1a2e1a,stroke:#3fb950,stroke-width:2px
+    style N fill:#1a1020,stroke:#bc8cff,stroke-width:2px
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">Gate details — new gates added in v4</div>
+    <div class="grid3">
+      <div style="font-size:11px;color:var(--text2);">
+        <span style="color:var(--blue);font-family:monospace;">Gate H — _gate_ram</span><br>
+        Checks <code>psutil.virtual_memory().available</code>.<br>
+        Requires ≥ 2 GiB available RAM.<br>
+        Skips gracefully if psutil not installed (PASS + note).<br>
+        <code style="color:var(--green);">RAM_MIN_BYTES = 2 * 1024³</code>
+      </div>
+      <div style="font-size:11px;color:var(--text2);">
+        <span style="color:var(--blue);font-family:monospace;">Gate I — _gate_cpp_build</span><br>
+        Checks <code>build/orb_strategy</code> exists and is executable.<br>
+        FAIL if binary missing: <em>run cd build &amp;&amp; make orb_strategy</em><br>
+        FAIL if not executable: <em>run chmod +x build/orb_strategy</em><br>
+        <code style="color:var(--green);">CPP_BINARY_PATH = Path("build/orb_strategy")</code>
+      </div>
+      <div style="font-size:11px;color:var(--text2);">
+        <span style="color:var(--blue);font-family:monospace;">Gate G — _gate_disk_space</span><br>
+        <code>shutil.disk_usage(".")</code> on working dir filesystem.<br>
+        Same 5 GiB threshold as audit daemon check_disk_space.<br>
+        Also mirrored in audit_daemon as <code>disk_space</code> check (WARN not FAIL).
+      </div>
     </div>
   </div>
 </section>
@@ -1345,12 +1528,15 @@ graph LR
 </main>
 
 <footer style="text-align:center;padding:32px;color:var(--text2);font-size:11px;border-top:1px solid var(--border);margin-top:32px;">
-  Rithmic Engine — MNQ ORB Strategy &nbsp;·&nbsp; Oracle VM 170.9.233.177 &nbsp;·&nbsp; v3 · Updated 2026-05-02
+  Rithmic Engine — MNQ ORB Strategy &nbsp;·&nbsp; Oracle VM 170.9.233.177 &nbsp;·&nbsp; v4 · Updated 2026-05-02
   &nbsp;·&nbsp; <span style="color:var(--green);">systemd enabled</span>
   &nbsp;·&nbsp; <span style="color:var(--green);">order-flow features live</span>
   &nbsp;·&nbsp; <span style="color:var(--green);">Slack alerts wired</span>
-  &nbsp;·&nbsp; <span style="color:var(--purple);">24/7 audit daemon</span>
+  &nbsp;·&nbsp; <span style="color:var(--purple);">24/7 audit daemon · 20 checks</span>
   &nbsp;·&nbsp; <span style="color:var(--purple);">escalation engine</span>
+  &nbsp;·&nbsp; <span style="color:var(--blue);">Hermes loop</span>
+  &nbsp;·&nbsp; <span style="color:var(--blue);">14-gate preflight</span>
+  &nbsp;·&nbsp; <span style="color:var(--green);">crash-safe session write</span>
 </footer>
 
 <script>

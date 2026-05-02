@@ -987,5 +987,245 @@ class TestCancelTradeOpen(unittest.TestCase):
         self.assertIn("exit_time", sql)
 
 
+# ── Integration: tick → signal → DB write path ────────────────────────────────
+
+@pytest.mark.live_trader
+@pytest.mark.fast
+class TestTickSignalDBIntegration(unittest.TestCase):
+    """End-to-end integration test: tick arrives → ORB signal → DB write.
+
+    Uses an in-memory mock connection — no real PostgreSQL required.
+    The mock tracks every cursor.execute() call so we can assert that:
+      1. MicroORBStrategy produced a LONG signal from the tick sequence.
+      2. _on_signal wrote an INSERT to the trades table (via Trade.save).
+      3. _on_signal updated the order_id in the DB (via _update_trade_order_id).
+      4. LiveTrader._active_trade_id was set to the returned trade id.
+    """
+
+    def _make_mock_conn(self, insert_id: int = 7):
+        """Return a mock psycopg2 conn whose cursor supports context-manager usage.
+
+        The cursor's fetchone() returns {"id": insert_id} on the first call
+        (simulating the RETURNING id clause in Trade.save), and None thereafter
+        (e.g. _write_state's live_position upsert has no fetchone dependency).
+        """
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__ = lambda s: mock_cursor
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        # First fetchone() → INSERT RETURNING id; all subsequent → None
+        mock_cursor.fetchone.side_effect = [{"id": insert_id}, None, None, None]
+        mock_conn.cursor.return_value = mock_cursor
+        return mock_conn, mock_cursor
+
+    def _build_breakout_sequence(self, strategy: MicroORBStrategy):
+        """Feed the strategy 5 range bars then one breakout bar.
+
+        Returns the Signal produced by the breakout bar (asserted non-None).
+        """
+        base = _base_dt()
+        # 5 range-building bars
+        for i in range(5):
+            bar = _make_bar(base + datetime.timedelta(minutes=i))
+            strategy.on_bar(bar)
+
+        # One breakout bar — close well above orb_high to guarantee signal
+        assert strategy.orb_high is not None, "ORB range must be set after 5 bars"
+        breakout_ts = base + datetime.timedelta(minutes=5)
+        breakout_bar = {
+            "ts": breakout_ts,
+            "open": strategy.orb_high + 0.25,
+            "high": strategy.orb_high + 10.0,
+            "low": strategy.orb_high,
+            "close": strategy.orb_high + 8.0,  # close above range high → LONG
+            "volume": 800,
+        }
+        sig = strategy.on_bar(breakout_bar)
+        return sig
+
+    def test_breakout_signal_triggers_db_insert(self):
+        """Full path: ticks → LONG signal → Trade.save INSERT executed."""
+        import live_trader
+
+        cfg = _make_config()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cfg["state_path"] = os.path.join(tmpdir, "live_state.json")
+            cfg["pid_path"] = os.path.join(tmpdir, "live_trader.pid")
+            trader = live_trader.LiveTrader(cfg, dry_run=True)
+            trader._session_date = datetime.date(2024, 1, 15)
+
+            mock_conn, mock_cursor = self._make_mock_conn(insert_id=7)
+            trader._conn = mock_conn
+
+            # Feed ticks (via on_bar) to produce a signal
+            sig = self._build_breakout_sequence(trader._strategy)
+
+            # Verify the strategy produced a LONG signal
+            self.assertIsNotNone(sig, "Breakout bar must generate a signal")
+            self.assertEqual(sig.direction, "LONG")
+
+            # Exercise the full _on_signal path (DB write happens here)
+            trader._on_signal(sig)
+
+            # Assert that cursor.execute was called at all (Trade.save + order_id update)
+            self.assertTrue(
+                mock_cursor.execute.called,
+                "cursor.execute must be called during _on_signal (DB write expected)",
+            )
+
+            # Find the INSERT INTO trades call
+            insert_calls = [
+                call for call in mock_cursor.execute.call_args_list
+                if "INSERT" in str(call) and "trades" in str(call).lower()
+            ]
+            self.assertTrue(
+                len(insert_calls) >= 1,
+                "At least one INSERT INTO trades must be executed during _on_signal",
+            )
+
+            # Verify LiveTrader stored the trade id returned by the DB
+            self.assertEqual(
+                trader._active_trade_id, 7,
+                "_active_trade_id must be set to the id returned by Trade.save",
+            )
+
+    def test_db_insert_contains_correct_direction(self):
+        """INSERT SQL must carry the signal direction (LONG) as a parameter."""
+        import live_trader
+
+        cfg = _make_config()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cfg["state_path"] = os.path.join(tmpdir, "live_state.json")
+            cfg["pid_path"] = os.path.join(tmpdir, "live_trader.pid")
+            trader = live_trader.LiveTrader(cfg, dry_run=True)
+            trader._session_date = datetime.date(2024, 1, 15)
+
+            mock_conn, mock_cursor = self._make_mock_conn(insert_id=11)
+            trader._conn = mock_conn
+
+            sig = self._build_breakout_sequence(trader._strategy)
+            self.assertIsNotNone(sig)
+            trader._on_signal(sig)
+
+            # Collect all parameter dicts passed to execute() calls
+            all_params = []
+            for call in mock_cursor.execute.call_args_list:
+                args = call[0]
+                if len(args) >= 2 and isinstance(args[1], dict):
+                    all_params.append(args[1])
+
+            # At least one parameter dict must have direction='LONG'
+            directions = [p.get("direction") for p in all_params]
+            self.assertIn(
+                "LONG", directions,
+                "Trade INSERT parameters must include direction='LONG'",
+            )
+
+    def test_db_insert_contains_session_date(self):
+        """INSERT parameters must include the correct session_date."""
+        import live_trader
+
+        cfg = _make_config()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cfg["state_path"] = os.path.join(tmpdir, "live_state.json")
+            cfg["pid_path"] = os.path.join(tmpdir, "live_trader.pid")
+            trader = live_trader.LiveTrader(cfg, dry_run=True)
+            session_date = datetime.date(2024, 1, 15)
+            trader._session_date = session_date
+
+            mock_conn, mock_cursor = self._make_mock_conn(insert_id=22)
+            trader._conn = mock_conn
+
+            sig = self._build_breakout_sequence(trader._strategy)
+            self.assertIsNotNone(sig)
+            trader._on_signal(sig)
+
+            all_params = []
+            for call in mock_cursor.execute.call_args_list:
+                args = call[0]
+                if len(args) >= 2 and isinstance(args[1], dict):
+                    all_params.append(args[1])
+
+            session_dates = [p.get("session_date") for p in all_params]
+            self.assertIn(
+                session_date, session_dates,
+                "Trade INSERT parameters must include the correct session_date",
+            )
+
+    def test_order_id_updated_after_dry_run_submit(self):
+        """_on_signal must update order_id in DB after dry-run submission."""
+        import live_trader
+
+        cfg = _make_config()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cfg["state_path"] = os.path.join(tmpdir, "live_state.json")
+            cfg["pid_path"] = os.path.join(tmpdir, "live_trader.pid")
+            trader = live_trader.LiveTrader(cfg, dry_run=True)
+            trader._session_date = datetime.date(2024, 1, 15)
+
+            mock_conn, mock_cursor = self._make_mock_conn(insert_id=33)
+            trader._conn = mock_conn
+
+            sig = self._build_breakout_sequence(trader._strategy)
+            self.assertIsNotNone(sig)
+            trader._on_signal(sig)
+
+            # Look for UPDATE ... order_id = ... call
+            update_calls = [
+                call for call in mock_cursor.execute.call_args_list
+                if "UPDATE" in str(call) and "order_id" in str(call).lower()
+            ]
+            self.assertTrue(
+                len(update_calls) >= 1,
+                "_on_signal must execute UPDATE trades SET order_id after dry-run submit",
+            )
+
+    def test_short_breakout_also_writes_db(self):
+        """SHORT signal path also produces an INSERT into trades."""
+        import live_trader
+
+        cfg = _make_config(allow_short=True)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cfg["state_path"] = os.path.join(tmpdir, "live_state.json")
+            cfg["pid_path"] = os.path.join(tmpdir, "live_trader.pid")
+            trader = live_trader.LiveTrader(cfg, dry_run=True)
+            trader._session_date = datetime.date(2024, 1, 15)
+
+            mock_conn, mock_cursor = self._make_mock_conn(insert_id=44)
+            trader._conn = mock_conn
+
+            # Build ORB range first
+            base = _base_dt()
+            for i in range(5):
+                bar = _make_bar(base + datetime.timedelta(minutes=i))
+                trader._strategy.on_bar(bar)
+
+            assert trader._strategy.orb_low is not None
+            # SHORT breakout: close well below orb_low
+            short_bar = {
+                "ts": base + datetime.timedelta(minutes=5),
+                "open": trader._strategy.orb_low - 0.25,
+                "high": trader._strategy.orb_low,
+                "low": trader._strategy.orb_low - 10.0,
+                "close": trader._strategy.orb_low - 8.0,
+                "volume": 600,
+            }
+            sig = trader._strategy.on_bar(short_bar)
+            self.assertIsNotNone(sig, "SHORT breakout bar must generate a signal")
+            self.assertEqual(sig.direction, "SHORT")
+
+            trader._on_signal(sig)
+
+            insert_calls = [
+                call for call in mock_cursor.execute.call_args_list
+                if "INSERT" in str(call) and "trades" in str(call).lower()
+            ]
+            self.assertTrue(
+                len(insert_calls) >= 1,
+                "SHORT signal must also produce INSERT INTO trades",
+            )
+            self.assertEqual(trader._active_trade_id, 44)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
