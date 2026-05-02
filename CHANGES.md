@@ -11,6 +11,77 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-02 — Hermes iteration 12 — full audit check test coverage 22/22 (f975c31)
+
+### Added
+- **28 new tests** covering 8 previously-untested audit check functions; all 22/22
+  audit check functions in `scripts/audit_daemon.py` now have direct unit tests.
+- **`check_zombie_trader` tests** (4): process-count variants — no processes, one
+  process (healthy), two processes (FAIL), psutil unavailable (SKIP).
+- **`check_hermes_session_freshness` tests** (4): weekend skip, today's session
+  present (PASS), stale session (WARN), file absent (WARN).
+- **`check_rejection_rate` tests** (3): below threshold (PASS), above threshold
+  (WARN), no `live_trades` table (SKIP).
+- **`check_gap_count` tests** (3): no gaps (PASS), gaps detected (WARN), no
+  `ticks` table (SKIP).
+- **`check_session_health` tests** (2): healthy session (PASS), unhealthy session
+  (WARN).
+- **`run_cpp_tests` tests** (3): binary missing (SKIP), tests pass (PASS), tests
+  fail (FAIL).
+- **`run_python_tests` tests** (3): pytest passes (PASS), pytest fails (FAIL),
+  subprocess error (FAIL with message).
+- **`run_type_check` / `run_lint_check` tests** (3 each): clean run (PASS),
+  violations found (WARN), subprocess error (FAIL).
+
+### Metrics
+- Test count: 512 → 540
+
+---
+
+## 2026-05-02 — Hermes iteration 11 — audit_data tests, contamination logging (e2d7355)
+
+### Added
+- **22 new fast tests** for `scripts/audit_data.py`: cover `_load_env` (env
+  present, env missing), `_pg_connstr` (full params, defaults), `check_schema`
+  (tables present, table missing, DB error), `check_date_range` (in range, gap
+  detected, no ticks), `check_tick_counts` (counts OK, low count, no ticks),
+  `check_bars` (bars valid, bar anomaly), `check_side_parity` (balanced, imbalanced),
+  and main CLI error handling (missing env, DB unreachable).
+
+### Fixed
+- **`scripts/contamination_audit.py` — 3 bare `except` swallows** in optional
+  view queries: replaced with `except Exception` handlers that log at `DEBUG`
+  level.  Runtime behaviour is unchanged (the views are best-effort); failures
+  are now observable in the debug log stream rather than silently discarded.
+
+### Metrics
+- Test count: 490 → 512
+
+---
+
+## 2026-05-02 — Hermes iteration 10 — flatten + eod_summary test coverage, CHANGES update (81f7fd9)
+
+### Added
+- **16 new tests for `scripts/flatten.py`** — a critical emergency-flatten CLI
+  that previously had zero test coverage.  Tests span import safety (no
+  side-effects on import), argparse validation (missing args, bad symbol, bad
+  direction, `--help`), coroutine structure (`flatten_position` is a coroutine),
+  and end-to-end behaviour (dry-run path, AUDIT_HALT sentinel check).
+- **28 new tests for `scripts/eod_summary.py`**: `_compute_max_drawdown` (7
+  cases — empty, single, flat, rise-only, drawdown, multiple drawdowns, partial
+  recovery), `write_eod_summary` (10 cases — normal write, DB error, zero trades,
+  missing columns, date filter, duplicate key, crash-safe path, field types),
+  `main` CLI (6 cases — no args, date flag, env missing, DB unreachable, output
+  path), import safety (5 cases).
+
+### Updated
+- **`CHANGES.md`**: added changelog entries for Hermes iterations 7–9.
+
+### Metrics
+- Test count: 446 → 490
+
+---
+
 ## 2026-05-02 — Hermes iteration 9 — zombie check, session freshness, formula tests (01bf0d7)
 
 ### Added

@@ -44,6 +44,7 @@ from audit_daemon import (
     check_hermes_session_freshness,
     check_model_staleness,
     check_pnl_sanity,
+    check_process_liveness,
     check_ram_usage,
     check_rejection_rate,
     check_session_health,
@@ -52,6 +53,7 @@ from audit_daemon import (
     check_trading_constants,
     check_wal_health,
     check_zombie_trader,
+    run_contamination_audit,
     run_cpp_tests,
     run_lint_check,
     run_python_tests,
@@ -1083,3 +1085,115 @@ def test_lint_check_with_issues():
     assert r["check"] == "lint_check"
     assert r["status"] in ("WARN", "FAIL")
     assert r["value"] >= 1.0
+
+
+# ── check_process_liveness ────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_process_liveness_outside_rth():
+    """Off-hours (Saturday 08:00 UTC) → INFO regardless of process state."""
+    saturday_offhours = dt_module.datetime(2026, 5, 2, 8, 0, 0,
+                                           tzinfo=dt_module.timezone.utc)
+    # pgrep returning empty / non-zero should not matter outside RTH
+    proc_none = _make_proc(1, "")
+    with patch("audit_daemon.datetime") as mock_dt, \
+         patch.object(audit_daemon.subprocess, "run", return_value=proc_none):
+        mock_dt.now.return_value = saturday_offhours
+        r = check_process_liveness()
+    assert r["check"] == "process_liveness"
+    assert r["status"] == "INFO"
+    assert "Outside RTH" in r["message"]
+
+
+@pytest.mark.fast
+def test_process_liveness_rth_processes_running():
+    """Weekday RTH (15:00 UTC Mon) + both pgrep calls return output → PASS."""
+    monday_rth = dt_module.datetime(2026, 5, 4, 15, 0, 0,
+                                    tzinfo=dt_module.timezone.utc)
+    proc_found = _make_proc(0, "12345\n")
+    with patch("audit_daemon.datetime") as mock_dt, \
+         patch.object(audit_daemon.subprocess, "run", return_value=proc_found):
+        mock_dt.now.return_value = monday_rth
+        r = check_process_liveness()
+    assert r["check"] == "process_liveness"
+    assert r["status"] == "PASS"
+    assert "Running" in r["message"]
+    assert r["value"] == pytest.approx(2.0)  # both nq_executor and live_trader
+
+
+@pytest.mark.fast
+def test_process_liveness_rth_no_processes():
+    """Weekday RTH + pgrep finds nothing → WARN (processes expected but absent)."""
+    monday_rth = dt_module.datetime(2026, 5, 4, 15, 0, 0,
+                                    tzinfo=dt_module.timezone.utc)
+    proc_missing = _make_proc(1, "")  # pgrep rc=1 means no match
+    with patch("audit_daemon.datetime") as mock_dt, \
+         patch.object(audit_daemon.subprocess, "run", return_value=proc_missing):
+        mock_dt.now.return_value = monday_rth
+        r = check_process_liveness()
+    assert r["check"] == "process_liveness"
+    assert r["status"] == "WARN"
+    assert "not running" in r["message"].lower()
+    assert r["value"] == pytest.approx(0.0)
+
+
+# ── run_contamination_audit ───────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_contamination_audit_script_not_found(tmp_path, monkeypatch):
+    """contamination_audit.py absent → WARN with 'not found' message."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    # Ensure scripts/ dir exists but script itself does not
+    (tmp_path / "scripts").mkdir(parents=True, exist_ok=True)
+    r = run_contamination_audit()
+    assert r["check"] == "contamination_audit"
+    assert r["status"] == "WARN"
+    assert "not found" in r["message"].lower()
+
+
+@pytest.mark.fast
+def test_contamination_audit_subprocess_error(tmp_path, monkeypatch):
+    """Script present but subprocess returns rc=-2 with empty stdout → WARN (json parse error)."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    (tmp_path / "scripts").mkdir(parents=True, exist_ok=True)
+    script = tmp_path / "scripts" / "contamination_audit.py"
+    script.write_text("# stub\n")
+    proc = _make_proc(-2, "")
+    with patch.object(audit_daemon.subprocess, "run", return_value=proc):
+        r = run_contamination_audit()
+    assert r["check"] == "contamination_audit"
+    assert r["status"] == "WARN"
+
+
+@pytest.mark.fast
+def test_contamination_audit_all_pass(tmp_path, monkeypatch):
+    """Script present + subprocess returns valid JSON with all PASS → PASS."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    (tmp_path / "scripts").mkdir(parents=True, exist_ok=True)
+    script = tmp_path / "scripts" / "contamination_audit.py"
+    script.write_text("# stub\n")
+    findings_json = json.dumps([{"status": "PASS"}, {"status": "PASS"}])
+    proc = _make_proc(0, findings_json)
+    with patch.object(audit_daemon.subprocess, "run", return_value=proc):
+        r = run_contamination_audit()
+    assert r["check"] == "contamination_audit"
+    assert r["status"] == "PASS"
+    assert r["value"] == pytest.approx(0.0)
+    assert "2 passed" in r["message"]
+
+
+@pytest.mark.fast
+def test_contamination_audit_some_fail(tmp_path, monkeypatch):
+    """Script present + subprocess returns JSON with FAIL entries → FAIL."""
+    monkeypatch.setattr(audit_daemon, "ENGINE_DIR", tmp_path)
+    (tmp_path / "scripts").mkdir(parents=True, exist_ok=True)
+    script = tmp_path / "scripts" / "contamination_audit.py"
+    script.write_text("# stub\n")
+    findings_json = json.dumps([{"status": "PASS"}, {"status": "FAIL"}])
+    proc = _make_proc(1, findings_json)
+    with patch.object(audit_daemon.subprocess, "run", return_value=proc):
+        r = run_contamination_audit()
+    assert r["check"] == "contamination_audit"
+    assert r["status"] == "FAIL"
+    assert r["value"] == pytest.approx(1.0)
+    assert "1 failed" in r["message"]

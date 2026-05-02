@@ -4,8 +4,10 @@
 # Version pins are minimum bounds (>=) to stay compatible with Oracle's
 # Python 3.9 and future upgrades. Exact pins are in requirements-dev.txt.
 
-# Database
+# System monitoring
 psutil>=5.9
+
+# Database
 psycopg2-binary>=2.9
 
 # Data processing (features.py, audit_data.py, pipeline_run.py)
