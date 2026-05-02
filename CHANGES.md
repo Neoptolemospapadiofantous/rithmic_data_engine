@@ -11,6 +11,71 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-02 — Hermes iteration 9 — zombie check, session freshness, formula tests (01bf0d7)
+
+### Added
+- **`check_zombie_trader()` audit check** (`audit_daemon.py`): FAILs if more than
+  one `live_trader.py` process is running simultaneously, preventing the
+  double-trading risk that arises when a prior instance is not fully shut down
+  before the next one starts.
+- **`check_hermes_session_freshness()` audit check** (`audit_daemon.py`): emits a
+  WARN on weekdays if no Hermes session has been recorded for today, ensuring the
+  quality loop is run on every trading day.
+- **42 new fast tests** (`tests/`): five test classes covering all audit functions
+  in `scripts/formula_audit.py`; tests are marked `@pytest.mark.fast` and run in
+  under 2 s total.
+
+### Fixed
+- **`audit_daemon.py` — docstring**: updated check count from "16 checks" to
+  "22 checks" to reflect the current audit surface.
+- **`_emergency_flatten` — silent PID-unlink swallow** (`live_trader.py`): the
+  last remaining silent `except` in the emergency-flatten path now logs at
+  `DEBUG` level instead of discarding the error, making transient filesystem
+  issues observable.
+
+### Metrics
+- Test count: 404 → 446
+
+---
+
+## 2026-05-02 — Hermes iteration 8 — gate unit tests, anyio dep (f746375)
+
+### Added
+- **`anyio>=4.0`** to `requirements-dev.txt`: the package was referenced by the
+  async test marker but was not listed as a dev dependency, causing environment
+  setup failures on clean installs.
+- **14 new preflight unit tests** (`tests/`): cover `_gate_ssl_cert` (4 cases),
+  `_gate_drift_halt` (4 cases), and `_gate_prop_firm` (6 cases), closing a gap
+  in gate coverage that left three preflight checks untested.
+
+### Metrics
+- Test count: 390 → 404
+
+---
+
+## 2026-05-02 — Hermes iteration 7 — config schema, gate ordering, dep fix, audit logging (255b1a2)
+
+### Fixed
+- **`LiveConfig` schema** (`config/live_config_schema.py`): `commission_rt`,
+  `tick_value`, and `starting_balance` added as required fields; the
+  `tick_value` validator now rejects the NQ value (`5.0`), catching an
+  instrument-mismatch that would silently corrupt P&L on MNQ.
+- **`go_live.py` — `_ALL_GATES` ordering**: all instant file/dict gates are now
+  executed first; the DB-connection gate (≤10 s) and ML-hash gate are moved to
+  the end of the sequence, reducing average preflight time on the happy path.
+- **`requirements.txt`** — `psutil>=5.9` added: the package was used by multiple
+  modules (process checks, memory gates) but was absent from the production
+  dependency list.
+- **`audit_daemon.py` — 2 remaining bare exception swallows**: `check_drift_halt`
+  and the PostgreSQL reconnect path now log at `WARN` level instead of silently
+  discarding the exception, making connectivity and drift-halt errors observable
+  in the audit log.
+
+### Updated
+- **`CHANGES.md`**: changelog entries for Hermes iterations 4–6 added.
+
+---
+
 ## 2026-05-02 — Hermes iteration 6 — type annotations, temp cleanup logging (dde80cf)
 
 ### Added
