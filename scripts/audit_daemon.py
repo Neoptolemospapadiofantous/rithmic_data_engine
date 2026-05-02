@@ -792,7 +792,8 @@ def check_drift_halt() -> dict:
     if halt.exists():
         try:
             detail = halt.read_text().strip()[:80]
-        except Exception:
+        except Exception as exc:
+            log(f"DRIFT_HALT file unreadable: {exc}", "WARN")
             detail = "(unreadable)"
         return {"check": "drift_halt", "status": "WARN",
                 "message": f"DRIFT_HALT present — retrain required: {detail}",
@@ -1053,7 +1054,8 @@ def main() -> None:
 
         try:
             conn = _pg_connect()
-        except Exception:
+        except Exception as exc:
+            log(f"pg reconnect failed: {exc}", "WARN")
             conn = None
 
         results = escalation.process(raw_results, conn)

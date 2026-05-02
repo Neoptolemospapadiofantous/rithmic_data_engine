@@ -125,6 +125,16 @@ class LiveConfig(BaseModel):
     fcm_id: str
     ib_id: str
 
+    # Account snapshot (informational — not used by C++ executor)
+    starting_balance: float = Field(
+        default=0.0, ge=0,
+        description="Account balance at session start, for reference/logging only")
+
+    # Instrument constants
+    tick_value: float = Field(
+        default=0.50, gt=0,
+        description="Dollar value of one tick (MNQ=0.50; NQ=5.00 — do NOT confuse)")
+
     # C++ executor flat params (must mirror prop_firm nested values)
     daily_loss_limit: float = Field(
         description="Negative: C++ halt threshold. E.g. -2000.0 halts when daily_pnl <= -2000")
@@ -143,6 +153,9 @@ class LiveConfig(BaseModel):
     session_open_hour: int = Field(ge=0, le=23)
     session_open_min: int = Field(ge=0, le=59)
     qty: int = Field(gt=0)
+    commission_rt: float = Field(
+        default=4.0, gt=0,
+        description="Round-trip commission in dollars (e.g. 4.0 for $2/side)")
 
     # Nested sections
     prop_firm: PropFirmConfig
@@ -161,6 +174,14 @@ class LiveConfig(BaseModel):
     model_config = {"extra": "allow"}  # allow _comment/_cpp_executor_params without error
 
     # ── cross-field invariants ────────────────────────────────────────────────
+
+    @field_validator("tick_value")
+    @classmethod
+    def tick_value_not_nq(cls, v: float) -> float:
+        if abs(v - 5.0) < 1e-6:
+            raise ValueError(
+                f"tick_value={v} — this is the NQ tick value; MNQ is 0.50 (10× smaller)")
+        return v
 
     @field_validator("trade_route")
     @classmethod

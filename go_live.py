@@ -10,17 +10,22 @@ Usage
 
 Gates (all must pass before promotion)
 ---------------------------------------
-A. NO_DEPLOY lockfile not2 present
+Execution order: cheap/file-stat first → network/DB → I/O-hash → subprocess
+
+A. NO_DEPLOY lockfile not present
 B. Config loaded successfully
 C. dry_run is currently True (must be in paper mode before promoting)
-D. PostgreSQL connection succeeds
 E. Rithmic SSL cert file exists
-F. ML model file exists and checksum matches (when ml.enabled is True)
 G. Disk space > 5 GB on working directory filesystem
+RAM available > 2 GB
+C++ orb_strategy binary exists and is executable
 H. No data/DRIFT_HALT file present
 I. Prop firm limits set (daily_loss_limit > 0, max_position_size > 0)
 J. Account equity above minimum (when PNL_PLANT_EQUITY env var is set)
 K. trade_route is not 'simulator'
+D. PostgreSQL connection succeeds  (network — up to 10 s)
+F. ML model file exists and checksum matches (when ml.enabled is True)
+L. audit_daemon service active and no AUDIT_HALT sentinel
 """
 from __future__ import annotations
 
@@ -471,20 +476,24 @@ def _gate_audit_daemon(_cfg: dict) -> GateResult:
 
 
 _ALL_GATES = [
-    _gate_no_deploy,
-    _gate_config_valid,
-    _gate_dry_run,
-    _gate_db,
-    _gate_cert,
-    _gate_ml_model,
-    _gate_disk_space,
-    _gate_ram,
-    _gate_cpp_build,
-    _gate_drift_halt,
-    _gate_prop_firm,
-    _gate_account_equity,
-    _gate_trade_route,
-    _gate_audit_daemon,
+    # ── cheap / file-stat / dict-key gates (no I/O waits) ─────────────────────
+    _gate_no_deploy,        # A. lockfile stat — instant
+    _gate_config_valid,     # B. already loaded — instant
+    _gate_dry_run,          # C. dict key lookup — instant
+    _gate_cert,             # E. SSL cert stat — instant
+    _gate_disk_space,       # G. statvfs — instant
+    _gate_ram,              # RAM psutil call — instant
+    _gate_cpp_build,        # binary stat — instant
+    _gate_drift_halt,       # H. sentinel stat — instant
+    _gate_prop_firm,        # I. dict key checks — instant
+    _gate_account_equity,   # J. env var lookup — instant
+    _gate_trade_route,      # K. dict key lookup — instant
+    # ── network / slow gates ──────────────────────────────────────────────────
+    _gate_db,               # D. TCP connect — up to 10 s (connect_timeout)
+    # ── I/O-heavy gates ───────────────────────────────────────────────────────
+    _gate_ml_model,         # F. sha256 hash of model file — ms to seconds
+    # ── subprocess gates ─────────────────────────────────────────────────────
+    _gate_audit_daemon,     # L. systemctl / pgrep subprocess
 ]
 
 
@@ -628,18 +637,20 @@ def _build_parser() -> argparse.ArgumentParser:
             "Formal paper→live promotion script.\n\n"
             "Runs all pre-flight safety gates before enabling live trading.\n"
             "Without --confirm-live the script is read-only (safe to run any time).\n\n"
-            "Gates:\n"
+            "Gates (cheap/file-stat → network → hash → subprocess):\n"
             "  A. NO_DEPLOY lockfile absent\n"
             "  B. Config loaded successfully\n"
             "  C. dry_run currently True\n"
-            "  D. PostgreSQL connection\n"
             "  E. Rithmic SSL cert file exists\n"
-            "  F. ML model file exists and checksum matches (when enabled)\n"
             "  G. Disk space > 5 GB\n"
+            "  RAM available > 2 GB\n"
+            "  C++ orb_strategy binary exists and is executable\n"
             "  H. No data/DRIFT_HALT file\n"
             "  I. Prop firm limits set (daily_loss_limit > 0, max_position_size > 0)\n"
             "  J. Account equity above minimum (when PNL_PLANT_EQUITY env var is set)\n"
             "  K. trade_route is not 'simulator'\n"
+            "  D. PostgreSQL connection (network — up to 10 s)\n"
+            "  F. ML model file exists and checksum matches (when enabled)\n"
             "  L. audit_daemon service active and no AUDIT_HALT sentinel\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,

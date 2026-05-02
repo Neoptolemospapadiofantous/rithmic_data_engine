@@ -11,6 +11,71 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-02 — Hermes iteration 6 — type annotations, temp cleanup logging (dde80cf)
+
+### Added
+- **`live_trader.py` — return type annotations**: `_pg_connect`, `_pg_connect_with_retry`,
+  and `_make_position_from_db` now carry explicit return type annotations.
+- **`live_trader.py` — `conn` parameter annotations**: 9 private methods that accept a
+  database connection now declare `conn: psycopg2.extensions.connection` in their
+  signatures, eliminating implicit `Any` types flagged by mypy.
+- **`audit_daemon.py` — return type annotations**: 8 functions/methods annotated with
+  explicit return types, bringing mypy coverage in line with `live_trader.py`.
+
+### Fixed
+- **`_promote_config` — silent OSError swallow**: temp-file cleanup failure is now logged
+  at `DEBUG` level instead of being silently discarded, making transient filesystem errors
+  observable without cluttering normal output.
+
+---
+
+## 2026-05-02 — Hermes iteration 5 — silent swallows, KeyError guards, test coverage (957532f)
+
+### Fixed
+- **5 silent exception swallows**: bare `except`/`pass` blocks replaced with explicit
+  handlers that log at `WARNING`, `DEBUG`, or `ERROR` level as appropriate, ensuring
+  all suppressed exceptions are now observable in logs.
+- **`config.get("orb", {})` guard** (`live_trader.py`, 2 sites): direct `config["orb"]`
+  key access replaced with `.get("orb", {})` to prevent `KeyError` when the `orb` section
+  is absent from the config.
+- **Zero-price close warning** (2 sites): an `ERROR` log is now emitted when a trade close
+  is attempted at `price=0.0` with no tick available, converting a silent data-integrity
+  issue into an observable fault.
+- **`audit_daemon.py` — stdlib UTC**: `pytz` dependency removed; all UTC references now
+  use stdlib `datetime.timezone.utc`, eliminating a soft dependency.
+- **`_load_live_config`**: logs `WARNING` on failure instead of silently returning
+  a default/empty config.
+- **`_emergency_flatten`**: `commission_rt` is now passed consistently, preventing a
+  `NameError` / wrong-value path that could corrupt P&L on forced flattens.
+
+### Added
+- **11 new tests**: `_gate_trade_route` (×4), `_gate_audit_daemon` (×3),
+  `Trade.for_date` (×2), `Trade.get` (×2) — covering previously untested public
+  interfaces.
+
+### Metrics
+- Test count: 379 → 390
+
+---
+
+## 2026-05-02 — Hermes iteration 4 — deploy target, flatten argparse, CHANGES.md update (3fbd11c)
+
+### Added
+- **`make deploy` target** (`Makefile`): runs the `hermes-fast` gate, pushes to
+  `origin main`, SSH-es to the Oracle VM, runs `git pull`, and conditionally restarts
+  the `live_trader` systemd service — full one-command deploy pipeline.
+- **`make deploy-dry` target** (`Makefile`): prints every step of the deploy sequence
+  without connecting to the remote, enabling safe rehearsal of the deploy path.
+- **`CHANGES.md`**: changelog entries documenting all Hermes iterations 1–3 added
+  (this file).
+
+### Changed
+- **`scripts/flatten.py` — argparse refactor**: replaced raw `sys.argv` indexing with
+  `argparse`; the script now provides `--help`, validates arguments, and produces clear
+  usage errors on bad input.
+
+---
+
 ## 2026-05-02 — Hermes iteration 3 — reconcile_position, help text, session logging, model tests (ecef05f)
 
 ### Fixed
