@@ -155,7 +155,20 @@ def write_eod_summary(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Write EOD session summary from trades table."
+        description=(
+            "Crash-safe end-of-day session summary writer. "
+            "Syncs C++ live_trades to the trades table (idempotent), computes a "
+            "SessionSummary, and upserts it to the session_summary table. "
+            "Safe to run multiple times for the same date."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/eod_summary.py                        # process today\n"
+            "  python scripts/eod_summary.py --date 2026-04-22      # backfill a specific date\n"
+            "  python scripts/eod_summary.py --dry-run              # compute without writing\n"
+            "  python scripts/eod_summary.py --no-cpp-sync          # skip live_trades sync\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--date", metavar="YYYY-MM-DD",

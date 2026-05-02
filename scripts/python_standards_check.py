@@ -172,10 +172,28 @@ def run_rules(rules_data: dict, root: Path) -> list[dict]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Python Standards Check")
-    parser.add_argument("--json", action="store_true", help="JSON output")
-    parser.add_argument("--errors-only", action="store_true",
-                        help="Only report ERROR and CRITICAL findings")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Python Standards Check — enforces python_standards.yaml rules across the codebase. "
+            "For each regex_absent rule, scans matching Python files and flags any matching line. "
+            "Exits 1 on any ERROR or CRITICAL finding."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/python_standards_check.py                # run all checks\n"
+            "  python scripts/python_standards_check.py --json         # machine-readable output\n"
+            "  python scripts/python_standards_check.py --errors-only  # errors and criticals only\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--json", action="store_true",
+        help="Emit results as a JSON array instead of the human-readable report",
+    )
+    parser.add_argument(
+        "--errors-only", action="store_true",
+        help="Filter output to ERROR and CRITICAL findings only",
+    )
     args = parser.parse_args()
 
     if not RULES_PATH.exists():

@@ -193,8 +193,35 @@ def main() -> None:
 
     # Append to session log
     SESSION_LOG.parent.mkdir(parents=True, exist_ok=True)
+
+    # Capture diff info for the diff block
+    _, diff_stat = _run(["git", "diff", "--stat", "HEAD"], timeout=10)
+    _, git_log3 = _run(["git", "log", "--oneline", "-3"], timeout=10)
+    changed_files = [ln for ln in diff_stat.splitlines() if ln.strip() and not ln.strip().startswith("file")]
+    last3_commits = [ln.strip() for ln in git_log3.strip().splitlines() if ln.strip()]
+
+    test_result = results[0]
     with SESSION_LOG.open("a") as f:
-        f.write(f"{started.isoformat()} {overall} tests={results[0]['message']}\n")
+        # Keep one-liner as first line (grep-compatible)
+        f.write(f"{started.isoformat()} {overall} tests={test_result['message']}\n")
+        # Append multi-line diff block
+        f.write("--- diff block ---\n")
+        f.write(f"timestamp:  {started.isoformat()}\n")
+        f.write(f"status:     {overall} ({passed} pass, {failed} fail)\n")
+        f.write(f"tests:      {test_result['message']}\n")
+        if changed_files:
+            f.write("changed_files:\n")
+            for cf in changed_files:
+                f.write(f"  {cf}\n")
+        else:
+            f.write("changed_files: (none — working tree clean)\n")
+        if last3_commits:
+            f.write("last_3_commits:\n")
+            for commit in last3_commits:
+                f.write(f"  {commit}\n")
+        else:
+            f.write("last_3_commits: (no commits)\n")
+        f.write("--- end diff block ---\n\n")
 
     if args.json:
         print(json.dumps(findings, indent=2))

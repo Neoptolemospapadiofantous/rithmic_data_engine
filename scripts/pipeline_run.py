@@ -634,7 +634,19 @@ def run_ml_comparison(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Profile the NQ optimization pipeline and show timing breakdown."
+        description=(
+            "Pipeline bottleneck profiler and ML A/B comparison tool. "
+            "Profiles each stage of the NQ ORB optimization pipeline, identifies dominant "
+            "cost centres, and optionally compares ML-on vs ML-off paper trading sessions."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/pipeline_run.py --mock             # profiled mock run (no data needed)\n"
+            "  python scripts/pipeline_run.py --mock --verbose   # include per-stage recommendations\n"
+            "  python scripts/pipeline_run.py --compare-ml       # ML on vs off comparison\n"
+            "  python scripts/pipeline_run.py --compare-ml --mock --sessions 10  # synthetic demo\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--mock",

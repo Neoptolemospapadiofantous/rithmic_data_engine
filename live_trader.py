@@ -170,70 +170,78 @@ def _reconcile_position(conn, config: dict, strategy: MicroORBStrategy,
                         log: logging.Logger) -> Optional[dict]:
     """Query DB for any open position from today's session.
 
-    Returns the open trade row dict if found and loads strategy state, else None.
-    This is NOT a stub — it queries the trades table synchronously.
+    Returns the open trade row dict if found and restores strategy state, else None.
+    The entire function is wrapped in try/except so startup is never blocked by a
+    reconciliation failure — a WARNING is logged and None is returned instead.
     """
-    today = datetime.datetime.now(tz=ET).date()
-    open_row = None
-    with conn.cursor() as cur:
-        # Check Python-managed trades table
-        cur.execute("""
-            SELECT *, 'python' AS _source FROM trades
-            WHERE session_date = %s
-              AND exit_time IS NULL
-              AND source = 'python'
-            ORDER BY entry_time DESC
-            LIMIT 1
-        """, (today,))
-        open_row = cur.fetchone()
+    try:
+        today = datetime.datetime.now(tz=ET).date()
+        open_row = None
+        cpp_row = None
 
-        # Also check C++ executor's live_trades table for open positions
-        try:
+        with conn.cursor() as cur:
+            # Check Python-managed trades table
             cur.execute("""
-                SELECT id, direction, entry_price, stop_loss, target, entry_time
-                FROM live_trades
-                WHERE trade_date = %s
+                SELECT *, 'python' AS _source FROM trades
+                WHERE session_date = %s
                   AND exit_time IS NULL
+                  AND source = 'python'
                 ORDER BY entry_time DESC
                 LIMIT 1
             """, (today,))
-            cpp_row = cur.fetchone()
-        except Exception as exc:
-            conn.rollback()
-            cpp_row = None  # live_trades table may not exist in all environments
-            if "does not exist" not in str(exc).lower():
-                logging.getLogger("live_trader").warning("_reconcile_position: unexpected error: %s", exc)
+            open_row = cur.fetchone()
 
-    if cpp_row is not None:
-        if open_row is not None:
-            log.critical(
-                "position_reconciliation: DUPLICATE OPEN POSITION — "
-                "python trades id=%s AND live_trades id=%s both open for %s. "
-                "Manual intervention required.",
-                open_row["id"], cpp_row["id"], today
-            )
-        else:
-            log.warning(
-                "position_reconciliation: C++ executor has open position in live_trades "
-                "(id=%s direction=%s entry=%s) but no matching python trades record — "
-                "possible crash recovery scenario",
-                cpp_row["id"], cpp_row["direction"], cpp_row["entry_price"]
-            )
-    row = open_row
+            # Also check C++ executor's live_trades table for open positions
+            try:
+                cur.execute("""
+                    SELECT id, direction, entry_price, stop_loss, target, entry_time
+                    FROM live_trades
+                    WHERE trade_date = %s
+                      AND exit_time IS NULL
+                    ORDER BY entry_time DESC
+                    LIMIT 1
+                """, (today,))
+                cpp_row = cur.fetchone()
+            except Exception as exc:
+                conn.rollback()
+                cpp_row = None  # live_trades table may not exist in all environments
+                if "does not exist" not in str(exc).lower():
+                    log.warning("_reconcile_position: live_trades query failed: %s", exc)
 
-    if row is None:
-        log.info("position_reconciliation: no open position found for %s", today)
+        if cpp_row is not None:
+            if open_row is not None:
+                log.critical(
+                    "position_reconciliation: DUPLICATE OPEN POSITION — "
+                    "python trades id=%s AND live_trades id=%s both open for %s. "
+                    "Manual intervention required.",
+                    open_row["id"], cpp_row["id"], today
+                )
+            else:
+                log.warning(
+                    "position_reconciliation: C++ executor has open position in live_trades "
+                    "(id=%s direction=%s entry=%s) but no matching python trades record — "
+                    "possible crash recovery scenario",
+                    cpp_row["id"], cpp_row["direction"], cpp_row["entry_price"]
+                )
+
+        row = open_row
+
+        if row is None:
+            log.debug("no open position to reconcile for %s", today)
+            return None
+
+        # Restore strategy state from DB record using the public hook
+        position = strategy._make_position_from_db(row)  # type: ignore[attr-defined]
+        strategy.restore_position(position)
+        log.info(
+            "reconciled open position trade_id=%s direction=%s entry=%s sl=%s",
+            row["id"], row["direction"], row["entry_price"], row["stop_loss"],
+        )
+        return dict(row)
+
+    except Exception as exc:
+        log.warning("_reconcile_position failed — startup continues without reconciliation: %s", exc)
         return None
-
-    # Restore strategy state from DB record
-    log.warning(
-        "position_reconciliation: found open position id=%s direction=%s entry=%s sl=%s — restoring state",
-        row["id"], row["direction"], row["entry_price"], row["stop_loss"],
-    )
-
-    strategy._position = strategy._make_position_from_db(row)  # type: ignore[attr-defined]
-    strategy.state = StrategyState.IN_POSITION
-    return dict(row)
 
 
 # ── order submission ──────────────────────────────────────────────────────────
@@ -510,7 +518,9 @@ class LiveTrader:
         SessionSummary.ensure_schema(self._conn)
 
         # Real position reconciliation — queries DB, does NOT just write a warning file
-        _reconcile_position(self._conn, self._config, self._strategy, self._log)
+        open_row = _reconcile_position(self._conn, self._config, self._strategy, self._log)
+        if open_row is not None:
+            self._active_trade_id = open_row["id"]
 
         self._write_state("CONNECTED")
         _sd_notify("READY=1")

@@ -266,12 +266,25 @@ def cmd_verify(name: str, envs: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Rithmic environment switcher",
+        description=(
+            "Rithmic environment switcher. Reads RITHMIC_ENV_{NAME}_ORDER_* / _MD_* "
+            "credential blocks from .env and copies the chosen environment's credentials "
+            "into the active RITHMIC_LEGENDS_* / RITHMIC_AMP_* aliases used by the "
+            "C++ executor and audit scripts."
+        ),
         usage="%(prog)s [env_name] [--verify]",
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/use_env.py                # show current env + all alias values\n"
+            "  python3 scripts/use_env.py test           # switch to test environment\n"
+            "  python3 scripts/use_env.py legends        # switch to Legends live environment\n"
+            "  python3 scripts/use_env.py test --verify  # switch then run login connectivity test\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "env_name", nargs="?",
-        help="Environment to activate (e.g. test, legends). Omit to show status.",
+        help="Environment to activate (e.g. test, legends). Omit to show current status.",
     )
     parser.add_argument(
         "--verify", action="store_true",

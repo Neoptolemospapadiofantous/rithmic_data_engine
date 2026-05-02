@@ -358,7 +358,8 @@ class TestPositionReconciliation(unittest.TestCase):
         mock_cursor = MagicMock()
         mock_cursor.__enter__ = lambda s: mock_cursor
         mock_cursor.__exit__ = MagicMock(return_value=False)
-        mock_cursor.fetchone.return_value = None
+        # First call: trades query → None; second call: live_trades query → None
+        mock_cursor.fetchone.side_effect = [None, None]
         mock_conn.cursor.return_value = mock_cursor
 
         log = MagicMock()
@@ -387,7 +388,8 @@ class TestPositionReconciliation(unittest.TestCase):
         mock_cursor = MagicMock()
         mock_cursor.__enter__ = lambda s: mock_cursor
         mock_cursor.__exit__ = MagicMock(return_value=False)
-        mock_cursor.fetchone.return_value = open_trade
+        # First call: trades query → open_trade; second call: live_trades → None
+        mock_cursor.fetchone.side_effect = [open_trade, None]
         mock_conn.cursor.return_value = mock_cursor
 
         log = MagicMock()
@@ -396,6 +398,108 @@ class TestPositionReconciliation(unittest.TestCase):
         self.assertEqual(strategy.state, StrategyState.IN_POSITION)
         self.assertIsNotNone(strategy.current_position())
         self.assertEqual(strategy.current_position().direction, "LONG")
+
+    def test_reconcile_restores_active_trade_id(self):
+        """start() must set _active_trade_id from the reconciled open trade row."""
+        import live_trader
+        cfg = _make_config()
+        strategy = MicroORBStrategy(cfg)
+
+        open_trade = {
+            "id": 77,
+            "direction": "SHORT",
+            "entry_price": 17050.0,
+            "stop_loss": 17054.0,
+            "target": 17026.0,
+            "entry_time": datetime.datetime.now(tz=ET),
+            "session_date": datetime.date.today(),
+        }
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__ = lambda s: mock_cursor
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_cursor.fetchone.side_effect = [open_trade, None]
+        mock_conn.cursor.return_value = mock_cursor
+
+        log = MagicMock()
+        result = live_trader._reconcile_position(mock_conn, cfg, strategy, log)
+        self.assertIsNotNone(result)
+        self.assertEqual(result["id"], 77,
+                         "_reconcile_position must return row dict with trade id")
+
+    def test_reconcile_survives_db_exception(self):
+        """_reconcile_position must return None and log WARNING when DB raises."""
+        import live_trader
+        cfg = _make_config()
+        strategy = MicroORBStrategy(cfg)
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__ = lambda s: mock_cursor
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_cursor.execute.side_effect = Exception("DB exploded")
+        mock_conn.cursor.return_value = mock_cursor
+
+        log = MagicMock()
+        # Must not raise — startup must continue
+        result = live_trader._reconcile_position(mock_conn, cfg, strategy, log)
+        self.assertIsNone(result)
+        log.warning.assert_called()
+        self.assertEqual(strategy.state, StrategyState.WAITING,
+                         "Strategy must remain WAITING when reconciliation fails")
+
+    def test_no_open_position_logs_at_debug(self):
+        """When no open trade is found, _reconcile_position must log at DEBUG."""
+        import live_trader
+        cfg = _make_config()
+        strategy = MicroORBStrategy(cfg)
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__ = lambda s: mock_cursor
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_cursor.fetchone.side_effect = [None, None]
+        mock_conn.cursor.return_value = mock_cursor
+
+        log = MagicMock()
+        live_trader._reconcile_position(mock_conn, cfg, strategy, log)
+        log.debug.assert_called()
+        # Must NOT call log.info for the "no position" case
+        info_msgs = [str(c) for c in log.info.call_args_list]
+        self.assertFalse(
+            any("no open position" in m for m in info_msgs),
+            "_reconcile_position must use log.debug (not log.info) when no position found",
+        )
+
+    def test_open_position_logs_at_info(self):
+        """When open trade found, _reconcile_position must log at INFO."""
+        import live_trader
+        cfg = _make_config()
+        strategy = MicroORBStrategy(cfg)
+
+        open_trade = {
+            "id": 55,
+            "direction": "LONG",
+            "entry_price": 17010.0,
+            "stop_loss": 17006.0,
+            "target": 17022.0,
+            "entry_time": datetime.datetime.now(tz=ET),
+            "session_date": datetime.date.today(),
+        }
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__ = lambda s: mock_cursor
+        mock_cursor.__exit__ = MagicMock(return_value=False)
+        mock_cursor.fetchone.side_effect = [open_trade, None]
+        mock_conn.cursor.return_value = mock_cursor
+
+        log = MagicMock()
+        live_trader._reconcile_position(mock_conn, cfg, strategy, log)
+        log.info.assert_called()
+        info_msg = str(log.info.call_args_list)
+        self.assertIn("reconciled open position", info_msg)
 
 
 # ── schema alignment tests ────────────────────────────────────────────────────

@@ -347,8 +347,22 @@ def check_config_invariants(cfg: dict) -> list[dict]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Formula Audit — MNQ ORB constants and PnL formulas")
-    parser.add_argument("--json", action="store_true", help="JSON output")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Formula Audit — verifies PnL constants, formulas, and prop-firm limits for MNQ ORB. "
+            "Compares YAML rules against live_config.json and tests PnL formula vectors."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/formula_audit.py           # run all checks\n"
+            "  python scripts/formula_audit.py --json    # machine-readable JSON output\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--json", action="store_true",
+        help="Emit results as a JSON array instead of the human-readable report",
+    )
     args = parser.parse_args()
 
     try:

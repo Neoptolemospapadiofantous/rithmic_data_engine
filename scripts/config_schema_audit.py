@@ -73,8 +73,22 @@ def run_audit() -> list[dict]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Config Schema Audit — live_config.json validation")
-    parser.add_argument("--json", action="store_true", help="JSON output")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Config Schema Audit — validates live_config.json against the Pydantic schema. "
+            "Checks required keys, types, MNQ invariants, trade_route, and flat/nested consistency."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/config_schema_audit.py           # validate live_config.json\n"
+            "  python scripts/config_schema_audit.py --json    # machine-readable JSON output\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--json", action="store_true",
+        help="Emit results as a JSON array instead of the human-readable report",
+    )
     args = parser.parse_args()
 
     findings = run_audit()

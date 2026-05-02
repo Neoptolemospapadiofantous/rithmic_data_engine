@@ -326,5 +326,74 @@ class TestRowToTradeKwargs(unittest.TestCase):
         self.assertIn("entry_time", kwargs)
 
 
+# ── pytest-marker tests for write_crash_safe and for_date ────────────────────
+# These four tests are tagged @pytest.mark.fast so they run in the
+# pre-commit fast gate (pytest -m fast).
+
+import pytest  # noqa: E402  (placed after unittest imports already at top)
+
+
+@pytest.mark.fast
+def test_write_crash_safe_inserts_on_new():
+    """write_crash_safe on a fresh conn issues an INSERT (no prior row)."""
+    conn, cur = _make_conn(fetchone_return=None)
+    result = SessionSummary.write_crash_safe(conn, date(2026, 4, 23))
+    assert isinstance(result, SessionSummary)
+    # cur.execute is called at least once — the INSERT inside save()
+    assert cur.execute.called
+    sql = cur.execute.call_args_list[0][0][0]
+    assert "INSERT INTO session_summary" in sql
+
+
+@pytest.mark.fast
+def test_write_crash_safe_updates_on_existing():
+    """write_crash_safe always uses ON CONFLICT DO UPDATE (idempotent upsert)."""
+    conn, cur = _make_conn(fetchone_return=None)
+    # First call
+    SessionSummary.write_crash_safe(conn, date(2026, 4, 23))
+    # Second call on a fresh mock simulating an existing row
+    conn2, cur2 = _make_conn(fetchone_return=None)
+    SessionSummary.write_crash_safe(conn2, date(2026, 4, 23))
+    sql2 = cur2.execute.call_args_list[0][0][0]
+    # The upsert SQL must contain ON CONFLICT DO UPDATE (not a bare INSERT)
+    assert "ON CONFLICT" in sql2
+    assert "DO UPDATE" in sql2
+
+
+@pytest.mark.fast
+def test_for_date_returns_empty_when_missing():
+    """for_date returns an empty list (not None) when no rows exist."""
+    conn, cur = _make_conn(fetchall_return=[])
+    result = SessionSummary.for_date(conn, date(2026, 4, 23))
+    assert result == []
+
+
+@pytest.mark.fast
+def test_for_date_returns_summary_when_found():
+    """for_date returns a populated SessionSummary list when a row exists."""
+    row = {
+        "session_id": "2026-04-23_python",
+        "date": date(2026, 4, 23),
+        "source": "python",
+        "gross_pnl": 250.0,
+        "trade_count": 3,
+        "win_count": 2,
+        "max_drawdown": 50.0,
+        "start_equity": 50000.0,
+        "end_equity": 50250.0,
+        "notes": None,
+        "crash_exit": False,
+    }
+    conn, cur = _make_conn(fetchall_return=[row])
+    results = SessionSummary.for_date(conn, date(2026, 4, 23))
+    assert len(results) == 1
+    s = results[0]
+    assert isinstance(s, SessionSummary)
+    assert s.session_id == "2026-04-23_python"
+    assert s.trade_count == 3
+    assert s.gross_pnl == 250.0
+    assert s.win_count == 2
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -317,9 +317,26 @@ def check_oot_holdout_isolation(conn):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Engine Contamination Audit")
-    parser.add_argument("--json", action="store_true")
-    parser.add_argument("--no-pg", action="store_true", help="Source-only checks")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Engine Contamination & Data Integrity Audit. "
+            "Runs source-code checks (always) and PostgreSQL data checks (unless --no-pg). "
+            "Exits 1 on any CRITICAL failure."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/contamination_audit.py             # full audit (source + PG)\n"
+            "  python scripts/contamination_audit.py --no-pg     # source checks only\n"
+            "  python scripts/contamination_audit.py --json      # machine-readable output\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--json", action="store_true",
+        help="Emit results as a JSON array to stdout instead of the human-readable report",
+    )
+    parser.add_argument("--no-pg", action="store_true",
+                        help="Skip PostgreSQL data checks and run source-only checks")
     args = parser.parse_args()
 
     _load_env()

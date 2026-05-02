@@ -325,13 +325,35 @@ def tail_for_signal(timeout: int = 90, start_pos: int = 0) -> str | None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="5m ORB live cycle integration test")
-    parser.add_argument("--price", type=float, default=19800.0, help="Base MNQ price")
-    parser.add_argument("--orb-pts", type=float, default=10.0, help="ORB half-width in points")
-    parser.add_argument("--direction", choices=["LONG", "SHORT"], default="LONG")
-    parser.add_argument("--no-restore", action="store_true", help="Keep patched config after test")
-    parser.add_argument("--dry-run", action="store_true", help="Force dry_run=true")
-    parser.add_argument("--timeout", type=int, default=90, help="Seconds to wait for signal")
+    parser = argparse.ArgumentParser(
+        description=(
+            "5-minute ORB live-cycle integration test. "
+            "Kills any running live_trader, patches RTH window to now, injects synthetic "
+            "MNQ ticks (5 ORB-building bars + 1 breakout bar), starts live_trader, and "
+            "watches the log for a trade_open signal. Restores config on exit."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/test_live_cycle.py                          # standard LONG test\n"
+            "  python3 scripts/test_live_cycle.py --direction SHORT         # test SHORT breakout\n"
+            "  python3 scripts/test_live_cycle.py --demo                    # reach WATCHING and hold\n"
+            "  python3 scripts/test_live_cycle.py --fire                    # inject breakout into demo\n"
+            "  python3 scripts/test_live_cycle.py --dry-run --price 20000   # dry-run at custom price\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--price", type=float, default=19800.0,
+                        help="Base MNQ price for synthetic bars (default: 19800.0)")
+    parser.add_argument("--orb-pts", type=float, default=10.0,
+                        help="ORB range half-width in points (default: 10.0)")
+    parser.add_argument("--direction", choices=["LONG", "SHORT"], default="LONG",
+                        help="Breakout direction for the test (default: LONG)")
+    parser.add_argument("--no-restore", action="store_true",
+                        help="Keep patched live_config.json after test (default: restore)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Force dry_run=true in the patched config")
+    parser.add_argument("--timeout", type=int, default=90,
+                        help="Seconds to wait for trade_open signal (default: 90)")
     parser.add_argument("--demo", action="store_true",
                         help="Demo mode: reach WATCHING state and hold — use --fire to trigger")
     parser.add_argument("--fire", action="store_true",

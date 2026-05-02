@@ -213,6 +213,19 @@ class MicroORBStrategy:
         """Return the active position dataclass, or None."""
         return self._position if self.state == StrategyState.IN_POSITION else None
 
+    def restore_position(self, position: "_Position") -> None:
+        """Restore a position from a DB record after a crash/restart.
+
+        Sets in_position state without touching any signal logic, entry/exit
+        conditions, or indicators.  Only called by the reconciliation path in
+        live_trader.py — never from the hot trading path.
+
+        Args:
+            position: A _Position dataclass built from the open trades DB row.
+        """
+        self._position = position
+        self.state = StrategyState.IN_POSITION
+
     # ── internals ─────────────────────────────────────────────────────
 
     def _reset_session(self, date: datetime.date) -> None:

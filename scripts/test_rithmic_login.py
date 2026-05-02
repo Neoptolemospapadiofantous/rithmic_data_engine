@@ -1,22 +1,4 @@
-"""
-Minimal Rithmic login tester — no generated pb2 files required.
-Encodes RequestLogin manually using raw protobuf wire format,
-then decodes ResponseLogin to show rp_code and any messages.
-
-Usage:
-    python3 scripts/test_rithmic_login.py \
-        --user <order_user> \
-        --password <order_password> \
-        --system LegendsTrading \
-        --plant ORDER_PLANT
-
-    # MD plant test (AMP credentials)
-    python3 scripts/test_rithmic_login.py \
-        --user <amp_user> \
-        --password <amp_password> \
-        --system "Rithmic 01" \
-        --plant TICKER_PLANT
-"""
+"""Minimal Rithmic login tester — validates WebSocket connectivity and credentials."""
 
 import argparse
 import asyncio
@@ -244,12 +226,36 @@ async def test_login(user, password, system_name, plant, url):
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("--user",     required=True)
-    p.add_argument("--password", required=True)
-    p.add_argument("--system",   default="Rithmic Paper Trading")
-    p.add_argument("--plant",    default="ORDER_PLANT", choices=list(INFRA))
-    p.add_argument("--url",      default=RITHMIC_URL)
+    p = argparse.ArgumentParser(
+        description=(
+            "Minimal Rithmic login tester. Encodes RequestLogin manually using raw "
+            "protobuf wire format (no generated pb2 files required) and decodes "
+            "ResponseLogin to show rp_code and any messages."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Test ORDER_PLANT with Legends credentials:\n"
+            "  python3 scripts/test_rithmic_login.py \\\n"
+            "      --user <order_user> --password <order_password> \\\n"
+            "      --system LegendsTrading --plant ORDER_PLANT\n"
+            "\n"
+            "  # Test TICKER_PLANT with AMP credentials:\n"
+            "  python3 scripts/test_rithmic_login.py \\\n"
+            "      --user <amp_user> --password <amp_password> \\\n"
+            '      --system "Rithmic 01" --plant TICKER_PLANT\n'
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p.add_argument("--user",     required=True,
+                   help="Rithmic account username")
+    p.add_argument("--password", required=True,
+                   help="Rithmic account password")
+    p.add_argument("--system",   default="Rithmic Paper Trading",
+                   help="Rithmic system name (default: 'Rithmic Paper Trading')")
+    p.add_argument("--plant",    default="ORDER_PLANT", choices=list(INFRA),
+                   help="Infrastructure plant to connect to (default: ORDER_PLANT)")
+    p.add_argument("--url",      default=RITHMIC_URL,
+                   help=f"WebSocket URL for the Rithmic gateway (default: {RITHMIC_URL})")
     args = p.parse_args()
 
     ok = asyncio.run(test_login(args.user, args.password, args.system, args.plant, args.url))

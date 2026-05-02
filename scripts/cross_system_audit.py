@@ -322,8 +322,23 @@ def run_audit() -> list[dict]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Cross-System Audit — MNQ/NQ constant consistency")
-    parser.add_argument("--json", action="store_true", help="JSON output")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Cross-System Audit — verifies constant consistency between C++ and Python for MNQ ORB. "
+            "Checks tick_value, point_value, symbol, and PnL-relevant defaults across orb_config.hpp, "
+            "live_config.json, live_trader.py, and strategy/micro_orb.py."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/cross_system_audit.py           # run all checks\n"
+            "  python scripts/cross_system_audit.py --json    # machine-readable JSON output\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--json", action="store_true",
+        help="Emit results as a JSON array instead of the human-readable report",
+    )
     args = parser.parse_args()
 
     # Load YAML if available (graceful skip if Builder 2 hasn't created it yet)

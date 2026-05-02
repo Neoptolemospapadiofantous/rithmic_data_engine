@@ -992,10 +992,27 @@ def run_all_checks(conn, live_cfg: dict | None) -> list[dict]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Engine Audit Daemon")
-    parser.add_argument("--interval", type=int, default=300,
-                        help="Seconds between runs (default: 300)")
-    parser.add_argument("--once", action="store_true", help="Run once and exit")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Continuous audit daemon for rithmic_engine. "
+            "Runs 16 data-health checks every INTERVAL seconds, escalates persistent "
+            "failures to Slack, writes quality metrics to PostgreSQL, and writes "
+            "data/AUDIT_HALT when a CRITICAL trading-constant issue is detected."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python scripts/audit_daemon.py                 # run forever, check every 5 min\n"
+            "  python scripts/audit_daemon.py --interval 60   # check every 60 seconds\n"
+            "  python scripts/audit_daemon.py --once          # run once and exit (CI / cron)\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--interval", type=int, default=300,
+        help="Seconds between audit cycles (default: 300)",
+    )
+    parser.add_argument("--once", action="store_true",
+                        help="Run a single audit cycle then exit (useful for CI or cron)")
     args = parser.parse_args()
 
     _load_env()
