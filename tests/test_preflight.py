@@ -1090,5 +1090,139 @@ class TestGateMlModelUnit:
         assert result.passed
 
 
+# ---------------------------------------------------------------------------
+# Gate D — DB connection unit tests  (Task A)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.preflight
+class TestGateDBUnit(unittest.TestCase):
+    """Direct unit tests for _check_db_connection(); mock psycopg2.connect."""
+
+    def _check(self, cfg: dict, env: dict | None = None):
+        import go_live as gl
+        with patch.dict(os.environ, env or {}, clear=False):
+            return gl._check_db_connection(cfg)
+
+    def test_valid_kwargs_calls_connect_with_correct_args(self):
+        """Valid host/port/db config → psycopg2.connect called with correct keyword args."""
+        cfg = {
+            "db": {
+                "host_env": "DB_HOST",
+                "port_env": "DB_PORT",
+                "dbname_env": "DB_NAME",
+                "user_env": "DB_USER",
+                "password_env": "DB_PASS",
+                "connect_timeout": 5,
+            }
+        }
+        env = {
+            "DB_HOST": "myhost",
+            "DB_PORT": "5433",
+            "DB_NAME": "mydb",
+            "DB_USER": "myuser",
+            "DB_PASS": "secret",
+        }
+        mock_conn = MagicMock()
+        with patch("psycopg2.connect", return_value=mock_conn) as mock_connect:
+            ok, detail = self._check(cfg, env)
+
+        self.assertTrue(ok)
+        self.assertIn("myhost", detail)
+        self.assertIn("mydb", detail)
+        mock_connect.assert_called_once_with(
+            host="myhost",
+            port=5433,
+            dbname="mydb",
+            user="myuser",
+            password="secret",
+            connect_timeout=5,
+        )
+        mock_conn.close.assert_called_once()
+
+    def test_port_env_empty_string_falls_back_to_default_5432(self):
+        """Port env var present but empty string → int('' or 5432) → default port 5432."""
+        cfg = {
+            "db": {
+                "host_env": "DB_HOST",
+                "port_env": "DB_PORT",
+                "dbname_env": "DB_NAME",
+                "user_env": "DB_USER",
+                "password_env": "DB_PASS",
+                "connect_timeout": 10,
+            }
+        }
+        # DB_PORT is set to empty string in env; _env() returns "" which triggers fallback
+        env = {
+            "DB_HOST": "localhost",
+            "DB_PORT": "",
+            "DB_NAME": "rithmic",
+            "DB_USER": "rithmic_user",
+            "DB_PASS": "",
+        }
+        mock_conn = MagicMock()
+        with patch("psycopg2.connect", return_value=mock_conn) as mock_connect:
+            ok, detail = self._check(cfg, env)
+
+        self.assertTrue(ok)
+        # Port must be the default 5432, not a crash from int("")
+        call_kwargs = mock_connect.call_args.kwargs
+        self.assertEqual(call_kwargs["port"], 5432)
+
+    def test_missing_db_cfg_keys_uses_defaults_and_passes(self):
+        """db section with no keys at all → all defaults applied, connect called with defaults."""
+        # With no host_env, port_env, etc. keys, _env() returns "" for the env key name,
+        # so os.environ.get("", default) returns the default.
+        cfg = {"db": {}}
+        mock_conn = MagicMock()
+        with patch("psycopg2.connect", return_value=mock_conn) as mock_connect:
+            ok, detail = self._check(cfg, {})
+
+        self.assertTrue(ok)
+        call_kwargs = mock_connect.call_args.kwargs
+        self.assertEqual(call_kwargs["host"], "localhost")
+        self.assertEqual(call_kwargs["port"], 5432)
+        self.assertEqual(call_kwargs["dbname"], "rithmic")
+
+    def test_psycopg2_error_returns_false_with_message(self):
+        """psycopg2.connect raises an exception → gate returns (False, error message string)."""
+        cfg = {
+            "db": {
+                "host_env": "DB_HOST",
+                "port_env": "DB_PORT",
+                "dbname_env": "DB_NAME",
+                "user_env": "DB_USER",
+                "password_env": "DB_PASS",
+                "connect_timeout": 10,
+            }
+        }
+        env = {
+            "DB_HOST": "unreachable-host",
+            "DB_PORT": "5432",
+            "DB_NAME": "testdb",
+            "DB_USER": "user",
+            "DB_PASS": "",
+        }
+        error_msg = "could not connect to server: Connection refused"
+        with patch("psycopg2.connect", side_effect=Exception(error_msg)):
+            ok, detail = self._check(cfg, env)
+
+        self.assertFalse(ok)
+        self.assertIn(error_msg, detail)
+
+    def test_gate_db_wraps_check_result(self):
+        """_gate_db() wraps _check_db_connection() result into a GateResult correctly."""
+        import go_live as gl
+        cfg = {"db": {}}
+        with patch("go_live._check_db_connection", return_value=(True, "localhost:5432/rithmic")):
+            result = gl._gate_db(cfg)
+        self.assertTrue(result.passed)
+        self.assertIn("localhost:5432/rithmic", result.detail)
+
+        with patch("go_live._check_db_connection", return_value=(False, "connection refused")):
+            result = gl._gate_db(cfg)
+        self.assertFalse(result.passed)
+        self.assertIn("connection refused", result.detail)
+
+
 if __name__ == "__main__":
     unittest.main()
