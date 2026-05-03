@@ -45,7 +45,7 @@ If tests break because of your changes: fix the code OR add tests that cover the
 | `data/logs/hermes_session.log` | History of all session results |
 | `data/audit_status.json` | Full audit daemon output |
 | `scripts/hermes_session.py` | The check runner |
-| `scripts/audit_daemon.py` | 22-check quality daemon |
+| `scripts/audit_daemon.py` | 23-check quality daemon |
 | `go_live.py` | Preflight gates (run before live trading) |
 | `live_trader.py` | Main trading loop — fix bugs, do not change strategy |
 | `deploy/live_trader.service` | Systemd unit for Oracle deployment |

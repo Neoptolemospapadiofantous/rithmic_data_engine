@@ -11,6 +11,25 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 23 — mypy full-sweep 16 files, CLAUDE.md fix
+
+### Improved
+- **`scripts/hermes_session.py`** mypy target list expanded from 11 → 16 files:
+  added `scripts/use_env.py`, `scripts/no_deploy.py`, `scripts/flatten.py`,
+  `scripts/config_schema_audit.py`, `scripts/pipeline_run.py`.  All 16 pass
+  `--ignore-missing-imports --disable-error-code=import-untyped` cleanly —
+  mypy now covers every non-test Python script in the repo.
+
+### Fixed
+- **`CLAUDE.md`**: corrected audit daemon description from "22-check" to "23-check".
+
+### Metrics
+- Tests: 625 (unchanged)
+- Mypy targets: 11 → 16 files (full script coverage)
+- All gates green (ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 22 — mypy 11-file coverage, file-handle shadow fixes
 
 ### Fixed

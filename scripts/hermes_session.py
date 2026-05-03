@@ -72,7 +72,9 @@ def check_mypy() -> dict:
                "scripts/audit_daemon.py", "strategy/features.py",
                "scripts/eod_summary.py", "scripts/formula_audit.py",
                "scripts/cross_system_audit.py", "scripts/contamination_audit.py",
-               "scripts/python_standards_check.py", "scripts/cpp_standards_check.py"]
+               "scripts/python_standards_check.py", "scripts/cpp_standards_check.py",
+               "scripts/use_env.py", "scripts/no_deploy.py", "scripts/flatten.py",
+               "scripts/config_schema_audit.py", "scripts/pipeline_run.py"]
     existing = [t for t in targets if (ENGINE_DIR / t).exists()]
     code, out = _run(
         [sys.executable, "-m", "mypy", "--ignore-missing-imports",
