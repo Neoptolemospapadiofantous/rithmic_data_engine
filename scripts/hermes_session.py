@@ -71,7 +71,8 @@ def check_mypy() -> dict:
     targets = ["live_trader.py", "models.py", "go_live.py",
                "scripts/audit_daemon.py", "strategy/features.py",
                "scripts/eod_summary.py", "scripts/formula_audit.py",
-               "scripts/cross_system_audit.py", "scripts/contamination_audit.py"]
+               "scripts/cross_system_audit.py", "scripts/contamination_audit.py",
+               "scripts/python_standards_check.py", "scripts/cpp_standards_check.py"]
     existing = [t for t in targets if (ENGINE_DIR / t).exists()]
     code, out = _run(
         [sys.executable, "-m", "mypy", "--ignore-missing-imports",

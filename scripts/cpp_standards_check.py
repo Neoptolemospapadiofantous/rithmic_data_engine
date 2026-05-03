@@ -211,7 +211,7 @@ def run_rules(rules_data: dict, root: Path) -> list[dict]:
     return findings
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="C++ Standards Check")
     parser.add_argument("--json", action="store_true", help="JSON output")
     parser.add_argument("--errors-only", action="store_true",
@@ -227,8 +227,8 @@ def main():
             print(f"SKIP: {msg}")
         sys.exit(0)
 
-    with open(RULES_PATH) as f:
-        rules_data = yaml.safe_load(f)
+    with open(RULES_PATH) as _fp:
+        rules_data = yaml.safe_load(_fp)
 
     findings = run_rules(rules_data, PROJECT_ROOT)
 

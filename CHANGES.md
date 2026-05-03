@@ -11,6 +11,28 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 22 — mypy 11-file coverage, file-handle shadow fixes
+
+### Fixed
+- **`scripts/cpp_standards_check.py`** and **`scripts/python_standards_check.py`**:
+  renamed `with open(RULES_PATH) as f:` to `as _fp:` (and updated the
+  `yaml.safe_load` call accordingly).  The variable `f` was later reused as a
+  loop variable over findings dicts; mypy was (correctly) flagging 26 errors
+  from the type mismatch.  The file handle is now `_fp` in both scripts.
+
+### Improved
+- **`scripts/hermes_session.py`** mypy target list expanded from 9 → 11 files:
+  added `scripts/python_standards_check.py` and `scripts/cpp_standards_check.py`.
+- **`scripts/python_standards_check.py`** and **`scripts/cpp_standards_check.py`**:
+  annotated `main()` with `-> None` return type.
+
+### Metrics
+- Tests: 625 (unchanged)
+- Mypy targets: 9 → 11 files
+- All gates green (ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 21 — mypy 9-file coverage, emergency_flatten tests, dead YAML removed
 
 ### Fixed
