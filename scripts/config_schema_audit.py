@@ -14,6 +14,8 @@ Usage:
   python scripts/config_schema_audit.py           # validate live_config.json
   python scripts/config_schema_audit.py --json    # JSON output
 """
+from __future__ import annotations
+
 import argparse
 import json
 import sys

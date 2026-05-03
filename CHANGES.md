@@ -11,6 +11,25 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 25 — config_schema_audit tests, future import
+
+### Added
+- **`tests/test_config_schema_audit.py`**: 7 new fast tests for `run_audit()` and
+  `_result()` in `scripts/config_schema_audit.py` — covering import failure (FAIL
+  CRITICAL), missing config file (FAIL CRITICAL), valid config (PASS), schema
+  violations (FAIL with parsed field errors), and the unparseable-error fallback.
+  `config_schema_audit.py::run_audit()` had zero prior test coverage.
+
+### Improved
+- **`scripts/config_schema_audit.py`**: added `from __future__ import annotations`
+  for consistency with all other scripts in the repo.
+
+### Metrics
+- Tests: 625 → 632
+- All gates green (mypy 17 files, ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 24 — mypy 17 files, migrate_parquet and flatten annotations
 
 ### Fixed
