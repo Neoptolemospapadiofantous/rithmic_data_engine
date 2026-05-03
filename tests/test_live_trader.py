@@ -1331,5 +1331,65 @@ class TestTickSignalDBIntegration(unittest.TestCase):
             self.assertEqual(trader._active_trade_id, 44)
 
 
+# ── compute_live_features() unit tests ───────────────────────────────────────
+
+@pytest.mark.fast
+class TestComputeLiveFeatures(unittest.TestCase):
+
+    def _make_bars(self, n: int = 10) -> list:
+        base = datetime.datetime(2026, 4, 23, 9, 30, tzinfo=ET)
+        return [
+            {
+                "ts": base + datetime.timedelta(minutes=i),
+                "open": 18000.0 + i,
+                "high": 18005.0 + i,
+                "low": 17995.0 + i,
+                "close": 18002.0 + i,
+                "volume": 100 + i,
+            }
+            for i in range(n)
+        ]
+
+    def test_returns_dict(self):
+        """compute_live_features returns a non-empty dict."""
+        import live_trader
+        bars = self._make_bars(10)
+        result = live_trader.compute_live_features(bars)
+        self.assertIsInstance(result, dict)
+        self.assertGreater(len(result), 0)
+
+    def test_config_none_uses_default_orb_period(self):
+        """compute_live_features(bars, config=None) defaults to orb_period=5."""
+        import live_trader
+        from unittest.mock import patch as _patch
+        bars = self._make_bars(10)
+        with _patch("strategy.features.compute_features") as mock_cf:
+            mock_cf.return_value = {}
+            live_trader.compute_live_features(bars, config=None)
+        mock_cf.assert_called_once_with(bars, orb_period=5)
+
+    def test_config_orb_period_overrides_default(self):
+        """compute_live_features reads orb_period_minutes from config."""
+        import live_trader
+        from unittest.mock import patch as _patch
+        bars = self._make_bars(10)
+        cfg = {"orb": {"orb_period_minutes": 15}}
+        with _patch("strategy.features.compute_features") as mock_cf:
+            mock_cf.return_value = {}
+            live_trader.compute_live_features(bars, config=cfg)
+        mock_cf.assert_called_once_with(bars, orb_period=15)
+
+    def test_missing_orb_key_in_config_uses_default(self):
+        """compute_live_features falls back to orb_period=5 when orb key absent."""
+        import live_trader
+        from unittest.mock import patch as _patch
+        bars = self._make_bars(10)
+        cfg = {"other": "data"}
+        with _patch("strategy.features.compute_features") as mock_cf:
+            mock_cf.return_value = {}
+            live_trader.compute_live_features(bars, config=cfg)
+        mock_cf.assert_called_once_with(bars, orb_period=5)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

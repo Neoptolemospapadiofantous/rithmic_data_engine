@@ -28,7 +28,9 @@ pytestmark = pytest.mark.fast
 REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from models import Trade, SessionSummary, _row_to_trade_kwargs
+from unittest.mock import patch
+
+from models import Trade, SessionSummary, _row_to_trade_kwargs, get_conn
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -468,6 +470,86 @@ def test_trade_get_returns_trade_when_found():
     assert result.id == 42
     assert result.direction == "SHORT"
     assert result.entry_price == 18000.0
+
+
+# ── get_conn() unit tests ─────────────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_get_conn_passes_pg_env_vars_to_connect():
+    """get_conn() forwards PG_* env vars to psycopg2.connect."""
+    env = {
+        "PG_HOST": "db.example.com",
+        "PG_PORT": "5433",
+        "PG_DB": "mydb",
+        "PG_USER": "myuser",
+        "PG_PASSWORD": "secret",
+    }
+    with patch.dict("os.environ", env, clear=False), \
+         patch("models.psycopg2.connect") as mock_connect:
+        get_conn()
+    mock_connect.assert_called_once()
+    kwargs = mock_connect.call_args[1]
+    assert kwargs["host"] == "db.example.com"
+    assert kwargs["port"] == 5433
+    assert kwargs["dbname"] == "mydb"
+    assert kwargs["user"] == "myuser"
+    assert kwargs["password"] == "secret"
+
+
+@pytest.mark.fast
+def test_get_conn_uses_defaults_when_env_absent():
+    """get_conn() falls back to defaults when PG_* vars are not set.
+
+    _load_env is patched to no-op so .env file values don't interfere.
+    """
+    no_pg = {k: v for k, v in __import__("os").environ.items()
+             if not k.startswith("PG_")}
+    with patch("models._load_env"), \
+         patch.dict("os.environ", no_pg, clear=True), \
+         patch("models.psycopg2.connect") as mock_connect:
+        get_conn()
+    kwargs = mock_connect.call_args[1]
+    assert kwargs["host"] == "localhost"
+    assert kwargs["port"] == 5432
+    assert kwargs["dbname"] == "rithmic"
+    assert kwargs["user"] == "rithmic_user"
+
+
+# ── build_from_trades edge cases ──────────────────────────────────────────────
+
+@pytest.mark.fast
+def test_build_from_trades_all_loss():
+    """build_from_trades with only losing trades: win_count=0, gross_pnl negative."""
+    trades = [
+        _make_trade(pnl=-100.0),
+        _make_trade(pnl=-50.0),
+    ]
+    s = SessionSummary.build_from_trades(trades)
+    assert s.win_count == 0
+    assert s.trade_count == 2
+    assert s.gross_pnl == pytest.approx(-150.0)
+
+
+@pytest.mark.fast
+def test_build_from_trades_start_equity_affects_end_equity():
+    """build_from_trades uses start_equity to compute end_equity."""
+    trades = [_make_trade(pnl=200.0)]
+    s = SessionSummary.build_from_trades(trades, start_equity=50000.0)
+    assert s.start_equity == 50000.0
+    assert s.end_equity == pytest.approx(50200.0)
+
+
+@pytest.mark.fast
+def test_build_from_trades_max_drawdown_from_positive_start():
+    """Drawdown calculation uses start_equity as initial equity baseline."""
+    # equity: 50000 → 49900 (dd=100) → 49800 (dd=200) → 50050 (no new dd)
+    trades = [
+        _make_trade(pnl=-100.0),
+        _make_trade(pnl=-100.0),
+        _make_trade(pnl=250.0),
+    ]
+    s = SessionSummary.build_from_trades(trades, start_equity=50000.0)
+    assert s.max_drawdown == pytest.approx(200.0)
 
 
 if __name__ == "__main__":

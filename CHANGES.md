@@ -11,6 +11,24 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 18 — get_conn, build_from_trades, compute_live_features tests
+
+### Added
+- **`test_models.py`**: 5 new tests covering previously untested public functions:
+  - `get_conn()` passes PG_* env vars to `psycopg2.connect`; falls back to
+    localhost/5432/rithmic defaults when PG_* vars absent (patches `_load_env`).
+  - `build_from_trades` edge cases: all-loss trades (`win_count=0`), positive
+    `start_equity` produces correct `end_equity`, drawdown from non-zero baseline.
+- **`test_live_trader.py`**: 4 new fast tests for `compute_live_features()`:
+  - Returns a non-empty dict; `config=None` uses `orb_period=5`; config override
+    applied; missing `orb` key falls back to default.
+
+### Metrics
+- Tests: 613 → 622 (fast gate: 597 → 606)
+- All gates green (mypy, ruff, 23 audit checks)
+
+---
+
 ## 2026-05-02 — Hermes iteration 17 — audit_log noise, fast test marks, log size check (f77380c)
 
 ### Fixed
