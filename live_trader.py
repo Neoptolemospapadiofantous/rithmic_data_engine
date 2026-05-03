@@ -57,6 +57,9 @@ ET = zoneinfo.ZoneInfo("America/New_York")
 WATCHDOG_INTERVAL = 30          # seconds between sd_notify WATCHDOG pings
 PG_POLL_INTERVAL = 5            # seconds between bar polls
 TICK_POLL_INTERVAL = 0.5        # seconds between tick polls when in position
+# ORB bar history: keep 10 h of 5-min bars; show last 5 h in state JSON
+_ORB_BARS_MAX = 120
+_ORB_BARS_DISPLAY = 60
 
 # ── structured logging ────────────────────────────────────────────────────────
 
@@ -577,8 +580,8 @@ class LiveTrader:
         self._log.info("replaying %d historical bar(s) from %s ET", len(bars), rth_open_str)
         for bar in bars:
             self._orb_bars.append(dict(bar))
-            if len(self._orb_bars) > 120:
-                self._orb_bars = self._orb_bars[-120:]
+            if len(self._orb_bars) > _ORB_BARS_MAX:
+                self._orb_bars = self._orb_bars[-_ORB_BARS_MAX:]
             self._strategy.on_bar(dict(bar))  # state-machine update only; signal suppressed
             self._last_bar_ts = bar["ts"]
         self._write_state("CONNECTED")
@@ -770,7 +773,7 @@ class LiveTrader:
                     "close": float(b["close"]),
                     "volume": int(b.get("volume", 0)),
                 }
-                for b in self._orb_bars[-60:]
+                for b in self._orb_bars[-_ORB_BARS_DISPLAY:]
             ]
             state = {
                 "position": position_str,

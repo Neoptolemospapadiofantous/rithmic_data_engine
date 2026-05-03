@@ -11,6 +11,23 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 20 — ORB bar window constants, audit threshold constants
+
+### Improved
+- **`live_trader.py`**: extracted `_ORB_BARS_MAX = 120` and `_ORB_BARS_DISPLAY = 60`
+  as named module-level constants.  The two bar-capping sites and the state-JSON
+  display slice now reference these constants (no more bare `120`/`60` literals).
+- **`scripts/audit_daemon.py`**: extracted three quality-threshold constants —
+  `_REJECTION_RATE_WARN_PCT = 5.0`, `_GAP_COUNT_WARN = 50`,
+  `_SLIPPAGE_WARN_TICKS = 6.0`.  The three check functions that compare against
+  these values now reference the constants.
+
+### Metrics
+- Tests: 622 (unchanged — non-behavioral refactor)
+- All gates green (mypy, ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 19 — RTH constants, silent swallow fix, type hints
 
 ### Fixed

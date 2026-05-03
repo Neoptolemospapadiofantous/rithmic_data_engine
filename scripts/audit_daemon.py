@@ -72,6 +72,10 @@ _RTH_END_UTC = 21
 _WEEKEND_GRACE_S = 259_200
 # Weekday off-hours freshness threshold: 18 hours
 _OFFHOURS_FRESHNESS_S = 64_800
+# Quality thresholds
+_REJECTION_RATE_WARN_PCT = 5.0     # >5% ticks rejected is unusual
+_GAP_COUNT_WARN = 50               # >50 sentinel gaps is unusual
+_SLIPPAGE_WARN_TICKS = 6.0        # >6 tick avg slippage is unusual
 
 
 # ── Environment + config ───────────────────────────────────────────
@@ -387,7 +391,7 @@ def check_rejection_rate(conn) -> dict:
                 "message": "No rejection rate data yet", "value": 0}
     rate = row[0]
     return {"check": "rejection_rate",
-            "status": "PASS" if rate < 5.0 else "WARN",
+            "status": "PASS" if rate < _REJECTION_RATE_WARN_PCT else "WARN",
             "message": f"Rejection rate: {rate:.2f}%", "value": rate}
 
 
@@ -404,7 +408,7 @@ def check_gap_count(conn) -> dict:
                 "message": "No gap data yet", "value": 0}
     gaps = int(row[0])
     return {"check": "gap_count",
-            "status": "PASS" if gaps < 50 else "WARN",
+            "status": "PASS" if gaps < _GAP_COUNT_WARN else "WARN",
             "message": f"Session gaps: {gaps}", "value": float(gaps)}
 
 
@@ -852,7 +856,7 @@ def check_slippage_sanity(conn) -> dict:
     n = int(row[2])
     worse = max(avg_entry, avg_exit)
     return {"check": "slippage_sanity",
-            "status": "PASS" if worse <= 6.0 else "WARN",
+            "status": "PASS" if worse <= _SLIPPAGE_WARN_TICKS else "WARN",
             "message": (f"Avg slippage — entry: {avg_entry:.1f}t "
                         f"exit: {avg_exit:.1f}t over {n} trades (7d)"),
             "value": worse}
