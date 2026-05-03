@@ -21,9 +21,6 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-import yaml
-
-RULES_PATH = PROJECT_ROOT / "quality_rules" / "cross_system.yaml"
 CONFIG_PATH = PROJECT_ROOT / "config" / "live_config.json"
 ORB_CONFIG_HPP = PROJECT_ROOT / "src" / "execution" / "orb_config.hpp"
 LIVE_TRADER_PY = PROJECT_ROOT / "live_trader.py"
@@ -321,7 +318,7 @@ def run_audit() -> list[dict]:
     return findings
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Cross-System Audit — verifies constant consistency between C++ and Python for MNQ ORB. "
@@ -340,13 +337,6 @@ def main():
         help="Emit results as a JSON array instead of the human-readable report",
     )
     args = parser.parse_args()
-
-    # Load YAML if available (graceful skip if Builder 2 hasn't created it yet)
-    if RULES_PATH.exists():
-        with open(RULES_PATH) as f:
-            _rules = yaml.safe_load(f)  # reserved for future rule-driven checks
-    else:
-        pass  # scripts do not depend on YAML for their core logic
 
     findings = run_audit()
 

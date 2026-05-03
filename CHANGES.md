@@ -11,6 +11,33 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 21 — mypy 9-file coverage, emergency_flatten tests, dead YAML removed
+
+### Fixed
+- **`scripts/cross_system_audit.py`**: removed dead YAML loading block (`_rules` was
+  assigned but never referenced) and the unused `import yaml` / `RULES_PATH` that
+  accompanied it.  This also fixed 12 mypy errors where the `f` loop variable was
+  inferred as `TextIOWrapper` due to the earlier `with open(…) as f:` in the same
+  scope.
+
+### Improved
+- **Mypy coverage**: expanded target list in `scripts/hermes_session.py` from 5 to
+  9 files — added `scripts/eod_summary.py`, `scripts/formula_audit.py`,
+  `scripts/cross_system_audit.py`, `scripts/contamination_audit.py`.  All 9 now
+  pass `--ignore-missing-imports --disable-error-code=import-untyped`.
+- **`scripts/formula_audit.py`** and **`scripts/cross_system_audit.py`**: annotated
+  `main()` with `-> None` return type.
+- **`tests/test_live_trader.py`**: 3 new fast tests for `_emergency_flatten()` failure
+  paths — `conn=None` skips gracefully, DB error writes `AUDIT_HALT` sentinel,
+  `WAITING` state skips trade-close without touching the cursor.
+
+### Metrics
+- Tests: 622 → 625
+- Mypy targets: 5 → 9 files
+- All gates green (ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 20 — ORB bar window constants, audit threshold constants
 
 ### Improved

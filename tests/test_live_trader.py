@@ -1391,5 +1391,67 @@ class TestComputeLiveFeatures(unittest.TestCase):
         mock_cf.assert_called_once_with(bars, orb_period=5)
 
 
+# ── _emergency_flatten failure-path tests ────────────────────────────────────
+
+@pytest.mark.fast
+class TestEmergencyFlattenFailurePaths(unittest.TestCase):
+
+    def _make_trader_with_tmpdir(self, tmpdir: str):
+        import live_trader
+        cfg = _make_config()
+        cfg["pid_path"] = os.path.join(tmpdir, "live_trader.pid")
+        cfg["state_path"] = os.path.join(tmpdir, "live_state.json")
+        return live_trader.LiveTrader(cfg, dry_run=True)
+
+    def test_flatten_with_no_conn_does_not_raise(self):
+        """_emergency_flatten with conn=None skips trade/session write without raising."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            trader = self._make_trader_with_tmpdir(tmpdir)
+            trader._conn = None
+            trader._active_trade_id = 42
+            trader._emergency_flatten("TEST")
+            # no exception = pass
+
+    def test_flatten_db_error_writes_audit_halt(self):
+        """When DB raises during flatten, _emergency_flatten writes AUDIT_HALT sentinel."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            trader = self._make_trader_with_tmpdir(tmpdir)
+            trader._active_trade_id = 42
+            trader._session_date = datetime.date.today()
+            # Force strategy into IN_POSITION state
+            from strategy.micro_orb import StrategyState
+            trader._strategy._state = StrategyState.IN_POSITION
+
+            # Make conn.cursor() itself raise so the exception hits the outer try/except
+            mock_conn = MagicMock()
+            mock_conn.cursor.side_effect = Exception("DB connection lost")
+            trader._conn = mock_conn
+
+            halt_path = Path("data/AUDIT_HALT")
+            halt_path.unlink(missing_ok=True)
+
+            trader._emergency_flatten("SIGTERM")
+
+            self.assertTrue(halt_path.exists(),
+                            "AUDIT_HALT must be written when emergency_flatten fails")
+            halt_path.unlink(missing_ok=True)
+
+    def test_flatten_no_open_position_skips_trade_write(self):
+        """When not IN_POSITION, _emergency_flatten skips the trade close entirely."""
+        from strategy.micro_orb import StrategyState
+        with tempfile.TemporaryDirectory() as tmpdir:
+            trader = self._make_trader_with_tmpdir(tmpdir)
+            # Initial state is WAITING (not IN_POSITION)
+            self.assertEqual(trader._strategy.state, StrategyState.WAITING)
+            trader._active_trade_id = None
+
+            mock_conn = MagicMock()
+            trader._conn = mock_conn
+            trader._emergency_flatten("EOD")
+
+            # cursor should never have been called since we're not in position
+            mock_conn.cursor.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

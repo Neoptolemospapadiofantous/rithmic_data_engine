@@ -346,7 +346,7 @@ def check_config_invariants(cfg: dict) -> list[dict]:
     return findings
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Formula Audit — verifies PnL constants, formulas, and prop-firm limits for MNQ ORB. "
