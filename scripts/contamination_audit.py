@@ -23,6 +23,8 @@ Usage:
   python scripts/contamination_audit.py --json
   python scripts/contamination_audit.py --no-pg   # source-only checks
 """
+from __future__ import annotations
+
 import argparse
 import json
 import logging
@@ -30,6 +32,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 ENGINE_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = ENGINE_DIR / "src"
@@ -37,7 +40,7 @@ SRC_DIR = ENGINE_DIR / "src"
 log = logging.getLogger(__name__)
 
 
-def _load_env():
+def _load_env() -> None:
     env_file = ENGINE_DIR / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
@@ -48,7 +51,7 @@ def _load_env():
                     os.environ[k.strip()] = v.strip()
 
 
-def _pg_connect():
+def _pg_connect() -> Any:
     import psycopg2
     return psycopg2.connect(
         host=os.environ.get("PG_HOST", "localhost"),
@@ -60,11 +63,11 @@ def _pg_connect():
     )
 
 
-def _pass(name, msg=""):
+def _pass(name: str, msg: str = "") -> dict:
     return {"check": name, "status": "PASS", "severity": "INFO", "message": msg}
 
 
-def _fail(name, msg, severity="ERROR"):
+def _fail(name: str, msg: str, severity: str = "ERROR") -> dict:
     return {"check": name, "status": "FAIL", "severity": severity, "message": msg}
 
 

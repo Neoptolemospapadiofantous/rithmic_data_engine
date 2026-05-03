@@ -11,6 +11,27 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 19 — RTH constants, silent swallow fix, type hints
+
+### Fixed
+- **`migrate_parquet.py` silent swallow** (`_load_progress`, line 67): corrupt
+  progress JSON now prints a WARN to stderr instead of silently resetting state.
+
+### Improved
+- **`scripts/audit_daemon.py`** — extracted `_RTH_START_UTC`, `_RTH_END_UTC`,
+  `_WEEKEND_GRACE_S`, `_OFFHOURS_FRESHNESS_S` as named module-level constants.
+  The two RTH comparison sites (`check_data_freshness`, `check_process_liveness`)
+  now reference these constants instead of bare magic numbers.
+- **`scripts/contamination_audit.py`** — added `from __future__ import annotations`
+  and `from typing import Any`; annotated `_load_env() -> None`,
+  `_pg_connect() -> Any`, `_pass(…) -> dict`, `_fail(…) -> dict`.
+
+### Metrics
+- Tests: 622 (unchanged — no new tests needed; changes are non-behavioral)
+- All gates green (mypy, ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 18 — get_conn, build_from_trades, compute_live_features tests
 
 ### Added

@@ -64,8 +64,8 @@ def _load_progress() -> dict:
     if PROGRESS_FILE.exists():
         try:
             return json.loads(PROGRESS_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"WARN: progress file corrupt, resetting — {exc}", file=sys.stderr)
     return {"completed": [], "total_inserted": 0}
 
 

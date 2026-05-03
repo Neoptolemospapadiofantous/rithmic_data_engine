@@ -65,6 +65,14 @@ STATUS_FILE = ENGINE_DIR / "data" / "audit_status.json"
 AUDIT_HALT = ENGINE_DIR / "data" / "AUDIT_HALT"
 ESCALATION_STATE_FILE = ENGINE_DIR / "data" / "escalation_state.json"
 
+# Regular Trading Hours in UTC (≈ 09:30–16:00 ET)
+_RTH_START_UTC = 13
+_RTH_END_UTC = 21
+# Weekend grace window: 72 hours (markets closed Fri close → Sun open)
+_WEEKEND_GRACE_S = 259_200
+# Weekday off-hours freshness threshold: 18 hours
+_OFFHOURS_FRESHNESS_S = 64_800
+
 
 # ── Environment + config ───────────────────────────────────────────
 
@@ -353,12 +361,12 @@ def check_data_freshness(conn) -> dict:
     weekday = now_utc.weekday()   # 5=Sat 6=Sun
     hour_utc = now_utc.hour
 
-    if weekday >= 5:               # weekend — no trading, 72h grace
-        threshold = 259200
-    elif 13 <= hour_utc <= 21:     # weekday RTH (≈ 09:30–16:00 ET)
+    if weekday >= 5:               # weekend — no trading
+        threshold = _WEEKEND_GRACE_S
+    elif _RTH_START_UTC <= hour_utc <= _RTH_END_UTC:   # weekday RTH
         threshold = 300
     else:                          # weekday off-hours
-        threshold = 64800          # 18 h
+        threshold = _OFFHOURS_FRESHNESS_S
 
     return {"check": "data_freshness",
             "status": "PASS" if age_sec < threshold else "WARN",
@@ -473,7 +481,7 @@ def check_process_liveness() -> dict:
     expected to be running.  During RTH a missing process is a WARN.
     """
     now_utc = datetime.now(timezone.utc)
-    in_rth = now_utc.weekday() < 5 and 13 <= now_utc.hour <= 21
+    in_rth = now_utc.weekday() < 5 and _RTH_START_UTC <= now_utc.hour <= _RTH_END_UTC
 
     procs: dict[str, bool] = {}
     for name, pattern in [("nq_executor", "nq_executor"),
