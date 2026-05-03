@@ -23,6 +23,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import psycopg2
@@ -60,7 +61,7 @@ def _connect():
 
 
 # ── progress ───────────────────────────────────────────────────────
-def _load_progress() -> dict:
+def _load_progress() -> dict[str, Any]:
     if PROGRESS_FILE.exists():
         try:
             return json.loads(PROGRESS_FILE.read_text())
@@ -209,7 +210,7 @@ def _load_file(conn, path: Path, dry_run: bool = False) -> int:
 
 
 # ── main ───────────────────────────────────────────────────────────
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Migrate parquet ticks → PostgreSQL")
     parser.add_argument("--dry-run",    action="store_true", help="Show what would be loaded, don't write")
     parser.add_argument("--from",       dest="from_month", default=None, help="Start from YYYY-MM (inclusive)")
@@ -239,7 +240,7 @@ def main():
         files = [f for f in files if f.stem >= args.from_month]
 
     # Load progress
-    progress = {"completed": [], "total_inserted": 0} if args.reset else _load_progress()
+    progress: dict[str, Any] = {"completed": [], "total_inserted": 0} if args.reset else _load_progress()
 
     # Connect
     try:

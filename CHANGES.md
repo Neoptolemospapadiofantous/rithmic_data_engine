@@ -11,6 +11,29 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-03 — Hermes iteration 24 — mypy 17 files, migrate_parquet and flatten annotations
+
+### Fixed
+- **`migrate_parquet.py`**: fixed 3 mypy errors caused by the ternary assignment
+  `progress = {...} if args.reset else _load_progress()` producing a union type
+  that confused dict-access inference.  Added `from typing import Any`, annotated
+  `_load_progress()` as `-> dict[str, Any]`, and explicitly typed the `progress`
+  variable as `dict[str, Any]`.  Also annotated `main()` as `-> None`.
+
+### Improved
+- **`scripts/flatten.py`**: added `from __future__ import annotations`; annotated
+  `parse_args(argv: list[str] | None = None) -> argparse.Namespace` and
+  `async def run(stop_basket: str) -> None`.
+- **`scripts/hermes_session.py`**: mypy target list expanded 16 → 17 files
+  (added `migrate_parquet.py`).
+
+### Metrics
+- Tests: 625 (unchanged)
+- Mypy targets: 16 → 17 files
+- All gates green (ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 23 — mypy full-sweep 16 files, CLAUDE.md fix
 
 ### Improved

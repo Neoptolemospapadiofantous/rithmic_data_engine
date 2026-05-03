@@ -5,6 +5,8 @@ Usage:
     python scripts/flatten.py [--basket-id BASKET_ID]
     python scripts/flatten.py --help
 """
+from __future__ import annotations
+
 import argparse
 import asyncio
 import logging
@@ -25,7 +27,7 @@ EXCHANGE   = "CME"
 _DEFAULT_STOP_BASKET = "1275735"
 
 
-def parse_args(argv=None):
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="flatten.py",
         description=(
@@ -46,7 +48,7 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-async def run(stop_basket: str):
+async def run(stop_basket: str) -> None:
     from async_rithmic import SysInfraType, TransactionType, OrderType
 
     cfg = RithmicConfig.from_env()
