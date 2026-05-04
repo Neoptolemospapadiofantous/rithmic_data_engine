@@ -6,8 +6,8 @@ set -euo pipefail
 RED='\033[31m'; GREEN='\033[32m'; YELLOW='\033[33m'; RESET='\033[0m'
 pass=0; fail=0
 
-ok()   { echo -e "${GREEN}✓${RESET} $*"; ((pass++)); }
-fail() { echo -e "${RED}✗${RESET} $*"; ((fail++)); }
+ok()   { echo -e "${GREEN}✓${RESET} $*"; pass=$((pass+1)); }
+fail() { echo -e "${RED}✗${RESET} $*"; fail=$((fail+1)); }
 warn() { echo -e "${YELLOW}~${RESET} $*"; }
 
 echo "=== validate-remote.sh — Oracle post-deploy check ==="
@@ -42,7 +42,7 @@ if [[ -f "$LIVE_CFG" ]]; then
     ok "live_config.json trade_route='simulator'"
   else
     warn "live_config.json trade_route='$route' (verify this is correct)"
-    ((pass++))
+    pass=$((pass+1))
   fi
 else
   fail "live_config.json not found"
