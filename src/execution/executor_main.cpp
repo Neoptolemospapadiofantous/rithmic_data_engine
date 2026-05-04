@@ -437,6 +437,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         LOG("[EXECUTOR] WARNING: AuditLog DB connect failed — audit disabled");
         if (audit_conn) { PQfinish(audit_conn); audit_conn = nullptr; }
     }
+    if (audit_conn) {
+        // Ensure audit_log table exists (not created by OrbDB schema — executor owns this)
+        PQexec(audit_conn,
+            "CREATE TABLE IF NOT EXISTS audit_log ("
+            "  id       BIGSERIAL PRIMARY KEY,"
+            "  ts       TIMESTAMPTZ DEFAULT NOW(),"
+            "  source   VARCHAR(32) DEFAULT 'engine',"
+            "  event    VARCHAR(64) NOT NULL,"
+            "  severity VARCHAR(8) DEFAULT 'INFO',"
+            "  details  TEXT"
+            ");");
+        PQexec(audit_conn, "CREATE INDEX IF NOT EXISTS idx_audit_ts  ON audit_log(ts);");
+        PQexec(audit_conn, "CREATE INDEX IF NOT EXISTS idx_audit_sev ON audit_log(severity, ts DESC);");
+    }
     AuditLog audit_log(audit_conn);
 
     // ── Order plant setup ─────────────────────────────────────────────────────
@@ -506,7 +520,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         co_return;
     }
 
-    // System info
+    // System info — log available systems to help diagnose login failures
     {
         rti::RequestRithmicSystemInfo req;
         req.set_template_id(16);
@@ -518,9 +532,22 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             auto payload = proto_strip(beast::buffers_to_string(buf.data()));
             rti::Base base;
             if (!base.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
-            if (base.template_id() == 17) break;
+            if (base.template_id() == 17) {
+                rti::ResponseRithmicSystemInfo sinfo;
+                if (sinfo.ParseFromString(payload)) {
+                    std::string avail;
+                    for (auto& sn : sinfo.system_name()) avail += "[" + sn + "] ";
+                    LOG("[EXECUTOR] MD plant available systems: %s", avail.c_str());
+                    bool found = false;
+                    for (auto& sn : sinfo.system_name())
+                        if (sn == orb_cfg.md_system_name) { found = true; break; }
+                    if (!found)
+                        LOG("[EXECUTOR] WARNING: MD system '%s' NOT in list — login will likely fail",
+                            orb_cfg.md_system_name.c_str());
+                }
+                break;
+            }
         }
-        LOG("[EXECUTOR] System info OK");
     }
 
     // Rithmic protocol: close probe connection, reconnect for login
