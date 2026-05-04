@@ -11,6 +11,228 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-04 — Python purge + C++ Hermes runner
+
+### Removed
+- All Python files (`.py`), Python test suites, `requirements*.txt`, `pytest.ini`,
+  `strategy/`, `ui/`, and all Python scripts from `scripts/`.
+- `deploy/audit_daemon.service` and `deploy/live_trader.service` (dead / non-production).
+- `scripts/quality_gate.sh` and `scripts/run_fast_tests.sh` (Python-dependent wrappers).
+
+### Added
+- **`scripts/hermes.sh`**: C++-only Hermes CI runner (build → unit tests →
+  audit_daemon) replacing `scripts/hermes_session.py`. Writes
+  `data/hermes_findings.json`. Supports `--fast` flag to skip DB test.
+
+### Changed
+- **`Makefile`**: fully rewritten with C++-only targets (`build`, `configure`,
+  `test-unit`, `test`, `hermes`, `hermes-fast`, `push-eod`, `deploy`, `deploy-dry`,
+  `clean`). No Python dependency.
+- **`CLAUDE.md`**: rewritten for C++-only stack. Audit daemon explicitly documented
+  as local/testing only — not deployed to Oracle.
+
+### Architecture note
+- Production (Oracle) runs `rithmic_engine` + `nq_executor` only.
+- `audit_daemon` is a local-CI tool — never deployed to Oracle.
+
+---
+
+## 2026-05-04 — Hermes iteration 33 — cmd_status and cmd_verify test coverage
+
+### Added
+- **`tests/test_use_env.py`**: 9 new tests covering 2 previously-untested public
+  functions in `scripts/use_env.py` (file grows from 21 → 30 tests):
+  - `cmd_status` (5 tests): active env appears in output; password is masked as `***`;
+    unset values show `(not set)`; available envs listed; warning when no envs found.
+  - `cmd_verify` (4 tests): unknown env prints ERROR; missing credentials → SKIP;
+    subprocess mocked — exit 0 → PASS; exit non-zero → "CHECK OUTPUT" message.
+
+### Metrics
+- Tests: 747 (+9); fast gate collects all 747
+- All gates green (mypy 18 files, ruff, 23 audit checks)
+
+---
+
+## 2026-05-03 — Hermes iteration 32 — hermes_session test coverage
+
+### Added
+- **`tests/test_hermes_session.py`** (22 tests): first dedicated coverage for
+  `scripts/hermes_session.py`. Covers all 6 public functions via `_run` mocking:
+  - `_run` (3 tests): `TimeoutExpired` → `(-1, "TIMEOUT…")`; `FileNotFoundError` →
+    `(-2, "…not found")`; stdout+stderr combined.
+  - `check_tests` (7 tests): PASS/FAIL by `passed`/`failed`/`error` counts; skipped
+    parsed; `check` field reflects `fast` flag; failure lines extracted from output.
+  - `check_mypy` (3 tests): PASS when clean; FAIL with `error_count`; check name.
+  - `check_ruff` (3 tests): PASS by exit code 0; FAIL with issue extraction;
+    indented context lines not counted.
+  - `check_audit` (3 tests): PASS/FAIL by `failed` count; zero when no regex match.
+  - `git_status` (3 tests): uncommitted file count; recent commits parsed;
+    empty output → zeros.
+
+### Metrics
+- Tests: 738 (+22); fast gate collects all 738
+- All gates green (mypy 18 files, ruff, 23 audit checks)
+
+---
+
+## 2026-05-03 — Hermes iteration 31 — no_deploy test coverage; final annotation sweep
+
+### Added
+- **`tests/test_no_deploy.py`** (20 tests): first dedicated coverage for
+  `scripts/no_deploy.py`. Covers all 5 public functions:
+  - `is_locked` (2 tests): absent → False; present → True.
+  - `set_lock` (4 tests): creates file; payload contains reason and timestamp; overwrites.
+  - `clear_lock` (3 tests): removes file; no-op when absent; leaves nothing.
+  - `get_lock_reason` (5 tests): None when absent; returns reason; includes timestamp;
+    non-JSON plain-text fallback; empty JSON object handled.
+  - `lock_required` (6 tests): allows when unlocked; sys.exit(1) when locked; both
+    `@lock_required` and `@lock_required(path=...)` call forms; `functools.wraps`
+    preserves `__name__`; positional args passed through.
+
+### Improved
+- **`live_trader.py`**: annotated the `load_dotenv` fallback stub (`-> None`).
+- **`scripts/flatten.py`**: annotated the inner `on_notify` closure
+  (`n: object, -> None`).
+- **`scripts/no_deploy.py`**: annotated the inner `wrapper` closure (`-> object`).
+  All three were the last remaining unannotated public-name functions across the
+  18 mypy-covered files.
+
+### Metrics
+- Tests: 716 (+20); fast gate collects all 716
+- All gates green (mypy 18 files, ruff, 23 audit checks)
+
+---
+
+## 2026-05-03 — Hermes iteration 30 — test coverage for audit_daemon helpers
+
+### Added
+- **`tests/test_audit_checks.py`**: 12 new tests covering 4 previously-untested public
+  functions in `scripts/audit_daemon.py`:
+  - `check_log_file_sizes` (4 tests): missing LOG_DIR → INFO; empty dir → INFO;
+    files under 200 MB → PASS; any file over 200 MB → WARN.
+  - `log_failure` (2 tests): FAILURE line appended to fail file; `LOG_DIR` created
+    when it doesn't exist.
+  - `write_metric` (2 tests): INSERT INTO `quality_metrics` called with correct args;
+    DB errors do not propagate.
+  - `write_event` (2 tests): INSERT INTO `audit_log` called with correct args;
+    DB errors do not propagate.
+
+  All new tests use `monkeypatch.setattr(audit_daemon, "LOG_DIR", ...)` and
+  `monkeypatch.setattr(audit_daemon, "FAIL_FILE", ...)` for file isolation, and
+  `MagicMock()` connections for the DB-writing helpers.
+
+### Metrics
+- Tests: 696 (+10); fast gate collects all 696
+- All gates green (mypy 18 files, ruff, 23 audit checks)
+
+---
+
+## 2026-05-03 — Hermes iteration 29 — complete parameter annotation sweep; module-level pytest marks
+
+### Improved
+- **`live_trader.py`**: annotated two remaining unannotated parameters:
+  `_handle_shutdown(frame: object)` (signal handler frame — widened to `object`
+  per stdlib convention) and `_on_exit(exit_ts: datetime.datetime)`.
+- **`scripts/audit_daemon.py`**: annotated `conn: Any` on 9 functions that previously
+  had bare untyped `conn` parameters: `process()`, `check_data_freshness()`,
+  `check_rejection_rate()`, `check_gap_count()`, `check_session_health()`,
+  `check_pnl_sanity()`, `check_slippage_sanity()`, `check_trade_table_consistency()`,
+  and `run_all_checks()`.
+- **`migrate_parquet.py`**: annotated 5 remaining gaps — `_load_env() -> None`,
+  `_connect() -> Any`, `_save_progress(p: dict) -> None`, `_load_file_fast(conn: Any)`,
+  `_load_file(conn: Any)`.
+- **`tests/test_features.py`**, **`tests/test_audit_data.py`**,
+  **`tests/test_audit_system.py`**, **`tests/test_use_env.py`**: added module-level
+  `pytestmark = pytest.mark.fast` to all four files that previously relied on
+  per-function `@pytest.mark.fast` decorators. Module-level marks are idiomatic,
+  prevent accidental unmarked tests when new functions are added, and are consistent
+  with all other test files in the project.
+
+### Metrics
+- Tests: 686 (unchanged); fast gate still collects 686/695 correctly
+- All gates green (mypy 18 files, ruff, 23 audit checks)
+
+---
+
+## 2026-05-03 — Hermes iteration 28 — Optional[] modernization across all mypy-covered files
+
+### Improved
+- **`models.py`**: replaced 19 `Optional[X]` usages with modern `X | None` union
+  syntax (PEP 604); removed `from typing import Optional` import entirely.
+- **`live_trader.py`**: replaced 10 `Optional[X]` usages (function signatures and
+  class attribute annotations) with `X | None`; removed `Optional` import.
+- **`go_live.py`**: replaced 2 `Optional[X]` usages with `X | None`; removed
+  `Optional` import.
+- **`scripts/no_deploy.py`**: replaced 5 `Optional[X]` usages with `X | None`;
+  removed `Optional` from the `from typing import ...` line.
+- **`scripts/eod_summary.py`**: replaced 1 `Optional[float]` → `float | None`;
+  removed `from typing import Optional`.
+
+  All changed files already had `from __future__ import annotations`, so the
+  `X | None` syntax is valid at runtime for all supported Python versions.
+
+### Metrics
+- Tests: 686 (unchanged)
+- All gates green (mypy 18 files, ruff, 23 audit checks)
+
+---
+
+## 2026-05-03 — Hermes iteration 27 — mypy 18 files, full return annotation sweep
+
+### Improved
+- **`scripts/hermes_session.py`**: added to mypy target list (17 → 18 files); the script
+  already passes mypy cleanly — coverage was simply missing.
+- **`scripts/contamination_audit.py`**: annotated all 15 previously-unannotated public
+  functions — `check_no_negative_shift()`, `check_dedup_index_in_source()`,
+  `check_validator_price_bounds()`, `check_sentinel_exists()`, `check_wal_crash_recovery()`,
+  and all 9 DB-dependent `check_*` functions — as `-> list[dict]`; annotated `conn`
+  parameters as `conn: Any`; annotated `main() -> None`.
+- **`scripts/audit_daemon.py`**: annotated `write_metric() -> None` and
+  `write_event() -> None` — the only two unannotated public functions in the file.
+- **`scripts/no_deploy.py`**: added `# type: ignore[misc]` to the inner `wrapper()`
+  closure (generic `*args/**kwargs` wrapper without concrete signature) so mypy
+  reports it cleanly rather than requiring a concrete overload.
+
+### Metrics
+- Tests: 686 (unchanged)
+- Mypy targets: 17 → 18 files
+- All gates green (ruff, 23 audit checks)
+
+---
+
+## 2026-05-03 — Hermes iteration 26 — standards check tests, pipeline_run tests, future imports
+
+### Added
+- **`tests/test_pipeline_run.py`**: 31 new fast tests for `scripts/pipeline_run.py`
+  — covering `_fmt_time()` (6 edge cases), `PipelineReport.total_s`, `run_stage()`
+  (success / error / cache-hit / no-cache paths), `SessionMetrics.win_rate` and
+  `avg_pnl` (zero-trade edge cases), `MLComparisonReport._agg()` (empty / single /
+  multi-session), `run_ml_comparison()` mock mode, `_load_comparison_store()` (missing
+  file, corrupt JSON, valid file), and the save/load round-trip.
+  `pipeline_run.py` had zero prior test coverage.
+- **`tests/test_standards_check.py`**: 39 new fast tests for
+  `scripts/cpp_standards_check.py` and `scripts/python_standards_check.py`
+  — covering `_resolve_scope()` (glob expansion, dedup), `_is_excluded()` (name
+  patterns, build prefix, wildcards), `_scan_regex_absent()` (no violation, violation
+  found, comment skipping, known_violations downgrade to WARN, invalid regex, excluded
+  files), `_scan_regex_present()` (compliant, missing, invalid regex), and
+  `run_rules()` dispatch for all check types plus unknown-check SKIP.
+  Both scripts had zero prior test coverage.
+
+### Improved
+- **`scripts/cpp_standards_check.py`**: added `from __future__ import annotations`.
+- **`scripts/python_standards_check.py`**: added `from __future__ import annotations`.
+- **`scripts/formula_audit.py`**: added `from __future__ import annotations`.
+- **`scripts/cross_system_audit.py`**: added `from __future__ import annotations`.
+  All four scripts were the last production scripts in `scripts/` lacking PEP 563
+  lazy-annotation support.
+
+### Metrics
+- Tests: 632 → 686 (+54)
+- All gates green (mypy 17 files, ruff, 23 audit checks)
+
+---
+
 ## 2026-05-03 — Hermes iteration 25 — config_schema_audit tests, future import
 
 ### Added

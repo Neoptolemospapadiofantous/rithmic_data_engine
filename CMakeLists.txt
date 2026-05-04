@@ -155,6 +155,18 @@ else()
     message(STATUS "USE_RAPI_SDK=OFF — using WebSocket (Boost.Beast) market data feed")
 endif()
 
+# ── Audit Daemon ───────────────────────────────────────────────────
+# Standalone C++20 binary — only libpq + nlohmann/json, no Boost/Protobuf.
+add_executable(audit_daemon src/audit_daemon_main.cpp)
+target_include_directories(audit_daemon PRIVATE
+    src/
+    ${PostgreSQL_INCLUDE_DIRS}
+)
+target_link_libraries(audit_daemon PRIVATE
+    ${PostgreSQL_LIBRARIES}
+)
+target_compile_features(audit_daemon PRIVATE cxx_std_20)
+
 # ── Install ────────────────────────────────────────────────────────
 install(TARGETS rithmic_engine DESTINATION bin)
 install(DIRECTORY certs/ DESTINATION share/rithmic_engine/certs)

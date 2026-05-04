@@ -6,7 +6,7 @@ You are the Hermes agent for this project. Your job is to **fix and improve** th
 ## The Loop
 
 ```
-make hermes          ← check current state
+make hermes          ← check current state (C++ build + tests + audit_daemon)
   → PASS: find improvements (see "What to improve")
   → FAIL: fix failures first, then add/update tests
 make hermes          ← verify your changes
@@ -16,26 +16,35 @@ make push-eod        ← end of day, only when fully green
 
 **Never push mid-session.** All changes stay local until `make push-eod`.
 
+## Stack
+Everything is C++. There is no Python in this project.
+
+- **`rithmic_engine`** — WebSocket tick collector (market data → PostgreSQL)
+- **`nq_executor`** — ORB strategy + order execution (production trader)
+- **`audit_daemon`** — 17-check quality daemon (local/testing only — NOT on Oracle)
+- **`dashboard`** — ncurses TUI
+- **Build**: `cmake -B build && cmake --build build -j$(nproc)`
+- **Tests**: `build/test_orb_strategy`, `build/test_risk_manager`, `build/test_validator`, `build/test_db`
+
 ## What to improve (in priority order)
 
 1. **Failing tests or audit checks** — fix these first, always
-2. **Type errors** (`mypy`) — fix before adding new code
-3. **Lint issues** (`ruff F,E7,E9,W6`) — fix real correctness issues
-4. **Silent failures** — bare `except: pass`, swallowed exceptions with no log
-5. **Missing tests** — any public function without test coverage
-6. **Infrastructure gaps** — missing service files, config validation, logging
-7. **Code quality** — dead code, duplicate logic, unclear error messages
+2. **C++ build warnings** — treat as errors on new code
+3. **Silent failures** — unchecked return values, ignored error codes
+4. **Missing tests** — new logic in `src/execution/` needs a corresponding test in `tests/execution/`
+5. **Infrastructure gaps** — missing service files, config validation, logging
+6. **Code quality** — dead code, unclear error messages
 
 ## What NOT to touch
 
-- `strategy/` — no changes to signal logic, entry/exit conditions, or indicators
+- `src/execution/orb_strategy.hpp` — no changes to C++ strategy logic, entry/exit conditions, or indicators
 - `config/live_config.json` — no changes to live trading parameters
-- `src/execution/orb_strategy.hpp` — no changes to C++ strategy
+- Python files — there are none; do not create any
 
 ## After making changes
 
 Always run `make hermes` (or `make hermes-fast` for a quick loop) before reporting done.
-If tests break because of your changes: fix the code OR add tests that cover the new behavior — do not delete tests.
+If tests break because of your changes: fix the code OR add tests that cover the new behavior.
 
 ## Key files
 
@@ -43,17 +52,23 @@ If tests break because of your changes: fix the code OR add tests that cover the
 |---|---|
 | `data/hermes_findings.json` | Output of last `make hermes` — read this to decide what to fix |
 | `data/logs/hermes_session.log` | History of all session results |
-| `data/audit_status.json` | Full audit daemon output |
-| `scripts/hermes_session.py` | The check runner |
-| `scripts/audit_daemon.py` | 23-check quality daemon |
-| `go_live.py` | Preflight gates (run before live trading) |
-| `live_trader.py` | Main trading loop — fix bugs, do not change strategy |
-| `deploy/live_trader.service` | Systemd unit for Oracle deployment |
-| `requirements.txt` | Production deps |
+| `data/audit_status.json` | Full audit_daemon output (local/testing) |
+| `scripts/hermes.sh` | C++ Hermes runner (build → tests → audit_daemon) |
+| `src/audit_daemon_main.cpp` | 17-check quality daemon source |
+| `src/execution/executor_main.cpp` | nq_executor entry point |
+| `src/execution/orb_strategy.cpp` | ORB strategy implementation |
+| `src/execution/order_manager.cpp` | Order lifecycle management |
+| `src/execution/risk_manager.cpp` | Pre-trade risk checks |
+| `src/client.cpp` | WebSocket client (Boost.Beast) |
+| `src/db.cpp` | PostgreSQL I/O (libpq) |
+| `src/collector.cpp` | Tick collector pipeline |
+| `config/live_config.json` | Runtime config (do not edit) |
+| `deploy/nq_executor.service` | Systemd unit for Oracle production |
+| `deploy/nq_executor@.service` | Systemd template unit |
 
 ## Oracle deployment
 
-Oracle VM: `170.9.233.177`, user `opc`, key `~/.ssh/id_ed25519`  
-Deploy: `make push-eod` locally, then `git pull` on Oracle.  
-Audit daemon on Oracle: `sudo systemctl start audit_daemon`  
-**Do not start the audit daemon on Oracle until explicitly asked.**
+Oracle VM: `170.9.233.177`, user `opc`, key `~/.ssh/id_ed25519`
+Deploy: `make deploy` (builds locally, pushes git, SSH pulls + rebuilds on Oracle)
+Production binaries on Oracle: `rithmic_engine`, `nq_executor`
+**audit_daemon is local/testing ONLY — do NOT start it on Oracle.**
