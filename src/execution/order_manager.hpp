@@ -281,6 +281,7 @@ public:
 
             rejected_exit_count_ = 0;  // successful close — reset rejection counter
             entry_halted_        = false;
+            last_exchange_sl_    = 0.0;
 
             pos_ = Position{};  // back to FLAT
             trade_completed_ = true;
@@ -540,6 +541,10 @@ private:
     int  rejected_exit_count_ = 0;         // incremented each time an exit order is rejected
     bool entry_halted_        = false;      // set after 3 consecutive exit rejections
 
+    // Last SL price submitted to the exchange — used to suppress cancel+resubmit
+    // storms: only update the exchange stop when sl moved by >= trail_step.
+    double last_exchange_sl_  = 0.0;
+
     static std::atomic<uint64_t> seq_;  // monotonic sequence for basket IDs
 
     std::string new_basket_id() {
@@ -606,6 +611,8 @@ private:
         if (!ok) {
             LOG("[OM] ERROR: stop order send failed — clearing basket, software SL active");
             pos_.basket_id_stop.clear();
+        } else {
+            last_exchange_sl_ = sl_price;
         }
     }
 
@@ -641,6 +648,14 @@ private:
                 initiate_exit_locked("stop_loss_trail", current_price);
                 return;
             }
+        }
+
+        // Suppress cancel+resubmit storm: only update the exchange stop when the SL
+        // has moved by >= trail_step since the last submitted stop. The in-memory
+        // pos_.sl_price is already updated by the caller for accurate DB display.
+        if (last_exchange_sl_ != 0.0 &&
+            std::abs(new_sl - last_exchange_sl_) < cfg_.trail_step - 1e-9) {
+            return;
         }
 
         if (pos_.basket_id_stop.empty()) {
