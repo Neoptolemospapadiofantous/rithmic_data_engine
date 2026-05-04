@@ -255,7 +255,7 @@ struct OrderPlant {
     std::string               account_id;
     std::string               fcm_id;
     std::string               ib_id;
-    std::string               trade_route = "Rithmic Order Routing";
+    std::string               trade_route = "simulator";  // Legends Trading route; NEVER use "Rithmic Order Routing"
     std::string               trade_symbol;  // front-month contract e.g. NQM6
 
     // Send RequestNewOrder (template 312)
@@ -780,7 +780,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 if (route_found)
                     LOG("[ORDER_PLANT] Resolved trade_route='%s'", order_plant->trade_route.c_str());
                 else
-                    LOG("[ORDER_PLANT] WARNING: no CME route found — using config fallback '%s'",
+                    LOG("[ORDER_PLANT] WARNING: no CME route found (rp_code=1043) — using Legends fallback '%s'",
                         order_plant->trade_route.c_str());
             }
 
@@ -944,7 +944,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                        notif.total_fill_size(),
                                                        is_entry && !is_stop);
                         flush_position(db.get(), today, order_mgr, strategy,
-                                       order_plant->connected, orb_cfg.point_value);
+                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
                     }
                 } else if ((int)notif.notify_type() == 15 && notif.total_fill_size() == 0) {
                     // COMPLETE with no fill = order cancelled/rejected by routing or risk rules.
@@ -955,7 +955,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             client_id.c_str(), notif.status().c_str());
                         order_mgr.on_order_rejected(client_id, "cancelled_no_fill");
                         flush_position(db.get(), today, order_mgr, strategy,
-                                       order_plant->connected, orb_cfg.point_value);
+                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
                     }
                 }
 
@@ -990,7 +990,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                    notif.fill_size(),
                                                    is_entry && !is_stop);
                     flush_position(db.get(), today, order_mgr, strategy,
-                                   order_plant->connected, orb_cfg.point_value);
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
                 } else if (notify_type == 2) { // MODIFY ACK
                     LOG("[EXECUTOR] Stop MODIFIED by exchange: client=%s server=%s — trail ACKed",
                         notif.user_tag().c_str(), notif.basket_id().c_str());
@@ -1119,12 +1119,24 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Immediate position flush after trade close so UI sees FLAT right away
                 try {
                     flush_position(db.get(), today, order_mgr, strategy,
-                                   order_plant->connected, orb_cfg.point_value);
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] DB flush_position (trade close) failed: %s", e.what());
                     if (db) db->reconnect();
                 }
                 pos_write_counter = 0;
+
+                // All daily trades exhausted and position is flat — shut down cleanly
+                if (strategy.session().trades_today >= orb_cfg.max_daily_trades &&
+                    order_mgr.position_snapshot().state == PosState::FLAT) {
+                    LOG("[EXECUTOR] Daily trade limit reached (%d/%d) — shutting down",
+                        strategy.session().trades_today, orb_cfg.max_daily_trades);
+                    if (audit_conn)
+                        audit_log.info("session.daily_limit", "all trades done — clean exit");
+                    g_running = false;
+                    ioc_ref.stop();
+                    co_return;
+                }
             }
 
             // Attempt DB reconnect if disconnected (avoids prolonged stale-data windows)
@@ -1142,7 +1154,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 pos_write_counter = 0;
                 try {
                     flush_position(db.get(), today, order_mgr, strategy,
-                                   order_plant->connected, orb_cfg.point_value);
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] DB flush_position failed: %s", e.what());
                     if (db) db->reconnect();
@@ -1317,21 +1329,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 LOG("[EXECUTOR] MD: reconnecting...");
                 bool login_ok = false;
                 try {
-                    // system info probe (Rithmic protocol: probe → close → reconnect → login)
-                    {
-                        auto probe = co_await connect_ws(ioc, ssl_ctx, orb_cfg.md_url);
-                        rti::RequestRithmicSystemInfo req; req.set_template_id(16);
-                        co_await ws_write(*probe, proto_frame(req));
-                        beast::flat_buffer rb;
-                        for (;;) {
-                            rb.clear();
-                            co_await probe->async_read(rb, asio::use_awaitable);
-                            auto pl = proto_strip(beast::buffers_to_string(rb.data()));
-                            rti::Base b; if (!b.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
-                            if (b.template_id() == 17) break;
-                        }
-                        try { probe->close(websocket::close_code::normal); } catch (...) {}
-                    }
+                    // Skip system info probe on reconnects — probe close triggers FORCED_LOGOUT
+                    // on the subsequent login session (Rithmic server-side session race).
+                    // The probe is only needed once at startup (already done above).
                     md_ws = co_await connect_ws(ioc, ssl_ctx, orb_cfg.md_url);
                     {
                         rti::RequestLogin req; req.set_template_id(10);
@@ -1450,10 +1450,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 LOG("[EXECUTOR] MD subscription %s (rp_code=%s)",
                     rpc == "0" ? "OK" : "FAILED", rpc.c_str());
             } else if (tid == 77) {
-                // ForcedLogout — server is closing this session; trigger reconnect
+                // ForcedLogout — server is closing this session; brief cooldown then reconnect
                 LOG("[EXECUTOR] MD: FORCED LOGOUT (tid=77) — reconnecting MD without touching ORDER_PLANT");
                 try { md_ws->close(websocket::close_code::normal); } catch (...) {}
                 md_ws.reset();
+                // 3-second non-blocking pause: lets Rithmic expire the old session
+                // before we open a new one, breaking the logout storm loop
+                {
+                    asio::steady_timer t(ex);
+                    t.expires_after(std::chrono::seconds(3));
+                    co_await t.async_wait(asio::use_awaitable);
+                }
             } else if (tid == 11) {
                 LOG("[EXECUTOR] Login response on MD loop (template 11) — ignoring");
             } else {

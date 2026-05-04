@@ -41,6 +41,13 @@ Everything is C++. There is no Python in this project.
 - `config/live_config.json` — no changes to live trading parameters
 - Python files — there are none; do not create any
 
+## CRITICAL — Order Routing
+
+**NEVER use `"Rithmic Order Routing"` as a trade route.**
+This route causes immediate silent order cancellation on Legends Trading accounts (rp_code=1043, notify_type=15, total_fill=0 — order never reaches the exchange).
+The correct trade route for Legends Trading accounts is **`"simulator"`**.
+If `RequestTradeRoutes` (tid=310) returns rp_code=1043 (no routes found), fall back to `"simulator"` — never to `"Rithmic Order Routing"`.
+
 ## After making changes
 
 Always run `make hermes` (or `make hermes-fast` for a quick loop) before reporting done.
