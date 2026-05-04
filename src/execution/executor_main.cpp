@@ -89,7 +89,8 @@ static void flush_position(OrbDB* db,
                             const OrderManager& order_mgr,
                             const OrbStrategy& strategy,
                             bool op_connected,
-                            double point_value = 2.0) {
+                            double point_value = 2.0,
+                            bool md_connected = false) {
     if (!db || !db->is_connected()) return;
 
     Position snap = order_mgr.position_snapshot();
@@ -151,7 +152,7 @@ static void flush_position(OrbDB* db,
                        strategy.orb_set() ? strategy.orb_low()  : 0.0,
                        strategy.orb_set(),
                        sess.trades_today,
-                       /*md_connected=*/true,
+                       md_connected,
                        op_connected);
 }
 
@@ -944,7 +945,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                        notif.total_fill_size(),
                                                        is_entry && !is_stop);
                         flush_position(db.get(), today, order_mgr, strategy,
-                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
+                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                       bool(md_ws));
                     }
                 } else if ((int)notif.notify_type() == 15 && notif.total_fill_size() == 0) {
                     // COMPLETE with no fill = order cancelled/rejected by routing or risk rules.
@@ -955,7 +957,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             client_id.c_str(), notif.status().c_str());
                         order_mgr.on_order_rejected(client_id, "cancelled_no_fill");
                         flush_position(db.get(), today, order_mgr, strategy,
-                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
+                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                       bool(md_ws));
                     }
                 }
 
@@ -990,7 +993,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                    notif.fill_size(),
                                                    is_entry && !is_stop);
                     flush_position(db.get(), today, order_mgr, strategy,
-                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                   bool(md_ws));
                 } else if (notify_type == 2) { // MODIFY ACK
                     LOG("[EXECUTOR] Stop MODIFIED by exchange: client=%s server=%s — trail ACKed",
                         notif.user_tag().c_str(), notif.basket_id().c_str());
@@ -1093,7 +1097,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         rsnap.daily_pnl,
                         rsnap.peak_equity,
                         risk.halted(),
-                        "",
+                        risk.halt_reason(),
                         rsnap.equity);
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] DB upsert_session failed: %s", e.what());
@@ -1119,7 +1123,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Immediate position flush after trade close so UI sees FLAT right away
                 try {
                     flush_position(db.get(), today, order_mgr, strategy,
-                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                   bool(md_ws));
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] DB flush_position (trade close) failed: %s", e.what());
                     if (db) db->reconnect();
@@ -1154,7 +1159,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 pos_write_counter = 0;
                 try {
                     flush_position(db.get(), today, order_mgr, strategy,
-                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value);
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                   bool(md_ws));
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] DB flush_position failed: %s", e.what());
                     if (db) db->reconnect();
