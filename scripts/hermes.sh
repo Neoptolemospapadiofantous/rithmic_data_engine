@@ -79,6 +79,35 @@ if [[ $FAST -eq 0 ]]; then
   fi
 fi
 
+# ── 4a. Config validation ─────────────────────────────────────────────────────
+log "=== CONFIG VALIDATION ==="
+LIVE_CFG="$REPO/config/live_config.json"
+if [[ -f "$LIVE_CFG" ]]; then
+  route=$(python3 -c "import json,sys; d=json.load(open('$LIVE_CFG')); print(d.get('trade_route','MISSING'))" 2>/dev/null || echo "MISSING")
+  if [[ "$route" == "Rithmic Order Routing" ]]; then
+    record FAIL "config/trade_route" "live_config.json trade_route='Rithmic Order Routing' — NEVER use this (silently cancels Legends orders)"
+  elif [[ "$route" == "MISSING" || -z "$route" ]]; then
+    record WARN "config/trade_route" "live_config.json missing trade_route field"
+  else
+    record PASS "config/trade_route" "trade_route='$route'"
+  fi
+  for key in dry_run symbol trade_contract exchange point_value account_id daily_loss_limit qty; do
+    if ! python3 -c "import json; d=json.load(open('$LIVE_CFG')); assert '$key' in d" 2>/dev/null; then
+      record WARN "config/$key" "live_config.json missing key '$key'"
+    fi
+  done
+else
+  record WARN "config/live_config" "live_config.json not found — Oracle uses this file"
+fi
+
+# Check .env RITHMIC_AMP_* are not "Rithmic Order Routing" proxy
+if [[ -f "$REPO/.env" ]]; then
+  amp_sys=$(grep "^RITHMIC_AMP_SYSTEM=" "$REPO/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -d "'\""  )
+  if [[ -n "$amp_sys" ]]; then
+    record PASS ".env/RITHMIC_AMP_SYSTEM" "=$amp_sys"
+  fi
+fi
+
 # ── 4. Audit daemon (local/testing only — not production) ─────────────────────
 log "=== AUDIT DAEMON ==="
 if [[ -x "$BUILD/audit_daemon" ]]; then
