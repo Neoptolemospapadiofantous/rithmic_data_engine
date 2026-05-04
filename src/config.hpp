@@ -90,7 +90,7 @@ private:
         const char* v = std::getenv(k); return v ? v : d;
     }
     static std::string trim(const std::string& s) {
-        const std::string_view ws = " \t\r\n";
+        const std::string_view ws = " \t\r\n\"";
         auto b = s.find_first_not_of(ws);
         if (b == std::string::npos) return {};
         return s.substr(b, s.find_last_not_of(ws) - b + 1);

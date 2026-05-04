@@ -246,18 +246,24 @@ void TickDB::ensure_schema() {
     exec_silent("CREATE INDEX IF NOT EXISTS idx_depth_ts ON depth_by_order(ts_event DESC);");
 
     // ── Audit log table ────────────────────────────────────────────
-    exec(R"(
-        CREATE TABLE IF NOT EXISTS audit_log (
-            id        BIGSERIAL PRIMARY KEY,
-            ts        TIMESTAMPTZ DEFAULT NOW(),
-            source    VARCHAR(32)  DEFAULT 'engine',
-            event     VARCHAR(64)  NOT NULL,
-            severity  VARCHAR(8)   DEFAULT 'INFO',
-            details   TEXT
-        );
-        CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_log(ts);
-        CREATE INDEX IF NOT EXISTS idx_audit_sev ON audit_log(severity, ts DESC);
-    )");
+    exec_silent(R"(CREATE TABLE IF NOT EXISTS audit_log (
+        id        BIGSERIAL PRIMARY KEY,
+        ts        TIMESTAMPTZ DEFAULT NOW(),
+        source    VARCHAR(32)  DEFAULT 'engine',
+        event     VARCHAR(64)  NOT NULL,
+        severity  VARCHAR(8)   DEFAULT 'INFO',
+        details   TEXT
+    );)");
+    // Migrate created_at → ts if the table was created with old schema
+    exec_silent(R"(DO $$ BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name='audit_log' AND column_name='created_at')
+           AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                           WHERE table_name='audit_log' AND column_name='ts')
+        THEN ALTER TABLE audit_log RENAME COLUMN created_at TO ts; END IF;
+    END $$;)");
+    exec_silent("CREATE INDEX IF NOT EXISTS idx_audit_ts  ON audit_log(ts);");
+    exec_silent("CREATE INDEX IF NOT EXISTS idx_audit_sev ON audit_log(severity, ts DESC);");
     // Add source column if missing (safe migration for existing installs)
     exec_silent("ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS source VARCHAR(32) DEFAULT 'engine';");
 
