@@ -1499,13 +1499,25 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // legends_md_loop disabled — separate comparison feed; not needed for live trading.
     // asio::co_spawn(ex, legends_md_loop(), asio::detached);
 
-    // Seed ORB range from env vars (use after restart when range was lost)
-    {
-        const char* sh = std::getenv("ORB_SEED_HIGH");
-        const char* sl = std::getenv("ORB_SEED_LOW");
-        if (sh && sl) {
-            strategy.seed_orb_range(std::stod(sh), std::stod(sl));
+    // Seed ORB range from today's live_sessions row (mid-session restart recovery).
+    // Only applies if orb_set=true in the DB AND today's session matches — prevents
+    // stale prior-day ranges from triggering false breakout signals on restart.
+    if (db && db->is_connected()) {
+        std::string orb_qdate = today_date_str();
+        std::string q =
+            "SELECT orb_high, orb_low FROM live_sessions "
+            "WHERE session_date = '" + orb_qdate + "' "
+            "  AND instrument = '" + orb_cfg.symbol + "' "
+            "  AND strategy = 'ORB' AND orb_high > orb_low LIMIT 1";
+        PGresult* r = PQexec(db->raw_conn(), q.c_str());
+        if (r && PQresultStatus(r) == PGRES_TUPLES_OK && PQntuples(r) == 1) {
+            double sh = std::atof(PQgetvalue(r, 0, 0));
+            double sl = std::atof(PQgetvalue(r, 0, 1));
+            if (sh > sl && sh > 0.0) {
+                strategy.seed_orb_range(sh, sl);
+            }
         }
+        if (r) PQclear(r);
     }
 
 

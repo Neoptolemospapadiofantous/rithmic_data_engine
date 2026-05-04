@@ -38,7 +38,8 @@ public:
     OrbDB(const OrbDB&)            = delete;
     OrbDB& operator=(const OrbDB&) = delete;
 
-    bool is_connected() const { return conn_ && PQstatus(conn_) == CONNECTION_OK; }
+    bool    is_connected() const { return conn_ && PQstatus(conn_) == CONNECTION_OK; }
+    PGconn* raw_conn()     const { return conn_; }
 
     void reconnect() {
         PQreset(conn_);
