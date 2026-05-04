@@ -439,7 +439,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     }
     if (audit_conn) {
         // Ensure audit_log table exists (not created by OrbDB schema — executor owns this)
-        PQexec(audit_conn,
+        auto pg_exec_silent = [&](const char* sql) {
+            PGresult* r = PQexec(audit_conn, sql);
+            if (r && PQresultStatus(r) != PGRES_COMMAND_OK &&
+                PQresultStatus(r) != PGRES_TUPLES_OK)
+                LOG("[EXECUTOR] audit schema: %s", PQresultErrorMessage(r));
+            PQclear(r);
+        };
+        pg_exec_silent(
             "CREATE TABLE IF NOT EXISTS audit_log ("
             "  id       BIGSERIAL PRIMARY KEY,"
             "  ts       TIMESTAMPTZ DEFAULT NOW(),"
@@ -448,8 +455,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             "  severity VARCHAR(8) DEFAULT 'INFO',"
             "  details  TEXT"
             ");");
-        PQexec(audit_conn, "CREATE INDEX IF NOT EXISTS idx_audit_ts  ON audit_log(ts);");
-        PQexec(audit_conn, "CREATE INDEX IF NOT EXISTS idx_audit_sev ON audit_log(severity, ts DESC);");
+        pg_exec_silent("CREATE INDEX IF NOT EXISTS idx_audit_ts  ON audit_log(ts);");
+        pg_exec_silent("CREATE INDEX IF NOT EXISTS idx_audit_sev ON audit_log(severity, ts DESC);");
     }
     AuditLog audit_log(audit_conn);
 

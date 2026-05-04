@@ -11,6 +11,47 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-04 — Hermes iteration 35 — MD connection architecture restore + live page fix
+
+### Added
+- **`scripts/use-env.sh`**: Bash replacement for deleted `use_env.py`. Reads
+  `RITHMIC_ENV_{NAME}_{ORDER,MD}_*` blocks and writes active aliases used by the
+  C++ executor: `RITHMIC_LEGENDS_*` → ORDER_PLANT, `RITHMIC_AMP_*` → TICKER_PLANT.
+  Applies per-env JSON config overrides via `jq`. No Python — pure bash.
+
+### Fixed
+- **`src/execution/orb_config.hpp`**: Reverted MD credential reading back to
+  `RITHMIC_AMP_*` (original design). The `RITHMIC_MD_PROVIDER` dynamic lookup
+  added in commit 7314556 broke compatibility with the env switcher pattern.
+  Legends/Tradeify use WebSocket; AMP uses C++ R|API+ SDK.
+- **`src/execution/executor_main.cpp`**: Executor now creates the `audit_log` table
+  on startup via its own `audit_conn` (previously the table was only created by the
+  `rithmic_engine` tick collector schema, not by `nq_executor`). Eliminates
+  `relation "audit_log" does not exist` error flood during audit flush.
+- **`src/execution/executor_main.cpp`**: MD plant system info probe now logs all
+  available Rithmic system names and warns if the configured system is not in the
+  list — aids diagnosis of login failures.
+- **`src/execution/executor_main.cpp`**: `PQexec()` calls for audit schema creation
+  now check result status and log errors instead of silently discarding failures.
+
+### Infrastructure
+- **`bot/.env`**: Set `CPP_PG_HOST=127.0.0.1 CPP_PG_PORT=5432` so the live page
+  WebSocket (`/ws/cpp`) reads from local PostgreSQL during dry-run testing. The
+  executor dry-run writes to local PG; the frontend now sees live position + price.
+- **`bot/.env`**: Set `PG_PORT=5432` so `live.py` REST endpoints also read from
+  local PG instead of Oracle SSH tunnel during local development.
+- **AMP out of credits workaround**: Configured Legends credentials in `RITHMIC_AMP_*`
+  with `USE_RAPI_SDK=OFF` (WebSocket mode). In dry-run, ORDER_PLANT is not opened
+  so no session conflict; Legends TICKER_PLANT connects successfully. For live trading
+  with real orders, AMP credits must be restored (or Tradeify MD configured).
+
+### Results
+- Hermes: **7/7 PASS** (build + 4 unit tests + db test + audit_daemon)
+- Dry-run verified: live page at localhost:3000/live shows `md_connected=true`,
+  live MNQ price (27810+), session equity, ORB state — all updating in real-time.
+
+---
+
 ## 2026-05-04 — Hermes iteration 34 — OrderManager tests + silent failure fixes
 
 ### Added
