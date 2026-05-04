@@ -1490,8 +1490,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     asio::co_spawn(ex, heartbeat_loop(),  asio::detached);
     asio::co_spawn(ex, eod_loop(),        asio::detached);
     asio::co_spawn(ex, op_loop(),         asio::detached);
-    // legends_md_loop disabled — Legends single-session limit causes FORCED LOGOUT
-    // loop that destabilises the main MD (AMP) feed when ORDER_PLANT is active.
+    // legends_md_loop disabled — separate comparison feed; not needed for live trading.
     // asio::co_spawn(ex, legends_md_loop(), asio::detached);
 
     // Seed ORB range from env vars (use after restart when range was lost)

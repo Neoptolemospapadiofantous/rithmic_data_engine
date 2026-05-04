@@ -109,7 +109,7 @@ struct OrbConfig {
     std::string account_id   = "";   // e.g. LTARAPAPA502114908626
     std::string fcm_id       = "";   // Rithmic FCM identifier (usually empty)
     std::string ib_id        = "";   // Rithmic IB identifier (usually empty)
-    std::string trade_route  = "Rithmic Order Routing";
+    std::string trade_route  = "simulator";  // Legends route; NEVER use "Rithmic Order Routing"
 
     // ── Account ───────────────────────────────────────────────────
     double starting_balance = 50000.0; // actual Rithmic account balance at last sync
@@ -156,14 +156,21 @@ struct OrbConfig {
         if (c.pg_password.empty())
             c.pg_password = env("RITHMIC_PG_PASSWORD", "");
 
-        // AMP credentials for TICKER_PLANT (market data feed only)
-        // use-env.sh writes RITHMIC_AMP_* when switching environments.
-        c.md_user        = env("RITHMIC_AMP_USER",     "");
-        c.md_password    = env("RITHMIC_AMP_PASSWORD",  "");
-        c.md_system_name = env("RITHMIC_AMP_SYSTEM",   c.md_system_name.c_str());
-        c.md_url         = env("RITHMIC_AMP_URL",       c.md_url.c_str());
-        fprintf(stderr, "[CONFIG] MD (AMP): user=%s system=%s\n",
-            c.md_user.c_str(), c.md_system_name.c_str());
+        // MD provider selection: RITHMIC_MD_PROVIDER selects which broker feeds market data.
+        // Supported values: legends, tradeify, amp
+        // Corresponding env vars: MD_{PROVIDER}_USER / _PASSWORD / _SYSTEM / _URL
+        {
+            std::string provider = env("RITHMIC_MD_PROVIDER", "tradeify");
+            // Uppercase provider name for env var lookup
+            std::string up = provider;
+            for (char& ch : up) ch = (char)toupper((unsigned char)ch);
+            c.md_user        = env(("MD_" + up + "_USER").c_str(),     "");
+            c.md_password    = env(("MD_" + up + "_PASSWORD").c_str(),  "");
+            c.md_system_name = env(("MD_" + up + "_SYSTEM").c_str(),   c.md_system_name.c_str());
+            c.md_url         = env(("MD_" + up + "_URL").c_str(),       c.md_url.c_str());
+            fprintf(stderr, "[CONFIG] MD provider=%s user=%s system=%s\n",
+                provider.c_str(), c.md_user.c_str(), c.md_system_name.c_str());
+        }
 
         // Legends credentials for ORDER_PLANT (execution) — prop firm account
         // Username: JSON field takes effect; env var overrides (allows runtime swap without rebuild)
