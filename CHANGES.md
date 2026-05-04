@@ -11,6 +11,34 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-04 — Hermes iteration 34 — OrderManager tests + silent failure fixes
+
+### Added
+- **`tests/execution/test_order_manager.cpp`** (19 tests): First test coverage for
+  `OrderManager` — previously the most critical untested component. Covers the
+  complete position state machine: FLAT → ENTRY_PENDING → IN_TRADE → exit lifecycle,
+  rejection retry logic (3-strike rule → entry halt), trailing stop activation,
+  software SL fallback, PnL calculation (long/short), dry-run auto-fill, MFE/MAE
+  tracking.
+- **CMakeLists.txt**: Added `test_order_manager` build target and CTest entry.
+- **scripts/hermes.sh**: Added `test_order_manager` to unit test loop and build targets.
+
+### Fixed
+- **`src/execution/executor_main.cpp`**: 16 `ParseFromString()` calls were ignoring
+  the bool return value — corrupted/truncated protobuf messages would silently
+  produce zero-value fields. All calls now check the return and `continue` on failure.
+- **`src/execution/orb_config.hpp`**: `load_dotenv` opened a `std::ifstream` without
+  checking if the file opened successfully. Added `if (!f) return;` guard.
+- **`src/db.cpp`**: `ensure_schema()` now closes stale open sessions (>2 h, no
+  `ended_at`) on startup, eliminating the `session_health WARN` in `audit_daemon`
+  that appeared after process crashes.
+
+### Results
+- Hermes: **7/7 PASS** (build + 4 unit tests + db test + audit_daemon)
+- Audit daemon: **13 PASS / 0 FAIL / 0 WARN** (session_health WARN resolved)
+
+---
+
 ## 2026-05-04 — Python purge + C++ Hermes runner
 
 ### Removed

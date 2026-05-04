@@ -39,7 +39,7 @@ record() {
 log "=== BUILD ==="
 if cmake --build "$BUILD" -j"$(nproc)" --target \
     rithmic_engine nq_executor audit_daemon \
-    test_orb_strategy test_risk_manager test_validator test_db \
+    test_orb_strategy test_risk_manager test_validator test_order_manager test_db \
     > "$LOG_DIR/build.log" 2>&1; then
   record PASS build "cmake --build succeeded"
 else
@@ -48,7 +48,7 @@ fi
 
 # ── 2. Unit tests (no DB, no network) ─────────────────────────────────────────
 log "=== UNIT TESTS ==="
-for bin in test_orb_strategy test_risk_manager test_validator; do
+for bin in test_orb_strategy test_risk_manager test_validator test_order_manager; do
   target="$BUILD/$bin"
   if [[ ! -x "$target" ]]; then
     record FAIL "$bin" "binary not found at $target"

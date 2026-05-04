@@ -517,7 +517,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             co_await md_ws->async_read(buf, asio::use_awaitable);
             auto payload = proto_strip(beast::buffers_to_string(buf.data()));
             rti::Base base;
-            base.ParseFromString(payload);
+            if (!base.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
             if (base.template_id() == 17) break;
         }
         LOG("[EXECUTOR] System info OK");
@@ -556,10 +556,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             co_await md_ws->async_read(buf, asio::use_awaitable);
             auto payload = proto_strip(beast::buffers_to_string(buf.data()));
             rti::Base base;
-            base.ParseFromString(payload);
+            if (!base.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
             if (base.template_id() == 11) {
                 rti::ResponseLogin resp;
-                resp.ParseFromString(payload);
+                if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                 bool ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
                 if (!ok) {
                     std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
@@ -616,10 +616,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     co_await probe->async_read(buf, asio::use_awaitable);
                     auto payload = proto_strip(beast::buffers_to_string(buf.data()));
                     rti::Base base;
-                    base.ParseFromString(payload);
+                    if (!base.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                     if (base.template_id() == 17) {
                         rti::ResponseRithmicSystemInfo sinfo;
-                        sinfo.ParseFromString(payload);
+                        if (!sinfo.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                         std::string avail;
                         for (auto& sn : sinfo.system_name()) avail += "[" + sn + "] ";
                         LOG("[EXECUTOR] ORDER_PLANT available systems: %s", avail.c_str());
@@ -659,10 +659,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     co_await op_ws->async_read(buf, asio::use_awaitable);
                     auto payload = proto_strip(beast::buffers_to_string(buf.data()));
                     rti::Base base;
-                    base.ParseFromString(payload);
+                    if (!base.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                     if (base.template_id() == 11) {
                         rti::ResponseLogin resp;
-                        resp.ParseFromString(payload);
+                        if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                         bool ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
                         if (!ok) {
                             LOG("[EXECUTOR] FATAL: ORDER_PLANT login failed — rp_code=%s",
@@ -723,10 +723,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     }
                     beast::get_lowest_layer(*order_plant->ws).expires_never();
                     auto pl = proto_strip(beast::buffers_to_string(tr_buf.data()));
-                    rti::Base base; base.ParseFromString(pl);
+                    rti::Base base; if (!base.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                     if (base.template_id() != 311) continue;
                     rti::ResponseTradeRoutes tr;
-                    tr.ParseFromString(pl);
+                    if (!tr.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                     LOG("[ORDER_PLANT] ResponseTradeRoutes: exch=%s route='%s' "
                         "status='%s' is_default=%d fcm=%s ib=%s rp=%s",
                         tr.exchange().c_str(), tr.trade_route().c_str(),
@@ -808,7 +808,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             } else if (tid == 309) {
                 // ResponseSubscribeForOrderUpdates — subscription ack
                 rti::ResponseSubscribeForOrderUpdates resp;
-                resp.ParseFromString(payload);
+                if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                 std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
                 LOG("[EXECUTOR] Order update subscription %s (rp_code=%s)",
                     rpc == "0" ? "OK" : "FAILED", rpc.c_str());
@@ -817,7 +817,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // 313 = preliminary gateway ack (rq_handler_rp_code only)
                 // 315 = final response for both RequestNewOrder and RequestModifyOrder
                 rti::ResponseNewOrder resp;
-                resp.ParseFromString(payload);
+                if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                 if (resp.rp_code().empty()) {
                     LOG("[EXECUTOR] ResponseNewOrder (ack) basket=%s",
                         resp.basket_id().c_str());
@@ -1150,7 +1150,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     buf.clear();
                     co_await l_ws->async_read(buf, asio::use_awaitable);
                     auto pl = proto_strip(beast::buffers_to_string(buf.data()));
-                    rti::Base b; b.ParseFromString(pl);
+                    rti::Base b; if (!b.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                     if (b.template_id() == 17) break;
                 }
             } catch (...) { retry_secs = 1; }
@@ -1187,9 +1187,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     buf.clear();
                     co_await l_ws->async_read(buf, asio::use_awaitable);
                     auto pl = proto_strip(beast::buffers_to_string(buf.data()));
-                    rti::Base b; b.ParseFromString(pl);
+                    rti::Base b; if (!b.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                     if (b.template_id() == 11) {
-                        rti::ResponseLogin resp; resp.ParseFromString(pl);
+                        rti::ResponseLogin resp; if (!resp.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                         login_ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
                         if (!login_ok) auth_rejected = true;
                         break;
@@ -1293,7 +1293,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             rb.clear();
                             co_await probe->async_read(rb, asio::use_awaitable);
                             auto pl = proto_strip(beast::buffers_to_string(rb.data()));
-                            rti::Base b; b.ParseFromString(pl);
+                            rti::Base b; if (!b.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                             if (b.template_id() == 17) break;
                         }
                         try { probe->close(websocket::close_code::normal); } catch (...) {}
@@ -1314,9 +1314,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             lb.clear();
                             co_await md_ws->async_read(lb, asio::use_awaitable);
                             auto pl = proto_strip(beast::buffers_to_string(lb.data()));
-                            rti::Base b; b.ParseFromString(pl);
+                            rti::Base b; if (!b.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                             if (b.template_id() == 11) {
-                                rti::ResponseLogin resp; resp.ParseFromString(pl);
+                                rti::ResponseLogin resp; if (!resp.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                                 login_ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
                                 if (!login_ok)
                                     LOG("[EXECUTOR] MD reconnect: login failed");
@@ -1411,7 +1411,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             } else if (tid == 101) {
                 // ResponseMarketDataUpdate — subscription ack
                 rti::ResponseMarketDataUpdate resp;
-                resp.ParseFromString(payload);
+                if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                 std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
                 LOG("[EXECUTOR] MD subscription %s (rp_code=%s)",
                     rpc == "0" ? "OK" : "FAILED", rpc.c_str());

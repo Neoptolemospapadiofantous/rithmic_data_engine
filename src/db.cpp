@@ -606,6 +606,14 @@ void TickDB::ensure_schema() {
     )");
 
     LOG("Schema ready (TimescaleDB hypertable + continuous aggregates + lifecycle tables)");
+
+    // Close any sessions that were left open by a prior crash (avoids
+    // session_health WARN in audit_daemon on every startup).
+    exec_silent(
+        "UPDATE sessions SET ended_at = NOW()"
+        " WHERE ended_at IS NULL"
+        "   AND started_at < NOW() - INTERVAL '2 hours';"
+    );
 }
 
 // ── write ──────────────────────────────────────────────────────────

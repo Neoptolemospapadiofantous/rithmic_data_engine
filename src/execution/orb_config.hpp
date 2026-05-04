@@ -299,6 +299,7 @@ private:
     static void load_dotenv(const fs::path& path) {
         if (!fs::exists(path)) return;
         std::ifstream f(path);
+        if (!f) return;
         std::string line;
         while (std::getline(f, line)) {
             auto s = trim(line);
