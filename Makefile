@@ -52,6 +52,7 @@ deploy:
 		set -e; \
 		cd /home/opc/rithmic_engine && git pull origin main; \
 		cmake --build build -j$$(nproc) --target rithmic_engine nq_executor; \
+		sudo install -m 755 build/nq_executor /usr/local/bin/nq_executor; \
 		for svc in nq_executor rithmic-engine; do \
 			if systemctl is-active $$svc 2>/dev/null | grep -q "^active$$"; then \
 				echo "Restarting $$svc..."; \

@@ -37,7 +37,7 @@ ExecStartPre=/bin/bash -c \
     '[ ! -f /home/opc/rithmic_engine/NO_DEPLOY ] || \
      { echo "NO_DEPLOY lockfile present — refusing to start executor"; exit 1; }'
 
-ExecStart=/home/opc/rithmic_engine/build/nq_executor \
+ExecStart=/usr/local/bin/nq_executor \
     --config /home/opc/rithmic_engine/config/live_config.json
 
 # Allow up to 90 s for Rithmic login + market data subscription before marking failed
