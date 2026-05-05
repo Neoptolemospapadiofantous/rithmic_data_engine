@@ -915,7 +915,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         notif.total_fill_size(), notif.total_unfilled_size(),
                         notif.symbol().c_str());
                     if (notif.symbol() == trade_symbol &&
-                        (notif.status() == "WORKING" || notif.status() == "ACTIVE") &&
+                        notif.total_unfilled_size() > 0 &&
                         !notif.basket_id().empty()) {
                         LOG("[EXECUTOR] [RECON] cancelling residual %s order basket=%s",
                             notif.status().c_str(), notif.basket_id().c_str());
