@@ -66,6 +66,7 @@ struct OrbConfig {
     int    trail_delay_secs    = 300;  // seconds after fill before trailing starts
     double trail_be_offset     = 1.0;  // SL move to entry + this offset at BE trigger
     double breakout_buffer     = 0.0;  // extra points beyond ORB high/low to confirm break
+    double max_entry_offset    = 0.0;  // max pts from ORB level at signal time (0=disabled)
     int    max_daily_trades    = 3;    // max entries per session
     int    last_entry_hour     = 13;   // no new entries at or after this ET hour
     int    eod_flatten_hour    = 15;   // EOD flatten hour (ET)
@@ -113,6 +114,9 @@ struct OrbConfig {
 
     // ── Account ───────────────────────────────────────────────────
     double starting_balance = 50000.0; // actual Rithmic account balance at last sync
+
+    // ── MD watchdog ───────────────────────────────────────────────
+    int tick_timeout_s = 30; // reconnect MD if no tick received for this many seconds (0=disabled)
 
     // ── Safety ────────────────────────────────────────────────────
     bool dry_run = true;   // true = log signals only, no real orders
@@ -191,6 +195,7 @@ struct OrbConfig {
         c.trail_delay_secs     = json_int(text,  "trail_delay_secs",     c.trail_delay_secs);
         c.trail_be_offset      = json_dbl(text,  "trail_be_offset",      c.trail_be_offset);
         c.breakout_buffer      = json_dbl(text,  "breakout_buffer",      c.breakout_buffer);
+        c.max_entry_offset     = json_dbl(text,  "max_entry_offset",     c.max_entry_offset);
         c.max_daily_trades     = json_int(text,  "max_daily_trades",     c.max_daily_trades);
         c.last_entry_hour      = json_int(text,  "last_entry_hour",      c.last_entry_hour);
         c.eod_flatten_hour     = json_int(text,  "eod_flatten_hour",     c.eod_flatten_hour);
@@ -220,6 +225,7 @@ struct OrbConfig {
         c.trade_route      = json_str(text, "trade_route",      c.trade_route);
         c.session_open_hour = (int)json_dbl(text, "session_open_hour", c.session_open_hour);
         c.session_open_min  = (int)json_dbl(text, "session_open_min",  c.session_open_min);
+        c.tick_timeout_s    = json_int(text, "tick_timeout_s",         c.tick_timeout_s);
 
         // dry_run: look for "dry_run": true/false
         {

@@ -51,7 +51,8 @@ struct Position {
     int    qty            = 1;
 
     // Trailing state
-    bool   trailing_active = false;
+    bool   be_triggered    = false;  // SL already moved to entry+offset (no delay)
+    bool   trailing_active = false;  // price-following trail active (after trail_delay_secs)
     std::chrono::steady_clock::time_point fill_time;
 
     // Exit info
@@ -282,6 +283,7 @@ public:
             rejected_exit_count_ = 0;  // successful close — reset rejection counter
             entry_halted_        = false;
             last_exchange_sl_    = 0.0;
+            sl_breach_time_      = {};  // clear breach timer on position close
 
             pos_ = Position{};  // back to FLAT
             trade_completed_ = true;
@@ -320,41 +322,65 @@ public:
         if (mfe_now > pos_.mfe) pos_.mfe = mfe_now;
         if (mae_now > pos_.mae) pos_.mae = mae_now;
 
-        // Software SL only fires if no exchange stop is active (fallback for rejected stops).
-        if (pos_.basket_id_stop.empty()) {
-            if (is_long && current_price <= pos_.sl_price) {
-                LOG("[OM] Software SL hit (LONG, no exchange stop): price=%.2f sl=%.2f",
-                    current_price, pos_.sl_price);
+        // Software SL: two-tier safety net.
+        // Tier 1 — immediate: no exchange stop basket (rejected or not yet submitted).
+        // Tier 2 — timeout: exchange stop submitted but hasn't fired after kSLFireTimeoutMs.
+        //   Catches silent stop failures and cancel+resubmit race windows.
+        //   initiate_exit_locked() cancels the exchange stop first to minimise double-fill risk.
+        bool sl_breached = (is_long  && current_price <= pos_.sl_price) ||
+                           (!is_long && current_price >= pos_.sl_price);
+
+        if (sl_breached) {
+            if (pos_.basket_id_stop.empty()) {
+                LOG("[OM] Software SL hit (%s, no exchange stop): price=%.2f sl=%.2f",
+                    is_long ? "LONG" : "SHORT", current_price, pos_.sl_price);
+                sl_breach_time_ = {};
                 initiate_exit_locked("stop_loss", current_price);
                 return;
             }
-            if (!is_long && current_price >= pos_.sl_price) {
-                LOG("[OM] Software SL hit (SHORT, no exchange stop): price=%.2f sl=%.2f",
-                    current_price, pos_.sl_price);
-                initiate_exit_locked("stop_loss", current_price);
-                return;
+            // Exchange stop active: start or check breach timer.
+            if (sl_breach_time_ == std::chrono::steady_clock::time_point{}) {
+                sl_breach_time_ = std::chrono::steady_clock::now();
+            } else {
+                auto breach_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - sl_breach_time_).count();
+                if (breach_ms >= kSLFireTimeoutMs) {
+                    LOG("[OM] Software SL timeout (%s, exchange stop unresponsive %ldms): "
+                        "price=%.2f sl=%.2f basket=%s",
+                        is_long ? "LONG" : "SHORT", (long)breach_ms,
+                        current_price, pos_.sl_price, pos_.basket_id_stop.c_str());
+                    sl_breach_time_ = {};
+                    initiate_exit_locked("stop_loss_timeout", current_price);
+                    return;
+                }
+            }
+        } else {
+            sl_breach_time_ = {};  // price recovered above SL — reset timer
+        }
+
+        // BE: immediate — no delay. Fires as soon as MFE passes trail_be_trigger.
+        if (!pos_.be_triggered && pos_.mfe >= cfg_.trail_be_trigger) {
+            pos_.be_triggered = true;
+            double be_sl = is_long
+                ? pos_.entry_price + cfg_.trail_be_offset
+                : pos_.entry_price - cfg_.trail_be_offset;
+            if ((is_long && be_sl > pos_.sl_price) ||
+                (!is_long && be_sl < pos_.sl_price)) {
+                double old_sl = pos_.sl_price;
+                pos_.sl_price = be_sl;
+                LOG("[OM] BE triggered — SL moved to entry+%.1fpt: %.2f",
+                    cfg_.trail_be_offset, be_sl);
+                update_stop_order_locked(old_sl, be_sl, current_price);
             }
         }
 
-        // Check trailing activation
+        // Trail: activates after trail_delay_secs (independent of BE).
         if (!pos_.trailing_active) {
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                 std::chrono::steady_clock::now() - pos_.fill_time).count();
-            bool delay_met  = (elapsed >= cfg_.trail_delay_secs);
-            bool mfe_met    = (pos_.mfe >= cfg_.trail_be_trigger);
-
-            if (delay_met && mfe_met) {
+            if (elapsed >= cfg_.trail_delay_secs && pos_.mfe >= cfg_.trail_be_trigger) {
                 pos_.trailing_active = true;
-                double be_sl = is_long
-                    ? pos_.entry_price + cfg_.trail_be_offset
-                    : pos_.entry_price - cfg_.trail_be_offset;
-                if ((is_long && be_sl > pos_.sl_price) ||
-                    (!is_long && be_sl < pos_.sl_price)) {
-                    double old_sl = pos_.sl_price;
-                    pos_.sl_price = be_sl;
-                    LOG("[OM] Trailing activated — SL moved to BE+offset: %.2f", be_sl);
-                    update_stop_order_locked(old_sl, be_sl, current_price);
-                }
+                LOG("[OM] Trailing activated after %lds", (long)elapsed);
             }
         }
 
@@ -545,6 +571,12 @@ private:
     // storms: only update the exchange stop when sl moved by >= trail_step.
     double last_exchange_sl_  = 0.0;
 
+    // Breach timer for the software SL timeout tier.
+    // Set when price first violates SL while an exchange stop basket is active.
+    // Software SL fires if the exchange stop hasn't responded within kSLFireTimeoutMs.
+    std::chrono::steady_clock::time_point sl_breach_time_{};
+    static constexpr int64_t kSLFireTimeoutMs = 3000;  // ms — well above normal stop latency
+
     static std::atomic<uint64_t> seq_;  // monotonic sequence for basket IDs
 
     std::string new_basket_id() {
@@ -684,6 +716,8 @@ private:
 
     void initiate_exit_locked(const std::string& reason, double ref_price) {
         if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return;
+
+        sl_breach_time_ = {};  // clear breach timer — we are exiting
 
         // Cancel the exchange stop BEFORE submitting market exit to prevent double-fill.
         cancel_stop_locked();

@@ -49,8 +49,8 @@ TimeoutStartSec=90s
 Restart=on-failure
 RestartSec=30s
 
-# Allow up to 30 s on SIGTERM for position flatten + DB session flush
-TimeoutStopSec=30s
+# Allow up to 90 s on SIGTERM: flatten order submit + exchange fill + DB flush
+TimeoutStopSec=90s
 
 # SIGTERM triggers the executor's emergency flatten / graceful shutdown handler
 KillMode=process

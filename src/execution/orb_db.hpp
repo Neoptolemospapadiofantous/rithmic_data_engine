@@ -411,6 +411,24 @@ public:
         PQclear(res);
     }
 
+    // ── Count completed trades for today (for seeding trades_today on restart) ──
+    int count_today_trades(const std::string& trade_date) {
+        if (!is_connected()) reconnect();
+        const char* params[3] = {
+            instrument_.c_str(),  // $1
+            strategy_.c_str(),    // $2
+            trade_date.c_str()    // $3
+        };
+        PGresult* res = exec_params_query(
+            "SELECT COUNT(*) FROM live_trades"
+            " WHERE instrument=$1 AND strategy=$2 AND trade_date=$3::date",
+            3, params);
+        if (!res) return 0;
+        int n = (PQntuples(res) > 0) ? std::atoi(PQgetvalue(res, 0, 0)) : 0;
+        PQclear(res);
+        return n;
+    }
+
     // Push current price to any LISTEN live_tick subscribers (non-throwing)
     void notify_tick(double price) {
         if (!is_connected()) return;

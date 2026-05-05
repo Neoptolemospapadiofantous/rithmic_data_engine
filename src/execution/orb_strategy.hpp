@@ -116,6 +116,7 @@ public:
             current_bar_.minute_utc = cur_epoch_min;
         }
         current_bar_.update(tick.price, tick.size);
+        double prev_price = last_price_;
         last_price_ = tick.price;
         last_et_hour_ = et_hour;
         last_et_min_  = et_min;
@@ -136,7 +137,7 @@ public:
         if (et_hour >= cfg_.last_entry_hour) return;
         if (is_news_blackout(et_hour, et_min)) return;
 
-        check_breakout(tick.price, et_hour, et_min);
+        check_breakout(tick.price, prev_price, et_hour, et_min);
     }
 
     // ── Periodic EOD check (call once per second) ─────────────────────────────
@@ -161,6 +162,11 @@ public:
         session_.in_position = false;
         LOG("[ORB] Trade closed — flat, re-entry allowed (trades_today=%d/%d)",
             session_.trades_today, cfg_.max_daily_trades);
+    }
+
+    void seed_trades_today(int n) {
+        session_.trades_today = n;
+        LOG("[ORB] Seeded trades_today=%d from DB (restart recovery)", n);
     }
 
     void seed_orb_range(double high, double low) {
@@ -242,19 +248,24 @@ private:
         }
     }
 
-    void check_breakout(double price, int /*et_hour*/, int /*et_min*/) {
+    void check_breakout(double price, double prev_price, int /*et_hour*/, int /*et_min*/) {
         if (session_.in_position) return;  // must be flat before re-entering
 
         double buy_level  = session_.orb_high + cfg_.breakout_buffer;
         double sell_level = session_.orb_low  - cfg_.breakout_buffer;
 
-        if (price > buy_level) {
+        // Require a genuine cross: prev tick on the inside, current tick on the outside.
+        // prev_price==0 means no prior tick this session — allow any first signal.
+        // This prevents re-entry mid-air when a stop fires while price is already
+        // beyond the breakout level.
+        bool no_prev = (prev_price <= 0.0);
+        if (price > buy_level && (no_prev || prev_price <= buy_level)) {
             LOG("[ORB] LONG breakout signal: price=%.2f orb_high=%.2f trades_today=%d",
                 price, session_.orb_high, session_.trades_today);
             if (signal_cb_) signal_cb_(OrbSignal::BUY, price, "orb_breakout_long");
             session_.in_position  = true;
             session_.trades_today++;
-        } else if (price < sell_level) {
+        } else if (price < sell_level && (no_prev || prev_price >= sell_level)) {
             LOG("[ORB] SHORT breakout signal: price=%.2f orb_low=%.2f trades_today=%d",
                 price, session_.orb_low, session_.trades_today);
             if (signal_cb_) signal_cb_(OrbSignal::SELL, price, "orb_breakout_short");

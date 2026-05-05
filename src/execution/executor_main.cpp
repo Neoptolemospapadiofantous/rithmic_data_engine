@@ -410,6 +410,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // Wire strategy → order_mgr
     strategy.set_signal_callback(
         [&](OrbSignal sig, double price, const std::string& reason) {
+            if (orb_cfg.max_entry_offset > 0.0 && sig != OrbSignal::FLATTEN_EOD) {
+                double orb_level = (sig == OrbSignal::BUY) ? strategy.orb_high() : strategy.orb_low();
+                double offset = (sig == OrbSignal::BUY) ? (price - orb_level) : (orb_level - price);
+                if (offset > orb_cfg.max_entry_offset) {
+                    LOG("[EXECUTOR] Signal SKIPPED — chase %.2fpt > max_entry_offset=%.2fpt "
+                        "(orb=%.2f px=%.2f reason=%s)",
+                        offset, orb_cfg.max_entry_offset, orb_level, price, reason.c_str());
+                    strategy.notify_trade_filled(sig);  // reset in_position for re-entry
+                    return;
+                }
+            }
             order_mgr.on_signal(sig, price, reason);
         }
     );
@@ -1018,11 +1029,26 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         today = today_date_str();
         strategy.reset_session();
         risk.reset_daily();
+        // Re-seed trades_today from DB so the count survives intra-day restarts.
+        // Without this, every restart resets to 0 and max_daily_trades is not enforced
+        // correctly across sessions started on the same calendar day.
+        if (db && db->is_connected()) {
+            int done = db->count_today_trades(today);
+            if (done > 0) strategy.seed_trades_today(done);
+        }
     }
     LOG("[EXECUTOR] Session date: %s  dry_run=%s",
         today.c_str(), orb_cfg.dry_run ? "TRUE" : "FALSE");
     if (orb_cfg.dry_run)
         LOG("[EXECUTOR] *** DRY RUN — no real orders will be sent ***");
+
+    // ── MD tick silence watchdog ──────────────────────────────────────────────
+    // Tracks epoch-seconds of last real tick.  eod_loop reconnects MD if silence
+    // exceeds tick_timeout_s during the active session window.
+    std::atomic<int64_t> last_tick_epoch_s{
+        std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count()
+    };
 
     // ── Heartbeat timer ───────────────────────────────────────────────────────
     asio::steady_timer hb_timer(ex);
@@ -1074,6 +1100,27 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             int et_h, et_m;
             current_et(et_h, et_m);
             strategy.check_eod(et_h, et_m);
+
+            // MD tick silence watchdog — force-close stale MD WS so md_loop reconnects.
+            // Only active during the session window (orb_open - 5 min to eod_flatten).
+            // beast::get_lowest_layer close aborts the pending async_read in md_loop.
+            if (md_ws && orb_cfg.tick_timeout_s > 0) {
+                int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                int64_t silence_s = now_s - last_tick_epoch_s.load();
+                int et_min_total  = et_h * 60 + et_m;
+                int active_start  = orb_cfg.session_open_hour * 60 + orb_cfg.session_open_min - 5;
+                int active_end    = orb_cfg.eod_flatten_hour  * 60 + orb_cfg.eod_flatten_min;
+                bool in_position  = !order_mgr.is_flat();
+                if ((et_min_total >= active_start && et_min_total <= active_end) || in_position) {
+                    if (silence_s >= orb_cfg.tick_timeout_s) {
+                        LOG("[EXECUTOR] MD tick silence %lds (timeout=%ds) — force-reconnecting MD",
+                            (long)silence_s, orb_cfg.tick_timeout_s);
+                        beast::get_lowest_layer(*md_ws).close();
+                        last_tick_epoch_s.store(now_s);  // reset so we get a fresh window
+                    }
+                }
+            }
 
             // Date rollover check
             std::string new_date = today_date_str();
@@ -1426,6 +1473,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Filter zero-price / zero-size ticks (Rithmic heartbeat events)
                 if (lt.trade_price() <= 0.0 || lt.trade_size() <= 0) continue;
 
+                last_tick_epoch_s.store(
+                    std::chrono::duration_cast<std::chrono::seconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count());
+
                 int64_t ts_us = static_cast<int64_t>(lt.ssboe()) * 1'000'000LL
                               + lt.usecs();
                 OrbTick tick{ts_us, lt.trade_price(), lt.trade_size(),
@@ -1515,6 +1566,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             double sl = std::atof(PQgetvalue(r, 0, 1));
             if (sh > sl && sh > 0.0) {
                 strategy.seed_orb_range(sh, sl);
+                // Inject synthetic tick at ORB midpoint so last_price_ is inside
+                // the range on restart.  Without this, no_prev=true on the first
+                // real tick allows a signal to fire even if price hasn't crossed
+                // the ORB level — a mid-air entry that violates the cross requirement.
+                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                double orb_mid = (sh + sl) / 2.0;
+                OrbTick seed_tick{now_us, orb_mid, 1, false};
+                strategy.on_tick(seed_tick);
+                LOG("[EXECUTOR] Seeded last_price_=%.2f (ORB mid) — genuine cross required on restart", orb_mid);
             }
         }
         if (r) PQclear(r);

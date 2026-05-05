@@ -11,6 +11,38 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-04 — Hermes iteration 36 — dry-run full ORB cycle verified + FORCED_LOGOUT root cause fixed
+
+### Fixed
+- **Oracle session conflict**: Production `nq_executor` on Oracle VM was holding an
+  active TICKER_PLANT session for `PAPA121797704102` (LegendsTrading), causing
+  immediate FORCED_LOGOUT on every local dry-run connection. Stopping Oracle service
+  releases the Rithmic session; local executor connects cleanly.
+- **`src/execution/executor_main.cpp`**: Added 3-second ASIO-awaitable cooldown after
+  FORCED_LOGOUT (tid=77) before reconnecting, preventing rapid reconnect storms from
+  hammering the Rithmic server.
+- **`src/execution/executor_main.cpp`**: Removed system-info probe from the MD reconnect
+  loop — probe is only needed at initial startup. Probe→close→reconnect during each
+  reconnect was adding unnecessary session churn.
+- **`bot/frontend/src/app/live/page.tsx`**: Fixed `ReferenceError: cfg is not defined`
+  — `cfg` state lives inside `EnvironmentCard`, not `LivePage`. Removed the
+  `cfg?.dry_run` references from the Order status span; `op_connected=true` in dry-run
+  (set by the C++ fix) is sufficient to show green "Connected".
+
+### Added
+- **`src/execution/executor_main.cpp`**: Executor now shuts down cleanly when the daily
+  trade limit is reached and position is flat. After the last trade closes, logs
+  `"Daily trade limit reached (N/N) — shutting down"`, flushes audit, sets
+  `g_running=false` and stops the io_context. Previously the process stayed alive until
+  EOD flatten time even when no further trades could be taken.
+
+### Verified
+- Full ORB dry-run cycle end-to-end: MD connected → 2-min range built (27861–27877)
+  → SHORT breakout at 27860.75 → BE+offset trail → stop exit → DB write → 3 trades
+  completed, +$2.00 daily P&L, daily limit respected, executor self-terminated.
+
+---
+
 ## 2026-05-04 — Hermes iteration 35 — MD connection architecture restore + live page fix
 
 ### Added
