@@ -13,6 +13,7 @@
     ═══════════════════════════════════════════════════════════════════════════ */
 #include "orb_config.hpp"
 #include "log.hpp"
+#include <chrono>
 #include <cmath>
 #include <ctime>
 #include <functional>
@@ -89,6 +90,8 @@ public:
         session_.reset();
         current_bar_ = MinuteBar{};
         eod_emitted_ = false;
+        cooldown_until_ = {};
+        seeded_ = false;
         LOG("[ORB] Session reset — ORB window %d min, SL=%.1f pts, trail_step=%.1f pts",
             cfg_.orb_minutes, cfg_.sl_points, cfg_.trail_step);
     }
@@ -121,6 +124,15 @@ public:
         last_et_hour_ = et_hour;
         last_et_min_  = et_min;
 
+        // First real tick after a seeded restart: anchor last_price_ but do NOT trade.
+        // Without this guard the strategy would see prev_price=midpoint (synthetic) and
+        // price=first_real_tick and fire a signal even if price was already outside the range.
+        if (seeded_) {
+            seeded_ = false;
+            LOG("[ORB] Seeded restart — anchored last_price_=%.2f, cross detection armed", tick.price);
+            return;
+        }
+
         // ORB not yet set — accumulate high/low during opening range
         if (!session_.orb_set) {
             bool in_orb_window = is_in_orb_window(et_hour, et_min);
@@ -135,7 +147,15 @@ public:
         // ORB set — check for breakout signal
         if (session_.trades_today >= cfg_.max_daily_trades) return;
         if (et_hour >= cfg_.last_entry_hour) return;
-        if (is_news_blackout(et_hour, et_min)) return;
+        if (is_news_blackout(et_hour, et_min)) {
+            static int64_t last_blackout_log = 0;
+            int64_t now_min = static_cast<int64_t>(tick.ts_micros / 1'000'000 / 60);
+            if (now_min != last_blackout_log) {
+                last_blackout_log = now_min;
+                LOG("[ORB] News blackout active at ET %02d:%02d — entry blocked", et_hour, et_min);
+            }
+            return;
+        }
 
         check_breakout(tick.price, prev_price, et_hour, et_min);
     }
@@ -157,11 +177,22 @@ public:
 
     // ── Notify strategy that a trade closed ──────────────────────────────────
     // Called by executor when OrderManager pops a completed trade.
-    // Clears in_position so re-entry is allowed on next breakout tick.
-    void notify_trade_filled(OrbSignal /*dir*/) {
+    // Clears in_position; if exit was a stop, arms a re-entry cooldown.
+    void notify_trade_filled(OrbSignal /*dir*/, const std::string& exit_reason = "") {
         session_.in_position = false;
-        LOG("[ORB] Trade closed — flat, re-entry allowed (trades_today=%d/%d)",
-            session_.trades_today, cfg_.max_daily_trades);
+        bool is_stop = !exit_reason.empty() &&
+                       (exit_reason.find("stop") != std::string::npos ||
+                        exit_reason.find("sl")   != std::string::npos);
+        if (is_stop && cfg_.stop_cooldown_secs > 0) {
+            cooldown_until_ = std::chrono::steady_clock::now() +
+                              std::chrono::seconds(cfg_.stop_cooldown_secs);
+            LOG("[ORB] Stop exit (%s) — re-entry blocked for %ds",
+                exit_reason.c_str(), cfg_.stop_cooldown_secs);
+        } else {
+            LOG("[ORB] Trade closed (%s) — flat, re-entry allowed (trades_today=%d/%d)",
+                exit_reason.empty() ? "?" : exit_reason.c_str(),
+                session_.trades_today, cfg_.max_daily_trades);
+        }
     }
 
     void seed_trades_today(int n) {
@@ -173,6 +204,7 @@ public:
         session_.orb_high = high;
         session_.orb_low  = low;
         session_.orb_set  = true;
+        seeded_ = true;  // block trading on first real tick — just record last_price_
         LOG("[ORB] Range seeded externally: high=%.2f low=%.2f", high, low);
     }
 
@@ -191,6 +223,8 @@ private:
     int          last_et_hour_ = 0;
     int          last_et_min_  = 0;
     bool         eod_emitted_  = false;
+    bool         seeded_       = false;
+    std::chrono::steady_clock::time_point cooldown_until_{};
 
     static void utc_micros_to_et(int64_t ts_us, int& h, int& m, int& s) {
         int64_t ts_sec = ts_us / 1'000'000;
@@ -249,7 +283,8 @@ private:
     }
 
     void check_breakout(double price, double prev_price, int /*et_hour*/, int /*et_min*/) {
-        if (session_.in_position) return;  // must be flat before re-entering
+        if (session_.in_position) return;
+        if (std::chrono::steady_clock::now() < cooldown_until_) return;
 
         double buy_level  = session_.orb_high + cfg_.breakout_buffer;
         double sell_level = session_.orb_low  - cfg_.breakout_buffer;

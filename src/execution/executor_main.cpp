@@ -1155,7 +1155,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // Check for completed trades → write to DB + immediately flush position
             Position completed;
             if (order_mgr.pop_trade_completed(completed)) {
-                strategy.notify_trade_filled(completed.direction);
+                strategy.notify_trade_filled(completed.direction, completed.exit_reason);
                 if (db && db->is_connected()) {
                     try {
                         db->write_trade(completed,
@@ -1566,16 +1566,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             double sl = std::atof(PQgetvalue(r, 0, 1));
             if (sh > sl && sh > 0.0) {
                 strategy.seed_orb_range(sh, sl);
-                // Inject synthetic tick at ORB midpoint so last_price_ is inside
-                // the range on restart.  Without this, no_prev=true on the first
-                // real tick allows a signal to fire even if price hasn't crossed
-                // the ORB level — a mid-air entry that violates the cross requirement.
-                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
-                double orb_mid = (sh + sl) / 2.0;
-                OrbTick seed_tick{now_us, orb_mid, 1, false};
-                strategy.on_tick(seed_tick);
-                LOG("[EXECUTOR] Seeded last_price_=%.2f (ORB mid) — genuine cross required on restart", orb_mid);
+                LOG("[EXECUTOR] ORB seeded high=%.2f low=%.2f — first real tick will anchor price, cross detection armed", sh, sl);
             }
         }
         if (r) PQclear(r);

@@ -72,6 +72,7 @@ struct OrbConfig {
     int    eod_flatten_hour    = 15;   // EOD flatten hour (ET)
     int    eod_flatten_min     = 55;   // EOD flatten minute (ET)
     int    news_blackout_min   = 5;    // minutes before/after news event to block entry
+    int    stop_cooldown_secs  = 15;   // seconds to block re-entry after any stop exit (0=disabled)
     int    qty                 = 1;    // contract quantity per trade
 
     // ── Session open (defaults: RTH 9:30 ET) ──────────────────────
@@ -201,6 +202,7 @@ struct OrbConfig {
         c.eod_flatten_hour     = json_int(text,  "eod_flatten_hour",     c.eod_flatten_hour);
         c.eod_flatten_min      = json_int(text,  "eod_flatten_min",      c.eod_flatten_min);
         c.news_blackout_min    = json_int(text,  "news_blackout_min",    c.news_blackout_min);
+        c.stop_cooldown_secs   = json_int(text,  "stop_cooldown_secs",   c.stop_cooldown_secs);
         c.qty                  = json_int(text,  "qty",                  c.qty);
 
         c.trailing_drawdown_cap = json_dbl(text, "trailing_drawdown_cap", c.trailing_drawdown_cap);

@@ -27,6 +27,7 @@
 #include <functional>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 #include <cmath>
 
 // ─── Position states ──────────────────────────────────────────────────────────
@@ -237,8 +238,33 @@ public:
                         if (ok) lat_.on_submit(basket, fill_price);
                     }
                 } else {
-                    LOG("[OM] Spurious exit fill basket=%s (state=%d)",
-                        basket_id.c_str(), (int)pos_.state);
+                    auto it = cancelled_stops_.find(basket_id);
+                    if (it != cancelled_stops_.end()) {
+                        // A stop we cancelled fired anyway — exchange didn't cancel in time.
+                        // Auto-unwind to return to flat.
+                        bool unwind_is_buy = !it->second;
+                        cancelled_stops_.erase(it);
+                        LOG("[OM] CRITICAL: Cancelled stop basket=%s px=%.2f fired anyway — "
+                            "auto-unwind %s to return flat",
+                            basket_id.c_str(), fill_price,
+                            unwind_is_buy ? "BUY" : "SELL");
+                        if (order_cb_) {
+                            std::string basket = new_basket_id();
+                            lat_.on_signal(basket, fill_price, false);
+                            constexpr double TICK = 0.25;
+                            constexpr int    OFFSET_TICKS = 4;
+                            double unwind_px = unwind_is_buy
+                                ? fill_price + OFFSET_TICKS * TICK
+                                : fill_price - OFFSET_TICKS * TICK;
+                            bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
+                                                cfg_.qty, /*LIMIT=1*/1, unwind_is_buy,
+                                                unwind_px, "stale_cancel_unwind");
+                            if (ok) lat_.on_submit(basket, fill_price);
+                        }
+                    } else {
+                        LOG("[OM] Spurious exit fill basket=%s (state=%d)",
+                            basket_id.c_str(), (int)pos_.state);
+                    }
                 }
                 return;
             }
@@ -454,10 +480,12 @@ public:
         }
     }
 
-    // ── Cancel ACK — stop was cancelled (position exit path only with modify-order trail) ──
+    // ── Cancel ACK — stop confirmed cancelled by exchange ────────────────────
     void on_cancel_confirmed(const std::string& basket_id) {
         std::lock_guard<std::mutex> lk(state_mu_);
-        LOG("[OM] Cancel ACK basket=%s (stop removed at position close)", basket_id.c_str());
+        cancelled_stops_.erase(basket_id);
+        if (last_stop_for_unwind_ == basket_id) last_stop_for_unwind_.clear();
+        LOG("[OM] Cancel ACK basket=%s — confirmed dead, unwind guard cleared", basket_id.c_str());
     }
 
     // ── Server basket_id for stop order (from tid=351 notifications) ─────────
@@ -558,6 +586,11 @@ private:
     // Stale stop unwind state (fires when old stop fills after position already closed)
     std::string last_stop_for_unwind_;      // basket of stop sent to cancel at position close
     bool        last_stop_was_buy_ = false; // true = stop was a BUY (SHORT position)
+
+    // All stops ever cancelled this session: basket → was_buy_stop.
+    // Exchange cancel is not atomic — the stop can fire after we think it's gone.
+    // Any basket in this map that fires while FLAT triggers an immediate unwind.
+    std::unordered_map<std::string, bool> cancelled_stops_;
 
     // EOD cancel race guard: entry cancel sent but fill arrived after pos_ was reset
     std::string pending_cancel_basket_;     // entry basket that was cancelled at EOD
@@ -703,9 +736,12 @@ private:
     // Cancel stop without replacing (called while state_mu_ held)
     void cancel_stop_locked() {
         if (pos_.basket_id_stop.empty() || !cancel_cb_) return;
+        bool was_buy_stop = (pos_.direction == OrbSignal::SELL); // SHORT has BUY stop
         // Save basket so we can detect stale fills after position closes
         last_stop_for_unwind_ = pos_.basket_id_stop;
-        last_stop_was_buy_    = (pos_.direction == OrbSignal::SELL); // SHORT has BUY stop
+        last_stop_was_buy_    = was_buy_stop;
+        // Also add to persistent map — cancel confirmation may never arrive
+        cancelled_stops_[pos_.basket_id_stop] = was_buy_stop;
         LOG("[OM] Cancelling stop basket=%s (position closed)", pos_.basket_id_stop.c_str());
         cancel_cb_(pos_.basket_id_stop);
         pos_.basket_id_stop.clear();
