@@ -94,6 +94,15 @@ struct CapturedSignal {
     std::string reason;
 };
 
+// Send one tick inside the range to consume the seeded_ guard after seed_orb_range.
+// seed_orb_range sets seeded_=true so the first real tick only anchors last_price_
+// without trading.  Call this helper right after seed_orb_range in every test.
+static void anchor_after_seed(OrbStrategy& s,
+                               double inside_price = 19025.0,
+                               int et_hour = 10, int et_min = 6) {
+    s.on_tick(make_tick(et_hour, et_min, 0, inside_price));
+}
+
 // Wire a signal collector and return a freshly reset OrbStrategy.
 static OrbStrategy make_strategy(const OrbConfig& cfg,
                                  std::vector<CapturedSignal>& out) {
@@ -157,6 +166,7 @@ TEST(buy_signal_on_breakout_above_orb_high) {
     // Seed the ORB range directly (avoids bar-boundary timing complexity)
     s.seed_orb_range(19100.0, 18950.0);
     ASSERT(s.orb_set());
+    anchor_after_seed(s);  // consume seeded_ guard; last_price_ = 19025
 
     // Tick at 10:10 ET — after ORB window, past news blackout, before last_entry_hour=13
     // price > orb_high (19100) → BUY
@@ -174,6 +184,7 @@ TEST(sell_signal_on_breakout_below_orb_low) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
 
     // price < orb_low (18950) → SELL  (10:10 ET — outside news blackout)
     s.on_tick(make_tick(10, 10, 0, 18949.0));
@@ -191,6 +202,7 @@ TEST(no_signal_at_orb_high_exact) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
     s.on_tick(make_tick(10, 10, 0, 19100.0));  // exactly at high, not above
 
     ASSERT(signals.empty());
@@ -203,6 +215,7 @@ TEST(no_double_entry_long) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
 
     s.on_tick(make_tick(10, 10, 0, 19105.0));  // BUY signal
     s.on_tick(make_tick(10, 11, 0, 19110.0));  // above high again — ignored
@@ -218,6 +231,7 @@ TEST(no_double_entry_short) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
 
     s.on_tick(make_tick(10, 10, 0, 18940.0));  // SELL signal
     s.on_tick(make_tick(10, 11, 0, 18930.0));  // below low again — ignored
@@ -235,6 +249,7 @@ TEST(buy_then_sell_both_fire_independently) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
 
     // First: breakout above — BUY, in_position = true
     s.on_tick(make_tick(10, 10, 0, 19105.0));
@@ -259,6 +274,7 @@ TEST(news_blackout_blocks_signal_at_830) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s, 19025.0, 8, 20);  // 8:20 ET — before blackout starts at 8:25
 
     // 8:30 ET is right on the news event (8:30 ± 5 min → 8:25–8:35)
     s.on_tick(make_tick(8, 30, 0, 19105.0));  // would be BUY, blocked by blackout
@@ -275,6 +291,7 @@ TEST(signals_resume_after_news_blackout) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s, 19025.0, 8, 20);  // 8:20 ET anchor — before blackout
 
     // 8:36 ET is 6 minutes after 8:30 — outside ±5 window
     s.on_tick(make_tick(8, 36, 0, 19105.0));
@@ -290,6 +307,7 @@ TEST(no_signal_at_or_after_last_entry_hour) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
 
     s.on_tick(make_tick(13, 0, 0, 19105.0));  // 13:00 ET — at boundary, blocked
     s.on_tick(make_tick(13, 30, 0, 19110.0)); // 13:30 ET — blocked
@@ -305,6 +323,7 @@ TEST(max_daily_trades_cap) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
 
     s.on_tick(make_tick(10, 10, 0, 19105.0));  // trade 1 (BUY)
     s.on_tick(make_tick(10, 11, 0, 18940.0));  // would be SELL — blocked (trades_today >= 1)
@@ -348,6 +367,7 @@ TEST(reset_session_clears_all_state) {
 
     // After reset and re-seeding, signals fire again
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
     s.on_tick(make_tick(10, 10, 0, 19105.0));
     ASSERT_EQ(signals.size(), (size_t)1);
     ASSERT(signals[0].signal == OrbSignal::BUY);
@@ -401,6 +421,7 @@ TEST(notify_trade_filled_clears_in_position) {
     OrbStrategy s = make_strategy(cfg, signals);
 
     s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
 
     // Enter long — in_position becomes true
     s.on_tick(make_tick(10, 10, 0, 19105.0));
