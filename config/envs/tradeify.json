@@ -1,10 +1,10 @@
 {
-  "_comment": "Tradeify prop firm overrides — applied by scripts/use_env.py. Update system_name/URL after confirming with Tradeify support.",
+  "_comment": "Tradeify prop firm overrides — applied by scripts/use-env.sh. fcm_id/ib_id/account_id confirmed via RequestTradeRoutes (310) on first connect.",
   "rithmic_legends_user": "RTU989361488",
-  "account_id": "",
-  "trade_route": "Rithmic Order Routing",
-  "fcm_id": "",
-  "ib_id": "",
+  "account_id": "RTSL25815692164",
+  "trade_route": "simulator",
+  "fcm_id": "Tradeify",
+  "ib_id": "Tradeify",
   "starting_balance": 25000.0,
   "prop_firm": {
     "name": "Tradeify 25K",
