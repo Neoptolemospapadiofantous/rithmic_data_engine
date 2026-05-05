@@ -1,8 +1,8 @@
 {
-  "_comment": "Legends live prop firm overrides — applied by scripts/use_env.py",
+  "_comment": "Legends live prop firm overrides — applied by scripts/use-env.sh",
   "rithmic_legends_user": "PAPA121797704102",
   "account_id": "LTARAPAPA503900216181",
-  "trade_route": "Rithmic Order Routing",
+  "trade_route": "simulator",
   "fcm_id": "LegendsTrading",
   "ib_id": "LegendsTrading",
   "starting_balance": 49594.48,

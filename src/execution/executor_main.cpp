@@ -428,7 +428,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // ── DB setup ──────────────────────────────────────────────────────────────
     std::unique_ptr<OrbDB> db;
     try {
-        db = std::make_unique<OrbDB>(orb_cfg.pg_connstr(), orb_cfg.symbol);
+        db = std::make_unique<OrbDB>(orb_cfg.pg_connstr(), orb_cfg.symbol, orb_cfg.account_label);
         LOG("[EXECUTOR] OrbDB connected");
         // Seed risk manager with historical P&L so consistency cap is correct
         if (today.empty()) {  // only on first startup, not reconnects
@@ -1537,6 +1537,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         order_mgr.flatten_now("kill_signal");
         if (audit_conn)
             audit_log.info("session.eod_flatten", "kill signal immediate flatten");
+        // Drain window: give pending cancel/exit writes 500ms to flush before
+        // stopping the io_context (prevents orphaned stop orders on SIGTERM).
+        asio::steady_timer drain(ex);
+        drain.expires_after(std::chrono::milliseconds(500));
+        co_await drain.async_wait(asio::use_awaitable);
         ioc_ref.stop();
     };
 

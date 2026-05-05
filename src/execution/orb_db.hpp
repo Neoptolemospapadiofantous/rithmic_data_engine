@@ -22,8 +22,9 @@
 class OrbDB {
 public:
     explicit OrbDB(const std::string& connstr,
-                   const std::string& instrument = "MNQ")
-        : connstr_(connstr), instrument_(instrument) {
+                   const std::string& instrument    = "MNQ",
+                   const std::string& account_label = "legends")
+        : connstr_(connstr), instrument_(instrument), account_label_(account_label) {
         conn_ = PQconnectdb(connstr_.c_str());
         if (!conn_ || PQstatus(conn_) != CONNECTION_OK)
             throw std::runtime_error(std::string("OrbDB connect failed: ") +
@@ -88,45 +89,46 @@ public:
         snprintf(trig,  sizeof(trig),  "%.4f", pos.trigger_price);
         snprintf(fill,  sizeof(fill),  "%.4f", pos.fill_price_actual);
 
-        const char* params[20] = {
-            instrument_.c_str(),       // $1  instrument
-            trade_date.c_str(),        // $2  trade_date
-            direction.c_str(),         // $3  direction
-            p4,                        // $4  entry_time_us
-            p5,                        // $5  exit_time_us (NULL → COALESCE to NOW())
-            ep,                        // $6  entry_price
-            xp,                        // $7  exit_price
-            sl,                        // $8  sl_price
-            qty,                       // $9  qty
-            ppts,                      // $10 pnl_points
-            pusd,                      // $11 pnl_usd
-            pos.exit_reason.c_str(),   // $12 exit_reason
-            ssus,                      // $13 signal_to_submit_us
-            sfms,                      // $14 submit_to_fill_ms
-            eslip,                     // $15 entry_slippage_ticks
-            xslip,                     // $16 exit_slippage_ticks
-            mae,                       // $17 mae_pts
-            mfe,                       // $18 mfe_pts
-            trig,                      // $19 trigger_price
-            fill                       // $20 fill_price
+        const char* params[21] = {
+            account_label_.c_str(),    // $1  account_label
+            instrument_.c_str(),       // $2  instrument
+            trade_date.c_str(),        // $3  trade_date
+            direction.c_str(),         // $4  direction
+            p4,                        // $5  entry_time_us
+            p5,                        // $6  exit_time_us (NULL → COALESCE to NOW())
+            ep,                        // $7  entry_price
+            xp,                        // $8  exit_price
+            sl,                        // $9  sl_price
+            qty,                       // $10 qty
+            ppts,                      // $11 pnl_points
+            pusd,                      // $12 pnl_usd
+            pos.exit_reason.c_str(),   // $13 exit_reason
+            ssus,                      // $14 signal_to_submit_us
+            sfms,                      // $15 submit_to_fill_ms
+            eslip,                     // $16 entry_slippage_ticks
+            xslip,                     // $17 exit_slippage_ticks
+            mae,                       // $18 mae_pts
+            mfe,                       // $19 mfe_pts
+            trig,                      // $20 trigger_price
+            fill                       // $21 fill_price
         };
 
         exec_params(
             "INSERT INTO live_trades"
-            "(instrument, trade_date, direction, entry_time, exit_time, entry_price, exit_price,"
-            " sl_price, qty, pnl_points, pnl_usd, exit_reason,"
+            "(account_label, instrument, trade_date, direction, entry_time, exit_time,"
+            " entry_price, exit_price, sl_price, qty, pnl_points, pnl_usd, exit_reason,"
             " signal_to_submit_us, submit_to_fill_ms, entry_slippage_ticks, exit_slippage_ticks,"
             " mae_pts, mfe_pts, trigger_price, fill_price)"
             " VALUES"
-            "($1, $2::date, $3,"
-            " to_timestamp($4::bigint / 1000000.0),"
-            " COALESCE(to_timestamp($5::bigint / 1000000.0), NOW()),"
-            " $6::double precision, $7::double precision, $8::double precision, $9::int,"
-            " $10::double precision, $11::double precision, $12,"
-            " $13::bigint, $14::bigint, $15::int, $16::int,"
-            " $17::double precision, $18::double precision,"
-            " $19::double precision, $20::double precision)",
-            20, params);
+            "($1, $2, $3::date, $4,"
+            " to_timestamp($5::bigint / 1000000.0),"
+            " COALESCE(to_timestamp($6::bigint / 1000000.0), NOW()),"
+            " $7::double precision, $8::double precision, $9::double precision, $10::int,"
+            " $11::double precision, $12::double precision, $13,"
+            " $14::bigint, $15::bigint, $16::int, $17::int,"
+            " $18::double precision, $19::double precision,"
+            " $20::double precision, $21::double precision)",
+            21, params);
 
         LOG("[ORBDB] Trade written: %s %.4f→%.4f pnl=%.2f mae=%.2f mfe=%.2f slip=%.2fpts",
             direction.c_str(), pos.entry_price, pos.exit_price, pos.pnl_usd,
@@ -156,35 +158,36 @@ public:
         double aeq = (account_equity >= 0.0) ? account_equity : peak_equity;
         snprintf(p12, sizeof(p12), "%.4f", aeq);
 
-        const char* params[12] = {
-            trade_date.c_str(),    // $1  session_date
-            instrument_.c_str(),   // $2  instrument
-            strategy_.c_str(),     // $3  strategy
-            p4,                    // $4  orb_high
-            p5,                    // $5  orb_low
-            p6,                    // $6  orb_range
-            p7,                    // $7  trades_taken
-            p8,                    // $8  daily_pnl_usd
-            p9,                    // $9  peak_equity
-            p10,                   // $10 risk_halted
-            halt_reason.c_str(),   // $11 halt_reason
-            p12                    // $12 account_equity
+        const char* params[13] = {
+            account_label_.c_str(),// $1  account_label
+            trade_date.c_str(),    // $2  session_date
+            instrument_.c_str(),   // $3  instrument
+            strategy_.c_str(),     // $4  strategy
+            p4,                    // $5  orb_high
+            p5,                    // $6  orb_low
+            p6,                    // $7  orb_range
+            p7,                    // $8  trades_taken
+            p8,                    // $9  daily_pnl_usd
+            p9,                    // $10 peak_equity
+            p10,                   // $11 risk_halted
+            halt_reason.c_str(),   // $12 halt_reason
+            p12                    // $13 account_equity
         };
 
         exec_params(
             "INSERT INTO live_sessions"
-            "(session_date, instrument, strategy, orb_high, orb_low, orb_range, trades_taken,"
-            " daily_pnl_usd, peak_equity, risk_halted, halt_reason, account_equity)"
-            " VALUES ($1::date, $2, $3,"
-            " $4::double precision, $5::double precision, $6::double precision, $7::int,"
-            " $8::double precision, $9::double precision, $10::boolean, $11, $12::double precision)"
-            " ON CONFLICT (session_date, instrument, strategy) DO UPDATE SET"
+            "(account_label, session_date, instrument, strategy, orb_high, orb_low, orb_range,"
+            " trades_taken, daily_pnl_usd, peak_equity, risk_halted, halt_reason, account_equity)"
+            " VALUES ($1, $2::date, $3, $4,"
+            " $5::double precision, $6::double precision, $7::double precision, $8::int,"
+            " $9::double precision, $10::double precision, $11::boolean, $12, $13::double precision)"
+            " ON CONFLICT (session_date, account_label, instrument, strategy) DO UPDATE SET"
             " orb_high=EXCLUDED.orb_high, orb_low=EXCLUDED.orb_low,"
             " orb_range=EXCLUDED.orb_range, trades_taken=EXCLUDED.trades_taken,"
             " daily_pnl_usd=EXCLUDED.daily_pnl_usd, peak_equity=EXCLUDED.peak_equity,"
             " risk_halted=EXCLUDED.risk_halted, halt_reason=EXCLUDED.halt_reason,"
             " account_equity=EXCLUDED.account_equity",
-            12, params);
+            13, params);
     }
 
     // ── Update account equity for today's session ────────────────────────────
@@ -200,20 +203,21 @@ public:
         char p4[32];
         snprintf(p4, sizeof(p4), "%.4f", equity);
 
-        const char* params[4] = {
-            trade_date.c_str(),   // $1  session_date
-            instrument_.c_str(),  // $2  instrument
-            strategy_.c_str(),    // $3  strategy
-            p4                    // $4  account_equity
+        const char* params[5] = {
+            account_label_.c_str(),// $1  account_label
+            trade_date.c_str(),    // $2  session_date
+            instrument_.c_str(),   // $3  instrument
+            strategy_.c_str(),     // $4  strategy
+            p4                     // $5  account_equity
         };
 
         try {
             exec_params(
-                "INSERT INTO live_sessions(session_date, instrument, strategy, account_equity)"
-                " VALUES ($1::date, $2, $3, $4::double precision)"
-                " ON CONFLICT (session_date, instrument, strategy)"
+                "INSERT INTO live_sessions(account_label, session_date, instrument, strategy, account_equity)"
+                " VALUES ($1, $2::date, $3, $4, $5::double precision)"
+                " ON CONFLICT (session_date, account_label, instrument, strategy)"
                 " DO UPDATE SET account_equity=EXCLUDED.account_equity",
-                4, params);
+                5, params);
             if (should_log) {
                 LOG("[ORBDB] Account equity updated: $%.2f", equity);
                 last_written_equity_ = equity;
@@ -278,42 +282,42 @@ public:
         const char* md_conn_s    = md_connected  ? "t" : "f";
         const char* op_conn_s    = op_connected  ? "t" : "f";
 
-        const char* params[17] = {
-            session_date.c_str(),  // $1  session_date
-            instrument_.c_str(),   // $2  instrument
-            strategy_.c_str(),     // $3  strategy
-            state.c_str(),         // $4  state
-            dir_param,             // $5  direction (NULL if empty)
-            ep_param,              // $6  entry_price (NULL if FLAT)
-            etime_param,           // $7  entry_time (NULL if empty)
-            cp,                    // $8  current_price
-            upts,                  // $9  unrealized_pnl_pts
-            uusd,                  // $10 unrealized_pnl_usd
-            sl_param,              // $11 sl_price (NULL if FLAT)
-            oh,                    // $12 orb_high
-            ol,                    // $13 orb_low
-            orb_set_s,             // $14 orb_set
-            tt,                    // $15 trades_today
-            md_conn_s,             // $16 md_connected
-            op_conn_s              // $17 op_connected
+        const char* params[18] = {
+            account_label_.c_str(),// $1  account_label
+            session_date.c_str(),  // $2  session_date
+            instrument_.c_str(),   // $3  instrument
+            strategy_.c_str(),     // $4  strategy
+            state.c_str(),         // $5  state
+            dir_param,             // $6  direction (NULL if empty)
+            ep_param,              // $7  entry_price (NULL if FLAT)
+            etime_param,           // $8  entry_time (NULL if empty)
+            cp,                    // $9  current_price
+            upts,                  // $10 unrealized_pnl_pts
+            uusd,                  // $11 unrealized_pnl_usd
+            sl_param,              // $12 sl_price (NULL if FLAT)
+            oh,                    // $13 orb_high
+            ol,                    // $14 orb_low
+            orb_set_s,             // $15 orb_set
+            tt,                    // $16 trades_today
+            md_conn_s,             // $17 md_connected
+            op_conn_s              // $18 op_connected
         };
 
         try {
             exec_params(
                 "INSERT INTO live_position"
-                " (session_date, instrument, strategy, state, direction, entry_price, entry_time,"
-                "  current_price, unrealized_pnl_pts, unrealized_pnl_usd,"
-                "  sl_price, orb_high, orb_low, orb_set,"
-                "  trades_today, md_connected, op_connected, last_updated)"
+                " (account_label, session_date, instrument, strategy, state, direction,"
+                "  entry_price, entry_time, current_price, unrealized_pnl_pts, unrealized_pnl_usd,"
+                "  sl_price, orb_high, orb_low, orb_set, trades_today,"
+                "  md_connected, op_connected, last_updated)"
                 " VALUES"
-                " ($1::date, $2, $3, $4, $5,"
-                "  $6::double precision,"
-                /* entry_time: to_timestamp(NULL,...) yields NULL — correct for FLAT state */
-                "  to_timestamp($7, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC',"
-                "  $8::double precision, $9::double precision, $10::double precision,"
-                "  $11::double precision, $12::double precision, $13::double precision,"
-                "  $14::boolean, $15::int, $16::boolean, $17::boolean, NOW())"
-                " ON CONFLICT (session_date, instrument, strategy) DO UPDATE SET"
+                " ($1, $2::date, $3, $4, $5, $6,"
+                "  $7::double precision,"
+                "  to_timestamp($8, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC',"
+                "  $9::double precision, $10::double precision, $11::double precision,"
+                "  $12::double precision, $13::double precision, $14::double precision,"
+                "  $15::boolean, $16::int, $17::boolean, $18::boolean, NOW())"
+                " ON CONFLICT (session_date, account_label, instrument, strategy) DO UPDATE SET"
                 "  state=EXCLUDED.state, direction=EXCLUDED.direction,"
                 "  entry_price=EXCLUDED.entry_price, entry_time=EXCLUDED.entry_time,"
                 "  current_price=EXCLUDED.current_price,"
@@ -326,7 +330,7 @@ public:
                 "  md_connected=EXCLUDED.md_connected,"
                 "  op_connected=EXCLUDED.op_connected,"
                 "  last_updated=NOW()",
-                17, params);
+                18, params);
         } catch (std::exception& e) {
             LOG("[ORBDB] write_position failed: %s", e.what());
         }
@@ -339,19 +343,20 @@ public:
         char p1[32];
         snprintf(p1, sizeof(p1), "%.4f", price);
 
-        const char* params[4] = {
-            p1,                   // $1  legends_price
-            session_date.c_str(), // $2  session_date
-            instrument_.c_str(),  // $3  instrument
-            strategy_.c_str()     // $4  strategy
+        const char* params[5] = {
+            p1,                        // $1  legends_price
+            account_label_.c_str(),    // $2  account_label
+            session_date.c_str(),      // $3  session_date
+            instrument_.c_str(),       // $4  instrument
+            strategy_.c_str()          // $5  strategy
         };
 
         try {
             exec_params(
                 "UPDATE live_position"
                 " SET legends_price=$1::double precision, last_updated=NOW()"
-                " WHERE session_date=$2::date AND instrument=$3 AND strategy=$4",
-                4, params);
+                " WHERE account_label=$2 AND session_date=$3::date AND instrument=$4 AND strategy=$5",
+                5, params);
         } catch (std::exception& e) {
             LOG("[ORBDB] write_legends_price failed: %s", e.what());
         }
@@ -361,15 +366,16 @@ public:
     double get_total_pnl() {
         if (!is_connected()) reconnect();
 
-        const char* params[2] = {
-            instrument_.c_str(),  // $1
-            strategy_.c_str()     // $2
+        const char* params[3] = {
+            account_label_.c_str(),// $1
+            instrument_.c_str(),   // $2
+            strategy_.c_str()      // $3
         };
 
         PGresult* res = exec_params_query(
             "SELECT COALESCE(SUM(pnl_usd), 0.0) FROM live_trades"
-            " WHERE instrument=$1 AND strategy=$2",
-            2, params);
+            " WHERE account_label=$1 AND instrument=$2 AND strategy=$3",
+            3, params);
 
         if (!res) return 0.0;
         double total = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
@@ -380,21 +386,22 @@ public:
 
     // ── Read last N trade rows (for monitoring) ───────────────────────────────
     void print_recent_trades(int n = 10) {
-        char p3[16];
-        snprintf(p3, sizeof(p3), "%d", n);
+        char p4[16];
+        snprintf(p4, sizeof(p4), "%d", n);
 
-        const char* params[3] = {
-            instrument_.c_str(),  // $1
-            strategy_.c_str(),    // $2
-            p3                    // $3  LIMIT
+        const char* params[4] = {
+            account_label_.c_str(),// $1
+            instrument_.c_str(),   // $2
+            strategy_.c_str(),     // $3
+            p4                     // $4  LIMIT
         };
 
         PGresult* res = exec_params_query(
             "SELECT trade_date, direction, entry_price, exit_price, pnl_usd, exit_reason"
             " FROM live_trades"
-            " WHERE instrument=$1 AND strategy=$2"
-            " ORDER BY entry_time DESC LIMIT $3::int",
-            3, params);
+            " WHERE account_label=$1 AND instrument=$2 AND strategy=$3"
+            " ORDER BY entry_time DESC LIMIT $4::int",
+            4, params);
 
         if (!res) return;
         int rows = PQntuples(res);
@@ -414,26 +421,28 @@ public:
     // ── Count completed trades for today (for seeding trades_today on restart) ──
     int count_today_trades(const std::string& trade_date) {
         if (!is_connected()) reconnect();
-        const char* params[3] = {
-            instrument_.c_str(),  // $1
-            strategy_.c_str(),    // $2
-            trade_date.c_str()    // $3
+        const char* params[4] = {
+            account_label_.c_str(),// $1
+            instrument_.c_str(),   // $2
+            strategy_.c_str(),     // $3
+            trade_date.c_str()     // $4
         };
         PGresult* res = exec_params_query(
             "SELECT COUNT(*) FROM live_trades"
-            " WHERE instrument=$1 AND strategy=$2 AND trade_date=$3::date",
-            3, params);
+            " WHERE account_label=$1 AND instrument=$2 AND strategy=$3 AND trade_date=$4::date",
+            4, params);
         if (!res) return 0;
         int n = (PQntuples(res) > 0) ? std::atoi(PQgetvalue(res, 0, 0)) : 0;
         PQclear(res);
         return n;
     }
 
-    // Push current price to any LISTEN live_tick subscribers (non-throwing)
+    // Push current price to any LISTEN live_tick_{account_label} subscribers (non-throwing)
     void notify_tick(double price) {
         if (!is_connected()) return;
-        char sql[80];
-        snprintf(sql, sizeof(sql), "NOTIFY live_tick, '%.2f'", price);
+        char sql[128];
+        snprintf(sql, sizeof(sql), "NOTIFY live_tick_%s, '%.2f'",
+                 account_label_.c_str(), price);
         PGresult* res = PQexec(conn_, sql);
         if (res) PQclear(res);
     }
@@ -443,6 +452,7 @@ private:
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_trades (
                 id                      BIGSERIAL PRIMARY KEY,
+                account_label           TEXT NOT NULL DEFAULT 'legends',
                 instrument              TEXT NOT NULL DEFAULT 'MNQ',
                 strategy                TEXT NOT NULL DEFAULT 'ORB',
                 trade_date              DATE NOT NULL,
@@ -468,15 +478,17 @@ private:
         )");
 
         // Add columns idempotently for existing deployments
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS instrument     TEXT NOT NULL DEFAULT 'MNQ'");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS strategy       TEXT NOT NULL DEFAULT 'ORB'");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mae_pts        DOUBLE PRECISION");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mfe_pts        DOUBLE PRECISION");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS trigger_price  DOUBLE PRECISION");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS fill_price     DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS account_label   TEXT NOT NULL DEFAULT 'legends'");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS instrument       TEXT NOT NULL DEFAULT 'MNQ'");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS strategy         TEXT NOT NULL DEFAULT 'ORB'");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mae_pts          DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mfe_pts          DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS trigger_price    DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS fill_price       DOUBLE PRECISION");
 
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_sessions (
+                account_label   TEXT NOT NULL DEFAULT 'legends',
                 session_date    DATE NOT NULL,
                 instrument      TEXT NOT NULL DEFAULT 'MNQ',
                 strategy        TEXT NOT NULL DEFAULT 'ORB',
@@ -489,17 +501,19 @@ private:
                 risk_halted     BOOLEAN DEFAULT FALSE,
                 halt_reason     TEXT,
                 account_equity  DOUBLE PRECISION,
-                PRIMARY KEY (session_date, instrument, strategy)
+                PRIMARY KEY (session_date, account_label, instrument, strategy)
             )
         )");
 
-        exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS instrument     TEXT NOT NULL DEFAULT 'MNQ'");
-        exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS strategy       TEXT NOT NULL DEFAULT 'ORB'");
-        exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS account_equity DOUBLE PRECISION");
+        exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS account_label  TEXT NOT NULL DEFAULT 'legends'");
+        exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS instrument      TEXT NOT NULL DEFAULT 'MNQ'");
+        exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS strategy        TEXT NOT NULL DEFAULT 'ORB'");
+        exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS account_equity  DOUBLE PRECISION");
 
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_position (
                 id                  SERIAL PRIMARY KEY,
+                account_label       TEXT NOT NULL DEFAULT 'legends',
                 session_date        DATE NOT NULL,
                 instrument          TEXT NOT NULL DEFAULT 'MNQ',
                 strategy            TEXT NOT NULL DEFAULT 'ORB',
@@ -521,17 +535,20 @@ private:
             )
         )");
 
-        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS instrument     TEXT NOT NULL DEFAULT 'MNQ'");
-        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS strategy      TEXT NOT NULL DEFAULT 'ORB'");
-        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS legends_price DOUBLE PRECISION");
+        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS account_label  TEXT NOT NULL DEFAULT 'legends'");
+        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS instrument      TEXT NOT NULL DEFAULT 'MNQ'");
+        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS strategy        TEXT NOT NULL DEFAULT 'ORB'");
+        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS legends_price   DOUBLE PRECISION");
 
+        // Drop old single-account unique index and recreate with account_label
+        exec("DROP INDEX IF EXISTS live_position_inst_strat_idx");
         exec(R"(
-            CREATE UNIQUE INDEX IF NOT EXISTS live_position_inst_strat_idx
-            ON live_position(session_date, instrument, strategy)
+            CREATE UNIQUE INDEX IF NOT EXISTS live_position_acct_inst_strat_idx
+            ON live_position(session_date, account_label, instrument, strategy)
         )");
 
-        LOG("[ORBDB] Schema verified: instrument=%s strategy=%s",
-            instrument_.c_str(), strategy_.c_str());
+        LOG("[ORBDB] Schema verified: account=%s instrument=%s strategy=%s",
+            account_label_.c_str(), instrument_.c_str(), strategy_.c_str());
     }
 
     // DDL-only helper — used exclusively for schema setup (no user input)
@@ -595,6 +612,7 @@ private:
 
     std::string connstr_;
     std::string instrument_;
+    std::string account_label_;
     std::string strategy_ = "ORB";
     PGconn*     conn_ = nullptr;
     double      last_written_equity_ = -1.0; // suppress duplicate equity log lines

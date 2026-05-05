@@ -113,6 +113,10 @@ struct OrbConfig {
     std::string ib_id        = "";   // Rithmic IB identifier (usually empty)
     std::string trade_route  = "simulator";  // Legends route; NEVER use "Rithmic Order Routing"
 
+    // ── Instance identity ──────────────────────────────────────────
+    std::string account_label    = "legends";         // DB tag: "legends", "tradeify", …
+    std::string order_env_prefix = "RITHMIC_LEGENDS"; // prefix for ORDER_PLANT env vars
+
     // ── Account ───────────────────────────────────────────────────
     double starting_balance = 50000.0; // actual Rithmic account balance at last sync
 
@@ -136,7 +140,7 @@ struct OrbConfig {
                " user="     + pg_escape_kv(pg_user)     +
                " password=" + pg_escape_kv(pg_password) +
                " connect_timeout=10"
-               " application_name=nq_executor";
+               " application_name=nq_executor_" + account_label;
     }
 
     // ── Parse from JSON file ───────────────────────────────────────
@@ -177,16 +181,27 @@ struct OrbConfig {
                 provider.c_str(), c.md_user.c_str(), c.md_system_name.c_str());
         }
 
-        // Legends credentials for ORDER_PLANT (execution) — prop firm account
-        // Username: JSON field takes effect; env var overrides (allows runtime swap without rebuild)
-        c.rithmic_user        = env("RITHMIC_LEGENDS_USER",     "");
-        if (c.rithmic_user.empty())
-            c.rithmic_user    = json_str(text, "rithmic_legends_user", "");
-        c.rithmic_password    = env("RITHMIC_LEGENDS_PASSWORD",  "");
-        c.rithmic_system_name = env("RITHMIC_LEGENDS_SYSTEM",   "LegendsTrading");
-        c.rithmic_url         = env("RITHMIC_LEGENDS_URL",       c.rithmic_url.c_str());
-        c.app_name            = env("RITHMIC_APP_NAME",          "nepa:OentexNQBot");
-        c.app_version         = env("RITHMIC_APP_VERSION",       "1.0");
+        // Instance identity — read first so the prefix drives all credential lookups
+        c.account_label    = json_str(text, "account_label",    c.account_label);
+        c.order_env_prefix = json_str(text, "order_env_prefix", c.order_env_prefix);
+
+        // ORDER_PLANT credentials — derived from order_env_prefix so any account works
+        // without code changes (add a new JSON config + env vars, done).
+        {
+            std::string pfx = c.order_env_prefix;
+            for (char& ch : pfx) ch = (char)toupper((unsigned char)ch);
+            c.rithmic_user        = env((pfx + "_USER").c_str(),     "");
+            if (c.rithmic_user.empty())
+                c.rithmic_user    = json_str(text, "rithmic_user", "");
+            c.rithmic_password    = env((pfx + "_PASSWORD").c_str(),  "");
+            c.rithmic_system_name = env((pfx + "_SYSTEM").c_str(),   c.rithmic_system_name.c_str());
+            c.rithmic_url         = env((pfx + "_URL").c_str(),       c.rithmic_url.c_str());
+            // account_id: env var takes precedence; JSON is fallback
+            const char* acct_v    = std::getenv((pfx + "_ACCOUNT").c_str());
+            if (acct_v && acct_v[0]) c.account_id = acct_v;
+        }
+        c.app_name    = env("RITHMIC_APP_NAME",    "nepa:OentexNQBot");
+        c.app_version = env("RITHMIC_APP_VERSION", "1.0");
 
         // Pull strategy fields from JSON text with simple extractor
         c.orb_minutes          = json_int(text,  "orb_minutes",          c.orb_minutes);
@@ -215,13 +230,9 @@ struct OrbConfig {
         c.point_value    = json_dbl(text, "point_value",    c.point_value);
         c.environment       = json_str(text, "environment",       c.environment);
         c.starting_balance  = json_dbl(text, "starting_balance",  c.starting_balance);
-        // Env var takes precedence so account_id can be managed in .env without touching JSON
-        {
-            const char* acct_env = std::getenv("RITHMIC_LEGENDS_ACCOUNT");
-            c.account_id = acct_env && acct_env[0]
-                         ? std::string(acct_env)
-                         : json_str(text, "account_id", c.account_id);
-        }
+        // account_id: JSON is fallback if env var (set above) was empty
+        if (c.account_id.empty())
+            c.account_id = json_str(text, "account_id", c.account_id);
         c.fcm_id           = json_str(text, "fcm_id",           c.fcm_id);
         c.ib_id            = json_str(text, "ib_id",            c.ib_id);
         c.trade_route      = json_str(text, "trade_route",      c.trade_route);
