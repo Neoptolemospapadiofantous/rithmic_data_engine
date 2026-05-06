@@ -1565,7 +1565,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         std::string orb_qdate = today_date_str();
         std::string q =
             "SELECT orb_high, orb_low FROM live_sessions "
-            "WHERE session_date = '" + orb_qdate + "' "
+            "WHERE account_label = '" + orb_cfg.account_label + "' "
+            "  AND session_date = '" + orb_qdate + "' "
             "  AND instrument = '" + orb_cfg.symbol + "' "
             "  AND strategy = 'ORB' AND orb_high > orb_low LIMIT 1";
         PGresult* r = PQexec(db->raw_conn(), q.c_str());
