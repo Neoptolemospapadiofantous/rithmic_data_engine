@@ -85,7 +85,7 @@ with open(cfg, "w") as f:
 orb = c.get("orb_minutes", 5)
 max_trades = c.get("max_daily_trades", 3)
 # cycle_timeout_mins: explicit config key, or default = orb window + 30 min buffer
-timeout_mins = int(c.get("cycle_timeout_mins", orb + 30))
+timeout_mins = int(c.get("cycle_timeout_mins", orb + 15))
 timeout_secs = timeout_mins * 60
 
 print(f"  cycle start {now_et.strftime('%H:%M:%S')} ET  epoch={now_unix}"
