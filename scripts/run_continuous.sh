@@ -158,11 +158,13 @@ while true; do
             log "Executor exited (exit=${EXIT_CODE}) — cycle complete"
         fi
 
-        # Clear last cycle's ORB from live_sessions so the next executor
-        # builds a genuine fresh range rather than re-seeding the old one.
+        # Clear last cycle's ORB from both tables so the UI immediately shows
+        # "Building range" and the next executor builds a fresh range.
         PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic -q \
-            -c "UPDATE live_sessions SET orb_high=0, orb_low=0, orb_range=0 \
-                WHERE account_label='${ACCOUNT}' AND session_date=CURRENT_DATE;" \
+            -c "UPDATE live_sessions SET orb_high=0, orb_low=0, orb_range=0
+                    WHERE account_label='${ACCOUNT}' AND session_date=CURRENT_DATE;
+                UPDATE live_position SET orb_set=false, orb_high=NULL, orb_low=NULL
+                    WHERE account_label='${ACCOUNT}' AND session_date=CURRENT_DATE;" \
             2>/dev/null || true
 
         log "Waiting ${CYCLE_RESTART_DELAY}s before next cycle..."
