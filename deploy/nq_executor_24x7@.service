@@ -1,0 +1,58 @@
+# systemd template unit — continuous 24/7 session runner.
+#
+# Runs scripts/run_continuous.sh which loops: patch config → start executor → sleep until next RTH.
+# KillMode=control-group ensures "systemctl stop" kills both the wrapper and the running executor.
+#
+# Usage:
+#   sudo systemctl start  nq_executor-24x7@tradeify   ← start continuous mode
+#   sudo systemctl stop   nq_executor-24x7@tradeify   ← stop permanently (kills executor too)
+#   journalctl -u nq_executor-24x7@tradeify -f        ← follow logs
+#
+# Install:
+#   sudo cp deploy/nq_executor_24x7@.service /etc/systemd/system/nq_executor-24x7@.service
+#   sudo systemctl daemon-reload
+
+[Unit]
+Description=NQ ORB Executor — continuous 24/7 mode for %I
+After=network-online.target postgresql-16.service
+Wants=network-online.target
+Requires=postgresql-16.service
+
+# Conflict with the one-shot service so both can't run simultaneously
+Conflicts=nq_executor@%i.service
+
+[Service]
+Type=simple
+
+User=opc
+Group=opc
+WorkingDirectory=/home/opc/rithmic_engine
+
+EnvironmentFile=/home/opc/rithmic_engine/.env
+UnsetEnvironment=NQ_FIRE_TEST_ORDER
+
+ExecStartPre=/bin/bash -c \
+    '[ ! -f /home/opc/rithmic_engine/NO_DEPLOY ] || \
+     { echo "NO_DEPLOY lockfile present — refusing to start %I continuous executor"; exit 1; }'
+
+ExecStart=/bin/bash /home/opc/rithmic_engine/scripts/run_continuous.sh %I
+
+# Script loops internally — no systemd restart needed
+Restart=no
+
+TimeoutStopSec=30s
+# Kill the entire cgroup: stops both the wrapper script AND the running nq_executor
+KillMode=control-group
+KillSignal=SIGTERM
+SendSIGKILL=yes
+FinalKillSignal=SIGKILL
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nq_executor_24x7_%I
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

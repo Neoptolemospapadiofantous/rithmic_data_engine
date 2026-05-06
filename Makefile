@@ -55,6 +55,8 @@ deploy:
 		sudo install -m 755 build/nq_executor /usr/local/bin/nq_executor; \
 		sudo chcon -t bin_t /usr/local/bin/nq_executor 2>/dev/null || true; \
 		sudo cp deploy/nq_executor.service /etc/systemd/system/nq_executor.service; \
+		sudo cp deploy/nq_executor_24x7@.service /etc/systemd/system/nq_executor-24x7@.service; \
+		sudo install -m 755 scripts/run_continuous.sh /home/opc/rithmic_engine/scripts/run_continuous.sh; \
 		sudo systemctl daemon-reload; \
 		route=$$(python3 -c "import json; print(json.load(open(\"config/live_config.json\")).get(\"trade_route\",\"\"))" 2>/dev/null || echo ""); \
 		if [[ "$$route" == "Rithmic Order Routing" ]]; then \
