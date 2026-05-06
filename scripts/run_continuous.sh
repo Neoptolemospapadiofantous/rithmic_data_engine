@@ -57,6 +57,7 @@ PYEOF
 
 patch_cycle() {
     # Set session_open = NOW() ET and stamp cycle_start_epoch = now Unix.
+    # Prints: cycle_timeout_secs on the last line (read by caller).
     python3 - <<'PYEOF'
 import json, os, time
 from datetime import datetime
@@ -80,8 +81,16 @@ c["dry_run"]            = False
 c["cycle_mode"]         = True
 with open(cfg, "w") as f:
     json.dump(c, f, indent=2)
+
+orb = c.get("orb_minutes", 5)
+max_trades = c.get("max_daily_trades", 3)
+# cycle_timeout_mins: explicit config key, or default = orb window + 30 min buffer
+timeout_mins = int(c.get("cycle_timeout_mins", orb + 30))
+timeout_secs = timeout_mins * 60
+
 print(f"  cycle start {now_et.strftime('%H:%M:%S')} ET  epoch={now_unix}"
-      f"  orb={c.get('orb_minutes',5)}m  max_trades={c.get('max_daily_trades',3)}")
+      f"  orb={orb}m  max_trades={max_trades}  timeout={timeout_mins}m")
+print(f"TIMEOUT_SECS={timeout_secs}")
 PYEOF
 }
 
@@ -117,12 +126,23 @@ while true; do
     if [[ "$MODE" == "true" ]]; then
         # ── Cycling mode ──────────────────────────────────────────
         log "Cycle mode: patching config with current time..."
-        patch_cycle || { log "Config patch failed — retrying in 10s"; sleep 10; continue; }
+        PATCH_OUT=$(patch_cycle 2>&1) || { log "Config patch failed — retrying in 10s"; sleep 10; continue; }
+        echo "$PATCH_OUT"
 
-        log "Starting executor (cycle)..."
-        "$BINARY" --config "$CONFIG_FILE" || true
+        # Extract timeout from patch output (last line: TIMEOUT_SECS=N)
+        CYCLE_TIMEOUT=$(echo "$PATCH_OUT" | grep "^TIMEOUT_SECS=" | cut -d= -f2)
+        CYCLE_TIMEOUT="${CYCLE_TIMEOUT:-2100}"  # fallback 35 min
+
+        log "Starting executor (cycle, timeout=${CYCLE_TIMEOUT}s)..."
+        # timeout -k 60 sends SIGTERM at CYCLE_TIMEOUT, then SIGKILL after 60s
+        # if executor didn't flatten and exit cleanly (handles stuck/no-signal cycles)
+        timeout -k 60 "${CYCLE_TIMEOUT}" "$BINARY" --config "$CONFIG_FILE" || true
         EXIT_CODE=$?
-        log "Executor exited (exit=${EXIT_CODE}) — cycle complete"
+        if [[ $EXIT_CODE -eq 124 ]]; then
+            log "Cycle timed out after ${CYCLE_TIMEOUT}s (no trades or stuck) — forcing next cycle"
+        else
+            log "Executor exited (exit=${EXIT_CODE}) — cycle complete"
+        fi
 
         log "Waiting ${CYCLE_RESTART_DELAY}s before next cycle..."
         sleep "${CYCLE_RESTART_DELAY}"
