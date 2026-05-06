@@ -19,6 +19,8 @@ Documentation=https://github.com/neoptolemospapadiofantous/rithmic_engine
 After=network-online.target postgresql-16.service
 Wants=network-online.target
 Requires=postgresql-16.service
+StartLimitIntervalSec=300s
+StartLimitBurst=3
 
 [Service]
 Type=simple
@@ -47,15 +49,12 @@ TimeoutStartSec=90s
 
 Restart=on-failure
 RestartSec=30s
-StartLimitIntervalSec=300s
-StartLimitBurst=3
 
 TimeoutStopSec=30s
 KillMode=process
 KillSignal=SIGTERM
 SendSIGKILL=yes
 FinalKillSignal=SIGKILL
-TimeoutKillSec=60s
 
 StandardOutput=journal
 StandardError=journal
