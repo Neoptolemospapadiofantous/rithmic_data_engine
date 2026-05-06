@@ -29,6 +29,8 @@ WorkingDirectory=/home/opc/rithmic_engine
 
 # Load credentials from .env (KEY=value format)
 EnvironmentFile=/home/opc/rithmic_engine/.env
+# Per-account overrides (e.g. RITHMIC_MD_PROVIDER) — optional, ignored if missing
+EnvironmentFile=-/home/opc/rithmic_engine/.env.%I
 
 # Explicitly unset test/dev flags that must never fire in production
 UnsetEnvironment=NQ_FIRE_TEST_ORDER

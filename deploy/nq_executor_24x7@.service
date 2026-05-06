@@ -29,6 +29,7 @@ Group=opc
 WorkingDirectory=/home/opc/rithmic_engine
 
 EnvironmentFile=/home/opc/rithmic_engine/.env
+EnvironmentFile=-/home/opc/rithmic_engine/.env.%I
 UnsetEnvironment=NQ_FIRE_TEST_ORDER
 
 ExecStartPre=/bin/bash -c \
