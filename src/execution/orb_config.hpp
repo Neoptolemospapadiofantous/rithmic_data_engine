@@ -123,6 +123,13 @@ struct OrbConfig {
     // ── MD watchdog ───────────────────────────────────────────────
     int tick_timeout_s = 30; // reconnect MD if no tick received for this many seconds (0=disabled)
 
+    // ── Cycling ORB mode ──────────────────────────────────────────
+    // When true the executor exits after max_daily_trades completes (position flat).
+    // The wrapper script immediately restarts it with a fresh cycle_start_epoch so
+    // count_today_trades only counts trades from the new cycle, not prior ones.
+    bool    cycle_mode         = false;
+    int64_t cycle_start_epoch  = 0;   // Unix timestamp; seed only counts trades after this (0=all)
+
     // ── Safety ────────────────────────────────────────────────────
     bool dry_run = true;   // true = log signals only, no real orders
 
@@ -239,6 +246,20 @@ struct OrbConfig {
         c.session_open_hour = (int)json_dbl(text, "session_open_hour", c.session_open_hour);
         c.session_open_min  = (int)json_dbl(text, "session_open_min",  c.session_open_min);
         c.tick_timeout_s    = json_int(text, "tick_timeout_s",         c.tick_timeout_s);
+        c.cycle_start_epoch = (int64_t)json_dbl(text, "cycle_start_epoch", (double)c.cycle_start_epoch);
+
+        // cycle_mode: look for "cycle_mode": true/false
+        {
+            auto pos = text.find("\"cycle_mode\"");
+            if (pos != std::string::npos) {
+                auto colon = text.find(':', pos);
+                if (colon != std::string::npos) {
+                    auto vp = text.find_first_not_of(" \t\r\n", colon + 1);
+                    if (vp != std::string::npos)
+                        c.cycle_mode = (text.substr(vp, 4) == "true");
+                }
+            }
+        }
 
         // dry_run: look for "dry_run": true/false
         {

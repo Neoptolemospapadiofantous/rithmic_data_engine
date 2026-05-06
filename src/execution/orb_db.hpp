@@ -419,8 +419,31 @@ public:
     }
 
     // ── Count completed trades for today (for seeding trades_today on restart) ──
-    int count_today_trades(const std::string& trade_date) {
+    // Count completed trades for today, optionally scoped to a cycle.
+    // When cycle_start_epoch > 0, only trades whose entry_time >= that Unix timestamp
+    // are counted — this lets the wrapper reset the count between cycles without
+    // deleting historical trade records.
+    int count_today_trades(const std::string& trade_date, int64_t cycle_start_epoch = 0) {
         if (!is_connected()) reconnect();
+        if (cycle_start_epoch > 0) {
+            std::string epoch_s = std::to_string(cycle_start_epoch);
+            const char* params[5] = {
+                account_label_.c_str(), // $1
+                instrument_.c_str(),    // $2
+                strategy_.c_str(),      // $3
+                trade_date.c_str(),     // $4
+                epoch_s.c_str()         // $5  cycle_start (Unix seconds)
+            };
+            PGresult* res = exec_params_query(
+                "SELECT COUNT(*) FROM live_trades"
+                " WHERE account_label=$1 AND instrument=$2 AND strategy=$3"
+                "   AND trade_date=$4::date AND entry_time >= to_timestamp($5::bigint)",
+                5, params);
+            if (!res) return 0;
+            int n = (PQntuples(res) > 0) ? std::atoi(PQgetvalue(res, 0, 0)) : 0;
+            PQclear(res);
+            return n;
+        }
         const char* params[4] = {
             account_label_.c_str(),// $1
             instrument_.c_str(),   // $2

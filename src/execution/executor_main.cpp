@@ -1033,7 +1033,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         // Without this, every restart resets to 0 and max_daily_trades is not enforced
         // correctly across sessions started on the same calendar day.
         if (db && db->is_connected()) {
-            int done = db->count_today_trades(today);
+            int done = db->count_today_trades(today, orb_cfg.cycle_start_epoch);
             if (done > 0) strategy.seed_trades_today(done);
         }
     }
@@ -1178,13 +1178,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
                 pos_write_counter = 0;
 
-                // All daily trades exhausted and position is flat — shut down cleanly
+                // All daily trades exhausted and position is flat — shut down cleanly.
+                // In cycle_mode the wrapper immediately restarts for the next cycle.
                 if (strategy.session().trades_today >= orb_cfg.max_daily_trades &&
                     order_mgr.position_snapshot().state == PosState::FLAT) {
-                    LOG("[EXECUTOR] Daily trade limit reached (%d/%d) — shutting down",
-                        strategy.session().trades_today, orb_cfg.max_daily_trades);
+                    LOG("[EXECUTOR] Daily trade limit reached (%d/%d) — shutting down%s",
+                        strategy.session().trades_today, orb_cfg.max_daily_trades,
+                        orb_cfg.cycle_mode ? " (cycle complete)" : "");
                     if (audit_conn)
-                        audit_log.info("session.daily_limit", "all trades done — clean exit");
+                        audit_log.info("session.daily_limit",
+                            orb_cfg.cycle_mode ? "cycle complete — clean exit" : "all trades done — clean exit");
                     g_running = false;
                     ioc_ref.stop();
                     co_return;
