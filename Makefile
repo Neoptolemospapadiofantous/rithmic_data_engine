@@ -55,10 +55,10 @@ deploy:
 		sudo install -m 755 build/nq_executor /usr/local/bin/nq_executor; \
 		sudo chcon -t bin_t /usr/local/bin/nq_executor 2>/dev/null || true; \
 		sudo chcon -t etc_t /home/opc/rithmic_engine/.env 2>/dev/null || true; \
-		sudo cp deploy/nq_executor.service /etc/systemd/system/nq_executor.service; \
 		sudo cp deploy/nq_executor@.service /etc/systemd/system/nq_executor@.service; \
 		sudo cp deploy/nq_executor_24x7@.service /etc/systemd/system/nq_executor-24x7@.service; \
 		sudo install -m 755 scripts/run_continuous.sh /home/opc/rithmic_engine/scripts/run_continuous.sh; \
+		sudo systemctl disable nq_executor.service 2>/dev/null || true; \
 		sudo systemctl daemon-reload; \
 		route=$$(python3 -c "import json; print(json.load(open(\"config/live_config.json\")).get(\"trade_route\",\"\"))" 2>/dev/null || echo ""); \
 		if [[ "$$route" == "Rithmic Order Routing" ]]; then \
@@ -67,7 +67,7 @@ deploy:
 		fi; \
 		PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic \
 			-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='"'"'rithmic_user'"'"' AND state='"'"'idle in transaction'"'"' AND pid != pg_backend_pid();" 2>/dev/null || true; \
-		for svc in nq_executor rithmic-engine; do \
+		for svc in rithmic-engine; do \
 			if systemctl is-active $$svc 2>/dev/null | grep -q "^active$$"; then \
 				echo "Restarting $$svc..."; \
 				sudo systemctl restart $$svc; \
