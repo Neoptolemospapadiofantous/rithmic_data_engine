@@ -72,7 +72,7 @@ struct OrbConfig {
     int    eod_flatten_hour    = 15;   // EOD flatten hour (ET)
     int    eod_flatten_min     = 55;   // EOD flatten minute (ET)
     int    news_blackout_min   = 5;    // minutes before/after news event to block entry
-    int    stop_cooldown_secs  = 15;   // seconds to block re-entry after any stop exit (0=disabled)
+    int    stop_cooldown_secs  = 5;    // seconds to block re-entry after any stop exit (0=disabled)
     int    qty                 = 1;    // contract quantity per trade
 
     // ── Session open (defaults: RTH 9:30 ET) ──────────────────────
