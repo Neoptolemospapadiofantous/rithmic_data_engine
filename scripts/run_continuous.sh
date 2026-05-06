@@ -136,13 +136,34 @@ while true; do
         log "Starting executor (cycle, timeout=${CYCLE_TIMEOUT}s)..."
         # timeout -k 60 sends SIGTERM at CYCLE_TIMEOUT, then SIGKILL after 60s
         # if executor didn't flatten and exit cleanly (handles stuck/no-signal cycles)
-        timeout -k 60 "${CYCLE_TIMEOUT}" "$BINARY" --config "$CONFIG_FILE" || true
+        timeout -k 60 "${CYCLE_TIMEOUT}" "$BINARY" --config "$CONFIG_FILE" &
+        EXEC_PID=$!
+        CYCLE_START_TS=$(date +%s)
+
+        # No-trade timer: log elapsed/remaining every 60s while executor is alive
+        while kill -0 "$EXEC_PID" 2>/dev/null; do
+            sleep 60
+            if kill -0 "$EXEC_PID" 2>/dev/null; then
+                ELAPSED=$(( $(date +%s) - CYCLE_START_TS ))
+                REMAINING=$(( CYCLE_TIMEOUT - ELAPSED ))
+                log "Cycle alive: ${ELAPSED}s elapsed — ${REMAINING}s until forced restart (no trade yet)"
+            fi
+        done
+        wait "$EXEC_PID" 2>/dev/null || true
         EXIT_CODE=$?
+
         if [[ $EXIT_CODE -eq 124 ]]; then
             log "Cycle timed out after ${CYCLE_TIMEOUT}s (no trades or stuck) — forcing next cycle"
         else
             log "Executor exited (exit=${EXIT_CODE}) — cycle complete"
         fi
+
+        # Clear last cycle's ORB from live_sessions so the next executor
+        # builds a genuine fresh range rather than re-seeding the old one.
+        PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic -q \
+            -c "UPDATE live_sessions SET orb_high=0, orb_low=0, orb_range=0 \
+                WHERE account_label='${ACCOUNT}' AND session_date=CURRENT_DATE;" \
+            2>/dev/null || true
 
         log "Waiting ${CYCLE_RESTART_DELAY}s before next cycle..."
         sleep "${CYCLE_RESTART_DELAY}"
