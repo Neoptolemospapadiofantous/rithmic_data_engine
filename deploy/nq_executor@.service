@@ -1,65 +1,32 @@
-# systemd template unit - one instance per account config.
-#
-# Instance name = config file stem (without _config.json)
-# Examples:
-#   sudo systemctl start  nq_executor@legends
-#   sudo systemctl start  nq_executor@tradeify
-#
-# Install:  sudo cp deploy/nq_executor@.service /etc/systemd/system/
-#           sudo systemctl daemon-reload
-#
-# Logs:     journalctl -u nq_executor@legends -f
-# Stop:     sudo systemctl stop nq_executor@legends
-
 [Unit]
-Description=NQ ORB Live Executor - %I
-Documentation=https://github.com/neoptolemospapadiofantous/rithmic_engine
+Description=NQ ORB Executor %I
 After=network-online.target postgresql-16.service
 Wants=network-online.target
 Requires=postgresql-16.service
 StartLimitIntervalSec=300s
 StartLimitBurst=3
+Conflicts=nq_executor-24x7@%i.service
 
 [Service]
 Type=simple
-
 User=opc
 Group=opc
 WorkingDirectory=/home/opc/rithmic_engine
-
-# Load credentials from .env (KEY=value format)
 EnvironmentFile=/home/opc/rithmic_engine/.env
-# Per-account overrides (e.g. RITHMIC_MD_PROVIDER) — optional, ignored if missing
 EnvironmentFile=-/home/opc/rithmic_engine/.env.%I
-
-# Explicitly unset test/dev flags that must never fire in production
 UnsetEnvironment=NQ_FIRE_TEST_ORDER
-
-# %I is the unescaped instance name (e.g. MNQ, MES, MYM)
-ExecStartPre=/bin/bash -c \
-    '[ ! -f /home/opc/rithmic_engine/NO_DEPLOY ] || \
-     { echo "NO_DEPLOY lockfile present — refusing to start %I executor"; exit 1; }'
-
-ExecStart=/home/opc/rithmic_engine/build/nq_executor \
-    --config /home/opc/rithmic_engine/config/%I_config.json
-
+ExecStartPre=/bin/bash -c '[ ! -f /home/opc/rithmic_engine/NO_DEPLOY ] || { echo "NO_DEPLOY lockfile present"; exit 1; }'
+ExecStart=/home/opc/rithmic_engine/build/nq_executor --config /home/opc/rithmic_engine/config/%I_config.json
 TimeoutStartSec=90s
-
 Restart=on-failure
 RestartSec=30s
-
 TimeoutStopSec=30s
 KillMode=process
 KillSignal=SIGTERM
 SendSIGKILL=yes
-FinalKillSignal=SIGKILL
-
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=nq_executor_%I
-
-NoNewPrivileges=yes
-PrivateTmp=yes
 
 [Install]
 WantedBy=multi-user.target
