@@ -1,20 +1,18 @@
-# systemd template unit — one instance per instrument/config.
+# systemd template unit - one instance per account config.
 #
 # Instance name = config file stem (without _config.json)
 # Examples:
-#   sudo systemctl start  nq_executor@MNQ   → runs with config/MNQ_config.json
-#   sudo systemctl start  nq_executor@MES   → runs with config/MES_config.json
-#   sudo systemctl start  nq_executor@MYM   → runs with config/MYM_config.json
-#   sudo systemctl enable nq_executor@MNQ nq_executor@MES
+#   sudo systemctl start  nq_executor@legends
+#   sudo systemctl start  nq_executor@tradeify
 #
 # Install:  sudo cp deploy/nq_executor@.service /etc/systemd/system/
 #           sudo systemctl daemon-reload
 #
-# Logs:     journalctl -u nq_executor@MNQ -f
-# Stop:     sudo systemctl stop nq_executor@MNQ   (SIGTERM → flatten)
+# Logs:     journalctl -u nq_executor@legends -f
+# Stop:     sudo systemctl stop nq_executor@legends
 
 [Unit]
-Description=NQ ORB Live Executor — %I
+Description=NQ ORB Live Executor - %I
 Documentation=https://github.com/neoptolemospapadiofantous/rithmic_engine
 After=network-online.target postgresql-16.service
 Wants=network-online.target
