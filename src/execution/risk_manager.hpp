@@ -84,12 +84,12 @@ public:
             return;
         }
 
-        // Check consistency cap: today's profit must not exceed 30% of total profit
-        // Only enforced when total_profit > 0 (don't restrict during losses)
-        // Consistency cap: today's profit must not exceed 30% of prior days' cumulative profit.
-        // Compare against prior_profit (total minus today) so a fresh session never self-halts.
+        // Consistency cap: today's profit must not exceed 30% of prior cumulative profit.
+        // Skipped in cycle_mode (each cycle is a short independent session, not a full
+        // trading day — the cap is meaningless when daily_pnl_ resets every 20 minutes).
+        // Also skipped when prior history is thin (<$500) to avoid test-trade false fires.
         double prior_profit = total_profit_ - daily_pnl_;
-        if (prior_profit > 0.0 && daily_pnl_ > 0.0) {
+        if (!cfg_.cycle_mode && prior_profit >= 500.0 && daily_pnl_ > 0.0) {
             double daily_fraction = daily_pnl_ / prior_profit;
             if (daily_fraction > cfg_.consistency_cap_pct) {
                 halt("consistency_cap: today=" + std::to_string(daily_pnl_)
