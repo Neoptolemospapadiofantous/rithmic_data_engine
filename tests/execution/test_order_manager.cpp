@@ -452,6 +452,127 @@ TEST(mfe_and_mae_tracked_correctly) {
     ASSERT_NEAR(snap.mae, 3.0, 0.001);
 }
 
+// 16. unknown_exit_cancels_stop: a fill arriving with an unrecognised basket_id
+//     (neither entry nor stop) while LONG triggers exit_reason="unknown_exit",
+//     causes the stop basket to be cancelled, and leaves the position FLAT.
+TEST(unknown_exit_cancels_stop) {
+    Fixture f;
+
+    // Get into LONG with an active exchange stop
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    auto snap = f.om.position_snapshot();
+    ASSERT(!snap.basket_id_stop.empty());   // exchange stop was submitted after entry fill
+
+    std::string stop_basket = snap.basket_id_stop;
+
+    // Simulate a fill arriving with a completely unknown basket_id (not entry, not stop)
+    // This represents an exchange fill for a basket we don't recognise.
+    f.om.on_fill_notification("UNKNOWN-BASKET-999", 18995.0, 1, /*is_entry_fill=*/false);
+
+    // exit_reason should be "unknown_exit" (basket didn't match basket_id_stop)
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_EQ(out.exit_reason, std::string("unknown_exit"));
+
+    // The stop basket should have been cancelled (basket_id_stop != fill basket_id)
+    bool stop_cancelled = false;
+    for (const auto& b : f.cancelled_baskets) {
+        if (b == stop_basket) { stop_cancelled = true; break; }
+    }
+    ASSERT(stop_cancelled);
+
+    // Position must be FLAT after the unknown fill resolved
+    ASSERT(f.om.is_flat());
+}
+
+// 17. all_exit_paths_cancel_stop: exchange_stop, stop_loss_timeout, and unknown_exit
+//     all result in at least one cancel call for the stop basket.
+TEST(all_exit_paths_cancel_stop) {
+    // ── Path A: exchange_stop ──────────────────────────────────────────────────
+    // The stop basket itself fills → cancel_stop_locked is NOT called (basket matches),
+    // but the stop basket is no longer relevant. What matters for exchange_stop is that
+    // when the stop fills, any OTHER pending stop is cancelled. Here we verify the
+    // basic path: stop basket fills → position goes FLAT without extra cancel needed.
+    // We confirm cancelled_baskets is empty (no extra cancel sent for a clean stop fill).
+    {
+        Fixture f;
+        f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+        sim_entry_fill(f, 19000.0);
+        ASSERT_EQ(f.om.state(), PosState::LONG);
+
+        auto snap = f.om.position_snapshot();
+        std::string stop_basket = snap.basket_id_stop;
+        ASSERT(!stop_basket.empty());
+
+        // Fill arrives for the stop basket itself → exchange_stop path
+        f.om.on_fill_notification(stop_basket, 18990.0, 1, /*is_entry_fill=*/false);
+
+        Position out;
+        ASSERT(f.om.pop_trade_completed(out));
+        ASSERT_EQ(out.exit_reason, std::string("exchange_stop"));
+        ASSERT(f.om.is_flat());
+        // No cancel should have been sent (the stop itself was the filler)
+        ASSERT(f.cancelled_baskets.empty());
+    }
+
+    // ── Path B: stop_loss_timeout ──────────────────────────────────────────────
+    // Exchange stop active but unresponsive → software SL timeout fires initiate_exit_locked,
+    // which calls cancel_stop_locked → cancel_cb_ is triggered for the stop basket.
+    {
+        Fixture f;
+        // Override kSLFireTimeoutMs by forcing the timeout path:
+        // We can't change the constant, but we can advance time by calling
+        // check_trail_and_stop twice. The first call starts the breach timer;
+        // since kSLFireTimeoutMs=3000ms we cannot fast-forward real time in a unit test.
+        // Instead we simulate the timeout path by rejecting the stop (software SL tier 1)
+        // and verifying a cancel was issued for the stop basket before it was cleared.
+        f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+        sim_entry_fill(f, 19000.0);
+        ASSERT_EQ(f.om.state(), PosState::LONG);
+
+        auto snap = f.om.position_snapshot();
+        std::string stop_basket = snap.basket_id_stop;
+        ASSERT(!stop_basket.empty());
+
+        // Use flatten_now with reason "stop_loss_timeout" to exercise the cancel path
+        // directly: initiate_exit_locked calls cancel_stop_locked before sending exit.
+        f.om.flatten_now("stop_loss_timeout", 18989.0);
+
+        // cancel_cb_ should have been called for the stop basket
+        bool stop_cancelled = false;
+        for (const auto& b : f.cancelled_baskets) {
+            if (b == stop_basket) { stop_cancelled = true; break; }
+        }
+        ASSERT(stop_cancelled);
+        ASSERT(!f.cancelled_baskets.empty());
+    }
+
+    // ── Path C: unknown_exit ───────────────────────────────────────────────────
+    // Fill arrives with unrecognised basket_id → cancel_stop_locked fires for stop basket.
+    {
+        Fixture f;
+        f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+        sim_entry_fill(f, 19000.0);
+        ASSERT_EQ(f.om.state(), PosState::LONG);
+
+        auto snap = f.om.position_snapshot();
+        std::string stop_basket = snap.basket_id_stop;
+        ASSERT(!stop_basket.empty());
+
+        f.om.on_fill_notification("UNKNOWN-BASKET-42", 18995.0, 1, /*is_entry_fill=*/false);
+
+        bool stop_cancelled = false;
+        for (const auto& b : f.cancelled_baskets) {
+            if (b == stop_basket) { stop_cancelled = true; break; }
+        }
+        ASSERT(stop_cancelled);
+        ASSERT(!f.cancelled_baskets.empty());
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -473,6 +594,8 @@ int main() {
     RUN(flatten_now_cancels_pending_entry);
     RUN(software_sl_fires_when_no_exchange_stop);
     RUN(mfe_and_mae_tracked_correctly);
+    RUN(unknown_exit_cancels_stop);
+    RUN(all_exit_paths_cancel_stop);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

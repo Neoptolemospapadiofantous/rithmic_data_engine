@@ -69,6 +69,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <unordered_set>
 
 namespace asio      = boost::asio;
 namespace beast     = boost::beast;
@@ -250,14 +251,15 @@ static asio::awaitable<void> ws_write(WsStream& ws, const std::string& data) {
 // single-threaded io_context means no contention, but we keep the mutex for
 // safety in case of future threading changes).
 struct OrderPlant {
-    std::unique_ptr<WsStream> ws;
-    std::mutex                send_mu;
-    bool                      connected = false;
-    std::string               account_id;
-    std::string               fcm_id;
-    std::string               ib_id;
-    std::string               trade_route = "simulator";  // Legends Trading route; NEVER use "Rithmic Order Routing"
-    std::string               trade_symbol;  // front-month contract e.g. NQM6
+    std::unique_ptr<WsStream>       ws;
+    std::mutex                      send_mu;
+    bool                            connected = false;
+    std::string                     account_id;
+    std::string                     fcm_id;
+    std::string                     ib_id;
+    std::string                     trade_route = "simulator";  // Legends Trading route; NEVER use "Rithmic Order Routing"
+    std::string                     trade_symbol;  // front-month contract e.g. NQM6
+    std::unordered_set<std::string> pending_cancels_;  // queued cancels from disconnected periods
 
     // Send RequestNewOrder (template 312)
     // Returns basket_id if sent, empty string on error
@@ -363,7 +365,14 @@ struct OrderPlant {
 
     // Send RequestCancelOrder (template 316)
     void send_cancel(const std::string& basket_id, const std::string& account_id_str) {
-        if (!connected || !ws) return;
+        if (!connected || !ws) {
+            // Queue the cancel; it will be drained when the order plant reconnects.
+            pending_cancels_.insert(basket_id);
+            LOG("[ORDER_PLANT] Disconnected — queued cancel for basket=%s "
+                "(pending_cancels size=%zu)",
+                basket_id.c_str(), pending_cancels_.size());
+            return;
+        }
         rti::RequestCancelOrder req;
         req.set_template_id(316);
         req.set_basket_id(basket_id);
@@ -376,6 +385,32 @@ struct OrderPlant {
         } catch (std::exception& e) {
             LOG("[ORDER_PLANT] ERROR sending cancel: %s", e.what());
         }
+    }
+
+    // Drain any cancels that were queued while the order plant was disconnected.
+    // Call this immediately after order_plant->connected is set to true and the
+    // subscription is in place, so the exchange receives the cancels promptly.
+    void drain_pending_cancels() {
+        if (pending_cancels_.empty()) return;
+        std::size_t count = pending_cancels_.size();
+        LOG("[ORDER_PLANT] Draining %zu queued cancel(s) after reconnect", count);
+        for (const auto& bid : pending_cancels_) {
+            rti::RequestCancelOrder req;
+            req.set_template_id(316);
+            req.set_basket_id(bid);
+            req.set_account_id(account_id);
+            req.set_fcm_id(fcm_id);
+            req.set_ib_id(ib_id);
+            try {
+                ws->write(asio::buffer(proto_frame(req)));
+                LOG("[ORDER_PLANT] [DRAIN] RequestCancelOrder sent: basket=%s", bid.c_str());
+            } catch (std::exception& e) {
+                LOG("[ORDER_PLANT] [DRAIN] ERROR sending cancel for basket=%s: %s",
+                    bid.c_str(), e.what());
+            }
+        }
+        pending_cancels_.clear();
+        LOG("[ORDER_PLANT] Drained %zu pending cancel(s)", count);
     }
 };
 
@@ -812,6 +847,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
             }
 
+            // Drain any cancels that were queued while the order plant was offline.
+            // Must run after connected=true and after tid=308 subscription so the
+            // exchange can immediately ACK/confirm the cancel notifications.
+            order_plant->drain_pending_cancels();
 
         } catch (std::exception& e) {
             LOG("[EXECUTOR] FATAL: ORDER_PLANT connect failed: %s", e.what());
@@ -1025,6 +1064,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 
     // Session setup — on reconnect, today/risk/strategy already have the day's state.
     // Only initialize today on first run (empty string signals first call).
+    bool is_fresh_start = today.empty();  // capture BEFORE the block sets today
     if (today.empty()) {
         today = today_date_str();
         strategy.reset_session();
@@ -1037,6 +1077,24 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             if (done > 0) strategy.seed_trades_today(done);
         }
     }
+
+    // Fresh-start reconciliation: if the prior cycle exited while holding a position,
+    // live_position.state will show LONG/SHORT/PENDING_EXIT in the DB. The new process
+    // starts with a flat in-process state but the exchange may still have an open
+    // position. Halt entries until the operator confirms the exchange is flat.
+    if (is_fresh_start && db && db->is_connected() && !orb_cfg.dry_run) {
+        std::string prior_state = db->read_position_state(today);
+        if (prior_state == "LONG" || prior_state == "SHORT" || prior_state == "PENDING_EXIT") {
+            LOG("[EXECUTOR] CRITICAL: live_position shows %s from prior cycle — "
+                "halting entries. Confirm exchange is flat then restart.",
+                prior_state.c_str());
+            strategy.halt_trading("startup_stale_position_" + prior_state);
+        } else if (prior_state == "PENDING_ENTRY") {
+            LOG("[EXECUTOR] WARNING: live_position shows PENDING_ENTRY from prior cycle — "
+                "snapshot reconciliation should cancel the residual entry order.");
+        }
+    }
+
     LOG("[EXECUTOR] Session date: %s  dry_run=%s",
         today.c_str(), orb_cfg.dry_run ? "TRUE" : "FALSE");
     if (orb_cfg.dry_run)

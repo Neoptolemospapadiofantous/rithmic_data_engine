@@ -362,6 +362,33 @@ public:
         }
     }
 
+    // ── Read current position state from DB (for startup reconciliation) ────────
+    // Returns 'FLAT' if no row exists for today (first ever run or new day).
+    std::string read_position_state(const std::string& session_date) {
+        if (!is_connected()) { reconnect(); if (!is_connected()) return "FLAT"; }
+
+        const char* params[4] = {
+            account_label_.c_str(),  // $1
+            session_date.c_str(),    // $2
+            instrument_.c_str(),     // $3
+            strategy_.c_str()        // $4
+        };
+
+        PGresult* res = exec_params_query(
+            "SELECT state FROM live_position"
+            " WHERE account_label=$1 AND session_date=$2::date"
+            "   AND instrument=$3 AND strategy=$4 LIMIT 1",
+            4, params);
+        if (!res) return "FLAT";
+        std::string state = "FLAT";
+        if (PQntuples(res) > 0) {
+            const char* v = PQgetvalue(res, 0, 0);
+            if (v && v[0] != '\0') state = v;
+        }
+        PQclear(res);
+        return state;
+    }
+
     // ── Get total historical P&L (for seeding RiskManager on startup) ─────────
     double get_total_pnl() {
         if (!is_connected()) reconnect();

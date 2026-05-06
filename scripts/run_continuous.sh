@@ -167,8 +167,20 @@ while true; do
                     WHERE account_label='${ACCOUNT}' AND session_date=CURRENT_DATE;" \
             2>/dev/null || true
 
-        log "Waiting ${CYCLE_RESTART_DELAY}s before next cycle..."
-        sleep "${CYCLE_RESTART_DELAY}"
+        # Check if prior cycle left a non-FLAT position state
+        PRIOR_STATE=$(PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic -tAq \
+            -c "SELECT COALESCE(state,'FLAT') FROM live_position
+                WHERE account_label='${ACCOUNT}' AND session_date=CURRENT_DATE LIMIT 1" \
+            2>/dev/null || echo "FLAT")
+        PRIOR_STATE="${PRIOR_STATE:-FLAT}"
+
+        if [[ "$PRIOR_STATE" != "FLAT" && "$PRIOR_STATE" != "PENDING_ENTRY" ]]; then
+            log "CRITICAL: prior cycle ended with position state=${PRIOR_STATE} — waiting 60s for exchange to settle"
+            sleep 60
+        else
+            log "Position state clean (${PRIOR_STATE}) — waiting ${CYCLE_RESTART_DELAY}s before next cycle"
+            sleep "${CYCLE_RESTART_DELAY}"
+        fi
     else
         # ── RTH mode (default) ────────────────────────────────────
         log "RTH mode: patching config for 9:30 ET..."
