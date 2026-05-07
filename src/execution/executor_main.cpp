@@ -154,7 +154,9 @@ static void flush_position(OrbDB* db,
                        strategy.orb_set(),
                        sess.trades_today,
                        md_connected,
-                       op_connected);
+                       op_connected,
+                       snap.be_triggered,
+                       snap.trailing_active);
 }
 
 static void handle_signal(int /*sig*/) {

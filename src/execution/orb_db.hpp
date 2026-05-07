@@ -251,7 +251,9 @@ public:
                         bool   orb_set,
                         int    trades_today,
                         bool   md_connected,
-                        bool   op_connected) {
+                        bool   op_connected,
+                        bool   be_triggered    = false,
+                        bool   trailing_active = false) {
         if (!is_connected()) {
             reconnect();
             if (!is_connected()) {
@@ -284,11 +286,13 @@ public:
         snprintf(oh,   sizeof(oh),   "%.4f", orb_high);
         snprintf(ol,   sizeof(ol),   "%.4f", orb_low);
         snprintf(tt,   sizeof(tt),   "%d",   trades_today);
-        const char* orb_set_s    = orb_set      ? "t" : "f";
-        const char* md_conn_s    = md_connected  ? "t" : "f";
-        const char* op_conn_s    = op_connected  ? "t" : "f";
+        const char* orb_set_s    = orb_set        ? "t" : "f";
+        const char* md_conn_s    = md_connected    ? "t" : "f";
+        const char* op_conn_s    = op_connected    ? "t" : "f";
+        const char* be_trig_s    = be_triggered    ? "t" : "f";
+        const char* trail_act_s  = trailing_active ? "t" : "f";
 
-        const char* params[18] = {
+        const char* params[20] = {
             account_label_.c_str(),// $1  account_label
             session_date.c_str(),  // $2  session_date
             instrument_.c_str(),   // $3  instrument
@@ -306,7 +310,9 @@ public:
             orb_set_s,             // $15 orb_set
             tt,                    // $16 trades_today
             md_conn_s,             // $17 md_connected
-            op_conn_s              // $18 op_connected
+            op_conn_s,             // $18 op_connected
+            be_trig_s,             // $19 be_triggered
+            trail_act_s            // $20 trailing_active
         };
 
         try {
@@ -315,14 +321,15 @@ public:
                 " (account_label, session_date, instrument, strategy, state, direction,"
                 "  entry_price, entry_time, current_price, unrealized_pnl_pts, unrealized_pnl_usd,"
                 "  sl_price, orb_high, orb_low, orb_set, trades_today,"
-                "  md_connected, op_connected, last_updated)"
+                "  md_connected, op_connected, be_triggered, trailing_active, last_updated)"
                 " VALUES"
                 " ($1, $2::date, $3, $4, $5, $6,"
                 "  $7::double precision,"
                 "  to_timestamp($8, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC',"
                 "  $9::double precision, $10::double precision, $11::double precision,"
                 "  $12::double precision, $13::double precision, $14::double precision,"
-                "  $15::boolean, $16::int, $17::boolean, $18::boolean, NOW())"
+                "  $15::boolean, $16::int, $17::boolean, $18::boolean,"
+                "  $19::boolean, $20::boolean, NOW())"
                 " ON CONFLICT (session_date, account_label, instrument, strategy) DO UPDATE SET"
                 "  state=EXCLUDED.state, direction=EXCLUDED.direction,"
                 "  entry_price=EXCLUDED.entry_price, entry_time=EXCLUDED.entry_time,"
@@ -335,8 +342,10 @@ public:
                 "  trades_today=EXCLUDED.trades_today,"
                 "  md_connected=EXCLUDED.md_connected,"
                 "  op_connected=EXCLUDED.op_connected,"
+                "  be_triggered=EXCLUDED.be_triggered,"
+                "  trailing_active=EXCLUDED.trailing_active,"
                 "  last_updated=NOW()",
-                18, params);
+                20, params);
         } catch (std::exception& e) {
             LOG("[ORBDB] write_position failed: %s", e.what());
         }
@@ -624,6 +633,8 @@ private:
                 trades_today        INTEGER DEFAULT 0,
                 md_connected        BOOLEAN DEFAULT FALSE,
                 op_connected        BOOLEAN DEFAULT FALSE,
+                be_triggered        BOOLEAN DEFAULT FALSE,
+                trailing_active     BOOLEAN DEFAULT FALSE,
                 last_updated        TIMESTAMPTZ DEFAULT NOW()
             )
         )");
@@ -632,6 +643,8 @@ private:
         exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS instrument      TEXT NOT NULL DEFAULT 'MNQ'");
         exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS strategy        TEXT NOT NULL DEFAULT 'ORB'");
         exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS legends_price   DOUBLE PRECISION");
+        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS be_triggered    BOOLEAN NOT NULL DEFAULT FALSE");
+        exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS trailing_active BOOLEAN NOT NULL DEFAULT FALSE");
 
         // Drop old single-account unique index and recreate with account_label
         exec("DROP INDEX IF EXISTS live_position_inst_strat_idx");
