@@ -411,6 +411,39 @@ public:
         return total;
     }
 
+    // ── Get historical peak equity (high-water mark across all trades) ─────────
+    // Returns the maximum running equity ever reached: starting_balance +
+    // max cumulative P&L at any point in trade history.  Used to seed
+    // RiskManager.peak_equity_ so the trailing drawdown cap is correct after
+    // a cycle restart (otherwise it resets to starting_balance each cycle).
+    double get_peak_equity(double starting_balance) {
+        if (!is_connected()) reconnect();
+
+        const char* params[3] = {
+            account_label_.c_str(),
+            instrument_.c_str(),
+            strategy_.c_str()
+        };
+
+        PGresult* res = exec_params_query(
+            "SELECT COALESCE(MAX(cum_pnl), 0.0) FROM ("
+            "  SELECT SUM(pnl_usd) OVER ("
+            "    ORDER BY exit_time"
+            "    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW"
+            "  ) AS cum_pnl"
+            "  FROM live_trades"
+            "  WHERE account_label=$1 AND instrument=$2 AND strategy=$3"
+            ") sub",
+            3, params);
+
+        if (!res) return starting_balance;
+        double max_cum_pnl = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
+        PQclear(res);
+        double peak = starting_balance + std::max(0.0, max_cum_pnl);
+        LOG("[ORBDB] Historical peak_equity=%.2f (max_cum_pnl=%.2f)", peak, max_cum_pnl);
+        return peak;
+    }
+
     // ── Read last N trade rows (for monitoring) ───────────────────────────────
     void print_recent_trades(int n = 10) {
         char p4[16];

@@ -465,13 +465,15 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     try {
         db = std::make_unique<OrbDB>(orb_cfg.pg_connstr(), orb_cfg.symbol, orb_cfg.account_label);
         LOG("[EXECUTOR] OrbDB connected");
-        // Seed risk manager with historical P&L so consistency cap is correct
+        // Seed risk manager with historical P&L and peak equity.
         if (today.empty()) {  // only on first startup, not reconnects
-            double hist_pnl = db->get_total_pnl();
+            double hist_pnl  = db->get_total_pnl();
+            double hist_peak = db->get_peak_equity(orb_cfg.starting_balance);
             risk.seed_total_profit(hist_pnl);
-            // Restore actual equity so trailing drawdown baseline matches Legends' records.
-            // Without this, peak_equity_ stays at 50000 after profitable prior sessions,
-            // and the drawdown cap fires earlier than Legends' rule requires.
+            // Seed peak first: set_equity raises peak_ if arg > current peak_.
+            // Then set current equity — peak_ stays at hist_peak when equity < hist_peak
+            // (the normal case after a drawdown), giving correct trailing drawdown distance.
+            risk.set_equity(hist_peak);
             risk.set_equity(orb_cfg.starting_balance + hist_pnl);
         }
     } catch (std::exception& e) {
@@ -1598,11 +1600,28 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         order_mgr.flatten_now("kill_signal");
         if (audit_conn)
             audit_log.info("session.eod_flatten", "kill signal immediate flatten");
-        // Drain window: give pending cancel/exit writes 500ms to flush before
-        // stopping the io_context (prevents orphaned stop orders on SIGTERM).
-        asio::steady_timer drain(ex);
-        drain.expires_after(std::chrono::milliseconds(500));
-        co_await drain.async_wait(asio::use_awaitable);
+        // Poll until the exit fill is confirmed (position = FLAT) before stopping
+        // the io_context.  Without this, the executor dies before the exchange fill
+        // arrives → live_position stays LONG/SHORT in DB → next cycle's startup
+        // halt fires and the 20-min recovery loop runs unnecessarily.
+        // SIGKILL fires after 60s (run_continuous.sh timeout -k 60), so up to 10s
+        // here is safe; market-order fills typically confirm in under 1s.
+        {
+            constexpr int kMaxTicks    = 100;   // 100 × 100 ms = 10 s
+            constexpr int kTickMs      = 100;
+            int ticks = 0;
+            while (!order_mgr.is_flat() && ticks < kMaxTicks) {
+                asio::steady_timer t(ex);
+                t.expires_after(std::chrono::milliseconds(kTickMs));
+                co_await t.async_wait(asio::use_awaitable);
+                ++ticks;
+            }
+            if (order_mgr.is_flat())
+                LOG("[EXECUTOR] Shutdown complete — position flat after %d ms", ticks * kTickMs);
+            else
+                LOG("[EXECUTOR] WARNING: position not confirmed flat after %d ms — shutting down anyway",
+                    kMaxTicks * kTickMs);
+        }
         ioc_ref.stop();
     };
 
