@@ -1189,6 +1189,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                     "%s MARKET qty=%d basket=%s",
                                     unwind_is_buy ? "BUY" : "SELL",
                                     std::abs(net), basket_id.c_str());
+                                // Register so the fill is recognised instead of
+                                // triggering a second GHOST-FILL log.
+                                order_mgr.register_unwind_basket(basket_id);
                             } catch (std::exception& e) {
                                 LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind FAILED: %s "
                                     "— MANUAL INTERVENTION REQUIRED", e.what());
@@ -1198,6 +1201,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         strategy.unhalt_trading("startup_ghost_position_cleared");
                     } else {
                         LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
+                        // tid=451 confirmed exchange is flat — clear any ghost-fill halt
+                        // so entries are re-enabled (covers the case where a stale stop
+                        // fired and then was manually closed via RTrader before this snapshot).
+                        order_mgr.confirm_exchange_flat();
                         // If strategy was halted waiting for position confirm, clear it
                         strategy.unhalt_trading("startup_position_confirmed_flat");
                     }
