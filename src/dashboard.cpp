@@ -108,6 +108,11 @@ struct Metrics {
     int         recon_failures = 0;    // from live_state.json reconnect_failures
     int64_t     last_tick_ms   = 0;    // system-clock ms of last received tick (C++ feed)
     std::string conn_state     = "INIT"; // from live_state.json connection field
+
+    // Slippage (from live_trades today)
+    int    last_entry_slip  = -1;   // -1 = no trades yet
+    double avg_entry_slip   = 0.0;
+    int    trades_today     = 0;
 };
 
 static Metrics           g_metrics;
@@ -388,6 +393,32 @@ struct Pipeline {
                 if (res) PQclear(res);
             } catch (...) {}
 
+            // Entry slippage from live_trades today
+            try {
+                PGresult* res = PQexec(db->conn(),
+                    "SELECT entry_slippage_ticks FROM live_trades"
+                    " WHERE trade_date = CURRENT_DATE"
+                    " ORDER BY id DESC LIMIT 10");
+                if (res && PQresultStatus(res) == PGRES_TUPLES_OK) {
+                    int n = PQntuples(res);
+                    if (n > 0) {
+                        double total = 0;
+                        for (int i = 0; i < n; ++i)
+                            total += std::stod(PQgetvalue(res, i, 0));
+                        std::lock_guard lk(g_metrics.mu);
+                        g_metrics.last_entry_slip = std::stoi(PQgetvalue(res, 0, 0));
+                        g_metrics.avg_entry_slip  = total / n;
+                        g_metrics.trades_today    = n;
+                    } else {
+                        std::lock_guard lk(g_metrics.mu);
+                        g_metrics.last_entry_slip = -1;
+                        g_metrics.avg_entry_slip  = 0.0;
+                        g_metrics.trades_today    = 0;
+                    }
+                }
+                if (res) PQclear(res);
+            } catch (...) {}
+
             // Primary position/reconnect data: data/live_state.json (written by live_trader.py)
             // If absent → show NOT RUNNING; if present → override DB with in-memory state.
             {
@@ -497,6 +528,9 @@ static void render() {
     int         recon_failures;
     int64_t     last_tick_ms;
     std::string conn_state;
+    int         last_entry_slip;
+    double      avg_entry_slip;
+    int         trades_today;
 
     {
         std::lock_guard lk(g_metrics.mu);
@@ -527,6 +561,9 @@ static void render() {
         recon_failures      = g_metrics.recon_failures;
         last_tick_ms        = g_metrics.last_tick_ms;
         conn_state          = g_metrics.conn_state;
+        last_entry_slip     = g_metrics.last_entry_slip;
+        avg_entry_slip      = g_metrics.avg_entry_slip;
+        trades_today        = g_metrics.trades_today;
 
         if (!g_metrics.rate_ms.empty()) {
             int64_t now_ms =
@@ -792,13 +829,29 @@ static void render() {
         printw("[OK] nominal");
     }
 
+    // Entry slippage from live_trades today
+    set_color(C_VALUE);
+    draw_label(r+5, midcol, "Entry slip:");
+    if (trades_today == 0 || last_entry_slip < 0) {
+        set_color(C_DIM);
+        printw("--");
+    } else {
+        int slip = last_entry_slip;
+        if (slip <= 1)      set_color(C_OK);
+        else if (slip <= 3) set_color(C_WARN);
+        else                set_color(C_ERR);
+        printw("%dtk", slip);
+        set_color(C_DIM);
+        printw("  avg %.1ftk/%d trades", avg_entry_slip, trades_today);
+    }
+
     // ── Separator ────────────────────────────────────────────────
-    r = 24;
+    r = 25;
     set_color(C_DIM);
     mvhline(r, 0, ACS_HLINE, cols);
 
-    // ── Row 25+: AUDIT LOG ────────────────────────────────────────
-    r = 25;
+    // ── Row 26+: AUDIT LOG ────────────────────────────────────────
+    r = 26;
     draw_section(r, 1, "AUDIT LOG");
 
     if (audit_tail.empty()) {
