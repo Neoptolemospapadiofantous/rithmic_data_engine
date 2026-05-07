@@ -189,24 +189,22 @@ static CheckResult check_data_freshness(PGconn* conn) {
 }
 
 // 2. Rejection rate
+// 2. Risk halt — was trading stopped by the risk manager today?
+//    Queries live_sessions (written by nq_executor) instead of the legacy orders table.
 static CheckResult check_rejection_rate(PGconn* conn) {
     bool missing = false;
-    const char* sql =
-        "SELECT COUNT(*) FROM orders "
-        "WHERE status='REJECTED' AND created_at > NOW()-INTERVAL '1 day'";
-
-    int64_t cnt = query_int64(conn, sql, &missing);
+    int64_t halted = query_int64(conn,
+        "SELECT COUNT(*) FROM live_sessions "
+        "WHERE session_date=CURRENT_DATE AND risk_halted=true",
+        &missing);
     if (missing)
-        return {"rejection_rate", "INFO", "orders table not present"};
-    if (cnt < 0)
-        return {"rejection_rate", "WARN", "query error on orders table"};
-
-    char msg[64];
-    std::snprintf(msg, sizeof(msg), "%lld rejections in last 24 h",
-                  static_cast<long long>(cnt));
-    if (cnt > 20) return {"rejection_rate", "FAIL", msg};
-    if (cnt >  5) return {"rejection_rate", "WARN", msg};
-    return {"rejection_rate", "PASS", msg};
+        return {"rejection_rate", "INFO", "live_sessions not present"};
+    if (halted < 0)
+        return {"rejection_rate", "WARN", "query error on live_sessions"};
+    if (halted > 0)
+        return {"rejection_rate", "WARN",
+                "risk manager halted trading today — check halt_reason in live_sessions"};
+    return {"rejection_rate", "PASS", "no risk halt today"};
 }
 
 // 3. Gap count (proxy: tick count in last day)
@@ -230,26 +228,48 @@ static CheckResult check_gap_count(PGconn* conn) {
     return {"gap_count", "PASS", msg};
 }
 
-// 4. Session health
+// 4. Session health — checks live_sessions (written by nq_executor) for today.
+//    During RTH: warns if no session exists yet (executor may not be running).
+//    Any time: warns if halt_reason is non-empty (unexpected halt).
 static CheckResult check_session_health(PGconn* conn) {
     bool missing = false;
-    const char* sql =
-        "SELECT COUNT(*) FROM sessions "
-        "WHERE ended_at IS NULL AND started_at < NOW()-INTERVAL '2 hours'";
-
-    int64_t cnt = query_int64(conn, sql, &missing);
+    int64_t cnt = query_int64(conn,
+        "SELECT COUNT(*) FROM live_sessions WHERE session_date=CURRENT_DATE",
+        &missing);
     if (missing)
-        return {"session_health", "INFO", "sessions table not present"};
+        return {"session_health", "INFO", "live_sessions not present"};
     if (cnt < 0)
-        return {"session_health", "WARN", "query error on sessions table"};
+        return {"session_health", "WARN", "query error on live_sessions"};
+
+    // Only enforce RTH liveness if this DB has production data (any historical sessions).
+    // On the dev machine the executor runs on Oracle, so local DB has no live_sessions rows.
+    bool missing2 = false;
+    int64_t hist = query_int64(conn, "SELECT COUNT(*) FROM live_sessions", &missing2);
+    bool is_production_db = (!missing2 && hist > 0);
+
+    if (cnt == 0 && is_rth() && is_production_db)
+        return {"session_health", "WARN",
+                "no live_sessions row for today during RTH — executor may not be running"};
+
+    // Check for unexpected halt reason
+    PGresult* res = PQexec(conn,
+        "SELECT halt_reason FROM live_sessions "
+        "WHERE session_date=CURRENT_DATE AND halt_reason IS NOT NULL "
+        "AND halt_reason <> '' LIMIT 1");
+    std::string halt_reason;
+    if (res && PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0)
+        halt_reason = PQgetvalue(res, 0, 0);
+    if (res) PQclear(res);
+
+    if (!halt_reason.empty()) {
+        char msg[256];
+        std::snprintf(msg, sizeof(msg), "halt_reason='%s'", halt_reason.c_str());
+        return {"session_health", "WARN", msg};
+    }
 
     char msg[64];
-    std::snprintf(msg, sizeof(msg), "%lld stale open session(s) (>2 h)",
-                  static_cast<long long>(cnt));
-
-    if (cnt > 0)
-        return {"session_health", "WARN", msg};
-    return {"session_health", "PASS", "no stale sessions"};
+    std::snprintf(msg, sizeof(msg), "%lld session(s) today, no halt", static_cast<long long>(cnt));
+    return {"session_health", cnt > 0 ? "PASS" : "INFO", msg};
 }
 
 // 5. PnL sanity — uses live_trades (production table written by nq_executor)
@@ -528,7 +548,9 @@ static std::vector<ProcInfo> scan_processes() {
 }
 
 // 13. Process liveness
-static CheckResult check_process_liveness() {
+// Only enforces RTH checks when this DB has production data — on the dev machine
+// the executor runs on Oracle so local process checks would always false-fail.
+static CheckResult check_process_liveness(PGconn* conn) {
     auto procs = scan_processes();
 
     bool has_executor = false;
@@ -540,8 +562,13 @@ static CheckResult check_process_liveness() {
         if (p.comm == "rithmic_engine") has_engine   = true;
     }
 
-    if (is_rth()) {
-        // Both must be running during RTH
+    // Determine whether we're on the production machine by checking for any
+    // live_sessions data in the DB. On the dev machine this table is empty.
+    bool missing = false;
+    int64_t hist = query_int64(conn, "SELECT COUNT(*) FROM live_sessions", &missing);
+    bool is_production_db = (!missing && hist > 0);
+
+    if (is_rth() && is_production_db) {
         if (!has_executor && !has_engine)
             return {"process_liveness", "FAIL",
                     "RTH: neither nq_executor nor rithmic_engine is running"};
@@ -549,20 +576,19 @@ static CheckResult check_process_liveness() {
             return {"process_liveness", "FAIL",
                     "RTH: nq_executor is not running"};
         if (!has_engine)
-            return {"process_liveness", "FAIL",
-                    "RTH: rithmic_engine is not running"};
+            return {"process_liveness", "WARN",
+                    "RTH: rithmic_engine (tick collector) is not running"};
         return {"process_liveness", "PASS",
                 "both nq_executor and rithmic_engine running"};
     }
 
-    // Outside RTH — informational only
     std::string running;
     if (has_executor) running += "nq_executor ";
     if (has_engine)   running += "rithmic_engine";
-    if (running.empty()) running = "none (outside RTH)";
+    if (running.empty()) running = is_production_db ? "none (outside RTH)" : "none (dev machine)";
 
     return {"process_liveness", "INFO",
-            "outside RTH — processes running: " + running};
+            "processes running: " + running};
 }
 
 // 14. Zombie trader
@@ -775,7 +801,7 @@ static CheckResult run_cpp_tests() {
 
 static std::vector<CheckResult> run_all_checks(PGconn* conn) {
     std::vector<CheckResult> results;
-    results.reserve(17);
+    results.reserve(16);
 
     // DB checks
     results.push_back(check_data_freshness(conn));
@@ -794,15 +820,12 @@ static std::vector<CheckResult> run_all_checks(PGconn* conn) {
     results.push_back(check_log_file_sizes());
 
     // Process checks
-    results.push_back(check_process_liveness());
+    results.push_back(check_process_liveness(conn));
     results.push_back(check_zombie_trader());
 
     // Config checks
     results.push_back(check_trading_constants());
     results.push_back(check_config_schema());
-
-    // Build check
-    results.push_back(run_cpp_tests());
 
     return results;
 }

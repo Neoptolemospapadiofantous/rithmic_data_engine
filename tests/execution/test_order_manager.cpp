@@ -573,6 +573,70 @@ TEST(all_exit_paths_cancel_stop) {
     }
 }
 
+// 18. seed_cancelled_stops() populates the unconfirmed-cancel guard
+TEST(seed_cancelled_stops_populates_guard) {
+    Fixture f;
+
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+
+    f.om.seed_cancelled_stops("BASKET-RESTART-1", /*was_buy=*/true);
+    f.om.seed_cancelled_stops("BASKET-RESTART-2", /*was_buy=*/false);
+
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 2);
+}
+
+// 19. on_cancel_confirmed() removes the basket from the unconfirmed-cancel guard
+//     and fires cancel_remove_cb_ exactly once for that basket
+TEST(on_cancel_confirmed_removes_from_guard) {
+    Fixture f;
+
+    std::vector<std::string> removed;
+    f.om.set_cancel_persist_callbacks(
+        [](const std::string&, bool) {},          // persist: no-op
+        [&removed](const std::string& id) { removed.push_back(id); }  // remove
+    );
+
+    f.om.seed_cancelled_stops("BASKET-A", true);
+    f.om.seed_cancelled_stops("BASKET-B", false);
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 2);
+
+    f.om.on_cancel_confirmed("BASKET-A");
+
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);
+    ASSERT_EQ(removed.size(), std::size_t(1));
+    ASSERT_EQ(removed[0], std::string("BASKET-A"));
+
+    // BASKET-B still in guard
+    f.om.on_cancel_confirmed("BASKET-B");
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+}
+
+// 20. recancel_pending_stops() re-fires cancel_cb_ for every unconfirmed stop
+TEST(recancel_pending_stops_resends_cancels) {
+    Fixture f;
+
+    f.om.seed_cancelled_stops("STOP-OLD-1", true);
+    f.om.seed_cancelled_stops("STOP-OLD-2", false);
+
+    f.cancelled_baskets.clear();  // reset capture from seed (seed doesn't call cancel_cb_)
+    ASSERT(f.cancelled_baskets.empty());
+
+    f.om.recancel_pending_stops();
+
+    // cancel_cb_ must have been called once per pending stop
+    ASSERT_EQ(f.cancelled_baskets.size(), std::size_t(2));
+    bool found1 = false, found2 = false;
+    for (const auto& b : f.cancelled_baskets) {
+        if (b == "STOP-OLD-1") found1 = true;
+        if (b == "STOP-OLD-2") found2 = true;
+    }
+    ASSERT(found1);
+    ASSERT(found2);
+
+    // Guard still intact after recancel (stops not yet confirmed)
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 2);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -596,6 +660,9 @@ int main() {
     RUN(mfe_and_mae_tracked_correctly);
     RUN(unknown_exit_cancels_stop);
     RUN(all_exit_paths_cancel_stop);
+    RUN(seed_cancelled_stops_populates_guard);
+    RUN(on_cancel_confirmed_removes_from_guard);
+    RUN(recancel_pending_stops_resends_cancels);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;
