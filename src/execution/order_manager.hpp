@@ -96,6 +96,24 @@ public:
     void set_cancel_callback(OrderCancelCallback cb) { cancel_cb_ = std::move(cb); }
     void set_modify_callback(OrderModifyCallback cb) { modify_cb_ = std::move(cb); }
 
+    // DB persistence for cancelled stops — survive process restarts.
+    // persist_cb: called when a stop cancel is sent (basket_id, was_buy_stop)
+    // remove_cb:  called when cancel is confirmed or the stop fires (basket_id)
+    using CancelPersistCb = std::function<void(const std::string& basket_id, bool was_buy_stop)>;
+    using CancelRemoveCb  = std::function<void(const std::string& basket_id)>;
+    void set_cancel_persist_callbacks(CancelPersistCb persist, CancelRemoveCb remove) {
+        cancel_persist_cb_ = std::move(persist);
+        cancel_remove_cb_  = std::move(remove);
+    }
+
+    // Called at startup to reload cancelled stops from DB (survive restart).
+    void seed_cancelled_stops(const std::string& basket_id, bool was_buy_stop) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        cancelled_stops_[basket_id] = was_buy_stop;
+        LOG("[OM] STARTUP-RECON: seeded cancelled_stop basket=%s dir=%s",
+            basket_id.c_str(), was_buy_stop ? "BUY-stop(SHORT)" : "SELL-stop(LONG)");
+    }
+
     // ── Called by OrbStrategy signal callback ─────────────────────────────────
     void on_signal(OrbSignal sig, double price, const std::string& reason) {
         if (sig == OrbSignal::FLATTEN_EOD) {
@@ -225,6 +243,7 @@ public:
                         basket_id.c_str(), fill_price, unwind_is_buy ? "BUY" : "SELL");
                     last_stop_for_unwind_.clear();
                     cancelled_stops_.erase(basket_id);  // remove from guard too
+                    if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
                     if (order_cb_) {
                         std::string basket = new_basket_id();
                         lat_.on_signal(basket, fill_price, false);
@@ -254,6 +273,7 @@ public:
                         // A stop we cancelled fired anyway — exchange didn't cancel in time.
                         bool unwind_is_buy = !it->second;
                         cancelled_stops_.erase(it);
+                        if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
                         LOG("[OM] CANCELLED-STOP-FIRED: basket=%s px=%.2f state=FLAT "
                             "— sending unwind %s (pending_cancelled now=%zu)",
                             basket_id.c_str(), fill_price,
@@ -285,9 +305,15 @@ public:
                         LOG("[OM] UNWIND-FILL: basket=%s px=%.2f — ghost position corrected, exchange now FLAT",
                             basket_id.c_str(), fill_price);
                     } else {
-                        LOG("[OM] SPURIOUS-FILL: basket=%s px=%.2f state=%d "
-                            "(not in entry/stop/unwind/cancelled_stops — unknown origin)",
-                            basket_id.c_str(), fill_price, (int)pos_.state);
+                        // Completely unknown fill while FLAT — this is a ghost position.
+                        // DB-seeded cancelled_stops should have caught this; if we're here
+                        // it means a stop survived across multiple restarts without being
+                        // persisted. Halt trading and require manual intervention.
+                        LOG("[OM] GHOST-FILL: basket=%s px=%.2f qty=%d state=FLAT "
+                            "— unknown fill, exchange may be non-flat. "
+                            "TRADING HALTED — check RTrader and restart executor.",
+                            basket_id.c_str(), fill_price, fill_qty);
+                        entry_halted_ = true;
                     }
                 }
                 return;
@@ -508,6 +534,7 @@ public:
     void on_cancel_confirmed(const std::string& basket_id) {
         std::lock_guard<std::mutex> lk(state_mu_);
         bool was_guard = cancelled_stops_.erase(basket_id) > 0;
+        if (was_guard && cancel_remove_cb_) cancel_remove_cb_(basket_id);
         if (last_stop_for_unwind_ == basket_id) last_stop_for_unwind_.clear();
         LOG("[OM] Cancel ACK basket=%s — confirmed dead%s (pending_cancelled=%zu)",
             basket_id.c_str(),
@@ -623,7 +650,11 @@ private:
     // All stops ever cancelled this session: basket → was_buy_stop.
     // Exchange cancel is not atomic — the stop can fire after we think it's gone.
     // Any basket in this map that fires while FLAT triggers an immediate unwind.
+    // Also persisted to DB so restarts don't lose knowledge of pending cancels.
     std::unordered_map<std::string, bool> cancelled_stops_;
+
+    CancelPersistCb cancel_persist_cb_;
+    CancelRemoveCb  cancel_remove_cb_;
 
     // Baskets of unwind orders sent to correct ghost positions from late stop fires.
     // When an unwind fill arrives we log it cleanly instead of SPURIOUS-FILL.
@@ -782,6 +813,7 @@ private:
         last_stop_was_buy_    = was_buy_stop;
         // Also add to persistent map — cancel confirmation may never arrive
         cancelled_stops_[pos_.basket_id_stop] = was_buy_stop;
+        if (cancel_persist_cb_) cancel_persist_cb_(pos_.basket_id_stop, was_buy_stop);
         LOG("[OM] STOP-CANCEL: basket=%s sl=%.2f dir=%s "
             "(unwind_guard=%s, pending_cancelled=%zu)",
             pos_.basket_id_stop.c_str(), pos_.sl_price,

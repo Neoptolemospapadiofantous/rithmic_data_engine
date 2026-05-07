@@ -1796,6 +1796,61 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         if (r) PQclear(r);
     }
 
+    // ── Persist cancelled stops across restarts ───────────────────────────────
+    // Any stop cancel sent but not yet ACKed must survive restarts so that late
+    // exchange fires are recognised and unwound rather than silently dropped.
+    if (db && db->is_connected() && !orb_cfg.dry_run) {
+        PGconn* pg = db->raw_conn();
+
+        // Create table if not present
+        PQexec(pg,
+            "CREATE TABLE IF NOT EXISTS pending_stop_cancels ("
+            "  basket_id    TEXT PRIMARY KEY,"
+            "  account_label TEXT NOT NULL,"
+            "  instrument   TEXT NOT NULL,"
+            "  was_buy_stop BOOL NOT NULL,"
+            "  cancelled_at TIMESTAMPTZ DEFAULT NOW()"
+            ")");
+
+        // Seed cancelled_stops_ from any rows left by a previous process
+        {
+            std::string q2 =
+                "SELECT basket_id, was_buy_stop FROM pending_stop_cancels "
+                "WHERE account_label = '" + orb_cfg.account_label + "' "
+                "  AND instrument = '" + orb_cfg.symbol + "'";
+            PGresult* r2 = PQexec(pg, q2.c_str());
+            if (r2 && PQresultStatus(r2) == PGRES_TUPLES_OK) {
+                int n = PQntuples(r2);
+                for (int i = 0; i < n; ++i) {
+                    std::string bid  = PQgetvalue(r2, i, 0);
+                    bool was_buy     = std::string(PQgetvalue(r2, i, 1)) == "t";
+                    order_mgr.seed_cancelled_stops(bid, was_buy);
+                }
+                if (n > 0)
+                    LOG("[EXECUTOR] STARTUP-RECON: loaded %d pending stop cancel(s) from DB", n);
+            }
+            if (r2) PQclear(r2);
+        }
+
+        // Wire up persist/remove callbacks so future cancels update the DB
+        order_mgr.set_cancel_persist_callbacks(
+            [pg, &orb_cfg](const std::string& bid, bool was_buy) {
+                std::string q =
+                    "INSERT INTO pending_stop_cancels "
+                    "(basket_id, account_label, instrument, was_buy_stop) VALUES ('" +
+                    bid + "','" + orb_cfg.account_label + "','" + orb_cfg.symbol + "'," +
+                    (was_buy ? "TRUE" : "FALSE") + ") ON CONFLICT DO NOTHING";
+                PQexec(pg, q.c_str());
+                LOG("[DB] pending_stop_cancels INSERT basket=%s", bid.c_str());
+            },
+            [pg](const std::string& bid) {
+                std::string q =
+                    "DELETE FROM pending_stop_cancels WHERE basket_id = '" + bid + "'";
+                PQexec(pg, q.c_str());
+                LOG("[DB] pending_stop_cancels DELETE basket=%s", bid.c_str());
+            }
+        );
+    }
 
 #ifdef USE_RAPI_SDK
     // ── Native R|API+ TCP market-data feed ───────────────────────────────────
