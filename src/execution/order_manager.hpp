@@ -548,12 +548,37 @@ public:
     void on_cancel_confirmed(const std::string& basket_id) {
         std::lock_guard<std::mutex> lk(state_mu_);
         bool was_guard = cancelled_stops_.erase(basket_id) > 0;
+        // Clean reverse map: find entry whose value matches client basket_id
+        for (auto it = server_to_client_cancelled_.begin();
+             it != server_to_client_cancelled_.end(); ) {
+            if (it->second == basket_id) it = server_to_client_cancelled_.erase(it);
+            else ++it;
+        }
         if (was_guard && cancel_remove_cb_) cancel_remove_cb_(basket_id);
         if (last_stop_for_unwind_ == basket_id) last_stop_for_unwind_.clear();
         LOG("[OM] Cancel ACK basket=%s — confirmed dead%s (pending_cancelled=%zu)",
             basket_id.c_str(),
             was_guard ? " (removed from unwind guard)" : "",
             cancelled_stops_.size());
+    }
+
+    // Cancel ACK arrived with empty user_tag (external cancellation via RTrader).
+    // Resolve client basket from exchange basket_id via the reverse map.
+    void on_cancel_confirmed_by_server_basket(const std::string& server_basket_id) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        auto it = server_to_client_cancelled_.find(server_basket_id);
+        if (it == server_to_client_cancelled_.end()) {
+            LOG("[OM] Cancel ACK server=%s — not in cancelled guard (already confirmed or filled)",
+                server_basket_id.c_str());
+            return;
+        }
+        const std::string client_id = it->second;
+        server_to_client_cancelled_.erase(it);
+        bool was_guard = cancelled_stops_.erase(client_id) > 0;
+        if (was_guard && cancel_remove_cb_) cancel_remove_cb_(client_id);
+        if (last_stop_for_unwind_ == client_id) last_stop_for_unwind_.clear();
+        LOG("[OM] Cancel ACK server=%s → client=%s confirmed dead (pending_cancelled=%zu)",
+            server_basket_id.c_str(), client_id.c_str(), cancelled_stops_.size());
     }
 
     // How many cancelled stops are still unconfirmed (could still fire from exchange).
@@ -666,6 +691,10 @@ private:
     // Any basket in this map that fires while FLAT triggers an immediate unwind.
     // Also persisted to DB so restarts don't lose knowledge of pending cancels.
     std::unordered_map<std::string, bool> cancelled_stops_;
+    // Reverse map: exchange basket_id → our client basket_id.
+    // Populated in cancel_stop_locked(); used to resolve cancel ACKs that arrive
+    // with empty user_tag (external cancellations via RTrader).
+    std::unordered_map<std::string, std::string> server_to_client_cancelled_;
 
     CancelPersistCb cancel_persist_cb_;
     CancelRemoveCb  cancel_remove_cb_;
@@ -834,6 +863,10 @@ private:
             was_buy_stop ? "BUY-stop(SHORT)" : "SELL-stop(LONG)",
             pos_.basket_id_stop.c_str(),
             cancelled_stops_.size());
+        // Populate reverse map before clearing so empty-user_tag cancel ACKs
+        // (from external RTrader cancellations) can still resolve the client basket.
+        if (!stop_server_basket_.empty())
+            server_to_client_cancelled_[stop_server_basket_] = pos_.basket_id_stop;
         cancel_cb_(pos_.basket_id_stop);
         pos_.basket_id_stop.clear();
         stop_server_basket_.clear();

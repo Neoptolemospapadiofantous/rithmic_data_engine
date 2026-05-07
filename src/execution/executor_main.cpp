@@ -1050,7 +1050,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     LOG("[EXECUTOR] tid=351 CANCEL ACK: client=%s basket=%s status=%s",
                         client_id.c_str(), notif.basket_id().c_str(),
                         notif.status().c_str());
-                    order_mgr.on_cancel_confirmed(client_id);
+                    if (!client_id.empty()) {
+                        order_mgr.on_cancel_confirmed(client_id);
+                    } else {
+                        // External cancellation (RTrader) — user_tag is empty;
+                        // resolve the client basket via the exchange basket_id reverse map.
+                        order_mgr.on_cancel_confirmed_by_server_basket(notif.basket_id());
+                    }
 
                 } else if ((int)notif.notify_type() == 15 && notif.total_fill_size() == 0) {
                     // COMPLETE with no fill = order cancelled/rejected by routing or risk rules.

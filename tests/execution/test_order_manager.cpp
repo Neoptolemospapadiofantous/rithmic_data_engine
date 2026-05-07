@@ -637,6 +637,51 @@ TEST(recancel_pending_stops_resends_cancels) {
     ASSERT_EQ(f.om.pending_cancelled_stop_count(), 2);
 }
 
+// 21. on_cancel_confirmed_by_server_basket clears guard for external cancellations
+// RTrader cancellations arrive as cancel ACKs with empty user_tag; we resolve
+// the client basket via the server_basket → client_basket reverse map.
+TEST(on_cancel_confirmed_by_server_basket_resolves_external_cancel) {
+    Fixture f;
+    std::vector<std::string> removed;
+    f.om.set_cancel_persist_callbacks(
+        [](const std::string&, bool) {},
+        [&removed](const std::string& id) { removed.push_back(id); }
+    );
+
+    // Get into LONG so a stop basket exists
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    auto snap = f.om.position_snapshot();
+    const std::string stop_basket = snap.basket_id_stop;
+    ASSERT(!stop_basket.empty());
+
+    // Register the exchange-assigned server basket_id (arrives via tid=351 NEW notification)
+    f.om.set_stop_server_basket("SERVER-12345");
+
+    // flatten_now triggers cancel_stop_locked which:
+    //   - adds stop_basket to cancelled_stops_
+    //   - saves server_to_client_cancelled_["SERVER-12345"] = stop_basket
+    f.om.flatten_now("stop_loss_timeout", 18989.0);
+
+    // Guard should now have exactly one pending cancelled stop
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);
+    ASSERT(removed.empty());
+
+    // Simulate external cancel ACK with empty user_tag — resolved via server basket
+    f.om.on_cancel_confirmed_by_server_basket("SERVER-12345");
+
+    // Guard should be cleared and cancel_remove_cb_ should have fired
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+    ASSERT_EQ(removed.size(), std::size_t(1));
+    ASSERT_EQ(removed[0], stop_basket);
+
+    // Calling again with the same server basket is a no-op (already resolved)
+    f.om.on_cancel_confirmed_by_server_basket("SERVER-12345");
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -663,6 +708,7 @@ int main() {
     RUN(seed_cancelled_stops_populates_guard);
     RUN(on_cancel_confirmed_removes_from_guard);
     RUN(recancel_pending_stops_resends_cancels);
+    RUN(on_cancel_confirmed_by_server_basket_resolves_external_cancel);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;
