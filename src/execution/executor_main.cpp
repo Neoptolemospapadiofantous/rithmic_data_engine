@@ -1732,8 +1732,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 OrbTick tick{ts_us, lt.trade_price(), lt.trade_size(),
                              lt.aggressor() == rti::LastTrade::BUY};
 
-                // Check trailing stop on every tick
-                order_mgr.check_trail_and_stop(tick.price);
+                // Check trailing stop on every tick; flush DB immediately on SL move
+                if (order_mgr.check_trail_and_stop(tick.price)) {
+                    flush_position(db.get(), today, order_mgr, strategy,
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                   bool(md_ws));
+                }
 
                 // Feed strategy
                 strategy.on_tick(tick);

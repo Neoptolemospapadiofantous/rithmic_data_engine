@@ -431,9 +431,10 @@ public:
     }
 
     // ── Periodic check: trailing stop and SL hit (call every tick or 1s) ─────
-    void check_trail_and_stop(double current_price) {
+    // Returns true if SL price changed (BE or trail move) — caller should flush DB.
+    bool check_trail_and_stop(double current_price) {
         std::lock_guard<std::mutex> lk(state_mu_);
-        if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return;
+        if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return false;
 
         bool is_long = (pos_.state == PosState::LONG);
         double mfe_now = is_long
@@ -451,6 +452,8 @@ public:
         // Tier 2 — timeout: exchange stop submitted but hasn't fired after kSLFireTimeoutMs.
         //   Catches silent stop failures and cancel+resubmit race windows.
         //   initiate_exit_locked() cancels the exchange stop first to minimise double-fill risk.
+        bool sl_moved = false;
+
         bool sl_breached = (is_long  && current_price <= pos_.sl_price) ||
                            (!is_long && current_price >= pos_.sl_price);
 
@@ -460,7 +463,7 @@ public:
                     is_long ? "LONG" : "SHORT", current_price, pos_.sl_price);
                 sl_breach_time_ = {};
                 initiate_exit_locked("stop_loss", current_price);
-                return;
+                return false;
             }
             // Exchange stop active: start or check breach timer.
             if (sl_breach_time_ == std::chrono::steady_clock::time_point{}) {
@@ -475,7 +478,7 @@ public:
                         current_price, pos_.sl_price, pos_.basket_id_stop.c_str());
                     sl_breach_time_ = {};
                     initiate_exit_locked("stop_loss_timeout", current_price);
-                    return;
+                    return false;
                 }
             }
         } else {
@@ -492,6 +495,7 @@ public:
                 (!is_long && be_sl < pos_.sl_price)) {
                 double old_sl = pos_.sl_price;
                 pos_.sl_price = be_sl;
+                sl_moved = true;
                 LOG("[OM] BE triggered — SL moved to entry+%.1fpt: %.2f",
                     cfg_.trail_be_offset, be_sl);
                 update_stop_order_locked(old_sl, be_sl, current_price);
@@ -518,10 +522,13 @@ public:
                 (!is_long && trail_sl < pos_.sl_price)) {
                 double old_sl = pos_.sl_price;
                 pos_.sl_price = trail_sl;
+                sl_moved = true;
                 LOG("[OM] Trail updated: price=%.2f new_sl=%.2f", current_price, trail_sl);
                 update_stop_order_locked(old_sl, trail_sl, current_price);
             }
         }
+
+        return sl_moved;
     }
 
     // ── Force flatten (EOD or kill switch) ────────────────────────────────────
