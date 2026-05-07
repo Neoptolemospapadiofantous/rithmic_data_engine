@@ -28,6 +28,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <cmath>
 
 // ─── Position states ──────────────────────────────────────────────────────────
@@ -238,8 +239,10 @@ public:
                         bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
                                             cfg_.qty, /*LIMIT=1*/1, unwind_is_buy,
                                             unwind_px, "stale_stop_unwind");
-                        if (ok) lat_.on_submit(basket, fill_price);
-                        else LOG("[OM] STALE-STOP-UNWIND: ERROR — order_cb_ failed basket=%s "
+                        if (ok) {
+                            lat_.on_submit(basket, fill_price);
+                            unwind_baskets_.insert(basket);
+                        } else LOG("[OM] STALE-STOP-UNWIND: ERROR — order_cb_ failed basket=%s "
                                  "EXCHANGE MAY BE NON-FLAT", basket.c_str());
                     } else {
                         LOG("[OM] STALE-STOP-UNWIND: ERROR — no order_cb_, cannot unwind "
@@ -269,13 +272,18 @@ public:
                             bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
                                                 cfg_.qty, /*LIMIT=1*/1, unwind_is_buy,
                                                 unwind_px, "stale_cancel_unwind");
-                            if (ok) lat_.on_submit(basket, fill_price);
-                            else LOG("[OM] CANCELLED-STOP-UNWIND: ERROR — order_cb_ failed "
+                            if (ok) {
+                                lat_.on_submit(basket, fill_price);
+                                unwind_baskets_.insert(basket);
+                            } else LOG("[OM] CANCELLED-STOP-UNWIND: ERROR — order_cb_ failed "
                                      "EXCHANGE MAY BE NON-FLAT");
                         } else {
                             LOG("[OM] CANCELLED-STOP-UNWIND: ERROR — no order_cb_ "
                                 "EXCHANGE MAY BE NON-FLAT");
                         }
+                    } else if (unwind_baskets_.erase(basket_id) > 0) {
+                        LOG("[OM] UNWIND-FILL: basket=%s px=%.2f — ghost position corrected, exchange now FLAT",
+                            basket_id.c_str(), fill_price);
                     } else {
                         LOG("[OM] SPURIOUS-FILL: basket=%s px=%.2f state=%d "
                             "(not in entry/stop/unwind/cancelled_stops — unknown origin)",
@@ -616,6 +624,10 @@ private:
     // Exchange cancel is not atomic — the stop can fire after we think it's gone.
     // Any basket in this map that fires while FLAT triggers an immediate unwind.
     std::unordered_map<std::string, bool> cancelled_stops_;
+
+    // Baskets of unwind orders sent to correct ghost positions from late stop fires.
+    // When an unwind fill arrives we log it cleanly instead of SPURIOUS-FILL.
+    std::unordered_set<std::string> unwind_baskets_;
 
     // EOD cancel race guard: entry cancel sent but fill arrived after pos_ was reset
     std::string pending_cancel_basket_;     // entry basket that was cancelled at EOD

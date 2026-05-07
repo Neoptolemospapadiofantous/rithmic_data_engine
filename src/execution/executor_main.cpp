@@ -1838,7 +1838,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         audit_conn = nullptr;
     }
 
-    ioc_ref.stop();  // unblock ioc.run() so outer reconnect loop can restart
+    // Only stop the io_context for a normal reconnect cycle.
+    // On signal shutdown (g_running=false), signal_loop owns the stop after Phase-2 drain.
+    // Calling ioc_ref.stop() here on shutdown would race with and abort Phase-2.
+    if (g_running)
+        ioc_ref.stop();
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
