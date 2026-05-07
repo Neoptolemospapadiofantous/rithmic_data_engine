@@ -71,25 +71,27 @@ public:
 
         char ep[32], xp[32], sl[32], qty[16];
         char ppts[32], pusd[32];
-        char ssus[32], sfms[32], eslip[16], xslip[16];
+        char ssus[32], sfms[32], eslip[16], xslip[16], echase[16], etslip[16];
         char mae[32], mfe[32], trig[32], fill[32];
 
-        snprintf(ep,    sizeof(ep),    "%.4f", pos.entry_price);
-        snprintf(xp,    sizeof(xp),    "%.4f", pos.exit_price);
-        snprintf(sl,    sizeof(sl),    "%.4f", pos.sl_price);
-        snprintf(qty,   sizeof(qty),   "%d",   pos.qty);
-        snprintf(ppts,  sizeof(ppts),  "%.4f", pos.pnl_points);
-        snprintf(pusd,  sizeof(pusd),  "%.4f", pos.pnl_usd);
-        snprintf(ssus,  sizeof(ssus),  "%lld", (long long)entry_lat.signal_to_submit_us);
-        snprintf(sfms,  sizeof(sfms),  "%lld", (long long)exit_lat.submit_to_fill_ms);
-        snprintf(eslip, sizeof(eslip), "%d",   entry_lat.slippage_ticks);
-        snprintf(xslip, sizeof(xslip), "%d",   exit_lat.slippage_ticks);
-        snprintf(mae,   sizeof(mae),   "%.4f", pos.mae);
-        snprintf(mfe,   sizeof(mfe),   "%.4f", pos.mfe);
-        snprintf(trig,  sizeof(trig),  "%.4f", pos.trigger_price);
-        snprintf(fill,  sizeof(fill),  "%.4f", pos.fill_price_actual);
+        snprintf(ep,     sizeof(ep),     "%.4f", pos.entry_price);
+        snprintf(xp,     sizeof(xp),     "%.4f", pos.exit_price);
+        snprintf(sl,     sizeof(sl),     "%.4f", pos.sl_price);
+        snprintf(qty,    sizeof(qty),    "%d",   pos.qty);
+        snprintf(ppts,   sizeof(ppts),   "%.4f", pos.pnl_points);
+        snprintf(pusd,   sizeof(pusd),   "%.4f", pos.pnl_usd);
+        snprintf(ssus,   sizeof(ssus),   "%lld", (long long)entry_lat.signal_to_submit_us);
+        snprintf(sfms,   sizeof(sfms),   "%lld", (long long)exit_lat.submit_to_fill_ms);
+        snprintf(eslip,  sizeof(eslip),  "%d",   entry_lat.slippage_ticks);
+        snprintf(xslip,  sizeof(xslip),  "%d",   exit_lat.slippage_ticks);
+        snprintf(echase, sizeof(echase), "%d",   entry_lat.price_chase_ticks);
+        snprintf(etslip, sizeof(etslip), "%d",   entry_lat.true_slip_ticks);
+        snprintf(mae,    sizeof(mae),    "%.4f", pos.mae);
+        snprintf(mfe,    sizeof(mfe),    "%.4f", pos.mfe);
+        snprintf(trig,   sizeof(trig),   "%.4f", pos.trigger_price);
+        snprintf(fill,   sizeof(fill),   "%.4f", pos.fill_price_actual);
 
-        const char* params[21] = {
+        const char* params[23] = {
             account_label_.c_str(),    // $1  account_label
             instrument_.c_str(),       // $2  instrument
             trade_date.c_str(),        // $3  trade_date
@@ -110,7 +112,9 @@ public:
             mae,                       // $18 mae_pts
             mfe,                       // $19 mfe_pts
             trig,                      // $20 trigger_price
-            fill                       // $21 fill_price
+            fill,                      // $21 fill_price
+            echase,                    // $22 entry_price_chase_ticks
+            etslip,                    // $23 entry_true_slip_ticks
         };
 
         exec_params(
@@ -118,7 +122,8 @@ public:
             "(account_label, instrument, trade_date, direction, entry_time, exit_time,"
             " entry_price, exit_price, sl_price, qty, pnl_points, pnl_usd, exit_reason,"
             " signal_to_submit_us, submit_to_fill_ms, entry_slippage_ticks, exit_slippage_ticks,"
-            " mae_pts, mfe_pts, trigger_price, fill_price)"
+            " mae_pts, mfe_pts, trigger_price, fill_price,"
+            " entry_price_chase_ticks, entry_true_slip_ticks)"
             " VALUES"
             "($1, $2, $3::date, $4,"
             " to_timestamp($5::bigint / 1000000.0),"
@@ -127,8 +132,9 @@ public:
             " $11::double precision, $12::double precision, $13,"
             " $14::bigint, $15::bigint, $16::int, $17::int,"
             " $18::double precision, $19::double precision,"
-            " $20::double precision, $21::double precision)",
-            21, params);
+            " $20::double precision, $21::double precision,"
+            " $22::int, $23::int)",
+            23, params);
 
         LOG("[ORBDB] Trade written: %s %.4f→%.4f pnl=%.2f mae=%.2f mfe=%.2f slip=%.2fpts",
             direction.c_str(), pos.entry_price, pos.exit_price, pos.pnl_usd,
@@ -553,6 +559,8 @@ private:
                 submit_to_fill_ms       BIGINT,
                 entry_slippage_ticks    INT,
                 exit_slippage_ticks     INT,
+                entry_price_chase_ticks INT,
+                entry_true_slip_ticks   INT,
                 mae_pts                 DOUBLE PRECISION,
                 mfe_pts                 DOUBLE PRECISION,
                 trigger_price           DOUBLE PRECISION,
@@ -564,10 +572,12 @@ private:
         exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS account_label   TEXT NOT NULL DEFAULT 'legends'");
         exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS instrument       TEXT NOT NULL DEFAULT 'MNQ'");
         exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS strategy         TEXT NOT NULL DEFAULT 'ORB'");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mae_pts          DOUBLE PRECISION");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mfe_pts          DOUBLE PRECISION");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS trigger_price    DOUBLE PRECISION");
-        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS fill_price       DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mae_pts                  DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS mfe_pts                  DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS trigger_price             DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS fill_price                DOUBLE PRECISION");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS entry_price_chase_ticks  INT");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS entry_true_slip_ticks    INT");
 
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_sessions (
