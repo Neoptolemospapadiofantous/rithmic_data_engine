@@ -403,6 +403,21 @@ public:
             // unwind order, effectively re-entering a position.
             last_stop_for_unwind_.clear();
             last_stop_was_buy_ = false;
+
+            // Purge all remaining trail-update cancel guards.  These are stops
+            // cancelled during the just-closed trade's trail updates whose cancel
+            // ACKs never arrived (common on simulator).  Once we are FLAT the
+            // guard is no longer needed — remove them from DB so they don't
+            // accumulate across 24x7 cycles.
+            if (!cancelled_stops_.empty()) {
+                LOG("[OM] FLAT — purging %zu stale trail-cancel guard(s) from DB",
+                    cancelled_stops_.size());
+                for (const auto& [bid, _] : cancelled_stops_) {
+                    if (cancel_remove_cb_) cancel_remove_cb_(bid);
+                }
+                cancelled_stops_.clear();
+                server_to_client_cancelled_.clear();
+            }
         }
     }
 
