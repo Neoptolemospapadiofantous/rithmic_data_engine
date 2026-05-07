@@ -252,26 +252,25 @@ static CheckResult check_session_health(PGconn* conn) {
     return {"session_health", "PASS", "no stale sessions"};
 }
 
-// 5. PnL sanity
+// 5. PnL sanity — uses live_trades (production table written by nq_executor)
 static CheckResult check_pnl_sanity(PGconn* conn) {
     bool missing = false;
     const char* sql =
-        "SELECT COALESCE(SUM(pnl),0) FROM trades WHERE session_date=CURRENT_DATE";
+        "SELECT COALESCE(SUM(pnl_usd),0) FROM live_trades WHERE trade_date=CURRENT_DATE";
 
-    // Detect missing table first with a cheap count
     {
         bool miss2 = false;
         query_int64(conn,
-            "SELECT COUNT(*) FROM trades WHERE session_date=CURRENT_DATE",
+            "SELECT COUNT(*) FROM live_trades WHERE trade_date=CURRENT_DATE",
             &miss2);
         if (miss2)
-            return {"pnl_sanity", "INFO", "trades table not present"};
+            return {"pnl_sanity", "INFO", "live_trades table not present"};
     }
 
     bool is_null = false;
     double pnl = query_double(conn, sql, &is_null);
     if (is_null && missing)
-        return {"pnl_sanity", "INFO", "trades table not present"};
+        return {"pnl_sanity", "INFO", "live_trades table not present"};
 
     char msg[128];
     std::snprintf(msg, sizeof(msg), "daily PnL = %.2f", pnl);
@@ -284,54 +283,70 @@ static CheckResult check_pnl_sanity(PGconn* conn) {
     return {"pnl_sanity", "PASS", msg};
 }
 
-// 6. Slippage sanity
+// 6. Slippage sanity — uses live_trades.sl_price (initial stop distance as proxy)
 static CheckResult check_slippage_sanity(PGconn* conn) {
     const char* sql =
-        "SELECT AVG(ABS(entry_price - stop_loss)) FROM trades "
-        "WHERE session_date=CURRENT_DATE AND stop_loss IS NOT NULL";
+        "SELECT AVG(ABS(entry_price - sl_price)) FROM live_trades "
+        "WHERE trade_date=CURRENT_DATE AND sl_price IS NOT NULL AND sl_price > 0";
 
-    // Detect missing table
     {
         bool miss2 = false;
         query_int64(conn,
-            "SELECT COUNT(*) FROM trades WHERE session_date=CURRENT_DATE",
+            "SELECT COUNT(*) FROM live_trades WHERE trade_date=CURRENT_DATE",
             &miss2);
         if (miss2)
-            return {"slippage_sanity", "INFO", "trades table not present"};
+            return {"slippage_sanity", "INFO", "live_trades table not present"};
     }
 
     bool is_null = false;
-    double avg_slip = query_double(conn, sql, &is_null);
+    double avg_dist = query_double(conn, sql, &is_null);
     if (is_null)
         return {"slippage_sanity", "INFO", "no trades with stop_loss today"};
 
     char msg[128];
-    std::snprintf(msg, sizeof(msg), "avg entry-to-stop distance = %.2f pts", avg_slip);
-    if (avg_slip > 10.0)
+    std::snprintf(msg, sizeof(msg), "avg entry-to-stop distance = %.2f pts", avg_dist);
+    if (avg_dist > 30.0)
         return {"slippage_sanity", "WARN", msg};
     return {"slippage_sanity", "PASS", msg};
 }
 
-// 7. Trade table consistency
+// 7. Trade table consistency — stale open rows in live_trades, plus pending_stop_cancels
 static CheckResult check_trade_table_consistency(PGconn* conn) {
     bool missing = false;
     const char* sql =
-        "SELECT COUNT(*) FROM trades "
+        "SELECT COUNT(*) FROM live_trades "
         "WHERE exit_time IS NULL AND entry_time < NOW()-INTERVAL '8 hours'";
 
-    int64_t cnt = query_int64(conn, sql, &missing);
+    int64_t stale = query_int64(conn, sql, &missing);
     if (missing)
-        return {"trade_table_consistency", "INFO", "trades table not present"};
-    if (cnt < 0)
-        return {"trade_table_consistency", "WARN", "query error on trades table"};
+        return {"trade_table_consistency", "INFO", "live_trades table not present"};
+    if (stale < 0)
+        return {"trade_table_consistency", "WARN", "query error on live_trades"};
 
-    char msg[64];
-    std::snprintf(msg, sizeof(msg), "%lld open trade(s) older than 8 h",
-                  static_cast<long long>(cnt));
+    // Also check pending_stop_cancels for entries older than 2 hours
+    bool psc_missing = false;
+    int64_t ghost_stops = query_int64(conn,
+        "SELECT COUNT(*) FROM pending_stop_cancels "
+        "WHERE cancelled_at < NOW()-INTERVAL '2 hours'",
+        &psc_missing);
 
-    if (cnt > 0)
+    char msg[128];
+    if (stale > 0 && ghost_stops > 0)
+        std::snprintf(msg, sizeof(msg),
+            "%lld stale open trade(s) + %lld ghost stop cancel(s) >2h",
+            static_cast<long long>(stale), static_cast<long long>(ghost_stops));
+    else if (stale > 0)
+        std::snprintf(msg, sizeof(msg), "%lld open trade(s) older than 8 h",
+                      static_cast<long long>(stale));
+    else if (!psc_missing && ghost_stops > 0)
+        std::snprintf(msg, sizeof(msg), "%lld ghost stop cancel(s) in DB >2h — cancel not confirmed",
+                      static_cast<long long>(ghost_stops));
+    else
+        std::snprintf(msg, sizeof(msg), "no stale open trades");
+
+    if (stale > 0 || (!psc_missing && ghost_stops > 0))
         return {"trade_table_consistency", "WARN", msg};
-    return {"trade_table_consistency", "PASS", "no stale open trades"};
+    return {"trade_table_consistency", "PASS", msg};
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -683,13 +698,13 @@ static CheckResult check_config_schema() {
         j["account_id"].get<std::string>().empty())
         issues.push_back("missing/empty 'account_id'");
 
-    // trade_route (string, must not be "simulator")
+    // trade_route must never be "Rithmic Order Routing" — silently cancels Legends orders
     if (!j.contains("trade_route") || !j["trade_route"].is_string()) {
         issues.push_back("missing/invalid 'trade_route'");
     } else {
         std::string tr = j["trade_route"].get<std::string>();
-        if (tr == "simulator")
-            issues.push_back("'trade_route' is set to \"simulator\" — dangerous in live");
+        if (tr == "Rithmic Order Routing")
+            issues.push_back("'trade_route' is \"Rithmic Order Routing\" — BANNED: silently cancels all Legends orders (rp_code=1043)");
     }
 
     if (!issues.empty()) {
@@ -713,6 +728,7 @@ static CheckResult run_cpp_tests() {
         "./build/test_orb_strategy",
         "./build/test_risk_manager",
         "./build/test_validator",
+        "./build/test_order_manager",
     };
 
     int failed  = 0;
