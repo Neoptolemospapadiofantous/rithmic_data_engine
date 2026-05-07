@@ -36,12 +36,15 @@ struct TradeLatency {
     double fill_price   = 0.0;  // actual fill price from exchange
 
     bool   is_entry     = true; // true=entry, false=exit
+    double orb_boundary = 0.0;  // ORB high (BUY) or ORB low (SELL) at signal time; 0 if not set
 
     // Computed fields (populated by LatencyLogger::finalize)
     int64_t signal_to_submit_us = 0;  // signal → wire (microseconds)
     int64_t submit_to_fill_ms   = 0;  // wire → fill  (milliseconds)
     int     slippage_ticks      = 0;  // |fill - signal| in ticks
     double  slippage_usd        = 0.0;
+    int     price_chase_ticks   = 0;  // |signal - orb_boundary| in ticks (how far past ORB we chased)
+    int     true_slip_ticks     = 0;  // |fill - signal| in ticks (post-order market movement)
 };
 
 // ─── LatencyLogger ────────────────────────────────────────────────────────────
@@ -57,10 +60,12 @@ public:
     explicit LatencyLogger(double tick_value = MNQ_TICK_VALUE)
         : tick_value_(tick_value) {}
     // Record signal emission — returns ns timestamp stored
-    int64_t on_signal(const std::string& basket_id, double signal_price, bool is_entry) {
+    int64_t on_signal(const std::string& basket_id, double signal_price, bool is_entry,
+                      double orb_boundary = 0.0) {
         int64_t ts = now_ns();
         std::lock_guard<std::mutex> lk(mu_);
         pending_[basket_id] = TradeLatency{basket_id, ts, 0, 0, signal_price, 0.0, 0.0, is_entry};
+        pending_[basket_id].orb_boundary = orb_boundary;
         return ts;
     }
 
@@ -88,13 +93,25 @@ public:
         rec.fill_ts_ns = ts;
         rec.fill_price = fill_price;
         finalize(rec, tick_value_);
-        LOG("[LAT] %s %s signal→submit=%lldus submit→fill=%lldms slippage=%dticks ($%.2f)",
-            rec.basket_id.c_str(),
-            rec.is_entry ? "ENTRY" : "EXIT",
-            (long long)rec.signal_to_submit_us,
-            (long long)rec.submit_to_fill_ms,
-            rec.slippage_ticks,
-            rec.slippage_usd);
+        if (rec.is_entry && rec.orb_boundary != 0.0) {
+            LOG("[LAT] %s ENTRY signal→submit=%lldus submit→fill=%lldms "
+                "slippage=%dticks ($%.2f) [chase=%dtick true_slip=%dtick]",
+                rec.basket_id.c_str(),
+                (long long)rec.signal_to_submit_us,
+                (long long)rec.submit_to_fill_ms,
+                rec.slippage_ticks,
+                rec.slippage_usd,
+                rec.price_chase_ticks,
+                rec.true_slip_ticks);
+        } else {
+            LOG("[LAT] %s %s signal→submit=%lldus submit→fill=%lldms slippage=%dticks ($%.2f)",
+                rec.basket_id.c_str(),
+                rec.is_entry ? "ENTRY" : "EXIT",
+                (long long)rec.signal_to_submit_us,
+                (long long)rec.submit_to_fill_ms,
+                rec.slippage_ticks,
+                rec.slippage_usd);
+        }
         last_ = rec;
         return rec;
     }
@@ -109,8 +126,15 @@ private:
             r.submit_to_fill_ms = (r.fill_ts_ns - r.submit_ts_ns) / 1'000'000;
 
         double diff = std::abs(r.fill_price - r.signal_price);
-        r.slippage_ticks = static_cast<int>(std::round(diff / NQ_TICK_SIZE));
-        r.slippage_usd   = r.slippage_ticks * tick_value;
+        r.slippage_ticks  = static_cast<int>(std::round(diff / NQ_TICK_SIZE));
+        r.slippage_usd    = r.slippage_ticks * tick_value;
+        r.true_slip_ticks = r.slippage_ticks;  // same as slippage when no boundary
+        if (r.orb_boundary != 0.0) {
+            r.price_chase_ticks = static_cast<int>(
+                std::round(std::abs(r.signal_price - r.orb_boundary) / NQ_TICK_SIZE));
+            r.true_slip_ticks   = static_cast<int>(
+                std::round(std::abs(r.fill_price - r.signal_price) / NQ_TICK_SIZE));
+        }
     }
 
     static int64_t now_ns() {

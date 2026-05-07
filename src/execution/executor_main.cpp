@@ -473,7 +473,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     return;
                 }
             }
-            order_mgr.on_signal(sig, price, reason);
+            double boundary = (sig == OrbSignal::BUY)  ? strategy.orb_high()
+                            : (sig == OrbSignal::SELL) ? strategy.orb_low()
+                            : 0.0;
+            order_mgr.on_signal(sig, price, reason, boundary);
         }
     );
 

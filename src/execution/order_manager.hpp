@@ -129,7 +129,7 @@ public:
     }
 
     // ── Called by OrbStrategy signal callback ─────────────────────────────────
-    void on_signal(OrbSignal sig, double price, const std::string& reason) {
+    void on_signal(OrbSignal sig, double price, const std::string& reason, double orb_boundary = 0.0) {
         if (sig == OrbSignal::FLATTEN_EOD) {
             flatten_now("eod_flatten", price);
             return;
@@ -161,7 +161,7 @@ public:
             is_buy ? "LONG" : "SHORT", price, basket.c_str(), reason.c_str(),
             cfg_.dry_run ? " [DRY_RUN]" : "");
 
-        lat_.on_signal(basket, price, /*is_entry=*/true);
+        lat_.on_signal(basket, price, /*is_entry=*/true, orb_boundary);
 
         pos_ = Position{};
         pos_.state         = PosState::PENDING_ENTRY;
@@ -363,6 +363,25 @@ public:
             LOG("[OM] FILL exit: basket=%s price=%.2f pnl=%.2fpts ($%.2f) slippage=%dtick",
                 basket_id.c_str(), fill_price, pts, pos_.pnl_usd,
                 lat_rec.slippage_ticks);
+
+            // If this basket was in the cancelled-stop guard (fired before cancel reached
+            // exchange, or was a cross-session stale stop), clean it up now — otherwise it
+            // accumulates in pending_stop_cancels DB across restarts and fires again later.
+            {
+                auto it = cancelled_stops_.find(basket_id);
+                if (it != cancelled_stops_.end()) {
+                    cancelled_stops_.erase(it);
+                    if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
+                    // Clean reverse map too
+                    for (auto rit = server_to_client_cancelled_.begin();
+                         rit != server_to_client_cancelled_.end(); ) {
+                        if (rit->second == basket_id) rit = server_to_client_cancelled_.erase(rit);
+                        else ++rit;
+                    }
+                    LOG("[OM] Cleaned stale cancelled_stop basket=%s on exit fill "
+                        "(pending_cancelled now=%zu)", basket_id.c_str(), cancelled_stops_.size());
+                }
+            }
 
             last_exit_lat_ = lat_rec;
             completed_pos_ = pos_;
