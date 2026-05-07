@@ -57,7 +57,7 @@ deploy:
 		sudo chcon -t etc_t /home/opc/rithmic_engine/.env 2>/dev/null || true; \
 		sudo cp deploy/nq_executor@.service /etc/systemd/system/nq_executor@.service; \
 		sudo cp deploy/nq_executor_24x7@.service /etc/systemd/system/nq_executor-24x7@.service; \
-		sudo install -m 755 scripts/run_continuous.sh /home/opc/rithmic_engine/scripts/run_continuous.sh; \
+		cp -f scripts/run_continuous.sh /home/opc/rithmic_engine/scripts/run_continuous.sh 2>/dev/null || true; \
 		sudo systemctl disable nq_executor.service 2>/dev/null || true; \
 		sudo systemctl daemon-reload; \
 		route=$$(python3 -c "import json; print(json.load(open(\"config/live_config.json\")).get(\"trade_route\",\"\"))" 2>/dev/null || echo ""); \

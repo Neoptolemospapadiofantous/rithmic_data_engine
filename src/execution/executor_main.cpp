@@ -1615,6 +1615,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // it before the next read.
     auto md_loop = [&]() -> asio::awaitable<void> {
         beast::flat_buffer buf;
+        bool first_tick_received = false;
+        int  last_log_minute     = -1;
         while (g_running) {
             // ── reconnect if md_ws is down ─────────────────────────────────
             while (g_running && !md_ws) {
@@ -1726,6 +1728,53 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 
                 // Feed strategy
                 strategy.on_tick(tick);
+
+                // ── Cycle visibility logs ─────────────────────────────────────
+                int et_h, et_m;
+                current_et(et_h, et_m);
+
+                if (!first_tick_received) {
+                    first_tick_received = true;
+                    LOG("[EXECUTOR] First tick: px=%.2f ET=%02d:%02d",
+                        tick.price, et_h, et_m);
+                }
+
+                int cur_min = et_h * 60 + et_m;
+                if (cur_min != last_log_minute) {
+                    last_log_minute = cur_min;
+                    if (!strategy.orb_set()) {
+                        double oh = strategy.orb_high();
+                        double ol = strategy.orb_low();
+                        bool   has = (oh > ol) && (ol < 1e10);
+                        LOG("[EXECUTOR] ORB building ET=%02d:%02d px=%.2f %s",
+                            et_h, et_m, tick.price,
+                            has ? (std::string("range=[") +
+                                   std::to_string((int)ol) + ".." +
+                                   std::to_string((int)oh) + "]").c_str()
+                                : "(no range yet)");
+                    } else {
+                        Position psnap = order_mgr.position_snapshot();
+                        const char* pss;
+                        switch (psnap.state) {
+                            case PosState::FLAT:          pss = "FLAT";          break;
+                            case PosState::PENDING_ENTRY: pss = "PENDING_ENTRY"; break;
+                            case PosState::LONG:          pss = "LONG";          break;
+                            case PosState::SHORT:         pss = "SHORT";         break;
+                            case PosState::PENDING_EXIT:  pss = "PENDING_EXIT";  break;
+                            default:                      pss = "?";             break;
+                        }
+                        LOG("[EXECUTOR] ET=%02d:%02d px=%.2f "
+                            "orb=[%.2f..%.2f] dist_long=%+.1f dist_short=%+.1f "
+                            "pos=%s sl=%.2f trades=%d/%d",
+                            et_h, et_m, tick.price,
+                            strategy.orb_low(), strategy.orb_high(),
+                            tick.price - strategy.orb_high(),
+                            strategy.orb_low() - tick.price,
+                            pss, psnap.sl_price,
+                            strategy.session().trades_today,
+                            orb_cfg.max_daily_trades);
+                    }
+                }
 
             } else if (tid == 18) {
                 // Server-sent RequestHeartbeat — must respond with ResponseHeartbeat (tid=19)
