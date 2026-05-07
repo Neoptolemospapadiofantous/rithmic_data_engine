@@ -41,11 +41,18 @@ push-eod:
 	@echo "Done. Oracle will pull on next deployment."
 
 # ── Oracle deployment ──────────────────────────────────────────────────────────
-# Deploys: rithmic_engine (tick collector) + nq_executor (ORB trader).
-# audit_daemon is LOCAL/TESTING ONLY — NOT deployed to Oracle.
+# Pipeline: validate locally → commit → push → Oracle pull+rebuild → restart.
+# Rule: ALL changes must be committed before deploying. Uncommitted changes
+# never reach Oracle because Oracle builds from git, not from local files.
 deploy:
 	@bash scripts/hermes.sh --fast || (echo "Not clean — fix before deploying." && exit 1)
-	@echo "Gates pass. Pushing to origin..."
+	@if ! git diff --quiet || ! git diff --cached --quiet; then \
+		echo "ERROR: Uncommitted changes detected. Commit them before deploying."; \
+		echo "       Run: git add <files> && git commit -m 'your message'"; \
+		git status --short; \
+		exit 1; \
+	fi
+	@echo "Gates pass — working tree clean. Pushing to origin..."
 	git push origin main
 	@echo "Connecting to Oracle..."
 	ssh -i $(SSH_KEY) -o StrictHostKeyChecking=no $(ORACLE) '\
@@ -67,10 +74,10 @@ deploy:
 		fi; \
 		PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic \
 			-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='"'"'rithmic_user'"'"' AND state='"'"'idle in transaction'"'"' AND pid != pg_backend_pid();" 2>/dev/null || true; \
-		for svc in rithmic-engine; do \
-			if systemctl is-active $$svc 2>/dev/null | grep -q "^active$$"; then \
+		for svc in rithmic-engine "nq_executor-24x7@legends"; do \
+			if systemctl is-active "$$svc" 2>/dev/null | grep -q "^active$$"; then \
 				echo "Restarting $$svc..."; \
-				sudo systemctl restart $$svc; \
+				sudo systemctl restart "$$svc"; \
 			fi; \
 		done; \
 		echo "Deploy complete."'
