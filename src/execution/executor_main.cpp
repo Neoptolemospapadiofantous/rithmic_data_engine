@@ -445,6 +445,23 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // Wire strategy → order_mgr
     strategy.set_signal_callback(
         [&](OrbSignal sig, double price, const std::string& reason) {
+            if (sig == OrbSignal::FLATTEN_EOD) {
+                Position eod_snap = order_mgr.position_snapshot();
+                const char* eod_ss;
+                switch (eod_snap.state) {
+                    case PosState::FLAT:          eod_ss = "FLAT";          break;
+                    case PosState::PENDING_ENTRY: eod_ss = "PENDING_ENTRY"; break;
+                    case PosState::LONG:          eod_ss = "LONG";          break;
+                    case PosState::SHORT:         eod_ss = "SHORT";         break;
+                    case PosState::PENDING_EXIT:  eod_ss = "PENDING_EXIT";  break;
+                    default:                      eod_ss = "?";             break;
+                }
+                LOG("[EXECUTOR] EOD_FLATTEN signal — pos=%s entry=%.2f sl=%.2f "
+                    "basket_entry=%s basket_exit=%s px=%.2f",
+                    eod_ss, eod_snap.entry_price, eod_snap.sl_price,
+                    eod_snap.basket_id_entry.c_str(), eod_snap.basket_id_exit.c_str(),
+                    price);
+            }
             if (orb_cfg.max_entry_offset > 0.0 && sig != OrbSignal::FLATTEN_EOD) {
                 double orb_level = (sig == OrbSignal::BUY) ? strategy.orb_high() : strategy.orb_low();
                 double offset = (sig == OrbSignal::BUY) ? (price - orb_level) : (orb_level - price);
@@ -1024,6 +1041,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
                                        bool(md_ws));
                     }
+                } else if ((int)notif.notify_type() == 3) {
+                    // Cancel ACK on tid=351 — Legends routing delivers cancel confirmations
+                    // here rather than on ExchangeOrderNotification (tid=352).
+                    // Must call on_cancel_confirmed so cancelled_stops_ is cleared;
+                    // without this the stop accumulates in the unwind-guard map forever.
+                    const std::string& client_id = notif.user_tag();
+                    LOG("[EXECUTOR] tid=351 CANCEL ACK: client=%s basket=%s status=%s",
+                        client_id.c_str(), notif.basket_id().c_str(),
+                        notif.status().c_str());
+                    order_mgr.on_cancel_confirmed(client_id);
+
                 } else if ((int)notif.notify_type() == 15 && notif.total_fill_size() == 0) {
                     // COMPLETE with no fill = order cancelled/rejected by routing or risk rules.
                     const std::string& client_id = notif.user_tag();
@@ -1247,7 +1275,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // ── EOD/trail check timer (1-second tick) ─────────────────────────────────
     asio::steady_timer eod_timer(ex);
     auto eod_loop = [&]() -> asio::awaitable<void> {
-        int pos_write_counter = 0;  // flush live_position every 5 ticks
+        int pos_write_counter = 0;
+        PosState watchdog_state  = PosState::FLAT;
+        int64_t  watchdog_since_s = 0;  // epoch-s when watchdog_state last changed
         while (g_running) {
             eod_timer.expires_after(std::chrono::seconds(1));
             co_await eod_timer.async_wait(asio::use_awaitable);
@@ -1320,6 +1350,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             Position completed;
             if (order_mgr.pop_trade_completed(completed)) {
                 strategy.notify_trade_filled(completed.direction, completed.exit_reason);
+                // Belt-and-suspenders: re-send cancel for any stop the exchange might
+                // still hold. Idempotent — exchange ignores it if order is already gone.
+                if (!orb_cfg.dry_run) order_mgr.recancel_pending_stops();
                 if (db && db->is_connected()) {
                     try {
                         db->write_trade(completed,
@@ -1382,6 +1415,45 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 double last_px = strategy.last_price();
                 if (db && last_px > 0.0) {
                     try { db->notify_tick(last_px); } catch (...) {}
+                }
+            }
+
+            // ── Position state watchdog ─────────────────────────────────────────
+            // Tracks how long the position has been in each state.
+            // PENDING_ENTRY > 5s or PENDING_EXIT > 10s: likely stuck — log CRITICAL.
+            // LONG/SHORT > 120s: log progress every 60s so log analysis can
+            // correlate open duration with any anomaly at shutdown.
+            {
+                int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                Position wsnap = order_mgr.position_snapshot();
+                if (wsnap.state != watchdog_state) {
+                    watchdog_state   = wsnap.state;
+                    watchdog_since_s = now_s;
+                }
+                int64_t held = now_s - watchdog_since_s;
+                if (wsnap.state == PosState::PENDING_ENTRY) {
+                    if (held >= 5 && held % 5 == 0)
+                        LOG("[EXECUTOR] WARN: PENDING_ENTRY for %lds — entry fill delayed "
+                            "basket=%s px=%.2f",
+                            (long)held, wsnap.basket_id_entry.c_str(),
+                            strategy.last_price());
+                } else if (wsnap.state == PosState::LONG || wsnap.state == PosState::SHORT) {
+                    if (held >= 120 && held % 60 == 0)
+                        LOG("[EXECUTOR] POSITION OPEN %lds: %s entry=%.2f sl=%.2f "
+                            "px=%.2f be=%d trailing=%d",
+                            (long)held,
+                            wsnap.state == PosState::LONG ? "LONG" : "SHORT",
+                            wsnap.entry_price, wsnap.sl_price,
+                            strategy.last_price(),
+                            (int)wsnap.be_triggered, (int)wsnap.trailing_active);
+                } else if (wsnap.state == PosState::PENDING_EXIT) {
+                    if (held >= 10 && held % 10 == 0)
+                        LOG("[EXECUTOR] CRITICAL: PENDING_EXIT for %lds — exit fill delayed "
+                            "basket=%s entry=%.2f reason=%s px=%.2f",
+                            (long)held, wsnap.basket_id_exit.c_str(),
+                            wsnap.entry_price, wsnap.exit_reason.c_str(),
+                            strategy.last_price());
                 }
             }
         }
@@ -1884,7 +1956,19 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 #endif
 
     carried_pos = order_mgr.position_snapshot();  // preserve state across reconnects (#2)
-    LOG("[EXECUTOR] Main loop exited — carried_pos.state=%d", (int)carried_pos.state);
+    {
+        const char* cps;
+        switch (carried_pos.state) {
+            case PosState::FLAT:          cps = "FLAT";          break;
+            case PosState::PENDING_ENTRY: cps = "PENDING_ENTRY"; break;
+            case PosState::LONG:          cps = "LONG";          break;
+            case PosState::SHORT:         cps = "SHORT";         break;
+            case PosState::PENDING_EXIT:  cps = "PENDING_EXIT";  break;
+            default:                      cps = "?";             break;
+        }
+        LOG("[EXECUTOR] Main loop exited — carried_pos=%s entry=%.2f sl=%.2f",
+            cps, carried_pos.entry_price, carried_pos.sl_price);
+    }
 
     // Final audit flush before shutdown
     if (audit_conn) {
@@ -1967,7 +2051,10 @@ int main(int argc, char* argv[]) {
     Position     carried_pos;  // non-FLAT on reconnect → halt + warn (#2)
 
     int exit_code = 0;
+    int cycle     = 0;
     while (g_running) {
+        ++cycle;
+        LOG("[EXECUTOR] ======== CYCLE %d START ========", cycle);
         try {
             asio::io_context ioc(1);
             asio::co_spawn(ioc,
@@ -1986,6 +2073,22 @@ int main(int argc, char* argv[]) {
         } catch (std::exception& e) {
             LOG("[EXECUTOR] io_context exception: %s", e.what());
             exit_code = 1;
+        }
+
+        {
+            const char* cs;
+            switch (carried_pos.state) {
+                case PosState::FLAT:          cs = "FLAT";          break;
+                case PosState::PENDING_ENTRY: cs = "PENDING_ENTRY"; break;
+                case PosState::LONG:          cs = "LONG";          break;
+                case PosState::SHORT:         cs = "SHORT";         break;
+                case PosState::PENDING_EXIT:  cs = "PENDING_EXIT";  break;
+                default:                      cs = "?";             break;
+            }
+            LOG("[EXECUTOR] ======== CYCLE %d END — carried_pos=%s entry=%.2f "
+                "g_running=%s ========",
+                cycle, cs, carried_pos.entry_price,
+                g_running.load() ? "true" : "false");
         }
 
         if (g_running) {

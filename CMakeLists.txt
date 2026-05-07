@@ -164,6 +164,23 @@ else()
     message(STATUS "USE_RAPI_SDK=OFF — using WebSocket (Boost.Beast) market data feed")
 endif()
 
+# ── Cancel Stops utility ───────────────────────────────────────────
+# Reads pending_stop_cancels from DB and fires RequestCancelOrder for each.
+# Safe to run alongside a live nq_executor.
+add_executable(cancel_stops tools/cancel_stops_main.cpp
+    src/execution/latency_logger.cpp)
+target_include_directories(cancel_stops PRIVATE
+    src/execution/
+    src/
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${Boost_INCLUDE_DIRS}
+    ${Protobuf_INCLUDE_DIRS}
+    ${PostgreSQL_INCLUDE_DIRS}
+)
+target_link_libraries(cancel_stops PRIVATE rithmic_lib)
+target_compile_definitions(cancel_stops PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(cancel_stops PRIVATE cxx_std_20)
+
 # ── Audit Daemon ───────────────────────────────────────────────────
 # Standalone C++20 binary — only libpq + nlohmann/json, no Boost/Protobuf.
 add_executable(audit_daemon src/audit_daemon_main.cpp)

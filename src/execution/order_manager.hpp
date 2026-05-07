@@ -106,6 +106,20 @@ public:
         cancel_remove_cb_  = std::move(remove);
     }
 
+    // Re-send cancel for every stop still in the unconfirmed-cancel map.
+    // Call immediately after a trade closes. Safe to call multiple times — exchange
+    // returns a harmless "not found" if the order is already gone.
+    void recancel_pending_stops() {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (cancelled_stops_.empty() || !cancel_cb_) return;
+        LOG("[OM] TRADE-CLOSE: re-cancelling %zu pending stop(s) — belt-and-suspenders "
+            "against ghost positions", cancelled_stops_.size());
+        for (const auto& [bid, _] : cancelled_stops_) {
+            cancel_cb_(bid);
+            LOG("[OM] TRADE-CLOSE: cancel re-sent basket=%s", bid.c_str());
+        }
+    }
+
     // Called at startup to reload cancelled stops from DB (survive restart).
     void seed_cancelled_stops(const std::string& basket_id, bool was_buy_stop) {
         std::lock_guard<std::mutex> lk(state_mu_);
