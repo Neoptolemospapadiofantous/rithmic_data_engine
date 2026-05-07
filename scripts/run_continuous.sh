@@ -20,7 +20,7 @@
 
 set -euo pipefail
 
-ACCOUNT="${1:-tradeify}"
+ACCOUNT="${1:-legends}"
 BASE_DIR="/home/opc/rithmic_engine"
 CONFIG_FILE="${BASE_DIR}/config/${ACCOUNT}_config.json"
 BINARY="${BASE_DIR}/build/nq_executor"

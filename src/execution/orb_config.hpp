@@ -179,7 +179,7 @@ struct OrbConfig {
         // Supported values: legends, tradeify, amp
         // Corresponding env vars: MD_{PROVIDER}_USER / _PASSWORD / _SYSTEM / _URL
         {
-            std::string provider = env("RITHMIC_MD_PROVIDER", "tradeify");
+            std::string provider = env("RITHMIC_MD_PROVIDER", "legends");
             // Uppercase provider name for env var lookup
             std::string up = provider;
             for (char& ch : up) ch = (char)toupper((unsigned char)ch);
