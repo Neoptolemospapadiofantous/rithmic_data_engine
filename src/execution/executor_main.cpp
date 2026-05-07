@@ -989,11 +989,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     if (notif.symbol() == trade_symbol) {
                         if (notif.total_unfilled_size() > 0 &&
                             !notif.basket_id().empty()) {
-                            // Case A: open working order — cancel it
+                            // Case A: open working order — cancel it.
+                            // Note: cancel may race with trigger-pending; if the stop
+                            // fires before the cancel is confirmed, it will arrive as a
+                            // live fill (not snapshot) and be caught by the GHOST-FILL
+                            // path → entry_halted_ set → tid=451 confirms flat → auto-resume.
                             LOG("[EXECUTOR] [STARTUP-RECON] OPEN ORDER FOUND "
-                                "basket=%s status='%s' unfilled=%d — cancelling",
-                                notif.basket_id().c_str(), notif.status().c_str(),
-                                notif.total_unfilled_size());
+                                "exchange_basket=%s user_tag='%s' status='%s' unfilled=%d "
+                                "— cancelling (cancel/trigger race possible)",
+                                notif.basket_id().c_str(), notif.user_tag().c_str(),
+                                notif.status().c_str(), notif.total_unfilled_size());
                             rti::RequestCancelOrder cancel_req;
                             cancel_req.set_template_id(316);
                             cancel_req.set_basket_id(notif.basket_id());
@@ -1002,8 +1007,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             cancel_req.set_ib_id(orb_cfg.ib_id);
                             try {
                                 co_await ws_write(*order_plant->ws, proto_frame(cancel_req));
-                                LOG("[EXECUTOR] [STARTUP-RECON] cancel sent basket=%s",
-                                    notif.basket_id().c_str());
+                                LOG("[EXECUTOR] [STARTUP-RECON] cancel sent "
+                                    "exchange_basket=%s user_tag='%s'",
+                                    notif.basket_id().c_str(), notif.user_tag().c_str());
                             } catch (std::exception& e) {
                                 LOG("[EXECUTOR] [STARTUP-RECON] cancel send FAILED: %s",
                                     e.what());
@@ -1013,9 +1019,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             // Case B: filled order snap → ghost position indicator.
                             // AccountPnLPositionUpdate (tid=451) will confirm net qty.
                             LOG("[EXECUTOR] [STARTUP-RECON] FILLED ORDER SNAP "
-                                "basket=%s fill_qty=%d px=%.2f — possible ghost position! "
+                                "exchange_basket=%s user_tag='%s' fill_qty=%d px=%.2f "
+                                "— possible ghost position! "
                                 "Halting entries pending tid=451 position confirm",
-                                notif.basket_id().c_str(),
+                                notif.basket_id().c_str(), notif.user_tag().c_str(),
                                 notif.total_fill_size(), notif.avg_fill_price());
                             strategy.halt_trading("startup_ghost_position_suspected");
                         }
@@ -1342,6 +1349,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 risk.reset_daily();
                 pos_write_counter = 0;
                 LOG("[EXECUTOR] New trading day: %s", today.c_str());
+            }
+
+            // Ghost-halt watchdog: remind operator every 60s if entries are blocked
+            if (order_mgr.is_entry_halted()) {
+                static int64_t last_halt_log_s = 0;
+                int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                if (now_s - last_halt_log_s >= 60) {
+                    last_halt_log_s = now_s;
+                    LOG("[EXECUTOR] GHOST-HALT ACTIVE: entries blocked (ghost fill detected). "
+                        "Waiting for tid=451 position snapshot to confirm exchange flat. "
+                        "pending_cancelled_stops=%d",
+                        order_mgr.pending_cancelled_stop_count());
+                }
             }
 
             // Flush session state to DB

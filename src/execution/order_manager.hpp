@@ -137,7 +137,8 @@ public:
         if (sig != OrbSignal::BUY && sig != OrbSignal::SELL) return;
 
         if (entry_halted_) {
-            LOG("[OM] Signal rejected — entries halted after repeated exit rejections");
+            LOG("[OM] Signal rejected — entries halted (ghost-fill detected, "
+                "waiting for tid=451 exchange-flat confirmation)");
             return;
         }
 
@@ -330,14 +331,17 @@ public:
                             "intervention. Waiting for position confirm to resume.",
                             basket_id.c_str(), fill_price, fill_qty);
                     } else {
-                        // Completely unknown fill while FLAT — this is a ghost position.
-                        // DB-seeded cancelled_stops should have caught this; if we're here
-                        // it means a stop survived across multiple restarts without being
-                        // persisted. Halt trading and require manual intervention.
+                        // Completely unknown fill while FLAT — ghost position from a
+                        // stop that survived across session boundaries without being
+                        // persisted to pending_stop_cancels. Halt and wait for tid=451
+                        // to confirm exchange state, which will call confirm_exchange_flat().
                         LOG("[OM] GHOST-FILL: basket=%s px=%.2f qty=%d state=FLAT "
-                            "— unknown fill, exchange may be non-flat. "
-                            "TRADING HALTED — check RTrader and restart executor.",
-                            basket_id.c_str(), fill_price, fill_qty);
+                            "cancelled_guards=%zu unwind_baskets=%zu last_stop_for_unwind='%s'"
+                            " — unknown fill, exchange may be non-flat. "
+                            "TRADING HALTED — waiting for tid=451 to confirm flat.",
+                            basket_id.c_str(), fill_price, fill_qty,
+                            cancelled_stops_.size(), unwind_baskets_.size(),
+                            last_stop_for_unwind_.c_str());
                         entry_halted_ = true;
                     }
                 }
@@ -655,6 +659,13 @@ public:
     int pending_cancelled_stop_count() const {
         std::lock_guard<std::mutex> lk(state_mu_);
         return (int)cancelled_stops_.size();
+    }
+
+    // True when entries have been blocked due to a ghost fill.
+    // Cleared by confirm_exchange_flat() or a tracked unwind fill.
+    bool is_entry_halted() const {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        return entry_halted_;
     }
 
     // ── Server basket_id for stop order (from tid=351 notifications) ─────────
