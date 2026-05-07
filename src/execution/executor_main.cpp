@@ -944,37 +944,61 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     notif.symbol().c_str(), notif.exchange().c_str(), notif.user_tag().c_str(),
                     notif.quantity());
 
-                // ── Startup reconciliation ────────────────────────────────────────
-                // is_snapshot=1 messages arrive right after subscribing for order updates
-                // and reflect open orders still live at the exchange from a prior session
-                // (e.g. executor killed mid-trade).  Cancel every such order automatically
-                // so residual stops can't fire against a new position this session.
+                // ── Startup order reconciliation ─────────────────────────────────
+                // is_snapshot=1 messages arrive after subscribing for order updates
+                // and reflect the live order book state from the prior session.
+                // Two cases:
+                //   A) unfilled_size > 0  → open order (e.g. stop in trigger-pending)
+                //      → cancel immediately so it can't fire against new positions
+                //   B) fill_size > 0, unfilled_size == 0  → order filled while we were
+                //      offline → ghost position on exchange. halt entries so operator
+                //      can reconcile via RTrader (AccountPnLPositionUpdate tid=451 will
+                //      confirm the net quantity below).
                 if (notif.is_snapshot()) {
-                    LOG("[EXECUTOR] [RECON] snapshot: basket=%s status=%s "
-                        "filled=%d unfilled=%d sym=%s",
+                    LOG("[EXECUTOR] [STARTUP-RECON] tid=351 snap: basket=%s "
+                        "status='%s' notify=%d filled=%d unfilled=%d "
+                        "avg_px=%.2f sym=%s tag=%s",
                         notif.basket_id().c_str(), notif.status().c_str(),
+                        (int)notif.notify_type(),
                         notif.total_fill_size(), notif.total_unfilled_size(),
-                        notif.symbol().c_str());
-                    if (notif.symbol() == trade_symbol &&
-                        notif.total_unfilled_size() > 0 &&
-                        !notif.basket_id().empty()) {
-                        LOG("[EXECUTOR] [RECON] cancelling residual %s order basket=%s",
-                            notif.status().c_str(), notif.basket_id().c_str());
-                        rti::RequestCancelOrder cancel_req;
-                        cancel_req.set_template_id(316);
-                        cancel_req.set_basket_id(notif.basket_id());
-                        cancel_req.set_account_id(orb_cfg.account_id);
-                        cancel_req.set_fcm_id(orb_cfg.fcm_id);
-                        cancel_req.set_ib_id(orb_cfg.ib_id);
-                        try {
-                            co_await ws_write(*order_plant->ws, proto_frame(cancel_req));
-                            LOG("[EXECUTOR] [RECON] cancel sent — basket=%s",
-                                notif.basket_id().c_str());
-                        } catch (std::exception& e) {
-                            LOG("[EXECUTOR] [RECON] cancel send failed: %s", e.what());
+                        notif.avg_fill_price(),
+                        notif.symbol().c_str(), notif.user_tag().c_str());
+
+                    if (notif.symbol() == trade_symbol) {
+                        if (notif.total_unfilled_size() > 0 &&
+                            !notif.basket_id().empty()) {
+                            // Case A: open working order — cancel it
+                            LOG("[EXECUTOR] [STARTUP-RECON] OPEN ORDER FOUND "
+                                "basket=%s status='%s' unfilled=%d — cancelling",
+                                notif.basket_id().c_str(), notif.status().c_str(),
+                                notif.total_unfilled_size());
+                            rti::RequestCancelOrder cancel_req;
+                            cancel_req.set_template_id(316);
+                            cancel_req.set_basket_id(notif.basket_id());
+                            cancel_req.set_account_id(orb_cfg.account_id);
+                            cancel_req.set_fcm_id(orb_cfg.fcm_id);
+                            cancel_req.set_ib_id(orb_cfg.ib_id);
+                            try {
+                                co_await ws_write(*order_plant->ws, proto_frame(cancel_req));
+                                LOG("[EXECUTOR] [STARTUP-RECON] cancel sent basket=%s",
+                                    notif.basket_id().c_str());
+                            } catch (std::exception& e) {
+                                LOG("[EXECUTOR] [STARTUP-RECON] cancel send FAILED: %s",
+                                    e.what());
+                            }
+                        } else if (notif.total_fill_size() > 0 &&
+                                   notif.total_unfilled_size() == 0) {
+                            // Case B: filled order snap → ghost position indicator.
+                            // AccountPnLPositionUpdate (tid=451) will confirm net qty.
+                            LOG("[EXECUTOR] [STARTUP-RECON] FILLED ORDER SNAP "
+                                "basket=%s fill_qty=%d px=%.2f — possible ghost position! "
+                                "Halting entries pending tid=451 position confirm",
+                                notif.basket_id().c_str(),
+                                notif.total_fill_size(), notif.avg_fill_price());
+                            strategy.halt_trading("startup_ghost_position_suspected");
                         }
                     }
-                    continue;  // never process snapshots as live fills
+                    continue;  // never process snapshots through the live fill path
                 }
 
                 // When our stop order reaches the exchange, capture the server basket_id.
@@ -1058,6 +1082,86 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     LOG("[EXECUTOR] Order CANCELLED by exchange: client=%s server=%s",
                         notif.user_tag().c_str(), notif.basket_id().c_str());
                     order_mgr.on_cancel_confirmed(notif.user_tag());
+                } else if (notify_type == 4) { // TRIGGER PENDING (stop armed)
+                    LOG("[EXECUTOR] Stop ARMED (trigger pending): client=%s server=%s",
+                        notif.user_tag().c_str(), notif.basket_id().c_str());
+                }
+
+            } else if (tid == 451) {
+                // AccountPnLPositionUpdate — real-time position/PnL from exchange.
+                // Startup snapshot (is_snapshot=true) shows current net position;
+                // used to detect ghost positions left by previous session.
+                rti::AccountPnLPositionUpdate pos_upd;
+                if (!pos_upd.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed tid=451"); continue; }
+
+                LOG("[EXECUTOR] [POS-UPDATE] tid=451 is_snap=%d acct=%s "
+                    "fill_buy=%d fill_sell=%d net_qty=%d open_pnl='%s'",
+                    (int)pos_upd.is_snapshot(),
+                    pos_upd.account_id().c_str(),
+                    pos_upd.fill_buy_qty(), pos_upd.fill_sell_qty(),
+                    pos_upd.net_quantity(),
+                    pos_upd.open_position_pnl().c_str());
+
+                // Only act on snapshots for our account (net_quantity is account-wide;
+                // since we trade only 1 contract this equals our position).
+                if (pos_upd.is_snapshot() && pos_upd.account_id() == orb_cfg.account_id) {
+                    int net = pos_upd.net_quantity();
+                    if (net != 0) {
+                        bool ghost_is_long = (net > 0);
+                        LOG("[EXECUTOR] [STARTUP-RECON] GHOST POSITION CONFIRMED: "
+                            "net_qty=%d (%s %d) — sending immediate unwind",
+                            net, ghost_is_long ? "LONG" : "SHORT", std::abs(net));
+                        // Unwind: sell if ghost long, buy if ghost short
+                        bool unwind_is_buy = !ghost_is_long;
+                        if (order_plant->connected && order_plant->ws) {
+                            std::string basket_id =
+                                orb_cfg.symbol + "-startup-recon-"
+                                + std::to_string(std::chrono::duration_cast<
+                                    std::chrono::milliseconds>(
+                                    std::chrono::system_clock::now()
+                                        .time_since_epoch()).count());
+                            constexpr double TICK = 0.25;
+                            constexpr int    OFFSET = 20; // 5 pts — wide to ensure fill
+                            // Use last known price from live_position for unwind limit
+                            double ref = 0.0;
+                            {
+                                auto snap = order_mgr.position_snapshot();
+                                ref = snap.sl_price > 0 ? snap.sl_price : 0.0;
+                            }
+                            // Build a market-like aggressive limit
+                            rti::RequestNewOrder unwind_req;
+                            unwind_req.set_template_id(312);
+                            unwind_req.set_fcm_id(orb_cfg.fcm_id);
+                            unwind_req.set_ib_id(orb_cfg.ib_id);
+                            unwind_req.set_account_id(orb_cfg.account_id);
+                            unwind_req.set_symbol(trade_symbol);
+                            unwind_req.set_exchange(orb_cfg.exchange);
+                            unwind_req.set_quantity(std::abs(net));
+                            unwind_req.set_order_type(2); // MARKET
+                            unwind_req.set_transaction_type(unwind_is_buy ? 1 : 2);
+                            unwind_req.set_user_tag(basket_id);
+                            unwind_req.set_duration(rti::RequestNewOrder::DAY);
+                            unwind_req.set_manual_or_auto_select(rti::RequestNewOrder::AUTO);
+                            unwind_req.set_trade_route(order_plant->trade_route);
+                            try {
+                                co_await ws_write(*order_plant->ws,
+                                                  proto_frame(unwind_req));
+                                LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind sent: "
+                                    "%s MARKET qty=%d basket=%s",
+                                    unwind_is_buy ? "BUY" : "SELL",
+                                    std::abs(net), basket_id.c_str());
+                            } catch (std::exception& e) {
+                                LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind FAILED: %s "
+                                    "— MANUAL INTERVENTION REQUIRED", e.what());
+                            }
+                        }
+                        // Clear the ghost-position halt set by the tid=351 snap handler
+                        strategy.unhalt_trading("startup_ghost_position_cleared");
+                    } else {
+                        LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
+                        // If strategy was halted waiting for position confirm, clear it
+                        strategy.unhalt_trading("startup_position_confirmed_flat");
+                    }
                 }
 
             }
@@ -1595,20 +1699,18 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     auto signal_loop = [&]() -> asio::awaitable<void> {
         asio::signal_set sigs(ex, SIGINT, SIGTERM);
         int sig = co_await sigs.async_wait(asio::use_awaitable);
-        LOG("[EXECUTOR] Signal %d — immediate flatten + shutdown", sig);
+        LOG("[EXECUTOR] Signal %d received — pending_cancelled_stops=%d",
+            sig, order_mgr.pending_cancelled_stop_count());
         g_running = false;
         order_mgr.flatten_now("kill_signal");
         if (audit_conn)
             audit_log.info("session.eod_flatten", "kill signal immediate flatten");
-        // Poll until the exit fill is confirmed (position = FLAT) before stopping
-        // the io_context.  Without this, the executor dies before the exchange fill
-        // arrives → live_position stays LONG/SHORT in DB → next cycle's startup
-        // halt fires and the 20-min recovery loop runs unnecessarily.
-        // SIGKILL fires after 60s (run_continuous.sh timeout -k 60), so up to 10s
-        // here is safe; market-order fills typically confirm in under 1s.
+
+        // Phase 1: wait for the market exit fill to confirm (position = FLAT).
+        // Typical fill latency: <1s.  Cap at 10s so we don't block SIGKILL (60s).
         {
-            constexpr int kMaxTicks    = 100;   // 100 × 100 ms = 10 s
-            constexpr int kTickMs      = 100;
+            constexpr int kMaxTicks = 100;   // 100 × 100 ms = 10 s
+            constexpr int kTickMs   = 100;
             int ticks = 0;
             while (!order_mgr.is_flat() && ticks < kMaxTicks) {
                 asio::steady_timer t(ex);
@@ -1617,11 +1719,47 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 ++ticks;
             }
             if (order_mgr.is_flat())
-                LOG("[EXECUTOR] Shutdown complete — position flat after %d ms", ticks * kTickMs);
+                LOG("[EXECUTOR] Phase-1 drain: position FLAT after %d ms "
+                    "(pending_cancelled_stops=%d)",
+                    ticks * kTickMs, order_mgr.pending_cancelled_stop_count());
             else
-                LOG("[EXECUTOR] WARNING: position not confirmed flat after %d ms — shutting down anyway",
-                    kMaxTicks * kTickMs);
+                LOG("[EXECUTOR] Phase-1 drain: WARNING — not flat after %d ms "
+                    "(pending_cancelled_stops=%d) — proceeding to phase-2",
+                    kMaxTicks * kTickMs, order_mgr.pending_cancelled_stop_count());
         }
+
+        // Phase 2: extra window to catch late exchange stop fires.
+        // Exchange-native stops can fire up to ~30s after a cancel request.
+        // Keep io_context alive so cancelled_stops_ handler can send the unwind.
+        // We use 8s: well within the 60s SIGKILL budget, catches virtually all
+        // late stop fires observed in practice (typical latency <3s).
+        {
+            int pending = order_mgr.pending_cancelled_stop_count();
+            LOG("[EXECUTOR] Phase-2 drain: holding io_context open 8s for late stop fires "
+                "(pending_cancelled_stops=%d)", pending);
+            constexpr int kExtraMs     = 8000;
+            constexpr int kExtraTickMs = 500;
+            for (int i = 0; i < kExtraMs / kExtraTickMs; ++i) {
+                asio::steady_timer t(ex);
+                t.expires_after(std::chrono::milliseconds(kExtraTickMs));
+                co_await t.async_wait(asio::use_awaitable);
+                int rem = order_mgr.pending_cancelled_stop_count();
+                if (rem != pending) {
+                    LOG("[EXECUTOR] Phase-2: pending_cancelled_stops changed %d→%d "
+                        "(cancel ACK or unwind fired)", pending, rem);
+                    pending = rem;
+                }
+            }
+            int final_pending = order_mgr.pending_cancelled_stop_count();
+            if (final_pending > 0)
+                LOG("[EXECUTOR] Phase-2 drain complete — %d stop(s) still unconfirmed "
+                    "(exchange may fire these after shutdown — check RTrader for ghost positions)",
+                    final_pending);
+            else
+                LOG("[EXECUTOR] Phase-2 drain complete — all cancelled stops confirmed or handled");
+        }
+
+        LOG("[EXECUTOR] Shutdown complete");
         ioc_ref.stop();
     };
 

@@ -219,35 +219,43 @@ public:
                 // Check for stale stop fill: cancel raced and stop fired anyway
                 if (!last_stop_for_unwind_.empty() && basket_id == last_stop_for_unwind_) {
                     bool unwind_is_buy = !last_stop_was_buy_;
-                    LOG("[OM] STALE STOP FILL basket=%s px=%.2f — auto-unwind %s MKT",
-                        basket_id.c_str(), fill_price,
-                        unwind_is_buy ? "BUY" : "SELL");
+                    LOG("[OM] STALE-STOP-FILL: basket=%s px=%.2f state=FLAT "
+                        "— late fire of most-recent cancelled stop, sending unwind %s",
+                        basket_id.c_str(), fill_price, unwind_is_buy ? "BUY" : "SELL");
                     last_stop_for_unwind_.clear();
+                    cancelled_stops_.erase(basket_id);  // remove from guard too
                     if (order_cb_) {
                         std::string basket = new_basket_id();
                         lat_.on_signal(basket, fill_price, false);
-                        // Legends rejects MARKET orders — use aggressive LIMIT same as entries.
                         constexpr double TICK = 0.25;
                         constexpr int    OFFSET_TICKS = 4;
                         double unwind_px = unwind_is_buy
                             ? fill_price + OFFSET_TICKS * TICK
                             : fill_price - OFFSET_TICKS * TICK;
+                        LOG("[OM] STALE-STOP-UNWIND: sending %s limit=%.2f basket=%s "
+                            "(ghost position from late stop fire)",
+                            unwind_is_buy ? "BUY" : "SELL", unwind_px, basket.c_str());
                         bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
                                             cfg_.qty, /*LIMIT=1*/1, unwind_is_buy,
                                             unwind_px, "stale_stop_unwind");
                         if (ok) lat_.on_submit(basket, fill_price);
+                        else LOG("[OM] STALE-STOP-UNWIND: ERROR — order_cb_ failed basket=%s "
+                                 "EXCHANGE MAY BE NON-FLAT", basket.c_str());
+                    } else {
+                        LOG("[OM] STALE-STOP-UNWIND: ERROR — no order_cb_, cannot unwind "
+                            "EXCHANGE MAY BE NON-FLAT");
                     }
                 } else {
                     auto it = cancelled_stops_.find(basket_id);
                     if (it != cancelled_stops_.end()) {
                         // A stop we cancelled fired anyway — exchange didn't cancel in time.
-                        // Auto-unwind to return to flat.
                         bool unwind_is_buy = !it->second;
                         cancelled_stops_.erase(it);
-                        LOG("[OM] CRITICAL: Cancelled stop basket=%s px=%.2f fired anyway — "
-                            "auto-unwind %s to return flat",
+                        LOG("[OM] CANCELLED-STOP-FIRED: basket=%s px=%.2f state=FLAT "
+                            "— sending unwind %s (pending_cancelled now=%zu)",
                             basket_id.c_str(), fill_price,
-                            unwind_is_buy ? "BUY" : "SELL");
+                            unwind_is_buy ? "BUY" : "SELL",
+                            cancelled_stops_.size());
                         if (order_cb_) {
                             std::string basket = new_basket_id();
                             lat_.on_signal(basket, fill_price, false);
@@ -256,14 +264,22 @@ public:
                             double unwind_px = unwind_is_buy
                                 ? fill_price + OFFSET_TICKS * TICK
                                 : fill_price - OFFSET_TICKS * TICK;
+                            LOG("[OM] CANCELLED-STOP-UNWIND: sending %s limit=%.2f basket=%s",
+                                unwind_is_buy ? "BUY" : "SELL", unwind_px, basket.c_str());
                             bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
                                                 cfg_.qty, /*LIMIT=1*/1, unwind_is_buy,
                                                 unwind_px, "stale_cancel_unwind");
                             if (ok) lat_.on_submit(basket, fill_price);
+                            else LOG("[OM] CANCELLED-STOP-UNWIND: ERROR — order_cb_ failed "
+                                     "EXCHANGE MAY BE NON-FLAT");
+                        } else {
+                            LOG("[OM] CANCELLED-STOP-UNWIND: ERROR — no order_cb_ "
+                                "EXCHANGE MAY BE NON-FLAT");
                         }
                     } else {
-                        LOG("[OM] Spurious exit fill basket=%s (state=%d)",
-                            basket_id.c_str(), (int)pos_.state);
+                        LOG("[OM] SPURIOUS-FILL: basket=%s px=%.2f state=%d "
+                            "(not in entry/stop/unwind/cancelled_stops — unknown origin)",
+                            basket_id.c_str(), fill_price, (int)pos_.state);
                     }
                 }
                 return;
@@ -483,9 +499,18 @@ public:
     // ── Cancel ACK — stop confirmed cancelled by exchange ────────────────────
     void on_cancel_confirmed(const std::string& basket_id) {
         std::lock_guard<std::mutex> lk(state_mu_);
-        cancelled_stops_.erase(basket_id);
+        bool was_guard = cancelled_stops_.erase(basket_id) > 0;
         if (last_stop_for_unwind_ == basket_id) last_stop_for_unwind_.clear();
-        LOG("[OM] Cancel ACK basket=%s — confirmed dead, unwind guard cleared", basket_id.c_str());
+        LOG("[OM] Cancel ACK basket=%s — confirmed dead%s (pending_cancelled=%zu)",
+            basket_id.c_str(),
+            was_guard ? " (removed from unwind guard)" : "",
+            cancelled_stops_.size());
+    }
+
+    // How many cancelled stops are still unconfirmed (could still fire from exchange).
+    int pending_cancelled_stop_count() const {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        return (int)cancelled_stops_.size();
     }
 
     // ── Server basket_id for stop order (from tid=351 notifications) ─────────
@@ -666,8 +691,11 @@ private:
         pos_.basket_id_stop = basket;
         stop_server_basket_.clear();   // new stop — server basket_id not yet known
         pending_modify_      = false;  // clear any stale pending modify
-        LOG("[OM] Submitting exchange STOP_MARKET %s at %.2f basket=%s",
-            stop_is_sell ? "SELL" : "BUY", sl_price, basket.c_str());
+        LOG("[OM] STOP-SUBMIT: %s STOP_MARKET at %.2f basket=%s "
+            "(entry=%.2f dist=%.2fpt pending_cancelled=%zu)",
+            stop_is_sell ? "SELL" : "BUY", sl_price, basket.c_str(),
+            pos_.entry_price, std::abs(sl_price - pos_.entry_price),
+            cancelled_stops_.size());
         // Pre-populate latency record so exchange-stop fills get meaningful metrics
         lat_.on_signal(basket, sl_price, /*is_entry=*/false);
         lat_.on_submit(basket, sl_price);
@@ -742,7 +770,12 @@ private:
         last_stop_was_buy_    = was_buy_stop;
         // Also add to persistent map — cancel confirmation may never arrive
         cancelled_stops_[pos_.basket_id_stop] = was_buy_stop;
-        LOG("[OM] Cancelling stop basket=%s (position closed)", pos_.basket_id_stop.c_str());
+        LOG("[OM] STOP-CANCEL: basket=%s sl=%.2f dir=%s "
+            "(unwind_guard=%s, pending_cancelled=%zu)",
+            pos_.basket_id_stop.c_str(), pos_.sl_price,
+            was_buy_stop ? "BUY-stop(SHORT)" : "SELL-stop(LONG)",
+            pos_.basket_id_stop.c_str(),
+            cancelled_stops_.size());
         cancel_cb_(pos_.basket_id_stop);
         pos_.basket_id_stop.clear();
         stop_server_basket_.clear();
@@ -766,8 +799,13 @@ private:
         std::string basket = new_basket_id();
         pos_.basket_id_exit = basket;
 
-        LOG("[OM] Initiating exit: reason=%s ref_price=%.2f basket=%s%s",
+        LOG("[OM] EXIT-INITIATE: reason=%s ref_price=%.2f basket=%s dir=%s "
+            "entry=%.2f sl=%.2f be=%d trailing=%d pending_cancelled=%zu%s",
             reason.c_str(), ref_price, basket.c_str(),
+            exit_is_buy ? "BUY(close-SHORT)" : "SELL(close-LONG)",
+            pos_.entry_price, pos_.sl_price,
+            (int)pos_.be_triggered, (int)pos_.trailing_active,
+            cancelled_stops_.size(),
             cfg_.dry_run ? " [DRY_RUN]" : "");
 
         lat_.on_signal(basket, ref_price, /*is_entry=*/false);

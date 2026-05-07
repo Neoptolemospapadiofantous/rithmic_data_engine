@@ -175,6 +175,13 @@ public:
         LOG("[ORB] Trading halted: %s", reason.c_str());
     }
 
+    void unhalt_trading(const std::string& reason) {
+        if (!session_.risk_halted) return;
+        session_.risk_halted = false;
+        session_.halt_reason.clear();
+        LOG("[ORB] Trading unhalted: %s", reason.c_str());
+    }
+
     // ── Notify strategy that a trade closed ──────────────────────────────────
     // Called by executor when OrderManager pops a completed trade.
     // Clears in_position; if exit was a stop, arms a re-entry cooldown.
