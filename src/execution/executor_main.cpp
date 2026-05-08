@@ -2115,6 +2115,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             "ALTER TABLE pending_stop_cancels "
             "ADD COLUMN IF NOT EXISTS server_basket_id TEXT");
 
+        // Prune rows older than 24 h — orders cannot survive across a full trading day;
+        // if the cancel ACK never arrived by now the order is expired or already gone.
+        PQexec(pg,
+            ("DELETE FROM pending_stop_cancels "
+             "WHERE account_label = '" + orb_cfg.account_label + "' "
+             "  AND instrument = '" + orb_cfg.symbol + "' "
+             "  AND cancelled_at < NOW() - INTERVAL '24 hours'").c_str());
+
         // Seed cancelled_stops_ (and server reverse map) from any rows left by a previous process
         {
             std::string q2 =
