@@ -686,6 +686,24 @@ static CheckResult check_trading_constants() {
         issues.push_back("missing 'stop_loss_points' (or 'sl_points')");
     }
 
+    // Trailing stop params — a zeroed trail_step puts the stop at entry and triggers
+    // an instant exit; trail_be_trigger/offset/delay_secs must be non-negative.
+    if (j.contains("trail_step")) {
+        if (!j["trail_step"].is_number() || j["trail_step"].get<double>() <= 0.0)
+            issues.push_back("'trail_step' must be > 0");
+    } else {
+        issues.push_back("missing 'trail_step'");
+    }
+    if (j.contains("trail_be_trigger") &&
+        (!j["trail_be_trigger"].is_number() || j["trail_be_trigger"].get<double>() < 0.0))
+        issues.push_back("'trail_be_trigger' must be >= 0");
+    if (j.contains("trail_be_offset") &&
+        (!j["trail_be_offset"].is_number() || j["trail_be_offset"].get<double>() < 0.0))
+        issues.push_back("'trail_be_offset' must be >= 0");
+    if (j.contains("trail_delay_secs") &&
+        (!j["trail_delay_secs"].is_number_integer() || j["trail_delay_secs"].get<int>() < 0))
+        issues.push_back("'trail_delay_secs' must be integer >= 0");
+
     if (!issues.empty()) {
         std::string msg = "validation issues: ";
         for (size_t i = 0; i < issues.size(); ++i) {
@@ -731,6 +749,13 @@ static CheckResult check_config_schema() {
         std::string tr = j["trade_route"].get<std::string>();
         if (tr == "Rithmic Order Routing")
             issues.push_back("'trade_route' is \"Rithmic Order Routing\" — BANNED: silently cancels all Legends orders (rp_code=1043)");
+    }
+
+    // sl_fire_timeout_ms must be > 0 when present (0 fires software SL on every tick)
+    if (j.contains("sl_fire_timeout_ms")) {
+        if (!j["sl_fire_timeout_ms"].is_number_integer() ||
+            j["sl_fire_timeout_ms"].get<int>() <= 0)
+            issues.push_back("'sl_fire_timeout_ms' must be integer > 0 (0 fires software SL on every tick)");
     }
 
     if (!issues.empty()) {
@@ -801,7 +826,7 @@ static CheckResult run_cpp_tests() {
 
 static std::vector<CheckResult> run_all_checks(PGconn* conn) {
     std::vector<CheckResult> results;
-    results.reserve(16);
+    results.reserve(17);
 
     // DB checks
     results.push_back(check_data_freshness(conn));
@@ -826,6 +851,9 @@ static std::vector<CheckResult> run_all_checks(PGconn* conn) {
     // Config checks
     results.push_back(check_trading_constants());
     results.push_back(check_config_schema());
+
+    // Build / test check
+    results.push_back(run_cpp_tests());
 
     return results;
 }
