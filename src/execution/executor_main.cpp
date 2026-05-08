@@ -876,6 +876,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // exchange can immediately ACK/confirm the cancel notifications.
             order_plant->drain_pending_cancels();
 
+            // Fire startup RECANCEL for any pending stops loaded from DB.
+            // These are trail-cancel orphans from a previous session whose cancel ACK
+            // never arrived within the 5s window.  Now that the order plant is up
+            // and subscribed, we can retry the cancel via the server basket ID.
+            if (!orb_cfg.dry_run && order_mgr.pending_cancelled_stop_count() > 0) {
+                LOG("[EXECUTOR] STARTUP-RECON: firing recancel for %d DB-seeded pending stop(s)",
+                    order_mgr.pending_cancelled_stop_count());
+                order_mgr.recancel_pending_stops();
+            }
+
         } catch (std::exception& e) {
             LOG("[EXECUTOR] FATAL: ORDER_PLANT connect failed: %s", e.what());
             co_return;
