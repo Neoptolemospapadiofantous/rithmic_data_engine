@@ -1477,6 +1477,65 @@ TEST(is_exit_basket_recognized_after_stop_rejection_software_sl) {
     ASSERT_NEAR(out.pnl_usd,    -11.0 * 2.0 - 1.0, 0.001); // -$23
 }
 
+// 52. cancel_persist_cb_ is called on stop SUBMIT (not just on cancel)
+//     — stop is tracked in DB from the moment it's live on the exchange,
+//       so a crash before any cancel ACK doesn't leave an orphan stop.
+TEST(stop_tracked_in_db_on_submit) {
+    Fixture f;
+    std::vector<std::string> persisted, removed;
+
+    f.om.set_cancel_persist_callbacks(
+        [&](const std::string& bid, bool) { persisted.push_back(bid); },
+        [&](const std::string& bid)       { removed.push_back(bid); }
+    );
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Stop must be persisted immediately on submit (before any cancel)
+    ASSERT_EQ((int)persisted.size(), 1);
+    ASSERT_EQ((int)removed.size(),   0);
+
+    // Flatten closes the position and cancels the stop
+    f.om.flatten_now("eod");
+    auto snap = f.om.position_snapshot();
+    // cancel_stop_locked is called — persist callback may fire again (duplicate)
+    // but remove callback fires when cancel ACK arrives
+    std::string stop_basket = persisted[0];
+    f.om.on_cancel_confirmed(stop_basket);
+    ASSERT_EQ((int)removed.size(), 1);
+    ASSERT_EQ(removed[0], stop_basket);
+}
+
+// 53. cancel_remove_cb_ is called when a stop fires NATURALLY (exchange stop fill)
+//     — without this, the DB row was never cleaned up and the next startup
+//       would try to cancel an already-filled order, firing a ghost unwind.
+TEST(stop_removed_from_db_on_natural_fire) {
+    Fixture f;
+    std::vector<std::string> persisted, removed;
+
+    f.om.set_cancel_persist_callbacks(
+        [&](const std::string& bid, bool) { persisted.push_back(bid); },
+        [&](const std::string& bid)       { removed.push_back(bid); }
+    );
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+
+    auto snap = f.om.position_snapshot();
+    ASSERT(!snap.basket_id_stop.empty());
+    const std::string stop_basket = snap.basket_id_stop;
+
+    // Exchange stop fires (price hits SL) — fill arrives for the stop basket directly
+    f.om.on_fill_notification(stop_basket, 18990.0, 1, /*is_entry_fill=*/false);
+    ASSERT(f.om.is_flat());
+
+    // remove callback must be called so the DB row is deleted
+    ASSERT_EQ((int)removed.size(), 1);
+    ASSERT_EQ(removed[0], stop_basket);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -1530,6 +1589,8 @@ int main() {
     RUN(software_sl_does_not_fire_when_only_in_memory_sl_breached);
     RUN(is_exit_basket_recognized_after_flatten_now);
     RUN(is_exit_basket_recognized_after_stop_rejection_software_sl);
+    RUN(stop_tracked_in_db_on_submit);
+    RUN(stop_removed_from_db_on_natural_fire);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

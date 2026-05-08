@@ -479,9 +479,14 @@ public:
             pos_.pnl_usd    = pts * cfg_.point_value
                               - 2.0 * MNQ_COMMISSION; // round-turn
 
-            // Cancel the exchange stop order if it wasn't the one that just filled
-            if (!pos_.basket_id_stop.empty() && pos_.basket_id_stop != basket_id) {
-                cancel_stop_locked();
+            // Cancel the exchange stop order if it wasn't the one that just filled;
+            // if it WAS the one that filled (natural stop fire), remove it from the
+            // active-stop DB so startup doesn't try to re-cancel an already-filled order.
+            if (!pos_.basket_id_stop.empty()) {
+                if (pos_.basket_id_stop != basket_id)
+                    cancel_stop_locked();
+                else if (cancel_remove_cb_)
+                    cancel_remove_cb_(basket_id);
             }
 
             auto lat_rec = lat_.on_fill(basket_id, fill_price);
@@ -1028,6 +1033,10 @@ private:
             pos_.basket_id_stop.clear();
         } else {
             last_exchange_sl_ = sl_price;
+            // Track in DB from submission — not just from cancel. Any crash between
+            // submit and cancel ACK leaves this stop live on the exchange; startup
+            // reads this table and fires a cancel for every row.
+            if (cancel_persist_cb_) cancel_persist_cb_(basket, !stop_is_sell);
         }
     }
 
