@@ -2012,6 +2012,25 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             "  cancelled_at TIMESTAMPTZ DEFAULT NOW()"
             ")");
 
+        // Prune stale pending_stop_cancels before loading.
+        // DAY orders expire at market close; any entry older than 24h is guaranteed
+        // stale (exchange already fired or discarded the order).
+        {
+            std::string prune_q =
+                "DELETE FROM pending_stop_cancels "
+                "WHERE account_label = '" + orb_cfg.account_label + "' "
+                "  AND instrument = '" + orb_cfg.symbol + "' "
+                "  AND cancelled_at < NOW() - INTERVAL '24 hours'";
+            PGresult* rp = PQexec(pg, prune_q.c_str());
+            if (rp) {
+                int pruned = (PQresultStatus(rp) == PGRES_COMMAND_OK)
+                    ? std::atoi(PQcmdTuples(rp)) : 0;
+                if (pruned > 0)
+                    LOG("[EXECUTOR] STARTUP-RECON: pruned %d stale pending_stop_cancel(s) (>24h old)", pruned);
+                PQclear(rp);
+            }
+        }
+
         // Seed cancelled_stops_ from any rows left by a previous process
         {
             std::string q2 =
@@ -2028,6 +2047,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
                 if (n > 0)
                     LOG("[EXECUTOR] STARTUP-RECON: loaded %d pending stop cancel(s) from DB", n);
+                else
+                    LOG("[EXECUTOR] STARTUP-RECON: no pending stop cancels to restore");
             }
             if (r2) PQclear(r2);
         }
