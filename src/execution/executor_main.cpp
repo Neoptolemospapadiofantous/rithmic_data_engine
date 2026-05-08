@@ -1045,11 +1045,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     const std::string& client_id = notif.user_tag();
                     bool is_entry = order_mgr.is_entry_basket(client_id);
                     bool is_stop  = order_mgr.is_stop_basket(client_id);
-                    if (is_entry || is_stop) {
+                    bool is_exit  = order_mgr.is_exit_basket(client_id);
+                    if (is_entry || is_stop || is_exit) {
                         LOG("[EXECUTOR] tid=351 fill detected: client=%s avg_fill=%.2f qty=%d "
-                            "entry=%d stop=%d",
+                            "entry=%d stop=%d exit=%d",
                             client_id.c_str(), notif.avg_fill_price(),
-                            notif.total_fill_size(), (int)is_entry, (int)is_stop);
+                            notif.total_fill_size(), (int)is_entry, (int)is_stop, (int)is_exit);
                         order_mgr.on_fill_notification(client_id,
                                                        notif.avg_fill_price(),
                                                        notif.total_fill_size(),
@@ -1191,7 +1192,29 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                 auto snap = order_mgr.position_snapshot();
                                 ref = snap.sl_price > 0 ? snap.sl_price : 0.0;
                             }
-                            // Build a market-like aggressive limit
+                            // Legends prop accounts reject MARKET (type=2) — use an
+                            // aggressive LIMIT that crosses the spread immediately.
+                            // Prefer strategy.last_price() as anchor (available on
+                            // reconnect; 0 on cold first boot).  Fall back to MARKET
+                            // only when absolutely no price reference exists.
+                            constexpr double UNWIND_TICK = 0.25;
+                            constexpr int UNWIND_OFFSET_TICKS = 50; // ~12.5 pts
+                            double last_px = strategy.last_price();
+                            int    unwind_order_type;
+                            double unwind_limit_px = 0.0;
+                            if (last_px > 0.0) {
+                                unwind_order_type = 1; // LIMIT
+                                unwind_limit_px = unwind_is_buy
+                                    ? last_px + UNWIND_OFFSET_TICKS * UNWIND_TICK
+                                    : last_px - UNWIND_OFFSET_TICKS * UNWIND_TICK;
+                            } else {
+                                // No price reference yet (cold start before first tick).
+                                // Fall back to MARKET — may be rejected by Legends.
+                                unwind_order_type = 2; // MARKET
+                                LOG("[EXECUTOR] [STARTUP-RECON] WARNING: no price ref for ghost unwind "
+                                    "— sending MARKET (may be rejected by Legends; "
+                                    "manually close via RTrader if rejected)");
+                            }
                             rti::RequestNewOrder unwind_req;
                             unwind_req.set_template_id(312);
                             unwind_req.set_fcm_id(orb_cfg.fcm_id);
@@ -1200,7 +1223,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             unwind_req.set_symbol(trade_symbol);
                             unwind_req.set_exchange(orb_cfg.exchange);
                             unwind_req.set_quantity(std::abs(net));
-                            unwind_req.set_order_type(2); // MARKET
+                            unwind_req.set_order_type(unwind_order_type);
+                            if (unwind_order_type == 1)
+                                unwind_req.set_price(unwind_limit_px);
                             unwind_req.set_transaction_type(unwind_is_buy ? 1 : 2);
                             unwind_req.set_user_tag(basket_id);
                             unwind_req.set_duration(rti::RequestNewOrder::DAY);
@@ -1210,9 +1235,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                 co_await ws_write(*order_plant->ws,
                                                   proto_frame(unwind_req));
                                 LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind sent: "
-                                    "%s MARKET qty=%d basket=%s",
+                                    "%s %s px=%.2f qty=%d basket=%s",
                                     unwind_is_buy ? "BUY" : "SELL",
-                                    std::abs(net), basket_id.c_str());
+                                    unwind_order_type == 1 ? "LIMIT" : "MARKET",
+                                    unwind_limit_px, std::abs(net), basket_id.c_str());
                                 // Register so the fill is recognised instead of
                                 // triggering a second GHOST-FILL log.
                                 order_mgr.register_unwind_basket(basket_id);

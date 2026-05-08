@@ -858,6 +858,14 @@ public:
         return !pos_.basket_id_stop.empty() && pos_.basket_id_stop == basket_id;
     }
 
+    // True when basket_id matches the current market-exit order (from initiate_exit_locked).
+    // Used by the tid=351 fill handler to route software-SL and EOD-flatten fills,
+    // which Legends delivers as COMPLETE on tid=351 rather than ExchangeOrderNotification.
+    bool is_exit_basket(const std::string& basket_id) const {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        return !pos_.basket_id_exit.empty() && pos_.basket_id_exit == basket_id;
+    }
+
     PosState state() const {
         std::lock_guard<std::mutex> lk(state_mu_);
         return pos_.state;

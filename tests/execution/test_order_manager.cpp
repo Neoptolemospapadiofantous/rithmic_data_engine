@@ -1364,6 +1364,82 @@ TEST(check_trail_returns_false_when_sl_unchanged) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — tid=351 exit-fill routing bug.
+// Legends routing delivers all LIMIT fills (including market exits) as COMPLETE
+// on tid=351. The executor's is_entry || is_stop guard previously dropped exit
+// basket fills silently, leaving the position stuck in PENDING_EXIT forever.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 49. is_exit_basket() correctly identifies the EOD-flatten exit basket,
+//     and on_fill_notification with that basket closes the position to FLAT.
+TEST(is_exit_basket_recognized_after_flatten_now) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    f.om.flatten_now("eod_flatten", 19005.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+
+    auto snap = f.om.position_snapshot();
+    ASSERT(!snap.basket_id_exit.empty());
+    const std::string exit_basket = snap.basket_id_exit;
+
+    ASSERT( f.om.is_exit_basket(exit_basket));
+    ASSERT(!f.om.is_entry_basket(exit_basket));
+    ASSERT(!f.om.is_stop_basket(exit_basket));
+
+    f.om.on_fill_notification(exit_basket, 19005.0, 1, /*is_entry_fill=*/false);
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_EQ(out.exit_reason, std::string("eod_flatten"));
+    ASSERT_NEAR(out.pnl_points, 5.0, 0.001);
+    ASSERT_NEAR(out.pnl_usd,    5.0 * 2.0 - 1.0, 0.001);  // 5pt * $2 - $1 rt-comm = $9
+}
+
+// 50. is_exit_basket() recognized after stop rejection (software SL path).
+//     Stop rejected → basket_id_stop cleared → immediate software SL fires →
+//     basket_id_exit set → fill via that basket closes the position to FLAT.
+TEST(is_exit_basket_recognized_after_stop_rejection_software_sl) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Reject the exchange stop → software SL fallback active
+    auto snap = f.om.position_snapshot();
+    ASSERT(!snap.basket_id_stop.empty());
+    f.om.on_order_rejected(snap.basket_id_stop, "rejected_by_exchange");
+    ASSERT(f.om.position_snapshot().basket_id_stop.empty());
+
+    // Price below SL (sl=19000-10=18990) → immediate software SL (no exchange stop)
+    f.om.check_trail_and_stop(18989.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+
+    auto snap2 = f.om.position_snapshot();
+    ASSERT(!snap2.basket_id_exit.empty());
+    const std::string exit_basket = snap2.basket_id_exit;
+
+    ASSERT( f.om.is_exit_basket(exit_basket));
+    ASSERT(!f.om.is_entry_basket(exit_basket));
+    ASSERT(!f.om.is_stop_basket(exit_basket));
+
+    // Simulate the tid=351 fill for the software-SL exit order
+    f.om.on_fill_notification(exit_basket, 18989.0, 1, /*is_entry_fill=*/false);
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_EQ(out.exit_reason, std::string("stop_loss"));
+    ASSERT_NEAR(out.pnl_points, -11.0, 0.001);             // 18989 - 19000
+    ASSERT_NEAR(out.pnl_usd,    -11.0 * 2.0 - 1.0, 0.001); // -$23
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -1413,6 +1489,8 @@ int main() {
     RUN(lifecycle_short_trail_step_stop_fills_closes_to_flat);
     RUN(lifecycle_long_multiple_trail_steps_closes_to_flat);
     RUN(check_trail_returns_false_when_sl_unchanged);
+    RUN(is_exit_basket_recognized_after_flatten_now);
+    RUN(is_exit_basket_recognized_after_stop_rejection_software_sl);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;
