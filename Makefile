@@ -61,6 +61,7 @@ deploy:
 		cmake --build build -j$$(nproc) --target rithmic_engine nq_executor; \
 		sudo install -m 755 build/nq_executor /usr/local/bin/nq_executor; \
 		sudo chcon -t bin_t /usr/local/bin/nq_executor 2>/dev/null || true; \
+		sudo chcon -t bin_t /home/opc/rithmic_engine/build/nq_executor 2>/dev/null || true; \
 		sudo chcon -t etc_t /home/opc/rithmic_engine/.env 2>/dev/null || true; \
 		sudo cp deploy/nq_executor@.service /etc/systemd/system/nq_executor@.service; \
 		sudo cp deploy/nq_executor_24x7@.service /etc/systemd/system/nq_executor-24x7@.service; \
