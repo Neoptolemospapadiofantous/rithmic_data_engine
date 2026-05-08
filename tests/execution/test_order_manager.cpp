@@ -1536,6 +1536,90 @@ TEST(stop_removed_from_db_on_natural_fire) {
     ASSERT_EQ(removed[0], stop_basket);
 }
 
+// 54. flat_purge_keeps_db_entry_for_in_flight_cancel:
+//     When a trail-cancelled stop still has its server ID in server_to_client_cancelled_
+//     (cancel ACK not yet received), the flat purge must NOT call cancel_remove_cb_ for
+//     it — that row must survive in DB so clear_post_close_recancels WARN + startup retry.
+//     The ACK path (on_cancel_confirmed / on_cancel_confirmed_by_server_basket) must
+//     clean the DB row unconditionally once the cancel is confirmed.
+TEST(flat_purge_keeps_db_entry_for_in_flight_cancel) {
+    Fixture f;
+    std::vector<std::string> removed;
+
+    f.om.set_cancel_persist_callbacks(
+        [](const std::string&, bool) {},
+        [&](const std::string& bid) { removed.push_back(bid); }
+    );
+
+    // Enter LONG, fill, capture initial stop basket and assign server ID
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    const std::string stop1 = f.om.position_snapshot().basket_id_stop;
+    ASSERT(!stop1.empty());
+    f.om.set_stop_server_basket("SERVER-TRAIL-1");
+
+    // Trigger BE: cancel stop1 (→ cancelled_stops_ + server_to_client_cancelled_), submit stop2
+    f.om.check_trail_and_stop(19005.5);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    const std::string stop2 = f.om.position_snapshot().basket_id_stop;
+    ASSERT(!stop2.empty());
+    ASSERT(stop2 != stop1);
+
+    // stop2 fires naturally (exchange stop fill) — position goes FLAT
+    f.om.on_fill_notification(stop2, 18985.0, 1, /*is_entry_fill=*/false);
+    ASSERT(f.om.is_flat());
+
+    // stop2 remove fired (natural fire path)
+    bool stop2_removed = std::find(removed.begin(), removed.end(), stop2) != removed.end();
+    ASSERT(stop2_removed);
+
+    // stop1 must NOT have been removed — it has a pending server cancel in-flight
+    bool stop1_removed_in_flat_purge = std::find(removed.begin(), removed.end(), stop1) != removed.end();
+    ASSERT(!stop1_removed_in_flat_purge);
+
+    // Simulate cancel ACK arriving via server basket ID — must delete the DB row now
+    f.om.on_cancel_confirmed_by_server_basket("SERVER-TRAIL-1");
+    bool stop1_removed_on_ack = std::find(removed.begin(), removed.end(), stop1) != removed.end();
+    ASSERT(stop1_removed_on_ack);
+}
+
+// 55. server_id_persisted_on_trail_cancel:
+//     When cancel_stop_locked fires for a stop whose server basket ID is already known,
+//     cancel_persist_server_id_cb_ is called so the DB row gets the server ID.
+//     This lets the next startup issue RequestCancelOrder with the server basket ID
+//     (required by Rithmic — client IDs are not accepted by RequestCancelOrder).
+TEST(server_id_persisted_on_trail_cancel) {
+    Fixture f;
+    std::vector<std::pair<std::string, std::string>> server_id_updates;
+
+    f.om.set_cancel_persist_callbacks(
+        [](const std::string&, bool) {},
+        [](const std::string&) {},
+        [&](const std::string& cid, const std::string& sid) {
+            server_id_updates.emplace_back(cid, sid);
+        }
+    );
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    const std::string stop1 = f.om.position_snapshot().basket_id_stop;
+    ASSERT(!stop1.empty());
+
+    // Assign server basket ID for the stop
+    f.om.set_stop_server_basket("SERVER-55");
+
+    // Trigger BE: cancel+resubmit — cancel_persist_server_id_cb_ must fire for stop1
+    f.om.check_trail_and_stop(19005.5);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    bool found = false;
+    for (const auto& [cid, sid] : server_id_updates)
+        if (cid == stop1 && sid == "SERVER-55") { found = true; break; }
+    ASSERT(found);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -1591,6 +1675,8 @@ int main() {
     RUN(is_exit_basket_recognized_after_stop_rejection_software_sl);
     RUN(stop_tracked_in_db_on_submit);
     RUN(stop_removed_from_db_on_natural_fire);
+    RUN(flat_purge_keeps_db_entry_for_in_flight_cancel);
+    RUN(server_id_persisted_on_trail_cancel);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

@@ -98,13 +98,19 @@ public:
     void set_modify_callback(OrderModifyCallback cb) { modify_cb_ = std::move(cb); }
 
     // DB persistence for cancelled stops — survive process restarts.
-    // persist_cb: called when a stop cancel is sent (basket_id, was_buy_stop)
-    // remove_cb:  called when cancel is confirmed or the stop fires (basket_id)
-    using CancelPersistCb = std::function<void(const std::string& basket_id, bool was_buy_stop)>;
-    using CancelRemoveCb  = std::function<void(const std::string& basket_id)>;
-    void set_cancel_persist_callbacks(CancelPersistCb persist, CancelRemoveCb remove) {
-        cancel_persist_cb_ = std::move(persist);
-        cancel_remove_cb_  = std::move(remove);
+    // persist_cb:           called when a stop cancel is sent (basket_id, was_buy_stop)
+    // remove_cb:            called when cancel is confirmed or the stop fires (basket_id)
+    // persist_server_id_cb: called when the server basket ID is known at cancel time,
+    //                       so startup can cancel by server ID instead of client ID
+    using CancelPersistCb         = std::function<void(const std::string& basket_id, bool was_buy_stop)>;
+    using CancelRemoveCb          = std::function<void(const std::string& basket_id)>;
+    using CancelPersistServerIdCb = std::function<void(const std::string& client_id,
+                                                        const std::string& server_id)>;
+    void set_cancel_persist_callbacks(CancelPersistCb persist, CancelRemoveCb remove,
+                                       CancelPersistServerIdCb persist_server = nullptr) {
+        cancel_persist_cb_          = std::move(persist);
+        cancel_remove_cb_           = std::move(remove);
+        cancel_persist_server_id_cb_ = std::move(persist_server);
     }
 
     // Re-send cancel for every unconfirmed stop.
@@ -151,13 +157,18 @@ public:
     // Called from executor when the post-close recancel window expires.
     // Clears server_to_client_cancelled_ and last_stop_for_unwind_ so they
     // don't leak into the next trade's state.
+    // If cancel ACKs still haven't arrived, DB rows are preserved — the next
+    // startup will read them and retry the cancel by server basket ID.
     void clear_post_close_recancels() {
         std::lock_guard<std::mutex> lk(state_mu_);
         if (!server_to_client_cancelled_.empty()) {
-            LOG("[OM] Post-close recancel window expired — clearing %zu server basket ID(s):",
+            LOG("[OM] WARN: recancel window expired — %zu stop cancel(s) still unconfirmed. "
+                "DB rows preserved for next-startup retry.",
                 server_to_client_cancelled_.size());
             for (const auto& [sid, cid] : server_to_client_cancelled_)
-                LOG("[OM]   server=%s → client=%s", sid.c_str(), cid.c_str());
+                LOG("[OM]   unconfirmed cancel: server=%s → client=%s "
+                    "(order may still be live — startup will retry via server ID)",
+                    sid.c_str(), cid.c_str());
             server_to_client_cancelled_.clear();
         }
         if (!last_stop_for_unwind_.empty()) {
@@ -199,6 +210,16 @@ public:
         cancelled_stops_[basket_id] = was_buy_stop;
         LOG("[OM] STARTUP-RECON: seeded cancelled_stop basket=%s dir=%s",
             basket_id.c_str(), was_buy_stop ? "BUY-stop(SHORT)" : "SELL-stop(LONG)");
+    }
+
+    // Seed the server→client reverse map from a DB row that stored both IDs.
+    // Called at startup so recancel_pending_stops() can cancel by server basket ID
+    // (required by Rithmic — client IDs alone are not accepted by RequestCancelOrder).
+    void seed_server_stop_cancel(const std::string& server_id, const std::string& client_id) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        server_to_client_cancelled_[server_id] = client_id;
+        LOG("[OM] STARTUP-RECON: seeded server cancel ID server=%s → client=%s",
+            server_id.c_str(), client_id.c_str());
     }
 
     // ── Called by OrbStrategy signal callback ─────────────────────────────────
@@ -533,21 +554,30 @@ public:
             // rather than triggering GHOST-FILL halt or being silently attributed to
             // the next trade as a spurious exit.  Cleared by clear_post_close_recancels().
 
-            // Purge all remaining trail-update cancel guards.  These are stops
-            // cancelled during the just-closed trade's trail updates whose cancel
-            // ACKs never arrived (common on simulator).  Once we are FLAT the
-            // DB guard is no longer needed — remove from DB so they don't
-            // accumulate across 24x7 cycles.
+            // Purge trail-cancel guards whose cancel was already confirmed (not in
+            // server_to_client_cancelled_).  Guards still awaiting a cancel ACK are
+            // kept in DB — on_cancel_confirmed / on_cancel_confirmed_by_server_basket
+            // will delete them when the ACK arrives.  If the ACK never comes within
+            // the 5s recancel window, clear_post_close_recancels() logs WARN and the
+            // DB rows survive for next-startup retry via server basket ID.
             // NOTE: server_to_client_cancelled_ and last_stop_for_unwind_ are NOT
-            // cleared here — they persist until clear_post_close_recancels() is called
-            // (after the 5s recancel window) so recancel_pending_stops() can use them.
+            // cleared here — they persist until clear_post_close_recancels().
             if (!cancelled_stops_.empty()) {
-                LOG("[OM] FLAT — purging %zu stale trail-cancel guard(s) from DB "
-                    "(server IDs kept for 5s recancel window)",
-                    cancelled_stops_.size());
+                size_t confirmed_cnt = 0, pending_cnt = 0;
                 for (const auto& [bid, _] : cancelled_stops_) {
-                    if (cancel_remove_cb_) cancel_remove_cb_(bid);
+                    bool has_pending_server_cancel = false;
+                    for (const auto& [sid, cid] : server_to_client_cancelled_)
+                        if (cid == bid) { has_pending_server_cancel = true; break; }
+                    if (has_pending_server_cancel) {
+                        ++pending_cnt;  // keep in DB; ACK or startup will clean up
+                    } else {
+                        ++confirmed_cnt;
+                        if (cancel_remove_cb_) cancel_remove_cb_(bid);
+                    }
                 }
+                LOG("[OM] FLAT — purged %zu confirmed trail-cancel guard(s) from DB; "
+                    "kept %zu with unconfirmed server cancel (server IDs kept for 5s recancel window)",
+                    confirmed_cnt, pending_cnt);
                 cancelled_stops_.clear();
                 // server_to_client_cancelled_ intentionally NOT cleared here
             }
@@ -778,7 +808,8 @@ public:
             if (it->second == basket_id) it = server_to_client_cancelled_.erase(it);
             else ++it;
         }
-        if (was_guard && cancel_remove_cb_) cancel_remove_cb_(basket_id);
+        // Always clean DB: flat purge may have preserved this row pending this ACK
+        if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
         if (last_stop_for_unwind_ == basket_id) last_stop_for_unwind_.clear();
         LOG("[OM] Cancel ACK basket=%s — confirmed dead%s (pending_cancelled=%zu)",
             basket_id.c_str(),
@@ -798,8 +829,9 @@ public:
         }
         const std::string client_id = it->second;
         server_to_client_cancelled_.erase(it);
-        bool was_guard = cancelled_stops_.erase(client_id) > 0;
-        if (was_guard && cancel_remove_cb_) cancel_remove_cb_(client_id);
+        cancelled_stops_.erase(client_id);
+        // Always clean DB: flat purge may have preserved this row pending this ACK
+        if (cancel_remove_cb_) cancel_remove_cb_(client_id);
         if (last_stop_for_unwind_ == client_id) last_stop_for_unwind_.clear();
         LOG("[OM] Cancel ACK server=%s → client=%s confirmed dead (pending_cancelled=%zu)",
             server_basket_id.c_str(), client_id.c_str(), cancelled_stops_.size());
@@ -934,8 +966,9 @@ private:
     // with empty user_tag (external cancellations via RTrader).
     std::unordered_map<std::string, std::string> server_to_client_cancelled_;
 
-    CancelPersistCb cancel_persist_cb_;
-    CancelRemoveCb  cancel_remove_cb_;
+    CancelPersistCb         cancel_persist_cb_;
+    CancelRemoveCb          cancel_remove_cb_;
+    CancelPersistServerIdCb cancel_persist_server_id_cb_;
 
     // Baskets of unwind orders sent to correct ghost positions from late stop fires.
     // When an unwind fill arrives we log it cleanly instead of SPURIOUS-FILL.
@@ -1094,8 +1127,14 @@ private:
         if (cancel_persist_cb_) cancel_persist_cb_(pos_.basket_id_stop, was_buy_stop);
         // Populate reverse map before clearing so cancel ACKs (and post-close recancels)
         // can resolve the client basket by server basket ID.
-        if (!stop_server_basket_.empty())
+        if (!stop_server_basket_.empty()) {
             server_to_client_cancelled_[stop_server_basket_] = pos_.basket_id_stop;
+            // Persist server ID to DB so next startup can cancel by server basket ID
+            // (Rithmic's RequestCancelOrder requires the exchange-assigned basket_id,
+            // not our client user_tag — without this, startup recancel silently fails).
+            if (cancel_persist_server_id_cb_)
+                cancel_persist_server_id_cb_(pos_.basket_id_stop, stop_server_basket_);
+        }
         // Use server basket ID for RequestCancelOrder — Rithmic routes the cancel by its
         // own server-assigned basket_id, not our user_tag.  Fall back to client ID only if
         // the server basket hasn't been mapped yet (race: cancel before first notification).

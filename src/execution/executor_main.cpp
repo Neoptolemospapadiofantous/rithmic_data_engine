@@ -2101,29 +2101,35 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     if (db && db->is_connected() && !orb_cfg.dry_run) {
         PGconn* pg = db->raw_conn();
 
-        // Create table if not present
+        // Create table if not present (server_basket_id added for startup recancel via server ID)
         PQexec(pg,
             "CREATE TABLE IF NOT EXISTS pending_stop_cancels ("
-            "  basket_id    TEXT PRIMARY KEY,"
-            "  account_label TEXT NOT NULL,"
-            "  instrument   TEXT NOT NULL,"
-            "  was_buy_stop BOOL NOT NULL,"
-            "  cancelled_at TIMESTAMPTZ DEFAULT NOW()"
+            "  basket_id        TEXT PRIMARY KEY,"
+            "  account_label    TEXT NOT NULL,"
+            "  instrument       TEXT NOT NULL,"
+            "  was_buy_stop     BOOL NOT NULL,"
+            "  cancelled_at     TIMESTAMPTZ DEFAULT NOW(),"
+            "  server_basket_id TEXT"
             ")");
+        PQexec(pg,
+            "ALTER TABLE pending_stop_cancels "
+            "ADD COLUMN IF NOT EXISTS server_basket_id TEXT");
 
-        // Seed cancelled_stops_ from any rows left by a previous process
+        // Seed cancelled_stops_ (and server reverse map) from any rows left by a previous process
         {
             std::string q2 =
-                "SELECT basket_id, was_buy_stop FROM pending_stop_cancels "
+                "SELECT basket_id, was_buy_stop, server_basket_id FROM pending_stop_cancels "
                 "WHERE account_label = '" + orb_cfg.account_label + "' "
                 "  AND instrument = '" + orb_cfg.symbol + "'";
             PGresult* r2 = PQexec(pg, q2.c_str());
             if (r2 && PQresultStatus(r2) == PGRES_TUPLES_OK) {
                 int n = PQntuples(r2);
                 for (int i = 0; i < n; ++i) {
-                    std::string bid  = PQgetvalue(r2, i, 0);
-                    bool was_buy     = std::string(PQgetvalue(r2, i, 1)) == "t";
+                    std::string bid    = PQgetvalue(r2, i, 0);
+                    bool was_buy       = std::string(PQgetvalue(r2, i, 1)) == "t";
+                    std::string svid   = PQgetisnull(r2, i, 2) ? "" : PQgetvalue(r2, i, 2);
                     order_mgr.seed_cancelled_stops(bid, was_buy);
+                    if (!svid.empty()) order_mgr.seed_server_stop_cancel(svid, bid);
                 }
                 if (n > 0)
                     LOG("[EXECUTOR] STARTUP-RECON: loaded %d pending stop cancel(s) from DB", n);
@@ -2131,7 +2137,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             if (r2) PQclear(r2);
         }
 
-        // Wire up persist/remove callbacks so future cancels update the DB
+        // Wire up persist/remove/server-id callbacks so future cancels update the DB
         order_mgr.set_cancel_persist_callbacks(
             [pg, &orb_cfg](const std::string& bid, bool was_buy) {
                 std::string q =
@@ -2147,6 +2153,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     "DELETE FROM pending_stop_cancels WHERE basket_id = '" + bid + "'";
                 PQexec(pg, q.c_str());
                 LOG("[DB] pending_stop_cancels DELETE basket=%s", bid.c_str());
+            },
+            [pg](const std::string& client_id, const std::string& server_id) {
+                std::string q =
+                    "UPDATE pending_stop_cancels SET server_basket_id = '" + server_id +
+                    "' WHERE basket_id = '" + client_id + "'";
+                PQexec(pg, q.c_str());
+                LOG("[DB] pending_stop_cancels UPDATE server_basket_id=%s for basket=%s",
+                    server_id.c_str(), client_id.c_str());
             }
         );
     }
