@@ -115,6 +115,18 @@ public:
         std::lock_guard<std::mutex> lk(state_mu_);
         if (!cancel_cb_) return;
         // Primary path: server basket IDs from in-session cancels
+        LOG("[OM] RECANCEL: firing — server_entries=%zu client_only_entries=%zu",
+            server_to_client_cancelled_.size(),
+            [&]() -> std::size_t {
+                std::size_t n = 0;
+                for (const auto& [cid, _] : cancelled_stops_) {
+                    bool covered = false;
+                    for (const auto& [sid, c2] : server_to_client_cancelled_)
+                        if (c2 == cid) { covered = true; break; }
+                    if (!covered) ++n;
+                }
+                return n;
+            }());
         for (const auto& [server_id, client_id] : server_to_client_cancelled_) {
             cancel_cb_(server_id);
             LOG("[OM] RECANCEL: cancel re-sent server=%s (client=%s)",
@@ -142,9 +154,15 @@ public:
     void clear_post_close_recancels() {
         std::lock_guard<std::mutex> lk(state_mu_);
         if (!server_to_client_cancelled_.empty()) {
-            LOG("[OM] Post-close recancel window expired — clearing %zu server basket ID(s)",
+            LOG("[OM] Post-close recancel window expired — clearing %zu server basket ID(s):",
                 server_to_client_cancelled_.size());
+            for (const auto& [sid, cid] : server_to_client_cancelled_)
+                LOG("[OM]   server=%s → client=%s", sid.c_str(), cid.c_str());
             server_to_client_cancelled_.clear();
+        }
+        if (!last_stop_for_unwind_.empty()) {
+            LOG("[OM] Post-close clear: last_stop_for_unwind_=%s cleared",
+                last_stop_for_unwind_.c_str());
         }
         last_stop_for_unwind_.clear();
         last_stop_was_buy_ = false;
@@ -309,8 +327,15 @@ public:
             if (pos_.state != PosState::PENDING_EXIT &&
                 pos_.state != PosState::LONG &&
                 pos_.state != PosState::SHORT) {
+                // State is FLAT (or some unexpected state) — run stale-stop guards
+                LOG("[OM] FLAT fill: basket=%s px=%.2f qty=%d — checking stale-stop guards "
+                    "(last_stop_for_unwind=%s cancelled_stops=%zu)",
+                    basket_id.c_str(), fill_price, fill_qty,
+                    last_stop_for_unwind_.empty() ? "(none)" : last_stop_for_unwind_.c_str(),
+                    cancelled_stops_.size());
                 // Check for stale stop fill: cancel raced and stop fired anyway
                 if (!last_stop_for_unwind_.empty() && basket_id == last_stop_for_unwind_) {
+                    // last_stop_for_unwind_ guard MATCHED
                     bool unwind_is_buy = !last_stop_was_buy_;
                     LOG("[OM] STALE-STOP-FILL: basket=%s px=%.2f state=FLAT "
                         "— late fire of most-recent cancelled stop, sending unwind %s",
@@ -342,8 +367,14 @@ public:
                             "EXCHANGE MAY BE NON-FLAT");
                     }
                 } else {
+                    // last_stop_for_unwind_ guard did NOT match — try cancelled_stops_
+                    LOG("[OM] FLAT fill: last_stop_for_unwind_ guard miss "
+                        "(basket=%s != last_unwind=%s) — checking cancelled_stops_",
+                        basket_id.c_str(),
+                        last_stop_for_unwind_.empty() ? "(none)" : last_stop_for_unwind_.c_str());
                     auto it = cancelled_stops_.find(basket_id);
                     if (it != cancelled_stops_.end()) {
+                        // cancelled_stops_ guard MATCHED
                         // A stop we cancelled fired anyway — exchange didn't cancel in time.
                         bool unwind_is_buy = !it->second;
                         cancelled_stops_.erase(it);
@@ -392,10 +423,35 @@ public:
                         // DB-seeded cancelled_stops should have caught this; if we're here
                         // it means a stop survived across multiple restarts without being
                         // persisted. Halt trading and require manual intervention.
+                        // Warn if fill_qty is suspiciously large (could be a Rithmic internal
+                        // notification or a fill for a different account's position).
+                        if (fill_qty > cfg_.qty) {
+                            LOG("[OM] GHOST-FILL WARN: fill_qty=%d > expected qty=%d "
+                                "— possible Rithmic internal notification or wrong-account fill "
+                                "(basket=%s px=%.2f)",
+                                fill_qty, cfg_.qty, basket_id.c_str(), fill_price);
+                        }
+                        // Dump all known basket IDs to aid debugging
                         LOG("[OM] GHOST-FILL: basket=%s px=%.2f qty=%d state=FLAT "
                             "— unknown fill, exchange may be non-flat. "
                             "TRADING HALTED — check RTrader and restart executor.",
                             basket_id.c_str(), fill_price, fill_qty);
+                        LOG("[OM] GHOST-FILL known baskets: entry=%s exit=%s stop=%s "
+                            "server_stop=%s last_unwind=%s",
+                            pos_.basket_id_entry.empty() ? "(none)" : pos_.basket_id_entry.c_str(),
+                            pos_.basket_id_exit.empty()  ? "(none)" : pos_.basket_id_exit.c_str(),
+                            pos_.basket_id_stop.empty()  ? "(none)" : pos_.basket_id_stop.c_str(),
+                            stop_server_basket_.empty()  ? "(none)" : stop_server_basket_.c_str(),
+                            last_stop_for_unwind_.empty() ? "(none)" : last_stop_for_unwind_.c_str());
+                        if (!cancelled_stops_.empty()) {
+                            for (const auto& [cid, buy_stop] : cancelled_stops_)
+                                LOG("[OM] GHOST-FILL cancelled_stops: %s (was_buy=%d)",
+                                    cid.c_str(), (int)buy_stop);
+                        }
+                        if (!unwind_baskets_.empty()) {
+                            for (const auto& ub : unwind_baskets_)
+                                LOG("[OM] GHOST-FILL unwind_baskets: %s", ub.c_str());
+                        }
                         ghost_halted_ = true;
                     }
                 }
@@ -535,6 +591,13 @@ public:
         bool sl_breached = (is_long  && current_price <= pos_.sl_price) ||
                            (!is_long && current_price >= pos_.sl_price);
 
+        LOG("[OM] TRAIL-CHECK: %s price=%.2f sl=%.2f mfe=%.2f mae=%.2f "
+            "be_triggered=%d trailing=%d sl_breached=%d stop=%s",
+            is_long ? "LONG" : "SHORT", current_price, pos_.sl_price,
+            pos_.mfe, pos_.mae,
+            (int)pos_.be_triggered, (int)pos_.trailing_active, (int)sl_breached,
+            pos_.basket_id_stop.empty() ? "(none)" : pos_.basket_id_stop.c_str());
+
         if (sl_breached) {
             if (pos_.basket_id_stop.empty()) {
                 LOG("[OM] Software SL hit (%s, no exchange stop): price=%.2f sl=%.2f",
@@ -582,15 +645,22 @@ public:
             double be_sl = is_long
                 ? pos_.entry_price + cfg_.trail_be_offset
                 : pos_.entry_price - cfg_.trail_be_offset;
+            LOG("[OM] BE eval: price=%.2f entry=%.2f trigger=%.2f mfe=%.2f "
+                "be_triggered=%d be_sl=%.2f current_sl=%.2f",
+                current_price, pos_.entry_price, cfg_.trail_be_trigger, pos_.mfe,
+                (int)pos_.be_triggered, be_sl, pos_.sl_price);
             if ((is_long && be_sl > pos_.sl_price) ||
                 (!is_long && be_sl < pos_.sl_price)) {
                 double old_sl = pos_.sl_price;
                 pos_.sl_price = be_sl;
                 pos_.be_sl_price = be_sl;
                 sl_moved = true;
-                LOG("[OM] BE triggered — SL moved to entry+%.1fpt: %.2f",
-                    cfg_.trail_be_offset, be_sl);
+                LOG("[OM] BE triggered — SL moved %.2f → %.2f (entry+%.1fpt)",
+                    old_sl, be_sl, cfg_.trail_be_offset);
                 update_stop_order_locked(old_sl, be_sl);
+            } else {
+                LOG("[OM] BE triggered but be_sl=%.2f does not improve current sl=%.2f — no update",
+                    be_sl, pos_.sl_price);
             }
         }
 
@@ -598,9 +668,14 @@ public:
         if (!pos_.trailing_active) {
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                 std::chrono::steady_clock::now() - pos_.fill_time).count();
+            LOG("[OM] TRAIL-DELAY eval: elapsed=%lds delay=%ds mfe=%.2f trigger=%.2f "
+                "trailing_active=%d",
+                (long)elapsed, cfg_.trail_delay_secs, pos_.mfe, cfg_.trail_be_trigger,
+                (int)pos_.trailing_active);
             if (elapsed >= cfg_.trail_delay_secs && pos_.mfe >= cfg_.trail_be_trigger) {
                 pos_.trailing_active = true;
-                LOG("[OM] Trailing activated after %lds", (long)elapsed);
+                LOG("[OM] Trailing activated after %lds (delay=%ds mfe=%.2f)",
+                    (long)elapsed, cfg_.trail_delay_secs, pos_.mfe);
             }
         }
 
@@ -615,7 +690,8 @@ public:
                 double old_sl = pos_.sl_price;
                 pos_.sl_price = trail_sl;
                 sl_moved = true;
-                LOG("[OM] Trail updated: price=%.2f new_sl=%.2f", current_price, trail_sl);
+                LOG("[OM] Trail updated: price=%.2f old_sl=%.2f new_sl=%.2f step=%.2f",
+                    current_price, old_sl, trail_sl, cfg_.trail_step);
                 update_stop_order_locked(old_sl, trail_sl);
             }
         }
@@ -726,8 +802,13 @@ public:
     void set_stop_server_basket(const std::string& server_basket_id) {
         std::lock_guard<std::mutex> lk(state_mu_);
         stop_server_basket_ = server_basket_id;
-        LOG("[OM] Stop server basket_id mapped: client=%s server=%s",
-            pos_.basket_id_stop.c_str(), server_basket_id.c_str());
+        int64_t elapsed_ms = 0;
+        if (stop_submit_time_ != std::chrono::steady_clock::time_point{}) {
+            elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - stop_submit_time_).count();
+        }
+        LOG("[OM] Stop server basket_id mapped: client=%s server=%s (took %ldms since submit)",
+            pos_.basket_id_stop.c_str(), server_basket_id.c_str(), (long)elapsed_ms);
     }
 
     // ── Modify response from exchange — if rejected, fall back to cancel+resubmit ──
@@ -812,6 +893,7 @@ private:
 
     // Server-assigned basket_id for the current stop order (needed for RequestModifyOrder)
     std::string stop_server_basket_;
+    std::chrono::steady_clock::time_point stop_submit_time_{};  // for server-mapping latency log
     // Pending modify state: tracks an in-flight modify so rejection triggers fallback
     bool        pending_modify_      = false;
     double      pending_modify_new_sl_ = 0.0;
@@ -912,6 +994,7 @@ private:
         std::string basket = new_basket_id();
         pos_.basket_id_stop = basket;
         stop_server_basket_.clear();   // new stop — server basket_id not yet known
+        stop_submit_time_ = std::chrono::steady_clock::now();
         pending_modify_      = false;  // clear any stale pending modify
         LOG("[OM] STOP-SUBMIT: %s STOP_MARKET at %.2f basket=%s "
             "(entry=%.2f dist=%.2fpt pending_cancelled=%zu)",
@@ -963,8 +1046,11 @@ private:
             submit_stop_order_locked(new_sl);
             return;
         }
-        LOG("[OM] Trail update: cancel+resubmit stop %s trigger=%.2f",
-            pos_.basket_id_stop.c_str(), new_sl);
+        LOG("[OM] Trail update: cancel+resubmit stop client=%s server=%s "
+            "old_sl=%.2f new_sl=%.2f",
+            pos_.basket_id_stop.c_str(),
+            stop_server_basket_.empty() ? "unmapped" : stop_server_basket_.c_str(),
+            last_exchange_sl_, new_sl);
         stop_resubmit_pending_ = true;
         cancel_stop_locked();
         submit_stop_order_locked(new_sl);
@@ -989,6 +1075,11 @@ private:
         // the server basket hasn't been mapped yet (race: cancel before first notification).
         const std::string& cancel_id = stop_server_basket_.empty()
                                        ? pos_.basket_id_stop : stop_server_basket_;
+        if (stop_server_basket_.empty()) {
+            LOG("[OM] WARN: server ID not yet mapped — using client ID as fallback "
+                "(BE fired before first tid=351 notification arrived) client=%s",
+                pos_.basket_id_stop.c_str());
+        }
         LOG("[OM] STOP-CANCEL: client=%s server=%s sl=%.2f dir=%s "
             "(cancel_id=%s, pending_cancelled=%zu)",
             pos_.basket_id_stop.c_str(),

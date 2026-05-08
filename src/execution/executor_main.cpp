@@ -1025,11 +1025,23 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 
                 // When our stop order reaches the exchange, capture the server basket_id.
                 if (order_mgr.is_stop_basket(notif.user_tag()) && !notif.basket_id().empty()) {
+                    LOG("[EXECUTOR] Stop server basket mapped: client=%s → server=%s",
+                        notif.user_tag().c_str(), notif.basket_id().c_str());
                     order_mgr.set_stop_server_basket(notif.basket_id());
                 }
                 // Legends routing delivers fills as COMPLETE (15) on tid=351 rather than
                 // ExchangeOrderNotification (352). Detect by total_fill_size > 0.
                 if (notif.total_fill_size() > 0 && notif.avg_fill_price() > 0.0) {
+                    // qty=7 (or any qty > cfg_.qty) on a fill we didn't send means Rithmic
+                    // is delivering order notifications for another account on this session.
+                    if (notif.total_fill_size() > orb_cfg.qty) {
+                        LOG("[EXECUTOR] WARNING: fill qty=%d exceeds expected position size=%d "
+                            "— possible multi-account notification basket=%s px=%.2f "
+                            "acct=%s user_tag=%s",
+                            notif.total_fill_size(), orb_cfg.qty,
+                            notif.basket_id().c_str(), notif.avg_fill_price(),
+                            notif.account_id().c_str(), notif.user_tag().c_str());
+                    }
                     const std::string& client_id = notif.user_tag();
                     bool is_entry = order_mgr.is_entry_basket(client_id);
                     bool is_stop  = order_mgr.is_stop_basket(client_id);
@@ -1056,6 +1068,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         client_id.c_str(), notif.basket_id().c_str(),
                         notif.status().c_str());
                     if (!client_id.empty()) {
+                        LOG("[EXECUTOR] Cancel ACK received: client=%s basket=%s notify_type=%d",
+                            client_id.c_str(), notif.basket_id().c_str(),
+                            (int)notif.notify_type());
                         order_mgr.on_cancel_confirmed(client_id);
                     } else {
                         // External cancellation (RTrader) — user_tag is empty;
@@ -1096,6 +1111,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Rithmic assigns its own basket_id on the response and echoes
                 // our user_tag in every notification.
                 if (notify_type == 5) {
+                    if (notif.fill_size() > orb_cfg.qty) {
+                        LOG("[EXECUTOR] WARNING: fill qty=%d exceeds expected position size=%d "
+                            "— possible multi-account notification basket=%s px=%.2f "
+                            "user_tag=%s",
+                            notif.fill_size(), orb_cfg.qty,
+                            notif.basket_id().c_str(), notif.fill_price(),
+                            notif.user_tag().c_str());
+                    }
                     const std::string& client_id = notif.user_tag();
                     bool is_entry = order_mgr.is_entry_basket(client_id);
                     bool is_stop  = order_mgr.is_stop_basket(client_id);
@@ -1297,6 +1320,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     asio::steady_timer eod_timer(ex);
     auto eod_loop = [&]() -> asio::awaitable<void> {
         int pos_write_counter = 0;
+        int trail_snapshot_counter = 0; // counts seconds for periodic 10s trail state log
         PosState watchdog_state  = PosState::FLAT;
         int64_t  watchdog_since_s = 0;  // epoch-s when watchdog_state last changed
         int ghost_halt_secs = 0;        // seconds ghost_halted_ has been active this cycle
@@ -1428,10 +1452,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count();
                 if (now_s < post_trade_cleanup_until_s) {
+                    int64_t remaining = post_trade_cleanup_until_s - now_s;
+                    LOG("[EXECUTOR] Post-close recancel tick: %lds remaining",
+                        (long)remaining);
                     if (!orb_cfg.dry_run) order_mgr.recancel_pending_stops();
                 } else {
                     post_trade_cleanup_until_s = 0;
                     // Window expired — clear server basket IDs and stale-stop guard
+                    LOG("[EXECUTOR] Post-close recancel window expired — clearing stale-stop guard");
                     order_mgr.clear_post_close_recancels();
                 }
             }
@@ -1473,6 +1501,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
                 int64_t held = now_s - watchdog_since_s;
                 if (wsnap.state == PosState::PENDING_ENTRY) {
+                    trail_snapshot_counter = 0;  // not in position — reset trail snapshot counter
                     if (held >= 5 && held % 5 == 0)
                         LOG("[EXECUTOR] WARN: PENDING_ENTRY for %lds — entry fill delayed "
                             "basket=%s px=%.2f",
@@ -1487,13 +1516,37 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             wsnap.entry_price, wsnap.sl_price,
                             strategy.last_price(),
                             (int)wsnap.be_triggered, (int)wsnap.trailing_active);
+                    // Periodic trail state snapshot every 10 seconds
+                    if (++trail_snapshot_counter >= 10) {
+                        trail_snapshot_counter = 0;
+                        auto trail_elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                            std::chrono::steady_clock::now() -
+                            wsnap.fill_time).count();
+                        // WARNING: trailing_active=true but be_triggered=false should never
+                        // happen — trail_delay_secs requires the same mfe >= trail_be_trigger
+                        // condition as BE, so BE always fires first.
+                        if (wsnap.trailing_active && !wsnap.be_triggered) {
+                            LOG("[EXECUTOR] WARNING: trailing_active=true but be_triggered=false "
+                                "— invariant violated! entry=%.2f sl=%.2f mfe=%.2f",
+                                wsnap.entry_price, wsnap.sl_price, wsnap.mfe);
+                        }
+                        LOG("[EXECUTOR] Trail state: entry=%.2f sl=%.2f be_triggered=%d "
+                            "trailing=%d trail_delay_elapsed=%lds/%ds price=%.2f mfe=%.2f",
+                            wsnap.entry_price, wsnap.sl_price,
+                            (int)wsnap.be_triggered, (int)wsnap.trailing_active,
+                            (long)trail_elapsed, orb_cfg.trail_delay_secs,
+                            strategy.last_price(), wsnap.mfe);
+                    }
                 } else if (wsnap.state == PosState::PENDING_EXIT) {
+                    trail_snapshot_counter = 0;  // exiting — reset trail snapshot counter
                     if (held >= 10 && held % 10 == 0)
                         LOG("[EXECUTOR] CRITICAL: PENDING_EXIT for %lds — exit fill delayed "
                             "basket=%s entry=%.2f reason=%s px=%.2f",
                             (long)held, wsnap.basket_id_exit.c_str(),
                             wsnap.entry_price, wsnap.exit_reason.c_str(),
                             strategy.last_price());
+                } else {
+                    trail_snapshot_counter = 0;  // FLAT — reset trail snapshot counter
                 }
             }
 

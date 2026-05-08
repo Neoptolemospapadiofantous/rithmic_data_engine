@@ -1024,6 +1024,169 @@ TEST(stop_resubmit_race_fires_immediate_software_sl) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// New tests (Task audit: stop/cancel lifecycle)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 41. cancel_uses_server_basket_id_when_mapped:
+//     When set_stop_server_basket() is called before a BE/trail cancel, the cancel
+//     request must be sent with the server basket ID (not the client basket ID).
+//     server_to_client_cancelled_ must have the server→client mapping afterwards.
+TEST(cancel_uses_server_basket_id_when_mapped) {
+    Fixture f;
+
+    // Enter LONG and sim entry fill (non-dry-run, so exchange stop is submitted)
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Capture the client stop basket ID assigned by OrderManager
+    auto snap = f.om.position_snapshot();
+    const std::string client_stop = snap.basket_id_stop;
+    ASSERT(!client_stop.empty());
+
+    // Exchange sends tid=351 notification: here is the server-assigned basket ID
+    f.om.set_stop_server_basket("SERVER-999");
+
+    // Trigger a BE stop update: price moves 5+ pts above entry (trail_be_trigger=5.0)
+    // This will call update_stop_order_locked → cancel_stop_locked → cancel_cb_
+    f.cancelled_baskets.clear();  // reset (may contain earlier items)
+    f.om.check_trail_and_stop(19005.5);
+
+    // The cancel callback must have been called with "SERVER-999", NOT client_stop
+    bool server_cancel_sent = false;
+    bool client_cancel_sent = false;
+    for (const auto& b : f.cancelled_baskets) {
+        if (b == "SERVER-999")  server_cancel_sent = true;
+        if (b == client_stop)   client_cancel_sent = true;
+    }
+    ASSERT(server_cancel_sent);
+    ASSERT(!client_cancel_sent);  // client ID must NOT have been sent
+
+    // server_to_client_cancelled_ must have the mapping: re-sending cancels should
+    // use "SERVER-999" (not the client basket ID).
+    // Verify by calling recancel_pending_stops() and checking that "SERVER-999" is re-sent.
+    f.cancelled_baskets.clear();
+    f.om.recancel_pending_stops();
+    bool server_recancel = false;
+    for (const auto& b : f.cancelled_baskets) {
+        if (b == "SERVER-999") server_recancel = true;
+        // client_stop must NOT appear (covered by server ID in reverse map)
+        ASSERT(b != client_stop);
+    }
+    ASSERT(server_recancel);
+}
+
+// 42. recancel_window_uses_server_ids_after_trade_close:
+//     After a trade closes (exit fill), cancelled_stops_ is purged but
+//     server_to_client_cancelled_ persists until clear_post_close_recancels().
+//     recancel_pending_stops() must re-send via server IDs during the window.
+//     After clear_post_close_recancels() the maps are empty — no more recancels.
+TEST(recancel_window_uses_server_ids_after_trade_close) {
+    Fixture f;
+
+    // Build up: LONG → entry fill → set server stop ID → trigger BE (cancel+resubmit)
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Map server basket for the initial stop
+    f.om.set_stop_server_basket("SERVER-BE-1");
+
+    // Trigger BE (fires cancel+resubmit of the stop → adds SERVER-BE-1 to reverse map)
+    f.om.check_trail_and_stop(19005.5);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // A new stop was submitted after BE; map its server basket too
+    auto snap_after_be = f.om.position_snapshot();
+    const std::string new_stop = snap_after_be.basket_id_stop;
+    ASSERT(!new_stop.empty());  // new stop submitted after BE
+    f.om.set_stop_server_basket("SERVER-BE-2");
+
+    // Now initiate exit (sets last_stop_for_unwind_ = new_stop, adds to cancelled_stops_,
+    // maps SERVER-BE-2 → new_stop in server_to_client_cancelled_)
+    f.om.flatten_now("eod", 19006.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+
+    // Simulate exit fill — trade closes; cancelled_stops_ is purged but
+    // server_to_client_cancelled_ survives
+    sim_exit_fill(f, 19006.0);
+    ASSERT(f.om.is_flat());
+
+    // recancel_pending_stops() should re-send via server IDs, not client IDs
+    f.cancelled_baskets.clear();
+    f.om.recancel_pending_stops();
+    // At minimum SERVER-BE-2 (new stop before exit) should be re-sent
+    bool server_recancel = false;
+    for (const auto& b : f.cancelled_baskets) {
+        if (b == "SERVER-BE-2") { server_recancel = true; break; }
+    }
+    ASSERT(server_recancel);
+
+    // clear_post_close_recancels() wipes the maps
+    f.om.clear_post_close_recancels();
+
+    // After clearing, recancel_pending_stops() must send nothing
+    f.cancelled_baskets.clear();
+    f.om.recancel_pending_stops();
+    ASSERT(f.cancelled_baskets.empty());
+}
+
+// 43. stale_stop_detected_after_trade_close_via_last_stop_for_unwind:
+//     last_stop_for_unwind_ is set when the exit-initiating cancel fires and is NOT
+//     cleared at trade close. If that stop fires late (while state=FLAT), the
+//     STALE-STOP-FILL path must fire, sending an unwind order.
+//     clear_post_close_recancels() must then clear last_stop_for_unwind_.
+TEST(stale_stop_detected_after_trade_close_via_last_stop_for_unwind) {
+    Fixture f;
+
+    // Enter LONG, fill entry, map server stop basket
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Capture the client stop basket (this will become last_stop_for_unwind_)
+    auto snap = f.om.position_snapshot();
+    const std::string original_stop_basket = snap.basket_id_stop;
+    ASSERT(!original_stop_basket.empty());
+
+    // Optionally map a server basket (doesn't affect last_stop_for_unwind_ value)
+    f.om.set_stop_server_basket("SERVER-STALE-1");
+
+    // Initiate exit via flatten_now — this calls cancel_stop_locked which sets
+    // last_stop_for_unwind_ = original_stop_basket
+    f.om.flatten_now("eod", 19005.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+
+    // Simulate exit fill — trade closes, state = FLAT
+    // last_stop_for_unwind_ = original_stop_basket (NOT cleared here by design)
+    sim_exit_fill(f, 19005.0);
+    ASSERT(f.om.is_flat());
+
+    // Stale stop fires: exchange delivers fill for the old stop basket
+    // while state is FLAT. This must hit the STALE-STOP-FILL path and send an unwind.
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.on_fill_notification(original_stop_basket, 18995.0, 1, /*is_entry_fill=*/false);
+
+    // An unwind order must have been sent (order_cb_ called)
+    ASSERT(f.sent_baskets.size() > sends_before);
+
+    // State stays FLAT (the unwind corrects the ghost position)
+    ASSERT(f.om.is_flat());
+
+    // clear_post_close_recancels() must clear last_stop_for_unwind_.
+    // After clearing, a second stale fill for the same basket goes to GHOST-FILL,
+    // not STALE-STOP-FILL (last_stop_for_unwind_ is now empty).
+    f.om.clear_post_close_recancels();
+
+    // After clear: a fill for the same basket should now trigger GHOST-FILL halt
+    // (last_stop_for_unwind_ is empty, basket not in cancelled_stops_ either)
+    ASSERT(!f.om.is_entry_halted());  // not yet halted
+    f.om.on_fill_notification(original_stop_basket, 18995.0, 1, /*is_entry_fill=*/false);
+    // Should now trigger ghost_halted_ (unknown fill while FLAT, no guards left)
+    ASSERT(f.om.is_entry_halted());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -1065,6 +1228,9 @@ int main() {
     RUN(eod_flatten_during_pending_exit_is_noop);
     RUN(be_trigger_below_be_sl_no_immediate_exit);
     RUN(stop_resubmit_race_fires_immediate_software_sl);
+    RUN(cancel_uses_server_basket_id_when_mapped);
+    RUN(recancel_window_uses_server_ids_after_trade_close);
+    RUN(stale_stop_detected_after_trade_close_via_last_stop_for_unwind);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;
