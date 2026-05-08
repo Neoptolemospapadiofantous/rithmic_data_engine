@@ -1187,6 +1187,183 @@ TEST(stale_stop_detected_after_trade_close_via_last_stop_for_unwind) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Lifecycle tests — verify that the trail path actually closes the position.
+// These are the end-to-end "did the stop fill land us FLAT?" checks that the
+// cancel+resubmit and trail-step unit tests do not cover.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 44. Full LONG lifecycle: entry → BE fires → exchange stop fills at BE level → FLAT.
+//     trail_delay_secs=0: trailing activates on the same tick as BE.
+//     At price=19005.5 (MFE=5.5 >= trigger=5): BE fires, SL moves to 19001 (entry+1),
+//     a new exchange stop basket is submitted.  When that stop fills at 19001 the
+//     position must close and pop_trade_completed() must return true with exchange_stop.
+TEST(lifecycle_long_be_stop_fills_closes_to_flat) {
+    Fixture f;  // trail_delay=0, trail_be_trigger=5, trail_be_offset=1, trail_step=3
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // BE fires: SL moves to entry+trail_be_offset = 19001 on the exchange, then trail
+    // immediately activates (delay=0) and moves in-memory SL to 19002.5 (19005.5-3.0).
+    // The trail exchange-stop update is suppressed (|1.5| < trail_step=3.0), so the
+    // exchange stop stays at 19001 while pos_.sl_price reflects the trail value 19002.5.
+    bool sl_moved = f.om.check_trail_and_stop(19005.5);
+    ASSERT(sl_moved);
+    auto snap = f.om.position_snapshot();
+    ASSERT(snap.be_triggered);
+    ASSERT(snap.trailing_active);
+    ASSERT_NEAR(snap.sl_price, 19002.5, 0.001);  // trail ran immediately: 19005.5-3=19002.5
+    ASSERT(!snap.basket_id_stop.empty());   // exchange stop at 19001 still active
+
+    // Exchange stop at 19001 fills — position must close
+    sim_exit_fill(f, 19001.0);
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_EQ(out.exit_reason, std::string("exchange_stop"));
+    ASSERT_NEAR(out.pnl_points,  1.0, 0.001);           // 19001 - 19000
+    ASSERT_NEAR(out.pnl_usd,     1.0 * 2.0 - 1.0, 0.001);  // 1pt * $2 - $1 rt-comm = $1
+    ASSERT(!f.om.pop_trade_completed(out));  // flag cleared after first pop
+}
+
+// 45. Full LONG lifecycle: entry → BE fires → trail step fires → exchange stop fills
+//     at trailed SL → FLAT.
+//     After BE (SL=19001), price rises to 19010: trail_sl=19007 > 19001 — step fires,
+//     new stop at 19007.  That stop fills → FLAT, pnl=7pts.
+TEST(lifecycle_long_trail_step_stop_fills_closes_to_flat) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Tick 1: BE fires at 19005.5 — exchange stop at 19001; trail also runs immediately
+    // (delay=0) and moves in-memory SL to 19002.5 (trail exchange update suppressed).
+    f.om.check_trail_and_stop(19005.5);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19002.5, 0.001);
+
+    // Tick 2: price 19010 — trail_sl = 19010-3 = 19007; |19007-19001|=6 >= step=3 → fires
+    // Price is above SL → stop_resubmit_pending_ cleared first, then new trail submitted
+    bool sl_moved2 = f.om.check_trail_and_stop(19010.0);
+    ASSERT(sl_moved2);
+    auto snap = f.om.position_snapshot();
+    ASSERT_NEAR(snap.sl_price, 19007.0, 0.001);
+    ASSERT(snap.trailing_active);
+    ASSERT(!snap.basket_id_stop.empty());  // new stop basket at 19007
+
+    // Exchange stop at 19007 fills — position closes
+    sim_exit_fill(f, 19007.0);
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_EQ(out.exit_reason, std::string("exchange_stop"));
+    ASSERT_NEAR(out.pnl_points, 7.0, 0.001);             // 19007 - 19000
+    ASSERT_NEAR(out.pnl_usd,    7.0 * 2.0 - 1.0, 0.001);  // 7pts * $2 - $1 = $13
+}
+
+// 46. Full SHORT lifecycle: entry → BE fires → trail step fires → exchange stop fills.
+//     Entry SHORT at 19000, BE trigger=5, be_offset=1: at price 18994.5 (MFE=5.5)
+//     BE fires → SL=18999 (entry-1).  At price 18990: trail_sl=18990+3=18993 < 18999 →
+//     step fires, new stop at 18993.  That stop fills → FLAT, pnl=7pts.
+TEST(lifecycle_short_trail_step_stop_fills_closes_to_flat) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "orb_breakdown");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::SHORT);
+
+    // Tick 1: BE fires (MFE=5.5 >= 5.0) — exchange stop at 18999 (entry-1); trail also
+    // runs immediately (delay=0): trail_sl=18994.5+3=18997.5 < 18999 → moves in-memory SL.
+    // Trail exchange update suppressed (|1.5| < step=3), so exchange stop stays at 18999.
+    bool sl_moved1 = f.om.check_trail_and_stop(18994.5);
+    ASSERT(sl_moved1);
+    auto snap1 = f.om.position_snapshot();
+    ASSERT(snap1.be_triggered);
+    ASSERT(snap1.trailing_active);
+    ASSERT_NEAR(snap1.sl_price, 18997.5, 0.001);  // trail moved in-memory: 18994.5+3=18997.5
+
+    // Tick 2: price 18990 — trail_sl=18990+3=18993; |18993-18999|=6 >= step=3 → fires
+    bool sl_moved2 = f.om.check_trail_and_stop(18990.0);
+    ASSERT(sl_moved2);
+    auto snap2 = f.om.position_snapshot();
+    ASSERT_NEAR(snap2.sl_price, 18993.0, 0.001);
+    ASSERT(!snap2.basket_id_stop.empty());
+
+    // Exchange stop at 18993 fills
+    sim_exit_fill(f, 18993.0);
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_EQ(out.exit_reason, std::string("exchange_stop"));
+    ASSERT_NEAR(out.pnl_points, 7.0, 0.001);             // 19000 - 18993
+    ASSERT_NEAR(out.pnl_usd,    7.0 * 2.0 - 1.0, 0.001);
+}
+
+// 47. Full LONG lifecycle: multiple trail ratchets → final stop fills → FLAT.
+//     Verifies the stop basket updates correctly across multiple trail steps and that
+//     only the LAST submitted basket closing the position marks it FLAT.
+TEST(lifecycle_long_multiple_trail_steps_closes_to_flat) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Step 1: BE fires at 19005.5 — exchange stop at 19001; trail immediately moves
+    // in-memory SL to 19002.5 (trail exchange update suppressed, |1.5| < step=3).
+    f.om.check_trail_and_stop(19005.5);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19002.5, 0.001);
+
+    // Step 2: trail fires at 19010 — SL=19007 (|19007-19001|=6 >= 3)
+    f.om.check_trail_and_stop(19010.0);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19007.0, 0.001);
+
+    // Step 3: trail fires at 19015 — SL=19012 (|19012-19007|=5 >= 3)
+    bool sl_moved3 = f.om.check_trail_and_stop(19015.0);
+    ASSERT(sl_moved3);
+    auto snap = f.om.position_snapshot();
+    ASSERT_NEAR(snap.sl_price, 19012.0, 0.001);
+    ASSERT(!snap.basket_id_stop.empty());  // latest stop basket active
+
+    // Exchange stop at 19012 fills — final basket closes the position
+    sim_exit_fill(f, 19012.0);
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_EQ(out.exit_reason, std::string("exchange_stop"));
+    ASSERT_NEAR(out.pnl_points, 12.0, 0.001);              // 19012 - 19000
+    ASSERT_NEAR(out.pnl_usd,    12.0 * 2.0 - 1.0, 0.001); // $23
+    ASSERT(!f.om.pop_trade_completed(out));  // flag cleared
+}
+
+// 48. check_trail_and_stop returns false when no SL move occurs (trail suppressed).
+//     Ensures executor_main does NOT flush DB on every tick — only when SL actually moves.
+TEST(check_trail_returns_false_when_sl_unchanged) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+
+    // Price below trigger: no BE, no trail — returns false
+    bool r1 = f.om.check_trail_and_stop(19003.0);  // MFE=3 < trigger=5
+    ASSERT(!r1);
+
+    // BE fires at 19005.5 — sl_moved=true; in-memory SL ends at 19002.5 (trail ran too)
+    bool r2 = f.om.check_trail_and_stop(19005.5);
+    ASSERT(r2);
+
+    // Price retreats to 19004: trail_sl = 19001.0 < sl_price(19002.5) → no advance
+    // In-memory SL unchanged → sl_moved=false → no DB flush needed
+    bool r3 = f.om.check_trail_and_stop(19004.0);
+    ASSERT(!r3);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -1231,6 +1408,11 @@ int main() {
     RUN(cancel_uses_server_basket_id_when_mapped);
     RUN(recancel_window_uses_server_ids_after_trade_close);
     RUN(stale_stop_detected_after_trade_close_via_last_stop_for_unwind);
+    RUN(lifecycle_long_be_stop_fills_closes_to_flat);
+    RUN(lifecycle_long_trail_step_stop_fills_closes_to_flat);
+    RUN(lifecycle_short_trail_step_stop_fills_closes_to_flat);
+    RUN(lifecycle_long_multiple_trail_steps_closes_to_flat);
+    RUN(check_trail_returns_false_when_sl_unchanged);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

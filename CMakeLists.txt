@@ -85,12 +85,21 @@ add_executable(test_order_manager
 target_include_directories(test_order_manager PRIVATE src/execution src/)
 target_compile_features(test_order_manager PRIVATE cxx_std_20)
 
+add_executable(test_lifecycle
+    tests/execution/test_lifecycle.cpp
+    src/execution/order_manager.cpp
+    src/execution/risk_manager.cpp
+)
+target_include_directories(test_lifecycle PRIVATE src/execution src/)
+target_compile_features(test_lifecycle PRIVATE cxx_std_20)
+
 enable_testing()
 add_test(NAME db_tests              COMMAND test_db)
 add_test(NAME validator_tests       COMMAND test_validator)
 add_test(NAME risk_manager_tests    COMMAND test_risk_manager)
 add_test(NAME orb_strategy_tests    COMMAND test_orb_strategy)
 add_test(NAME order_manager_tests   COMMAND test_order_manager)
+add_test(NAME lifecycle_tests       COMMAND test_lifecycle)
 
 # ── Dashboard (ncurses TUI) ────────────────────────────────────────
 add_executable(dashboard src/dashboard.cpp)
