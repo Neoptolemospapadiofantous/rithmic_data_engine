@@ -72,7 +72,7 @@ public:
         char ep[32], xp[32], sl[32], qty[16];
         char ppts[32], pusd[32];
         char ssus[32], sfms[32], eslip[16], xslip[16], echase[16], etslip[16];
-        char mae[32], mfe[32], trig[32], fill[32];
+        char mae[32], mfe[32], trig[32], fill[32], besl[32];
 
         snprintf(ep,     sizeof(ep),     "%.4f", pos.entry_price);
         snprintf(xp,     sizeof(xp),     "%.4f", pos.exit_price);
@@ -90,8 +90,9 @@ public:
         snprintf(mfe,    sizeof(mfe),    "%.4f", pos.mfe);
         snprintf(trig,   sizeof(trig),   "%.4f", pos.trigger_price);
         snprintf(fill,   sizeof(fill),   "%.4f", pos.fill_price_actual);
+        snprintf(besl,   sizeof(besl),   "%.4f", pos.be_sl_price);
 
-        const char* params[23] = {
+        const char* params[24] = {
             account_label_.c_str(),    // $1  account_label
             instrument_.c_str(),       // $2  instrument
             trade_date.c_str(),        // $3  trade_date
@@ -115,6 +116,7 @@ public:
             fill,                      // $21 fill_price
             echase,                    // $22 entry_price_chase_ticks
             etslip,                    // $23 entry_true_slip_ticks
+            besl,                      // $24 be_sl_price
         };
 
         exec_params(
@@ -123,7 +125,7 @@ public:
             " entry_price, exit_price, sl_price, qty, pnl_points, pnl_usd, exit_reason,"
             " signal_to_submit_us, submit_to_fill_ms, entry_slippage_ticks, exit_slippage_ticks,"
             " mae_pts, mfe_pts, trigger_price, fill_price,"
-            " entry_price_chase_ticks, entry_true_slip_ticks)"
+            " entry_price_chase_ticks, entry_true_slip_ticks, be_sl_price)"
             " VALUES"
             "($1, $2, $3::date, $4,"
             " to_timestamp($5::bigint / 1000000.0),"
@@ -133,8 +135,8 @@ public:
             " $14::bigint, $15::bigint, $16::int, $17::int,"
             " $18::double precision, $19::double precision,"
             " $20::double precision, $21::double precision,"
-            " $22::int, $23::int)",
-            23, params);
+            " $22::int, $23::int, $24::double precision)",
+            24, params);
 
         LOG("[ORBDB] Trade written: %s %.4f→%.4f pnl=%.2f mae=%.2f mfe=%.2f slip=%.2fpts",
             direction.c_str(), pos.entry_price, pos.exit_price, pos.pnl_usd,
@@ -573,7 +575,8 @@ private:
                 mae_pts                 DOUBLE PRECISION,
                 mfe_pts                 DOUBLE PRECISION,
                 trigger_price           DOUBLE PRECISION,
-                fill_price              DOUBLE PRECISION
+                fill_price              DOUBLE PRECISION,
+                be_sl_price             DOUBLE PRECISION
             )
         )");
 
@@ -587,6 +590,7 @@ private:
         exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS fill_price                DOUBLE PRECISION");
         exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS entry_price_chase_ticks  INT");
         exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS entry_true_slip_ticks    INT");
+        exec("ALTER TABLE live_trades ADD COLUMN IF NOT EXISTS be_sl_price              DOUBLE PRECISION");
 
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_sessions (

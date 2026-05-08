@@ -54,6 +54,7 @@ struct Position {
 
     // Trailing state
     bool   be_triggered    = false;  // SL already moved to entry+offset (no delay)
+    double be_sl_price     = 0.0;    // price at which BE stop was placed (entry+trail_be_offset); 0 before BE fires
     bool   trailing_active = false;  // price-following trail active (after trail_delay_secs)
     std::chrono::steady_clock::time_point fill_time;
 
@@ -432,6 +433,7 @@ public:
             entry_halted_        = false;
             last_exchange_sl_    = 0.0;
             sl_breach_time_      = {};  // clear breach timer on position close
+            stop_resubmit_pending_ = false;
 
             pos_ = Position{};  // back to FLAT
             trade_completed_ = true;
@@ -510,6 +512,18 @@ public:
                 initiate_exit_locked("stop_loss", current_price);
                 return false;
             }
+            // Stop cancel+resubmit in progress: new stop may not have reached the exchange yet.
+            // Fire software SL immediately rather than risk a delayed fill at a far worse price
+            // when the new stop arrives at the exchange after price has already moved.
+            if (stop_resubmit_pending_) {
+                stop_resubmit_pending_ = false;
+                sl_breach_time_ = {};
+                LOG("[OM] SL breach in stop-resubmit window (new stop in-flight): "
+                    "price=%.2f sl=%.2f — firing immediate software SL",
+                    current_price, pos_.sl_price);
+                initiate_exit_locked("stop_loss_resubmit", current_price);
+                return false;
+            }
             // Exchange stop active: start or check breach timer.
             if (sl_breach_time_ == std::chrono::steady_clock::time_point{}) {
                 sl_breach_time_ = std::chrono::steady_clock::now();
@@ -527,7 +541,8 @@ public:
                 }
             }
         } else {
-            sl_breach_time_ = {};  // price recovered above SL — reset timer
+            sl_breach_time_ = {};
+            stop_resubmit_pending_ = false;  // price above new stop — resubmit window safe
         }
 
         // BE: immediate — no delay. Fires as soon as MFE passes trail_be_trigger.
@@ -540,6 +555,7 @@ public:
                 (!is_long && be_sl < pos_.sl_price)) {
                 double old_sl = pos_.sl_price;
                 pos_.sl_price = be_sl;
+                pos_.be_sl_price = be_sl;
                 sl_moved = true;
                 LOG("[OM] BE triggered — SL moved to entry+%.1fpt: %.2f",
                     cfg_.trail_be_offset, be_sl);
@@ -808,6 +824,8 @@ private:
     // Software SL fires if the exchange stop hasn't responded within cfg_.sl_fire_timeout_ms.
     std::chrono::steady_clock::time_point sl_breach_time_{};
 
+    bool stop_resubmit_pending_ = false;  // set during stop cancel+resubmit; clears when safe
+
     static std::atomic<uint64_t> seq_;  // monotonic sequence for basket IDs
 
     std::string new_basket_id() {
@@ -916,6 +934,7 @@ private:
         }
         LOG("[OM] Trail update: cancel+resubmit stop %s trigger=%.2f",
             pos_.basket_id_stop.c_str(), new_sl);
+        stop_resubmit_pending_ = true;
         cancel_stop_locked();
         submit_stop_order_locked(new_sl);
     }
@@ -951,6 +970,7 @@ private:
         if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return;
 
         sl_breach_time_ = {};  // clear breach timer — we are exiting
+        stop_resubmit_pending_ = false;
 
         // Cancel the exchange stop BEFORE submitting market exit to prevent double-fill.
         cancel_stop_locked();

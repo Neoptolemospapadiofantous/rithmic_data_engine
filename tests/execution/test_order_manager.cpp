@@ -924,33 +924,34 @@ TEST(trail_suppression_prevents_rapid_resubmit) {
 
 // 33. BE fires with retraced price (trail_be_offset > trail_be_trigger):
 //     be_sl=entry+2 is above current_price=entry+0.6 when BE triggers.
-//     Correct behaviour: stop submitted at be_sl; state stays LONG; sl_breach path
-//     handles the exit (no immediate market exit at current_price).
+//     Correct behaviour: on tick 1, stop is cancel+resubmitted at be_sl (no immediate
+//     market exit at current_price). On tick 2, stop_resubmit_pending_ fires the
+//     immediate software SL because the new stop is in-flight and price is below it.
 TEST(be_retraced_price_uses_breach_not_market_exit) {
     OrbConfig cfg = make_cfg(false);
     cfg.trail_be_trigger   = 0.5;
     cfg.trail_be_offset    = 2.0;  // be_sl = entry+2 > trigger price entry+0.5
     cfg.trail_delay_secs   = 300;
-    cfg.sl_fire_timeout_ms = 0;    // breach fires on second call below SL
+    cfg.sl_fire_timeout_ms = 3000;  // timeout irrelevant — resubmit path fires first
     Fixture f(cfg);
 
     f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
     sim_entry_fill(f, 19000.0);
 
-    // Tick 1: BE fires (mfe=0.6 >= 0.5); be_sl=19002 > current 19000.6 → stop submitted.
-    // No immediate market exit — state must stay LONG.
+    // Tick 1: BE fires (mfe=0.6 >= 0.5); be_sl=19002 > current 19000.6 → stop
+    // cancel+resubmitted. No immediate market exit on THIS tick — sl_breached was
+    // computed against the OLD sl (18990) before BE updated it.
     std::size_t sends_after_entry = f.sent_baskets.size();
     f.om.check_trail_and_stop(19000.6);
     ASSERT_EQ(f.om.state(), PosState::LONG);
     ASSERT(f.sent_baskets.size() > sends_after_entry);  // stop cancel+resubmit to be_sl
 
-    // Tick 2: price still below be_sl=19002 → sl_breach timer starts
-    f.om.check_trail_and_stop(19000.6);
-    ASSERT_EQ(f.om.state(), PosState::LONG);
-
-    // Tick 3: sl_fire_timeout_ms=0 → breach fires exit
+    // Tick 2: price still below be_sl=19002; stop_resubmit_pending_=true (stop in-flight)
+    // → immediate software SL fires rather than risk a delayed exchange fill.
+    std::size_t sends_before = f.sent_baskets.size();
     f.om.check_trail_and_stop(19000.6);
     ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    ASSERT(f.sent_baskets.size() > sends_before);
 }
 
 // 34. flatten_now() when PENDING_EXIT logs and returns — no duplicate exit order sent.
@@ -969,32 +970,57 @@ TEST(eod_flatten_during_pending_exit_is_noop) {
 }
 
 // 35. BE fires at entry+trigger, but trail_be_offset > trail_be_trigger so be_sl is
-//     ABOVE current price. The old "already_hit" dead-code path would have fired a
-//     market exit at entry+trigger (below be_sl) — worse than placing the stop and
-//     letting sl_breach handle it. Verify: no immediate exit, breach path fires instead.
+//     ABOVE current price. On tick 1 the stop is cancel+resubmitted at be_sl; state
+//     stays LONG (sl_breached was computed against the OLD sl before BE updated it).
+//     On tick 2, stop_resubmit_pending_=true fires the immediate software SL because
+//     the new stop is in-flight and price is already below it.
 TEST(be_trigger_below_be_sl_no_immediate_exit) {
     OrbConfig cfg = make_cfg(false);
     cfg.trail_be_trigger   = 3.0;
     cfg.trail_be_offset    = 5.0;  // be_sl = entry+5 — above trigger price of entry+3
-    cfg.sl_fire_timeout_ms = 0;    // breach fires on second call below SL
+    cfg.sl_fire_timeout_ms = 3000; // timeout irrelevant — resubmit path fires first
     Fixture f(cfg);
 
     f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
     sim_entry_fill(f, 19000.0);
 
     // Tick 1: BE fires (mfe=3.0), be_sl=19005 > current_price=19003.
-    // Without the fix: already_hit → immediate PENDING_EXIT at 19003 (below be_sl).
-    // With fix: stop submitted at 19005, state stays LONG.
+    // sl_breached was evaluated against OLD sl=18990 → false → state stays LONG.
+    // Stop cancel+resubmit happens; stop_resubmit_pending_=true.
     f.om.check_trail_and_stop(19003.0);
     ASSERT_EQ(f.om.state(), PosState::LONG);
 
-    // Tick 2: price still below be_sl=19005 → sl_breach timer starts
-    f.om.check_trail_and_stop(19003.0);
-    ASSERT_EQ(f.om.state(), PosState::LONG);
-
-    // Tick 3: sl_fire_timeout_ms=0 → breach fires → PENDING_EXIT via sl_breach path
+    // Tick 2: price still below be_sl=19005; stop_resubmit_pending_=true (stop in-flight)
+    // → immediate software SL fires — no 3000ms wait needed.
+    std::size_t sends_before = f.sent_baskets.size();
     f.om.check_trail_and_stop(19003.0);
     ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    ASSERT(f.sent_baskets.size() > sends_before);
+}
+
+// 36. Stop-resubmit race: BE fires (cancel+resubmit in progress) and price immediately
+//     breaches the new stop. Software SL fires at once — no 3000ms wait — preventing
+//     a delayed exchange fill at a far worse price.
+TEST(stop_resubmit_race_fires_immediate_software_sl) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.trail_be_trigger   = 3.0;
+    cfg.trail_be_offset    = 1.0;
+    cfg.sl_fire_timeout_ms = 3000;  // normal timeout — should NOT be needed
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+
+    // BE fires at entry+3: stop cancel+resubmit sent, stop_resubmit_pending_=true
+    f.om.check_trail_and_stop(19003.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Price immediately drops below new be_sl=19001 (resubmit window still open).
+    // Must fire software SL at once, NOT wait 3000ms.
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.check_trail_and_stop(19000.5);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);   // immediate exit
+    ASSERT(f.sent_baskets.size() > sends_before);       // market order sent
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1038,6 +1064,7 @@ int main() {
     RUN(be_retraced_price_uses_breach_not_market_exit);
     RUN(eod_flatten_during_pending_exit_is_noop);
     RUN(be_trigger_below_be_sl_no_immediate_exit);
+    RUN(stop_resubmit_race_fires_immediate_software_sl);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

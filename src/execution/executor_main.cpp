@@ -1300,6 +1300,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         PosState watchdog_state  = PosState::FLAT;
         int64_t  watchdog_since_s = 0;  // epoch-s when watchdog_state last changed
         int ghost_halt_secs = 0;        // seconds ghost_halted_ has been active this cycle
+        int64_t post_trade_cleanup_until_s = 0;  // epoch-s; recancel pending stops until this time
         while (g_running) {
             eod_timer.expires_after(std::chrono::seconds(1));
             co_await eod_timer.async_wait(asio::use_awaitable);
@@ -1375,6 +1376,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Belt-and-suspenders: re-send cancel for any stop the exchange might
                 // still hold. Idempotent — exchange ignores it if order is already gone.
                 if (!orb_cfg.dry_run) order_mgr.recancel_pending_stops();
+                post_trade_cleanup_until_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count() + orb_cfg.stop_cooldown_secs;
+                LOG("[EXECUTOR] Post-trade cleanup window: %ds — will recancel pending stops each second",
+                    orb_cfg.stop_cooldown_secs);
                 if (db && db->is_connected()) {
                     try {
                         db->write_trade(completed,
@@ -1416,6 +1421,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // Attempt DB reconnect if disconnected (avoids prolonged stale-data windows)
             if (db && !db->is_connected()) {
                 db->reconnect();
+            }
+
+            // Persistent stop cleanup during post-trade window (covers in-flight cancels)
+            if (post_trade_cleanup_until_s > 0) {
+                int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                if (now_s < post_trade_cleanup_until_s) {
+                    if (!orb_cfg.dry_run) order_mgr.recancel_pending_stops();
+                } else {
+                    post_trade_cleanup_until_s = 0;  // window expired
+                }
             }
 
             // Periodic audit flush (best-effort; only when audit_conn is available)

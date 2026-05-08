@@ -184,17 +184,16 @@ public:
 
     // ── Notify strategy that a trade closed ──────────────────────────────────
     // Called by executor when OrderManager pops a completed trade.
-    // Clears in_position; if exit was a stop, arms a re-entry cooldown.
+    // Clears in_position; arms a re-entry cooldown on ALL exits when
+    // stop_cooldown_secs > 0 (not just stop exits).
     void notify_trade_filled(OrbSignal /*dir*/, const std::string& exit_reason = "") {
         session_.in_position = false;
-        bool is_stop = !exit_reason.empty() &&
-                       (exit_reason.find("stop") != std::string::npos ||
-                        exit_reason.find("sl")   != std::string::npos);
-        if (is_stop && cfg_.stop_cooldown_secs > 0) {
+        if (cfg_.stop_cooldown_secs > 0) {
             cooldown_until_ = std::chrono::steady_clock::now() +
                               std::chrono::seconds(cfg_.stop_cooldown_secs);
-            LOG("[ORB] Stop exit (%s) — re-entry blocked for %ds",
-                exit_reason.c_str(), cfg_.stop_cooldown_secs);
+            LOG("[ORB] Trade closed (%s) — re-entry blocked for %ds",
+                exit_reason.empty() ? "?" : exit_reason.c_str(),
+                cfg_.stop_cooldown_secs);
         } else {
             LOG("[ORB] Trade closed (%s) — flat, re-entry allowed (trades_today=%d/%d)",
                 exit_reason.empty() ? "?" : exit_reason.c_str(),

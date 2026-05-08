@@ -63,6 +63,7 @@ static OrbConfig make_cfg() {
     c.eod_flatten_min   = 55;
     c.daily_loss_limit  = -999999.0;
     c.trailing_drawdown_cap = 999999.0;
+    c.stop_cooldown_secs = 0;  // disable wall-clock cooldown by default; tests that need it set it explicitly
     return c;
 }
 
@@ -462,6 +463,37 @@ TEST(seeded_restart_first_tick_no_signal) {
     ASSERT(signals.empty());
 }
 
+// 20. notify_trade_filled applies cooldown on ALL exit types, not just stops.
+//     With stop_cooldown_secs=2, an EOD flatten must block re-entry for 2s.
+TEST(notify_trade_filled_cooldown_applies_to_all_exits) {
+    OrbConfig cfg = make_cfg();
+    cfg.stop_cooldown_secs = 2;
+    std::vector<CapturedSignal> signals;
+    OrbStrategy s = make_strategy(cfg, signals);
+
+    // Seed ORB range and consume the seeded_ guard with an inside-range price
+    s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s, 19025.0);  // last_price_ = 19025 (inside range), seeded_ consumed
+
+    // Fire a BUY breakout to put strategy in_position
+    s.on_tick(make_tick(10, 10, 0, 19105.0));  // price > orb_high (19100) — BUY
+    ASSERT_EQ(signals.size(), (size_t)1);
+    ASSERT(signals[0].signal == OrbSignal::BUY);
+    signals.clear();
+
+    // Close via a non-stop exit (EOD flatten) — must arm cooldown just like a stop
+    s.notify_trade_filled(OrbSignal::BUY, "eod_flatten");
+    ASSERT(!s.session().in_position);
+
+    // Cooldown is now active (2s). Try to re-enter: prev_price=19105 (outside range),
+    // so we need a cross from inside. Feed an inside tick first to reset prev_price,
+    // then a breakout tick — cooldown must block the breakout signal.
+    s.on_tick(make_tick(10, 10, 1, 19099.0));  // pull back inside range — no signal expected
+    ASSERT(signals.empty());
+    s.on_tick(make_tick(10, 10, 2, 19105.0));  // cross above orb_high — blocked by cooldown
+    ASSERT(signals.empty());  // cooldown blocking re-entry
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(orb_range_accumulates_during_window);
@@ -483,6 +515,7 @@ int main() {
     RUN(eod_flatten_emits_only_once);
     RUN(notify_trade_filled_clears_in_position);
     RUN(seeded_restart_first_tick_no_signal);
+    RUN(notify_trade_filled_cooldown_applies_to_all_exits);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;
