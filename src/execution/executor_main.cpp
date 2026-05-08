@@ -1259,6 +1259,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         order_mgr.confirm_exchange_flat();
                         // If strategy was halted waiting for position confirm, clear it
                         strategy.unhalt_trading("startup_position_confirmed_flat");
+                        // Immediately persist FLAT state to DB so a crash within the next
+                        // 5s doesn't leave a stale LONG/SHORT for the next restart to find.
+                        flush_position(db.get(), today, order_mgr, strategy,
+                                       orb_cfg.dry_run || order_plant->connected,
+                                       orb_cfg.point_value, bool(md_ws));
                     }
                 }
 
@@ -1596,15 +1601,31 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
             }
 
-            // Ghost-halt visibility: warn if startup-recon halt lingers > 60s without
-            // a tid=451 position confirm. Fires once per minute so it's visible in logs.
+            // Ghost-halt watchdog: re-subscribe to PnL every 30s so the tid=451 handler
+            // auto-unwinds any ghost position or confirms FLAT without manual intervention.
             if (order_mgr.is_entry_halted()) {
                 ++ghost_halt_secs;
-                if (ghost_halt_secs >= 60 && ghost_halt_secs % 60 == 0) {
-                    LOG("[EXECUTOR] WARNING: entry halt still active after %ds — "
-                        "if this is a startup ghost-fill halt, tid=451 may not have arrived. "
-                        "Verify position via RTrader; restart executor if exchange is flat.",
-                        ghost_halt_secs);
+                if (ghost_halt_secs % 30 == 0) {
+                    if (order_plant->connected && order_plant->ws) {
+                        bool pnl_resubscribed = false;
+                        try {
+                            rti::RequestPnLPositionUpdates pnl_req;
+                            pnl_req.set_template_id(400);
+                            pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
+                            pnl_req.set_fcm_id(orb_cfg.fcm_id);
+                            pnl_req.set_ib_id(orb_cfg.ib_id);
+                            pnl_req.set_account_id(orb_cfg.account_id);
+                            co_await ws_write(*order_plant->ws, proto_frame(pnl_req));
+                            pnl_resubscribed = true;
+                        } catch (...) {}
+                        LOG("[EXECUTOR] ENTRY-HALT: re-subscribed PnL for position snapshot "
+                            "(halted %ds, resubscribed=%d)", ghost_halt_secs, (int)pnl_resubscribed);
+                    }
+                    if (ghost_halt_secs >= 60) {
+                        LOG("[EXECUTOR] WARNING: entry halt still active after %ds — "
+                            "tid=451 should auto-recover; check RTrader if halt persists >5min.",
+                            ghost_halt_secs);
+                    }
                 }
             } else {
                 ghost_halt_secs = 0;
