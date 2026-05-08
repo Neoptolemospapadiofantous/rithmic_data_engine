@@ -1259,14 +1259,34 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // Fresh-start reconciliation: if the prior cycle exited while holding a position,
     // live_position.state will show LONG/SHORT/PENDING_EXIT in the DB. The new process
     // starts with a flat in-process state but the exchange may still have an open
-    // position. Halt entries until the operator confirms the exchange is flat.
+    // position. Halt entries and request a position snapshot to auto-verify.
     if (is_fresh_start && db && db->is_connected() && !orb_cfg.dry_run) {
         std::string prior_state = db->read_position_state(today);
         if (prior_state == "LONG" || prior_state == "SHORT" || prior_state == "PENDING_EXIT") {
             LOG("[EXECUTOR] CRITICAL: live_position shows %s from prior cycle — "
-                "halting entries. Confirm exchange is flat then restart.",
+                "halting entries. Requesting exchange position snapshot to auto-verify.",
                 prior_state.c_str());
             strategy.halt_trading("startup_stale_position_" + prior_state);
+            // Subscribe to PnL/position updates so the exchange sends a tid=451 snapshot.
+            // If net_qty=0 the existing tid=451 handler calls unhalt_trading() automatically
+            // — no manual restart needed when the prior exit order already filled.
+            // If net_qty!=0 the handler sends an unwind order and then unhalts.
+            if (order_plant->connected && order_plant->ws) {
+                try {
+                    rti::RequestPnLPositionUpdates pnl_req;
+                    pnl_req.set_template_id(400);
+                    pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
+                    pnl_req.set_fcm_id(orb_cfg.fcm_id);
+                    pnl_req.set_ib_id(orb_cfg.ib_id);
+                    pnl_req.set_account_id(orb_cfg.account_id);
+                    co_await ws_write(*order_plant->ws, proto_frame(pnl_req));
+                    LOG("[EXECUTOR] [STARTUP-RECON] RequestPnLPositionUpdates SUBSCRIBE sent "
+                        "— awaiting tid=451 snapshot to auto-verify and unhalt");
+                } catch (std::exception& e) {
+                    LOG("[EXECUTOR] [STARTUP-RECON] PnL subscribe FAILED: %s "
+                        "— manual restart required to clear halt", e.what());
+                }
+            }
         } else if (prior_state == "PENDING_ENTRY") {
             LOG("[EXECUTOR] WARNING: live_position shows PENDING_ENTRY from prior cycle — "
                 "snapshot reconciliation should cancel the residual entry order.");
