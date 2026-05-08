@@ -82,7 +82,10 @@ struct Fixture {
     bool send_ok = true;
 
     explicit Fixture(bool dry_run = false)
-        : cfg(make_cfg(dry_run))
+        : Fixture(make_cfg(dry_run)) {}
+
+    explicit Fixture(OrbConfig custom_cfg)
+        : cfg(std::move(custom_cfg))
         , risk(cfg, 50000.0)
         , lat()
         , om(cfg, risk, lat)
@@ -682,6 +685,278 @@ TEST(on_cancel_confirmed_by_server_basket_resolves_external_cancel) {
     ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Ghost-fill recovery tests
+// Scenario: stale stop from a prior session fires after executor restarts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 22. Unknown fill while FLAT sets ghost_halted_, blocking new signals.
+TEST(ghost_fill_halts_entries) {
+    Fixture f;
+    ASSERT(f.om.is_flat());
+    ASSERT(!f.om.is_entry_halted());
+
+    // Exchange delivers fill for a basket we've never seen (stale stop from prior session)
+    f.om.on_fill_notification("STALE-STOP-PRIOR-SESSION", 19000.0, 1, /*is_entry=*/false);
+
+    ASSERT(f.om.is_flat());
+    ASSERT(f.om.is_entry_halted());  // ghost_halted_ set
+
+    // Signal must be rejected while halted
+    size_t before = f.sent_baskets.size();
+    f.om.on_signal(OrbSignal::BUY, 19100.0, "orb_breakout");
+    ASSERT_EQ(f.sent_baskets.size(), before);
+    ASSERT(f.om.is_flat());
+}
+
+// 23. confirm_exchange_flat() clears ghost_halted_ and re-enables entries.
+//     Simulates the tid=451 snapshot arriving after operator closes via RTrader.
+TEST(confirm_exchange_flat_clears_ghost_halt) {
+    Fixture f;
+
+    f.om.on_fill_notification("GHOST-BASKET", 19000.0, 1, /*is_entry=*/false);
+    ASSERT(f.om.is_entry_halted());
+
+    // tid=451 fires with net_qty=0 — exchange confirmed flat
+    f.om.confirm_exchange_flat();
+    ASSERT(!f.om.is_entry_halted());
+
+    // Entries should now be unblocked
+    f.om.on_signal(OrbSignal::BUY, 19100.0, "orb_breakout");
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+}
+
+// 24. A second unknown fill while ghost_halted_ is MANUAL-CLOSE-DETECTED —
+//     it must NOT escalate, must NOT send anything, and halt must stay active.
+TEST(second_fill_while_ghost_halted_is_manual_not_ghost) {
+    Fixture f;
+
+    // First ghost fill
+    f.om.on_fill_notification("STALE-STOP", 19000.0, 1, /*is_entry=*/false);
+    ASSERT(f.om.is_entry_halted());
+
+    size_t cancels_before = f.cancelled_baskets.size();
+    size_t sends_before   = f.sent_baskets.size();
+
+    // Second unknown fill (operator closed via RTrader) — should send nothing
+    f.om.on_fill_notification("RTRADER-CLOSE", 19010.0, 1, /*is_entry=*/false);
+
+    ASSERT_EQ(f.cancelled_baskets.size(), cancels_before);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);
+    ASSERT(f.om.is_entry_halted());  // still halted — tid=451 needed to clear
+    ASSERT(f.om.is_flat());
+}
+
+// 25. register_unwind_basket(): fill for a registered basket is UNWIND-FILL,
+//     not GHOST-FILL, and does not set ghost_halted_.
+TEST(register_unwind_basket_fill_not_ghost) {
+    Fixture f;
+    ASSERT(!f.om.is_entry_halted());
+
+    f.om.register_unwind_basket("STARTUP-RECON-UNWIND-1");
+
+    size_t sends_before = f.sent_baskets.size();
+    f.om.on_fill_notification("STARTUP-RECON-UNWIND-1", 19000.0, 1, /*is_entry=*/false);
+
+    ASSERT(!f.om.is_entry_halted());          // no halt — recognised as tracked unwind
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);  // no extra order sent
+    ASSERT(f.om.is_flat());
+}
+
+// 26. register_unwind_basket(): when ghost_halted_ is set, a registered-unwind
+//     fill clears ghost_halted_ automatically.
+TEST(register_unwind_basket_clears_ghost_halt) {
+    Fixture f;
+
+    // Ghost fill from a stale stop
+    f.om.on_fill_notification("STALE-STOP-PRIOR", 19000.0, 1, /*is_entry=*/false);
+    ASSERT(f.om.is_entry_halted());
+
+    // Startup-recon sends a market unwind and registers it
+    f.om.register_unwind_basket("MNQ-startup-recon-1234567890");
+
+    // Unwind fills — halt should clear
+    f.om.on_fill_notification("MNQ-startup-recon-1234567890", 19005.0, 1, /*is_entry=*/false);
+
+    ASSERT(!f.om.is_entry_halted());
+    ASSERT(f.om.is_flat());
+}
+
+// 27. Full stale-stop recovery flow:
+//     stale stop fires → halt → register unwind → unwind fills → halt cleared → entries re-enabled.
+TEST(stale_stop_full_recovery_flow) {
+    Fixture f;
+
+    // Prior-session stop fires while we think we're flat
+    f.om.on_fill_notification("OLD-SESSION-STOP", 19000.0, 1, /*is_entry=*/false);
+    ASSERT(f.om.is_entry_halted());
+
+    // Signal rejected while halted
+    size_t sends = f.sent_baskets.size();
+    f.om.on_signal(OrbSignal::BUY, 19100.0, "orb_breakout");
+    ASSERT_EQ(f.sent_baskets.size(), sends);
+
+    // Startup-recon registers and dispatches unwind
+    f.om.register_unwind_basket("RECON-UNWIND-XYZ");
+
+    // Operator also closes via RTrader — second unknown fill while halted
+    f.om.on_fill_notification("RTRADER-MKT-CLOSE", 19002.0, 1, /*is_entry=*/false);
+    ASSERT(f.om.is_entry_halted());  // still halted (unwind not yet filled)
+
+    // Unwind fills — halt cleared
+    f.om.on_fill_notification("RECON-UNWIND-XYZ", 19003.0, 1, /*is_entry=*/false);
+    ASSERT(!f.om.is_entry_halted());
+
+    // New entries are now allowed
+    f.om.on_signal(OrbSignal::BUY, 19200.0, "orb_breakout");
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+}
+
+// 28. confirm_exchange_flat() must NOT clear entry_halted_ (exit-rejection halt).
+//     The two halts are independent — ghost flat-confirm only clears ghost halt.
+TEST(exit_rejection_halt_not_cleared_by_exchange_flat) {
+    Fixture f;
+
+    // Get into LONG and trigger entry_halted_ via 4 market-exit rejections
+    // (mirrors exit_rejection_halts_after_three_retries pattern)
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    f.om.flatten_now("test_exit", 19005.0);
+    for (int i = 0; i < 3; ++i) {
+        auto snap = f.om.position_snapshot();
+        f.om.on_order_rejected(snap.basket_id_exit, "test_reject");
+    }
+    {
+        auto snap = f.om.position_snapshot();
+        f.om.on_order_rejected(snap.basket_id_exit, "test_reject");
+    }
+    ASSERT(f.om.is_entry_halted());
+
+    // tid=451 flat confirm must NOT clear the exit-rejection halt
+    f.om.confirm_exchange_flat();
+    ASSERT(f.om.is_entry_halted());  // still halted — only successful exit fill clears it
+
+    // Signal still blocked
+    size_t sends_before = f.sent_baskets.size();
+    f.om.on_signal(OrbSignal::BUY, 19100.0, "orb_breakout");
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);
+}
+
+// 29. Tier-2 software SL fires on the second below-SL tick when sl_fire_timeout_ms=0.
+//     First tick starts the breach timer; second tick (breach_ms >= 0) triggers the exit.
+TEST(sl_tier2_fires_after_breach_timeout) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_fire_timeout_ms = 0;  // fires as soon as breach_ms >= 0 (next tick)
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    // Verify exchange stop is active (basket_id_stop non-empty)
+    ASSERT(!f.om.position_snapshot().basket_id_stop.empty());
+
+    // First tick below SL — starts breach timer, does NOT fire yet
+    f.om.check_trail_and_stop(18989.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Second tick below SL — breach_ms >= 0 → software SL fires
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.check_trail_and_stop(18989.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    ASSERT(f.sent_baskets.size() > sends_before);
+}
+
+// 30. Tier-2 breach timer resets when price recovers above SL.
+//     After recovery the "first tick below SL" logic restarts from scratch.
+TEST(sl_tier2_resets_on_price_recovery) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_fire_timeout_ms = 0;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+
+    f.om.check_trail_and_stop(18989.0);  // start timer
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    f.om.check_trail_and_stop(18995.0);  // price recovered — timer cleared
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // One more tick below SL — timer set again (first call after reset), no fire
+    f.om.check_trail_and_stop(18989.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);  // timer just restarted, not yet fired
+}
+
+// 31. BE trigger fires cancel+resubmit of the exchange stop.
+//     Entry at 19000; trail_be_trigger=5, trail_be_offset=1, trail_step=3, trail_delay_secs=0.
+//     At price=19005.5: MFE=5.5 >= trigger → BE fires, SL moves up, trail also moves SL.
+TEST(trail_be_triggers_cancel_resubmit) {
+    Fixture f;  // dry_run=false; trail_delay_secs=0
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    // After fill: entry + stop submitted → sent_baskets.size() == 2
+    ASSERT_EQ(f.sent_baskets.size(), (std::size_t)2);
+    ASSERT(f.cancelled_baskets.empty());
+
+    f.om.check_trail_and_stop(19005.5);  // MFE=5.5 → BE triggers, trail activates
+    // Old stop cancelled, new stop submitted
+    ASSERT(!f.cancelled_baskets.empty());  // cancel was sent
+    ASSERT(f.sent_baskets.size() > 2);    // new stop submitted
+}
+
+// 32. Trail suppression: small SL move (< trail_step) does NOT trigger cancel+resubmit.
+TEST(trail_suppression_prevents_rapid_resubmit) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+
+    f.om.check_trail_and_stop(19005.5);  // BE triggers; trail: SL → 19002.5
+    std::size_t cancels_after_first = f.cancelled_baskets.size();
+    std::size_t sends_after_first   = f.sent_baskets.size();
+
+    // Small price move: trail_sl = 19006.0 - 3.0 = 19003.0
+    // |19003.0 - last_exchange_sl| < trail_step=3 → suppressed
+    f.om.check_trail_and_stop(19006.0);
+    ASSERT_EQ(f.cancelled_baskets.size(), cancels_after_first);  // no new cancel
+    ASSERT_EQ(f.sent_baskets.size(),      sends_after_first);    // no new send
+}
+
+// 33. Trail early-exit: if BE SL would be placed above current price, exit immediately.
+//     Config: trail_be_trigger=0.5 (tiny MFE needed), trail_be_offset=2.0 (SL at entry+2),
+//     trail_delay_secs=300 (trail doesn't activate). At price=19000.6, MFE=0.6 >= 0.5
+//     → BE fires, be_sl=19002, current_price=19000.6 < 19002 → already_hit → immediate exit.
+TEST(trail_early_exit_when_price_past_new_sl) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.trail_be_trigger = 0.5;
+    cfg.trail_be_offset  = 2.0;
+    cfg.trail_delay_secs = 300;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.check_trail_and_stop(19000.6);  // MFE=0.6 >= 0.5; be_sl=19002 > 19000.6 → exit
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    ASSERT(f.sent_baskets.size() > sends_before);
+}
+
+// 34. flatten_now() when PENDING_EXIT logs and returns — no duplicate exit order sent.
+TEST(eod_flatten_during_pending_exit_is_noop) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    f.om.flatten_now("eod", 19010.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.flatten_now("eod_second_call", 19010.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);  // state unchanged
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);    // no second exit order
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -709,6 +984,19 @@ int main() {
     RUN(on_cancel_confirmed_removes_from_guard);
     RUN(recancel_pending_stops_resends_cancels);
     RUN(on_cancel_confirmed_by_server_basket_resolves_external_cancel);
+    RUN(ghost_fill_halts_entries);
+    RUN(confirm_exchange_flat_clears_ghost_halt);
+    RUN(second_fill_while_ghost_halted_is_manual_not_ghost);
+    RUN(register_unwind_basket_fill_not_ghost);
+    RUN(register_unwind_basket_clears_ghost_halt);
+    RUN(stale_stop_full_recovery_flow);
+    RUN(exit_rejection_halt_not_cleared_by_exchange_flat);
+    RUN(sl_tier2_fires_after_breach_timeout);
+    RUN(sl_tier2_resets_on_price_recovery);
+    RUN(trail_be_triggers_cancel_resubmit);
+    RUN(trail_suppression_prevents_rapid_resubmit);
+    RUN(trail_early_exit_when_price_past_new_sl);
+    RUN(eod_flatten_during_pending_exit_is_noop);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

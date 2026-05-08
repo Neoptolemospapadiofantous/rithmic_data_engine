@@ -273,7 +273,10 @@ private:
     }
 
     void handle_completed_bar(const MinuteBar& bar, int et_hour, int et_min) {
-        if (bar.volume == 0) return;
+        if (bar.volume == 0) {
+            LOG("[ORB] Bar at ET %02d:%02d has zero volume — skipped", et_hour, et_min);
+            return;
+        }
         int total_min = et_hour * 60 + et_min;
         int orb_end   = cfg_.session_open_hour * 60 + cfg_.session_open_min + cfg_.orb_minutes;
 

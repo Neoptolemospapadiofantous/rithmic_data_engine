@@ -120,6 +120,31 @@ public:
         }
     }
 
+    // Register an unwind order sent by startup-recon so its fill is recognised
+    // as a correction rather than triggering a second GHOST-FILL log.
+    void register_unwind_basket(const std::string& basket_id) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        unwind_baskets_.insert(basket_id);
+        LOG("[OM] STARTUP-RECON: registered unwind basket=%s", basket_id.c_str());
+    }
+
+    // Called by tid=451 handler when exchange confirms net_qty=0.
+    // Clears ghost_halted_ so new entries are re-enabled.
+    // Does NOT touch entry_halted_ (exit-rejection halt is independent).
+    void confirm_exchange_flat() {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (ghost_halted_) {
+            ghost_halted_ = false;
+            LOG("[OM] GHOST-HALT CLEARED: tid=451 confirmed exchange FLAT — entries re-enabled");
+        }
+    }
+
+    // True if any halt (exit-rejection or ghost-fill) is blocking new entries.
+    bool is_entry_halted() const {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        return entry_halted_ || ghost_halted_;
+    }
+
     // Called at startup to reload cancelled stops from DB (survive restart).
     void seed_cancelled_stops(const std::string& basket_id, bool was_buy_stop) {
         std::lock_guard<std::mutex> lk(state_mu_);
@@ -136,8 +161,9 @@ public:
         }
         if (sig != OrbSignal::BUY && sig != OrbSignal::SELL) return;
 
-        if (entry_halted_) {
-            LOG("[OM] Signal rejected — entries halted after repeated exit rejections");
+        if (entry_halted_ || ghost_halted_) {
+            LOG("[OM] Signal rejected — entries halted (%s)",
+                entry_halted_ ? "exit-rejection halt" : "ghost-fill halt");
             return;
         }
 
@@ -230,6 +256,10 @@ public:
             pos_.state = (pos_.direction == OrbSignal::BUY)
                          ? PosState::LONG : PosState::SHORT;
 
+            // Clear EOD-cancel race guard — the entry filled normally, no late-fill expected.
+            pending_cancel_basket_.clear();
+            pending_cancel_was_buy_ = false;
+
             // Place stop-loss
             double sl = compute_sl(fill_price, pos_.direction);
             pos_.sl_price = sl;
@@ -318,6 +348,15 @@ public:
                     } else if (unwind_baskets_.erase(basket_id) > 0) {
                         LOG("[OM] UNWIND-FILL: basket=%s px=%.2f — ghost position corrected, exchange now FLAT",
                             basket_id.c_str(), fill_price);
+                        ghost_halted_ = false;  // unwind confirmed flat — entries re-enabled
+                    } else if (ghost_halted_) {
+                        // Already halted from a prior ghost fill. This is likely a manual
+                        // close via RTrader or a startup-recon unwind we didn't register.
+                        // Don't escalate — stay halted until tid=451 confirms flat.
+                        LOG("[OM] MANUAL-CLOSE-DETECTED: basket=%s px=%.2f qty=%d "
+                            "— unknown fill while ghost-halted, likely manual RTrader "
+                            "close. Waiting for tid=451 position confirm.",
+                            basket_id.c_str(), fill_price, fill_qty);
                     } else {
                         // Completely unknown fill while FLAT — this is a ghost position.
                         // DB-seeded cancelled_stops should have caught this; if we're here
@@ -327,7 +366,7 @@ public:
                             "— unknown fill, exchange may be non-flat. "
                             "TRADING HALTED — check RTrader and restart executor.",
                             basket_id.c_str(), fill_price, fill_qty);
-                        entry_halted_ = true;
+                        ghost_halted_ = true;
                     }
                 }
                 return;
@@ -418,6 +457,12 @@ public:
                 cancelled_stops_.clear();
                 server_to_client_cancelled_.clear();
             }
+            if (!unwind_baskets_.empty()) {
+                LOG("[OM] FLAT — discarding %zu unconfirmed unwind basket(s) "
+                    "(unwinds that never filled — exchange confirmed flat via exit)",
+                    unwind_baskets_.size());
+                unwind_baskets_.clear();
+            }
         }
     }
 
@@ -449,7 +494,7 @@ public:
 
         // Software SL: two-tier safety net.
         // Tier 1 — immediate: no exchange stop basket (rejected or not yet submitted).
-        // Tier 2 — timeout: exchange stop submitted but hasn't fired after kSLFireTimeoutMs.
+        // Tier 2 — timeout: exchange stop submitted but hasn't fired after sl_fire_timeout_ms.
         //   Catches silent stop failures and cancel+resubmit race windows.
         //   initiate_exit_locked() cancels the exchange stop first to minimise double-fill risk.
         bool sl_moved = false;
@@ -471,7 +516,7 @@ public:
             } else {
                 auto breach_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::steady_clock::now() - sl_breach_time_).count();
-                if (breach_ms >= kSLFireTimeoutMs) {
+                if (breach_ms >= (int64_t)cfg_.sl_fire_timeout_ms) {
                     LOG("[OM] Software SL timeout (%s, exchange stop unresponsive %ldms): "
                         "price=%.2f sl=%.2f basket=%s",
                         is_long ? "LONG" : "SHORT", (long)breach_ms,
@@ -580,6 +625,7 @@ public:
         } else if (pos_.basket_id_stop == basket_id) {
             // Stop order rejected — clear basket so software SL fallback activates
             pos_.basket_id_stop.clear();
+            stop_server_basket_.clear();  // stale server mapping no longer valid
             LOG("[OM] CRITICAL: Exchange stop rejected — software SL fallback now active (sl=%.2f)",
                 pos_.sl_price);
         }
@@ -751,6 +797,7 @@ private:
     // Exit rejection retry limit
     int  rejected_exit_count_ = 0;         // incremented each time an exit order is rejected
     bool entry_halted_        = false;      // set after 3 consecutive exit rejections
+    bool ghost_halted_        = false;      // set after unknown fill while FLAT; cleared by confirm_exchange_flat()
 
     // Last SL price submitted to the exchange — used to suppress cancel+resubmit
     // storms: only update the exchange stop when sl moved by >= trail_step.
@@ -758,9 +805,8 @@ private:
 
     // Breach timer for the software SL timeout tier.
     // Set when price first violates SL while an exchange stop basket is active.
-    // Software SL fires if the exchange stop hasn't responded within kSLFireTimeoutMs.
+    // Software SL fires if the exchange stop hasn't responded within cfg_.sl_fire_timeout_ms.
     std::chrono::steady_clock::time_point sl_breach_time_{};
-    static constexpr int64_t kSLFireTimeoutMs = 3000;  // ms — well above normal stop latency
 
     static std::atomic<uint64_t> seq_;  // monotonic sequence for basket IDs
 

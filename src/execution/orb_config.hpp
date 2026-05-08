@@ -73,6 +73,7 @@ struct OrbConfig {
     int    eod_flatten_min     = 55;   // EOD flatten minute (ET)
     int    news_blackout_min   = 5;    // minutes before/after news event to block entry
     int    stop_cooldown_secs  = 5;    // seconds to block re-entry after any stop exit (0=disabled)
+    int    sl_fire_timeout_ms  = 3000; // ms before software SL fires if exchange stop is unresponsive
     int    qty                 = 1;    // contract quantity per trade
 
     // ── Session open (defaults: RTH 9:30 ET) ──────────────────────
@@ -228,6 +229,7 @@ struct OrbConfig {
         c.eod_flatten_min      = json_int(text,  "eod_flatten_min",      c.eod_flatten_min);
         c.news_blackout_min    = json_int(text,  "news_blackout_min",    c.news_blackout_min);
         c.stop_cooldown_secs   = json_int(text,  "stop_cooldown_secs",   c.stop_cooldown_secs);
+        c.sl_fire_timeout_ms   = json_int(text,  "sl_fire_timeout_ms",   c.sl_fire_timeout_ms);
         c.qty                  = json_int(text,  "qty",                  c.qty);
 
         c.trailing_drawdown_cap = json_dbl(text, "trailing_drawdown_cap", c.trailing_drawdown_cap);

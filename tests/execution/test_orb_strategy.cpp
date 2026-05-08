@@ -438,6 +438,30 @@ TEST(notify_trade_filled_clears_in_position) {
     ASSERT(!s.session().in_position);
 }
 
+// 19. Seeded restart guard: when seed_orb_range() is called (executor restart recovery),
+//     the very first real tick anchors last_price_ but MUST NOT fire a breakout signal,
+//     even if the price is already outside the ORB range.
+//     Without the guard, prev_price=0 (no_prev=true) would allow any price above orb_high
+//     to trigger a BUY on the first tick — a spurious entry at an unknown position.
+TEST(seeded_restart_first_tick_no_signal) {
+    OrbConfig cfg = make_cfg();
+    std::vector<CapturedSignal> signals;
+    OrbStrategy s = make_strategy(cfg, signals);
+
+    // Simulate executor restart: ORB range already known from DB
+    s.seed_orb_range(19100.0, 18950.0);
+    ASSERT(s.orb_set());
+
+    // First real tick after restart: price is ABOVE orb_high — would be a BUY without guard
+    s.on_tick(make_tick(10, 10, 0, 19105.0));
+    ASSERT(signals.empty());  // guard: seeded_ consumed, no signal
+
+    // Second tick at the same price: prev_price=19105 is already OUTSIDE range
+    // so the cross condition (prev <= orb_high) fails → still no signal
+    s.on_tick(make_tick(10, 10, 1, 19105.0));
+    ASSERT(signals.empty());
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(orb_range_accumulates_during_window);
@@ -458,6 +482,7 @@ int main() {
     RUN(no_eod_flatten_before_1555);
     RUN(eod_flatten_emits_only_once);
     RUN(notify_trade_filled_clears_in_position);
+    RUN(seeded_restart_first_tick_no_signal);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

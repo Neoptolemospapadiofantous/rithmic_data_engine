@@ -1152,6 +1152,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             net, ghost_is_long ? "LONG" : "SHORT", std::abs(net));
                         // Unwind: sell if ghost long, buy if ghost short
                         bool unwind_is_buy = !ghost_is_long;
+                        bool unwind_sent = false;
                         if (order_plant->connected && order_plant->ws) {
                             std::string basket_id =
                                 orb_cfg.symbol + "-startup-recon-"
@@ -1189,15 +1190,24 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                     "%s MARKET qty=%d basket=%s",
                                     unwind_is_buy ? "BUY" : "SELL",
                                     std::abs(net), basket_id.c_str());
+                                // Register so the fill is recognised instead of
+                                // triggering a second GHOST-FILL log.
+                                order_mgr.register_unwind_basket(basket_id);
+                                unwind_sent = true;
                             } catch (std::exception& e) {
                                 LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind FAILED: %s "
                                     "— MANUAL INTERVENTION REQUIRED", e.what());
                             }
                         }
-                        // Clear the ghost-position halt set by the tid=351 snap handler
-                        strategy.unhalt_trading("startup_ghost_position_cleared");
+                        // Only unhalt strategy if the unwind order was actually dispatched.
+                        // If send failed, stay halted — operator must confirm flat and restart.
+                        if (unwind_sent)
+                            strategy.unhalt_trading("startup_ghost_position_cleared");
                     } else {
                         LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
+                        // Clear ghost-fill halt in OrderManager (covers: stale stop fired
+                        // then manually closed via RTrader before this snapshot arrived).
+                        order_mgr.confirm_exchange_flat();
                         // If strategy was halted waiting for position confirm, clear it
                         strategy.unhalt_trading("startup_position_confirmed_flat");
                     }
@@ -1289,6 +1299,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         int pos_write_counter = 0;
         PosState watchdog_state  = PosState::FLAT;
         int64_t  watchdog_since_s = 0;  // epoch-s when watchdog_state last changed
+        int ghost_halt_secs = 0;        // seconds ghost_halted_ has been active this cycle
         while (g_running) {
             eod_timer.expires_after(std::chrono::seconds(1));
             co_await eod_timer.async_wait(asio::use_awaitable);
@@ -1466,6 +1477,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             wsnap.entry_price, wsnap.exit_reason.c_str(),
                             strategy.last_price());
                 }
+            }
+
+            // Ghost-halt visibility: warn if startup-recon halt lingers > 60s without
+            // a tid=451 position confirm. Fires once per minute so it's visible in logs.
+            if (order_mgr.is_entry_halted()) {
+                ++ghost_halt_secs;
+                if (ghost_halt_secs >= 60 && ghost_halt_secs % 60 == 0) {
+                    LOG("[EXECUTOR] WARNING: entry halt still active after %ds — "
+                        "if this is a startup ghost-fill halt, tid=451 may not have arrived. "
+                        "Verify position via RTrader; restart executor if exchange is flat.",
+                        ghost_halt_secs);
+                }
+            } else {
+                ghost_halt_secs = 0;
             }
         }
     };
