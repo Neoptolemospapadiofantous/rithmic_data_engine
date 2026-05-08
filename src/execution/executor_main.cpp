@@ -2196,6 +2196,12 @@ int main(int argc, char* argv[]) {
     }
     if (force_dry_run) orb_cfg.dry_run = true;
 
+    // In cycle mode each cycle sets session_open = NOW(), so last_entry_hour
+    // (designed for RTH "stop entering after 1 PM") would block every cycle
+    // that starts at or after that hour. Override to 23 so entries are gated
+    // only by eod_flatten_hour, not by this RTH-specific cutoff.
+    if (orb_cfg.cycle_mode) orb_cfg.last_entry_hour = 23;
+
     LOG("[EXECUTOR] symbol=%s exchange=%s orb_min=%d sl=%.1fpts trail_step=%.1fpts",
         orb_cfg.symbol.c_str(), orb_cfg.exchange.c_str(),
         orb_cfg.orb_minutes, orb_cfg.sl_points, orb_cfg.trail_step);
