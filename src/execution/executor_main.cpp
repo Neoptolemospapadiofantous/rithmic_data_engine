@@ -1430,7 +1430,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 if (now_s < post_trade_cleanup_until_s) {
                     if (!orb_cfg.dry_run) order_mgr.recancel_pending_stops();
                 } else {
-                    post_trade_cleanup_until_s = 0;  // window expired
+                    post_trade_cleanup_until_s = 0;
+                    // Window expired — clear server basket IDs and stale-stop guard
+                    order_mgr.clear_post_close_recancels();
                 }
             }
 

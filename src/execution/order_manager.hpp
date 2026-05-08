@@ -107,18 +107,47 @@ public:
         cancel_remove_cb_  = std::move(remove);
     }
 
-    // Re-send cancel for every stop still in the unconfirmed-cancel map.
-    // Call immediately after a trade closes. Safe to call multiple times — exchange
-    // returns a harmless "not found" if the order is already gone.
+    // Re-send cancel for every unconfirmed stop.
+    // In-session stops: use server basket ID (required by Rithmic's RequestCancelOrder).
+    // Startup-recon seeded stops: fall back to client basket ID (no server ID available).
+    // server_to_client_cancelled_ persists until clear_post_close_recancels().
     void recancel_pending_stops() {
         std::lock_guard<std::mutex> lk(state_mu_);
-        if (cancelled_stops_.empty() || !cancel_cb_) return;
-        LOG("[OM] TRADE-CLOSE: re-cancelling %zu pending stop(s) — belt-and-suspenders "
-            "against ghost positions", cancelled_stops_.size());
-        for (const auto& [bid, _] : cancelled_stops_) {
-            cancel_cb_(bid);
-            LOG("[OM] TRADE-CLOSE: cancel re-sent basket=%s", bid.c_str());
+        if (!cancel_cb_) return;
+        // Primary path: server basket IDs from in-session cancels
+        for (const auto& [server_id, client_id] : server_to_client_cancelled_) {
+            cancel_cb_(server_id);
+            LOG("[OM] RECANCEL: cancel re-sent server=%s (client=%s)",
+                server_id.c_str(), client_id.c_str());
         }
+        // Fallback: DB-seeded cancelled_stops have no server ID mapping
+        // (these are stops from previous sessions, cancel by client basket ID)
+        for (const auto& [client_id, _] : cancelled_stops_) {
+            // Skip if already covered by the server_to_client map
+            bool covered = false;
+            for (const auto& [sid, cid] : server_to_client_cancelled_) {
+                if (cid == client_id) { covered = true; break; }
+            }
+            if (!covered) {
+                cancel_cb_(client_id);
+                LOG("[OM] RECANCEL: cancel re-sent client=%s (startup-recon, no server ID)",
+                    client_id.c_str());
+            }
+        }
+    }
+
+    // Called from executor when the post-close recancel window expires.
+    // Clears server_to_client_cancelled_ and last_stop_for_unwind_ so they
+    // don't leak into the next trade's state.
+    void clear_post_close_recancels() {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (!server_to_client_cancelled_.empty()) {
+            LOG("[OM] Post-close recancel window expired — clearing %zu server basket ID(s)",
+                server_to_client_cancelled_.size());
+            server_to_client_cancelled_.clear();
+        }
+        last_stop_for_unwind_.clear();
+        last_stop_was_buy_ = false;
     }
 
     // Register an unwind order sent by startup-recon so its fill is recognised
@@ -437,27 +466,29 @@ public:
 
             pos_ = Position{};  // back to FLAT
             trade_completed_ = true;
-            // Clear stale-stop unwind state. last_stop_for_unwind_ was set when we
-            // cancelled the exchange stop before sending the market exit. If the old
-            // stop fires after this point the position is already FLAT — without this
-            // clear the stale-stop branch would match the basket and send an unintended
-            // unwind order, effectively re-entering a position.
-            last_stop_for_unwind_.clear();
-            last_stop_was_buy_ = false;
+            // last_stop_for_unwind_ intentionally NOT cleared here.
+            // It persists until clear_post_close_recancels() (5s window) so that if
+            // the just-cancelled stop fires late it is recognised as STALE-STOP-FILL
+            // rather than triggering GHOST-FILL halt or being silently attributed to
+            // the next trade as a spurious exit.  Cleared by clear_post_close_recancels().
 
             // Purge all remaining trail-update cancel guards.  These are stops
             // cancelled during the just-closed trade's trail updates whose cancel
             // ACKs never arrived (common on simulator).  Once we are FLAT the
-            // guard is no longer needed — remove them from DB so they don't
+            // DB guard is no longer needed — remove from DB so they don't
             // accumulate across 24x7 cycles.
+            // NOTE: server_to_client_cancelled_ and last_stop_for_unwind_ are NOT
+            // cleared here — they persist until clear_post_close_recancels() is called
+            // (after the 5s recancel window) so recancel_pending_stops() can use them.
             if (!cancelled_stops_.empty()) {
-                LOG("[OM] FLAT — purging %zu stale trail-cancel guard(s) from DB",
+                LOG("[OM] FLAT — purging %zu stale trail-cancel guard(s) from DB "
+                    "(server IDs kept for 5s recancel window)",
                     cancelled_stops_.size());
                 for (const auto& [bid, _] : cancelled_stops_) {
                     if (cancel_remove_cb_) cancel_remove_cb_(bid);
                 }
                 cancelled_stops_.clear();
-                server_to_client_cancelled_.clear();
+                // server_to_client_cancelled_ intentionally NOT cleared here
             }
             if (!unwind_baskets_.empty()) {
                 LOG("[OM] FLAT — discarding %zu unconfirmed unwind basket(s) "
@@ -949,17 +980,24 @@ private:
         // Also add to persistent map — cancel confirmation may never arrive
         cancelled_stops_[pos_.basket_id_stop] = was_buy_stop;
         if (cancel_persist_cb_) cancel_persist_cb_(pos_.basket_id_stop, was_buy_stop);
-        LOG("[OM] STOP-CANCEL: basket=%s sl=%.2f dir=%s "
-            "(unwind_guard=%s, pending_cancelled=%zu)",
-            pos_.basket_id_stop.c_str(), pos_.sl_price,
-            was_buy_stop ? "BUY-stop(SHORT)" : "SELL-stop(LONG)",
-            pos_.basket_id_stop.c_str(),
-            cancelled_stops_.size());
-        // Populate reverse map before clearing so empty-user_tag cancel ACKs
-        // (from external RTrader cancellations) can still resolve the client basket.
+        // Populate reverse map before clearing so cancel ACKs (and post-close recancels)
+        // can resolve the client basket by server basket ID.
         if (!stop_server_basket_.empty())
             server_to_client_cancelled_[stop_server_basket_] = pos_.basket_id_stop;
-        cancel_cb_(pos_.basket_id_stop);
+        // Use server basket ID for RequestCancelOrder — Rithmic routes the cancel by its
+        // own server-assigned basket_id, not our user_tag.  Fall back to client ID only if
+        // the server basket hasn't been mapped yet (race: cancel before first notification).
+        const std::string& cancel_id = stop_server_basket_.empty()
+                                       ? pos_.basket_id_stop : stop_server_basket_;
+        LOG("[OM] STOP-CANCEL: client=%s server=%s sl=%.2f dir=%s "
+            "(cancel_id=%s, pending_cancelled=%zu)",
+            pos_.basket_id_stop.c_str(),
+            stop_server_basket_.empty() ? "unmapped" : stop_server_basket_.c_str(),
+            pos_.sl_price,
+            was_buy_stop ? "BUY-stop(SHORT)" : "SELL-stop(LONG)",
+            cancel_id.c_str(),
+            cancelled_stops_.size());
+        cancel_cb_(cancel_id);
         pos_.basket_id_stop.clear();
         stop_server_basket_.clear();
         pending_modify_      = false;
