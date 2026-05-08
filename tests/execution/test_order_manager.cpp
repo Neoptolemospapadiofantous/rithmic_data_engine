@@ -1364,6 +1364,44 @@ TEST(check_trail_returns_false_when_sl_unchanged) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — trail suppression / premature software SL bug.
+// When trail suppression is active (in-memory SL has advanced but exchange stop
+// has not been updated because |delta| < trail_step), the software SL must NOT
+// fire just because price crosses the in-memory SL level.  Only fire when price
+// crosses the actual exchange stop level (last_exchange_sl_).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 51. Price retreats through in-memory SL but NOT through exchange stop — no fire.
+//     LONG entry 19000; BE fires → exchange stop cancel+resubmit to 19001.
+//     Trail: trail_sl=19002.5 (19005.5-3), suppressed (|1.5|<3).
+//     last_exchange_sl_=19001, pos_.sl_price=19002.5.
+//     Price drops to 19001.5: breaches in-memory SL (19002.5) but NOT exchange
+//     stop (19001).  Software SL must NOT fire.
+TEST(software_sl_does_not_fire_when_only_in_memory_sl_breached) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_fire_timeout_ms = 0;  // immediate fire on any breach (worst case for this test)
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // BE fires at 19005.5: exchange stop cancel+resubmit to 19001 (entry+1).
+    // Trail immediately runs too (delay=0): trail_sl=19002.5; |19002.5-19001|=1.5 < 3 → suppressed.
+    // last_exchange_sl_=19001, pos_.sl_price=19002.5.
+    f.om.check_trail_and_stop(19005.5);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19002.5, 0.001);
+
+    // Two ticks at 19001.5: above exchange stop (19001) but below in-memory SL (19002.5).
+    // Old code: sl_breached vs pos_.sl_price=19002.5 → true → software SL fires after 2 ticks.
+    // New code: sl_breached vs last_exchange_sl_=19001 → false → state stays LONG.
+    f.om.check_trail_and_stop(19001.5);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    f.om.check_trail_and_stop(19001.5);
+    ASSERT_EQ(f.om.state(), PosState::LONG);  // must NOT have fired software SL
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Regression tests — tid=351 exit-fill routing bug.
 // Legends routing delivers all LIMIT fills (including market exits) as COMPLETE
 // on tid=351. The executor's is_entry || is_stop guard previously dropped exit
@@ -1489,6 +1527,7 @@ int main() {
     RUN(lifecycle_short_trail_step_stop_fills_closes_to_flat);
     RUN(lifecycle_long_multiple_trail_steps_closes_to_flat);
     RUN(check_trail_returns_false_when_sl_unchanged);
+    RUN(software_sl_does_not_fire_when_only_in_memory_sl_breached);
     RUN(is_exit_basket_recognized_after_flatten_now);
     RUN(is_exit_basket_recognized_after_stop_rejection_software_sl);
 

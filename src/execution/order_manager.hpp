@@ -588,12 +588,21 @@ public:
         //   initiate_exit_locked() cancels the exchange stop first to minimise double-fill risk.
         bool sl_moved = false;
 
-        bool sl_breached = (is_long  && current_price <= pos_.sl_price) ||
-                           (!is_long && current_price >= pos_.sl_price);
+        // When an exchange stop is active, use last_exchange_sl_ for breach detection.
+        // pos_.sl_price can diverge from last_exchange_sl_ due to trail suppression:
+        // the in-memory SL updates on every tick but the exchange stop only moves when
+        // |delta| >= trail_step.  Using pos_.sl_price causes spurious software-SL
+        // timeouts when price bounces back through the in-memory SL but has NOT yet
+        // reached the actual exchange stop level.  Use pos_.sl_price only when no
+        // exchange stop is active (tier-1 software-SL fallback).
+        double effective_sl = (!pos_.basket_id_stop.empty() && last_exchange_sl_ != 0.0)
+            ? last_exchange_sl_ : pos_.sl_price;
+        bool sl_breached = (is_long  && current_price <= effective_sl) ||
+                           (!is_long && current_price >= effective_sl);
 
-        LOG("[OM] TRAIL-CHECK: %s price=%.2f sl=%.2f mfe=%.2f mae=%.2f "
+        LOG("[OM] TRAIL-CHECK: %s price=%.2f sl=%.2f exch_sl=%.2f mfe=%.2f mae=%.2f "
             "be_triggered=%d trailing=%d sl_breached=%d stop=%s",
-            is_long ? "LONG" : "SHORT", current_price, pos_.sl_price,
+            is_long ? "LONG" : "SHORT", current_price, pos_.sl_price, effective_sl,
             pos_.mfe, pos_.mae,
             (int)pos_.be_triggered, (int)pos_.trailing_active, (int)sl_breached,
             pos_.basket_id_stop.empty() ? "(none)" : pos_.basket_id_stop.c_str());
