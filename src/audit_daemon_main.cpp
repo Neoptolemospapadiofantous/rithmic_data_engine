@@ -704,6 +704,27 @@ static CheckResult check_trading_constants() {
         (!j["trail_delay_secs"].is_number_integer() || j["trail_delay_secs"].get<int>() < 0))
         issues.push_back("'trail_delay_secs' must be integer >= 0");
 
+    // BE stop commission math: warn if trail_be_offset × point_value < commission_rt.
+    // A BE stop exit at entry+trail_be_offset yields trail_be_offset×point_value gross;
+    // if that is less than the round-trip commission, every BE stop fill is a net loss.
+    if (j.contains("trail_be_offset") && j.contains("commission_rt") &&
+        j.contains("point_value") &&
+        j["trail_be_offset"].is_number() && j["commission_rt"].is_number() &&
+        j["point_value"].is_number()) {
+        double tbo  = j["trail_be_offset"].get<double>();
+        double comm = j["commission_rt"].get<double>();
+        double pv   = j["point_value"].get<double>();
+        double gross = tbo * pv;
+        if (gross < comm) {
+            char buf[192];
+            std::snprintf(buf, sizeof(buf),
+                "trail_be_offset=%.1fpt × $%.1f/pt = $%.2f gross < commission_rt=$%.2f "
+                "— every BE stop exit is a net loss (need trail_be_offset >= %.1f pts to break even)",
+                tbo, pv, gross, comm, comm / pv);
+            issues.push_back(buf);
+        }
+    }
+
     if (!issues.empty()) {
         std::string msg = "validation issues: ";
         for (size_t i = 0; i < issues.size(); ++i) {

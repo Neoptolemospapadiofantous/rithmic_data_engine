@@ -543,7 +543,7 @@ public:
                 sl_moved = true;
                 LOG("[OM] BE triggered — SL moved to entry+%.1fpt: %.2f",
                     cfg_.trail_be_offset, be_sl);
-                update_stop_order_locked(old_sl, be_sl, current_price);
+                update_stop_order_locked(old_sl, be_sl);
             }
         }
 
@@ -569,7 +569,7 @@ public:
                 pos_.sl_price = trail_sl;
                 sl_moved = true;
                 LOG("[OM] Trail updated: price=%.2f new_sl=%.2f", current_price, trail_sl);
-                update_stop_order_locked(old_sl, trail_sl, current_price);
+                update_stop_order_locked(old_sl, trail_sl);
             }
         }
 
@@ -895,26 +895,12 @@ private:
     // where the fill arrives *after* the position has already gone FLAT.
     // Net risk: a trailing move can trigger at the old SL level instead of the new one
     // — effectively a one-trail-step slip. Acceptable given Legends' modify restriction.
-    void update_stop_order_locked(double /*old_sl*/, double new_sl,
-                                  double current_price = 0.0) {
+    void update_stop_order_locked(double /*old_sl*/, double new_sl) {
         if (cfg_.dry_run) {
             LOG("[OM] [DRY_RUN] Trail: would update stop to %.2f", new_sl);
             return;
         }
         bool is_long = (pos_.state == PosState::LONG);
-
-        // If price already past new SL, no point placing a stop — exit immediately.
-        if (current_price > 0.0) {
-            bool already_hit = is_long ? (current_price <= new_sl)
-                                       : (current_price >= new_sl);
-            if (already_hit) {
-                LOG("[OM] Trail: price=%.2f already past new SL=%.2f — exiting immediately",
-                    current_price, new_sl);
-                pos_.sl_price = new_sl;
-                initiate_exit_locked("stop_loss_trail", current_price);
-                return;
-            }
-        }
 
         // Suppress cancel+resubmit storm: only update the exchange stop when the SL
         // has moved by >= trail_step since the last submitted stop. The in-memory

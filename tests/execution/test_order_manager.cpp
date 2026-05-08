@@ -922,24 +922,35 @@ TEST(trail_suppression_prevents_rapid_resubmit) {
     ASSERT_EQ(f.sent_baskets.size(),      sends_after_first);    // no new send
 }
 
-// 33. Trail early-exit: if BE SL would be placed above current price, exit immediately.
-//     Config: trail_be_trigger=0.5 (tiny MFE needed), trail_be_offset=2.0 (SL at entry+2),
-//     trail_delay_secs=300 (trail doesn't activate). At price=19000.6, MFE=0.6 >= 0.5
-//     → BE fires, be_sl=19002, current_price=19000.6 < 19002 → already_hit → immediate exit.
-TEST(trail_early_exit_when_price_past_new_sl) {
+// 33. BE fires with retraced price (trail_be_offset > trail_be_trigger):
+//     be_sl=entry+2 is above current_price=entry+0.6 when BE triggers.
+//     Correct behaviour: stop submitted at be_sl; state stays LONG; sl_breach path
+//     handles the exit (no immediate market exit at current_price).
+TEST(be_retraced_price_uses_breach_not_market_exit) {
     OrbConfig cfg = make_cfg(false);
-    cfg.trail_be_trigger = 0.5;
-    cfg.trail_be_offset  = 2.0;
-    cfg.trail_delay_secs = 300;
+    cfg.trail_be_trigger   = 0.5;
+    cfg.trail_be_offset    = 2.0;  // be_sl = entry+2 > trigger price entry+0.5
+    cfg.trail_delay_secs   = 300;
+    cfg.sl_fire_timeout_ms = 0;    // breach fires on second call below SL
     Fixture f(cfg);
 
     f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
     sim_entry_fill(f, 19000.0);
 
-    std::size_t sends_before = f.sent_baskets.size();
-    f.om.check_trail_and_stop(19000.6);  // MFE=0.6 >= 0.5; be_sl=19002 > 19000.6 → exit
+    // Tick 1: BE fires (mfe=0.6 >= 0.5); be_sl=19002 > current 19000.6 → stop submitted.
+    // No immediate market exit — state must stay LONG.
+    std::size_t sends_after_entry = f.sent_baskets.size();
+    f.om.check_trail_and_stop(19000.6);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    ASSERT(f.sent_baskets.size() > sends_after_entry);  // stop cancel+resubmit to be_sl
+
+    // Tick 2: price still below be_sl=19002 → sl_breach timer starts
+    f.om.check_trail_and_stop(19000.6);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Tick 3: sl_fire_timeout_ms=0 → breach fires exit
+    f.om.check_trail_and_stop(19000.6);
     ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
-    ASSERT(f.sent_baskets.size() > sends_before);
 }
 
 // 34. flatten_now() when PENDING_EXIT logs and returns — no duplicate exit order sent.
@@ -955,6 +966,35 @@ TEST(eod_flatten_during_pending_exit_is_noop) {
     f.om.flatten_now("eod_second_call", 19010.0);
     ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);  // state unchanged
     ASSERT_EQ(f.sent_baskets.size(), sends_before);    // no second exit order
+}
+
+// 35. BE fires at entry+trigger, but trail_be_offset > trail_be_trigger so be_sl is
+//     ABOVE current price. The old "already_hit" dead-code path would have fired a
+//     market exit at entry+trigger (below be_sl) — worse than placing the stop and
+//     letting sl_breach handle it. Verify: no immediate exit, breach path fires instead.
+TEST(be_trigger_below_be_sl_no_immediate_exit) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.trail_be_trigger   = 3.0;
+    cfg.trail_be_offset    = 5.0;  // be_sl = entry+5 — above trigger price of entry+3
+    cfg.sl_fire_timeout_ms = 0;    // breach fires on second call below SL
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+
+    // Tick 1: BE fires (mfe=3.0), be_sl=19005 > current_price=19003.
+    // Without the fix: already_hit → immediate PENDING_EXIT at 19003 (below be_sl).
+    // With fix: stop submitted at 19005, state stays LONG.
+    f.om.check_trail_and_stop(19003.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Tick 2: price still below be_sl=19005 → sl_breach timer starts
+    f.om.check_trail_and_stop(19003.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Tick 3: sl_fire_timeout_ms=0 → breach fires → PENDING_EXIT via sl_breach path
+    f.om.check_trail_and_stop(19003.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -995,8 +1035,9 @@ int main() {
     RUN(sl_tier2_resets_on_price_recovery);
     RUN(trail_be_triggers_cancel_resubmit);
     RUN(trail_suppression_prevents_rapid_resubmit);
-    RUN(trail_early_exit_when_price_past_new_sl);
+    RUN(be_retraced_price_uses_breach_not_market_exit);
     RUN(eod_flatten_during_pending_exit_is_noop);
+    RUN(be_trigger_below_be_sl_no_immediate_exit);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;
