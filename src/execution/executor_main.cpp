@@ -1955,9 +1955,45 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             if (sh > sl && sh > 0.0) {
                 strategy.seed_orb_range(sh, sl);
                 LOG("[EXECUTOR] ORB seeded high=%.2f low=%.2f — first real tick will anchor price, cross detection armed", sh, sl);
+            } else {
+                LOG("[EXECUTOR] WARN: ORB seed row found but values invalid (high=%.2f low=%.2f) — will rebuild from ticks",
+                    sh, sl);
             }
+        } else {
+            const char* why = (!r || PQresultStatus(r) != PGRES_TUPLES_OK)
+                ? PQerrorMessage(db->raw_conn())
+                : "no row with orb_high > orb_low for today";
+            LOG("[EXECUTOR] WARN: ORB seed skipped — %s "
+                "(date=%s account=%s symbol=%s) — will rebuild from ticks during %02d:%02d ET",
+                why, orb_qdate.c_str(),
+                orb_cfg.account_label.c_str(), orb_cfg.symbol.c_str(),
+                orb_cfg.session_open_hour, orb_cfg.session_open_min);
         }
         if (r) PQclear(r);
+    } else {
+        LOG("[EXECUTOR] WARN: ORB seed skipped — DB not connected at startup — "
+            "will rebuild from ticks during %02d:%02d ET",
+            orb_cfg.session_open_hour, orb_cfg.session_open_min);
+    }
+
+    // Warn if restarting after last_entry_hour — no new entries will fire today.
+    {
+        int cur_et_h, cur_et_m;
+        current_et(cur_et_h, cur_et_m);
+        if (cur_et_h >= orb_cfg.last_entry_hour) {
+            LOG("[EXECUTOR] WARN: restart at ET=%02d:%02d is at or past last_entry_hour=%d — "
+                "no new entries will be placed today (EOD flatten only)",
+                cur_et_h, cur_et_m, orb_cfg.last_entry_hour);
+        }
+        if (strategy.orb_set()) {
+            LOG("[EXECUTOR] ORB status: SET high=%.2f low=%.2f (seeded or carried)",
+                strategy.orb_high(), strategy.orb_low());
+        } else {
+            int orb_close_h = orb_cfg.session_open_hour + (orb_cfg.session_open_min + orb_cfg.orb_minutes) / 60;
+            int orb_close_m = (orb_cfg.session_open_min + orb_cfg.orb_minutes) % 60;
+            LOG("[EXECUTOR] ORB status: NOT SET — will build from ticks during %02d:%02d-%02d:%02d ET",
+                orb_cfg.session_open_hour, orb_cfg.session_open_min, orb_close_h, orb_close_m);
+        }
     }
 
     // ── Persist cancelled stops across restarts ───────────────────────────────
