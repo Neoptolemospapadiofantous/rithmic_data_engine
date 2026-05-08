@@ -989,16 +989,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     if (notif.symbol() == trade_symbol) {
                         if (notif.total_unfilled_size() > 0 &&
                             !notif.basket_id().empty()) {
-                            // Case A: open working order — cancel it.
-                            // Note: cancel may race with trigger-pending; if the stop
-                            // fires before the cancel is confirmed, it will arrive as a
-                            // live fill (not snapshot) and be caught by the GHOST-FILL
-                            // path → entry_halted_ set → tid=451 confirms flat → auto-resume.
+                            // Case A: open working order — cancel it
                             LOG("[EXECUTOR] [STARTUP-RECON] OPEN ORDER FOUND "
-                                "exchange_basket=%s user_tag='%s' status='%s' unfilled=%d "
-                                "— cancelling (cancel/trigger race possible)",
-                                notif.basket_id().c_str(), notif.user_tag().c_str(),
-                                notif.status().c_str(), notif.total_unfilled_size());
+                                "basket=%s status='%s' unfilled=%d — cancelling",
+                                notif.basket_id().c_str(), notif.status().c_str(),
+                                notif.total_unfilled_size());
                             rti::RequestCancelOrder cancel_req;
                             cancel_req.set_template_id(316);
                             cancel_req.set_basket_id(notif.basket_id());
@@ -1007,9 +1002,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             cancel_req.set_ib_id(orb_cfg.ib_id);
                             try {
                                 co_await ws_write(*order_plant->ws, proto_frame(cancel_req));
-                                LOG("[EXECUTOR] [STARTUP-RECON] cancel sent "
-                                    "exchange_basket=%s user_tag='%s'",
-                                    notif.basket_id().c_str(), notif.user_tag().c_str());
+                                LOG("[EXECUTOR] [STARTUP-RECON] cancel sent basket=%s",
+                                    notif.basket_id().c_str());
                             } catch (std::exception& e) {
                                 LOG("[EXECUTOR] [STARTUP-RECON] cancel send FAILED: %s",
                                     e.what());
@@ -1019,10 +1013,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             // Case B: filled order snap → ghost position indicator.
                             // AccountPnLPositionUpdate (tid=451) will confirm net qty.
                             LOG("[EXECUTOR] [STARTUP-RECON] FILLED ORDER SNAP "
-                                "exchange_basket=%s user_tag='%s' fill_qty=%d px=%.2f "
-                                "— possible ghost position! "
+                                "basket=%s fill_qty=%d px=%.2f — possible ghost position! "
                                 "Halting entries pending tid=451 position confirm",
-                                notif.basket_id().c_str(), notif.user_tag().c_str(),
+                                notif.basket_id().c_str(),
                                 notif.total_fill_size(), notif.avg_fill_price());
                             strategy.halt_trading("startup_ghost_position_suspected");
                         }
@@ -1196,9 +1189,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                     "%s MARKET qty=%d basket=%s",
                                     unwind_is_buy ? "BUY" : "SELL",
                                     std::abs(net), basket_id.c_str());
-                                // Register so the fill is recognised instead of
-                                // triggering a second GHOST-FILL log.
-                                order_mgr.register_unwind_basket(basket_id);
                             } catch (std::exception& e) {
                                 LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind FAILED: %s "
                                     "— MANUAL INTERVENTION REQUIRED", e.what());
@@ -1208,10 +1198,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         strategy.unhalt_trading("startup_ghost_position_cleared");
                     } else {
                         LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
-                        // tid=451 confirmed exchange is flat — clear any ghost-fill halt
-                        // so entries are re-enabled (covers the case where a stale stop
-                        // fired and then was manually closed via RTrader before this snapshot).
-                        order_mgr.confirm_exchange_flat();
                         // If strategy was halted waiting for position confirm, clear it
                         strategy.unhalt_trading("startup_position_confirmed_flat");
                     }
@@ -1349,20 +1335,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 risk.reset_daily();
                 pos_write_counter = 0;
                 LOG("[EXECUTOR] New trading day: %s", today.c_str());
-            }
-
-            // Ghost-halt watchdog: remind operator every 60s if entries are blocked
-            if (order_mgr.is_entry_halted()) {
-                static int64_t last_halt_log_s = 0;
-                int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
-                if (now_s - last_halt_log_s >= 60) {
-                    last_halt_log_s = now_s;
-                    LOG("[EXECUTOR] GHOST-HALT ACTIVE: entries blocked (ghost fill detected). "
-                        "Waiting for tid=451 position snapshot to confirm exchange flat. "
-                        "pending_cancelled_stops=%d",
-                        order_mgr.pending_cancelled_stop_count());
-                }
             }
 
             // Flush session state to DB
@@ -1955,45 +1927,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             if (sh > sl && sh > 0.0) {
                 strategy.seed_orb_range(sh, sl);
                 LOG("[EXECUTOR] ORB seeded high=%.2f low=%.2f — first real tick will anchor price, cross detection armed", sh, sl);
-            } else {
-                LOG("[EXECUTOR] WARN: ORB seed row found but values invalid (high=%.2f low=%.2f) — will rebuild from ticks",
-                    sh, sl);
             }
-        } else {
-            const char* why = (!r || PQresultStatus(r) != PGRES_TUPLES_OK)
-                ? PQerrorMessage(db->raw_conn())
-                : "no row with orb_high > orb_low for today";
-            LOG("[EXECUTOR] WARN: ORB seed skipped — %s "
-                "(date=%s account=%s symbol=%s) — will rebuild from ticks during %02d:%02d ET",
-                why, orb_qdate.c_str(),
-                orb_cfg.account_label.c_str(), orb_cfg.symbol.c_str(),
-                orb_cfg.session_open_hour, orb_cfg.session_open_min);
         }
         if (r) PQclear(r);
-    } else {
-        LOG("[EXECUTOR] WARN: ORB seed skipped — DB not connected at startup — "
-            "will rebuild from ticks during %02d:%02d ET",
-            orb_cfg.session_open_hour, orb_cfg.session_open_min);
-    }
-
-    // Warn if restarting after last_entry_hour — no new entries will fire today.
-    {
-        int cur_et_h, cur_et_m;
-        current_et(cur_et_h, cur_et_m);
-        if (cur_et_h >= orb_cfg.last_entry_hour) {
-            LOG("[EXECUTOR] WARN: restart at ET=%02d:%02d is at or past last_entry_hour=%d — "
-                "no new entries will be placed today (EOD flatten only)",
-                cur_et_h, cur_et_m, orb_cfg.last_entry_hour);
-        }
-        if (strategy.orb_set()) {
-            LOG("[EXECUTOR] ORB status: SET high=%.2f low=%.2f (seeded or carried)",
-                strategy.orb_high(), strategy.orb_low());
-        } else {
-            int orb_close_h = orb_cfg.session_open_hour + (orb_cfg.session_open_min + orb_cfg.orb_minutes) / 60;
-            int orb_close_m = (orb_cfg.session_open_min + orb_cfg.orb_minutes) % 60;
-            LOG("[EXECUTOR] ORB status: NOT SET — will build from ticks during %02d:%02d-%02d:%02d ET",
-                orb_cfg.session_open_hour, orb_cfg.session_open_min, orb_close_h, orb_close_m);
-        }
     }
 
     // ── Persist cancelled stops across restarts ───────────────────────────────
@@ -2012,25 +1948,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             "  cancelled_at TIMESTAMPTZ DEFAULT NOW()"
             ")");
 
-        // Prune stale pending_stop_cancels before loading.
-        // DAY orders expire at market close; any entry older than 24h is guaranteed
-        // stale (exchange already fired or discarded the order).
-        {
-            std::string prune_q =
-                "DELETE FROM pending_stop_cancels "
-                "WHERE account_label = '" + orb_cfg.account_label + "' "
-                "  AND instrument = '" + orb_cfg.symbol + "' "
-                "  AND cancelled_at < NOW() - INTERVAL '24 hours'";
-            PGresult* rp = PQexec(pg, prune_q.c_str());
-            if (rp) {
-                int pruned = (PQresultStatus(rp) == PGRES_COMMAND_OK)
-                    ? std::atoi(PQcmdTuples(rp)) : 0;
-                if (pruned > 0)
-                    LOG("[EXECUTOR] STARTUP-RECON: pruned %d stale pending_stop_cancel(s) (>24h old)", pruned);
-                PQclear(rp);
-            }
-        }
-
         // Seed cancelled_stops_ from any rows left by a previous process
         {
             std::string q2 =
@@ -2047,8 +1964,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
                 if (n > 0)
                     LOG("[EXECUTOR] STARTUP-RECON: loaded %d pending stop cancel(s) from DB", n);
-                else
-                    LOG("[EXECUTOR] STARTUP-RECON: no pending stop cancels to restore");
             }
             if (r2) PQclear(r2);
         }
