@@ -77,13 +77,6 @@ using OrderSendCallback = std::function<bool(
     const std::string& user_tag
 )>;
 using OrderCancelCallback = std::function<void(const std::string& basket_id)>;
-// Atomically changes the trigger_price of an existing STOP_MARKET order.
-// Returns true if the modify was sent successfully.
-using OrderModifyCallback = std::function<bool(
-    const std::string& basket_id,
-    double new_trigger_price
-)>;
-
 // ─── OrderManager ─────────────────────────────────────────────────────────────
 class OrderManager {
 public:
@@ -95,7 +88,6 @@ public:
 
     void set_order_callback(OrderSendCallback cb)   { order_cb_  = std::move(cb); }
     void set_cancel_callback(OrderCancelCallback cb) { cancel_cb_ = std::move(cb); }
-    void set_modify_callback(OrderModifyCallback cb) { modify_cb_ = std::move(cb); }
 
     // DB persistence for cancelled stops — survive process restarts.
     // persist_cb:           called when a stop cancel is sent (basket_id, was_buy_stop)
@@ -923,7 +915,6 @@ private:
     LatencyLogger& lat_;
     OrderSendCallback   order_cb_;
     OrderCancelCallback cancel_cb_;
-    OrderModifyCallback modify_cb_;
 
     mutable std::mutex state_mu_;
     Position           pos_;

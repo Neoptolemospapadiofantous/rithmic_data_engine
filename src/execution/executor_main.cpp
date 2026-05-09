@@ -329,42 +329,6 @@ struct OrderPlant {
         }
     }
 
-    // Send RequestModifyOrder (template 314) — atomically changes stop trigger_price.
-    // Returns true if sent successfully.
-    bool send_modify_order(const std::string& basket_id,
-                           double new_trigger_price,
-                           const std::string& symbol,
-                           const std::string& exchange_str,
-                           bool dry_run) {
-        if (dry_run) {
-            LOG("[ORDER_PLANT] [DRY_RUN] Would modify stop basket=%s trigger=%.2f",
-                basket_id.c_str(), new_trigger_price);
-            return true;
-        }
-        if (!connected || !ws) {
-            LOG("[ORDER_PLANT] Not connected — cannot modify order basket=%s", basket_id.c_str());
-            return false;
-        }
-        rti::RequestModifyOrder req;
-        req.set_template_id(314);
-        req.set_basket_id(basket_id);
-        req.set_fcm_id(fcm_id);
-        req.set_ib_id(ib_id);
-        req.set_account_id(account_id);
-        req.set_symbol(symbol);
-        req.set_exchange(exchange_str);
-        req.set_trigger_price(new_trigger_price);
-        try {
-            ws->write(asio::buffer(proto_frame(req)));
-            LOG("[ORDER_PLANT] RequestModifyOrder sent: basket=%s new_trigger=%.2f",
-                basket_id.c_str(), new_trigger_price);
-            return true;
-        } catch (std::exception& e) {
-            LOG("[ORDER_PLANT] ERROR sending modify order: %s", e.what());
-            return false;
-        }
-    }
-
     // Send RequestCancelOrder (template 316)
     void send_cancel(const std::string& basket_id, const std::string& account_id_str) {
         if (!connected || !ws) {
@@ -584,15 +548,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             order_plant->send_cancel(basket_id, order_plant->account_id);
         }
     );
-    order_mgr.set_modify_callback(
-        [&order_plant, &orb_cfg](const std::string& basket_id, double new_trigger) -> bool {
-            const std::string& sym = order_plant->trade_symbol.empty()
-                                   ? orb_cfg.symbol : order_plant->trade_symbol;
-            return order_plant->send_modify_order(
-                basket_id, new_trigger, sym, orb_cfg.exchange, orb_cfg.dry_run);
-        }
-    );
-
     // ── SSL context, executor refs, and trade symbol (shared setup) ─────────────
     ssl::context ssl_ctx(ssl::context::tls_client);
     ssl_ctx.load_verify_file("certs/rithmic_ssl_cert_auth_params");
@@ -1208,7 +1163,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                     std::chrono::system_clock::now()
                                         .time_since_epoch()).count());
                             constexpr double TICK = 0.25;
-                            constexpr int    OFFSET = 20; // 5 pts — wide to ensure fill
                             // Use last known price from live_position for unwind limit
                             double ref = 0.0;
                             {

@@ -14,8 +14,6 @@ repeat
 make push-eod        ← end of day, only when fully green
 ```
 
-**Never push mid-session.** All changes stay local until `make push-eod`.
-
 ## Stack
 Everything is C++. There is no Python in this project.
 

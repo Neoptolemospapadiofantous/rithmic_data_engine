@@ -108,7 +108,6 @@ struct Fixture {
         om.set_cancel_callback([this](const std::string& bid) {
             cancelled_baskets.push_back(bid);
         });
-        om.set_modify_callback([](const std::string&, double) -> bool { return true; });
     }
 
     // Reset strategy for the next cycle; OM + RiskManager state persists.

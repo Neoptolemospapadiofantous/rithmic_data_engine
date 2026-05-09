@@ -107,10 +107,6 @@ struct Fixture {
             cancelled_baskets.push_back(basket_id);
         });
 
-        om.set_modify_callback([](const std::string& /*basket_id*/,
-                                   double /*new_trigger*/) -> bool {
-            return true;
-        });
     }
 };
 
