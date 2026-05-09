@@ -115,68 +115,56 @@ public:
 
     // Re-send cancel for every unconfirmed stop.
     // In-session stops: use server basket ID (required by Rithmic's RequestCancelOrder).
-    // Startup-recon seeded stops: fall back to client basket ID (no server ID available).
-    // server_to_client_cancelled_ persists until clear_post_close_recancels().
     void recancel_pending_stops() {
         std::lock_guard<std::mutex> lk(state_mu_);
         if (!cancel_cb_) return;
-        // Primary path: server basket IDs from in-session cancels
+        // Build covered set once (O(N)) to avoid O(N²) inner-loop lookups.
+        std::unordered_set<std::string> covered;
+        for (const auto& [sid, cid] : server_to_client_cancelled_)
+            covered.insert(cid);
+        std::size_t client_only = 0;
+        for (const auto& [cid, _] : cancelled_stops_)
+            if (!covered.count(cid)) ++client_only;
         LOG("[OM] RECANCEL: firing — server_entries=%zu client_only_entries=%zu",
-            server_to_client_cancelled_.size(),
-            [&]() -> std::size_t {
-                std::size_t n = 0;
-                for (const auto& [cid, _] : cancelled_stops_) {
-                    bool covered = false;
-                    for (const auto& [sid, c2] : server_to_client_cancelled_)
-                        if (c2 == cid) { covered = true; break; }
-                    if (!covered) ++n;
-                }
-                return n;
-            }());
+            server_to_client_cancelled_.size(), client_only);
+        // Primary: cancel by exchange-assigned server basket ID (required by Rithmic).
         for (const auto& [server_id, client_id] : server_to_client_cancelled_) {
             cancel_cb_(server_id);
             LOG("[OM] RECANCEL: cancel re-sent server=%s (client=%s)",
                 server_id.c_str(), client_id.c_str());
         }
-        // Fallback: DB-seeded cancelled_stops have no server ID mapping
-        // (these are stops from previous sessions, cancel by client basket ID)
+        // Fallback: startup-seeded entries with no server ID yet — cancel by client basket.
         for (const auto& [client_id, _] : cancelled_stops_) {
-            // Skip if already covered by the server_to_client map
-            bool covered = false;
-            for (const auto& [sid, cid] : server_to_client_cancelled_) {
-                if (cid == client_id) { covered = true; break; }
-            }
-            if (!covered) {
+            if (!covered.count(client_id)) {
                 cancel_cb_(client_id);
-                LOG("[OM] RECANCEL: cancel re-sent client=%s (startup-recon, no server ID)",
-                    client_id.c_str());
+                LOG("[OM] RECANCEL: cancel re-sent client=%s (no server ID)", client_id.c_str());
             }
         }
     }
 
-    // Called from executor when the post-close recancel window expires.
-    // Clears server_to_client_cancelled_ and last_stop_for_unwind_ so they
-    // don't leak into the next trade's state.
-    // If cancel ACKs still haven't arrived, DB rows are preserved — the next
-    // startup will read them and retry the cancel by server basket ID.
+    // Called when the intensive post-close recancel window expires.
+    // Clears ONLY last_stop_for_unwind_ (ghost-fill guard for the just-closed trade).
+    // server_to_client_cancelled_ is intentionally preserved so the 30s background
+    // retry can keep sending cancel requests by server basket ID until ACKs arrive.
     void clear_post_close_recancels() {
         std::lock_guard<std::mutex> lk(state_mu_);
-        if (!server_to_client_cancelled_.empty()) {
-            LOG("[OM] WARN: recancel window expired — %zu stop cancel(s) still unconfirmed. "
-                "DB rows preserved for next-startup retry.",
+        if (!server_to_client_cancelled_.empty())
+            LOG("[OM] Intensive window done — %zu server cancel(s) still unconfirmed; "
+                "background retry will continue",
                 server_to_client_cancelled_.size());
-            for (const auto& [sid, cid] : server_to_client_cancelled_)
-                LOG("[OM]   unconfirmed cancel: server=%s → client=%s "
-                    "(order may still be live — startup will retry via server ID)",
-                    sid.c_str(), cid.c_str());
-            server_to_client_cancelled_.clear();
-        }
-        if (!last_stop_for_unwind_.empty()) {
+        if (!last_stop_for_unwind_.empty())
             LOG("[OM] Post-close clear: last_stop_for_unwind_=%s cleared",
                 last_stop_for_unwind_.c_str());
-        }
         last_stop_for_unwind_.clear();
         last_stop_was_buy_ = false;
+    }
+
+    // How many server-basket cancel requests are still awaiting ACK from the exchange.
+    // Stays non-zero until on_cancel_confirmed / on_cancel_confirmed_by_server_basket
+    // erases the entry; used by the executor background retry gate.
+    int unconfirmed_server_cancels() const {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        return (int)server_to_client_cancelled_.size();
     }
 
     // Register an unwind order sent by startup-recon so its fill is recognised

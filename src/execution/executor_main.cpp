@@ -386,6 +386,29 @@ struct OrderPlant {
             LOG("[ORDER_PLANT] RequestCancelOrder sent: basket=%s", basket_id.c_str());
         } catch (std::exception& e) {
             LOG("[ORDER_PLANT] ERROR sending cancel: %s", e.what());
+            return;
+        }
+        // Re-subscribe (tid=308) to prompt Rithmic to flush queued cancel ACKs.
+        // Rithmic batches cancel notifications and delivers them on next order activity;
+        // a re-subscription acts as that trigger without submitting a real order.
+        flush_order_notifications();
+    }
+
+    // Re-send RequestSubscribeForOrderUpdates (tid=308) to prompt Rithmic to
+    // flush any queued cancel ACKs. Rithmic holds cancel notifications until the
+    // next order activity event; this triggers that flush cheaply.
+    void flush_order_notifications() {
+        if (!connected || !ws) return;
+        rti::RequestSubscribeForOrderUpdates sub;
+        sub.set_template_id(308);
+        sub.set_fcm_id(fcm_id);
+        sub.set_ib_id(ib_id);
+        sub.set_account_id(account_id);
+        try {
+            ws->write(asio::buffer(proto_frame(sub)));
+            LOG("[ORDER_PLANT] Sent tid=308 flush to prompt cancel ACK delivery");
+        } catch (std::exception& e) {
+            LOG("[ORDER_PLANT] WARNING: flush_order_notifications failed: %s", e.what());
         }
     }
 
@@ -1375,7 +1398,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         PosState watchdog_state  = PosState::FLAT;
         int64_t  watchdog_since_s = 0;  // epoch-s when watchdog_state last changed
         int ghost_halt_secs = 0;        // seconds ghost_halted_ has been active this cycle
-        int64_t post_trade_cleanup_until_s = 0;  // epoch-s; recancel pending stops until this time
+        int64_t post_close_window_until_s    = 0;  // epoch-s; intensive per-second recancel window
+        int64_t last_background_recancel_s   = 0;  // epoch-s; last background 30s recancel fire
         while (g_running) {
             eod_timer.expires_after(std::chrono::seconds(1));
             co_await eod_timer.async_wait(asio::use_awaitable);
@@ -1449,11 +1473,18 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             if (order_mgr.pop_trade_completed(completed)) {
                 strategy.notify_trade_filled(completed.direction, completed.exit_reason);
                 // Belt-and-suspenders: re-send cancel for any stop the exchange might
-                // still hold. Idempotent — exchange ignores it if order is already gone.
-                if (!orb_cfg.dry_run) order_mgr.recancel_pending_stops();
-                post_trade_cleanup_until_s = std::chrono::duration_cast<std::chrono::seconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count() + orb_cfg.stop_cooldown_secs;
-                LOG("[EXECUTOR] Post-trade cleanup window: %ds — will recancel pending stops each second",
+                // still hold, then flush tid=308 to prompt Rithmic to deliver the ACK.
+                if (!orb_cfg.dry_run) {
+                    order_mgr.recancel_pending_stops();
+                    order_plant->flush_order_notifications();
+                }
+                {
+                    int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count();
+                    post_close_window_until_s  = now_s + orb_cfg.stop_cooldown_secs;
+                    last_background_recancel_s = now_s;  // background retry starts after window
+                }
+                LOG("[EXECUTOR] Post-trade cleanup window: %ds intensive, then 30s background retry",
                     orb_cfg.stop_cooldown_secs);
                 if (db && db->is_connected()) {
                     try {
@@ -1498,20 +1529,37 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 db->reconnect();
             }
 
-            // Persistent stop cleanup during post-trade window (covers in-flight cancels)
-            if (post_trade_cleanup_until_s > 0) {
+            // Intensive recancel window: every second for stop_cooldown_secs after trade close
+            if (post_close_window_until_s > 0) {
                 int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count();
-                if (now_s < post_trade_cleanup_until_s) {
-                    int64_t remaining = post_trade_cleanup_until_s - now_s;
+                if (now_s < post_close_window_until_s) {
                     LOG("[EXECUTOR] Post-close recancel tick: %lds remaining",
-                        (long)remaining);
-                    if (!orb_cfg.dry_run) order_mgr.recancel_pending_stops();
+                        (long)(post_close_window_until_s - now_s));
+                    if (!orb_cfg.dry_run) {
+                        order_mgr.recancel_pending_stops();
+                        order_plant->flush_order_notifications();
+                    }
                 } else {
-                    post_trade_cleanup_until_s = 0;
-                    // Window expired — clear server basket IDs and stale-stop guard
-                    LOG("[EXECUTOR] Post-close recancel window expired — clearing stale-stop guard");
+                    post_close_window_until_s = 0;
+                    LOG("[EXECUTOR] Post-close recancel window expired — ghost-fill guard cleared; "
+                        "background 30s retry continues until ACK");
                     order_mgr.clear_post_close_recancels();
+                }
+            }
+
+            // Background retry: every 30s while unconfirmed server-basket cancels remain.
+            // Fires only outside the intensive window to avoid double-sending.
+            if (!orb_cfg.dry_run && post_close_window_until_s == 0 &&
+                order_mgr.unconfirmed_server_cancels() > 0) {
+                int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                if (now_s - last_background_recancel_s >= 30) {
+                    LOG("[EXECUTOR] Background recancel: %d server-basket cancel(s) still unconfirmed",
+                        order_mgr.unconfirmed_server_cancels());
+                    order_mgr.recancel_pending_stops();
+                    order_plant->flush_order_notifications();
+                    last_background_recancel_s = now_s;
                 }
             }
 
@@ -2179,6 +2227,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 "(trail-cancel orphans from previous session)",
                 order_mgr.pending_cancelled_stop_count());
             order_mgr.recancel_pending_stops();
+            order_plant->flush_order_notifications();
         }
     }
 

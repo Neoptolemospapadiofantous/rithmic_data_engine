@@ -1078,9 +1078,9 @@ TEST(cancel_uses_server_basket_id_when_mapped) {
 
 // 42. recancel_window_uses_server_ids_after_trade_close:
 //     After a trade closes (exit fill), cancelled_stops_ is purged but
-//     server_to_client_cancelled_ persists until clear_post_close_recancels().
-//     recancel_pending_stops() must re-send via server IDs during the window.
-//     After clear_post_close_recancels() the maps are empty — no more recancels.
+//     server_to_client_cancelled_ persists (cleared only on cancel ACK, not at window expiry).
+//     recancel_pending_stops() must re-send via server IDs both during and after the window.
+//     clear_post_close_recancels() only clears last_stop_for_unwind_ (ghost-fill guard).
 TEST(recancel_window_uses_server_ids_after_trade_close) {
     Fixture f;
 
@@ -1096,10 +1096,13 @@ TEST(recancel_window_uses_server_ids_after_trade_close) {
     f.om.check_trail_and_stop(19005.5);
     ASSERT_EQ(f.om.state(), PosState::LONG);
 
-    // A new stop was submitted after BE; map its server basket too
+    // Trail-cancel ACK arrives for the old stop (SERVER-BE-1 confirmed dead)
+    f.om.on_cancel_confirmed_by_server_basket("SERVER-BE-1");
+
+    // A new stop was submitted after BE; map its server basket
     auto snap_after_be = f.om.position_snapshot();
     const std::string new_stop = snap_after_be.basket_id_stop;
-    ASSERT(!new_stop.empty());  // new stop submitted after BE
+    ASSERT(!new_stop.empty());
     f.om.set_stop_server_basket("SERVER-BE-2");
 
     // Now initiate exit (sets last_stop_for_unwind_ = new_stop, adds to cancelled_stops_,
@@ -1122,10 +1125,19 @@ TEST(recancel_window_uses_server_ids_after_trade_close) {
     }
     ASSERT(server_recancel);
 
-    // clear_post_close_recancels() wipes the maps
+    // clear_post_close_recancels() clears last_stop_for_unwind_ but preserves server IDs
     f.om.clear_post_close_recancels();
 
-    // After clearing, recancel_pending_stops() must send nothing
+    // Background retry still fires via server IDs after window expiry
+    f.cancelled_baskets.clear();
+    f.om.recancel_pending_stops();
+    bool still_recancels_server = false;
+    for (const auto& b : f.cancelled_baskets)
+        if (b == "SERVER-BE-2") { still_recancels_server = true; break; }
+    ASSERT(still_recancels_server);
+
+    // Once the cancel ACK arrives the entry is removed and recancel sends nothing
+    f.om.on_cancel_confirmed_by_server_basket("SERVER-BE-2");
     f.cancelled_baskets.clear();
     f.om.recancel_pending_stops();
     ASSERT(f.cancelled_baskets.empty());
