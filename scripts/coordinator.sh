@@ -263,7 +263,6 @@ log "Starting. phase=$(phase) ONCE=$ONCE"
 while true; do
   run_cycle
   [[ $ONCE -eq 1 ]] && { show_status; exit 0; }
-  local secs
   secs=$(sleep_for_phase)
   log "Sleeping ${secs}s (next phase: $(phase))"
   sleep "$secs"
