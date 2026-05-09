@@ -1,4 +1,4 @@
-.PHONY: build test hermes hermes-fast hermes-note hermes-fleet hermes-fleet-fast hermes-lifecycle obsidian-daily obsidian-session push-eod deploy deploy-dry clean
+.PHONY: build test hermes hermes-fast hermes-note hermes-fleet hermes-fleet-fast hermes-lifecycle hermes-lifecycle-once hermes-lifecycle-local coordinator-start coordinator-once coordinator-status agent-run obsidian-daily obsidian-session push-eod deploy deploy-dry clean
 
 BUILD_DIR := build
 JOBS      := $(shell nproc)
@@ -58,6 +58,23 @@ hermes-lifecycle-once:
 # Lifecycle without git push or make deploy (safe for local dev).
 hermes-lifecycle-local:
 	@bash scripts/hermes_lifecycle.sh --no-deploy
+
+# ── Coordinator (manages all specialist agents) ────────────────────────────────
+# Persistent coordinator loop — orchestrates all 5 agents based on market phase.
+coordinator-start:
+	@bash scripts/coordinator.sh
+
+# Run one full coordinator cycle then exit.
+coordinator-once:
+	@bash scripts/coordinator.sh --once
+
+# Show current status of all agents.
+coordinator-status:
+	@bash scripts/agents/status.sh
+
+# Run a single agent manually: make agent-run AGENT=ci-watchdog
+agent-run:
+	@bash scripts/agents/$(subst -,_,$(AGENT)).sh
 
 # Regenerate today's daily digest note in Obsidian.
 obsidian-daily:
