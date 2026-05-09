@@ -1,4 +1,4 @@
-.PHONY: build test hermes hermes-fast hermes-note push-eod deploy deploy-dry clean
+.PHONY: build test hermes hermes-fast hermes-note obsidian-daily obsidian-session push-eod deploy deploy-dry clean
 
 BUILD_DIR := build
 JOBS      := $(shell nproc)
@@ -33,10 +33,19 @@ hermes:
 hermes-fast:
 	@bash scripts/hermes.sh --fast
 
-# Run hermes then write a note to the Obsidian vault.
+# Run hermes then write a note + update today's daily note in Obsidian.
 hermes-note:
 	@bash scripts/hermes.sh && bash scripts/obsidian_note.sh || \
 	  (bash scripts/obsidian_note.sh && exit 1)
+	@bash scripts/obsidian_daily.sh
+
+# Regenerate today's daily digest note in Obsidian.
+obsidian-daily:
+	@bash scripts/obsidian_daily.sh
+
+# Generate a trading session post-mortem from PostgreSQL (optional date: make obsidian-session DATE=2026-05-09).
+obsidian-session:
+	@bash scripts/obsidian_session.sh $(or $(DATE),)
 
 # ── End-of-day push ────────────────────────────────────────────────────────────
 push-eod:
