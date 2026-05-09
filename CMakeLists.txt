@@ -12,7 +12,6 @@ find_package(Protobuf REQUIRED)
 
 # PostgreSQL (libpq)
 find_package(PostgreSQL REQUIRED)
-find_package(Curses REQUIRED)
 
 # ── Protobuf codegen ───────────────────────────────────────────────
 set(PROTO_FILE "${CMAKE_CURRENT_SOURCE_DIR}/proto/rithmic.proto")
@@ -101,10 +100,6 @@ add_test(NAME orb_strategy_tests    COMMAND test_orb_strategy)
 add_test(NAME order_manager_tests   COMMAND test_order_manager)
 add_test(NAME lifecycle_tests       COMMAND test_lifecycle)
 
-# ── Dashboard (ncurses TUI) ────────────────────────────────────────
-add_executable(dashboard src/dashboard.cpp)
-target_link_libraries(dashboard PRIVATE rithmic_lib ${CURSES_LIBRARIES})
-target_include_directories(dashboard PRIVATE src/ ${CURSES_INCLUDE_DIRS})
 
 # ── orb_strategy (standalone ORB signal binary for CI parity tests) ──
 # Header-only nlohmann/json; no link deps beyond stdlib.

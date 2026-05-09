@@ -109,11 +109,6 @@ journalctl -u nq_executor@RTH -f
 | `emergency_flatten` | SIGTERM received — flatten initiated |
 | `Daily trade limit reached (N/N) — shutting down` | Max trades hit, clean shutdown |
 
-**ncurses dashboard (local):**
-```bash
-./build/dashboard
-```
-
 ---
 
 ## Emergency procedures

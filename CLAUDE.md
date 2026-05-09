@@ -20,7 +20,6 @@ Everything is C++. There is no Python in this project.
 - **`rithmic_engine`** — WebSocket tick collector (market data → PostgreSQL)
 - **`nq_executor`** — ORB strategy + order execution (production trader)
 - **`audit_daemon`** — 17-check quality daemon (local/testing only — NOT on Oracle)
-- **`dashboard`** — ncurses TUI
 - **Build**: `cmake -B build && cmake --build build -j$(nproc)`
 - **Tests**: `build/test_orb_strategy`, `build/test_risk_manager`, `build/test_validator`, `build/test_db`
 
