@@ -30,7 +30,7 @@ PG_PASSWORD=...
 | `is_buy`   | BOOLEAN         | True if buy aggressor          |
 | `source`   | VARCHAR(32)     | Always `amp_rithmic`           |
 
-**Primary key / dedup:** `UNIQUE (symbol, exchange, ts_event)`
+**Primary key / dedup:** `UNIQUE (symbol, exchange, ts_event, price, size)`
 
 **Compression:** TimescaleDB compresses chunks older than 7 days (~10:1 ratio).
 
@@ -64,17 +64,13 @@ Auto-refreshed by TimescaleDB background worker. Read-only (materialized views).
 rithmic_engine/
 ├── data/
 │   ├── logs/
-│   │   ├── collector.log   ← structured collector log (rotated daily)
-│   │   └── sync.log        ← R2 upload log (if sync enabled)
-│   └── rithmic.duckdb      ← LEGACY: old Python-era DB, no longer written to
+│   │   └── collector.log   ← structured collector log (rotated daily)
+│   ├── audit_status.json   ← last audit_daemon run output
+│   └── hermes_findings.json← last make hermes CI output
 ├── .env                    ← credentials (never commit)
 └── build/
     └── rithmic_engine      ← compiled binary
 ```
-
-> **Note:** `data/rithmic.duckdb` is a leftover from the old Python collector.
-> It is not written to by the C++ engine. Safe to delete once the Python bot
-> has been updated to read from PostgreSQL instead.
 
 ---
 
@@ -87,48 +83,6 @@ rithmic_engine/
 | 1 month | ~12.5 M   | ~125 MB         |
 | 1 year  | ~150 M    | ~1.5 GB         |
 | 5 years | ~750 M    | ~7.5 GB         |
-
----
-
-## Reading from Python (bot integration)
-
-```python
-import psycopg2
-import pandas as pd
-
-conn = psycopg2.connect(
-    host=os.environ["PG_HOST"],
-    port=os.environ["PG_PORT"],
-    dbname=os.environ["PG_DB"],
-    user=os.environ["PG_USER"],
-    password=os.environ["PG_PASSWORD"],
-)
-
-# Raw ticks (RTH only)
-df = pd.read_sql("""
-    SELECT ts_event, price, size, side, is_buy
-    FROM ticks
-    WHERE symbol = 'NQ'
-      AND ts_event BETWEEN %s AND %s
-      AND EXTRACT(HOUR FROM ts_event AT TIME ZONE 'America/New_York') * 60
-        + EXTRACT(MINUTE FROM ts_event AT TIME ZONE 'America/New_York')
-        BETWEEN 570 AND 960
-    ORDER BY ts_event
-""", conn, params=("2026-04-01", "2026-04-08"))
-
-# 1-minute OHLCV bars
-df = pd.read_sql("""
-    SELECT ts, open, high, low, close, volume
-    FROM bars_1min
-    WHERE ts BETWEEN %s AND %s
-    ORDER BY ts
-""", conn, params=("2026-04-01", "2026-04-08"))
-
-# Latest price
-cur = conn.cursor()
-cur.execute("SELECT price FROM ticks ORDER BY ts_event DESC LIMIT 1")
-price = cur.fetchone()[0]
-```
 
 ---
 

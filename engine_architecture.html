@@ -118,7 +118,7 @@
 <header>
   <h1>Rithmic Engine Architecture</h1>
   <span>MNQ / ORB Strategy</span>
-  <span style="background:#2e2a1a;border-color:#d29922;color:#d29922;" title="Updated 2026-05-02: Hermes loop, 20-check audit daemon, new preflight gates, crash-safe session write">v4 · 2026-05-02</span>
+  <span style="background:#2e2a1a;border-color:#d29922;color:#d29922;" title="Updated 2026-05-02: Hermes loop, 17-check audit daemon, new preflight gates, crash-safe session write">v4 · 2026-05-02</span>
   <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">systemd ✓</span>
   <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">order-flow ✓</span>
   <span style="background:#0d2818;border-color:#3fb950;color:#3fb950;">alerts ✓</span>
@@ -186,7 +186,7 @@ graph TB
         end
 
         subgraph AUDIT ["audit_daemon.py  (Python) · 24/7"]
-            AD["AuditDaemon\n20 checks / 2-10 min adaptive"]
+            AD["AuditDaemon\n17 checks / 2-10 min adaptive"]
             ESCOV["EscalationEngine\nWARN→ERROR→CRITICAL\nstate persisted to escalation_state.json"]
             AH["data/AUDIT_HALT\nsentinel file"]
         end
@@ -269,7 +269,7 @@ flowchart TD
     TESTS --> MYPY["mypy\nlive_trader.py · models.py\ngo_live.py · audit_daemon.py\nstrategy/features.py"]
     MYPY --> RUFF["ruff check\n--select=F,E7,E9,W6\n--exclude=build"]
     RUFF --> AUDIT_FULL{"--fast flag?"}
-    AUDIT_FULL -->|"no (full)"| AUDIT["audit_daemon.py --once\n20 checks"]
+    AUDIT_FULL -->|"no (full)"| AUDIT["audit_daemon --once\n17 checks"]
     AUDIT_FULL -->|"yes (fast)"| SKIP_AUDIT["audit + cpp skipped"]
 
     AUDIT --> FINDINGS
@@ -319,7 +319,7 @@ flowchart TD
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--text2);">
       <span style="color:var(--blue);font-family:monospace;">audit</span> (full run only) — invokes
-      <code style="color:var(--green);">audit_daemon.py --once</code> → 20 checks → PASS / FAIL / warned counts.<br>
+      <code style="color:var(--green);">audit_daemon.py --once</code> → 17 checks → PASS / FAIL / warned counts.<br>
       Output: <code style="color:var(--blue);">data/hermes_findings.json</code> (machine-readable for the Hermes agent)
       + <code style="color:var(--blue);">data/logs/hermes_session.log</code> (timestamped history).
     </div>
@@ -621,7 +621,7 @@ flowchart LR
 flowchart TD
     LOAD["_load_live_config()\nlive_config.json"] --> C1
 
-    subgraph CHECKS ["20 checks per cycle"]
+    subgraph CHECKS ["17 checks per cycle"]
         direction LR
         C1["data_freshness\nlast tick recency · 5min RTH / 18h off-hours / 72h weekend"]
         C2["rejection_rate\nquality_metrics rejection_rate_pct"]
@@ -1532,7 +1532,7 @@ graph LR
   &nbsp;·&nbsp; <span style="color:var(--green);">systemd enabled</span>
   &nbsp;·&nbsp; <span style="color:var(--green);">order-flow features live</span>
   &nbsp;·&nbsp; <span style="color:var(--green);">Slack alerts wired</span>
-  &nbsp;·&nbsp; <span style="color:var(--purple);">24/7 audit daemon · 20 checks</span>
+  &nbsp;·&nbsp; <span style="color:var(--purple);">24/7 audit daemon · 17 checks</span>
   &nbsp;·&nbsp; <span style="color:var(--purple);">escalation engine</span>
   &nbsp;·&nbsp; <span style="color:var(--blue);">Hermes loop</span>
   &nbsp;·&nbsp; <span style="color:var(--blue);">14-gate preflight</span>

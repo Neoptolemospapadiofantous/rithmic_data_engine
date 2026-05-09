@@ -11,6 +11,27 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-09 — Hermes codebase cleanup + doc refresh
+
+### Removed
+- **Dead callback machinery**: `OrderModifyCallback`, `modify_cb_`, `set_modify_callback()`,
+  and `send_modify_order()` — the modify path was registered but never invoked; the executor
+  uses cancel+resubmit instead. Removed from `order_manager.hpp`, `executor_main.cpp`, and both test fixtures.
+- **Unused variable**: `constexpr int OFFSET = 20` in `executor_main.cpp` (shadowed by `UNWIND_OFFSET_TICKS`).
+- **15 stale files**: old audit fragments (`docs/audit_gap_T{1,2,3}.md`, `AUDIT_GAP_REPORT.md`,
+  `audit_gap_coordinator.md`), superseded deploy files (`deploy/nq_executor.service`, `deploy/update.sh`),
+  archived configs (`config/legends_config.json`, `config/archived/tradeify_config.json`),
+  orphaned scripts (`backup_pg.sh`, `cpp_build_check.sh`, `migrate_account_label.sql`, `validate-remote.sh`),
+  stale docs (`docs/architecture.html`), untracked artefacts (`ticks.wal`, `rithmic.duckdb`, two `.docx` playbooks).
+
+### Docs
+- **RUNBOOK.md**: Full rewrite — Python-era workflow replaced with C++ operator procedures.
+- **DATA.md**: Fixed unique index definition (5-column, not 3); removed Python psycopg2 example; updated file layout.
+- **CLAUDE.md**: Fixed key files table (removed deleted `nq_executor.service`, added `nq_executor_24x7@.service`); removed "never push mid-session" rule.
+- **engine_architecture.html**: Corrected audit check count (20 → 17 everywhere).
+
+---
+
 ## 2026-05-04 — Hermes iteration 36 — dry-run full ORB cycle verified + FORCED_LOGOUT root cause fixed
 
 ### Fixed

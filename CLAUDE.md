@@ -68,8 +68,8 @@ If tests break because of your changes: fix the code OR add tests that cover the
 | `src/db.cpp` | PostgreSQL I/O (libpq) |
 | `src/collector.cpp` | Tick collector pipeline |
 | `config/live_config.json` | Runtime config (do not edit) |
-| `deploy/nq_executor.service` | Systemd unit for Oracle production |
-| `deploy/nq_executor@.service` | Systemd template unit |
+| `deploy/nq_executor@.service` | Systemd template unit (RTH sessions) |
+| `deploy/nq_executor_24x7@.service` | Systemd template unit (24×7 mode) |
 
 ## Oracle deployment
 
