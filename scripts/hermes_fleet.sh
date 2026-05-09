@@ -67,20 +67,21 @@ Recent Obsidian notes (for regression context):
 ${OBSIDIAN_RECENT}
 
 ## Your mission
-1. Spawn all 4 specialist agents IN PARALLEL using the Agent tool:
+1. Spawn all 5 specialist agents IN PARALLEL using the Agent tool:
    - regression-watcher
    - code-scanner
    - audit-analyst
    - test-sentinel
+   - doc-syncer
    Pass each agent the repo path: /home/theone/Desktop/rithmic_engine
 
-2. Collect all 4 reports. Synthesize into a priority list:
+2. Collect all 5 reports. Synthesize into a priority list:
    CRITICAL → fix now
    HIGH     → fix now if < 30 min
    MEDIUM   → create Obsidian task note
    LOW      → note only
 
-3. For each CRITICAL or HIGH confirmed issue:
+3. For each CRITICAL or HIGH confirmed issue (code OR docs):
    - Fix it (edit the relevant file)
    - Do NOT touch: src/execution/orb_strategy.hpp, config/live_config.json
    - After ALL fixes: run make hermes to verify still green
@@ -93,7 +94,7 @@ ${OBSIDIAN_RECENT}
    date: <today>
    type: fleet
    overall: <final hermes status>
-   agents: [regression-watcher, code-scanner, audit-analyst, test-sentinel]
+   agents: [regression-watcher, code-scanner, audit-analyst, test-sentinel, doc-syncer]
    tags: [hermes, fleet, <pass/warn/fail>]
    ---
    # Fleet Run — <datetime>
@@ -117,7 +118,7 @@ ${OBSIDIAN_RECENT}
 
 # ── 4. Launch the fleet ────────────────────────────────────────────────────────
 log "=== LAUNCHING FLEET ==="
-log "Agents: regression-watcher | code-scanner | audit-analyst | test-sentinel"
+log "Agents: regression-watcher | code-scanner | audit-analyst | test-sentinel | doc-syncer"
 
 claude --print \
   --dangerously-skip-permissions \

@@ -26,6 +26,7 @@ make hermes-fleet    ← launches 4 specialist agents in parallel, coordinator s
 | `code-scanner` | Scans C++ files changed in last 5 commits for quality issues and coverage gaps |
 | `audit-analyst` | Deep-reads all 17 audit checks, flags thresholds approaching limits |
 | `test-sentinel` | Verifies test coverage for recently changed execution layer code |
+| `doc-syncer` | Audits CLAUDE.md, CHANGES.md, DATA.md, RUNBOOK.md, Obsidian decisions — fixes stale content and adds missing entries |
 
 After agents report: coordinator fixes CRITICAL/HIGH issues, re-runs hermes, writes fleet note to Obsidian.
 Agent prompts live in `scripts/fleet_agents.json`.

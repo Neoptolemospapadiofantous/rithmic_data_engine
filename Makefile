@@ -1,4 +1,4 @@
-.PHONY: build test hermes hermes-fast hermes-note hermes-fleet obsidian-daily obsidian-session push-eod deploy deploy-dry clean
+.PHONY: build test hermes hermes-fast hermes-note hermes-fleet hermes-fleet-fast hermes-lifecycle obsidian-daily obsidian-session push-eod deploy deploy-dry clean
 
 BUILD_DIR := build
 JOBS      := $(shell nproc)
@@ -46,6 +46,18 @@ hermes-fleet:
 # Fast fleet (skips DB test in baseline hermes run).
 hermes-fleet-fast:
 	@bash scripts/hermes_fleet.sh --fast
+
+# Time-aware lifecycle loop: auto-selects phase (PRE_MARKET/SESSION/POST_SESSION/OVERNIGHT).
+hermes-lifecycle:
+	@bash scripts/hermes_lifecycle.sh
+
+# Single lifecycle cycle (for testing — does not loop).
+hermes-lifecycle-once:
+	@bash scripts/hermes_lifecycle.sh --once
+
+# Lifecycle without git push or make deploy (safe for local dev).
+hermes-lifecycle-local:
+	@bash scripts/hermes_lifecycle.sh --no-deploy
 
 # Regenerate today's daily digest note in Obsidian.
 obsidian-daily:

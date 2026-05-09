@@ -11,6 +11,35 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-05-09 — Hermes full lifecycle + multi-agent fleet
+
+### Added
+- **Hermes lifecycle** (`scripts/hermes_lifecycle.sh`): time-aware CI loop with 4 phases keyed to
+  Eastern market hours — PRE_MARKET (fleet + deploy), PRE_SESSION (fast + Oracle health),
+  SESSION (fast every 30 min, no deploy), POST_SESSION (fleet + session post-mortem + push),
+  OVERNIGHT (fast every 90 min). Makefile targets: `hermes-lifecycle`, `hermes-lifecycle-once`,
+  `hermes-lifecycle-local`.
+- **`doc-syncer` fleet agent**: 5th specialist agent that audits all docs (CLAUDE.md, CHANGES.md,
+  DATA.md, RUNBOOK.md) and Obsidian decisions against current code, fixes stale content, and
+  creates missing decision notes automatically on every fleet run.
+- **Obsidian vault** (`~/obsidian/rithmic/`): full vault setup with `.obsidian/` config (core
+  plugins, daily notes, graph colors), templates (daily, session, decision), pre-seeded decision
+  notes (simulator route, trail_be_offset, cancel+resubmit), and daily digest auto-generation.
+- **`scripts/obsidian_daily.sh`**: generates/updates daily digest note aggregating all hermes runs
+  and open audit warnings for the day.
+- **`scripts/obsidian_session.sh`**: pulls trade data from PostgreSQL and writes a session
+  post-mortem note. Accepts optional `DATE=YYYY-MM-DD` argument.
+- **Makefile targets**: `hermes-note`, `hermes-fleet`, `hermes-fleet-fast`, `hermes-lifecycle`,
+  `hermes-lifecycle-once`, `hermes-lifecycle-local`, `obsidian-daily`, `obsidian-session`.
+- **Weekly digest**: lifecycle generates `daily/week-YYYY-WW.md` automatically on Fridays
+  post-session with hermes health stats and session P&L summary.
+
+### Removed
+- ncurses dashboard (`src/dashboard.cpp`, `find_package(Curses REQUIRED)`) — UI lives in
+  `bot/frontend` (Next.js). Removing also drops ncurses as a hard build dependency on Oracle.
+
+---
+
 ## 2026-05-09 — Hermes codebase cleanup + doc refresh
 
 ### Removed
