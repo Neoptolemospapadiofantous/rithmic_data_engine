@@ -38,11 +38,12 @@ et_hour_min() {
 phase() {
   local hm
   hm=$(et_hour_min)
-  if   [[ $hm -lt 920  ]]; then echo "PRE_MARKET"
-  elif [[ $hm -lt 930  ]]; then echo "PRE_SESSION"
-  elif [[ $hm -lt 1605 ]]; then echo "SESSION"
-  elif [[ $hm -lt 1700 ]]; then echo "POST_SESSION"
-  else                           echo "OVERNIGHT"
+  local n=$((10#$hm))  # force base-10 — leading zeros would be parsed as octal otherwise
+  if   [[ $n -lt 920  ]]; then echo "PRE_MARKET"
+  elif [[ $n -lt 930  ]]; then echo "PRE_SESSION"
+  elif [[ $n -lt 1605 ]]; then echo "SESSION"
+  elif [[ $n -lt 1700 ]]; then echo "POST_SESSION"
+  else                          echo "OVERNIGHT"
   fi
 }
 
