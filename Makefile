@@ -1,4 +1,4 @@
-.PHONY: build test hermes hermes-fast hermes-note obsidian-daily obsidian-session push-eod deploy deploy-dry clean
+.PHONY: build test hermes hermes-fast hermes-note hermes-fleet obsidian-daily obsidian-session push-eod deploy deploy-dry clean
 
 BUILD_DIR := build
 JOBS      := $(shell nproc)
@@ -38,6 +38,14 @@ hermes-note:
 	@bash scripts/hermes.sh && bash scripts/obsidian_note.sh || \
 	  (bash scripts/obsidian_note.sh && exit 1)
 	@bash scripts/obsidian_daily.sh
+
+# Full multi-agent fleet: 4 specialist agents analyse in parallel, coordinator fixes + writes enriched Obsidian note.
+hermes-fleet:
+	@bash scripts/hermes_fleet.sh
+
+# Fast fleet (skips DB test in baseline hermes run).
+hermes-fleet-fast:
+	@bash scripts/hermes_fleet.sh --fast
 
 # Regenerate today's daily digest note in Obsidian.
 obsidian-daily:

@@ -14,6 +14,22 @@ repeat
 make push-eod        ← end of day, only when fully green
 ```
 
+## Fleet Mode (multi-agent)
+
+```
+make hermes-fleet    ← launches 4 specialist agents in parallel, coordinator synthesizes + fixes
+```
+
+| Agent | Scope |
+|---|---|
+| `regression-watcher` | Compares current run vs last 7 Obsidian hermes notes — flags new/recurring failures |
+| `code-scanner` | Scans C++ files changed in last 5 commits for quality issues and coverage gaps |
+| `audit-analyst` | Deep-reads all 17 audit checks, flags thresholds approaching limits |
+| `test-sentinel` | Verifies test coverage for recently changed execution layer code |
+
+After agents report: coordinator fixes CRITICAL/HIGH issues, re-runs hermes, writes fleet note to Obsidian.
+Agent prompts live in `scripts/fleet_agents.json`.
+
 ## Stack
 Everything is C++. There is no Python in this project.
 
