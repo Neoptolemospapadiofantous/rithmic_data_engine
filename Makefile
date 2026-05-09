@@ -1,4 +1,4 @@
-.PHONY: build test hermes hermes-fast push-eod deploy deploy-dry clean
+.PHONY: build test hermes hermes-fast hermes-note push-eod deploy deploy-dry clean
 
 BUILD_DIR := build
 JOBS      := $(shell nproc)
@@ -32,6 +32,11 @@ hermes:
 # Fast check: unit tests only, skip DB test.
 hermes-fast:
 	@bash scripts/hermes.sh --fast
+
+# Run hermes then write a note to the Obsidian vault.
+hermes-note:
+	@bash scripts/hermes.sh && bash scripts/obsidian_note.sh || \
+	  (bash scripts/obsidian_note.sh && exit 1)
 
 # ── End-of-day push ────────────────────────────────────────────────────────────
 push-eod:
