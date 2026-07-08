@@ -3,7 +3,7 @@
   "dry_run": false,
   "environment": "legends",
   "symbol": "MNQ",
-  "trade_contract": "MNQM6",
+  "trade_contract": "MNQU6",
   "exchange": "CME",
   "point_value": 2.0,
   "starting_balance": 50134.08,

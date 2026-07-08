@@ -149,8 +149,8 @@ while true; do
                 log "Cycle alive: ${ELAPSED}s elapsed — ${REMAINING}s until forced restart (no trade yet)"
             fi
         done
-        wait "$EXEC_PID" 2>/dev/null || true
-        EXIT_CODE=$?
+        EXIT_CODE=0
+        wait "$EXEC_PID" 2>/dev/null || EXIT_CODE=$?
 
         if [[ $EXIT_CODE -eq 124 ]]; then
             log "Cycle timed out after ${CYCLE_TIMEOUT}s (no trades or stuck) — forcing next cycle"

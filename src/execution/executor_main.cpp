@@ -817,7 +817,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         tr.fcm_id().c_str(), tr.ib_id().c_str(),
                         tr.rp_code().empty() ? "" : tr.rp_code(0).c_str());
                     if (tr.exchange() == orb_cfg.exchange && !tr.trade_route().empty()) {
-                        if (!route_found || tr.is_default()) {
+                        // NEVER adopt "Rithmic Order Routing" — on Legends accounts it
+                        // silently cancels every order (rp_code=1043, notify_type=15,
+                        // total_fill=0; order never reaches the exchange).
+                        if (tr.trade_route() == "Rithmic Order Routing") {
+                            LOG("[ORDER_PLANT] Ignoring forbidden route 'Rithmic Order Routing' "
+                                "(silent-cancel route on Legends) — keeping '%s'",
+                                order_plant->trade_route.c_str());
+                        } else if (!route_found || tr.is_default()) {
                             order_plant->trade_route = tr.trade_route();
                             route_found = true;
                         }
@@ -871,6 +878,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             } catch (std::exception& e) {
                 if (!g_running) co_return;
                 LOG("[EXECUTOR] ORDER_PLANT read error: %s — triggering full reconnect", e.what());
+                // Capture position state HERE: ioc_ref.stop() destroys the suspended
+                // run_executor frame, so the normal capture after md_loop never runs.
+                // Without this, a reconnect while LONG/SHORT starts the next cycle
+                // believing FLAT and both reconciliation paths are skipped.
+                carried_pos = order_mgr.position_snapshot();
                 ioc_ref.stop();  // kill md_loop and all timers → outer loop reconnects
                 co_return;
             }
@@ -1009,7 +1021,18 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
                 // Legends routing delivers fills as COMPLETE (15) on tid=351 rather than
                 // ExchangeOrderNotification (352). Detect by total_fill_size > 0.
-                if (notif.total_fill_size() > 0 && notif.avg_fill_price() > 0.0) {
+                if (notif.total_fill_size() > 0) {
+                    // Legends can deliver a COMPLETE fill with avg_fill_price=0 but a
+                    // valid price field. Dropping those (old guard required avg_fill>0)
+                    // left order_mgr stuck LONG/SHORT after a real close — fall back
+                    // price → last traded price instead of dropping the fill.
+                    double fill_px = notif.avg_fill_price() > 0.0 ? notif.avg_fill_price()
+                                   : (notif.price() > 0.0 ? notif.price()
+                                                          : strategy.last_price());
+                    if (notif.avg_fill_price() <= 0.0)
+                        LOG("[EXECUTOR] WARN: tid=351 fill with avg_fill=0 basket=%s "
+                            "user_tag=%s — using fallback px=%.2f",
+                            notif.basket_id().c_str(), notif.user_tag().c_str(), fill_px);
                     // qty=7 (or any qty > cfg_.qty) on a fill we didn't send means Rithmic
                     // is delivering order notifications for another account on this session.
                     if (notif.total_fill_size() > orb_cfg.qty) {
@@ -1017,7 +1040,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             "— possible multi-account notification basket=%s px=%.2f "
                             "acct=%s user_tag=%s",
                             notif.total_fill_size(), orb_cfg.qty,
-                            notif.basket_id().c_str(), notif.avg_fill_price(),
+                            notif.basket_id().c_str(), fill_px,
                             notif.account_id().c_str(), notif.user_tag().c_str());
                     }
                     const std::string& client_id = notif.user_tag();
@@ -1025,12 +1048,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     bool is_stop  = order_mgr.is_stop_basket(client_id);
                     bool is_exit  = order_mgr.is_exit_basket(client_id);
                     if (is_entry || is_stop || is_exit) {
-                        LOG("[EXECUTOR] tid=351 fill detected: client=%s avg_fill=%.2f qty=%d "
+                        LOG("[EXECUTOR] tid=351 fill detected: client=%s px=%.2f qty=%d "
                             "entry=%d stop=%d exit=%d",
-                            client_id.c_str(), notif.avg_fill_price(),
+                            client_id.c_str(), fill_px,
                             notif.total_fill_size(), (int)is_entry, (int)is_stop, (int)is_exit);
                         order_mgr.on_fill_notification(client_id,
-                                                       notif.avg_fill_price(),
+                                                       fill_px,
                                                        notif.total_fill_size(),
                                                        is_entry && !is_stop);
                         flush_position(db.get(), today, order_mgr, strategy,
@@ -1592,12 +1615,19 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     }
                 } else if (wsnap.state == PosState::PENDING_EXIT) {
                     trail_snapshot_counter = 0;  // exiting — reset trail snapshot counter
-                    if (held >= 10 && held % 10 == 0)
+                    if (held >= 10 && held % 10 == 0) {
                         LOG("[EXECUTOR] CRITICAL: PENDING_EXIT for %lds — exit fill delayed "
                             "basket=%s entry=%.2f reason=%s px=%.2f",
                             (long)held, wsnap.basket_id_exit.c_str(),
                             wsnap.entry_price, wsnap.exit_reason.c_str(),
                             strategy.last_price());
+                        // Re-drive the exit: the protective stop was already cancelled
+                        // when the exit was initiated, so a resting unfilled exit limit
+                        // means the position is naked. Cancel it and re-send at the
+                        // current price instead of waiting forever.
+                        if (!orb_cfg.dry_run)
+                            order_mgr.retry_stuck_exit(strategy.last_price());
+                    }
                 } else {
                     trail_snapshot_counter = 0;  // FLAT — reset trail snapshot counter
                 }

@@ -1628,6 +1628,85 @@ TEST(server_id_persisted_on_trail_cancel) {
     ASSERT(found);
 }
 
+TEST(exit_send_failure_reverts_to_position_and_restores_stop) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 20000.0, "orb_breakout");
+    sim_entry_fill(f, 20000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // Exit send fails (WS down): must NOT stay PENDING_EXIT with no stop —
+    // revert to LONG and resubmit the protective stop (which also fails here,
+    // so the software SL takes over via the empty stop basket).
+    f.send_ok = false;
+    f.om.flatten_now("eod_flatten", 20005.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    ASSERT(f.om.position_snapshot().basket_id_exit.empty());
+
+    // Link recovers: software SL (tier 1 — no exchange stop) drives the exit.
+    f.send_ok = true;
+    f.om.check_trail_and_stop(19989.0);  // below sl = 20000 - 10
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    auto snap = f.om.position_snapshot();
+    ASSERT(!snap.basket_id_exit.empty());
+    f.om.on_fill_notification(snap.basket_id_exit, 19989.0, 1, /*is_entry_fill=*/false);
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+    Position done;
+    ASSERT(f.om.pop_trade_completed(done));
+}
+
+TEST(stuck_exit_retry_resends_exit_and_unwinds_late_fill) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 20000.0, "orb_breakout");
+    sim_entry_fill(f, 20000.0);
+    f.om.flatten_now("eod_flatten", 20005.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    std::string old_exit = f.om.position_snapshot().basket_id_exit;
+    ASSERT(!old_exit.empty());
+
+    // Exit limit never fills — the executor watchdog re-drives it.
+    f.om.retry_stuck_exit(20003.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    std::string new_exit = f.om.position_snapshot().basket_id_exit;
+    ASSERT(!new_exit.empty());
+    ASSERT(new_exit != old_exit);
+    bool old_cancelled = false;
+    for (const auto& b : f.cancelled_baskets)
+        if (b == old_exit) { old_cancelled = true; break; }
+    ASSERT(old_cancelled);
+
+    // New exit fills → trade completes.
+    f.om.on_fill_notification(new_exit, 20003.0, 1, /*is_entry_fill=*/false);
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+    Position done;
+    ASSERT(f.om.pop_trade_completed(done));
+
+    // The old exit (SELL, closing a LONG) fills late while FLAT: must be
+    // unwound with a BUY, not treated as a ghost fill that halts entries.
+    size_t sends_before = f.sent_baskets.size();
+    f.om.on_fill_notification(old_exit, 20002.0, 1, /*is_entry_fill=*/false);
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before + 1);  // unwind order sent
+    ASSERT(!f.om.is_entry_halted());
+}
+
+TEST(late_stop_fire_cleans_server_reverse_map) {
+    Fixture f;
+    // Seeded from DB at startup: a stop whose cancel was sent but never ACKed,
+    // with the server basket ID mapped.
+    f.om.seed_cancelled_stops("OLD-STOP", /*was_buy_stop=*/false);
+    f.om.seed_server_stop_cancel("SRV-9", "OLD-STOP");
+    ASSERT_EQ(f.om.unconfirmed_server_cancels(), 1);
+
+    // The stop fires late while FLAT: an unwind must be sent AND the server
+    // reverse-map entry must drain — otherwise the 30s background recancel
+    // re-sends cancels for an already-filled order forever.
+    size_t sends_before = f.sent_baskets.size();
+    f.om.on_fill_notification("OLD-STOP", 19950.0, 1, /*is_entry_fill=*/false);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before + 1);  // unwind sent
+    ASSERT_EQ(f.om.unconfirmed_server_cancels(), 0);
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -1685,6 +1764,9 @@ int main() {
     RUN(stop_removed_from_db_on_natural_fire);
     RUN(flat_purge_keeps_db_entry_for_in_flight_cancel);
     RUN(server_id_persisted_on_trail_cancel);
+    RUN(exit_send_failure_reverts_to_position_and_restores_stop);
+    RUN(stuck_exit_retry_resends_exit_and_unwinds_late_fill);
+    RUN(late_stop_fire_cleans_server_reverse_map);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

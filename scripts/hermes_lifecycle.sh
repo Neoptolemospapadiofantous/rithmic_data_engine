@@ -79,6 +79,23 @@ oracle_health() {
   fi
 }
 
+# ── Findings reader (freshness-gated) ─────────────────────────────────────────
+# Prints the overall status only when the findings file is <2h old; otherwise
+# STALE. A hermes run that dies before writing findings must not leave an old
+# PASS gating deploys/pushes.
+findings_overall() {
+  python3 - "$REPO/data/hermes_findings.json" <<'PYEOF'
+import json, sys, datetime
+try:
+    d = json.load(open(sys.argv[1]))
+    ts = datetime.datetime.fromisoformat(d["ts"].replace("Z", "+00:00"))
+    age = (datetime.datetime.now(datetime.timezone.utc) - ts).total_seconds()
+    print(d.get("overall", "UNKNOWN") if age < 7200 else "STALE")
+except Exception:
+    print("UNKNOWN")
+PYEOF
+}
+
 # ── Deploy gate ───────────────────────────────────────────────────────────────
 deploy_if_green() {
   if [[ $NO_DEPLOY -eq 1 ]]; then
@@ -87,7 +104,7 @@ deploy_if_green() {
   fi
 
   local overall
-  overall=$(python3 -c "import json; print(json.load(open('$REPO/data/hermes_findings.json'))['overall'])" 2>/dev/null || echo "UNKNOWN")
+  overall=$(findings_overall)
 
   if [[ "$overall" == "PASS" ]]; then
     log "Hermes PASS — deploying to Oracle"
@@ -108,7 +125,7 @@ push_if_green() {
   fi
 
   local overall
-  overall=$(python3 -c "import json; print(json.load(open('$REPO/data/hermes_findings.json'))['overall'])" 2>/dev/null || echo "UNKNOWN")
+  overall=$(findings_overall)
 
   if [[ "$overall" == "PASS" ]]; then
     local changes
@@ -240,7 +257,7 @@ run_cycle() {
       cd "$REPO" && make hermes-fast 2>&1 | tail -5
       # Only write Obsidian note if something changed
       local overall
-      overall=$(python3 -c "import json; print(json.load(open('$REPO/data/hermes_findings.json'))['overall'])" 2>/dev/null || echo "UNKNOWN")
+      overall=$(findings_overall)
       if [[ "$overall" != "PASS" ]]; then
         bash "$REPO/scripts/obsidian_note.sh" "Overnight check: $overall" 2>/dev/null || true
         bash "$REPO/scripts/obsidian_daily.sh" 2>/dev/null || true
@@ -259,7 +276,6 @@ while true; do
 
   [[ $ONCE -eq 1 ]] && { log "--once: exiting"; exit 0; }
 
-  local secs
   secs=$(sleep_seconds)
   log "Sleeping ${secs}s until next cycle (phase=$(phase))"
   sleep "$secs"

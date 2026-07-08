@@ -2,7 +2,7 @@
   "_comment": "Legends live prop firm overrides \u2014 applied by scripts/use_env.py",
   "dry_run": true,
   "symbol": "MES",
-  "trade_contract": "MESM6",
+  "trade_contract": "MESU6",
   "exchange": "CME",
   "point_value": 5.0,
   "account_id": "LTARAPAPA503900216181",

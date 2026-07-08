@@ -379,23 +379,25 @@ public:
         }
     }
 
-    // ── Read current position state from DB (for startup reconciliation) ────────
-    // Returns 'FLAT' if no row exists for today (first ever run or new day).
-    std::string read_position_state(const std::string& session_date) {
+    // ── Read latest position state from DB (for startup reconciliation) ────────
+    // Uses the MOST RECENT row regardless of session_date: a crash while holding
+    // a position followed by a restart on the next calendar day must still see
+    // the stale LONG/SHORT row — scoping to today's date silently bypassed the
+    // startup safety halt. Returns 'FLAT' if no row exists at all.
+    std::string read_position_state(const std::string& /*session_date*/) {
         if (!is_connected()) { reconnect(); if (!is_connected()) return "FLAT"; }
 
-        const char* params[4] = {
+        const char* params[3] = {
             account_label_.c_str(),  // $1
-            session_date.c_str(),    // $2
-            instrument_.c_str(),     // $3
-            strategy_.c_str()        // $4
+            instrument_.c_str(),     // $2
+            strategy_.c_str()        // $3
         };
 
         PGresult* res = exec_params_query(
             "SELECT state FROM live_position"
-            " WHERE account_label=$1 AND session_date=$2::date"
-            "   AND instrument=$3 AND strategy=$4 LIMIT 1",
-            4, params);
+            " WHERE account_label=$1 AND instrument=$2 AND strategy=$3"
+            " ORDER BY session_date DESC LIMIT 1",
+            3, params);
         if (!res) return "FLAT";
         std::string state = "FLAT";
         if (PQntuples(res) > 0) {

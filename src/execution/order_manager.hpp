@@ -343,6 +343,7 @@ public:
                         basket_id.c_str(), fill_price, unwind_is_buy ? "BUY" : "SELL");
                     last_stop_for_unwind_.clear();
                     cancelled_stops_.erase(basket_id);  // remove from guard too
+                    erase_server_cancel_for_client_locked(basket_id);
                     if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
                     if (order_cb_) {
                         std::string basket = new_basket_id();
@@ -379,6 +380,7 @@ public:
                         // A stop we cancelled fired anyway — exchange didn't cancel in time.
                         bool unwind_is_buy = !it->second;
                         cancelled_stops_.erase(it);
+                        erase_server_cancel_for_client_locked(basket_id);
                         if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
                         LOG("[OM] CANCELLED-STOP-FIRED: basket=%s px=%.2f state=FLAT "
                             "— sending unwind %s (pending_cancelled now=%zu)",
@@ -503,12 +505,7 @@ public:
                 if (it != cancelled_stops_.end()) {
                     cancelled_stops_.erase(it);
                     if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
-                    // Clean reverse map too
-                    for (auto rit = server_to_client_cancelled_.begin();
-                         rit != server_to_client_cancelled_.end(); ) {
-                        if (rit->second == basket_id) rit = server_to_client_cancelled_.erase(rit);
-                        else ++rit;
-                    }
+                    erase_server_cancel_for_client_locked(basket_id);
                     LOG("[OM] Cleaned stale cancelled_stop basket=%s on exit fill "
                         "(pending_cancelled now=%zu)", basket_id.c_str(), cancelled_stops_.size());
                 }
@@ -747,6 +744,38 @@ public:
             return;
         }
         initiate_exit_locked(reason, price);
+    }
+
+    // ── Re-drive a stuck PENDING_EXIT ─────────────────────────────────────────
+    // The protective stop is cancelled before the exit limit is submitted, so an
+    // exit limit that never fills leaves a naked position parked in PENDING_EXIT
+    // with the software SL disabled. Called by the executor watchdog: cancel the
+    // resting exit order and submit a fresh aggressive limit at the current price.
+    // The old exit basket goes into cancelled_stops_ so a late fill after FLAT is
+    // unwound like a cancelled stop firing late.
+    void retry_stuck_exit(double current_price) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (pos_.state != PosState::PENDING_EXIT) return;
+        if (cfg_.dry_run) return;  // dry-run exits fill synchronously — never stuck
+        bool exit_was_buy = (pos_.direction == OrbSignal::SELL);
+        std::string old_basket = pos_.basket_id_exit;
+        LOG("[OM] STUCK-EXIT RETRY: cancelling exit basket=%s, re-sending at px=%.2f "
+            "(reason=%s)",
+            old_basket.empty() ? "(none)" : old_basket.c_str(), current_price,
+            pos_.exit_reason.c_str());
+        if (!old_basket.empty()) {
+            if (cancel_cb_) cancel_cb_(old_basket);
+            cancelled_stops_[old_basket] = exit_was_buy;
+            if (cancel_persist_cb_) cancel_persist_cb_(old_basket, exit_was_buy);
+            // The just-cancelled exit is now the order most likely to late-fill
+            // after FLAT (the flat purge clears cancelled_stops_, but the
+            // single-slot unwind guard survives until clear_post_close_recancels).
+            last_stop_for_unwind_ = old_basket;
+            last_stop_was_buy_    = exit_was_buy;
+        }
+        pos_.basket_id_exit.clear();
+        pos_.state = (pos_.direction == OrbSignal::BUY) ? PosState::LONG : PosState::SHORT;
+        initiate_exit_locked("stuck_exit_retry", current_price);
     }
 
     // ── Reject notification (entry rejected by exchange) ─────────────────────
@@ -1195,7 +1224,35 @@ private:
         bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
                              pos_.qty, /*LIMIT=1*/1, exit_is_buy, limit_px, reason);
         if (!ok) {
-            LOG("[OM] ERROR: exit order_cb_ returned false basket=%s", basket.c_str());
+            // Send failed (WS down / serialization error). The stop was already
+            // cancelled above — staying in PENDING_EXIT would leave the position
+            // naked with the software SL dead. Revert to LONG/SHORT and restore
+            // the exchange stop; the software SL / watchdog will retry the exit.
+            LOG("[OM] ERROR: exit order_cb_ returned false basket=%s — reverting to %s "
+                "and restoring protective stop",
+                basket.c_str(), pos_.direction == OrbSignal::BUY ? "LONG" : "SHORT");
+            pos_.basket_id_exit.clear();
+            pos_.state = (pos_.direction == OrbSignal::BUY)
+                         ? PosState::LONG : PosState::SHORT;
+            ++rejected_exit_count_;
+            if (rejected_exit_count_ > 3) {
+                LOG("[OM] CRITICAL: exit send failed %d times — halting new entries. "
+                    "Manual intervention required.", rejected_exit_count_);
+                entry_halted_ = true;
+            }
+            submit_stop_order_locked(pos_.sl_price);
+        }
+    }
+
+    // Erase any server→client reverse-map entries pointing at client basket_id.
+    // Must be called whenever a cancelled stop is resolved by a FILL rather than
+    // a cancel ACK — otherwise unconfirmed_server_cancels() never drains and the
+    // 30s background recancel re-sends cancels for an already-filled order forever.
+    void erase_server_cancel_for_client_locked(const std::string& client_id) {
+        for (auto it = server_to_client_cancelled_.begin();
+             it != server_to_client_cancelled_.end(); ) {
+            if (it->second == client_id) it = server_to_client_cancelled_.erase(it);
+            else ++it;
         }
     }
 };

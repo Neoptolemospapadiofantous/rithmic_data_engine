@@ -119,14 +119,19 @@ deploy:
 		cp -f scripts/run_continuous.sh /home/opc/rithmic_engine/scripts/run_continuous.sh 2>/dev/null || true; \
 		sudo systemctl disable nq_executor.service 2>/dev/null || true; \
 		sudo systemctl daemon-reload; \
-		route=$$(python3 -c "import json; print(json.load(open(\"config/live_config.json\")).get(\"trade_route\",\"\"))" 2>/dev/null || echo ""); \
-		if [[ "$$route" == "Rithmic Order Routing" ]]; then \
-			echo "ERROR: live_config.json trade_route is \"Rithmic Order Routing\" — aborting deploy"; \
+		route=$$(python3 -c "import json; print(json.load(open(\"config/live_config.json\")).get(\"trade_route\",\"\"))") || { echo "ERROR: cannot read trade_route from live_config.json — aborting deploy (fail closed)"; exit 1; }; \
+		if [[ "$$route" != "simulator" ]]; then \
+			echo "ERROR: live_config.json trade_route=\"$$route\" (Legends requires \"simulator\") — aborting deploy"; \
+			exit 1; \
+		fi; \
+		bad=$$(grep -l "Rithmic Order Routing" config/*_config.json config/live_config.json 2>/dev/null || true); \
+		if [[ -n "$$bad" ]]; then \
+			echo "ERROR: forbidden route \"Rithmic Order Routing\" found in: $$bad — aborting deploy"; \
 			exit 1; \
 		fi; \
 		PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic \
 			-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='"'"'rithmic_user'"'"' AND state='"'"'idle in transaction'"'"' AND pid != pg_backend_pid();" 2>/dev/null || true; \
-		for svc in rithmic-engine "nq_executor-24x7@legends"; do \
+		for svc in rithmic-engine "nq_executor@RTH" "nq_executor@legends" "nq_executor-24x7@legends" "nq_executor-24x7@tradeify"; do \
 			if systemctl is-active "$$svc" 2>/dev/null | grep -q "^active$$"; then \
 				echo "Restarting $$svc..."; \
 				sudo systemctl restart "$$svc"; \
