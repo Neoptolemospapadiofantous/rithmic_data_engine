@@ -11,6 +11,91 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-09-19 — Paper fleet engine + MTF scalper port + collector heartbeat fix
+
+### Added
+- **Paper fleet** (`src/paper/`): local paper-trading engine running 20+ strategies
+  (ORB variants + MTF scalpers) on a single account, fed by the PG tick stream — no
+  per-strategy Rithmic sessions. Tables `paper_strategies/paper_positions/paper_trades/
+  paper_daily/paper_account` (`migrations/007_paper_fleet.sql`), NOTIFY channel
+  `paper_update`, config `config/paper_fleet.json`. Two broker modes: ORB-style exits
+  (`paper_broker.hpp`) and strategy-driven brackets (`paper_bracket_broker.hpp`).
+- **MTF Scalper** (`src/execution/mtf_scalper_strategy.hpp` + config): C++ port of the
+  Pine v6 strategy, 33 unit tests (`tests/execution/test_mtf_scalper.cpp`). SMT filter
+  disabled (no DXY feed locally). `auto_mode_flag_fix` defaults to intended semantics.
+
+### Fixed
+- **Collector weekend death spiral** (`src/client.cpp`): `receive_loop` no longer cancels
+  the Beast read on heartbeat timeout; a sibling `link_watchdog` coroutine owns all
+  heartbeat sends and closes the socket only after 2.5× heartbeat-interval silence.
+  `LoginError` carries `rp_code` — 13 retries every 300s, other codes terminal.
+- **Paper engine correctness**: ORB strategies now receive `notify_trade_filled` (was
+  capped at 1 trade/day); bracket broker clears stale phantom exits; reversal flips
+  supported; MTF halt resets at day rollover; restart-resume flattens at entry instead
+  of feeding stale state; `MtfScalperStrategy::seed_state` added; daily-loss double
+  count and `init_bracket` ratchet fixed.
+- **`test_db` destroyed live data**: the suite created `ticks_test` then renamed it over
+  the production `ticks` table and dropped `ticks`/`audit_log` on teardown. All tests now
+  run inside an isolated `rithmic_test` schema via `options='-c search_path=rithmic_test'`
+  on the connstr, recreated fresh at start and dropped at exit; catalog queries pinned to
+  `schemaname/table_schema = 'rithmic_test'`. Verified: production row counts identical
+  before/after a full run with the live collector writing.
+- **Account mismatch**: `RITHMIC_TRADEIFY_ACCOUNT` and `RITHMIC_ENV_TRADEIFY_ORDER_ACCOUNT`
+  in `.env` pointed at `RTSL25815692164`; aligned to the real Tradeify 25K account
+  `RTU989361488` (matches `config/tradeify_config.json`).
+
+---
+
+## 2026-09-18 — Config/schema/doc drift fixes + local mode docs
+
+### Changed
+- **live_sessions primary key**: promoted from `(session_date, instrument, strategy)` to
+  `(session_date, account_label, instrument, strategy)` locally, reusing the existing
+  `live_sessions_acct_inst_strat_idx` unique index (`ADD PRIMARY KEY USING INDEX` — no table
+  rewrite, brief lock). Two accounts trading the same instrument on the same day no longer
+  collide. Migration `migrations/006_live_sessions_account_pk.sql` (idempotent `DO $$` guard)
+  added for Oracle — **not run anywhere but local**.
+- **Trade routes**: `trade_route` set to `"simulator"` in `config/MNQ_config.json`,
+  `config/MES_config.json`, `config/MYM_config.json` (was `"Rithmic Order Routing"`, the route
+  that silently cancels orders). `config/live_config.json` untouched (already `"simulator"`, frozen).
+- **`.env.tradeify1`**: added `RITHMIC_TRADEIFY1_SYSTEM="Tradeify"` and
+  `RITHMIC_TRADEIFY1_URL="wss://rprotocol-mobile.rithmic.com:443"` — executor was falling back
+  to system `LegendsTrading` + wrong URL.
+- **`audit_daemon`** (`src/audit_daemon_main.cpp`):
+  - `write_metrics` INSERT fixed to match the real schema: `quality_metrics(metric, value,
+    labels_json, ts)` (was nonexistent `labels`/`recorded_at` columns).
+  - Config checks now honor `AUDIT_CONFIG_PATH` (default `config/live_config.json` preserved).
+  - Data-freshness check queries `AUDIT_TICK_SYMBOL` (default `NQ`, matching the collector's
+    `RITHMIC_SYMBOL`) instead of hardcoded `MNQ`.
+- **Tradeify 25K config** (`config/tradeify_config.json`): `starting_balance` 25000,
+  `trailing_drawdown_cap` 1000, `daily_loss_limit` -500, `trade_contract` `MNQZ6`,
+  `trade_route` `"simulator"`, `order_env_prefix` `RITHMIC_TRADEIFY`.
+
+### Removed
+- **Legacy tables dropped locally**: `nq_trades`, `nq_session`, `nq_position` — all 0 rows,
+  superseded by `live_trades` / `live_sessions` / `live_position`; nothing wrote to them.
+
+### Docs
+- **CLAUDE.md**: new "Local mode" section — dashboard `:3000`, backend `:8080` with
+  `CPP_LOCAL=1` spawning collector + executor as `nohup` subprocesses; `deploy/*.service`
+  are Oracle-only; warning to kill local executors before Oracle failback (no cross-host
+  single-writer guard yet).
+- **RUNBOOK.md**: per-account configs throughout — `nq_executor@tradeify` /
+  `nq_executor-24x7@tradeify` (was nonexistent `nq_executor@RTH` / `nq_executor-24x7@default`);
+  dry_run edits now target `config/tradeify_config.json`, with a note that frozen
+  `config/live_config.json`'s `dry_run` is not read by any binary.
+- **DATA.md**: `ticks.source` is no longer "Always `amp_rithmic`" — provider is Tradeify now.
+- **scripts** (`hermes_lifecycle.sh`, `agents/deploy_manager.sh`, `provision_oracle.sh`):
+  default Oracle service `nq_executor@RTH` → `nq_executor@tradeify`; provisioning checklist
+  points at `config/tradeify_config.json`.
+
+### Known issues
+- `config/tradeify_config.json` and `config/tradeify1_config.json` share
+  `account_id` `RTU989361488` — two configs point at one Rithmic account. Left unchanged
+  pending a second account; do not run both executors simultaneously.
+
+---
+
 ## 2026-05-09 — Hermes full lifecycle + multi-agent fleet
 
 ### Added

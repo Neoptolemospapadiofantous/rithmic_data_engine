@@ -59,7 +59,7 @@ sleep_seconds() {
 
 # ── Oracle health check ───────────────────────────────────────────────────────
 oracle_health() {
-  local service="${1:-nq_executor@RTH}"
+  local service="${1:-nq_executor@tradeify}"
   log "Checking Oracle: $ORACLE ($service)"
   local status
   status=$(ssh -i "$SSH_KEY" -o ConnectTimeout=10 -o StrictHostKeyChecking=no \

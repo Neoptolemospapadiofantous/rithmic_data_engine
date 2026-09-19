@@ -1,17 +1,23 @@
 #pragma once
-// wal.hpp — Write-Ahead Log for crash-safe tick recovery.
+// wal.hpp — Write-Ahead Log for crash-safe batch recovery.
 //
 // Lifecycle:
-//   1. Before every DB flush: write_batch(buf)        — appends + fdatasyncs
-//   2. After successful DB write: commit()            — truncates + fdatasyncs
-//   3. On startup: replay() → vector<TickRow>         — returns any unflushed ticks
+//   1. Construct: opens the file (fd kept open for the object's lifetime)
+//      and replays any uncommitted rows into memory, once.
+//   2. Before every DB flush: write_batch(rows) — appends + fdatasyncs and
+//      adds the rows to the in-memory pending set.
+//   3. DB flush writes pending() — ALL uncommitted rows, not just the last
+//      batch — so batches from earlier failed flushes drain too.
+//   4. After a successful DB write: commit() — truncates + fdatasyncs and
+//      clears pending().
 //
-// If the process crashes between steps 1 and 2, the unflushed ticks are
-// replayed at the next start.  Duplicates are handled by the DB's
-// ON CONFLICT (symbol, exchange, ts_event) DO NOTHING clause.
+// If the process crashes between steps 2 and 4, pending rows are replayed
+// at the next start.  Duplicates are handled by the DB's ON CONFLICT
+// clauses.
 //
-// Format: one CSV line per tick, \n terminated.
-//   ts_micros,price,size,is_buy,symbol,exchange
+// Size cap: size_bytes() tracks the file size; while the DB is unreachable
+// the WAL grows without bound, so callers should alert when over_cap()
+// flips true (data is still written — the cap only drives the alert).
 //
 // Uses POSIX open/write/fdatasync for true crash safety.
 // std::ofstream flush() only reaches the kernel buffer; fdatasync() forces
@@ -23,118 +29,136 @@
 
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <fstream>
-#include <sstream>
+#include <functional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "db.hpp"
-
+template <typename Row>
 class Wal {
 public:
-    explicit Wal(const std::string& path) : path_(path) {}
+    // ToLine serializes one row to a single line (no '\n').
+    // FromLine parses one line back; returns false for malformed/partial
+    // lines (tail of file at a crash boundary).
+    using ToLine   = std::function<std::string(const Row&)>;
+    using FromLine = std::function<bool(const std::string&, Row&)>;
+
+    // Alert threshold — the WAL holding this many bytes means the DB has
+    // been down for a long time.
+    static constexpr int64_t DEFAULT_MAX_BYTES = 64LL * 1024 * 1024;  // 64 MiB
+
+    Wal(std::string path, ToLine to_line, FromLine from_line,
+        int64_t max_bytes = DEFAULT_MAX_BYTES)
+        : path_(std::move(path)),
+          to_line_(std::move(to_line)),
+          from_line_(std::move(from_line)),
+          max_bytes_(max_bytes)
+    {
+        fd_ = ::open(path_.c_str(), O_RDWR | O_CREAT | O_APPEND, 0644);
+        if (fd_ < 0)
+            throw std::runtime_error("WAL open failed: " + path_ +
+                                     " (" + std::strerror(errno) + ")");
+        replay_once();
+    }
+
+    ~Wal() { if (fd_ >= 0) ::close(fd_); }
+
+    Wal(const Wal&)            = delete;
+    Wal& operator=(const Wal&) = delete;
 
     // Append a batch to the WAL file (called before DB write).
     // Guarantees the data reaches stable storage (fdatasync) before returning.
-    void write_batch(const std::vector<TickRow>& rows) {
+    // On failure nothing is added to pending() — the caller re-queues.
+    void write_batch(const std::vector<Row>& rows) {
         if (rows.empty()) return;
 
-        // Build the entire CSV block in memory first
+        // Build the entire block in memory first
         std::string buf;
-        buf.reserve(rows.size() * 72);
+        buf.reserve(rows.size() * 96);
         for (auto& r : rows) {
-            buf += std::to_string(r.ts_micros);
-            buf += ',';
-            // Use fixed-precision to avoid locale-dependent decimal separator
-            char pbuf[32];
-            std::snprintf(pbuf, sizeof(pbuf), "%.6f", r.price);
-            buf += pbuf;
-            buf += ',';
-            buf += std::to_string(r.size);
-            buf += ',';
-            buf += (r.is_buy ? '1' : '0');
-            buf += ',';
-            buf += r.symbol;
-            buf += ',';
-            buf += r.exchange;
+            buf += to_line_(r);
             buf += '\n';
         }
-
-        int fd = ::open(path_.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
-        if (fd < 0)
-            throw std::runtime_error("WAL open failed: " + path_ +
-                                     " (" + std::strerror(errno) + ")");
 
         const char* p   = buf.data();
         std::size_t rem = buf.size();
         while (rem > 0) {
-            ssize_t n = ::write(fd, p, rem);
-            if (n < 0) {
-                ::close(fd);
+            ssize_t n = ::write(fd_, p, rem);
+            if (n < 0)
                 throw std::runtime_error(std::string("WAL write failed: ") +
                                          std::strerror(errno));
-            }
             p   += n;
             rem -= static_cast<std::size_t>(n);
         }
-        ::fdatasync(fd);   // force to stable storage
-        ::close(fd);
+        if (::fdatasync(fd_) != 0)   // force to stable storage
+            throw std::runtime_error(std::string("WAL fdatasync failed: ") +
+                                     std::strerror(errno));
+
+        pending_.insert(pending_.end(), rows.begin(), rows.end());
+        size_bytes_ += static_cast<int64_t>(buf.size());
     }
 
     // Truncate the WAL to zero after a confirmed DB write.
+    // Throws on failure — pending rows stay tracked and are retried
+    // (the DB dedups them via ON CONFLICT).
     void commit() {
-        int fd = ::open(path_.c_str(),
-                        O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        if (fd >= 0) {
-            ::fdatasync(fd);
-            ::close(fd);
-        }
-        // If open fails the file simply doesn't exist — already clean.
+        if (::ftruncate(fd_, 0) != 0)
+            throw std::runtime_error(std::string("WAL truncate failed: ") +
+                                     std::strerror(errno));
+        ::fdatasync(fd_);
+        pending_.clear();
+        size_bytes_ = 0;
     }
 
-    // Read all ticks from the WAL (called once at startup, and before each
-    // flush to catch up accumulated missed batches).
-    std::vector<TickRow> replay() const {
-        std::vector<TickRow> rows;
-        std::ifstream f(path_);
-        if (!f) return rows;   // no WAL file — nothing to replay
+    // All rows written to the WAL but not yet committed.  Replayed from
+    // disk once at construction, then tracked in memory — no per-flush
+    // file reads (previously O(n²) while the DB was down).
+    const std::vector<Row>& pending() const { return pending_; }
 
-        std::string line;
-        while (std::getline(f, line)) {
-            if (line.empty()) continue;
-            std::istringstream ss(line);
-            std::string tok;
-            TickRow r;
-            try {
-                std::getline(ss, tok, ','); r.ts_micros = std::stoll(tok);
-                std::getline(ss, tok, ','); r.price     = std::stod(tok);
-                std::getline(ss, tok, ','); r.size      = std::stoll(tok);
-                std::getline(ss, tok, ','); r.is_buy    = (tok == "1");
-                std::getline(ss, r.symbol,   ',');
-                std::getline(ss, r.exchange);
-                if (!r.symbol.empty() && !r.exchange.empty())
-                    rows.push_back(std::move(r));
-            } catch (...) {
-                // Skip malformed/partial lines (tail of file at crash boundary)
-            }
-        }
-        return rows;
-    }
+    // True if there are uncommitted rows (data to flush/replay)
+    bool dirty() const { return !pending_.empty(); }
 
-    // True if the WAL file exists and is non-empty (dirty = data to replay)
-    bool dirty() const {
-        struct stat st{};
-        return ::stat(path_.c_str(), &st) == 0 && st.st_size > 0;
-    }
+    bool exists() const { return ::access(path_.c_str(), F_OK) == 0; }
 
-    bool exists() const {
-        return ::access(path_.c_str(), F_OK) == 0;
-    }
+    int64_t size_bytes() const { return size_bytes_; }
+    bool    over_cap()   const { return size_bytes_ > max_bytes_; }
 
     const std::string& path() const { return path_; }
 
 private:
-    std::string path_;
+    // Read the file once at startup; the write fd stays open.
+    void replay_once() {
+        struct stat st{};
+        if (::fstat(fd_, &st) == 0) size_bytes_ = st.st_size;
+        if (size_bytes_ == 0) return;
+
+        FILE* f = ::fopen(path_.c_str(), "r");
+        if (!f) return;
+        char*  line = nullptr;
+        size_t cap  = 0;
+        ssize_t len;
+        while ((len = ::getline(&line, &cap, f)) > 0) {
+            std::string s(line, static_cast<size_t>(len));
+            while (!s.empty() && (s.back() == '\n' || s.back() == '\r'))
+                s.pop_back();
+            if (s.empty()) continue;
+            Row r;
+            if (from_line_(s, r))
+                pending_.push_back(std::move(r));
+            // malformed/partial lines (crash-boundary tail) are skipped
+        }
+        std::free(line);
+        std::fclose(f);
+    }
+
+    std::string      path_;
+    ToLine           to_line_;
+    FromLine         from_line_;
+    int64_t          max_bytes_;
+    int              fd_         = -1;
+    int64_t          size_bytes_ = 0;
+    std::vector<Row> pending_;
 };

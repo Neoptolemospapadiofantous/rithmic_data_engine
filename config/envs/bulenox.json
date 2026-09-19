@@ -1,0 +1,18 @@
+{
+  "_comment": "Bulenox overrides — applied by scripts/use-env.sh. CONFIRM the two numbers marked TBC against your Bulenox dashboard before going live; they drive RiskManager halts.",
+  "_comment_drawdown": "Option 1 trails peak balance INCLUDING unrealised gains, tick by tick. RiskManager currently advances peak_equity_ on realized P&L only (risk_manager.hpp:68) — see set_equity() at :134, called only at startup. On Option 1 the engine will UNDER-report drawdown. Option 2 (EOD drawdown) matches the current model.",
+  "account_id": "TBC_FROM_BULENOX_DASHBOARD",
+  "trade_route": "simulator",
+  "fcm_id": "Bulenox",
+  "ib_id": "Bulenox",
+  "starting_balance": 25000.0,
+  "trailing_drawdown_cap": 1500.0,
+  "prop_firm": {
+    "name": "Bulenox 25K",
+    "daily_loss_limit": 0.0,
+    "max_position_size": 3,
+    "max_daily_trades": 3,
+    "trailing_drawdown_limit": 1500.0,
+    "consistency_rule_pct": 0.3
+  }
+}

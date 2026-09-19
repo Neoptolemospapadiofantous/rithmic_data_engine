@@ -18,15 +18,15 @@ struct TickRow {
 };
 
 struct BBORow {
-    int64_t     ts_micros;
-    double      bid_price;
-    int32_t     bid_size;
-    int32_t     bid_orders;
-    double      ask_price;
-    int32_t     ask_size;
-    int32_t     ask_orders;
-    std::string symbol;
-    std::string exchange;
+    int64_t              ts_micros;
+    std::optional<double> bid_price;   // nullopt when bid side absent (presence_bits)
+    int32_t              bid_size;
+    int32_t              bid_orders;
+    std::optional<double> ask_price;   // nullopt when ask side absent (presence_bits)
+    int32_t              ask_size;
+    int32_t              ask_orders;
+    std::string          symbol;
+    std::string          exchange;
 };
 
 struct DepthRow {
@@ -36,7 +36,7 @@ struct DepthRow {
     int8_t      update_type;       // 1=NEW, 2=CHANGE, 3=DELETE
     int8_t      transaction_type;  // 1=BUY, 2=SELL
     double      depth_price;
-    double      prev_depth_price;
+    std::optional<double> prev_depth_price;  // nullopt when prev_depth_price_flag is false
     int32_t     depth_size;
     std::string exchange_order_id;
     std::string symbol;
@@ -143,12 +143,21 @@ public:
 private:
     void ensure_schema();
     void exec(const char* sql);
-    void exec_silent(const char* sql);  // runs SQL, ignores all errors, frees result
+    void exec_silent(const char* sql);  // runs SQL, logs failures at WARN, frees result
+
+    // Depth batch helper.  with_conflict=false for source_ns==0 rows
+    // (plain INSERT — the dedup key would collapse them) or when
+    // idx_depth_unique is unavailable.
+    int  write_depth_rows(const std::vector<const DepthRow*>& rows, bool with_conflict);
+    bool bbo_unique_ok();    // cached: idx_bbo_unique present?
+    bool depth_unique_ok();  // cached: idx_depth_unique present?
 
     // Format int64 microseconds as "YYYY-MM-DD HH:MM:SS.ffffff+00"
     static std::string format_ts(int64_t ts_micros);
 
-    PGconn*     conn_     = nullptr;
-    std::string connstr_;
-    bool        read_only_;
+    PGconn*             conn_     = nullptr;
+    std::string         connstr_;
+    bool                read_only_;
+    std::optional<bool> bbo_unique_ok_;
+    std::optional<bool> depth_unique_ok_;
 };

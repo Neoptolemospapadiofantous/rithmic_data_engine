@@ -59,8 +59,10 @@
 #include <atomic>
 #include <chrono>
 #include <csignal>
+#include <cstdint>
 #include <cstring>
 #include <ctime>
+#include <deque>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -70,6 +72,7 @@
 #include <string>
 #include <thread>
 #include <unordered_set>
+#include <vector>
 
 namespace asio      = boost::asio;
 namespace beast     = boost::beast;
@@ -118,8 +121,9 @@ static void flush_position(OrbDB* db,
         unreal_pts = (snap.state == PosState::LONG)
             ? (last_px - snap.entry_price)
             : (snap.entry_price - last_px);
-        // MNQ: $2/point, 1 contract, round-trip commission ($4) deducted at close
-        unreal_usd = unreal_pts * point_value;
+        // Unrealized P&L scales with position size; commission is charged only
+        // at close (see OrderManager pnl_usd) — keep it out of unrealized.
+        unreal_usd = unreal_pts * point_value * snap.qty;
     }
 
     // entry_time: format fill_time as UTC string (empty if FLAT/PENDING)
@@ -180,6 +184,17 @@ static std::string proto_frame(const Msg& msg) {
 static std::string proto_strip(const std::string& wire) {
     if (wire.size() < 4) throw std::runtime_error("Message too short");
     return wire.substr(4);
+}
+
+// RequestHeartbeat.ssboe is int32 in the proto (proto/rithmic.proto:77), so a true
+// int64 epoch is impossible without a proto change. Clamp instead of truncating:
+// epoch-seconds fits int32 until 2038; past that the value saturates rather than
+// wrapping negative (which some Rithmic parsers reject).
+static int32_t hb_ssboe_now() {
+    int64_t secs = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    if (secs > INT32_MAX) secs = INT32_MAX;
+    return static_cast<int32_t>(secs);
 }
 
 // ─── ET time helpers ─────────────────────────────────────────────────────────
@@ -248,12 +263,116 @@ static asio::awaitable<void> ws_write(WsStream& ws, const std::string& data) {
     co_await ws.async_write(asio::buffer(data), asio::use_awaitable);
 }
 
+// ─── Serialized per-stream write queue ────────────────────────────────────────
+// Beast forbids overlapping async_write calls on the same stream. heartbeat_loop,
+// op_loop, eod_loop and OrderPlant callbacks all write to the shared MD /
+// ORDER_PLANT streams, so every write goes through this queue: at most one
+// async_write per stream is ever in flight.
+class WsWriteQueue {
+public:
+    void attach(WsStream* ws) { ws_ = ws; }
+
+    // Detach before the stream is closed/replaced: queued and future writes fail
+    // immediately with not_connected instead of touching a dead stream.
+    void detach() {
+        ws_ = nullptr;
+        fail_all(asio::error::make_error_code(asio::error::not_connected));
+    }
+
+    // Awaitable write: suspends until this message has been written (or failed).
+    asio::awaitable<void> write(std::string data) {
+        if (!ws_)
+            throw beast::system_error(
+                asio::error::make_error_code(asio::error::not_connected),
+                "ws write: stream not attached");
+        auto token = asio::use_awaitable;
+        co_await asio::async_initiate<asio::use_awaitable_t<>,
+                                      void(boost::system::error_code)>(
+            [this, data = std::move(data)](auto handler) mutable {
+                submit(std::move(data), Handler(std::move(handler)));
+            },
+            token);
+    }
+
+    // Fire-and-forget write for non-coroutine callers (OrderPlant send paths).
+    void enqueue(std::string data) {
+        submit(std::move(data), [](boost::system::error_code ec) {
+            if (ec) LOG("[WS] queued write failed: %s", ec.message().c_str());
+        });
+    }
+
+private:
+    // Move-only type-erased completion handler — asio's use_awaitable handler is
+    // not copyable, so std::function cannot hold it.
+    struct MoveOnlyHandler {
+        struct Base {
+            virtual void call(boost::system::error_code) = 0;
+            virtual ~Base() = default;
+        };
+        template <class F>
+        struct Impl : Base {
+            F f;
+            explicit Impl(F&& fn) : f(std::move(fn)) {}
+            void call(boost::system::error_code ec) override { std::move(f)(ec); }
+        };
+        std::unique_ptr<Base> p;
+        MoveOnlyHandler() = default;
+        template <class F,
+                  class = std::enable_if_t<!std::is_same_v<std::decay_t<F>, MoveOnlyHandler>>>
+        MoveOnlyHandler(F&& f) : p(std::make_unique<Impl<std::decay_t<F>>>(std::forward<F>(f))) {}
+        void operator()(boost::system::error_code ec) { p->call(ec); }
+    };
+    using Handler = MoveOnlyHandler;
+    struct Item { std::string data; Handler handler; };
+
+    void submit(std::string data, Handler handler) {
+        if (!ws_) {
+            handler(asio::error::make_error_code(asio::error::not_connected));
+            return;
+        }
+        q_.push_back(Item{std::move(data), std::move(handler)});
+        if (!busy_) pump();
+    }
+
+    void pump() {
+        if (!ws_ || q_.empty()) { busy_ = false; return; }
+        busy_ = true;
+        ws_->binary(true);
+        ws_->async_write(asio::buffer(q_.front().data),
+            [this](boost::system::error_code ec, std::size_t) {
+                Item item = std::move(q_.front());
+                q_.pop_front();
+                item.handler(ec);
+                if (ec) {
+                    // Stream is broken: fail every queued write with the same error.
+                    fail_all(ec);
+                    busy_ = false;
+                    return;
+                }
+                pump();
+            });
+    }
+
+    void fail_all(boost::system::error_code ec) {
+        while (!q_.empty()) {
+            Handler h = std::move(q_.front().handler);
+            q_.pop_front();
+            h(ec);
+        }
+    }
+
+    WsStream*        ws_   = nullptr;
+    bool             busy_ = false;
+    std::deque<Item> q_;
+};
+
 // ─── Order plant send helper ──────────────────────────────────────────────────
 // Wraps WsStream writes with mutex (called from io_context coroutine only —
 // single-threaded io_context means no contention, but we keep the mutex for
 // safety in case of future threading changes).
 struct OrderPlant {
     std::unique_ptr<WsStream>       ws;
+    WsWriteQueue*                   write_q = nullptr;  // serialized writes (Beast forbids overlapping async_write)
     std::mutex                      send_mu;
     bool                            connected = false;
     std::string                     account_id;
@@ -310,13 +429,10 @@ struct OrderPlant {
 
         try {
             std::string wire = proto_frame(req);
-            // Synchronous send is OK — we're single-threaded in io_context
-            beast::flat_buffer dummy;
-            (void)dummy;
-            // Note: async send not possible from non-coroutine context;
-            // for production, queue to a write strand. For now we use a
-            // blocking write (acceptable given <1 order/minute cadence).
-            ws->write(asio::buffer(wire));
+            // Route through the per-stream write queue — a blocking write here would
+            // overlap with in-flight async writes (heartbeats), which Beast forbids.
+            if (write_q) write_q->enqueue(std::move(wire));
+            else         ws->write(asio::buffer(wire));  // fallback: queue not attached yet
             LOG("[ORDER_PLANT] RequestNewOrder sent: basket=%s %s %s qty=%d "
                 "order_type=%d price=%.2f fcm=%s ib=%s acct=%s route='%s' dur=DAY auto=AUTO",
                 basket_id.c_str(), is_buy ? "BUY" : "SELL", symbol.c_str(), qty,
@@ -346,7 +462,8 @@ struct OrderPlant {
         req.set_fcm_id(fcm_id);
         req.set_ib_id(ib_id);
         try {
-            ws->write(asio::buffer(proto_frame(req)));
+            if (write_q) write_q->enqueue(proto_frame(req));
+            else         ws->write(asio::buffer(proto_frame(req)));
             LOG("[ORDER_PLANT] RequestCancelOrder sent: basket=%s", basket_id.c_str());
         } catch (std::exception& e) {
             LOG("[ORDER_PLANT] ERROR sending cancel: %s", e.what());
@@ -369,7 +486,8 @@ struct OrderPlant {
         sub.set_ib_id(ib_id);
         sub.set_account_id(account_id);
         try {
-            ws->write(asio::buffer(proto_frame(sub)));
+            if (write_q) write_q->enqueue(proto_frame(sub));
+            else         ws->write(asio::buffer(proto_frame(sub)));
             LOG("[ORDER_PLANT] Sent tid=308 flush to prompt cancel ACK delivery");
         } catch (std::exception& e) {
             LOG("[ORDER_PLANT] WARNING: flush_order_notifications failed: %s", e.what());
@@ -391,7 +509,8 @@ struct OrderPlant {
             req.set_fcm_id(fcm_id);
             req.set_ib_id(ib_id);
             try {
-                ws->write(asio::buffer(proto_frame(req)));
+                if (write_q) write_q->enqueue(proto_frame(req));
+                else         ws->write(asio::buffer(proto_frame(req)));
                 LOG("[ORDER_PLANT] [DRAIN] RequestCancelOrder sent: basket=%s", bid.c_str());
             } catch (std::exception& e) {
                 LOG("[ORDER_PLANT] [DRAIN] ERROR sending cancel for basket=%s: %s",
@@ -420,7 +539,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // If the previous session ended with an open position (e.g. disconnect while
     // LONG), the exchange stop order may or may not have fired. We cannot query
     // the exchange here, so we halt new entries and force a manual check.
-    if (carried_pos.state != PosState::FLAT) {
+    bool carried_nonflat = (carried_pos.state != PosState::FLAT);
+    if (carried_nonflat) {
         LOG("[EXECUTOR] CRITICAL: reconnecting with non-flat carried position "
             "(state=%d dir=%s entry=%.2f sl=%.2f) — halting new entries. "
             "Verify exchange position manually; delete halt if flat.",
@@ -472,8 +592,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // ── DB setup ──────────────────────────────────────────────────────────────
     std::unique_ptr<OrbDB> db;
     try {
-        db = std::make_unique<OrbDB>(orb_cfg.pg_connstr(), orb_cfg.symbol, orb_cfg.account_label);
+        db = std::make_unique<OrbDB>(orb_cfg.pg_connstr(), orb_cfg.symbol,
+                                     orb_cfg.account_label, orb_cfg.strategy);
         LOG("[EXECUTOR] OrbDB connected");
+        // Single-instance guard: a second executor for the same account+strategy
+        // must refuse to trade (dry-run instances don't take the lock).
+        if (!orb_cfg.dry_run) {
+            if (!db->acquire_instance_lock(orb_cfg.account_label, orb_cfg.strategy)) {
+                LOG("[EXECUTOR] FATAL: another executor already holds the instance lock "
+                    "for account=%s strategy=%s — refusing to trade, exiting",
+                    orb_cfg.account_label.c_str(), orb_cfg.strategy.c_str());
+                g_running = false;
+                co_return;
+            }
+        }
         // Seed risk manager with historical P&L and peak equity.
         if (today.empty()) {  // only on first startup, not reconnects
             double hist_pnl  = db->get_total_pnl();
@@ -484,6 +616,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // (the normal case after a drawdown), giving correct trailing drawdown distance.
             risk.set_equity(hist_peak);
             risk.set_equity(orb_cfg.starting_balance + hist_pnl);
+            // Seed today's realized P&L so a restarted process cannot re-spend the
+            // daily loss limit already consumed before the restart.
+            risk.seed_daily_pnl(db->seed_daily_pnl(orb_cfg.account_label, today_date_str()));
         }
     } catch (std::exception& e) {
         LOG("[EXECUTOR] WARNING: OrbDB failed (%s) — trades will not be persisted", e.what());
@@ -563,6 +698,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // md_ws is only used in WebSocket mode; stays null in SDK mode.
     std::unique_ptr<WsStream> md_ws;
 
+    // Per-stream write queues: serialize every write to the shared MD and
+    // ORDER_PLANT streams (finding: Beast forbids overlapping async_write).
+    WsWriteQueue md_write_q;
+    WsWriteQueue op_write_q;
+
 #ifndef USE_RAPI_SDK
     // ── MD plant connection (WebSocket — skipped when USE_RAPI_SDK is set) ───────
     // In SDK mode the native R|API+ TCP feed owns the AMP session; opening a
@@ -616,6 +756,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         LOG("[EXECUTOR] FATAL: MD plant reconnect failed: %s", e.what());
         co_return;
     }
+    md_write_q.attach(md_ws.get());
 
     // MD plant login — use AMP credentials (separate session from Legends ORDER_PLANT)
     {
@@ -630,14 +771,28 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         req.set_app_name(orb_cfg.app_name + "-MD");
         req.set_app_version(orb_cfg.app_version);
         req.set_infra_type(rti::RequestLogin::TICKER_PLANT);
-        co_await ws_write(*md_ws, proto_frame(req));
+        co_await md_write_q.write(proto_frame(req));
 
         beast::flat_buffer buf;
         beast::get_lowest_layer(*md_ws).expires_after(std::chrono::seconds(15));
         for (;;) {
             buf.clear();
-            co_await md_ws->async_read(buf, asio::use_awaitable);
-            auto payload = proto_strip(beast::buffers_to_string(buf.data()));
+            try {
+                co_await md_ws->async_read(buf, asio::use_awaitable);
+            } catch (std::exception& e) {
+                // Network fault during login (timeout, reset) — transient: co_return
+                // and let the outer while-loop reconnect and retry in 10s.
+                LOG("[EXECUTOR] MD login read error (network): %s — will retry via reconnect",
+                    e.what());
+                co_return;
+            }
+            std::string payload;
+            try {
+                payload = proto_strip(beast::buffers_to_string(buf.data()));
+            } catch (std::exception& e) {
+                LOG("[EXECUTOR] MD login: malformed frame (%s) — skipping", e.what());
+                continue;
+            }
             rti::Base base;
             if (!base.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
             if (base.template_id() == 11) {
@@ -645,9 +800,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                 bool ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
                 if (!ok) {
+                    // The server ANSWERED the login — this is an auth/config rejection,
+                    // not a network fault. Retrying with the same credentials would
+                    // loop forever, so stop the process instead.
                     std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
                     std::string txt = resp.rp_code().size() > 1 ? resp.rp_code(1) : "";
-                    LOG("[EXECUTOR] FATAL: MD login failed — rp_code=%s %s", rpc.c_str(), txt.c_str());
+                    LOG("[EXECUTOR] FATAL: MD login REJECTED by server (rp_code=%s %s) — "
+                        "terminal, not retrying. Check MD credentials/system name.",
+                        rpc.c_str(), txt.c_str());
+                    audit_log.info("session.md_login_rejected",
+                        "MD auth rejected rp_code=" + rpc + " " + txt);
+                    g_running = false;
                     co_return;
                 }
                 double hb_interval = resp.heartbeat_interval();
@@ -661,10 +824,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         {
             rti::RequestHeartbeat hb;
             hb.set_template_id(18);
-            auto ts = std::chrono::system_clock::now().time_since_epoch();
-            hb.set_ssboe(static_cast<int32_t>(
-                std::chrono::duration_cast<std::chrono::seconds>(ts).count()));
-            co_await ws_write(*md_ws, proto_frame(hb));
+            hb.set_ssboe(hb_ssboe_now());
+            co_await md_write_q.write(proto_frame(hb));
         }
     }
 
@@ -676,7 +837,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         req.set_exchange(orb_cfg.exchange);
         req.set_request(rti::RequestMarketDataUpdate::SUBSCRIBE);
         req.set_update_bits(1);  // LAST_TRADE
-        co_await ws_write(*md_ws, proto_frame(req));
+        co_await md_write_q.write(proto_frame(req));
         LOG("[EXECUTOR] Subscribed to %s/%s last trade",
             trade_symbol.c_str(), orb_cfg.exchange.c_str());
     }
@@ -764,12 +925,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             {
                 rti::RequestHeartbeat hb;
                 hb.set_template_id(18);
-                auto ts = std::chrono::system_clock::now().time_since_epoch();
-                hb.set_ssboe(static_cast<int32_t>(
-                    std::chrono::duration_cast<std::chrono::seconds>(ts).count()));
+                hb.set_ssboe(hb_ssboe_now());
                 co_await ws_write(*op_ws, proto_frame(hb));
             }
             order_plant->ws         = std::move(op_ws);
+            op_write_q.attach(order_plant->ws.get());
+            order_plant->write_q    = &op_write_q;
             order_plant->account_id  = orb_cfg.account_id;
             order_plant->fcm_id      = orb_cfg.fcm_id;
             order_plant->ib_id       = orb_cfg.ib_id;
@@ -786,7 +947,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 rti::RequestTradeRoutes tr_req;
                 tr_req.set_template_id(310);
                 tr_req.set_subscribe_for_updates(false);
-                co_await ws_write(*order_plant->ws, proto_frame(tr_req));
+                co_await op_write_q.write(proto_frame(tr_req));
                 LOG("[ORDER_PLANT] Sent RequestTradeRoutes (tid=310)");
 
                 beast::flat_buffer tr_buf;
@@ -849,7 +1010,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 sub.set_ib_id(orb_cfg.ib_id);
                 sub.set_account_id(orb_cfg.account_id);
                 try {
-                    order_plant->ws->write(asio::buffer(proto_frame(sub)));
+                    co_await op_write_q.write(proto_frame(sub));
                     LOG("[EXECUTOR] Sent RequestSubscribeForOrderUpdates (tid=308)");
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] WARNING: Failed to send order update subscription: %s", e.what());
@@ -861,6 +1022,27 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // exchange can immediately ACK/confirm the cancel notifications.
             order_plant->drain_pending_cancels();
 
+            // Reconnect-with-position reconciliation (#1): entries were halted at the
+            // top of this coroutine. Subscribe to PnL/position updates so the tid=451
+            // snapshot can confirm net_qty and auto-unwind — the same auto-recovery the
+            // fresh-start path below uses. Without this the halt persisted forever.
+            if (carried_nonflat) {
+                try {
+                    rti::RequestPnLPositionUpdates pnl_req;
+                    pnl_req.set_template_id(400);
+                    pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
+                    pnl_req.set_fcm_id(orb_cfg.fcm_id);
+                    pnl_req.set_ib_id(orb_cfg.ib_id);
+                    pnl_req.set_account_id(orb_cfg.account_id);
+                    co_await op_write_q.write(proto_frame(pnl_req));
+                    LOG("[EXECUTOR] [RECONNECT-RECON] RequestPnLPositionUpdates SUBSCRIBE sent "
+                        "— awaiting tid=451 snapshot to reconcile carried position");
+                } catch (std::exception& e) {
+                    LOG("[EXECUTOR] [RECONNECT-RECON] PnL subscribe FAILED: %s "
+                        "— manual intervention required (entries stay halted)", e.what());
+                }
+            }
+
         } catch (std::exception& e) {
             LOG("[EXECUTOR] FATAL: ORDER_PLANT connect failed: %s", e.what());
             co_return;
@@ -868,6 +1050,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     }
 
     // ── ORDER_PLANT fill receive loop ─────────────────────────────────────────
+    // Carried-position reconnect (#1): a working order in the tid=351 startup
+    // snapshot may be the carried position's protective stop. Defer those Case-A
+    // cancels until the tid=451 snapshot confirms net_qty==0 (stale → cancel) or
+    // net_qty!=0 (position live — the stop must stay).
+    std::vector<std::string> deferred_snapshot_cancels;
+    bool defer_snapshot_cancels = carried_nonflat;
     auto op_loop = [&]() -> asio::awaitable<void> {
         if (!order_plant->connected || !order_plant->ws) co_return;
         beast::flat_buffer buf;
@@ -886,7 +1074,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 ioc_ref.stop();  // kill md_loop and all timers → outer loop reconnects
                 co_return;
             }
-            auto payload = proto_strip(beast::buffers_to_string(buf.data()));
+            std::string payload;
+            try {
+                payload = proto_strip(beast::buffers_to_string(buf.data()));
+            } catch (std::exception& e) {
+                // Malformed short frame — must not propagate: this coroutine is spawned
+                // detached, so an uncaught throw here is std::terminate.
+                LOG("[EXECUTOR] ORDER_PLANT malformed frame (%s) len=%zu — skipping message",
+                    e.what(), buf.size());
+                continue;
+            }
             rti::Base base;
             if (!base.ParseFromString(payload)) continue;
 
@@ -898,7 +1095,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 rti::ResponseHeartbeat hb_resp;
                 hb_resp.set_template_id(19);
                 try {
-                    co_await ws_write(*order_plant->ws, proto_frame(hb_resp));
+                    co_await op_write_q.write(proto_frame(hb_resp));
                 } catch (...) {
                     LOG("[EXECUTOR] ORDER_PLANT heartbeat response send failed");
                 }
@@ -922,21 +1119,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         resp.basket_id().c_str());
                 } else {
                     std::string rpc = resp.rp_code(0);
-                    // If a modify is in-flight, treat tid=315 as the modify response
-                    if (tid == 315 && order_mgr.has_pending_modify()) {
-                        bool accepted = (rpc == "0");
-                        LOG("[EXECUTOR] ResponseModifyOrder rp_code=%s (%s)",
-                            rpc.c_str(), accepted ? "ACK" : "REJECT");
-                        order_mgr.on_modify_response(accepted, rpc);
-                    } else {
-                        LOG("[EXECUTOR] ResponseNewOrder basket=%s rp_code=%s",
+                    LOG("[EXECUTOR] ResponseNewOrder basket=%s rp_code=%s",
+                        resp.basket_id().c_str(), rpc.c_str());
+                    if (rpc != "0") {
+                        LOG("[EXECUTOR] Order REJECTED at gateway: basket=%s code=%s",
                             resp.basket_id().c_str(), rpc.c_str());
-                        if (rpc != "0") {
-                            LOG("[EXECUTOR] Order REJECTED at gateway: basket=%s code=%s",
-                                resp.basket_id().c_str(), rpc.c_str());
-                            order_mgr.on_order_rejected(resp.basket_id(),
-                                                        "gateway_reject_" + rpc);
-                        }
+                        // ResponseNewOrder has NO user_tag field — basket_id is the
+                        // server-assigned ID. on_order_rejected resolves it to our
+                        // client basket via the server→client map (map_server_basket).
+                        order_mgr.on_order_rejected(resp.basket_id(),
+                                                    "gateway_reject_" + rpc);
                     }
                 }
 
@@ -979,6 +1171,18 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     if (notif.symbol() == trade_symbol) {
                         if (notif.total_unfilled_size() > 0 &&
                             !notif.basket_id().empty()) {
+                            if (defer_snapshot_cancels) {
+                                // Carried-position reconnect (#1): this open order may be
+                                // the carried position's protective stop. Do NOT cancel it
+                                // until the tid=451 snapshot confirms the exchange is flat.
+                                LOG("[EXECUTOR] [STARTUP-RECON] OPEN ORDER basket=%s "
+                                    "status='%s' unfilled=%d — DEFERRING cancel until "
+                                    "tid=451 position confirm (carried position)",
+                                    notif.basket_id().c_str(), notif.status().c_str(),
+                                    notif.total_unfilled_size());
+                                deferred_snapshot_cancels.push_back(notif.basket_id());
+                                continue;
+                            }
                             // Case A: open working order — cancel it
                             LOG("[EXECUTOR] [STARTUP-RECON] OPEN ORDER FOUND "
                                 "basket=%s status='%s' unfilled=%d — cancelling",
@@ -991,7 +1195,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             cancel_req.set_fcm_id(orb_cfg.fcm_id);
                             cancel_req.set_ib_id(orb_cfg.ib_id);
                             try {
-                                co_await ws_write(*order_plant->ws, proto_frame(cancel_req));
+                                co_await op_write_q.write(proto_frame(cancel_req));
                                 LOG("[EXECUTOR] [STARTUP-RECON] cancel sent basket=%s",
                                     notif.basket_id().c_str());
                             } catch (std::exception& e) {
@@ -1013,6 +1217,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     continue;  // never process snapshots through the live fill path
                 }
 
+                // Map server→client basket IDs for entry/exit orders as well: gateway
+                // rejects (tid=313/315 ResponseNewOrder) carry only the server basket_id.
+                order_mgr.map_server_basket(notif.user_tag(), notif.basket_id());
                 // When our stop order reaches the exchange, capture the server basket_id.
                 if (order_mgr.is_stop_basket(notif.user_tag()) && !notif.basket_id().empty()) {
                     LOG("[EXECUTOR] Stop server basket mapped: client=%s → server=%s",
@@ -1048,6 +1255,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     bool is_stop  = order_mgr.is_stop_basket(client_id);
                     bool is_exit  = order_mgr.is_exit_basket(client_id);
                     if (is_entry || is_stop || is_exit) {
+                        // total_fill_size is CUMULATIVE, not incremental: a repeated
+                        // COMPLETE notification (partial-then-complete) or a duplicate
+                        // delivery of a fill already processed via tid=352 must be
+                        // skipped — re-processing would double-count the fill.
+                        if (order_mgr.fill_already_processed(client_id,
+                                                             notif.total_fill_size())) {
+                            LOG("[EXECUTOR] tid=351 duplicate fill skipped: client=%s "
+                                "total_fill=%d (already processed)",
+                                client_id.c_str(), notif.total_fill_size());
+                            continue;
+                        }
                         LOG("[EXECUTOR] tid=351 fill detected: client=%s px=%.2f qty=%d "
                             "entry=%d stop=%d exit=%d",
                             client_id.c_str(), fill_px,
@@ -1113,6 +1331,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Rithmic assigns its own basket_id on the response and echoes
                 // our user_tag in every notification.
                 if (notify_type == 5) {
+                    const std::string& client_id = notif.user_tag();
+                    order_mgr.map_server_basket(client_id, notif.basket_id());
                     if (notif.fill_size() > orb_cfg.qty) {
                         LOG("[EXECUTOR] WARNING: fill qty=%d exceeds expected position size=%d "
                             "— possible multi-account notification basket=%s px=%.2f "
@@ -1121,20 +1341,36 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             notif.basket_id().c_str(), notif.fill_price(),
                             notif.user_tag().c_str());
                     }
-                    const std::string& client_id = notif.user_tag();
+                    // Same gating as tid=351: without it, fills for unknown/other-account
+                    // tags landed in the FLAT unknown-fill branch and falsely ghost-halted
+                    // the engine.
                     bool is_entry = order_mgr.is_entry_basket(client_id);
                     bool is_stop  = order_mgr.is_stop_basket(client_id);
-                    if (is_stop) {
-                        LOG("[EXECUTOR] Exchange STOP filled client_id=%s (server=%s) px=%.2f — treating as exit",
-                            client_id.c_str(), notif.basket_id().c_str(), notif.fill_price());
+                    bool is_exit  = order_mgr.is_exit_basket(client_id);
+                    if (!is_entry && !is_stop && !is_exit) {
+                        LOG("[EXECUTOR] tid=352 fill for unknown user_tag='%s' basket=%s "
+                            "px=%.2f qty=%d — ignoring (not our order)",
+                            client_id.c_str(), notif.basket_id().c_str(),
+                            notif.fill_price(), notif.fill_size());
+                    } else if (order_mgr.fill_already_processed(client_id,
+                                                                notif.fill_size())) {
+                        // Duplicate delivery of a fill already processed via tid=351.
+                        LOG("[EXECUTOR] tid=352 duplicate fill skipped: client=%s qty=%d "
+                            "(already processed)",
+                            client_id.c_str(), notif.fill_size());
+                    } else {
+                        if (is_stop) {
+                            LOG("[EXECUTOR] Exchange STOP filled client_id=%s (server=%s) px=%.2f — treating as exit",
+                                client_id.c_str(), notif.basket_id().c_str(), notif.fill_price());
+                        }
+                        order_mgr.on_fill_notification(client_id,
+                                                       notif.fill_price(),
+                                                       notif.fill_size(),
+                                                       is_entry && !is_stop);
+                        flush_position(db.get(), today, order_mgr, strategy,
+                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                       bool(md_ws));
                     }
-                    order_mgr.on_fill_notification(client_id,
-                                                   notif.fill_price(),
-                                                   notif.fill_size(),
-                                                   is_entry && !is_stop);
-                    flush_position(db.get(), today, order_mgr, strategy,
-                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                   bool(md_ws));
                 } else if (notify_type == 2) { // MODIFY ACK
                     LOG("[EXECUTOR] Stop MODIFIED by exchange: client=%s server=%s — trail ACKed",
                         notif.user_tag().c_str(), notif.basket_id().c_str());
@@ -1171,6 +1407,15 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 if (pos_upd.is_snapshot() && pos_upd.account_id() == orb_cfg.account_id) {
                     int net = pos_upd.net_quantity();
                     if (net != 0) {
+                        // Position is live — any deferred working orders may be its
+                        // protective stops: keep them, stop deferring.
+                        if (defer_snapshot_cancels) {
+                            defer_snapshot_cancels = false;
+                            LOG("[EXECUTOR] [STARTUP-RECON] net_qty=%d — position live: keeping "
+                                "%zu deferred working order(s) (protective stops)",
+                                net, deferred_snapshot_cancels.size());
+                            deferred_snapshot_cancels.clear();
+                        }
                         bool ghost_is_long = (net > 0);
                         LOG("[EXECUTOR] [STARTUP-RECON] GHOST POSITION CONFIRMED: "
                             "net_qty=%d (%s %d) — sending immediate unwind",
@@ -1232,8 +1477,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             unwind_req.set_manual_or_auto_select(rti::RequestNewOrder::AUTO);
                             unwind_req.set_trade_route(order_plant->trade_route);
                             try {
-                                co_await ws_write(*order_plant->ws,
-                                                  proto_frame(unwind_req));
+                                co_await op_write_q.write(proto_frame(unwind_req));
                                 LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind sent: "
                                     "%s %s px=%.2f qty=%d basket=%s",
                                     unwind_is_buy ? "BUY" : "SELL",
@@ -1254,6 +1498,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             strategy.unhalt_trading("startup_ghost_position_cleared");
                     } else {
                         LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
+                        // Exchange is flat: any deferred working orders from the tid=351
+                        // snapshot are stale (carried position no longer exists) — cancel now.
+                        if (!deferred_snapshot_cancels.empty()) {
+                            LOG("[EXECUTOR] [STARTUP-RECON] draining %zu deferred snapshot "
+                                "cancel(s) (stale working orders)",
+                                deferred_snapshot_cancels.size());
+                            for (const auto& bid : deferred_snapshot_cancels)
+                                order_plant->send_cancel(bid, orb_cfg.account_id);
+                            deferred_snapshot_cancels.clear();
+                        }
+                        defer_snapshot_cancels = false;
                         // Clear ghost-fill halt in OrderManager (covers: stale stop fired
                         // then manually closed via RTrader before this snapshot arrived).
                         order_mgr.confirm_exchange_flat();
@@ -1310,7 +1565,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     pnl_req.set_fcm_id(orb_cfg.fcm_id);
                     pnl_req.set_ib_id(orb_cfg.ib_id);
                     pnl_req.set_account_id(orb_cfg.account_id);
-                    co_await ws_write(*order_plant->ws, proto_frame(pnl_req));
+                    co_await op_write_q.write(proto_frame(pnl_req));
                     LOG("[EXECUTOR] [STARTUP-RECON] RequestPnLPositionUpdates SUBSCRIBE sent "
                         "— awaiting tid=451 snapshot to auto-verify and unhalt");
                 } catch (std::exception& e) {
@@ -1346,12 +1601,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             if (!g_running) co_return;
             rti::RequestHeartbeat hb;
             hb.set_template_id(18);
-            auto ts = std::chrono::system_clock::now().time_since_epoch();
-            hb.set_ssboe(static_cast<int32_t>(
-                std::chrono::duration_cast<std::chrono::seconds>(ts).count()));
+            hb.set_ssboe(hb_ssboe_now());
             if (md_ws) {
                 try {
-                    co_await ws_write(*md_ws, proto_frame(hb));
+                    co_await md_write_q.write(proto_frame(hb));
                 } catch (...) {
                     LOG("[EXECUTOR] Heartbeat send failed on MD — WS may be closed");
                 }
@@ -1359,7 +1612,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // Also heartbeat ORDER_PLANT — Rithmic drops idle connections in ~2 min
             if (order_plant->connected && order_plant->ws) {
                 try {
-                    co_await ws_write(*order_plant->ws, proto_frame(hb));
+                    co_await op_write_q.write(proto_frame(hb));
                 } catch (...) {
                     LOG("[EXECUTOR] Heartbeat send failed on ORDER_PLANT");
                 }
@@ -1583,6 +1836,15 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             "basket=%s px=%.2f",
                             (long)held, wsnap.basket_id_entry.c_str(),
                             strategy.last_price());
+                    // Entry-order watchdog: a gateway reject that could not be correlated
+                    // (or was never delivered) would otherwise leave this state stuck
+                    // forever — cancel the entry and revert to FLAT after 10s.
+                    if (order_mgr.pending_entry_timeout_check(10)) {
+                        LOG("[EXECUTOR] PENDING_ENTRY timeout — entry cancelled, state FLAT");
+                        flush_position(db.get(), today, order_mgr, strategy,
+                                       orb_cfg.dry_run || order_plant->connected,
+                                       orb_cfg.point_value, bool(md_ws));
+                    }
                 } else if (wsnap.state == PosState::LONG || wsnap.state == PosState::SHORT) {
                     if (held >= 120 && held % 60 == 0)
                         LOG("[EXECUTOR] POSITION OPEN %lds: %s entry=%.2f sl=%.2f "
@@ -1647,7 +1909,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             pnl_req.set_fcm_id(orb_cfg.fcm_id);
                             pnl_req.set_ib_id(orb_cfg.ib_id);
                             pnl_req.set_account_id(orb_cfg.account_id);
-                            co_await ws_write(*order_plant->ws, proto_frame(pnl_req));
+                            co_await op_write_q.write(proto_frame(pnl_req));
                             pnl_resubscribed = true;
                         } catch (...) {}
                         LOG("[EXECUTOR] ENTRY-HALT: re-subscribed PnL for position snapshot "
@@ -1754,9 +2016,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // Heartbeat immediately after login
             try {
                 rti::RequestHeartbeat hb; hb.set_template_id(18);
-                auto ts = std::chrono::system_clock::now().time_since_epoch();
-                hb.set_ssboe(static_cast<int32_t>(
-                    std::chrono::duration_cast<std::chrono::seconds>(ts).count()));
+                hb.set_ssboe(hb_ssboe_now());
                 co_await ws_write(*l_ws, proto_frame(hb));
             } catch (...) {}
 
@@ -1828,11 +2088,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             while (g_running && !md_ws) {
                 LOG("[EXECUTOR] MD: reconnecting...");
                 bool login_ok = false;
+                bool auth_rejected = false;
                 try {
                     // Skip system info probe on reconnects — probe close triggers FORCED_LOGOUT
                     // on the subsequent login session (Rithmic server-side session race).
                     // The probe is only needed once at startup (already done above).
                     md_ws = co_await connect_ws(ioc, ssl_ctx, orb_cfg.md_url);
+                    md_write_q.attach(md_ws.get());
                     {
                         rti::RequestLogin req; req.set_template_id(10);
                         req.set_template_version("3.9");
@@ -1842,18 +2104,31 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         req.set_app_name(orb_cfg.app_name + "-MD");
                         req.set_app_version(orb_cfg.app_version);
                         req.set_infra_type(rti::RequestLogin::TICKER_PLANT);
-                        co_await ws_write(*md_ws, proto_frame(req));
+                        co_await md_write_q.write(proto_frame(req));
                         beast::flat_buffer lb;
                         for (;;) {
                             lb.clear();
                             co_await md_ws->async_read(lb, asio::use_awaitable);
-                            auto pl = proto_strip(beast::buffers_to_string(lb.data()));
+                            std::string pl;
+                            try {
+                                pl = proto_strip(beast::buffers_to_string(lb.data()));
+                            } catch (std::exception& e) {
+                                LOG("[EXECUTOR] MD reconnect login: malformed frame (%s) — skipping",
+                                    e.what());
+                                continue;
+                            }
                             rti::Base b; if (!b.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                             if (b.template_id() == 11) {
                                 rti::ResponseLogin resp; if (!resp.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                                 login_ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
-                                if (!login_ok)
-                                    LOG("[EXECUTOR] MD reconnect: login failed");
+                                if (!login_ok) {
+                                    // Server answered: auth/config rejection is terminal —
+                                    // retrying the same credentials would loop forever.
+                                    auth_rejected = true;
+                                    LOG("[EXECUTOR] MD reconnect: login REJECTED by server "
+                                        "(rp_code=%s) — terminal, not retrying",
+                                        resp.rp_code().empty() ? "?" : resp.rp_code(0).c_str());
+                                }
                                 break;
                             }
                         }
@@ -1861,28 +2136,35 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     if (login_ok) {
                         // immediate heartbeat required after login
                         rti::RequestHeartbeat hb; hb.set_template_id(18);
-                        auto ts = std::chrono::system_clock::now().time_since_epoch();
-                        hb.set_ssboe(static_cast<int32_t>(
-                            std::chrono::duration_cast<std::chrono::seconds>(ts).count()));
-                        co_await ws_write(*md_ws, proto_frame(hb));
+                        hb.set_ssboe(hb_ssboe_now());
+                        co_await md_write_q.write(proto_frame(hb));
                         // re-subscribe to last trade
                         rti::RequestMarketDataUpdate sub; sub.set_template_id(100);
                         sub.set_symbol(trade_symbol);
                         sub.set_exchange(orb_cfg.exchange);
                         sub.set_request(rti::RequestMarketDataUpdate::SUBSCRIBE);
                         sub.set_update_bits(1);
-                        co_await ws_write(*md_ws, proto_frame(sub));
+                        co_await md_write_q.write(proto_frame(sub));
                         LOG("[EXECUTOR] MD reconnect OK — re-subscribed to %s", trade_symbol.c_str());
                     } else {
+                        md_write_q.detach();
                         try { md_ws->close(websocket::close_code::normal); } catch (...) {}
                         md_ws.reset();
                     }
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] MD reconnect error: %s", e.what());
                     if (md_ws) {
+                        md_write_q.detach();
                         try { md_ws->close(websocket::close_code::normal); } catch (...) {}
                         md_ws.reset();
                     }
+                }
+                if (auth_rejected) {
+                    // Terminal: bad credentials cannot recover by retrying. Stop the whole
+                    // executor rather than trading blind (no market data).
+                    g_running = false;
+                    ioc_ref.stop();
+                    co_return;
                 }
                 if (!md_ws) {
                     asio::steady_timer t(ex);
@@ -1900,13 +2182,22 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             } catch (std::exception& e) {
                 if (!g_running) co_return;
                 LOG("[EXECUTOR] MD read error: %s — reconnecting", e.what());
+                md_write_q.detach();
                 try { md_ws->close(websocket::close_code::normal); } catch (...) {}
                 md_ws.reset();
                 read_error = true;
             }
             if (read_error) continue;  // re-enters reconnect block above
 
-            auto payload = proto_strip(beast::buffers_to_string(buf.data()));
+            std::string payload;
+            try {
+                payload = proto_strip(beast::buffers_to_string(buf.data()));
+            } catch (std::exception& e) {
+                // Malformed short frame — log and skip; never let it kill the loop.
+                LOG("[EXECUTOR] MD malformed frame (%s) len=%zu — skipping message",
+                    e.what(), buf.size());
+                continue;
+            }
             rti::Base base;
             if (!base.ParseFromString(payload)) continue;
 
@@ -1991,7 +2282,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 rti::ResponseHeartbeat hb_resp;
                 hb_resp.set_template_id(19);
                 try {
-                    co_await ws_write(*md_ws, proto_frame(hb_resp));
+                    co_await md_write_q.write(proto_frame(hb_resp));
                 } catch (...) {
                     LOG("[EXECUTOR] MD heartbeat response send failed");
                 }
@@ -2007,6 +2298,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             } else if (tid == 77) {
                 // ForcedLogout — server is closing this session; brief cooldown then reconnect
                 LOG("[EXECUTOR] MD: FORCED LOGOUT (tid=77) — reconnecting MD without touching ORDER_PLANT");
+                md_write_q.detach();
                 try { md_ws->close(websocket::close_code::normal); } catch (...) {}
                 md_ws.reset();
                 // 3-second non-blocking pause: lets Rithmic expire the old session
@@ -2322,12 +2614,12 @@ int main(int argc, char* argv[]) {
     LOG("[EXECUTOR] risk: trailing_dd_cap=$%.0f consistency_cap=%.0f%%",
         orb_cfg.trailing_drawdown_cap, orb_cfg.consistency_cap_pct * 100.0);
 
-    // ── Validate Legends credentials ─────────────────────────────────────────
+    // ── Validate order-plant credentials ─────────────────────────────────────
     if (orb_cfg.rithmic_user.empty()) {
-        std::fprintf(stderr, "Config error: RITHMIC_LEGENDS_USER not set\n"); return 1;
+        std::fprintf(stderr, "Config error: %s_USER not set\n", orb_cfg.order_env_prefix.c_str()); return 1;
     }
     if (orb_cfg.rithmic_password.empty()) {
-        std::fprintf(stderr, "Config error: RITHMIC_LEGENDS_PASSWORD not set\n"); return 1;
+        std::fprintf(stderr, "Config error: %s_PASSWORD not set\n", orb_cfg.order_env_prefix.c_str()); return 1;
     }
 
     // ── Validate config sanity ────────────────────────────────────────────────

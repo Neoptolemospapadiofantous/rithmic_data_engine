@@ -131,7 +131,7 @@ deploy:
 		fi; \
 		PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic \
 			-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='"'"'rithmic_user'"'"' AND state='"'"'idle in transaction'"'"' AND pid != pg_backend_pid();" 2>/dev/null || true; \
-		for svc in rithmic-engine "nq_executor@RTH" "nq_executor@legends" "nq_executor-24x7@legends" "nq_executor-24x7@tradeify"; do \
+		for svc in rithmic-engine "nq_executor@tradeify" "nq_executor@legends" "nq_executor-24x7@legends" "nq_executor-24x7@tradeify"; do \
 			if systemctl is-active "$$svc" 2>/dev/null | grep -q "^active$$"; then \
 				echo "Restarting $$svc..."; \
 				sudo systemctl restart "$$svc"; \

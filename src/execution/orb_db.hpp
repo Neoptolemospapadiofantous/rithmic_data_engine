@@ -14,6 +14,7 @@
 #include "orb_strategy.hpp"
 #include "log.hpp"
 #include <libpq-fe.h>
+#include <cstdint>
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
@@ -23,8 +24,10 @@ class OrbDB {
 public:
     explicit OrbDB(const std::string& connstr,
                    const std::string& instrument    = "MNQ",
-                   const std::string& account_label = "legends")
-        : connstr_(connstr), instrument_(instrument), account_label_(account_label) {
+                   const std::string& account_label = "legends",
+                   const std::string& strategy      = "ORB")
+        : connstr_(connstr), instrument_(instrument), account_label_(account_label),
+          strategy_(strategy) {
         conn_ = PQconnectdb(connstr_.c_str());
         if (!conn_ || PQstatus(conn_) != CONNECTION_OK)
             throw std::runtime_error(std::string("OrbDB connect failed: ") +
@@ -33,7 +36,10 @@ public:
     }
 
     ~OrbDB() {
-        if (conn_) PQfinish(conn_);
+        if (conn_) {
+            if (instance_lock_held_) release_instance_lock();
+            PQfinish(conn_);
+        }
     }
 
     OrbDB(const OrbDB&)            = delete;
@@ -44,10 +50,95 @@ public:
 
     void reconnect() {
         PQreset(conn_);
-        if (PQstatus(conn_) != CONNECTION_OK)
+        if (PQstatus(conn_) != CONNECTION_OK) {
             LOG("[ORBDB] Reconnect failed: %s", PQerrorMessage(conn_));
-        else
-            LOG("[ORBDB] Reconnected to PostgreSQL");
+            return;
+        }
+        LOG("[ORBDB] Reconnected to PostgreSQL");
+        // Session-level advisory locks are dropped when the connection resets —
+        // re-acquire the instance lock so the single-instance guard survives.
+        if (instance_lock_held_) {
+            instance_lock_held_ = false;
+            if (!acquire_instance_lock(account_label_, strategy_))
+                LOG("[ORBDB] WARNING: instance lock lost on reconnect and could not be re-acquired");
+        }
+    }
+
+    // ── Single-instance guard (multi-executor safety) ─────────────────────────
+    // Acquires a PostgreSQL session-level advisory lock keyed on a stable hash of
+    // (account_label, strategy). A second executor started with the same pair gets
+    // false and must refuse to trade; different strategy on the same account gets
+    // its own lock. The lock is released on close()/destruction or automatically
+    // by the server if the connection dies.
+    bool acquire_instance_lock(const std::string& account_label,
+                               const std::string& strategy) {
+        if (!is_connected()) reconnect();
+        if (!is_connected()) return false;
+
+        int64_t key = instance_lock_key(account_label, strategy);
+        std::string ks = std::to_string(key);
+        const char* params[1] = { ks.c_str() };
+        PGresult* res = exec_params_query(
+            "SELECT pg_try_advisory_lock($1::bigint)", 1, params);
+        if (!res) return false;
+        bool acquired = (PQntuples(res) > 0 && PQgetvalue(res, 0, 0)[0] == 't');
+        PQclear(res);
+        if (acquired) {
+            instance_lock_held_ = true;
+            LOG("[ORBDB] Instance lock acquired: account=%s strategy=%s key=%lld",
+                account_label.c_str(), strategy.c_str(), (long long)key);
+        } else {
+            LOG("[ORBDB] Instance lock REFUSED: another executor holds account=%s strategy=%s",
+                account_label.c_str(), strategy.c_str());
+        }
+        return acquired;
+    }
+
+    void release_instance_lock() {
+        if (!instance_lock_held_ || !is_connected()) {
+            instance_lock_held_ = false;
+            return;
+        }
+        int64_t key = instance_lock_key(account_label_, strategy_);
+        std::string ks = std::to_string(key);
+        const char* params[1] = { ks.c_str() };
+        PGresult* res = exec_params_query(
+            "SELECT pg_advisory_unlock($1::bigint)", 1, params);
+        if (res) PQclear(res);
+        instance_lock_held_ = false;
+        LOG("[ORBDB] Instance lock released: account=%s strategy=%s",
+            account_label_.c_str(), strategy_.c_str());
+    }
+
+    bool instance_lock_held() const { return instance_lock_held_; }
+
+    // ── Checked exec for fire-and-forget writes (e.g. pending_stop_cancels) ────
+    // Unlike raw PQexec: verifies the connection (reconnecting once if dropped),
+    // checks the result status, and logs the server error. Returns false on
+    // failure instead of silently dropping the write. Never throws.
+    bool exec_logged(const std::string& sql) {
+        if (!is_connected()) {
+            reconnect();
+            if (!is_connected()) {
+                LOG("[ORBDB] exec_logged skipped — not connected. SQL: %.120s", sql.c_str());
+                return false;
+            }
+        }
+        PGresult* res = PQexec(conn_, sql.c_str());
+        if (!res) {
+            LOG("[ORBDB] exec_logged PQexec null: %s | SQL: %.120s",
+                PQerrorMessage(conn_), sql.c_str());
+            return false;
+        }
+        ExecStatusType st = PQresultStatus(res);
+        if (st != PGRES_COMMAND_OK && st != PGRES_TUPLES_OK) {
+            LOG("[ORBDB] exec_logged failed: %s | SQL: %.120s",
+                PQerrorMessage(conn_), sql.c_str());
+            PQclear(res);
+            return false;
+        }
+        PQclear(res);
+        return true;
     }
 
     // ── Write a completed trade ───────────────────────────────────────────────
@@ -430,6 +521,33 @@ public:
         return total;
     }
 
+    // ── Get today's realized P&L for an account (for seeding RiskManager on restart) ──
+    // Sums ALL strategies/instruments on the account: prop-firm daily loss limits
+    // are per-account, not per-strategy. Call once at startup and feed into
+    // RiskManager::seed_daily_pnl() so a restarted process cannot re-spend the
+    // daily loss limit it already consumed before the restart.
+    double seed_daily_pnl(const std::string& account_label,
+                          const std::string& trade_date) {
+        if (!is_connected()) reconnect();
+
+        const char* params[2] = {
+            account_label.c_str(),  // $1
+            trade_date.c_str()      // $2
+        };
+
+        PGresult* res = exec_params_query(
+            "SELECT COALESCE(SUM(pnl_usd), 0.0) FROM live_trades"
+            " WHERE account_label=$1 AND trade_date=$2::date",
+            2, params);
+
+        if (!res) return 0.0;
+        double daily = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
+        PQclear(res);
+        LOG("[ORBDB] Today's daily_pnl=%.2f (account=%s date=%s)",
+            daily, account_label.c_str(), trade_date.c_str());
+        return daily;
+    }
+
     // ── Get historical peak equity (high-water mark across all trades) ─────────
     // Returns the maximum running equity ever reached: starting_balance +
     // max cumulative P&L at any point in trade history.  Used to seed
@@ -542,11 +660,26 @@ public:
     // Push current price to any LISTEN live_tick_{account_label} subscribers (non-throwing)
     void notify_tick(double price) {
         if (!is_connected()) return;
+        // account_label is interpolated into the NOTIFY identifier (cannot be
+        // parameterized). It is charset-validated at config load; guard again
+        // here so a hand-constructed OrbDB cannot smuggle SQL into the channel name.
+        if (account_label_.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_") !=
+                std::string::npos) {
+            LOG("[ORBDB] notify_tick skipped — unsafe account_label '%s'",
+                account_label_.c_str());
+            return;
+        }
         char sql[128];
         snprintf(sql, sizeof(sql), "NOTIFY live_tick_%s, '%.2f'",
                  account_label_.c_str(), price);
         PGresult* res = PQexec(conn_, sql);
-        if (res) PQclear(res);
+        if (!res) {
+            LOG("[ORBDB] notify_tick PQexec null: %s", PQerrorMessage(conn_));
+            return;
+        }
+        if (PQresultStatus(res) != PGRES_COMMAND_OK)
+            LOG("[ORBDB] notify_tick failed: %s", PQerrorMessage(conn_));
+        PQclear(res);
     }
 
 private:
@@ -722,10 +855,25 @@ private:
         return res;
     }
 
+    // Stable 64-bit key for the (account_label, strategy) advisory lock.
+    // FNV-1a over a namespaced string — deterministic across processes and
+    // restarts, no dependence on PG-version-specific hashtext().
+    static int64_t instance_lock_key(const std::string& account_label,
+                                     const std::string& strategy) {
+        const std::string s = "nq_executor:" + account_label + ":" + strategy;
+        uint64_t h = 1469598103934665603ULL;
+        for (unsigned char c : s) {
+            h ^= c;
+            h *= 1099511628211ULL;
+        }
+        return (int64_t)h;  // reinterpret as signed bigint
+    }
+
     std::string connstr_;
     std::string instrument_;
     std::string account_label_;
-    std::string strategy_ = "ORB";
+    std::string strategy_;
     PGconn*     conn_ = nullptr;
     double      last_written_equity_ = -1.0; // suppress duplicate equity log lines
+    bool        instance_lock_held_  = false;
 };

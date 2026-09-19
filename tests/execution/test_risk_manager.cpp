@@ -17,6 +17,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <cmath>
+#include <cstdio>
+#include <fstream>
 #include <limits>
 #include <string>
 
@@ -220,6 +222,294 @@ TEST(cumulative_loss_breaches_daily_limit) {
     ASSERT(rm.halted());
 }
 
+// ─── Audit finding 1: daily loss limit must survive intra-day restarts ────────
+
+// 17. Restart seeding: a restarted process that already lost $490 today on a
+//     $500-limit account must halt after only $10 more loss — not a fresh $500.
+TEST(seed_daily_pnl_enforces_limit_after_restart) {
+    OrbConfig cfg = make_cfg(-500.0, 999999.0);
+    RiskManager rm(cfg, 25000.0);
+    rm.seed_daily_pnl(-490.0);      // from OrbDB::seed_daily_pnl() at startup
+    ASSERT_NEAR(rm.daily_pnl(), -490.0, 0.001);
+    ASSERT(!rm.halted());           // -490 > -500: still allowed
+    rm.on_trade_pnl(-15.0);         // daily_pnl = -505 <= -500 -> halt
+    ASSERT(rm.halted());
+}
+
+// 18. Restart seeding keeps consistency-cap "prior profit" correct: total_profit
+//     seeded from DB INCLUDES today's trades, so seeding daily_pnl excludes them
+//     from "prior" instead of double-counting today as both prior and today.
+TEST(seed_daily_pnl_excludes_today_from_consistency_prior) {
+    OrbConfig cfg = make_cfg(-999999.0, 9999999.0, 0.30);
+    RiskManager rm(cfg, 50000.0);
+    // DB says: total lifetime profit 2000, of which 1000 was earned today.
+    rm.seed_total_profit(2000.0);
+    rm.seed_daily_pnl(1000.0);
+    // True prior = 2000 - 1000 = 1000. Another 301 today -> daily=1301,
+    // 1301/1000 = 130% > 30% -> halt. Without the daily seed, prior would be
+    // wrongly computed as 2000 - 301 = 1699 and today would still be just 301.
+    rm.on_trade_pnl(301.0);
+    ASSERT(rm.halted());
+    ASSERT(rm.halt_reason().rfind("consistency_cap", 0) == 0);
+}
+
+// 19. Already over the limit at seed time: first new signal must be rejected
+//     even before any new trade closes.
+TEST(can_trade_rejects_when_seeded_daily_pnl_over_limit) {
+    OrbConfig cfg = make_cfg(-500.0, 999999.0);
+    RiskManager rm(cfg, 25000.0);
+    rm.seed_daily_pnl(-550.0);
+    ASSERT(!rm.can_trade());
+}
+
+// ─── Audit finding 4: drawdown/consistency halts must persist past midnight ───
+
+// 20. Daily-loss-limit halt IS cleared by reset_daily (it is a per-day rule).
+TEST(reset_daily_clears_daily_loss_halt_only) {
+    OrbConfig cfg = make_cfg(-1000.0, 999999.0);
+    RiskManager rm(cfg, 50000.0);
+    rm.on_trade_pnl(-1001.0);
+    ASSERT(rm.halted());
+    rm.reset_daily();
+    ASSERT(!rm.halted());
+    ASSERT(rm.can_trade());
+}
+
+// 21. Trailing-drawdown halt persists across reset_daily — prop-firm trailing
+//     DD breach is account-killing, not a per-day rule.
+TEST(reset_daily_preserves_drawdown_halt) {
+    OrbConfig cfg = make_cfg(-999999.0, 2500.0);
+    RiskManager rm(cfg, 50000.0);
+    rm.on_trade_pnl(2000.0);    // peak = 52000
+    rm.on_trade_pnl(-2500.0);   // dd = 2500 >= cap -> halt
+    ASSERT(rm.halted());
+    rm.reset_daily();
+    ASSERT(rm.halted());                    // still halted the next day
+    ASSERT(!rm.can_trade());
+    ASSERT(rm.halt_reason().rfind("trailing_drawdown_cap", 0) == 0);
+    ASSERT_NEAR(rm.daily_pnl(), 0.0, 0.001); // daily accumulator still resets
+}
+
+// 22. Consistency-cap halt also persists across reset_daily.
+TEST(reset_daily_preserves_consistency_halt) {
+    OrbConfig cfg = make_cfg(-999999.0, 9999999.0, 0.30);
+    RiskManager rm(cfg, 50000.0);
+    rm.seed_total_profit(1000.0);
+    rm.on_trade_pnl(301.0);     // 30.1% > 30% -> halt
+    ASSERT(rm.halted());
+    rm.reset_daily();
+    ASSERT(rm.halted());
+}
+
+// 23. Manual clear_halt() releases a drawdown halt.
+TEST(clear_halt_releases_drawdown_halt) {
+    OrbConfig cfg = make_cfg(-999999.0, 2500.0);
+    RiskManager rm(cfg, 50000.0);
+    rm.on_trade_pnl(2000.0);
+    rm.on_trade_pnl(-2500.0);
+    ASSERT(rm.halted());
+    rm.reset_daily();
+    ASSERT(rm.halted());
+    rm.clear_halt();            // operator reviewed and reset
+    ASSERT(!rm.halted());
+    // can_trade still independently blocks: dd is still >= cap until new profits
+    // raise equity — clear_halt only clears the latch, not the live check.
+    ASSERT(!rm.can_trade());
+}
+
+// ─── Audit finding 5: drawdown check must see open-position unrealized P&L ────
+
+// 24. Unrealized loss trips the can_trade() drawdown gate before the trade closes.
+TEST(update_unrealized_blocks_new_entry_on_drawdown) {
+    OrbConfig cfg = make_cfg(-999999.0, 2500.0);
+    RiskManager rm(cfg, 50000.0);
+    rm.on_trade_pnl(2000.0);        // equity = peak = 52000
+    ASSERT(rm.can_trade());
+    rm.update_unrealized(-2600.0);  // open position deep underwater
+    ASSERT(!rm.can_trade());        // effective equity 49400 -> dd 2600 >= 2500
+    rm.update_unrealized(-1000.0);  // position recovers
+    ASSERT(rm.can_trade());
+    rm.update_unrealized(0.0);      // flat again
+    ASSERT(rm.can_trade());
+}
+
+// 25. Unrealized P&L does not move realized equity or peak, and does not halt.
+TEST(update_unrealized_does_not_touch_realized_state) {
+    OrbConfig cfg = make_cfg(-999999.0, 2500.0);
+    RiskManager rm(cfg, 50000.0);
+    rm.update_unrealized(-9999.0);
+    ASSERT_NEAR(rm.equity(),      50000.0, 0.001);
+    ASSERT_NEAR(rm.peak_equity(), 50000.0, 0.001);
+    ASSERT(!rm.halted());
+}
+
+// 26. Non-finite unrealized P&L is ignored, not latched.
+TEST(update_unrealized_ignores_nan) {
+    OrbConfig cfg = make_cfg(-999999.0, 2500.0);
+    RiskManager rm(cfg, 50000.0);
+    rm.update_unrealized(std::numeric_limits<double>::quiet_NaN());
+    ASSERT(rm.can_trade());
+    ASSERT(!rm.halted());
+}
+
+// ─── Audit findings 3/6/8: config parser + validation ─────────────────────────
+
+static std::string write_temp_config(const char* name, const std::string& body) {
+    std::string path = std::string("/tmp/test_orb_cfg_") + name + ".json";
+    std::ofstream f(path);
+    f << body;
+    f.close();
+    return path;
+}
+
+// 27. Nested-object bleed (bulenox-style): "daily_loss_limit" only inside a
+//     nested "prop_firm" object must NOT be read as a top-level key. Before the
+//     fix this silently set daily_loss_limit=0.0, disabling the daily-loss check.
+TEST(config_nested_object_keys_do_not_bleed) {
+    std::string path = write_temp_config("nested", R"({
+        "_comment": "Bulenox-style overrides",
+        "starting_balance": 25000.0,
+        "trailing_drawdown_cap": 1500.0,
+        "prop_firm": {
+            "name": "Bulenox 25K",
+            "daily_loss_limit": 0.0,
+            "max_daily_trades": 3
+        }
+    })");
+    OrbConfig c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_NEAR(c.daily_loss_limit, -1000.0, 0.001);  // default preserved
+    ASSERT_NEAR(c.trailing_drawdown_cap, 1500.0, 0.001);
+    ASSERT_EQ(c.max_daily_trades, 3);                  // same value by default — no bleed check
+    ASSERT_NEAR(c.starting_balance, 25000.0, 0.001);
+}
+
+// 28. A "_comment" string quoting a key name must not shadow the real key.
+TEST(config_comment_string_does_not_shadow_key) {
+    std::string path = write_temp_config("comment", R"({
+        "_comment": "set \"qty\": 99 and \"daily_loss_limit\": 0.0 to reproduce the bug",
+        "qty": 2,
+        "daily_loss_limit": -500.0
+    })");
+    OrbConfig c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_EQ(c.qty, 2);                        // real key wins, not the quoted 99
+    ASSERT_NEAR(c.daily_loss_limit, -500.0, 0.001);
+}
+
+// 29. Escaped quotes inside a string value must not truncate it.
+TEST(config_string_value_with_escaped_quote) {
+    std::string path = write_temp_config("escape",
+        "{\n  \"trade_contract\": \"MNQ\\\"U6\"\n}\n");
+    OrbConfig c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_EQ(c.trade_contract, std::string("MNQ\"U6"));
+}
+
+// 30. New keys parse: strategy and commission_rt.
+TEST(config_parses_strategy_and_commission_rt) {
+    std::string path = write_temp_config("newkeys", R"({
+        "strategy": "VWAP",
+        "commission_rt": 4.0
+    })");
+    OrbConfig c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_EQ(c.strategy, std::string("VWAP"));
+    ASSERT_NEAR(c.commission_rt, 4.0, 0.001);
+}
+
+// 31. Defaults for strategy and commission_rt.
+TEST(config_strategy_commission_defaults) {
+    OrbConfig c;
+    ASSERT_EQ(c.strategy, std::string("ORB"));
+    ASSERT_NEAR(c.commission_rt, 1.0, 0.001);
+}
+
+// 32. Numeric validation: qty <= 0 throws a FATAL naming the key.
+TEST(config_validation_rejects_zero_qty) {
+    std::string path = write_temp_config("badqty", "{ \"qty\": 0 }");
+    bool threw = false;
+    try {
+        OrbConfig c = OrbConfig::from_file(path);
+        (void)c;
+    } catch (std::runtime_error& e) {
+        threw = true;
+        std::string msg = e.what();
+        ASSERT(msg.find("FATAL") != std::string::npos);
+        ASSERT(msg.find("qty") != std::string::npos);
+    }
+    std::remove(path.c_str());
+    ASSERT(threw);
+}
+
+// 33. Numeric validation: negative sl_points throws.
+TEST(config_validation_rejects_negative_sl_points) {
+    std::string path = write_temp_config("badsl", "{ \"sl_points\": -5.0 }");
+    bool threw = false;
+    try {
+        OrbConfig c = OrbConfig::from_file(path);
+        (void)c;
+    } catch (std::runtime_error& e) {
+        threw = true;
+        ASSERT(std::string(e.what()).find("sl_points") != std::string::npos);
+    }
+    std::remove(path.c_str());
+    ASSERT(threw);
+}
+
+// 34. Numeric validation: zero trailing_drawdown_cap throws.
+TEST(config_validation_rejects_zero_drawdown_cap) {
+    std::string path = write_temp_config("baddd", "{ \"trailing_drawdown_cap\": 0.0 }");
+    bool threw = false;
+    try {
+        OrbConfig c = OrbConfig::from_file(path);
+        (void)c;
+    } catch (std::runtime_error& e) {
+        threw = true;
+        ASSERT(std::string(e.what()).find("trailing_drawdown_cap") != std::string::npos);
+    }
+    std::remove(path.c_str());
+    ASSERT(threw);
+}
+
+// 35. account_label charset: SQL-unsafe labels rejected at load.
+TEST(config_validation_rejects_unsafe_account_label) {
+    std::string path = write_temp_config("badlabel",
+        "{ \"account_label\": \"x'; DROP TABLE live_trades;--\" }");
+    bool threw = false;
+    try {
+        OrbConfig c = OrbConfig::from_file(path);
+        (void)c;
+    } catch (std::runtime_error& e) {
+        threw = true;
+        ASSERT(std::string(e.what()).find("account_label") != std::string::npos);
+    }
+    std::remove(path.c_str());
+    ASSERT(threw);
+}
+
+// 36. A valid full config loads cleanly end-to-end.
+TEST(config_valid_file_loads) {
+    std::string path = write_temp_config("valid", R"({
+        "account_label": "tradeify1",
+        "strategy": "ORB",
+        "qty": 2,
+        "orb_minutes": 10,
+        "sl_points": 12.0,
+        "trail_step": 8.0,
+        "trailing_drawdown_cap": 1000.0,
+        "daily_loss_limit": -500.0,
+        "commission_rt": 1.04,
+        "dry_run": true
+    })");
+    OrbConfig c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_EQ(c.account_label, std::string("tradeify1"));
+    ASSERT_EQ(c.qty, 2);
+    ASSERT(c.dry_run);
+    ASSERT_NEAR(c.commission_rt, 1.04, 0.0001);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(no_halt_within_limits);
@@ -238,6 +528,30 @@ int main() {
     RUN(no_consistency_cap_on_first_day);
     RUN(set_equity_updates_peak_no_halt);
     RUN(cumulative_loss_breaches_daily_limit);
+    // Finding 1: restart seeding
+    RUN(seed_daily_pnl_enforces_limit_after_restart);
+    RUN(seed_daily_pnl_excludes_today_from_consistency_prior);
+    RUN(can_trade_rejects_when_seeded_daily_pnl_over_limit);
+    // Finding 4: halt persistence across reset_daily
+    RUN(reset_daily_clears_daily_loss_halt_only);
+    RUN(reset_daily_preserves_drawdown_halt);
+    RUN(reset_daily_preserves_consistency_halt);
+    RUN(clear_halt_releases_drawdown_halt);
+    // Finding 5: unrealized P&L in drawdown gate
+    RUN(update_unrealized_blocks_new_entry_on_drawdown);
+    RUN(update_unrealized_does_not_touch_realized_state);
+    RUN(update_unrealized_ignores_nan);
+    // Findings 3/6/8: config parser + validation
+    RUN(config_nested_object_keys_do_not_bleed);
+    RUN(config_comment_string_does_not_shadow_key);
+    RUN(config_string_value_with_escaped_quote);
+    RUN(config_parses_strategy_and_commission_rt);
+    RUN(config_strategy_commission_defaults);
+    RUN(config_validation_rejects_zero_qty);
+    RUN(config_validation_rejects_negative_sl_points);
+    RUN(config_validation_rejects_zero_drawdown_cap);
+    RUN(config_validation_rejects_unsafe_account_label);
+    RUN(config_valid_file_loads);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

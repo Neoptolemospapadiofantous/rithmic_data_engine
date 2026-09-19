@@ -4,7 +4,8 @@
 // or a .env file in the working directory.
 //
 // Run: ./test_db
-// All tests use a temporary schema prefix to avoid polluting production data.
+// All tests run inside an isolated rithmic_test schema (dropped on exit) —
+// production tables are never touched, so the live collector can keep writing.
 
 #include <cassert>
 #include <cstdio>
@@ -62,42 +63,54 @@ struct PGConnGuard {
 };
 
 // ── fixture ────────────────────────────────────────────────────────
+//
+// Every statement in this suite runs inside an isolated `rithmic_test`
+// schema, recreated fresh at static-init time and dropped at exit.  The
+// schema is selected via `options='-c search_path=rithmic_test'` on the
+// connection string, so all unqualified table references (including the
+// ones inside TickDB/AuditLog/ensure_schema) resolve there.  Production
+// tables in `public` are never touched — the suite is safe to run while
+// the live collector is writing.
 
-// g_connstr is initialised at static-init time by reading .env, so all TEST
-// static-initializer constructors (which run before main()) have a valid connstr.
-static std::string g_connstr = []() -> std::string {
+static std::string g_base_connstr = []() {
     Config c = Config::from_env(".env");
     return c.pg_connstr();
 }();
 
-static void setup_test_schema(PGconn* conn) {
-    // Use a separate test table so we don't touch production data
-    PGresult* r;
-    r = PQexec(conn, "DROP TABLE IF EXISTS ticks_test CASCADE");
-    if (r) PQclear(r);
+// g_connstr initialises after g_base_connstr (definition order), before any
+// TEST static-initializer constructor runs — so every test connection lands
+// in the isolated schema.
+static std::string g_connstr = []() -> std::string {
+    PGconn* c = PQconnectdb(g_base_connstr.c_str());
+    if (PQstatus(c) != CONNECTION_OK) {
+        std::fprintf(stderr, "Cannot connect to PostgreSQL: %s\n",
+                     PQerrorMessage(c));
+        PQfinish(c);
+        std::exit(1);
+    }
+    PGresult* r = PQexec(c,
+        "DROP SCHEMA IF EXISTS rithmic_test CASCADE;"
+        "CREATE SCHEMA rithmic_test;");
+    bool ok = r && PQresultStatus(r) == PGRES_COMMAND_OK;
+    if (!ok) {
+        std::fprintf(stderr, "Cannot create test schema: %s\n",
+                     PQerrorMessage(c));
+        if (r) PQclear(r);
+        PQfinish(c);
+        std::exit(1);
+    }
+    PQclear(r);
+    PQfinish(c);
+    return g_base_connstr + " options='-c search_path=rithmic_test'";
+}();
 
-    r = PQexec(conn, R"(
-        CREATE TABLE ticks_test (
-            ts_event  TIMESTAMPTZ NOT NULL,
-            price     DOUBLE PRECISION NOT NULL,
-            size      BIGINT NOT NULL,
-            side      CHAR(1),
-            is_buy    BOOLEAN,
-            source    VARCHAR(32) DEFAULT 'amp_rithmic'
-        );
-        CREATE UNIQUE INDEX ON ticks_test(ts_event);
-        ALTER TABLE ticks_test RENAME TO ticks;
-    )");
-    // Note: for simplicity we just rename to 'ticks' in a transaction — in a real
-    // test suite use a separate schema (SET search_path TO test_schema).
-    if (r) PQclear(r);
-}
-
-static void teardown_test_schema(PGconn* conn) {
-    PGresult* r = PQexec(conn, "DROP TABLE IF EXISTS ticks CASCADE");
-    if (r) PQclear(r);
-    r = PQexec(conn, "DROP TABLE IF EXISTS audit_log CASCADE");
-    if (r) PQclear(r);
+static void drop_test_schema() {
+    PGconn* c = PQconnectdb(g_base_connstr.c_str());
+    if (PQstatus(c) == CONNECTION_OK) {
+        PGresult* r = PQexec(c, "DROP SCHEMA IF EXISTS rithmic_test CASCADE");
+        if (r) PQclear(r);
+    }
+    PQfinish(c);
 }
 
 // ── tests ──────────────────────────────────────────────────────────
@@ -208,14 +221,9 @@ TEST(large_batch) {
 
 // ── BBO helpers ────────────────────────────────────────────────────
 
+// Truncate (inside the isolated rithmic_test schema) rather than drop so
+// the hypertable structure created by ensure_schema is preserved.
 static void truncate_bbo_table(PGconn* conn) {
-    // Truncate rather than drop so the hypertable structure (created by
-    // ensure_schema) is preserved.
-    PGresult* r = PQexec(conn, "TRUNCATE TABLE bbo");
-    if (r) PQclear(r);
-}
-
-static void teardown_bbo_table(PGconn* conn) {
     PGresult* r = PQexec(conn, "TRUNCATE TABLE bbo");
     if (r) PQclear(r);
 }
@@ -249,10 +257,8 @@ static void test_write_bbo_empty_batch() {
 }
 
 static void test_write_bbo_dedup() {
-    // bbo has no UNIQUE constraint (only a plain ts_event DESC index).
-    // write_bbo uses ON CONFLICT DO NOTHING which is only a no-op when a
-    // unique constraint is violated.  Without one, every insert succeeds.
-    // This test verifies the write path is stable with repeated rows.
+    // idx_bbo_unique (symbol, exchange, ts_event) drives ON CONFLICT
+    // DO UPDATE — a repeated identical row merges (no duplicate, no error).
     TickDB db(g_connstr);
 
     std::vector<BBORow> rows = {
@@ -262,19 +268,74 @@ static void test_write_bbo_dedup() {
     int first  = db.write_bbo(rows);
     int second = db.write_bbo(rows);
 
-    // Both inserts succeed since there is no unique constraint on bbo
     ASSERT(first  >= 1);
-    ASSERT(second >= 0);  // 0 or 1 — both are acceptable
+    ASSERT(second >= 0);  // 0 or 1 — a DO UPDATE merge counts as affected
+}
+
+// Helper: true if idx_bbo_unique exists (required for the merge-on-conflict path)
+static bool bbo_unique_index_exists() {
+    PGConnGuard g(g_connstr);
+    if (!g.ok()) return false;
+    PGresult* r = PQexec(g.get(),
+        "SELECT COUNT(*) FROM pg_indexes"
+        " WHERE schemaname='rithmic_test' AND tablename='bbo'"
+        "   AND indexname='idx_bbo_unique'");
+    bool ok = r && PQresultStatus(r) == PGRES_TUPLES_OK && std::atoi(PQgetvalue(r, 0, 0)) > 0;
+    if (r) PQclear(r);
+    return ok;
+}
+
+// One-sided updates (absent side = nullopt → SQL NULL) must merge with
+// COALESCE so a bid-only and an ask-only update at the same ts_event
+// combine into a single two-sided row instead of clobbering each other.
+static void test_write_bbo_null_side_merge() {
+    if (!bbo_unique_index_exists())
+        throw SkipTest("idx_bbo_unique not present (required for merge-on-conflict)");
+
+    {
+        PGConnGuard g(g_connstr);
+        truncate_bbo_table(g.get());
+    }
+
+    TickDB db(g_connstr);
+    int64_t ts = 1712000600'000000LL;
+
+    // Bid-only update — ask side absent
+    std::vector<BBORow> bid_only = {
+        {ts, 18499.75, 10, 3, std::nullopt, 0, 0, "NQ", "CME"},
+    };
+    ASSERT_EQ(db.write_bbo(bid_only), 1);
+
+    // Ask-only update at the same ts_event — bid side absent
+    std::vector<BBORow> ask_only = {
+        {ts, std::nullopt, 0, 0, 18500.25, 8, 2, "NQ", "CME"},
+    };
+    db.write_bbo(ask_only);
+
+    // The two one-sided rows must have merged into one two-sided row
+    PGresult* res = PQexec(db.conn(),
+        "SELECT bid_price, bid_size, bid_orders, ask_price, ask_size, ask_orders"
+        " FROM bbo WHERE ts_event = to_timestamp(1712000600.0)");
+    ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
+    ASSERT_EQ(PQntuples(res), 1);
+    ASSERT(!PQgetisnull(res, 0, 0));
+    ASSERT(!PQgetisnull(res, 0, 3));
+    double bid = std::atof(PQgetvalue(res, 0, 0));
+    double ask = std::atof(PQgetvalue(res, 0, 3));
+    int bid_sz = std::atoi(PQgetvalue(res, 0, 1));
+    int ask_sz = std::atoi(PQgetvalue(res, 0, 4));
+    PQclear(res);
+    ASSERT(bid == 18499.75);
+    ASSERT(ask == 18500.25);
+    ASSERT_EQ(bid_sz, 10);
+    ASSERT_EQ(ask_sz, 8);
 }
 
 // ── DepthRow helpers ────────────────────────────────────────────────
 
+// Truncate (inside the isolated rithmic_test schema) rather than drop so
+// the hypertable structure created by ensure_schema is preserved.
 static void truncate_depth_table(PGconn* conn) {
-    PGresult* r = PQexec(conn, "TRUNCATE TABLE depth_by_order");
-    if (r) PQclear(r);
-}
-
-static void teardown_depth_table(PGconn* conn) {
     PGresult* r = PQexec(conn, "TRUNCATE TABLE depth_by_order");
     if (r) PQclear(r);
 }
@@ -287,7 +348,8 @@ static bool depth_unique_index_exists() {
     if (!g.ok()) return false;
     PGresult* r = PQexec(g.get(),
         "SELECT COUNT(*) FROM pg_indexes"
-        " WHERE tablename='depth_by_order' AND indexname='idx_depth_unique'");
+        " WHERE schemaname='rithmic_test' AND tablename='depth_by_order'"
+        "   AND indexname='idx_depth_unique'");
     bool ok = r && PQresultStatus(r) == PGRES_TUPLES_OK && std::atoi(PQgetvalue(r, 0, 0)) > 0;
     if (r) PQclear(r);
     return ok;
@@ -359,7 +421,40 @@ static void test_write_depth_update_types() {
     ASSERT_EQ(inserted, 3);
 }
 
+// source_ns == 0 means "source timestamp absent": rows must be plain-inserted
+// (no dedup key — it would collapse them) and must never error, regardless of
+// whether idx_depth_unique exists.  nullopt prev_depth_price → SQL NULL.
+static void test_write_depth_zero_source_ns() {
+    {
+        PGConnGuard g(g_connstr);
+        truncate_depth_table(g.get());
+    }
+
+    TickDB db(g_connstr);
+
+    std::vector<DepthRow> rows = {
+        {1712000700'000000LL, 0, 4001, 1, 1, 18510.0,  std::nullopt, 5, "ORD_Z1", "NQ", "CME"},
+        {1712000701'000000LL, 0, 4002, 2, 1, 18510.0,  18510.0,      3, "ORD_Z2", "NQ", "CME"},
+        {1712000702'000000LL, 0, 4003, 1, 2, 18510.25, std::nullopt, 7, "ORD_Z3", "NQ", "CME"},
+    };
+
+    int inserted = db.write_depth(rows);
+    ASSERT_EQ(inserted, 3);
+
+    // nullopt prev_depth_price stored as SQL NULL
+    PGresult* res = PQexec(db.conn(),
+        "SELECT prev_depth_price FROM depth_by_order"
+        " WHERE exchange_order_id = 'ORD_Z1'");
+    ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
+    ASSERT(PQntuples(res) >= 1);
+    bool is_null = PQgetisnull(res, 0, 0);
+    PQclear(res);
+    ASSERT(is_null);
+}
+
 // ── Schema verification tests (information_schema queries) ──────────
+// Catalog queries are pinned to the isolated rithmic_test schema —
+// production tables with the same names must not satisfy them.
 
 static void test_bbo_table_exists() {
     PGConnGuard g(g_connstr);
@@ -367,7 +462,7 @@ static void test_bbo_table_exists() {
 
     PGresult* res = PQexec(g.get(),
         "SELECT COUNT(*) FROM information_schema.columns"
-        " WHERE table_name = 'bbo'");
+        " WHERE table_schema = 'rithmic_test' AND table_name = 'bbo'");
     ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
     int count = std::atoi(PQgetvalue(res, 0, 0));
     PQclear(res);
@@ -386,7 +481,8 @@ static void test_bbo_has_required_columns() {
     for (const char* col : required) {
         std::string sql =
             std::string("SELECT COUNT(*) FROM information_schema.columns"
-                        " WHERE table_name = 'bbo' AND column_name = '") + col + "'";
+                        " WHERE table_schema = 'rithmic_test'"
+                        "   AND table_name = 'bbo' AND column_name = '") + col + "'";
         PGresult* res = PQexec(g.get(), sql.c_str());
         ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
         int cnt = std::atoi(PQgetvalue(res, 0, 0));
@@ -402,7 +498,7 @@ static void test_depth_table_exists() {
 
     PGresult* res = PQexec(g.get(),
         "SELECT COUNT(*) FROM information_schema.columns"
-        " WHERE table_name = 'depth_by_order'");
+        " WHERE table_schema = 'rithmic_test' AND table_name = 'depth_by_order'");
     ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
     int count = std::atoi(PQgetvalue(res, 0, 0));
     PQclear(res);
@@ -416,7 +512,8 @@ static void test_depth_has_source_ns() {
 
     PGresult* res = PQexec(g.get(),
         "SELECT COUNT(*) FROM information_schema.columns"
-        " WHERE table_name = 'depth_by_order' AND column_name = 'source_ns'");
+        " WHERE table_schema = 'rithmic_test'"
+        "   AND table_name = 'depth_by_order' AND column_name = 'source_ns'");
     ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
     int count = std::atoi(PQgetvalue(res, 0, 0));
     PQclear(res);
@@ -430,7 +527,8 @@ static void test_depth_has_update_type() {
 
     PGresult* res = PQexec(g.get(),
         "SELECT COUNT(*) FROM information_schema.columns"
-        " WHERE table_name = 'depth_by_order' AND column_name = 'update_type'");
+        " WHERE table_schema = 'rithmic_test'"
+        "   AND table_name = 'depth_by_order' AND column_name = 'update_type'");
     ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
     int count = std::atoi(PQgetvalue(res, 0, 0));
     PQclear(res);
@@ -439,15 +537,18 @@ static void test_depth_has_update_type() {
 }
 
 static void test_ticks_unique_index_wide() {
-    // Regression guard: idx_ticks_unique must include 'price' AND 'size' columns.
-    // The old narrow index (ts_event only) allowed duplicate trades sharing
-    // a microsecond timestamp to be silently dropped.
+    // Regression guard: idx_ticks_unique must include 'price' AND 'size'
+    // AND the 'seq' tiebreaker column.  The old narrow index (ts_event
+    // only) allowed duplicate trades sharing a microsecond timestamp to be
+    // silently dropped, and the 5-col version (no seq) merged two legit
+    // same-price/same-size trades in the same microsecond.
     PGConnGuard g(g_connstr);
     ASSERT(g.ok());
 
     PGresult* res = PQexec(g.get(),
         "SELECT indexdef FROM pg_indexes"
-        " WHERE tablename = 'ticks' AND indexname = 'idx_ticks_unique'");
+        " WHERE schemaname = 'rithmic_test' AND tablename = 'ticks'"
+        "   AND indexname = 'idx_ticks_unique'");
     ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
 
     bool found = PQntuples(res) > 0;
@@ -459,31 +560,38 @@ static void test_ticks_unique_index_wide() {
     ASSERT(found);
     ASSERT(indexdef.find("price") != std::string::npos);
     ASSERT(indexdef.find("size")  != std::string::npos);
+    ASSERT(indexdef.find("seq")   != std::string::npos);
+}
+
+// Two legit identical trades in the same microsecond must both land
+// (seq tiebreaker), while a redelivered duplicate batch must dedup.
+static void test_tick_dedup_tiebreaker() {
+    TickDB db(g_connstr);
+
+    int64_t ts = 1712002000'000000LL;
+    std::vector<TickRow> rows = {
+        {ts, 18600.0, 4, true,  "NQ", "CME"},
+        {ts, 18600.0, 4, true,  "NQ", "CME"},  // legit same-µs duplicate
+        {ts, 18600.0, 7, false, "NQ", "CME"},
+    };
+
+    int inserted = db.write(rows);
+    ASSERT_EQ(inserted, 3);
+
+    // Redelivery of the same batch reproduces the same seqs → all deduped
+    int again = db.write(rows);
+    ASSERT_EQ(again, 0);
 }
 
 // ── main ───────────────────────────────────────────────────────────
 
 int main() {
-    // Load .env if present
-    Config cfg = Config::from_env(".env");
-    g_connstr  = cfg.pg_connstr();
+    // g_connstr was initialised at static-init time: it points at a fresh,
+    // isolated rithmic_test schema — never at production tables.
 
     std::printf("\n=== TickDB + AuditLog integration tests ===\n\n");
 
-    // Setup fresh test tables
-    {
-        PGconn* setup_conn = PQconnectdb(g_connstr.c_str());
-        if (PQstatus(setup_conn) != CONNECTION_OK) {
-            std::fprintf(stderr, "Cannot connect to PostgreSQL: %s\n",
-                         PQerrorMessage(setup_conn));
-            PQfinish(setup_conn);
-            return 1;
-        }
-        teardown_test_schema(setup_conn);
-        PQfinish(setup_conn);
-    }
-
-    // TickDB constructor creates the schema
+    // TickDB constructor creates the schema objects inside rithmic_test
     {
         TickDB db(g_connstr);  // triggers ensure_schema()
         (void)db;
@@ -493,16 +601,21 @@ int main() {
     // New tests (BBORow, DepthRow, schema) run explicitly below, after the
     // schema is guaranteed to be in place.
 
+    std::printf("\n--- Tick dedup tests ---\n");
+    RUN_TEST(tick_dedup_tiebreaker);
+
     std::printf("\n--- BBORow tests ---\n");
     RUN_TEST(write_bbo_basic);
     RUN_TEST(write_bbo_empty_batch);
     RUN_TEST(write_bbo_dedup);
+    RUN_TEST(write_bbo_null_side_merge);
 
     std::printf("\n--- DepthRow tests ---\n");
     RUN_TEST(write_depth_basic);
     RUN_TEST(write_depth_empty_batch);
     RUN_TEST(write_depth_dedup);
     RUN_TEST(write_depth_update_types);
+    RUN_TEST(write_depth_zero_source_ns);
 
     std::printf("\n--- Schema verification tests ---\n");
     RUN_TEST(bbo_table_exists);
@@ -515,16 +628,9 @@ int main() {
     std::printf("\n=== Results: %d passed, %d failed, %d skipped ===\n\n",
                 g_passed, g_failed, g_skipped);
 
-    // Teardown
-    {
-        PGconn* c = PQconnectdb(g_connstr.c_str());
-        if (PQstatus(c) == CONNECTION_OK) {
-            teardown_test_schema(c);
-            teardown_bbo_table(c);
-            teardown_depth_table(c);
-        }
-        PQfinish(c);
-    }
+    // Teardown: drop the whole isolated schema — production tables in
+    // `public` are never touched.
+    drop_test_schema();
 
     return g_failed > 0 ? 1 : 0;
 }

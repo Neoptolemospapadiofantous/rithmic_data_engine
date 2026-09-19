@@ -479,8 +479,8 @@ public:
                          ? fill_price - pos_.entry_price
                          : pos_.entry_price - fill_price;
             pos_.pnl_points = pts;
-            pos_.pnl_usd    = pts * cfg_.point_value
-                              - 2.0 * MNQ_COMMISSION; // round-turn
+            pos_.pnl_usd    = pts * cfg_.point_value * pos_.qty
+                              - cfg_.commission_rt * pos_.qty; // round-turn commission
 
             // Cancel the exchange stop order if it wasn't the one that just filled;
             // if it WAS the one that filled (natural stop fire), remove it from the
@@ -525,6 +525,10 @@ public:
 
             pos_ = Position{};  // back to FLAT
             trade_completed_ = true;
+            // Reject-correlation and fill-dedupe state is scoped to the lifetime of
+            // the trade's orders (baskets are unique per order) — drop it at close.
+            server_to_client_orders_.clear();
+            processed_fill_qty_.clear();
             // last_stop_for_unwind_ intentionally NOT cleared here.
             // It persists until clear_post_close_recancels() (5s window) so that if
             // the just-cancelled stop fires late it is recognised as STALE-STOP-FILL
@@ -778,14 +782,24 @@ public:
         initiate_exit_locked("stuck_exit_retry", current_price);
     }
 
-    // ── Reject notification (entry rejected by exchange) ─────────────────────
+    // ── Reject notification (entry/exit/stop rejected by gateway or exchange) ──
+    // Gateway rejects (tid=313/315 ResponseNewOrder) carry ONLY the server-assigned
+    // basket_id — the proto has no user_tag field — so resolve it through the
+    // server→client map populated from tid=351/352 notifications before matching.
     void on_order_rejected(const std::string& basket_id, const std::string& msg) {
         std::lock_guard<std::mutex> lk(state_mu_);
-        LOG("[OM] Order rejected basket=%s msg=%s", basket_id.c_str(), msg.c_str());
-        if (pos_.basket_id_entry == basket_id && pos_.state == PosState::PENDING_ENTRY) {
+        std::string resolved = basket_id;
+        if (auto it = server_to_client_orders_.find(basket_id);
+            it != server_to_client_orders_.end()) {
+            resolved = it->second;
+            LOG("[OM] Reject correlation: server=%s → client=%s",
+                basket_id.c_str(), resolved.c_str());
+        }
+        LOG("[OM] Order rejected basket=%s msg=%s", resolved.c_str(), msg.c_str());
+        if (pos_.basket_id_entry == resolved && pos_.state == PosState::PENDING_ENTRY) {
             pos_ = Position{};
             LOG("[OM] Reverted to FLAT after entry rejection");
-        } else if (pos_.basket_id_exit == basket_id && pos_.state == PosState::PENDING_EXIT) {
+        } else if (pos_.basket_id_exit == resolved && pos_.state == PosState::PENDING_EXIT) {
             LOG("[OM] CRITICAL: Exit order rejected basket=%s — reverting to %s",
                 basket_id.c_str(), pos_.direction == OrbSignal::BUY ? "LONG" : "SHORT");
             pos_.state = (pos_.direction == OrbSignal::BUY) ? PosState::LONG : PosState::SHORT;
@@ -798,7 +812,8 @@ public:
                     rejected_exit_count_);
                 entry_halted_ = true;
             }
-        } else if (pos_.basket_id_stop == basket_id) {
+        } else if (pos_.basket_id_stop == resolved ||
+                   (!stop_server_basket_.empty() && stop_server_basket_ == basket_id)) {
             // Stop order rejected — clear basket so software SL fallback activates
             pos_.basket_id_stop.clear();
             stop_server_basket_.clear();  // stale server mapping no longer valid
@@ -866,28 +881,49 @@ public:
             pos_.basket_id_stop.c_str(), server_basket_id.c_str(), (long)elapsed_ms);
     }
 
-    // ── Modify response from exchange — if rejected, fall back to cancel+resubmit ──
-    void on_modify_response(bool accepted, const std::string& rp_code) {
+    // Map a server-assigned basket_id to our client user_tag (tid=351/352 notifications
+    // carry both). Gateway rejects (tid=313/315) carry only the server basket_id, so
+    // on_order_rejected() resolves them through this map.
+    void map_server_basket(const std::string& client_id, const std::string& server_id) {
+        if (client_id.empty() || server_id.empty()) return;
         std::lock_guard<std::mutex> lk(state_mu_);
-        if (!pending_modify_) return;
-        pending_modify_ = false;
-        if (accepted) {
-            LOG("[OM] Stop modify ACKed by exchange (new_sl=%.2f)", pending_modify_new_sl_);
-            pending_modify_new_sl_ = 0.0;
-        } else {
-            double new_sl = pending_modify_new_sl_;
-            pending_modify_new_sl_ = 0.0;
-            LOG("[OM] Stop modify REJECTED (rp_code=%s) — cancel+resubmit at %.2f",
-                rp_code.c_str(), new_sl);
-            if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return;
-            cancel_stop_locked();
-            submit_stop_order_locked(new_sl);
-        }
+        server_to_client_orders_[server_id] = client_id;
     }
 
-    bool has_pending_modify() const {
+    // Fill dedupe: the same fill can be delivered on tid=351 (cumulative
+    // total_fill_size) AND tid=352 (per-event fill_size), and tid=351 can repeat a
+    // COMPLETE notification (partial-then-complete sends the running total again).
+    // Returns true when a fill for basket_id at this quantity was already processed —
+    // the caller must skip it.
+    bool fill_already_processed(const std::string& basket_id, int fill_qty) {
         std::lock_guard<std::mutex> lk(state_mu_);
-        return pending_modify_;
+        int& seen = processed_fill_qty_[basket_id];
+        if (seen >= fill_qty) return true;
+        seen = fill_qty;
+        return false;
+    }
+
+    // PENDING_ENTRY watchdog: if the entry order has been pending longer than
+    // timeout_secs (gateway reject lost or uncorrelatable, fill never delivered),
+    // cancel it and revert to FLAT. Returns true when a timeout cancel was issued.
+    bool pending_entry_timeout_check(int timeout_secs = 10) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (pos_.state != PosState::PENDING_ENTRY) return false;
+        if (cfg_.dry_run) return false;  // dry-run entries fill synchronously
+        auto age_s = std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::steady_clock::now() - pos_.fill_time).count();
+        if (age_s < timeout_secs) return false;
+        LOG("[OM] CRITICAL: PENDING_ENTRY timeout (%lds >= %ds) — cancelling entry "
+            "basket=%s and reverting to FLAT",
+            (long)age_s, timeout_secs, pos_.basket_id_entry.c_str());
+        // Same late-fill guard as flatten_now(): if the entry fills after the cancel,
+        // the spurious-fill handler unwinds it immediately.
+        pending_cancel_basket_  = pos_.basket_id_entry;
+        pending_cancel_was_buy_ = (pos_.direction == OrbSignal::BUY);
+        if (cancel_cb_ && !pos_.basket_id_entry.empty())
+            cancel_cb_(pos_.basket_id_entry);
+        pos_ = Position{};
+        return true;
     }
 
     // ── Read-only position snapshot for DB / UI writes ────────────────────────
@@ -956,9 +992,14 @@ private:
     // Server-assigned basket_id for the current stop order (needed for RequestModifyOrder)
     std::string stop_server_basket_;
     std::chrono::steady_clock::time_point stop_submit_time_{};  // for server-mapping latency log
-    // Pending modify state: tracks an in-flight modify so rejection triggers fallback
-    bool        pending_modify_      = false;
-    double      pending_modify_new_sl_ = 0.0;
+
+    // Server-assigned basket_id → client user_tag for entry/exit/stop orders.
+    // Populated from tid=351/352 notifications (map_server_basket); used by
+    // on_order_rejected() to correlate gateway rejects, which carry no user_tag.
+    std::unordered_map<std::string, std::string> server_to_client_orders_;
+    // Fill dedupe: basket_id → largest fill quantity already processed.
+    // tid=351 reports cumulative total_fill_size; tid=352 per-event fill_size.
+    std::unordered_map<std::string, int> processed_fill_qty_;
 
     // Stale stop unwind state (fires when old stop fills after position already closed)
     std::string last_stop_for_unwind_;      // basket of stop sent to cancel at position close
@@ -1058,7 +1099,6 @@ private:
         pos_.basket_id_stop = basket;
         stop_server_basket_.clear();   // new stop — server basket_id not yet known
         stop_submit_time_ = std::chrono::steady_clock::now();
-        pending_modify_      = false;  // clear any stale pending modify
         LOG("[OM] STOP-SUBMIT: %s STOP_MARKET at %.2f basket=%s "
             "(entry=%.2f dist=%.2fpt pending_cancelled=%zu)",
             stop_is_sell ? "SELL" : "BUY", sl_price, basket.c_str(),
@@ -1164,8 +1204,6 @@ private:
         cancel_cb_(cancel_id);
         pos_.basket_id_stop.clear();
         stop_server_basket_.clear();
-        pending_modify_      = false;
-        pending_modify_new_sl_ = 0.0;
     }
 
     void initiate_exit_locked(const std::string& reason, double ref_price) {

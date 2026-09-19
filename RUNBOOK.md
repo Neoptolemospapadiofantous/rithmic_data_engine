@@ -7,20 +7,24 @@ Authoritative checklist for the C++ executor lifecycle: dry-run baseline, Oracle
 ## Prerequisites
 
 - [ ] `make hermes` fully green (0 FAIL, 0 WARN)
-- [ ] `.env` present with valid `PG_*`, `RITHMIC_LEGENDS_*`, `RITHMIC_AMP_*`
+- [ ] `.env` present with valid `PG_*`, `RITHMIC_TRADEIFY_*` (plus `.env.<account>` per account, e.g. `.env.tradeify1`)
 - [ ] Oracle VM reachable: `ssh opc@170.9.233.177 -i ~/.ssh/id_ed25519`
-- [ ] Prop firm account funded (Legends 50K Master — check portal)
-- [ ] `config/live_config.json` validated: `trade_route="simulator"`, correct `symbol`, `account_id`
+- [ ] Prop firm account funded (check portal)
+- [ ] Per-account config validated (e.g. `config/tradeify_config.json`): `trade_route="simulator"`, correct `symbol`, `account_id`
+
+Configs are per-account: systemd instance `%I` maps to `config/%I_config.json` and `.env.%I` (see `deploy/nq_executor@.service`). `config/live_config.json` is frozen — no binary reads its `dry_run` flag.
 
 ---
 
 ## Step 1 — Verify dry-run baseline (5 sessions)
 
-Set `dry_run: true` in `config/live_config.json`, then run locally:
+Set `dry_run: true` in the per-account config (e.g. `config/tradeify_config.json`), then run locally:
 
 ```bash
-./build/nq_executor
+./build/nq_executor --config config/tradeify_config.json
 ```
+
+Local mode: the dashboard (http://localhost:3000) launches the backend (`:8080`, `CPP_LOCAL=1`), collector, and executor as `nohup` subprocesses — no systemd locally. See "Local mode" in CLAUDE.md.
 
 For each session confirm in `data/logs/nq_executor.log`:
 - `ORB_BUILDING` fires at session open (`session_open_hour:session_open_min`)
@@ -59,29 +63,33 @@ This:
 
 ## Step 4 — Promote to live
 
-Edit `config/live_config.json` — set `dry_run: false`. Then redeploy:
+Edit the per-account config (e.g. `config/tradeify_config.json`) — set `dry_run: false`. Then redeploy:
 
 ```bash
 make deploy
 ```
 
-> **Rollback:** Set `dry_run: true` in config and `make deploy` again.
+> **Rollback:** Set `dry_run: true` in the same per-account config and `make deploy` again.
+> Do not edit `config/live_config.json` — it is frozen and its `dry_run` flag is not read by any binary.
 
 ---
 
 ## Step 5 — Start the service on Oracle
 
-For the standard RTH session (09:30–16:00):
+The systemd instance name is the account label: `%I` → `config/%I_config.json` + `.env.%I`.
+For the Tradeify account, standard RTH session (09:30–16:00):
 ```bash
 ssh opc@170.9.233.177
-sudo systemctl enable --now nq_executor@RTH
-sudo systemctl status nq_executor@RTH
+sudo systemctl enable --now nq_executor@tradeify
+sudo systemctl status nq_executor@tradeify
 ```
 
 For 24×7 mode:
 ```bash
-sudo systemctl enable --now nq_executor-24x7@default
+sudo systemctl enable --now nq_executor-24x7@tradeify
 ```
+
+(The two units conflict with each other per instance — never run both for the same account.)
 
 Expected within 60 s:
 - `startup complete — entering trading loop`
@@ -94,7 +102,7 @@ Expected within 60 s:
 
 **Live logs on Oracle VM:**
 ```bash
-journalctl -u nq_executor@RTH -f
+journalctl -u nq_executor@tradeify -f
 ```
 
 **Key events:**
@@ -115,8 +123,11 @@ journalctl -u nq_executor@RTH -f
 
 ### Stop immediately
 ```bash
-# Via systemd
-sudo systemctl stop nq_executor@RTH
+# Via systemd (Oracle)
+sudo systemctl stop nq_executor@tradeify
+
+# Local mode: kill the nohup'd executor directly
+pkill -SIGTERM -f 'nq_executor --config'
 
 # Or direct signal if systemd unresponsive
 kill -SIGTERM $(pgrep nq_executor)
@@ -125,7 +136,7 @@ kill -SIGTERM $(pgrep nq_executor)
 SIGTERM triggers: `g_running=false` → flattens open position → flushes DB → exits.
 
 ### Revert to paper mode
-Edit `config/live_config.json` — set `dry_run: true` — then `make deploy` and restart the service.
+Edit the per-account config (e.g. `config/tradeify_config.json`) — set `dry_run: true` — then `make deploy` and restart the service (Oracle), or restart the executor from the dashboard (local).
 
 ### Block restarts (NO_DEPLOY lockfile)
 ```bash
@@ -140,7 +151,7 @@ The audit daemon and service `ExecStartPre` check for this file and refuse to st
 
 ### Check Oracle service logs since last boot
 ```bash
-journalctl -u nq_executor@RTH -b
+journalctl -u nq_executor@tradeify -b
 ```
 
 ---

@@ -87,6 +87,21 @@ If tests break because of your changes: fix the code OR add tests that cover the
 | `deploy/nq_executor@.service` | Systemd template unit (RTH sessions) |
 | `deploy/nq_executor_24x7@.service` | Systemd template unit (24×7 mode) |
 
+## Local mode
+
+Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
+
+- **Dashboard** on http://localhost:3000 launches and supervises everything locally.
+- **Backend** on `:8080` runs with `CPP_LOCAL=1`; it spawns the **collector** and
+  `nq_executor` as `nohup` subprocesses (per-account config, e.g.
+  `./build/nq_executor --config config/tradeify_config.json`).
+- To stop a local executor: `pkill -SIGTERM -f 'nq_executor --config'` (SIGTERM flattens and exits cleanly).
+
+**WARNING — Oracle failback:** before starting an executor on Oracle (failback or
+deploy), kill any locally running executors for the same account. There is currently
+**no cross-host single-writer guard**, so a local executor and an Oracle executor can
+trade the same account simultaneously.
+
 ## Oracle deployment
 
 Oracle VM: `170.9.233.177`, user `opc`, key `~/.ssh/id_ed25519`

@@ -76,6 +76,13 @@ add_executable(test_orb_strategy tests/execution/test_orb_strategy.cpp)
 target_include_directories(test_orb_strategy PRIVATE src/execution src/)
 target_compile_features(test_orb_strategy PRIVATE cxx_std_20)
 
+add_executable(test_mtf_scalper
+    tests/execution/test_mtf_scalper.cpp
+    src/execution/orb_strategy.cpp
+)
+target_include_directories(test_mtf_scalper PRIVATE src/execution src/)
+target_compile_features(test_mtf_scalper PRIVATE cxx_std_20)
+
 add_executable(test_order_manager
     tests/execution/test_order_manager.cpp
     src/execution/order_manager.cpp
@@ -99,6 +106,11 @@ add_test(NAME risk_manager_tests    COMMAND test_risk_manager)
 add_test(NAME orb_strategy_tests    COMMAND test_orb_strategy)
 add_test(NAME order_manager_tests   COMMAND test_order_manager)
 add_test(NAME lifecycle_tests       COMMAND test_lifecycle)
+add_test(NAME paper_broker_tests    COMMAND test_paper_broker
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME mtf_scalper_tests     COMMAND test_mtf_scalper)
+add_test(NAME bracket_broker_tests  COMMAND test_bracket_broker
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 # ── orb_strategy (standalone ORB signal binary for CI parity tests) ──
@@ -184,6 +196,54 @@ target_include_directories(cancel_stops PRIVATE
 target_link_libraries(cancel_stops PRIVATE rithmic_lib)
 target_compile_definitions(cancel_stops PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
 target_compile_features(cancel_stops PRIVATE cxx_std_20)
+
+# ── Paper fleet engine ─────────────────────────────────────────────
+# Runs ~20 paper strategies against the live tick stream in PostgreSQL.
+# Never connects to Rithmic; only libpq + header-only strategy/risk code.
+add_executable(paper_engine
+    src/paper/paper_main.cpp
+    src/paper/paper_db.cpp
+)
+target_include_directories(paper_engine PRIVATE
+    src/execution/
+    src/
+    src/paper/
+    ${PostgreSQL_INCLUDE_DIRS}
+)
+target_link_libraries(paper_engine PRIVATE
+    ${PostgreSQL_LIBRARIES}
+)
+target_compile_features(paper_engine PRIVATE cxx_std_20)
+
+add_executable(test_paper_broker
+    tests/paper/test_paper_broker.cpp
+    src/paper/paper_db.cpp
+)
+target_include_directories(test_paper_broker PRIVATE
+    src/execution/
+    src/
+    src/paper/
+    ${PostgreSQL_INCLUDE_DIRS}
+)
+target_link_libraries(test_paper_broker PRIVATE
+    ${PostgreSQL_LIBRARIES}
+)
+target_compile_features(test_paper_broker PRIVATE cxx_std_20)
+
+add_executable(test_bracket_broker
+    tests/paper/test_bracket_broker.cpp
+    src/paper/paper_db.cpp
+)
+target_include_directories(test_bracket_broker PRIVATE
+    src/execution/
+    src/
+    src/paper/
+    ${PostgreSQL_INCLUDE_DIRS}
+)
+target_link_libraries(test_bracket_broker PRIVATE
+    ${PostgreSQL_LIBRARIES}
+)
+target_compile_features(test_bracket_broker PRIVATE cxx_std_20)
 
 # ── Audit Daemon ───────────────────────────────────────────────────
 # Standalone C++20 binary — only libpq + nlohmann/json, no Boost/Protobuf.

@@ -84,6 +84,7 @@ struct OrbConfig {
     double trailing_drawdown_cap = 2500.0; // max $ drawdown from equity peak
     double consistency_cap_pct   = 0.30;   // no single day > 30% of total profit
     double daily_loss_limit      = -1000.0; // halt if daily_pnl <= this value
+    double commission_rt         = 1.0;    // round-trip commission $ per contract
 
     // ── Rithmic instrument ─────────────────────────────────────────
     std::string symbol         = "MNQ";
@@ -116,6 +117,7 @@ struct OrbConfig {
 
     // ── Instance identity ──────────────────────────────────────────
     std::string account_label    = "legends";         // DB tag: "legends", "tradeify", …
+    std::string strategy         = "ORB";             // DB strategy tag — must differ per strategy sharing an account
     std::string order_env_prefix = "RITHMIC_LEGENDS"; // prefix for ORDER_PLANT env vars
 
     // ── Account ───────────────────────────────────────────────────
@@ -194,6 +196,7 @@ struct OrbConfig {
 
         // Instance identity — read first so the prefix drives all credential lookups
         c.account_label    = json_str(text, "account_label",    c.account_label);
+        c.strategy         = json_str(text, "strategy",         c.strategy);
         c.order_env_prefix = json_str(text, "order_env_prefix", c.order_env_prefix);
 
         // ORDER_PLANT credentials — derived from order_env_prefix so any account works
@@ -235,6 +238,7 @@ struct OrbConfig {
         c.trailing_drawdown_cap = json_dbl(text, "trailing_drawdown_cap", c.trailing_drawdown_cap);
         c.consistency_cap_pct   = json_dbl(text, "consistency_cap_pct",   c.consistency_cap_pct);
         c.daily_loss_limit      = json_dbl(text, "daily_loss_limit",      c.daily_loss_limit);
+        c.commission_rt         = json_dbl(text, "commission_rt",         c.commission_rt);
 
         c.symbol         = json_str(text, "symbol",         c.symbol);
         c.trade_contract = json_str(text, "trade_contract", c.trade_contract);
@@ -254,31 +258,9 @@ struct OrbConfig {
         c.cycle_start_epoch  = (int64_t)json_dbl(text, "cycle_start_epoch",  (double)c.cycle_start_epoch);
         c.cycle_timeout_mins = json_int(text, "cycle_timeout_mins", c.cycle_timeout_mins);
 
-        // cycle_mode: look for "cycle_mode": true/false
-        {
-            auto pos = text.find("\"cycle_mode\"");
-            if (pos != std::string::npos) {
-                auto colon = text.find(':', pos);
-                if (colon != std::string::npos) {
-                    auto vp = text.find_first_not_of(" \t\r\n", colon + 1);
-                    if (vp != std::string::npos)
-                        c.cycle_mode = (text.substr(vp, 4) == "true");
-                }
-            }
-        }
-
-        // dry_run: look for "dry_run": true/false
-        {
-            auto pos = text.find("\"dry_run\"");
-            if (pos != std::string::npos) {
-                auto colon = text.find(':', pos);
-                if (colon != std::string::npos) {
-                    auto vp = text.find_first_not_of(" \t\r\n", colon + 1);
-                    if (vp != std::string::npos)
-                        c.dry_run = (text.substr(vp, 4) == "true");
-                }
-            }
-        }
+        // cycle_mode / dry_run: top-level boolean keys
+        c.cycle_mode = json_bool(text, "cycle_mode", c.cycle_mode);
+        c.dry_run    = json_bool(text, "dry_run",    c.dry_run);
 
         // DB overrides from JSON
         c.pg_host = json_str(text, "pg_host", c.pg_host);
@@ -288,7 +270,39 @@ struct OrbConfig {
         if (c.pg_password.empty())
             c.pg_password = json_str(text, "pg_password", "");
 
+        c.validate();
         return c;
+    }
+
+    // ── Config validation — called at the end of from_file() ────────
+    // Throws std::runtime_error with a FATAL message naming the bad key.
+    void validate() const {
+        auto need_positive = [](const char* key, double v) {
+            if (v <= 0.0)
+                throw std::runtime_error(std::string("FATAL: invalid config key '") + key +
+                    "' — must be > 0 (got " + std::to_string(v) + ")");
+        };
+        need_positive("qty",                   (double)qty);
+        need_positive("orb_minutes",           (double)orb_minutes);
+        need_positive("trail_step",            trail_step);
+        need_positive("sl_points",             sl_points);
+        need_positive("trailing_drawdown_cap", trailing_drawdown_cap);
+
+        // account_label / strategy are interpolated into SQL identifiers and
+        // raw SQL strings (NOTIFY live_tick_<account>, startup ORB query) —
+        // restrict to a safe charset at load time.
+        auto need_safe_ident = [](const char* key, const std::string& v) {
+            if (v.empty() ||
+                v.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_") != std::string::npos)
+                throw std::runtime_error(std::string("FATAL: invalid config key '") + key +
+                    "' — must match [a-z0-9_]+ (got '" + v + "')");
+        };
+        need_safe_ident("account_label", account_label);
+        // strategy is uppercased ORB-style by convention — allow A-Z too
+        if (strategy.empty() ||
+            strategy.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos)
+            throw std::runtime_error(std::string("FATAL: invalid config key 'strategy'") +
+                " — must match [A-Za-z0-9_]+ (got '" + strategy + "')");
     }
 
 private:
@@ -305,9 +319,44 @@ private:
         return out;
     }
 
-    // Simple JSON field extractors (no deps)
+    // Simple JSON field extractors (no deps).
+    // All extractors match keys ONLY at top-level object depth (brace depth 1)
+    // and never inside string values — nested objects (e.g. "prop_firm": {...})
+    // and "_comment" strings quoting key names cannot shadow real keys.
+    //
+    // find_top_key: scan the whole document tracking brace/bracket depth and
+    // in-string state (with backslash escapes). A match must be the exact
+    // quoted key, at depth 1, followed by ':' (modulo whitespace) — a quoted
+    // string VALUE equal to "key" is not mistaken for a key.
+    static size_t find_top_key(const std::string& s, const std::string& key) {
+        const std::string needle = "\"" + key + "\"";
+        int  depth  = 0;
+        bool in_str = false;
+        for (size_t i = 0; i < s.size(); ++i) {
+            char c = s[i];
+            if (in_str) {
+                if (c == '\\') { ++i; continue; }   // skip escaped char
+                if (c == '"') in_str = false;
+                continue;
+            }
+            if (c == '"') {
+                if (depth == 1 && s.compare(i, needle.size(), needle) == 0) {
+                    size_t j = i + needle.size();
+                    while (j < s.size() &&
+                           (s[j] == ' ' || s[j] == '\t' || s[j] == '\r' || s[j] == '\n')) ++j;
+                    if (j < s.size() && s[j] == ':') return i;
+                }
+                in_str = true;
+                continue;
+            }
+            if (c == '{' || c == '[') ++depth;
+            else if (c == '}' || c == ']') --depth;
+        }
+        return std::string::npos;
+    }
+
     static int json_int(const std::string& s, const std::string& key, int def) {
-        auto pos = s.find("\"" + key + "\"");
+        auto pos = find_top_key(s, key);
         if (pos == std::string::npos) return def;
         auto colon = s.find(':', pos);
         if (colon == std::string::npos) return def;
@@ -318,7 +367,7 @@ private:
     }
 
     static double json_dbl(const std::string& s, const std::string& key, double def) {
-        auto pos = s.find("\"" + key + "\"");
+        auto pos = find_top_key(s, key);
         if (pos == std::string::npos) return def;
         auto colon = s.find(':', pos);
         if (colon == std::string::npos) return def;
@@ -328,18 +377,37 @@ private:
         catch (...) { return def; }
     }
 
-    static std::string json_str(const std::string& s,
-                                const std::string& key,
-                                const std::string& def) {
-        auto pos = s.find("\"" + key + "\"");
+    static bool json_bool(const std::string& s, const std::string& key, bool def) {
+        auto pos = find_top_key(s, key);
         if (pos == std::string::npos) return def;
         auto colon = s.find(':', pos);
         if (colon == std::string::npos) return def;
-        auto q1 = s.find('"', colon + 1);
-        if (q1 == std::string::npos) return def;
-        auto q2 = s.find('"', q1 + 1);
-        if (q2 == std::string::npos) return def;
-        return s.substr(q1 + 1, q2 - q1 - 1);
+        auto vp = s.find_first_not_of(" \t\r\n", colon + 1);
+        if (vp == std::string::npos) return def;
+        if (s.compare(vp, 4, "true")  == 0) return true;
+        if (s.compare(vp, 5, "false") == 0) return false;
+        return def;
+    }
+
+    static std::string json_str(const std::string& s,
+                                const std::string& key,
+                                const std::string& def) {
+        auto pos = find_top_key(s, key);
+        if (pos == std::string::npos) return def;
+        auto colon = s.find(':', pos);
+        if (colon == std::string::npos) return def;
+        auto vp = s.find_first_not_of(" \t\r\n", colon + 1);
+        if (vp == std::string::npos || s[vp] != '"') return def;
+        // Read the string honouring backslash escapes (\" and \\) so values
+        // containing escaped quotes are not truncated at the first inner quote.
+        std::string out;
+        for (size_t i = vp + 1; i < s.size(); ++i) {
+            char c = s[i];
+            if (c == '\\' && i + 1 < s.size()) { out += s[i + 1]; ++i; continue; }
+            if (c == '"') return out;
+            out += c;
+        }
+        return def;  // unterminated string
     }
 
     static void load_dotenv(const fs::path& path) {

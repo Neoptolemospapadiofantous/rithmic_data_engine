@@ -1708,6 +1708,195 @@ TEST(late_stop_fire_cleans_server_reverse_map) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — gateway-reject correlation (ResponseNewOrder has no user_tag)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 56. A gateway reject (tid=313/315) arrives with ONLY the server-assigned basket_id.
+//     After map_server_basket() (fed by tid=351/352 notifications), on_order_rejected
+//     must resolve it to the client basket and revert PENDING_ENTRY to FLAT.
+TEST(gateway_reject_resolved_via_server_basket_map_entry) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+
+    auto snap = f.om.position_snapshot();
+    const std::string client_entry = snap.basket_id_entry;
+    ASSERT(!client_entry.empty());
+
+    // tid=351 NEW notification maps server basket → client user_tag
+    f.om.map_server_basket(client_entry, "SRV-ENTRY-1");
+
+    // Gateway reject carries only the server basket_id — before the fix this could
+    // never match pos_.basket_id_entry and the entry stayed PENDING_ENTRY forever.
+    f.om.on_order_rejected("SRV-ENTRY-1", "gateway_reject_1043");
+
+    ASSERT(f.om.is_flat());
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+}
+
+// 57. Same correlation for a STOP order reject: server basket matched via the map
+//     (or via set_stop_server_basket) must clear basket_id_stop so the software SL
+//     fallback activates.
+TEST(gateway_reject_resolved_via_server_basket_map_stop) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    auto snap = f.om.position_snapshot();
+    const std::string client_stop = snap.basket_id_stop;
+    ASSERT(!client_stop.empty());
+
+    f.om.map_server_basket(client_stop, "SRV-STOP-1");
+    f.om.on_order_rejected("SRV-STOP-1", "gateway_reject_2010");
+
+    ASSERT(f.om.position_snapshot().basket_id_stop.empty());  // software SL active
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+}
+
+// 57b. Stop reject by server basket works even without map_server_basket, via the
+//      dedicated stop server-basket slot.
+TEST(stop_reject_matched_by_stop_server_basket) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT(!f.om.position_snapshot().basket_id_stop.empty());
+
+    f.om.set_stop_server_basket("SRV-STOP-9");
+    f.om.on_order_rejected("SRV-STOP-9", "gateway_reject_2010");
+
+    ASSERT(f.om.position_snapshot().basket_id_stop.empty());
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+}
+
+// 58. PENDING_ENTRY watchdog: entry stuck past the timeout is cancelled and reverts
+//     to FLAT; before the timeout it is left alone.
+TEST(pending_entry_timeout_cancels_and_reverts_to_flat) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+
+    // Not yet timed out — no-op
+    ASSERT(!f.om.pending_entry_timeout_check(10));
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+
+    // Timed out (timeout=0 → any age qualifies) — cancel + revert to FLAT
+    std::size_t cancels_before = f.cancelled_baskets.size();
+    ASSERT(f.om.pending_entry_timeout_check(0));
+    ASSERT(f.om.is_flat());
+    ASSERT(f.cancelled_baskets.size() > cancels_before);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — tid=352 fill gating / tid=351 cumulative-fill dedupe
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 59. The same fill delivered on tid=351 (cumulative total_fill_size) and again on
+//     tid=352 (per-event fill_size) must be processed once. Mirrors the executor's
+//     handler sequence: gate on basket role, then dedupe before on_fill_notification.
+TEST(tid352_duplicate_fill_after_tid351_is_deduped) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    auto snap = f.om.position_snapshot();
+    const std::string entry = snap.basket_id_entry;
+
+    // tid=351 COMPLETE fill (total_fill_size=1) — first delivery, not a duplicate
+    ASSERT(!f.om.fill_already_processed(entry, 1));
+    f.om.on_fill_notification(entry, 19000.0, 1, /*is_entry_fill=*/true);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // tid=352 FILL for the same fill (fill_size=1) — duplicate, must be skipped
+    ASSERT(f.om.fill_already_processed(entry, 1));
+    // tid=351 re-delivery of the same COMPLETE (cumulative total still 1) — skipped
+    ASSERT(f.om.fill_already_processed(entry, 1));
+
+    // tid=351 partial-then-complete: partial total_fill=1 processed, then the
+    // COMPLETE notification arrives with cumulative total_fill=2 — NOT a duplicate
+    // of qty=1, so the dedupe lets it through exactly once.
+    ASSERT(!f.om.fill_already_processed(entry, 2));
+    ASSERT(f.om.fill_already_processed(entry, 2));   // its own re-delivery is caught
+}
+
+// 60. Duplicate EXIT fill: after a tid=351 exit fill closes the trade, the tid=352
+//     duplicate arrives while FLAT. The executor's gating (same as tid=351) sees the
+//     basket no longer matches any live order and ignores the fill before it can
+//     reach the FLAT unknown-fill branch — no false ghost halt.
+TEST(tid352_duplicate_exit_fill_does_not_ghost_halt) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    f.om.flatten_now("eod_flatten", 19010.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+
+    auto snap = f.om.position_snapshot();
+    const std::string exit_basket = snap.basket_id_exit;
+    ASSERT(!exit_basket.empty());
+
+    // tid=351 exit fill — first delivery
+    ASSERT(!f.om.fill_already_processed(exit_basket, 1));
+    f.om.on_fill_notification(exit_basket, 19010.0, 1, /*is_entry_fill=*/false);
+    ASSERT(f.om.is_flat());
+    ASSERT(!f.om.is_entry_halted());
+
+    // tid=352 duplicate after close: executor gates on basket role first — the
+    // closed exit basket matches nothing, so on_fill_notification is never called.
+    ASSERT(!f.om.is_entry_basket(exit_basket));
+    ASSERT(!f.om.is_stop_basket(exit_basket));
+    ASSERT(!f.om.is_exit_basket(exit_basket));
+    ASSERT(!f.om.is_entry_halted());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — P&L scales with qty and uses cfg.commission_rt
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 61. qty=3 LONG: pnl_usd = pts * point_value * qty − commission_rt * qty.
+//     entry=19000, exit=19010 → 10pts * $2 * 3 − $2.50 * 3 = $60.00 − $7.50 = $52.50
+TEST(pnl_scales_with_qty_and_commission_rt) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty           = 3;
+    cfg.commission_rt = 2.50;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    ASSERT_EQ(f.om.position_snapshot().qty, 3);
+
+    f.om.flatten_now("test", 19010.0);
+    sim_exit_fill(f, 19010.0);
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_NEAR(out.pnl_points, 10.0,  0.001);
+    ASSERT_NEAR(out.pnl_usd,    52.50, 0.001);
+}
+
+// 62. qty=2 SHORT loser with default commission_rt=1.0:
+//     entry=19000, exit=19005 → -5pts * $2 * 2 − $1.00 * 2 = -$20.00 − $2.00 = -$22.00
+TEST(pnl_short_loss_scales_with_qty_and_commission_rt) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;   // commission_rt defaults to 1.0
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "orb_breakdown");
+    sim_entry_fill(f, 19000.0);
+    f.om.flatten_now("test", 19005.0);
+    sim_exit_fill(f, 19005.0);
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_NEAR(out.pnl_points, -5.0,   0.001);
+    ASSERT_NEAR(out.pnl_usd,    -22.00, 0.001);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -1767,6 +1956,14 @@ int main() {
     RUN(exit_send_failure_reverts_to_position_and_restores_stop);
     RUN(stuck_exit_retry_resends_exit_and_unwinds_late_fill);
     RUN(late_stop_fire_cleans_server_reverse_map);
+    RUN(gateway_reject_resolved_via_server_basket_map_entry);
+    RUN(gateway_reject_resolved_via_server_basket_map_stop);
+    RUN(stop_reject_matched_by_stop_server_basket);
+    RUN(pending_entry_timeout_cancels_and_reverts_to_flat);
+    RUN(tid352_duplicate_fill_after_tid351_is_deduped);
+    RUN(tid352_duplicate_exit_fill_does_not_ghost_halt);
+    RUN(pnl_scales_with_qty_and_commission_rt);
+    RUN(pnl_short_loss_scales_with_qty_and_commission_rt);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

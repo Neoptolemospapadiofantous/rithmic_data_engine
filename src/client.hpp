@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include <chrono>
+#include <cstring>
 #include <functional>
 #include <memory>
 #include <string>
@@ -57,10 +58,13 @@ using TickCallback  = std::function<void(TickRow)>;
 using BBOCallback   = std::function<void(BBORow)>;
 using DepthCallback = std::function<void(DepthRow)>;
 
-// Thrown by login() on authentication rejection — not a transient error,
-// so the reconnect loop propagates it rather than retrying.
+// Thrown by login() on authentication rejection. `code` is Rithmic's
+// rp_code; transient codes (e.g. 13 — too many rapid logins) are retried
+// by run(), genuine auth failures propagate and stop the client.
 struct LoginError : std::runtime_error {
-    using std::runtime_error::runtime_error;
+    std::string code;
+    explicit LoginError(const std::string& c)
+        : std::runtime_error("Login failed: " + c), code(c) {}
 };
 
 // Rithmic WebSocket client (ticker plant only — data collection).
@@ -96,6 +100,24 @@ public:
     // Request a clean shutdown
     void stop() { running_ = false; }
 
+    // Dispatch one decoded payload (public for unit tests; receive_loop is
+    // the only production caller).
+    void dispatch_message(const std::string& payload);
+
+    // Strip and validate the 4-byte length prefix, return raw protobuf payload
+    static std::string strip_header(const std::string& wire) {
+        if (wire.size() < 4)
+            throw std::runtime_error("Rithmic: message too short");
+        uint32_t len = 0;
+        std::memcpy(&len, wire.data(), 4);
+        len = __builtin_bswap32(len);
+        if (len != wire.size() - 4)
+            throw std::runtime_error("Rithmic: length prefix mismatch (prefix=" +
+                std::to_string(len) + " payload=" +
+                std::to_string(wire.size() - 4) + ")");
+        return wire.substr(4);
+    }
+
 private:
     // ── helpers ────────────────────────────────────────────────────
     asio::awaitable<std::unique_ptr<WsStream>> connect_ws();
@@ -115,7 +137,13 @@ private:
     asio::awaitable<void> send_logout(WsStream& ws);
 
     asio::awaitable<void> receive_loop(WsStream& ws);
-    void dispatch_message(const std::string& payload);
+    asio::awaitable<void> link_watchdog(WsStream& ws);
+
+    // Read one frame, racing the read against a timeout. Returns the payload
+    // with the length prefix stripped. Throws std::runtime_error on timeout,
+    // beast::system_error on read failure.
+    asio::awaitable<std::string> read_with_timeout(WsStream& ws, int timeout_s,
+                                                   const char* waiting_for);
 
     // Serialize proto message with Rithmic 4-byte big-endian length prefix
     template <class Msg>
@@ -130,13 +158,6 @@ private:
         return wire;
     }
 
-    // Strip 4-byte length prefix, return raw protobuf payload
-    static std::string strip_header(const std::string& wire) {
-        if (wire.size() < 4)
-            throw std::runtime_error("Rithmic: message too short");
-        return wire.substr(4);
-    }
-
     asio::io_context&  ioc_;
     ssl::context       ssl_ctx_;
     Config             cfg_;
@@ -146,4 +167,7 @@ private:
     double             heartbeat_interval_ = 30.0;
     std::atomic<bool>  running_{true};
     std::atomic<bool>  hb_response_pending_{false}; // set by dispatch_message on template 18
+    std::atomic<int64_t> last_rx_mono_s_{0};   // steady_clock seconds of last inbound frame
+    std::atomic<bool>  silence_killed_{false}; // set by link_watchdog on dead connection
+    std::string        link_error_;            // io-thread only: real disconnect cause
 };

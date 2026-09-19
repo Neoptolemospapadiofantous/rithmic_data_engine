@@ -5,8 +5,10 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <map>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 
 // ── helpers ────────────────────────────────────────────────────────
 
@@ -16,11 +18,34 @@ static std::string redact_pg_password(const std::string& connstr) {
     if (pos == std::string::npos) pos = result.find("password=");
     if (pos != std::string::npos) {
         auto val_start = result.find('=', pos) + 1;
-        auto val_end = result.find(' ', val_start);
-        if (val_end == std::string::npos) val_end = result.size();
+        auto val_end   = result.size();
+        if (val_start < result.size() && result[val_start] == '\'') {
+            // Quoted value (may contain spaces) — find the closing quote;
+            // a backslash escapes the next char (libpq conninfo rules).
+            for (auto i = val_start + 1; i < result.size(); ++i) {
+                if (result[i] == '\\') { ++i; continue; }
+                if (result[i] == '\'') { val_end = i + 1; break; }
+            }
+        } else {
+            val_end = result.find(' ', val_start);
+            if (val_end == std::string::npos) val_end = result.size();
+        }
         result.replace(val_start, val_end - val_start, "***");
     }
     return result;
+}
+
+// Escape one string element for a PostgreSQL array literal (same rules as
+// AuditLog's make_pg_array): wrap in double quotes, backslash-escape
+// '"' and '\'.
+static std::string pg_arr_elem(const std::string& v) {
+    std::string out = "\"";
+    for (char c : v) {
+        if (c == '"' || c == '\\') out += '\\';
+        out += c;
+    }
+    out += '"';
+    return out;
 }
 
 static void pg_check(PGresult* res, const char* ctx) {
@@ -85,7 +110,23 @@ void TickDB::exec(const char* sql) {
 
 void TickDB::exec_silent(const char* sql) {
     PGresult* r = PQexec(conn_, sql);
-    if (r) PQclear(r);
+    if (r) {
+        auto s = PQresultStatus(r);
+        if (s != PGRES_COMMAND_OK && s != PGRES_TUPLES_OK) {
+            // Non-fatal by design, but never invisible — log the statement
+            // tag (first line, capped) plus the server message at WARN.
+            std::string tag = sql;
+            auto b = tag.find_first_not_of(" \t\r\n");
+            tag = (b == std::string::npos) ? "?" : tag.substr(b, 72);
+            auto nl = tag.find('\n');
+            if (nl != std::string::npos) tag = tag.substr(0, nl);
+            std::string msg = PQresultErrorMessage(r);
+            while (!msg.empty() && (msg.back() == '\n' || msg.back() == '\r'))
+                msg.pop_back();
+            LOG("  WARN schema stmt failed [%s]: %s", tag.c_str(), msg.c_str());
+        }
+        PQclear(r);
+    }
 }
 
 // ── ensure_schema ──────────────────────────────────────────────────
@@ -99,6 +140,7 @@ void TickDB::ensure_schema() {
             exchange  VARCHAR(32)      NOT NULL DEFAULT 'CME',
             price     DOUBLE PRECISION NOT NULL,
             size      BIGINT           NOT NULL,
+            seq       INTEGER          NOT NULL DEFAULT 0,
             side      CHAR(1),
             is_buy    BOOLEAN,
             source    VARCHAR(32)      DEFAULT 'amp_rithmic'
@@ -108,21 +150,35 @@ void TickDB::ensure_schema() {
     // Add columns to existing tables (idempotent — safe to run every start)
     exec_silent("ALTER TABLE ticks ADD COLUMN IF NOT EXISTS symbol   VARCHAR(32) NOT NULL DEFAULT 'NQ';");
     exec_silent("ALTER TABLE ticks ADD COLUMN IF NOT EXISTS exchange VARCHAR(32) NOT NULL DEFAULT 'CME';");
+    // Dedup tiebreaker: per-batch rank among identical
+    // (symbol, exchange, ts_event, price, size) rows — two legit same
+    // price+size trades in one microsecond no longer merge.
+    exec_silent("ALTER TABLE ticks ADD COLUMN IF NOT EXISTS seq INTEGER NOT NULL DEFAULT 0;");
 
     // Create hypertable (idempotent)
     exec_silent(
         "SELECT create_hypertable('ticks','ts_event',"
         "  if_not_exists => TRUE, migrate_data => TRUE);");
 
-    // Unique index: (symbol, exchange, ts_event, price, size).
-    // IF NOT EXISTS makes this a no-op on every normal startup — only builds
-    // the index the very first time (or after explicit DROP).
-    // Old narrower legacy index (3-col) dropped once on first run.
+    // Unique index: (symbol, exchange, ts_event, price, size, seq).
+    // IF NOT EXISTS makes this a no-op on every normal startup.
+    // Old narrower indexes (3-col, or 5-col without seq) dropped once via
+    // the conditional DO block — no index rebuild on every start.
     exec_silent("DROP INDEX IF EXISTS idx_ticks_ts_unique;");
+    exec_silent(R"(DO $$ BEGIN
+        IF EXISTS (SELECT 1 FROM pg_indexes
+                   WHERE tablename='ticks' AND indexname='idx_ticks_unique'
+                     AND indexdef NOT LIKE '%seq%') THEN
+            DROP INDEX idx_ticks_unique;
+        END IF;
+    END $$;)");
     exec(R"(
         CREATE UNIQUE INDEX IF NOT EXISTS idx_ticks_unique
-            ON ticks(symbol, exchange, ts_event, price, size);
+            ON ticks(symbol, exchange, ts_event, price, size, seq);
     )");
+
+    // Supports latest_price() / ORDER BY ts_event DESC queries
+    exec_silent("CREATE INDEX IF NOT EXISTS idx_ticks_ts ON ticks(ts_event DESC);");
 
     // Compression — non-fatal (requires TimescaleDB; skipped if unavailable)
     exec_silent(
@@ -239,10 +295,23 @@ void TickDB::ensure_schema() {
     exec_silent(
         "SELECT create_hypertable('depth_by_order','ts_event',"
         "  if_not_exists => TRUE, migrate_data => TRUE);");
+    // The old idx_depth_unique lacked the partition column ts_event, so its
+    // creation failed on the hypertable (silently, via exec_silent) and every
+    // depth INSERT ... ON CONFLICT then errored.  Drop the broken/narrow
+    // version once and recreate including ts_event.  source_ns=0 rows are
+    // excluded from the predicate — 0 means "source timestamp absent" and
+    // would otherwise collapse distinct rows under the dedup key.
+    exec_silent(R"(DO $$ BEGIN
+        IF EXISTS (SELECT 1 FROM pg_indexes
+                   WHERE tablename='depth_by_order' AND indexname='idx_depth_unique'
+                     AND indexdef NOT LIKE '%ts_event%') THEN
+            DROP INDEX idx_depth_unique;
+        END IF;
+    END $$;)");
     exec_silent(
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_depth_unique"
-        " ON depth_by_order(symbol, exchange, source_ns)"
-        " WHERE source_ns IS NOT NULL;");
+        " ON depth_by_order(symbol, exchange, source_ns, ts_event)"
+        " WHERE source_ns IS NOT NULL AND source_ns <> 0;");
     exec_silent("CREATE INDEX IF NOT EXISTS idx_depth_ts ON depth_by_order(ts_event DESC);");
 
     // ── Audit log table ────────────────────────────────────────────
@@ -622,27 +691,37 @@ int TickDB::write(const std::vector<TickRow>& rows) {
     if (rows.empty()) return 0;
 
     // Build array literals for UNNEST batch insert
-    std::string ts_arr, sym_arr, exch_arr, price_arr, size_arr, side_arr, is_buy_arr, src_arr;
+    std::string ts_arr, sym_arr, exch_arr, price_arr, size_arr, side_arr, is_buy_arr, src_arr, seq_arr;
     // Reserve capacity to avoid reallocation (ts string dominates at ~32 chars each)
     const std::size_t N = rows.size();
     ts_arr.reserve(N * 34);  sym_arr.reserve(N * 8);  exch_arr.reserve(N * 8);
     price_arr.reserve(N * 12); size_arr.reserve(N * 8); side_arr.reserve(N * 6);
-    is_buy_arr.reserve(N * 6); src_arr.reserve(N * 16);
+    is_buy_arr.reserve(N * 6); src_arr.reserve(N * 16); seq_arr.reserve(N * 4);
+
+    // Per-batch dedup tiebreaker: rank of each row among rows sharing the
+    // same (symbol, exchange, ts, price, size).  Two legit identical trades
+    // in one microsecond get seq 0 and 1 and both land; a redelivered
+    // duplicate (e.g. WAL replay of the same batch) reproduces the same
+    // rank and is deduped by ON CONFLICT.
+    std::map<std::tuple<std::string, std::string, int64_t, double, int64_t>, int> seq_rank;
 
     for (size_t i = 0; i < rows.size(); ++i) {
         if (i) {
             ts_arr    += ','; sym_arr  += ','; exch_arr   += ',';
             price_arr += ','; size_arr += ','; side_arr   += ',';
-            is_buy_arr+= ','; src_arr  += ',';
+            is_buy_arr+= ','; src_arr  += ','; seq_arr    += ',';
         }
         ts_arr    += '"' + format_ts(rows[i].ts_micros) + '"';
-        sym_arr   += '"' + rows[i].symbol   + '"';
-        exch_arr  += '"' + rows[i].exchange + '"';
+        sym_arr   += pg_arr_elem(rows[i].symbol);
+        exch_arr  += pg_arr_elem(rows[i].exchange);
         price_arr += std::to_string(rows[i].price);
         size_arr  += std::to_string(rows[i].size);
         side_arr  += (rows[i].is_buy ? "\"B\"" : "\"A\"");
         is_buy_arr+= (rows[i].is_buy ? "true"  : "false");
         src_arr   += "\"amp_rithmic\"";
+        seq_arr   += std::to_string(seq_rank[
+            {rows[i].symbol, rows[i].exchange, rows[i].ts_micros,
+             rows[i].price, rows[i].size}]++);
     }
 
     ts_arr    = '{' + ts_arr    + '}';
@@ -653,27 +732,29 @@ int TickDB::write(const std::vector<TickRow>& rows) {
     side_arr  = '{' + side_arr  + '}';
     is_buy_arr= '{' + is_buy_arr+ '}';
     src_arr   = '{' + src_arr   + '}';
+    seq_arr   = '{' + seq_arr   + '}';
 
     const char* sql =
-        "INSERT INTO ticks (ts_event, symbol, exchange, price, size, side, is_buy, source)"
+        "INSERT INTO ticks (ts_event, symbol, exchange, price, size, seq, side, is_buy, source)"
         " SELECT * FROM unnest("
         "   $1::timestamptz[],"
         "   $2::varchar[],"
         "   $3::varchar[],"
         "   $4::float8[],"
         "   $5::int8[],"
-        "   $6::char[],"
-        "   $7::bool[],"
-        "   $8::varchar[]"
-        " ) ON CONFLICT (symbol, exchange, ts_event, price, size) DO NOTHING";
+        "   $6::int4[],"
+        "   $7::char[],"
+        "   $8::bool[],"
+        "   $9::varchar[]"
+        " ) ON CONFLICT (symbol, exchange, ts_event, price, size, seq) DO NOTHING";
 
-    const char* params[8] = {
+    const char* params[9] = {
         ts_arr.c_str(), sym_arr.c_str(), exch_arr.c_str(),
-        price_arr.c_str(), size_arr.c_str(),
+        price_arr.c_str(), size_arr.c_str(), seq_arr.c_str(),
         side_arr.c_str(), is_buy_arr.c_str(), src_arr.c_str()
     };
 
-    PGresult* res = PQexecParams(conn_, sql, 8, nullptr,
+    PGresult* res = PQexecParams(conn_, sql, 9, nullptr,
                                  params, nullptr, nullptr, 0);
     pg_check(res, "write ticks");
 
@@ -684,6 +765,23 @@ int TickDB::write(const std::vector<TickRow>& rows) {
 }
 
 // ── write_bbo ─────────────────────────────────────────────────────
+
+// Cached check: does idx_bbo_unique exist?  ON CONFLICT needs it; without
+// it (e.g. plain PostgreSQL, or a failed hypertable index build) fall back
+// to plain INSERT so BBO rows are still collected.
+bool TickDB::bbo_unique_ok() {
+    if (bbo_unique_ok_.has_value()) return *bbo_unique_ok_;
+    PGresult* res = PQexec(conn_,
+        "SELECT COUNT(*) FROM pg_indexes"
+        " WHERE tablename='bbo' AND indexname='idx_bbo_unique'");
+    bool ok = res && PQresultStatus(res) == PGRES_TUPLES_OK &&
+              PQntuples(res) > 0 && std::atoi(PQgetvalue(res, 0, 0)) > 0;
+    if (res) PQclear(res);
+    if (!ok)
+        LOG("  WARN: idx_bbo_unique missing — BBO rows inserted without dedup/merge");
+    bbo_unique_ok_ = ok;
+    return ok;
+}
 
 int TickDB::write_bbo(const std::vector<BBORow>& rows) {
     if (rows.empty()) return 0;
@@ -699,6 +797,16 @@ int TickDB::write_bbo(const std::vector<BBORow>& rows) {
     ask_p_arr.reserve(N * 12); ask_s_arr.reserve(N * 8); ask_o_arr.reserve(N * 8);
     src_arr.reserve(N * 16);
 
+    // Absent side (nullopt price from presence_bits) → SQL NULL for price,
+    // size and orders alike, so the ON CONFLICT merge never clobbers the
+    // other side with a protobuf-default 0.
+    auto opt_f8 = [](const std::optional<double>& v) {
+        return v ? std::to_string(*v) : std::string("NULL");
+    };
+    auto opt_i4 = [](std::optional<double> side, int32_t v) {
+        return side ? std::to_string(v) : std::string("NULL");
+    };
+
     for (std::size_t i = 0; i < N; ++i) {
         if (i) {
             ts_arr   += ','; sym_arr  += ','; exch_arr += ',';
@@ -707,14 +815,14 @@ int TickDB::write_bbo(const std::vector<BBORow>& rows) {
             src_arr  += ',';
         }
         ts_arr    += '"' + format_ts(rows[i].ts_micros)  + '"';
-        sym_arr   += '"' + rows[i].symbol   + '"';
-        exch_arr  += '"' + rows[i].exchange + '"';
-        bid_p_arr += std::to_string(rows[i].bid_price);
-        bid_s_arr += std::to_string(rows[i].bid_size);
-        bid_o_arr += std::to_string(rows[i].bid_orders);
-        ask_p_arr += std::to_string(rows[i].ask_price);
-        ask_s_arr += std::to_string(rows[i].ask_size);
-        ask_o_arr += std::to_string(rows[i].ask_orders);
+        sym_arr   += pg_arr_elem(rows[i].symbol);
+        exch_arr  += pg_arr_elem(rows[i].exchange);
+        bid_p_arr += opt_f8(rows[i].bid_price);
+        bid_s_arr += opt_i4(rows[i].bid_price, rows[i].bid_size);
+        bid_o_arr += opt_i4(rows[i].bid_price, rows[i].bid_orders);
+        ask_p_arr += opt_f8(rows[i].ask_price);
+        ask_s_arr += opt_i4(rows[i].ask_price, rows[i].ask_size);
+        ask_o_arr += opt_i4(rows[i].ask_price, rows[i].ask_orders);
         src_arr   += "\"amp_rithmic\"";
     }
 
@@ -729,7 +837,10 @@ int TickDB::write_bbo(const std::vector<BBORow>& rows) {
     ask_o_arr = '{' + ask_o_arr + '}';
     src_arr   = '{' + src_arr   + '}';
 
-    const char* sql =
+    // One-sided updates complement rather than clobber: on a same-instant
+    // conflict each column takes the new value when present, otherwise
+    // keeps the stored one.
+    std::string sql =
         "INSERT INTO bbo"
         " (ts_event, symbol, exchange, bid_price, bid_size, bid_orders,"
         "  ask_price, ask_size, ask_orders, source)"
@@ -744,7 +855,16 @@ int TickDB::write_bbo(const std::vector<BBORow>& rows) {
         "   $8::int4[],"
         "   $9::int4[],"
         "   $10::varchar[]"
-        " ) ON CONFLICT (symbol, exchange, ts_event) DO NOTHING";
+        " )";
+    if (bbo_unique_ok())
+        sql +=
+        " ON CONFLICT (symbol, exchange, ts_event) DO UPDATE SET"
+        "   bid_price  = COALESCE(excluded.bid_price,  bbo.bid_price),"
+        "   bid_size   = COALESCE(excluded.bid_size,   bbo.bid_size),"
+        "   bid_orders = COALESCE(excluded.bid_orders, bbo.bid_orders),"
+        "   ask_price  = COALESCE(excluded.ask_price,  bbo.ask_price),"
+        "   ask_size   = COALESCE(excluded.ask_size,   bbo.ask_size),"
+        "   ask_orders = COALESCE(excluded.ask_orders, bbo.ask_orders)";
 
     const char* params[10] = {
         ts_arr.c_str(), sym_arr.c_str(), exch_arr.c_str(),
@@ -753,7 +873,7 @@ int TickDB::write_bbo(const std::vector<BBORow>& rows) {
         src_arr.c_str()
     };
 
-    PGresult* res = PQexecParams(conn_, sql, 10, nullptr,
+    PGresult* res = PQexecParams(conn_, sql.c_str(), 10, nullptr,
                                  params, nullptr, nullptr, 0);
     pg_check(res, "write bbo");
 
@@ -765,9 +885,43 @@ int TickDB::write_bbo(const std::vector<BBORow>& rows) {
 
 // ── write_depth ────────────────────────────────────────────────────
 
+// Cached check: does idx_depth_unique exist?  ON CONFLICT needs it;
+// without it (older schema, or TimescaleDB rejecting the partial unique
+// index) fall back to plain INSERT so depth rows are still collected.
+bool TickDB::depth_unique_ok() {
+    if (depth_unique_ok_.has_value()) return *depth_unique_ok_;
+    PGresult* res = PQexec(conn_,
+        "SELECT COUNT(*) FROM pg_indexes"
+        " WHERE tablename='depth_by_order' AND indexname='idx_depth_unique'");
+    bool ok = res && PQresultStatus(res) == PGRES_TUPLES_OK &&
+              PQntuples(res) > 0 && std::atoi(PQgetvalue(res, 0, 0)) > 0;
+    if (res) PQclear(res);
+    if (!ok)
+        LOG("  WARN: idx_depth_unique missing — depth rows inserted without dedup");
+    depth_unique_ok_ = ok;
+    return ok;
+}
+
 int TickDB::write_depth(const std::vector<DepthRow>& rows) {
     if (rows.empty()) return 0;
 
+    // source_ns == 0 means the source timestamp was absent; such rows must
+    // NOT go through the dedup key (it would collapse them all into one).
+    // They get a plain INSERT.  Keyed rows dedup on
+    // (symbol, exchange, source_ns, ts_event).
+    std::vector<const DepthRow*> keyed, plain;
+    keyed.reserve(rows.size());
+    for (auto& r : rows)
+        (r.source_ns != 0 ? keyed : plain).push_back(&r);
+
+    int inserted = 0;
+    if (!keyed.empty()) inserted += write_depth_rows(keyed, depth_unique_ok());
+    if (!plain.empty()) inserted += write_depth_rows(plain, false);
+    return inserted;
+}
+
+int TickDB::write_depth_rows(const std::vector<const DepthRow*>& rows,
+                             bool with_conflict) {
     const std::size_t N = rows.size();
     std::string ts_arr, src_ns_arr, sym_arr, exch_arr;
     std::string seq_arr, upd_arr, txn_arr;
@@ -782,17 +936,19 @@ int TickDB::write_depth(const std::vector<DepthRow>& rows) {
             dp_arr    += ','; pdp_arr   += ','; ds_arr   += ',';
             eoid_arr  += ','; src_arr   += ',';
         }
-        ts_arr     += '"' + format_ts(rows[i].ts_micros) + '"';
-        src_ns_arr += std::to_string(rows[i].source_ns);
-        sym_arr    += '"' + rows[i].symbol   + '"';
-        exch_arr   += '"' + rows[i].exchange + '"';
-        seq_arr    += std::to_string(rows[i].sequence_number);
-        upd_arr    += std::to_string(static_cast<int>(rows[i].update_type));
-        txn_arr    += std::to_string(static_cast<int>(rows[i].transaction_type));
-        dp_arr     += std::to_string(rows[i].depth_price);
-        pdp_arr    += std::to_string(rows[i].prev_depth_price);
-        ds_arr     += std::to_string(rows[i].depth_size);
-        eoid_arr   += '"' + rows[i].exchange_order_id + '"';
+        ts_arr     += '"' + format_ts(rows[i]->ts_micros) + '"';
+        src_ns_arr += std::to_string(rows[i]->source_ns);
+        sym_arr    += pg_arr_elem(rows[i]->symbol);
+        exch_arr   += pg_arr_elem(rows[i]->exchange);
+        seq_arr    += std::to_string(rows[i]->sequence_number);
+        upd_arr    += std::to_string(static_cast<int>(rows[i]->update_type));
+        txn_arr    += std::to_string(static_cast<int>(rows[i]->transaction_type));
+        dp_arr     += std::to_string(rows[i]->depth_price);
+        pdp_arr    += rows[i]->prev_depth_price
+                          ? std::to_string(*rows[i]->prev_depth_price)
+                          : std::string("NULL");
+        ds_arr     += std::to_string(rows[i]->depth_size);
+        eoid_arr   += pg_arr_elem(rows[i]->exchange_order_id);
         src_arr    += "\"amp_rithmic\"";
     }
 
@@ -809,7 +965,7 @@ int TickDB::write_depth(const std::vector<DepthRow>& rows) {
     eoid_arr   = '{' + eoid_arr   + '}';
     src_arr    = '{' + src_arr    + '}';
 
-    const char* sql =
+    std::string sql =
         "INSERT INTO depth_by_order"
         " (ts_event, source_ns, symbol, exchange,"
         "  sequence_number, update_type, transaction_type,"
@@ -828,8 +984,10 @@ int TickDB::write_depth(const std::vector<DepthRow>& rows) {
         "   $10::int4[],"
         "   $11::varchar[],"
         "   $12::varchar[]"
-        " ) ON CONFLICT (symbol, exchange, source_ns)"
-        "   WHERE source_ns IS NOT NULL DO NOTHING";
+        " )";
+    if (with_conflict)
+        sql += " ON CONFLICT (symbol, exchange, source_ns, ts_event)"
+               "   WHERE source_ns IS NOT NULL AND source_ns <> 0 DO NOTHING";
 
     const char* params[12] = {
         ts_arr.c_str(), src_ns_arr.c_str(), sym_arr.c_str(), exch_arr.c_str(),
@@ -838,7 +996,7 @@ int TickDB::write_depth(const std::vector<DepthRow>& rows) {
         eoid_arr.c_str(), src_arr.c_str()
     };
 
-    PGresult* res = PQexecParams(conn_, sql, 12, nullptr,
+    PGresult* res = PQexecParams(conn_, sql.c_str(), 12, nullptr,
                                  params, nullptr, nullptr, 0);
     pg_check(res, "write depth");
 

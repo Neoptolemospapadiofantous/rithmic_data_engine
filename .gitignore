@@ -39,3 +39,6 @@ models/*.joblib
 
 # Preflight test artifact — never commit
 NO_DEPLOY_DOES_NOT_EXIST_TEST
+.env.bak.*
+.env.*
+*.wal*

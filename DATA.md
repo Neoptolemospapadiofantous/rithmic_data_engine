@@ -28,7 +28,7 @@ PG_PASSWORD=...
 | `size`     | BIGINT          | Contracts traded               |
 | `side`     | CHAR(1)         | `B` = buy aggressor, `A` = ask |
 | `is_buy`   | BOOLEAN         | True if buy aggressor          |
-| `source`   | VARCHAR(32)     | Always `amp_rithmic`           |
+| `source`   | VARCHAR(32)     | Feed provider tag, currently `tradeify` (was `amp_rithmic`) |
 
 **Primary key / dedup:** `UNIQUE (symbol, exchange, ts_event, price, size)`
 

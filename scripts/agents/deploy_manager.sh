@@ -5,7 +5,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 ORACLE="opc@170.9.233.177"
 SSH_KEY="$HOME/.ssh/id_ed25519"
-SERVICE="${2:-nq_executor@RTH}"
+SERVICE="${2:-nq_executor@tradeify}"
 HEALTH_ONLY="${1:-}"
 OUT="$REPO/data/agents/deploy-manager"
 TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
