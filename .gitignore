@@ -42,3 +42,8 @@ NO_DEPLOY_DOES_NOT_EXIST_TEST
 .env.bak.*
 .env.*
 *.wal*
+
+# Audit-wave subagent build dirs + local artifacts
+build_*/
+.playwright-mcp/
+newstrategy
