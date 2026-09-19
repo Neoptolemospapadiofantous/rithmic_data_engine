@@ -680,6 +680,10 @@ asio::awaitable<void> RithmicClient::run() {
 
                 co_await subscribe(*ws, contract, cfg_.exchange);
                 co_await subscribe_depth(*ws, contract, cfg_.exchange);
+                // Intermarket reference feeds (e.g. ES for the MTF SMT
+                // module) — LAST_TRADE|BBO only, no depth.
+                for (const auto& extra : cfg_.extra_symbols)
+                    co_await subscribe(*ws, extra, cfg_.exchange);
                 silence_killed_.store(false);
                 link_error_.clear();
                 co_await (receive_loop(*ws) || link_watchdog(*ws));
@@ -693,6 +697,8 @@ asio::awaitable<void> RithmicClient::run() {
 
                 // Clean shutdown
                 co_await unsubscribe(*ws, contract, cfg_.exchange);
+                for (const auto& extra : cfg_.extra_symbols)
+                    co_await unsubscribe(*ws, extra, cfg_.exchange);
                 co_await send_logout(*ws);
                 beast::get_lowest_layer(*ws).expires_after(
                     std::chrono::seconds(10));

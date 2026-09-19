@@ -1,7 +1,9 @@
 {
-  "_comment": "Paper fleet: 20 ORB variants on one tradeify paper account. Base params = config/tradeify_config.json; per-strategy params override named OrbConfig fields. Consumed by paper_engine (ticks from PostgreSQL, no Rithmic session).",
+  "_comment": "Paper fleet: 20 ORB variants + 4 MTF scalpers on one tradeify paper account. Base params = config/tradeify_config.json; per-strategy params override named OrbConfig/MtfScalperConfig fields. Consumed by paper_engine (ticks from PostgreSQL, no Rithmic session). feed_symbol = what the collector writes (NQ front-month); symbol = traded label (MNQ). reference_symbol (ES) feeds the MTF SMT/intermarket module as 1m bars.",
   "account_label": "tradeify",
   "symbol": "MNQ",
+  "feed_symbol": "NQ",
+  "reference_symbol": "ES",
   "exchange": "CME",
   "point_value": 2.0,
   "tick_size": 0.25,
@@ -36,6 +38,7 @@
     {"id": "orb_15_20_15","engine": "orb", "enabled": true, "params": {"orb_minutes": 15, "sl_points": 20.0, "trail_step": 15.0}},
     {"id": "mtf_auto_v5", "engine": "mtf_scalper", "enabled": true, "params": {"warmup_bars": 250, "qty_max": 3}},
     {"id": "mtf_flags_v5","engine": "mtf_scalper", "enabled": true, "params": {"trigger_mode": "flag_any", "warmup_bars": 250, "qty_max": 3}},
-    {"id": "mtf_loose_v5","engine": "mtf_scalper", "enabled": true, "params": {"use_regime": false, "use_atr_floor": false, "warmup_bars": 250, "qty_max": 3}}
+    {"id": "mtf_loose_v5","engine": "mtf_scalper", "enabled": true, "params": {"use_regime": false, "use_atr_floor": false, "warmup_bars": 250, "qty_max": 3}},
+    {"id": "mtf_smt_v5",  "engine": "mtf_scalper", "enabled": true, "params": {"trigger_mode": "smt", "use_smt_entry": true, "reference_symbol": "ES", "im_expected_corr": "positive", "warmup_bars": 250, "qty_max": 3}}
   ]
 }

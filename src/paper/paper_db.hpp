@@ -119,6 +119,7 @@ public:
 
 private:
     PGconn* conn_ = nullptr;
+    bool    poll_error_logged_ = false;  // rate-limit poll_ticks WARN spam
 
     std::string exec_scalar(const std::string& sql, const char* const* params,
                             int nparams, const char* ctx);

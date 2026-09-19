@@ -11,6 +11,34 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-09-20 — ES reference feed (SMT live) + fleet feed-symbol starvation fix
+
+### Fixed
+- **Paper fleet consumed zero ticks**: `paper_fleet.json` polled `symbol='MNQ'` while the
+  collector writes `symbol='NQ'` (front-month feed). Every strategy had been silently
+  starved since the fleet launched — hidden by the weekend close. New explicit
+  `feed_symbol` fleet field (default = `symbol`): trade the micro label (MNQ P&L maths)
+  on the NQ feed, same price series. Verified live: 24/24 strategies now consume ticks.
+- **`poll_ticks` WARN spam**: a missing `ticks` relation logged one WARN per 100ms poll
+  (thousands of lines during the test_db window). Now logs once per error-state entry.
+
+### Added
+- **ES reference feed for the MTF SMT/intermarket module** (Pine v5 §1.8, previously
+  inert): `RITHMIC_EXTRA_SYMBOLS` (comma-separated) makes the collector subscribe extra
+  symbols LAST_TRADE|BBO alongside the primary (no depth); `.env` sets `ES`. The paper
+  engine polls `reference_symbol`, aggregates ticks into 1m bars (minute-rollover, same
+  convention as the strategy's own bars) and fans them out via
+  `MtfScalperStrategy::on_reference_bar` to strategies that wired a reference feed
+  (`wants_reference_feed()`). New fleet variant `mtf_smt_v5` (trigger_mode `smt`,
+  `use_smt_entry`, reference ES, positive expected correlation) — fleet now 24.
+- 4 new MTF tests: SMT bull divergence fires long, SMT inert without feed, correlation
+  gate blocks uncorrelated reference, gate passes correlated/up-trending reference
+  (37/37 green). End-to-end smoke over the weekend: synthetic NQ+ES ticks injected into
+  `ticks` (source='synthetic', deleted after) → collector subscribed ES, engine logged
+  `Reference feed wired (ES) — SMT machinery live`.
+
+---
+
 ## 2026-09-19 — Paper fleet engine + MTF scalper port + collector heartbeat fix
 
 ### Added

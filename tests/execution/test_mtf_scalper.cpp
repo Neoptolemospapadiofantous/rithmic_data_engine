@@ -1126,6 +1126,103 @@ TEST(config_from_json_string) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// 17. SMT / intermarket module (spec §1.8, Pine :994-1040)
+// ═════════════════════════════════════════════════════════════════════════════
+// Chart makes a lower pivot low while the reference makes a HIGHER pivot low
+// (sell-side SMT) → long trigger. smt_pivot_len=2 keeps it compact: a pivot at
+// bar c is confirmed when bar c+2 completes. Closes rise steadily so the trend
+// gate (EMA2>EMA3, close>EMA2) stays up throughout.
+static void feed_smt_divergence(MtfScalperStrategy& s, bool feed_ref) {
+    for (int m = 0; m <= 11; ++m) {
+        const double c = 100.0 + 0.4 * m;
+        double lo = c - 0.1;
+        if (m == 3) lo = 99.5;    // chart pivot low 1
+        if (m == 9) lo = 98.9;    // chart pivot low 2 — LOWER (chart sweeps)
+        feed_bar(s, 0, 600 + m, c - 0.05, c + 0.1, lo, c);
+        if (feed_ref) {
+            const double rc = 500.0 + 0.2 * m;
+            double rlo = rc - 0.1;
+            if (m == 3) rlo = 498.5;   // ref pivot low 1
+            if (m == 9) rlo = 498.9;   // ref pivot low 2 — HIGHER (ref refuses)
+            s.on_reference_bar(rc + 0.1, rlo, rc);
+        }
+    }
+}
+
+TEST(smt_bull_divergence_fires_long) {
+    MtfScalperConfig cfg = base_cfg();
+    cfg.trigger_mode = "smt";
+    cfg.use_smt_entry = true;
+    cfg.reference_symbol = "ES";
+    cfg.smt_pivot_len = 2;
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    feed_smt_divergence(s, true);
+    ASSERT(sigs.empty());            // nothing before bar 11 completes
+    flush(s, 0, 612, 104.5);         // completes bar 11 → pivot c=9 evaluated
+    ASSERT_EQ(sigs.size(), (size_t)1);
+    ASSERT(sigs[0].signal == OrbSignal::BUY);
+    ASSERT_EQ(sigs[0].reason, std::string("smt_long"));
+}
+
+TEST(smt_inert_without_reference_feed) {
+    MtfScalperConfig cfg = base_cfg();
+    cfg.trigger_mode = "smt";
+    cfg.use_smt_entry = true;
+    cfg.reference_symbol = "";       // no feed wired → SMT must never fire
+    cfg.smt_pivot_len = 2;
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    feed_smt_divergence(s, false);   // identical chart path, no ref bars
+    flush(s, 0, 612, 104.5);
+    ASSERT(sigs.empty());
+    ASSERT(!s.wants_reference_feed());
+}
+
+TEST(im_filter_blocks_uncorrelated_reference) {
+    MtfScalperConfig cfg = base_cfg();   // flag_any mode
+    cfg.use_im_filter = true;
+    cfg.im_corr_len = 10;
+    cfg.im_min_corr = 0.3;
+    cfg.reference_symbol = "ES";
+    cfg.im_expected_corr = "positive";
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    // Alternating ref closes vs a rising chart → |corr| ≈ 0 → gate blocks
+    for (int m = 600; m <= 611; ++m) {
+        double rc = (m % 2 == 0) ? 500.0 : 500.4;
+        s.on_reference_bar(rc + 0.2, rc - 0.2, rc);
+    }
+    feed_flag_long(s, 0, 600, 100.0);
+    flush(s, 0, 612, 110.5);
+    ASSERT(sigs.empty());
+}
+
+TEST(im_filter_passes_correlated_reference) {
+    MtfScalperConfig cfg = base_cfg();
+    cfg.use_im_filter = true;
+    cfg.im_corr_len = 10;
+    cfg.im_min_corr = 0.3;
+    cfg.reference_symbol = "ES";
+    cfg.im_expected_corr = "positive";   // longs need the reference trending up
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    // Steadily rising ref vs rising chart → corr ≈ +1, ref EMAs up → passes
+    for (int m = 600; m <= 611; ++m) {
+        double rc = 500.0 + 0.25 * (m - 600);
+        s.on_reference_bar(rc + 0.2, rc - 0.2, rc);
+    }
+    feed_flag_long(s, 0, 600, 100.0);
+    flush(s, 0, 612, 110.5);
+    ASSERT_EQ(sigs.size(), (size_t)1);
+    ASSERT(sigs[0].signal == OrbSignal::BUY);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(indicators_match_reference_250_bars);
     RUN(indicators_constant_series);
@@ -1159,6 +1256,10 @@ int main() {
     RUN(mtf_gate_no_lookahead);
     RUN(session_window_and_flat_at_end);
     RUN(warmup_blocks_signals);
+    RUN(smt_bull_divergence_fires_long);
+    RUN(smt_inert_without_reference_feed);
+    RUN(im_filter_blocks_uncorrelated_reference);
+    RUN(im_filter_passes_correlated_reference);
     RUN(config_from_json_string);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";

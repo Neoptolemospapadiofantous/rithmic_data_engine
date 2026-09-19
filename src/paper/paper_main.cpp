@@ -99,6 +99,15 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    // The collector writes ticks under the feed (front-month) symbol — NQ —
+    // while the fleet trades the micro label (MNQ). Same price series.
+    const std::string feed_symbol = fleet.feed_symbol.empty()
+                                        ? fleet.symbol : fleet.feed_symbol;
+    LOG("[PAPER] Feed symbol=%s (trading %s)%s", feed_symbol.c_str(),
+        fleet.symbol.c_str(),
+        fleet.reference_symbol.empty()
+            ? "" : (" — reference feed=" + fleet.reference_symbol).c_str());
+
     Config env = Config::from_env(".env");
     if (env.pg_password.empty()) {
         LOG("[PAPER] FATAL: PG_PASSWORD not set (checked .env)");
@@ -324,12 +333,17 @@ int main(int argc, char** argv) {
     LOG("[PAPER] Tick watermark seeded at %s (now − 5 min)",
         paper::PaperDb::format_ts(watermark).c_str());
 
+    // Reference-feed 1m bar aggregator state (SMT/intermarket module)
+    int64_t ref_watermark = watermark;
+    long    ref_bar_min   = -1;
+    double  ref_hi = 0.0, ref_lo = 0.0, ref_close = 0.0;
+
     int flush_every_ms = 2000;
     int64_t last_flush_ms = 0;
     double last_price = 0.0;
 
     while (!g_stop) {
-        auto ticks = db->poll_ticks(fleet.symbol, watermark, 5000);
+        auto ticks = db->poll_ticks(feed_symbol, watermark, 5000);
         for (const auto& t : ticks) {
             watermark = t.ts_us;
             last_price = t.price;
@@ -345,6 +359,34 @@ int main(int argc, char** argv) {
                                         r->mtf->qty_calc(r->mtf->equity()));
                     r->mtf->on_tick(ot);
                 }
+            }
+        }
+
+        // Intermarket reference feed: aggregate reference ticks into 1m bars
+        // and fan each completed bar out to MTF strategies that wired a
+        // reference_symbol (SMT/correlation module, Pine spec §1.8).
+        if (!fleet.reference_symbol.empty()) {
+            auto ref_ticks = db->poll_ticks(fleet.reference_symbol,
+                                            ref_watermark, 5000);
+            for (const auto& t : ref_ticks) {
+                ref_watermark = t.ts_us;
+                const long bar_min = (long)(t.ts_us / 60'000'000LL);
+                if (ref_bar_min < 0) {          // first tick ever
+                    ref_bar_min = bar_min;
+                    ref_hi = ref_lo = ref_close = t.price;
+                    continue;
+                }
+                if (bar_min != ref_bar_min) {   // minute rolled → emit bar
+                    for (auto& r : runners)
+                        if (r->mtf && r->mtf->wants_reference_feed())
+                            r->mtf->on_reference_bar(ref_hi, ref_lo, ref_close);
+                    ref_bar_min = bar_min;
+                    ref_hi = ref_lo = t.price;
+                } else {
+                    if (t.price > ref_hi) ref_hi = t.price;
+                    if (t.price < ref_lo) ref_lo = t.price;
+                }
+                ref_close = t.price;
             }
         }
 

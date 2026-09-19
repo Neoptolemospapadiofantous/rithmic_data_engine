@@ -429,11 +429,17 @@ std::vector<PaperDb::TickRow> PaperDb::poll_ticks(const std::string& symbol,
         3, nullptr, params, nullptr, nullptr, 0);
     std::vector<TickRow> out;
     if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
-        LOG("[PAPER-DB] WARN poll_ticks: %s",
-            res ? PQresultErrorMessage(res) : "null result");
+        // Log on error-state entry only — a missing table would otherwise
+        // spam one WARN per poll (100ms) until the collector recreates it.
+        if (!poll_error_logged_) {
+            LOG("[PAPER-DB] WARN poll_ticks: %s (further errors suppressed)",
+                res ? PQresultErrorMessage(res) : "null result");
+            poll_error_logged_ = true;
+        }
         if (res) PQclear(res);
         return out;
     }
+    poll_error_logged_ = false;
     int n = PQntuples(res);
     out.reserve(n);
     for (int i = 0; i < n; ++i) {

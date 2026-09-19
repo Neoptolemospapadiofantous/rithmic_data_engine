@@ -196,7 +196,9 @@ public:
     }
 
     // ── Reference-symbol 1m bars (SMT / correlation, spec §1.8) ─────────────
-    // Never called in the current engine (no DXY subscription) → SMT inert.
+    // Fed by the paper engine when the fleet config wires a reference_symbol
+    // (e.g. ES); without it SMT stays inert by design.
+    bool wants_reference_feed() const { return !cfg_.reference_symbol.empty(); }
     void on_reference_bar(double high, double low, double close) {
         if (!ref_wired_) {
             ref_wired_ = true;

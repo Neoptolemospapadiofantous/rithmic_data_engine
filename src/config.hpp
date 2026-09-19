@@ -17,6 +17,10 @@ struct Config {
     std::string app_version = "1.0";
     std::string symbol      = "NQ";
     std::string exchange    = "CME";
+    // Extra MD symbols subscribed alongside the primary one (LAST_TRADE|BBO
+    // only — no depth). Intermarket reference feeds, e.g. ES for the MTF
+    // SMT module. Comma-separated: RITHMIC_EXTRA_SYMBOLS=ES,YM
+    std::vector<std::string> extra_symbols;
 
     // ── PostgreSQL connection ──────────────────────────────────────
     std::string pg_host     = "localhost";
@@ -67,6 +71,7 @@ struct Config {
         c.app_version  = env("RITHMIC_APP_VERSION",   "1.0");
         c.symbol       = env("RITHMIC_SYMBOL",        "NQ");
         c.exchange     = env("RITHMIC_EXCHANGE",      "CME");
+        c.extra_symbols = split_csv(env("RITHMIC_EXTRA_SYMBOLS", ""));
         c.pg_host      = env("PG_HOST",               "localhost");
         c.pg_port      = env("PG_PORT",               "5432");
         c.pg_db        = env("PG_DB",                 "rithmic");
@@ -125,5 +130,18 @@ private:
         auto b = s.find_first_not_of(ws);
         if (b == std::string::npos) return {};
         return s.substr(b, s.find_last_not_of(ws) - b + 1);
+    }
+    static std::vector<std::string> split_csv(const std::string& s) {
+        std::vector<std::string> out;
+        size_t pos = 0;
+        while (pos <= s.size()) {
+            auto comma = s.find(',', pos);
+            auto part  = trim(s.substr(pos, comma == std::string::npos
+                                              ? comma : comma - pos));
+            if (!part.empty()) out.push_back(part);
+            if (comma == std::string::npos) break;
+            pos = comma + 1;
+        }
+        return out;
     }
 };

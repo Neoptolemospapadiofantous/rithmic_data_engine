@@ -46,6 +46,15 @@ struct FleetConfig {
     std::string account_label = "tradeify";
     std::string symbol        = "MNQ";
     std::string exchange      = "CME";
+    // Feed symbol: what the collector actually writes to `ticks` (Rithmic
+    // front-month, e.g. "NQ") — may differ from the traded instrument
+    // label (`symbol`, e.g. "MNQ"; same price series, micro point value).
+    // Empty → poll `symbol`.
+    std::string feed_symbol;
+    // Intermarket reference symbol polled alongside the primary feed and
+    // fanned out to MTF strategies as 1m bars (SMT/correlation module).
+    // Empty → no reference feed (SMT stays inert).
+    std::string reference_symbol;
     double      point_value   = 2.0;
     double      tick_size     = 0.25;
     double      starting_balance      = 25000.0;
@@ -69,6 +78,8 @@ struct FleetConfig {
         c.account_label = json_str(text, "account_label", c.account_label);
         c.symbol        = json_str(text, "symbol",        c.symbol);
         c.exchange      = json_str(text, "exchange",      c.exchange);
+        c.feed_symbol   = json_str(text, "feed_symbol",   c.feed_symbol);
+        c.reference_symbol = json_str(text, "reference_symbol", c.reference_symbol);
         c.point_value   = json_dbl(text, "point_value",   c.point_value);
         c.tick_size     = json_dbl(text, "tick_size",     c.tick_size);
         c.starting_balance      = json_dbl(text, "starting_balance",      c.starting_balance);
