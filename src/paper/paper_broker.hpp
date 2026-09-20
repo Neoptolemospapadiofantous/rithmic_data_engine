@@ -146,6 +146,7 @@ public:
         double mfe_now = (pos_dir_ > 0) ? (t.price - entry_price_)
                                         : (entry_price_ - t.price);
         if (mfe_now > mfe_) mfe_ = mfe_now;
+        if (mfe_now < mae_) mae_ = mfe_now;   // adverse excursion (≤ 0)
 
         int64_t elapsed_s = (t.ts_micros - entry_time_us_) / 1'000'000;
         if (!trail_armed_ && elapsed_s >= cfg_.trail_delay_secs &&
@@ -254,6 +255,7 @@ private:
         entry_time_us_ = ts_us;
         stop_price_    = snap(fill - dir * cfg_.sl_points, dir);
         mfe_           = 0.0;
+        mae_           = 0.0;
         be_moved_      = false;
         trail_armed_   = false;
         ++entries_today_;
@@ -285,6 +287,12 @@ private:
         tr.pnl_pts       = (fill - entry_price_) * pos_dir_;
         tr.commission    = cfg_.commission_rt * qty_;
         tr.pnl_usd       = tr.pnl_pts * cfg_.point_value * qty_ - tr.commission;
+        // Fold the exit tick into the excursion bounds, then persist them
+        const double ex = tr.pnl_pts;
+        if (ex > mfe_) mfe_ = ex;
+        if (ex < mae_) mae_ = ex;
+        tr.mfe_pts       = mfe_;
+        tr.mae_pts       = mae_;
         tr.exit_reason   = reason;
 
         LOG("[PAPER %s] EXIT %s @ %.2f reason=%s pnl=%.2fpts ($%.2f)",
@@ -359,6 +367,7 @@ private:
     double  stop_price_ = 0.0;
     int64_t entry_time_us_ = 0;
     double  mfe_ = 0.0;
+    double  mae_ = 0.0;
     bool    be_moved_ = false;
     bool    trail_armed_ = false;
     bool    sl_dirty_ = false;

@@ -42,6 +42,8 @@ struct PaperTradeRow {
     double      pnl_pts = 0.0;
     double      pnl_usd = 0.0;
     double      commission = 0.0;
+    double      mae_pts = 0.0;   // max adverse excursion (≤ 0)
+    double      mfe_pts = 0.0;   // max favorable excursion
     std::string exit_reason;
 };
 

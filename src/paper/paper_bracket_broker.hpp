@@ -154,6 +154,11 @@ public:
             return;
         }
 
+        // Excursion tracking for MAE/MFE (persisted on close)
+        const double ex = (t.price - entry_price_) * pos_dir_;
+        if (ex > mfe_) mfe_ = ex;
+        if (ex < mae_) mae_ = ex;
+
         risk_.update_unrealized(unrealized(t.price));
     }
 
@@ -219,6 +224,8 @@ private:
         qty_           = std::max(1, qty);
         entry_price_   = fill;
         entry_time_us_ = ts_us;
+        mfe_           = 0.0;
+        mae_           = 0.0;
         pending_exit_reason_.clear();  // never leak a stale exit into a new trade
         stop_price_    = (!std::isnan(stop) && stop > 0.0)
                              ? snap(stop, dir)
@@ -256,6 +263,11 @@ private:
         tr.pnl_pts       = (fill - entry_price_) * pos_dir_;
         tr.commission    = cfg_.commission_rt * qty_;
         tr.pnl_usd       = tr.pnl_pts * cfg_.point_value * qty_ - tr.commission;
+        // Fold the exit tick into the excursion bounds, then persist them
+        if (tr.pnl_pts > mfe_) mfe_ = tr.pnl_pts;
+        if (tr.pnl_pts < mae_) mae_ = tr.pnl_pts;
+        tr.mfe_pts       = mfe_;
+        tr.mae_pts       = mae_;
         tr.exit_reason   = reason;
 
         LOG("[PAPER %s] EXIT %s @ %.2f reason=%s pnl=%.2fpts ($%.2f)",
@@ -313,6 +325,8 @@ private:
     double  stop_price_  = 0.0;
     double  tp_price_    = std::numeric_limits<double>::quiet_NaN();
     int64_t entry_time_us_ = 0;
+    double  mfe_ = 0.0;             // max favorable excursion (pts, this leg)
+    double  mae_ = 0.0;             // max adverse excursion (pts, ≤ 0)
 
     int         pending_dir_ = 0; // entry waiting for next tick
     int         pending_flip_ = 0; // reversal: exit current leg, enter opposite

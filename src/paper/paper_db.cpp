@@ -48,6 +48,9 @@ static const char* kSchemaSQL[] = {
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()))sql",
     R"sql(CREATE INDEX IF NOT EXISTS idx_paper_trades_strat_time
   ON paper_trades(strategy_id, entry_time DESC))sql",
+    // MAE/MFE columns (added 2026-09-20) — idempotent for existing tables
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS mae_pts DOUBLE PRECISION)sql",
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS mfe_pts DOUBLE PRECISION)sql",
     R"sql(CREATE TABLE IF NOT EXISTS paper_daily (
   strategy_id TEXT NOT NULL REFERENCES paper_strategies(strategy_id),
   trade_date DATE NOT NULL,
@@ -190,20 +193,23 @@ void PaperDb::record_trade(const PaperTradeRow& t) {
     std::string pts  = std::to_string(t.pnl_pts);
     std::string usd  = std::to_string(t.pnl_usd);
     std::string comm = std::to_string(t.commission);
-    const char* params[13] = {
+    std::string mae  = std::to_string(t.mae_pts);
+    std::string mfe  = std::to_string(t.mfe_pts);
+    const char* params[15] = {
         t.strategy_id.c_str(), t.account_label.c_str(), t.symbol.c_str(),
         t.direction.c_str(), qty.c_str(), ets.c_str(), ep.c_str(),
         xts.c_str(), xp.c_str(), pts.c_str(), usd.c_str(), comm.c_str(),
-        t.exit_reason.c_str(),
+        t.exit_reason.c_str(), mae.c_str(), mfe.c_str(),
     };
     PGresult* res = PQexecParams(conn_,
         R"sql(INSERT INTO paper_trades
               (strategy_id, account_label, symbol, direction, qty,
                entry_time, entry_price, exit_time, exit_price,
-               pnl_pts, pnl_usd, commission, exit_reason)
+               pnl_pts, pnl_usd, commission, exit_reason, mae_pts, mfe_pts)
               VALUES ($1,$2,$3,$4,$5::int,$6::timestamptz,$7::float8,
-                      $8::timestamptz,$9::float8,$10::float8,$11::float8,$12::float8,$13))sql",
-        13, nullptr, params, nullptr, nullptr, 0);
+                      $8::timestamptz,$9::float8,$10::float8,$11::float8,$12::float8,$13,
+                      $14::float8,$15::float8))sql",
+        15, nullptr, params, nullptr, nullptr, 0);
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
         LOG("[PAPER-DB] WARN record_trade(%s): %s", t.strategy_id.c_str(),
             res ? PQresultErrorMessage(res) : "null result");

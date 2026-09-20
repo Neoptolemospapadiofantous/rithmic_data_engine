@@ -11,6 +11,17 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-09-20 — Paper per-trade MAE/MFE (excursion tracking)
+
+### Added
+- **MAE/MFE per paper trade** (`src/paper/paper_broker.hpp`, `paper_bracket_broker.hpp`):
+  both brokers track max adverse/favorable excursion (points) per leg on every tick
+  (exit tick folded in) and persist `mae_pts`/`mfe_pts` on the `paper_trades` row.
+  Columns added via idempotent ALTERs in `PaperDb::ensure_schema()` +
+  `migrations/010_paper_mae_mfe.sql`.
+
+---
+
 ## 2026-09-20 — Paper fleet manual control channel (paper_control)
 
 ### Added
