@@ -55,6 +55,12 @@ struct PaperDailyRow {
     std::string halt_reason;
 };
 
+struct PaperControlRow {
+    int64_t     id = 0;
+    std::string strategy_id;
+    std::string action;              // "disable" / "enable" / "flatten"
+};
+
 struct PaperAccountRow {
     std::string account_label;
     double starting_balance = 0.0;
@@ -103,6 +109,11 @@ public:
     void upsert_daily(const PaperDailyRow& d);
     void upsert_account(const PaperAccountRow& a);
 
+    // Manual control channel (dashboard inserts rows, engine consumes them)
+    std::vector<PaperControlRow> poll_control();
+    void consume_control(int64_t id);
+    std::optional<bool> load_enabled(const std::string& strategy_id);
+
     // Seeding helpers (history for RiskManager / strategy warmup)
     double sum_pnl(const std::string& strategy_id);                          // all time
     double sum_pnl_since(const std::string& strategy_id, int64_t since_us);  // today
@@ -120,6 +131,7 @@ public:
 private:
     PGconn* conn_ = nullptr;
     bool    poll_error_logged_ = false;  // rate-limit poll_ticks WARN spam
+    bool    ctl_error_logged_  = false;  // rate-limit poll_control WARN spam
 
     std::string exec_scalar(const std::string& sql, const char* const* params,
                             int nparams, const char* ctx);

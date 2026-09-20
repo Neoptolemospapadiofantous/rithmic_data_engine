@@ -181,6 +181,15 @@ int main(int argc, char** argv) {
                 });
         }
 
+        // Manual disable (paper_strategies.enabled, set via the dashboard)
+        // overrides config: the runner is still built but starts halted.
+        if (auto en = db->load_enabled(fs.id); en && !*en) {
+            if (r->strategy) r->strategy->halt_trading("manual_disabled");
+            else             r->mtf->halt_trading("manual_disabled");
+            LOG("[PAPER] %s disabled in paper_strategies — built but halted",
+                fs.id.c_str());
+        }
+
         // Seed per-strategy risk + trade counters from history.
         double total = db->sum_pnl(fs.id);
         double today = db->sum_pnl_since(fs.id, day_start_us);
@@ -340,6 +349,8 @@ int main(int argc, char** argv) {
 
     int flush_every_ms = 2000;
     int64_t last_flush_ms = 0;
+    int ctl_every_ms = 1000;
+    int64_t last_ctl_ms = 0;
     double last_price = 0.0;
 
     while (!g_stop) {
@@ -434,8 +445,55 @@ int main(int argc, char** argv) {
             persist_account();
         }
 
-        // Periodic flush of position + account rows.
+        // Manual control channel: dashboard-written paper_control rows.
+        // Runs even with zero ticks (loop spins on the poll sleep).
         int64_t now_ms = now_us() / 1000;
+        if (now_ms - last_ctl_ms >= ctl_every_ms) {
+            last_ctl_ms = now_ms;
+            for (const auto& ctl : db->poll_control()) {
+                Runner* hit = nullptr;
+                for (auto& r : runners) {
+                    if (r->fcfg.id == ctl.strategy_id) { hit = r.get(); break; }
+                }
+                if (!hit) {
+                    LOG("[PAPER] WARN control #%lld: unknown strategy '%s' — skipped",
+                        (long long)ctl.id, ctl.strategy_id.c_str());
+                    db->consume_control(ctl.id);
+                    continue;
+                }
+                if (ctl.action == "disable") {
+                    if (hit->strategy) hit->strategy->halt_trading("manual_disable");
+                    else               hit->mtf->halt_trading("manual_disable");
+                } else if (ctl.action == "enable") {
+                    if (hit->risk().halted()) {
+                        LOG("[PAPER] WARN control #%lld: enable %s refused — "
+                            "risk-halted (%s)", (long long)ctl.id,
+                            hit->fcfg.id.c_str(), hit->risk().halt_reason().c_str());
+                        db->consume_control(ctl.id);
+                        continue;
+                    }
+                    if (hit->strategy) hit->strategy->unhalt_trading("manual_enable");
+                    else               hit->mtf->unhalt_trading("manual_enable");
+                } else if (ctl.action == "flatten") {
+                    if (hit->strategy)
+                        hit->broker->flatten("manual", now_us(),
+                                             hit->strategy->last_price());
+                    else
+                        hit->bbroker->flatten("manual", now_us(),
+                                              hit->bbroker->last_price());
+                } else {
+                    LOG("[PAPER] WARN control #%lld: unknown action '%s' for %s — skipped",
+                        (long long)ctl.id, ctl.action.c_str(), hit->fcfg.id.c_str());
+                    db->consume_control(ctl.id);
+                    continue;
+                }
+                db->consume_control(ctl.id);
+                LOG("[PAPER] control #%lld applied: %s %s",
+                    (long long)ctl.id, ctl.action.c_str(), hit->fcfg.id.c_str());
+            }
+        }
+
+        // Periodic flush of position + account rows.
         if (now_ms - last_flush_ms >= flush_every_ms) {
             last_flush_ms = now_ms;
             for (auto& r : runners)

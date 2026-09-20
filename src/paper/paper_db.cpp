@@ -68,6 +68,14 @@ static const char* kSchemaSQL[] = {
   halted BOOLEAN NOT NULL DEFAULT FALSE,
   halt_reason TEXT,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()))sql",
+    R"sql(CREATE TABLE IF NOT EXISTS paper_control (
+  id BIGSERIAL PRIMARY KEY,
+  strategy_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  consumed_at TIMESTAMPTZ))sql",
+    R"sql(CREATE INDEX IF NOT EXISTS idx_paper_control_pending
+  ON paper_control(consumed_at))sql",
 };
 
 PaperDb::PaperDb(const std::string& connstr) {
@@ -224,7 +232,7 @@ void PaperDb::upsert_strategy(const std::string& id, const std::string& account_
               VALUES ($1,$2,$3,$4::jsonb,$5::boolean)
               ON CONFLICT (strategy_id) DO UPDATE SET
                 account_label=EXCLUDED.account_label, engine=EXCLUDED.engine,
-                params_json=EXCLUDED.params_json, enabled=EXCLUDED.enabled)sql",
+                params_json=EXCLUDED.params_json)sql",
         5, nullptr, params, nullptr, nullptr, 0);
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
         LOG("[PAPER-DB] WARN upsert_strategy(%s): %s", id.c_str(),
@@ -381,6 +389,67 @@ void PaperDb::upsert_account(const PaperAccountRow& a) {
         LOG("[PAPER-DB] WARN upsert_account(%s): %s", a.account_label.c_str(),
             res ? PQresultErrorMessage(res) : "null result");
     if (res) PQclear(res);
+}
+
+// ── manual control channel ───────────────────────────────────────────────────
+
+std::vector<PaperControlRow> PaperDb::poll_control() {
+    PGresult* res = PQexec(conn_,
+        "SELECT id, strategy_id, action FROM paper_control "
+        "WHERE consumed_at IS NULL ORDER BY id");
+    std::vector<PaperControlRow> out;
+    if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
+        // Same rate-limit as poll_ticks: one WARN per error-state entry.
+        if (!ctl_error_logged_) {
+            LOG("[PAPER-DB] WARN poll_control: %s (further errors suppressed)",
+                res ? PQresultErrorMessage(res) : "null result");
+            ctl_error_logged_ = true;
+        }
+        if (res) PQclear(res);
+        return out;
+    }
+    ctl_error_logged_ = false;
+    int n = PQntuples(res);
+    out.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        PaperControlRow c;
+        c.id          = std::atoll(PQgetvalue(res, i, 0));
+        c.strategy_id = PQgetvalue(res, i, 1);
+        c.action      = PQgetvalue(res, i, 2);
+        out.push_back(c);
+    }
+    PQclear(res);
+    return out;
+}
+
+void PaperDb::consume_control(int64_t id) {
+    std::string sid = std::to_string(id);
+    const char* params[1] = { sid.c_str() };
+    PGresult* res = PQexecParams(conn_,
+        "UPDATE paper_control SET consumed_at=now() WHERE id=$1::bigint",
+        1, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+        LOG("[PAPER-DB] WARN consume_control(%lld): %s", (long long)id,
+            res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
+}
+
+std::optional<bool> PaperDb::load_enabled(const std::string& strategy_id) {
+    const char* params[1] = { strategy_id.c_str() };
+    PGresult* res = PQexecParams(conn_,
+        "SELECT enabled FROM paper_strategies WHERE strategy_id=$1",
+        1, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
+        LOG("[PAPER-DB] WARN load_enabled(%s): %s", strategy_id.c_str(),
+            res ? PQresultErrorMessage(res) : "null result");
+        if (res) PQclear(res);
+        return std::nullopt;
+    }
+    std::optional<bool> out;
+    if (PQntuples(res) > 0)
+        out = std::strcmp(PQgetvalue(res, 0, 0), "t") == 0;
+    PQclear(res);
+    return out;
 }
 
 // ── seeding queries ──────────────────────────────────────────────────────────

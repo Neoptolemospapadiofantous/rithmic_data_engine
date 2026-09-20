@@ -11,6 +11,30 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-09-20 — Paper fleet manual control channel (paper_control)
+
+### Added
+- **DB-backed manual control channel** for the paper fleet: new `paper_control`
+  table (`migrations/009_paper_control.sql`, also ensured by `PaperDb::ensure_schema()`)
+  with `(id, strategy_id, action, created_at, consumed_at)` and a pending-row index.
+  The dashboard INSERTs a row; the engine polls unconsumed rows once per second
+  (in-order by id), applies the action, and stamps `consumed_at`. Actions: `disable`
+  → `halt_trading("manual_disable")`; `enable` → `unhalt_trading("manual_enable")`,
+  refused with a WARN when the strategy's RiskManager is halted (halt left in place);
+  `flatten` → broker `flatten("manual", ...)` at the last known price (safe no-op when
+  flat). Unknown strategy ids and unknown actions are WARN-logged and consumed so a
+  bad row is never re-applied. Poll errors rate-limit to one WARN per error-state entry,
+  same as `poll_ticks`. Works with the market closed — the main loop spins on zero ticks.
+
+### Changed
+- **Startup enabled-merge**: `paper_strategies.enabled` is now operator-owned — the
+  config seeds it on first insert but `upsert_strategy` no longer overwrites it on
+  conflict. A config-enabled strategy whose DB row says `enabled=false` is still built
+  at startup but immediately halted (`manual_disabled`) so a dashboard disable survives
+  engine restarts. Config-disabled strategies keep the existing skip behavior.
+
+---
+
 ## 2026-09-20 — ES reference feed (SMT live) + fleet feed-symbol starvation fix
 
 ### Fixed
