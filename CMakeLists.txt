@@ -76,6 +76,10 @@ add_executable(test_orb_strategy tests/execution/test_orb_strategy.cpp)
 target_include_directories(test_orb_strategy PRIVATE src/execution src/)
 target_compile_features(test_orb_strategy PRIVATE cxx_std_20)
 
+add_executable(test_trend_strategy tests/execution/test_trend_strategy.cpp)
+target_include_directories(test_trend_strategy PRIVATE src/execution src/)
+target_compile_features(test_trend_strategy PRIVATE cxx_std_20)
+
 add_executable(test_mtf_scalper
     tests/execution/test_mtf_scalper.cpp
     src/execution/orb_strategy.cpp

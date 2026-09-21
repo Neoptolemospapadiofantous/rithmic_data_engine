@@ -112,6 +112,14 @@ public:
     void upsert_account(const PaperAccountRow& a);
 
     // Manual control channel (dashboard inserts rows, engine consumes them)
+    // Audit/replay isolation: when set, the store records paper_trades ONLY —
+    // no strategy/position/daily/account upserts, no control consumption, and
+    // every load_* returns empty so a replay never inherits the live fleet's
+    // day counts or positions (paper_strategies/positions are keyed by
+    // strategy_id alone, so a replay would otherwise overwrite the live rows).
+    void set_trades_only(bool v) { trades_only_ = v; }
+    bool trades_only() const { return trades_only_; }
+
     std::vector<PaperControlRow> poll_control();
     void consume_control(int64_t id);
     std::optional<bool> load_enabled(const std::string& strategy_id);
@@ -132,6 +140,7 @@ public:
 
 private:
     PGconn* conn_ = nullptr;
+    bool    trades_only_       = false;  // replay/audit isolation (see set_trades_only)
     bool    poll_error_logged_ = false;  // rate-limit poll_ticks WARN spam
     bool    ctl_error_logged_  = false;  // rate-limit poll_control WARN spam
 

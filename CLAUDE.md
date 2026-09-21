@@ -38,7 +38,7 @@ Everything is C++. There is no Python in this project.
 - **`nq_executor`** — ORB strategy + order execution (production trader)
 - **`audit_daemon`** — 17-check quality daemon (local/testing only — NOT on Oracle)
 - **Build**: `cmake -B build && cmake --build build -j$(nproc)`
-- **Tests**: `build/test_orb_strategy`, `build/test_risk_manager`, `build/test_validator`, `build/test_db`
+- **Tests**: `build/test_orb_strategy`, `build/test_trend_strategy`, `build/test_risk_manager`, `build/test_validator`, `build/test_db`
 
 ## What to improve (in priority order)
 
@@ -78,6 +78,8 @@ If tests break because of your changes: fix the code OR add tests that cover the
 | `src/audit_daemon_main.cpp` | 17-check quality daemon source |
 | `src/execution/executor_main.cpp` | nq_executor entry point |
 | `src/execution/orb_strategy.cpp` | ORB strategy implementation |
+| `src/execution/trend_strategy.hpp` | Configurable trend engine (11 modes) used by the paper fleet — `tests/execution/test_trend_strategy.cpp` |
+| `src/paper/paper_main.cpp` | Paper fleet runner (engines orb / mtf_scalper / trend, replay mode, feed-gap guard) |
 | `src/execution/order_manager.cpp` | Order lifecycle management |
 | `src/execution/risk_manager.cpp` | Pre-trade risk checks |
 | `src/client.cpp` | WebSocket client (Boost.Beast) |

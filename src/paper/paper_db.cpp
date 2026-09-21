@@ -150,6 +150,8 @@ std::string PaperDb::exec_scalar(const std::string& sql, const char* const* para
 // ── PaperStore ───────────────────────────────────────────────────────────────
 
 void PaperDb::save_position(const PaperPositionRow& p) {
+    if (trades_only_) return;
+
     std::string ts = p.entry_time_us > 0 ? format_ts(p.entry_time_us) : "";
     const char* dir = p.direction > 0 ? "LONG" : (p.direction < 0 ? "SHORT" : nullptr);
     std::string qty  = std::to_string(p.qty);
@@ -230,6 +232,7 @@ void PaperDb::record_trade(const PaperTradeRow& t) {
 void PaperDb::upsert_strategy(const std::string& id, const std::string& account_label,
                               const std::string& engine, const std::string& params_json,
                               bool enabled) {
+    if (trades_only_) return;
     const char* en = enabled ? "true" : "false";
     const char* params[5] = { id.c_str(), account_label.c_str(), engine.c_str(),
                               params_json.c_str(), en };
@@ -247,6 +250,7 @@ void PaperDb::upsert_strategy(const std::string& id, const std::string& account_
 }
 
 std::optional<PaperPositionRow> PaperDb::load_position(const std::string& strategy_id) {
+    if (trades_only_) return std::nullopt;
     const char* params[1] = { strategy_id.c_str() };
     PGresult* res = PQexecParams(conn_,
         R"sql(SELECT direction, qty, entry_price,
@@ -280,6 +284,7 @@ std::optional<PaperPositionRow> PaperDb::load_position(const std::string& strate
 
 std::optional<PaperDailyRow> PaperDb::load_daily(const std::string& strategy_id,
                                                  const std::string& trade_date) {
+    if (trades_only_) return std::nullopt;
     const char* params[2] = { strategy_id.c_str(), trade_date.c_str() };
     PGresult* res = PQexecParams(conn_,
         R"sql(SELECT trades, wins, pnl_usd, halted, COALESCE(halt_reason,'')
@@ -306,6 +311,7 @@ std::optional<PaperDailyRow> PaperDb::load_daily(const std::string& strategy_id,
 }
 
 std::optional<PaperAccountRow> PaperDb::load_account(const std::string& account_label) {
+    if (trades_only_) return std::nullopt;
     const char* params[1] = { account_label.c_str() };
     PGresult* res = PQexecParams(conn_,
         R"sql(SELECT starting_balance, equity, peak_equity, day_pnl, day_start_equity,
@@ -336,6 +342,8 @@ std::optional<PaperAccountRow> PaperDb::load_account(const std::string& account_
 }
 
 void PaperDb::upsert_daily(const PaperDailyRow& d) {
+    if (trades_only_) return;
+
     std::string trades = std::to_string(d.trades);
     std::string wins   = std::to_string(d.wins);
     std::string pnl    = std::to_string(d.pnl_usd);
@@ -365,6 +373,8 @@ void PaperDb::upsert_daily(const PaperDailyRow& d) {
 }
 
 void PaperDb::upsert_account(const PaperAccountRow& a) {
+    if (trades_only_) return;
+
     std::string sb  = std::to_string(a.starting_balance);
     std::string eq  = std::to_string(a.equity);
     std::string pk  = std::to_string(a.peak_equity);
@@ -400,6 +410,7 @@ void PaperDb::upsert_account(const PaperAccountRow& a) {
 // ── manual control channel ───────────────────────────────────────────────────
 
 std::vector<PaperControlRow> PaperDb::poll_control() {
+    if (trades_only_) return {};
     PGresult* res = PQexec(conn_,
         "SELECT id, strategy_id, action FROM paper_control "
         "WHERE consumed_at IS NULL ORDER BY id");
@@ -429,6 +440,8 @@ std::vector<PaperControlRow> PaperDb::poll_control() {
 }
 
 void PaperDb::consume_control(int64_t id) {
+    if (trades_only_) return;
+
     std::string sid = std::to_string(id);
     const char* params[1] = { sid.c_str() };
     PGresult* res = PQexecParams(conn_,
@@ -441,6 +454,7 @@ void PaperDb::consume_control(int64_t id) {
 }
 
 std::optional<bool> PaperDb::load_enabled(const std::string& strategy_id) {
+    if (trades_only_) return std::nullopt;
     const char* params[1] = { strategy_id.c_str() };
     PGresult* res = PQexecParams(conn_,
         "SELECT enabled FROM paper_strategies WHERE strategy_id=$1",

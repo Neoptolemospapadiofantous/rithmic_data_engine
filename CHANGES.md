@@ -9,7 +9,44 @@ Dates are in ISO-8601 order (newest first).
 
 ## [Unreleased]
 
+### Added
+- **Trend engine — 11 configurable trend modes, 28 fleet variants (fleet 82 → 110)**
+  (`src/execution/trend_strategy.hpp`, `tests/execution/test_trend_strategy.cpp`,
+  `src/paper/paper_main.cpp` engine `"trend"`, `config/paper_fleet.json`). One
+  header-only `TrendStrategy` driven by `TrendConfig{mode, tf_min, win_start/win_end,
+  allow_longs/shorts, exit_on_flip, time_stop_min, …}` builds 1-minute → `tf_min` bars
+  in ET (a bar closes when its bucket's last minute completes) and emits the same
+  `OrbSignal`s the ORB does, so it shares the plain `PaperBroker` (stop / BE / trail
+  from the strategy's `OrbConfig` overrides). Modes: `donchian` (N-bar channel close),
+  `ema_pullback` (fast/slow EMA, touch-and-resume), `vwap_trend` (retest of a sloping
+  session VWAP), `opening_drive` (first N minutes' direction ≥ k×ATR, pullback entry),
+  `gap_go` (open gap vs prior RTH close, unfilled after a wait), `pdhl_breakout`
+  (prior-day or overnight high/low with volume), `squeeze` (Bollinger inside Keltner
+  then a break), `supertrend` (band flip; opposite flip flattens and re-enters once
+  flat), `nr7` (narrowest-of-N break), `rs_continuation` (NQ leads the ES reference
+  feed by ≥ bp), `tod_momentum` (continuation at a clock time). 14-check unit test in
+  the hermes gate. Replay audit 2026-09-21 (afternoon data only): 12 of 28 variants
+  fired, with losers recorded (`trend_donchian_10_1m` −64.5, `trend_supertrend_7_3_1m`
+  −51.0, `trend_rs_es_15m` −36.5) alongside winners.
+- **Feed-gap guard in the paper engine** (`src/paper/paper_main.cpp`,
+  `paper_config.hpp` `feed_gap_reset_secs` = 300). A hole in the tick stream longer
+  than the threshold (collector down, forced logout, box asleep) now restarts the
+  session state of every orb/trend strategy that is flat and not halted (daily trade
+  counters re-seeded); open positions keep their stops, halts stay latched, MTF keeps
+  its bar history. Why: on 2026-09-21 the feed had no ticks 09:33–11:01 ET, and the
+  first tick back fired 36 "entries" across the fleet (an ORB range built on one
+  minute of ticks, Donchian channels with a 90-minute hole) — all winners by
+  construction of the jump, +$1,081 of phantom P&L. Replay of the same day with the
+  guard: 62 trades / +1,059.5 → 26 trades / −21.5. Logged as
+  `[PAPER] WARN feed gap …`. Applies identically in replay so audits match live.
+
 ### Fixed
+- **Trend runners crashed the fleet at start-up (SIGSEGV, 20 systemd restarts)**
+  (`src/paper/paper_main.cpp`): the trade-close hook and the position-resume path
+  branched on `strategy` (ORB) vs "else bracket broker", so a `trend` runner
+  dereferenced a null `PaperBracketBroker`. Both now branch on which broker exists;
+  a resumed trend position also seeds the strategy's in-position flag
+  (`TrendStrategy::seed_open_position`) so the flip-exit and time-stop see the leg.
 - **Stop cancels were being refused by Rithmic (rp_code=1045) — every trailing-stop
   update left the superseded stop WORKING** (`proto/rithmic.proto`,
   `src/execution/executor_main.cpp`, `tools/cancel_stops_main.cpp`). `RequestCancelOrder`
@@ -93,6 +130,29 @@ Dates are in ISO-8601 order (newest first).
   `base.py`: refuse below the model's minimum data, time-ordered hold-out only, baseline
   next to every score. All ten refuse on 2026-09-21 data (3 days of ticks, 22 trades) and
   all ten train correctly on synthetic sets. None is consulted by the executor.
+- **Paper fleet 24 → 82 strategies** (`config/paper_fleet.json`, founder: "as many
+  different, different times, different timeframes"): ORB at other session times (07:00
+  and 08:30 pre-market, 10:00/10:30 second range, noon, 13:30, 15:00 power hour, 18:00 and
+  21:00 Globex, 03:00 London, 04:00 EU — each with an eod/last-entry that keeps the session
+  on one ET date), range lengths 1/2/30/60 min, entry/management rules (confirmation buffer,
+  no-chase, trail-now/late, break-even variants, one-shot/five-shot, morning-only, cooldown,
+  wide-stop/tight-trail, tight), and MTF scalper variants (HTF 5/30/60 min; flag-retest,
+  sweep, onset, FVG, stochastic, all triggers; open/afternoon/Globex/London/all-day
+  sessions; long-only/short-only; fixed 15/35 bracket; VWAP; long hold; no time stop;
+  SMT on 30-min HTF). Every key is one the engines already parse; verified 82/82 active.
+- **Feature builder + validation** (dashboard `ui/services/features.py`,
+  `ui/services/data_quality.py`, `migrations/012_trade_context_features.sql`): per trade, a
+  50-feature multi-timeframe vector (1/5/15/60-min bars: returns, realized vol, ATR,
+  range position, EMA9−21, EMA slope, volume z, VWAP distance, plus session context)
+  built ONLY from bars that closed before the entry — the builder asserts the invariant —
+  stored in `trade_context.features` with a validation verdict (NaN-heavy / out-of-range
+  rows flagged, not used blindly). Data-quality report per trading day (RTH coverage,
+  gaps, out-of-order, duplicates, bad prints, spikes, ES parity, feed staleness); days
+  under 80% coverage are excluded from the day-level models. Feature selection
+  (`FeatureSelector` in models/base.py): NaN/constant drop, |corr|>0.95 pruning,
+  permutation importance on a time-ordered validation tail — fitted on the training
+  slice only, applied consistently at predict time — wired into the trade filter,
+  adaptive risk, breakout, exit, fill-quality and day-type models.
 - **Account-list verification after ORDER_PLANT login** (tid=302 `RequestAccountList` →
   303, new messages in `proto/rithmic.proto`; `ResponseLogin` gains `fcm_id`/`ib_id`).
   The executor adopts the fcm/ib Rithmic reports for the configured `account_id` and
@@ -118,6 +178,22 @@ Dates are in ISO-8601 order (newest first).
   `config/archived/tradeify1_config.json` (the dashboard ignores `archived/`), its env file
   and backup moved alongside (mode 600), its `live_position`/`live_sessions` rows deleted;
   it never closed a trade.
+
+- **Paper-engine replay / audit mode** (`src/paper/paper_main.cpp`, `paper_db.*`; founder:
+  "audit, validate and test to see all strategies are live taking trades, bad ones too"):
+  `paper_engine --replay-from "YYYY-MM-DD HH:MM" --replay-to … [--account-label audit]`
+  runs the whole fleet over RECORDED ticks with the engine clock driven by tick timestamps
+  (EOD, day rollover), no sleeps, no control polling, then exits. `PaperDb::set_trades_only`
+  isolates it: only `paper_trades` (label `audit`) is written, no strategy/position/daily/
+  account rows, and every `load_*` returns empty so a replay never inherits the live
+  fleet's day counts or positions. Dashboard: `POST /api/cpp/paper/replay {from,to}`,
+  `GET /api/cpp/paper/audit`, "Replay audit" section on /strategies with per-strategy
+  results and a stated reason for every silent strategy. Learning queries exclude the
+  `audit` label. **Incident worth the line**: the first replay (before isolation) overwrote
+  the live fleet's `paper_strategies.account_label` and doubled today's `paper_daily`
+  counts, because those tables are keyed by `strategy_id` alone — a SECOND fleet label on
+  this schema collides with the first. Repaired from `paper_trades`; the isolation flag is
+  the fix, the shared key is the standing caveat.
 
 ### Operational notes
 - **Collector + executor cannot share the Tradeify login.** With the `tradeify` executor

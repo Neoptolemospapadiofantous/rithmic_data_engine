@@ -1,5 +1,5 @@
 {
-  "_comment": "Paper fleet: 20 ORB variants + 4 MTF scalpers on one tradeify paper account. Base params = config/tradeify_config.json; per-strategy params override named OrbConfig/MtfScalperConfig fields. Consumed by paper_engine (ticks from PostgreSQL, no Rithmic session). feed_symbol = what the collector writes (NQ front-month); symbol = traded label (MNQ). reference_symbol (ES) feeds the MTF SMT/intermarket module as 1m bars.",
+  "_comment": "Paper fleet: 28 trend-engine variants (11 modes across 1/5/15/60-minute frames) + 57 ORB variants (09:30 range sweep + other session times/timeframes + entry/management rules) + 25 MTF scalpers (HTF choices, trigger modes, sessions, direction) on one tradeify paper account. Base params = config/tradeify_config.json; per-strategy params override named OrbConfig/MtfScalperConfig fields. Consumed by paper_engine (ticks from PostgreSQL, no Rithmic session). feed_symbol = what the collector writes (NQ front-month); symbol = traded label (MNQ). reference_symbol (ES) feeds the MTF SMT/intermarket module as 1m bars.",
   "account_label": "tradeify",
   "symbol": "MNQ",
   "feed_symbol": "NQ",
@@ -10,35 +10,1235 @@
   "starting_balance": 25000.0,
   "daily_loss_limit": -500.0,
   "trailing_drawdown_cap": 1000.0,
-  "consistency_cap_pct": 0.30,
+  "consistency_cap_pct": 0.3,
   "commission_rt": 1.0,
   "slippage_ticks": 1,
   "poll_ms": 100,
+  "feed_gap_reset_secs": 300,
   "strategy_daily_loss_limit": -250.0,
   "strategies": [
-    {"id": "orb_3_10_5",  "engine": "orb", "enabled": true, "params": {"orb_minutes": 3,  "sl_points": 10.0, "trail_step": 5.0}},
-    {"id": "orb_3_10_10", "engine": "orb", "enabled": true, "params": {"orb_minutes": 3,  "sl_points": 10.0, "trail_step": 10.0}},
-    {"id": "orb_3_15_5",  "engine": "orb", "enabled": true, "params": {"orb_minutes": 3,  "sl_points": 15.0, "trail_step": 5.0}},
-    {"id": "orb_3_15_10", "engine": "orb", "enabled": true, "params": {"orb_minutes": 3,  "sl_points": 15.0, "trail_step": 10.0}},
-    {"id": "orb_3_20_15", "engine": "orb", "enabled": true, "params": {"orb_minutes": 3,  "sl_points": 20.0, "trail_step": 15.0}},
-    {"id": "orb_5_10_5",  "engine": "orb", "enabled": true, "params": {"orb_minutes": 5,  "sl_points": 10.0, "trail_step": 5.0}},
-    {"id": "orb_5_10_10", "engine": "orb", "enabled": true, "params": {"orb_minutes": 5,  "sl_points": 10.0, "trail_step": 10.0}},
-    {"id": "orb_5_15_5",  "engine": "orb", "enabled": true, "params": {"orb_minutes": 5,  "sl_points": 15.0, "trail_step": 5.0}},
-    {"id": "orb_5_15_10", "engine": "orb", "enabled": true, "params": {"orb_minutes": 5,  "sl_points": 15.0, "trail_step": 10.0}},
-    {"id": "orb_5_15_15", "engine": "orb", "enabled": true, "params": {"orb_minutes": 5,  "sl_points": 15.0, "trail_step": 15.0}},
-    {"id": "orb_5_20_10", "engine": "orb", "enabled": true, "params": {"orb_minutes": 5,  "sl_points": 20.0, "trail_step": 10.0}},
-    {"id": "orb_5_20_15", "engine": "orb", "enabled": true, "params": {"orb_minutes": 5,  "sl_points": 20.0, "trail_step": 15.0}},
-    {"id": "orb_10_10_5", "engine": "orb", "enabled": true, "params": {"orb_minutes": 10, "sl_points": 10.0, "trail_step": 5.0}},
-    {"id": "orb_10_15_10","engine": "orb", "enabled": true, "params": {"orb_minutes": 10, "sl_points": 15.0, "trail_step": 10.0}},
-    {"id": "orb_10_15_15","engine": "orb", "enabled": true, "params": {"orb_minutes": 10, "sl_points": 15.0, "trail_step": 15.0}},
-    {"id": "orb_10_20_10","engine": "orb", "enabled": true, "params": {"orb_minutes": 10, "sl_points": 20.0, "trail_step": 10.0}},
-    {"id": "orb_10_20_15","engine": "orb", "enabled": true, "params": {"orb_minutes": 10, "sl_points": 20.0, "trail_step": 15.0}},
-    {"id": "orb_15_15_5", "engine": "orb", "enabled": true, "params": {"orb_minutes": 15, "sl_points": 15.0, "trail_step": 5.0}},
-    {"id": "orb_15_15_10","engine": "orb", "enabled": true, "params": {"orb_minutes": 15, "sl_points": 15.0, "trail_step": 10.0}},
-    {"id": "orb_15_20_15","engine": "orb", "enabled": true, "params": {"orb_minutes": 15, "sl_points": 20.0, "trail_step": 15.0}},
-    {"id": "mtf_auto_v5", "engine": "mtf_scalper", "enabled": true, "params": {"warmup_bars": 250, "qty_max": 3}},
-    {"id": "mtf_flags_v5","engine": "mtf_scalper", "enabled": true, "params": {"trigger_mode": "flag_any", "warmup_bars": 250, "qty_max": 3}},
-    {"id": "mtf_loose_v5","engine": "mtf_scalper", "enabled": true, "params": {"use_regime": false, "use_atr_floor": false, "warmup_bars": 250, "qty_max": 3}},
-    {"id": "mtf_smt_v5",  "engine": "mtf_scalper", "enabled": true, "params": {"trigger_mode": "smt", "use_smt_entry": true, "reference_symbol": "ES", "im_expected_corr": "positive", "warmup_bars": 250, "qty_max": 3}}
+    {
+      "id": "orb_3_10_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 3,
+        "sl_points": 10.0,
+        "trail_step": 5.0
+      }
+    },
+    {
+      "id": "orb_3_10_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 3,
+        "sl_points": 10.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_3_15_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 3,
+        "sl_points": 15.0,
+        "trail_step": 5.0
+      }
+    },
+    {
+      "id": "orb_3_15_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 3,
+        "sl_points": 15.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_3_20_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 3,
+        "sl_points": 20.0,
+        "trail_step": 15.0
+      }
+    },
+    {
+      "id": "orb_5_10_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 10.0,
+        "trail_step": 5.0
+      }
+    },
+    {
+      "id": "orb_5_10_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 10.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_5_15_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 15.0,
+        "trail_step": 5.0
+      }
+    },
+    {
+      "id": "orb_5_15_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 15.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_5_15_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 15.0,
+        "trail_step": 15.0
+      }
+    },
+    {
+      "id": "orb_5_20_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 20.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_5_20_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 20.0,
+        "trail_step": 15.0
+      }
+    },
+    {
+      "id": "orb_10_10_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 10,
+        "sl_points": 10.0,
+        "trail_step": 5.0
+      }
+    },
+    {
+      "id": "orb_10_15_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 10,
+        "sl_points": 15.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_10_15_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 10,
+        "sl_points": 15.0,
+        "trail_step": 15.0
+      }
+    },
+    {
+      "id": "orb_10_20_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 10,
+        "sl_points": 20.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_10_20_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 10,
+        "sl_points": 20.0,
+        "trail_step": 15.0
+      }
+    },
+    {
+      "id": "orb_15_15_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 15,
+        "sl_points": 15.0,
+        "trail_step": 5.0
+      }
+    },
+    {
+      "id": "orb_15_15_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 15,
+        "sl_points": 15.0,
+        "trail_step": 10.0
+      }
+    },
+    {
+      "id": "orb_15_20_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 15,
+        "sl_points": 20.0,
+        "trail_step": 15.0
+      }
+    },
+    {
+      "id": "mtf_auto_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3
+      }
+    },
+    {
+      "id": "mtf_flags_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "trigger_mode": "flag_any",
+        "warmup_bars": 250,
+        "qty_max": 3
+      }
+    },
+    {
+      "id": "mtf_loose_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "use_regime": false,
+        "use_atr_floor": false,
+        "warmup_bars": 250,
+        "qty_max": 3
+      }
+    },
+    {
+      "id": "mtf_smt_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "trigger_mode": "smt",
+        "use_smt_entry": true,
+        "reference_symbol": "ES",
+        "im_expected_corr": "positive",
+        "warmup_bars": 250,
+        "qty_max": 3
+      }
+    },
+    {
+      "id": "orb_t0700_pre_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 7,
+        "session_open_min": 0,
+        "orb_minutes": 10,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 9,
+        "eod_flatten_hour": 9,
+        "eod_flatten_min": 25
+      }
+    },
+    {
+      "id": "orb_t0830_pre_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 8,
+        "session_open_min": 30,
+        "orb_minutes": 5,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 13
+      }
+    },
+    {
+      "id": "orb_t0830_pre_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 8,
+        "session_open_min": 30,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 13
+      }
+    },
+    {
+      "id": "orb_t1000_2nd_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 10,
+        "session_open_min": 0,
+        "orb_minutes": 5,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 14
+      }
+    },
+    {
+      "id": "orb_t1000_2nd_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 10,
+        "session_open_min": 0,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 14
+      }
+    },
+    {
+      "id": "orb_t1030_2nd_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 10,
+        "session_open_min": 30,
+        "orb_minutes": 5,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 14
+      }
+    },
+    {
+      "id": "orb_t1200_noon_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 12,
+        "session_open_min": 0,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 15
+      }
+    },
+    {
+      "id": "orb_t1330_pm_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 13,
+        "session_open_min": 30,
+        "orb_minutes": 5,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 15
+      }
+    },
+    {
+      "id": "orb_t1330_pm_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 13,
+        "session_open_min": 30,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 15
+      }
+    },
+    {
+      "id": "orb_t1500_power_5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 15,
+        "session_open_min": 0,
+        "orb_minutes": 5,
+        "sl_points": 10,
+        "trail_step": 5,
+        "last_entry_hour": 16
+      }
+    },
+    {
+      "id": "orb_t1800_globex_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 18,
+        "session_open_min": 0,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 23,
+        "eod_flatten_hour": 23,
+        "eod_flatten_min": 55
+      }
+    },
+    {
+      "id": "orb_t1800_globex_30",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 18,
+        "session_open_min": 0,
+        "orb_minutes": 30,
+        "sl_points": 20,
+        "trail_step": 15,
+        "last_entry_hour": 23,
+        "eod_flatten_hour": 23,
+        "eod_flatten_min": 55
+      }
+    },
+    {
+      "id": "orb_t2100_asia_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 21,
+        "session_open_min": 0,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 23,
+        "eod_flatten_hour": 23,
+        "eod_flatten_min": 55
+      }
+    },
+    {
+      "id": "orb_t0300_london_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 3,
+        "session_open_min": 0,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 9,
+        "eod_flatten_hour": 9,
+        "eod_flatten_min": 20
+      }
+    },
+    {
+      "id": "orb_t0300_london_30",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 3,
+        "session_open_min": 0,
+        "orb_minutes": 30,
+        "sl_points": 20,
+        "trail_step": 15,
+        "last_entry_hour": 9,
+        "eod_flatten_hour": 9,
+        "eod_flatten_min": 20
+      }
+    },
+    {
+      "id": "orb_t0400_eu_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "session_open_hour": 4,
+        "session_open_min": 0,
+        "orb_minutes": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "last_entry_hour": 9,
+        "eod_flatten_hour": 9,
+        "eod_flatten_min": 20
+      }
+    },
+    {
+      "id": "orb_1_15_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 1,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "orb_2_15_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 2,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "orb_30_20_15",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 30,
+        "sl_points": 20,
+        "trail_step": 15
+      }
+    },
+    {
+      "id": "orb_30_30_20",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 30,
+        "sl_points": 30,
+        "trail_step": 20
+      }
+    },
+    {
+      "id": "orb_60_30_20",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 60,
+        "sl_points": 30,
+        "trail_step": 20,
+        "last_entry_hour": 14
+      }
+    },
+    {
+      "id": "orb_60_40_25",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 60,
+        "sl_points": 40,
+        "trail_step": 25,
+        "last_entry_hour": 14
+      }
+    },
+    {
+      "id": "orb_5_buf2",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "breakout_buffer": 2.0
+      }
+    },
+    {
+      "id": "orb_5_buf5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "breakout_buffer": 5.0
+      }
+    },
+    {
+      "id": "orb_5_nochase3",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "max_entry_offset": 3.0
+      }
+    },
+    {
+      "id": "orb_5_nochase1",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "max_entry_offset": 1.0
+      }
+    },
+    {
+      "id": "orb_5_trail_now",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "trail_delay_secs": 0
+      }
+    },
+    {
+      "id": "orb_5_trail_late",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "trail_delay_secs": 900
+      }
+    },
+    {
+      "id": "orb_5_be5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "trail_be_trigger": 5.0
+      }
+    },
+    {
+      "id": "orb_5_be8_off0",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "trail_be_trigger": 8.0,
+        "trail_be_offset": 0.0
+      }
+    },
+    {
+      "id": "orb_5_one_shot",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "max_daily_trades": 1
+      }
+    },
+    {
+      "id": "orb_5_five_shots",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "max_daily_trades": 5
+      }
+    },
+    {
+      "id": "orb_5_morning",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "last_entry_hour": 11
+      }
+    },
+    {
+      "id": "orb_5_cooldown60",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "stop_cooldown_secs": 60
+      }
+    },
+    {
+      "id": "orb_5_wide_10_40",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "sl_points": 40,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "orb_5_tight_8_8",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "sl_points": 8,
+        "trail_step": 8
+      }
+    },
+    {
+      "id": "orb_15_buf3_nochase5",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 15,
+        "breakout_buffer": 3.0,
+        "max_entry_offset": 5.0
+      }
+    },
+    {
+      "id": "mtf_htf5_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "htf_mult": 5
+      }
+    },
+    {
+      "id": "mtf_htf30_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "htf_mult": 30
+      }
+    },
+    {
+      "id": "mtf_htf60_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "htf_mult": 60
+      }
+    },
+    {
+      "id": "mtf_retest_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "trigger_mode": "flag_retest"
+      }
+    },
+    {
+      "id": "mtf_sweep_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "trigger_mode": "sweep",
+        "use_sweep_entry": true
+      }
+    },
+    {
+      "id": "mtf_onset_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "trigger_mode": "onset"
+      }
+    },
+    {
+      "id": "mtf_fvg_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "trigger_mode": "fvg",
+        "use_fvg_entry": true
+      }
+    },
+    {
+      "id": "mtf_stoch_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "trigger_mode": "stoch"
+      }
+    },
+    {
+      "id": "mtf_all_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "trigger_mode": "all"
+      }
+    },
+    {
+      "id": "mtf_open_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "session_window": "0930-1130"
+      }
+    },
+    {
+      "id": "mtf_pm_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "session_window": "1300-1600"
+      }
+    },
+    {
+      "id": "mtf_globex_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "session_window": "1800-2200"
+      }
+    },
+    {
+      "id": "mtf_london_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "session_window": "0200-0600"
+      }
+    },
+    {
+      "id": "mtf_allday_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "session_window": "0930-1555"
+      }
+    },
+    {
+      "id": "mtf_longonly_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "allow_shorts": false
+      }
+    },
+    {
+      "id": "mtf_shortonly_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "allow_longs": false
+      }
+    },
+    {
+      "id": "mtf_fixed_15_35_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "exit_sizing": "fixed",
+        "sl_points": 15.0,
+        "tp_points": 35.0
+      }
+    },
+    {
+      "id": "mtf_vwap_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "use_vwap": true
+      }
+    },
+    {
+      "id": "mtf_longhold_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "max_hold_bars": 60
+      }
+    },
+    {
+      "id": "mtf_notimestop_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "use_time_stop": false
+      }
+    },
+    {
+      "id": "mtf_smt_htf30_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "trigger_mode": "smt",
+        "use_smt_entry": true,
+        "reference_symbol": "ES",
+        "im_expected_corr": "positive",
+        "htf_mult": 30
+      }
+    },
+    {
+      "id": "trend_donchian_20_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "donchian",
+        "tf_min": 5,
+        "donchian_n": 20,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_donchian_55_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "donchian",
+        "tf_min": 5,
+        "donchian_n": 55,
+        "sl_points": 20,
+        "trail_step": 15
+      }
+    },
+    {
+      "id": "trend_donchian_20_15m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "donchian",
+        "tf_min": 15,
+        "donchian_n": 20,
+        "sl_points": 25,
+        "trail_step": 15
+      }
+    },
+    {
+      "id": "trend_donchian_10_1m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "donchian",
+        "tf_min": 1,
+        "donchian_n": 10,
+        "sl_points": 10,
+        "trail_step": 8
+      }
+    },
+    {
+      "id": "trend_ema_pb_9_21_1m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "ema_pullback",
+        "tf_min": 1,
+        "ema_fast": 9,
+        "ema_slow": 21,
+        "sl_points": 10,
+        "trail_step": 8
+      }
+    },
+    {
+      "id": "trend_ema_pb_9_21_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "ema_pullback",
+        "tf_min": 5,
+        "ema_fast": 9,
+        "ema_slow": 21,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_ema_pb_20_50_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "ema_pullback",
+        "tf_min": 5,
+        "ema_fast": 20,
+        "ema_slow": 50,
+        "sl_points": 20,
+        "trail_step": 15
+      }
+    },
+    {
+      "id": "trend_vwap_1m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "vwap_trend",
+        "tf_min": 1,
+        "sl_points": 12,
+        "trail_step": 8
+      }
+    },
+    {
+      "id": "trend_vwap_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "vwap_trend",
+        "tf_min": 5,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_vwap_5m_longonly",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "vwap_trend",
+        "tf_min": 5,
+        "allow_shorts": false,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_drive_15",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "opening_drive",
+        "tf_min": 1,
+        "drive_minutes": 15,
+        "drive_entry_from": 950,
+        "drive_entry_to": 1130,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_drive_30",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "opening_drive",
+        "tf_min": 1,
+        "drive_minutes": 30,
+        "drive_entry_from": 1000,
+        "drive_entry_to": 1130,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_gap_go_20",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "gap_go",
+        "gap_min_pts": 20,
+        "gap_wait_min": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "max_daily_trades": 1
+      }
+    },
+    {
+      "id": "trend_gap_go_40",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "gap_go",
+        "gap_min_pts": 40,
+        "gap_wait_min": 10,
+        "sl_points": 20,
+        "trail_step": 15,
+        "max_daily_trades": 1
+      }
+    },
+    {
+      "id": "trend_pdh_pdl_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "pdhl_breakout",
+        "level": "prior_day",
+        "tf_min": 5,
+        "vol_mult": 1.5,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_onh_onl_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "pdhl_breakout",
+        "level": "overnight",
+        "tf_min": 5,
+        "vol_mult": 1.3,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_squeeze_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "squeeze",
+        "tf_min": 5,
+        "squeeze_bars": 6,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_squeeze_15m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "squeeze",
+        "tf_min": 15,
+        "squeeze_bars": 4,
+        "sl_points": 20,
+        "trail_step": 15
+      }
+    },
+    {
+      "id": "trend_supertrend_10_3_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "supertrend",
+        "tf_min": 5,
+        "st_len": 10,
+        "st_mult": 3.0,
+        "sl_points": 25,
+        "trail_step": 15
+      }
+    },
+    {
+      "id": "trend_supertrend_10_2_15m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "supertrend",
+        "tf_min": 15,
+        "st_len": 10,
+        "st_mult": 2.0,
+        "sl_points": 30,
+        "trail_step": 20
+      }
+    },
+    {
+      "id": "trend_supertrend_7_3_1m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "supertrend",
+        "tf_min": 1,
+        "st_len": 7,
+        "st_mult": 3.0,
+        "sl_points": 12,
+        "trail_step": 8
+      }
+    },
+    {
+      "id": "trend_nr7_15m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "nr7",
+        "tf_min": 15,
+        "nr_n": 7,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_nr7_60m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "nr7",
+        "tf_min": 60,
+        "nr_n": 7,
+        "sl_points": 25,
+        "trail_step": 15,
+        "win_end": 1555
+      }
+    },
+    {
+      "id": "trend_rs_es_15m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "rs_continuation",
+        "rs_lookback_min": 15,
+        "rs_min_bp": 5.0,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    },
+    {
+      "id": "trend_tod_1000",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "tod_momentum",
+        "tod_hhmm": 1000,
+        "tod_lookback_min": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "max_daily_trades": 1
+      }
+    },
+    {
+      "id": "trend_tod_1400",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "tod_momentum",
+        "tod_hhmm": 1400,
+        "tod_lookback_min": 15,
+        "sl_points": 15,
+        "trail_step": 10,
+        "max_daily_trades": 1
+      }
+    },
+    {
+      "id": "trend_tod_1500",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "tod_momentum",
+        "tod_hhmm": 1500,
+        "tod_lookback_min": 15,
+        "sl_points": 12,
+        "trail_step": 8,
+        "max_daily_trades": 1
+      }
+    },
+    {
+      "id": "trend_donchian_20_5m_ts30",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "donchian",
+        "tf_min": 5,
+        "donchian_n": 20,
+        "time_stop_min": 30,
+        "sl_points": 15,
+        "trail_step": 10
+      }
+    }
   ]
 }

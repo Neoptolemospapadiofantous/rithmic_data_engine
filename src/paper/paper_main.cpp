@@ -11,6 +11,7 @@
 #include "log.hpp"
 #include "orb_strategy.hpp"
 #include "mtf_scalper_strategy.hpp"
+#include "trend_strategy.hpp"
 #include "paper_broker.hpp"
 #include "paper_bracket_broker.hpp"
 #include "paper_config.hpp"
@@ -35,6 +36,43 @@ void on_signal(int) { g_stop = 1; }
 int64_t now_us() {
     return std::chrono::duration_cast<std::chrono::microseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+// ── Replay (audit) mode ──────────────────────────────────────────────────────
+// `--replay-from "YYYY-MM-DD HH:MM" --replay-to "YYYY-MM-DD HH:MM"` (ET) runs the
+// whole fleet over RECORDED ticks as fast as they load, with the engine clock
+// driven by tick timestamps (EOD checks, day rollover) instead of wall time,
+// then exits. Combined with `--account-label audit` it exercises every
+// strategy against a real session without touching the live paper account:
+// the dashboard's learning queries exclude the 'audit' label.
+// Known distortion: OrbStrategy's post-stop cooldown is wall-clock (5 s of
+// replay ≈ many replayed minutes), so re-entries right after a stop are
+// under-counted in replay.
+static bool    g_replay       = false;
+static int64_t g_replay_clock = 0;   // last replayed tick (us since epoch)
+static int64_t g_replay_to    = 0;
+
+static int64_t clock_us() { return g_replay ? g_replay_clock : now_us(); }
+
+static int64_t parse_et_us(const std::string& ymd_hm) {
+    // "YYYY-MM-DD HH:MM" in America/New_York → us since epoch (uses the TZ env)
+    std::tm tm{}; int Y, M, D, h, m;
+    if (std::sscanf(ymd_hm.c_str(), "%d-%d-%d %d:%d", &Y, &M, &D, &h, &m) != 5)
+        throw std::runtime_error("bad --replay time (want \"YYYY-MM-DD HH:MM\"): " + ymd_hm);
+    tm.tm_year = Y - 1900; tm.tm_mon = M - 1; tm.tm_mday = D; tm.tm_hour = h; tm.tm_min = m; tm.tm_isdst = -1;
+    setenv("TZ", "America/New_York", 1); tzset();
+    time_t t = mktime(&tm);
+    return static_cast<int64_t>(t) * 1'000'000LL;
+}
+
+static void utc_us_to_et(int64_t us, int& h, int& m) {
+    time_t tt = static_cast<time_t>(us / 1'000'000LL);
+    struct tm tm_utc;
+    gmtime_r(&tt, &tm_utc);
+    int64_t et = (int64_t)tt - us_et_offset(tm_utc) * 3600LL;
+    h = (int)((et / 3600) % 24);
+    if (h < 0) h += 24;
+    m = (int)((et % 3600) / 60);
 }
 
 void utc_now_et(int& h, int& m) {
@@ -62,13 +100,27 @@ struct Runner {
     double pnl    = 0.0;
     bool   mtf_restart_flatten = false;  // resumed MTF leg → close after wiring
 
-    bool halted() const { return strategy ? broker->halted() : bbroker->halted(); }
-    RiskManager& risk() { return strategy ? broker->risk() : bbroker->risk(); }
+    std::unique_ptr<TrendStrategy>  trend;   // engine "trend" — shares the plain PaperBroker with orb
+
+    bool halted() const { return broker ? broker->halted() : bbroker->halted(); }
+    RiskManager& risk() { return broker ? broker->risk() : bbroker->risk(); }
     double last_price() const {
-        return strategy ? strategy->last_price() : bbroker->last_price();
+        return strategy ? strategy->last_price() : trend ? trend->last_price() : bbroker->last_price();
     }
     paper::PaperPositionRow position_row(double lp) const {
-        return strategy ? broker->position_row(lp) : bbroker->position_row(lp);
+        return broker ? broker->position_row(lp) : bbroker->position_row(lp);
+    }
+    // engine-agnostic strategy calls
+    void s_halt(const std::string& why)   { if (strategy) strategy->halt_trading(why);   else if (trend) trend->halt_trading(why);   else mtf->halt_trading(why); }
+    void s_unhalt(const std::string& why) { if (strategy) strategy->unhalt_trading(why); else if (trend) trend->unhalt_trading(why); else mtf->unhalt_trading(why); }
+    void s_reset()                        { if (strategy) strategy->reset_session();     else if (trend) trend->reset_session();     else mtf->reset_session(); }
+    void s_eod(int h, int m)              { if (strategy) strategy->check_eod(h, m);     else if (trend) trend->check_eod(h, m);     else mtf->check_time_flatten(h, m); }
+    // Feed-gap guard (orb + trend only): a strategy that is flat and not halted
+    // can safely restart its session state after a hole in the tick stream.
+    bool gap_resettable() const {
+        if (mtf) return false;
+        if (broker->direction() != 0 || halted()) return false;
+        return strategy ? !strategy->session().risk_halted : !trend->session().risk_halted;
     }
     std::function<void(const paper::PaperTradeRow&)> on_trade_closed;
 };
@@ -77,13 +129,31 @@ struct Runner {
 
 int main(int argc, char** argv) {
     std::string config_path = "config/paper_fleet.json";
+    std::string label_override, replay_from, replay_to;
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--config") == 0 && i + 1 < argc)
             config_path = argv[++i];
+        else if (std::strcmp(argv[i], "--account-label") == 0 && i + 1 < argc)
+            label_override = argv[++i];
+        else if (std::strcmp(argv[i], "--replay-from") == 0 && i + 1 < argc)
+            replay_from = argv[++i];
+        else if (std::strcmp(argv[i], "--replay-to") == 0 && i + 1 < argc)
+            replay_to = argv[++i];
         else if (std::strcmp(argv[i], "--help") == 0) {
-            std::printf("usage: paper_engine [--config config/paper_fleet.json]\n");
+            std::printf("usage: paper_engine [--config config/paper_fleet.json]\n"
+                        "       paper_engine --replay-from \"YYYY-MM-DD HH:MM\" --replay-to \"YYYY-MM-DD HH:MM\" "
+                        "[--account-label audit]   (ET; replays recorded ticks, then exits)\n");
             return 0;
         }
+    }
+    if (!replay_from.empty() || !replay_to.empty()) {
+        if (replay_from.empty() || replay_to.empty()) {
+            std::fprintf(stderr, "replay needs both --replay-from and --replay-to\n"); return 2;
+        }
+        g_replay = true;
+        g_replay_clock = parse_et_us(replay_from);
+        g_replay_to    = parse_et_us(replay_to);
+        if (label_override.empty()) label_override = "audit";
     }
 
     std::signal(SIGTERM, on_signal);
@@ -94,6 +164,11 @@ int main(int argc, char** argv) {
     paper::FleetConfig fleet;
     try {
         fleet = paper::FleetConfig::from_file(config_path);
+        if (!label_override.empty()) {
+            LOG("[PAPER] account_label overridden: %s -> %s%s", fleet.account_label.c_str(),
+                label_override.c_str(), g_replay ? " (replay/audit mode)" : "");
+            fleet.account_label = label_override;
+        }
     } catch (const std::exception& e) {
         LOG("[PAPER] FATAL: %s", e.what());
         return 1;
@@ -122,13 +197,18 @@ int main(int argc, char** argv) {
         return 1;
     }
     LOG("[PAPER] Connected to PostgreSQL — schema ensured");
+    if (g_replay) {
+        db->set_trades_only(true);
+        LOG("[PAPER] REPLAY isolation: the store will record paper_trades (label '%s') only — "
+            "no strategy/position/daily/account rows, no inherited live state", fleet.account_label.c_str());
+    }
 
     // ── Account envelope ─────────────────────────────────────────────────────
     paper::AccountEnvelope account(fleet.starting_balance, fleet.daily_loss_limit,
                                    fleet.trailing_drawdown_cap);
 
-    const std::string session_date = paper::et_trade_date(now_us());
-    const int64_t day_start_us     = paper::et_day_start_us(now_us());
+    const std::string session_date = paper::et_trade_date(clock_us());
+    const int64_t day_start_us     = paper::et_day_start_us(clock_us());
     std::string cur_date = session_date;  // mutated on day rollover; shared with callbacks
     LOG("[PAPER] Session trade_date=%s (day start %s)", session_date.c_str(),
         paper::PaperDb::format_ts(day_start_us).c_str());
@@ -145,7 +225,7 @@ int main(int argc, char** argv) {
             LOG("[PAPER] %s disabled in config — skipped", fs.id.c_str());
             continue;
         }
-        if (fs.engine != "orb" && fs.engine != "mtf_scalper") {
+        if (fs.engine != "orb" && fs.engine != "mtf_scalper" && fs.engine != "trend") {
             LOG("[PAPER] WARN: unknown engine '%s' for strategy %s — skipped",
                 fs.engine.c_str(), fs.id.c_str());
             continue;
@@ -169,6 +249,17 @@ int main(int argc, char** argv) {
                 [brk](OrbSignal sig, double px, const std::string& reason) {
                     brk->on_signal(sig, px, reason);
                 });
+        } else if (fs.engine == "trend") {
+            TrendConfig tc = TrendConfig::from_json_string(fs.params_json);
+            r->trend  = std::make_unique<TrendStrategy>(tc, r->cfg);
+            r->broker = std::make_unique<paper::PaperBroker>(
+                fs.id, fleet.account_label, fleet.symbol, r->cfg,
+                fleet.tick_size, fleet.slippage_ticks, db.get());
+            paper::PaperBroker* brk = r->broker.get();
+            r->trend->set_signal_callback(
+                [brk](OrbSignal sig, double px, const std::string& reason) {
+                    brk->on_signal(sig, px, reason);
+                });
         } else {
             r->strategy = std::make_unique<OrbStrategy>(r->cfg);
             r->broker   = std::make_unique<paper::PaperBroker>(
@@ -184,8 +275,7 @@ int main(int argc, char** argv) {
         // Manual disable (paper_strategies.enabled, set via the dashboard)
         // overrides config: the runner is still built but starts halted.
         if (auto en = db->load_enabled(fs.id); en && !*en) {
-            if (r->strategy) r->strategy->halt_trading("manual_disabled");
-            else             r->mtf->halt_trading("manual_disabled");
+            r->s_halt("manual_disabled");
             LOG("[PAPER] %s disabled in paper_strategies — built but halted",
                 fs.id.c_str());
         }
@@ -196,9 +286,10 @@ int main(int argc, char** argv) {
         int    ntoday = db->count_trades_since(fs.id, day_start_us);
         r->risk().seed_total_profit(total);
         r->risk().seed_daily_pnl(today);
-        if (r->strategy) {
+        if (r->broker) {
             r->broker->seed_entries_today(ntoday);
-            r->strategy->seed_trades_today(ntoday);
+            if (r->strategy) r->strategy->seed_trades_today(ntoday);
+            else             r->trend->seed_trades_today(ntoday);
         } else {
             r->mtf->seed_state(ntoday, today, total);
         }
@@ -211,8 +302,7 @@ int main(int argc, char** argv) {
             r->wins   = d->wins;
             r->pnl    = d->pnl_usd;
             if (d->halted) {
-                if (r->strategy) r->strategy->halt_trading("resumed_daily_halt: " + d->halt_reason);
-                else             r->mtf->halt_trading("resumed_daily_halt: " + d->halt_reason);
+                r->s_halt("resumed_daily_halt: " + d->halt_reason);
                 LOG("[PAPER] %s resumed with daily halt (%s)",
                     fs.id.c_str(), d->halt_reason.c_str());
             }
@@ -223,9 +313,13 @@ int main(int argc, char** argv) {
         // resumed leg would diverge (strategy bracket ≠ held leg) — resume for
         // the row, then flatten at entry once accounting is wired (below).
         if (auto p = db->load_position(fs.id)) {
-            if (r->strategy) {
+            if (r->broker) {                      // orb + trend share the plain broker
                 r->broker->resume_position(p->direction, p->qty, p->entry_price,
                                            p->stop_price, p->entry_time_us);
+                if (r->trend)
+                    r->trend->seed_open_position(
+                        p->direction > 0 ? OrbSignal::BUY : OrbSignal::SELL,
+                        p->entry_time_us);
             } else {
                 r->bbroker->resume_position(p->direction, p->qty, p->entry_price,
                                             p->stop_price, p->entry_time_us);
@@ -233,12 +327,8 @@ int main(int argc, char** argv) {
             }
         }
 
-        if (r->risk().halted()) {
-            if (r->strategy) r->strategy->halt_trading("risk_halted_at_seed: " +
-                                                       r->risk().halt_reason());
-            else             r->mtf->halt_trading("risk_halted_at_seed: " +
-                                                  r->risk().halt_reason());
-        }
+        if (r->risk().halted())
+            r->s_halt("risk_halted_at_seed: " + r->risk().halt_reason());
 
         // Wire trade-close accounting (daily row + account envelope). For
         // mtf_scalper the strategy also needs the close (loss-streak cooldown,
@@ -261,6 +351,8 @@ int main(int argc, char** argv) {
                                                  t.pnl_usd);
             } else if (rp->strategy) {
                 rp->strategy->notify_trade_filled(closed_dir, t.exit_reason);
+            } else if (rp->trend) {
+                rp->trend->notify_trade_filled(closed_dir, t.exit_reason);
             }
             paper::PaperDailyRow d;
             d.strategy_id = rp->fcfg.id;
@@ -274,8 +366,8 @@ int main(int argc, char** argv) {
             std::string halt = account.on_trade_close(t.pnl_usd);
             if (!halt.empty()) account.set_halt(halt);
         };
-        if (r->strategy) r->broker->on_trade_closed  = r->on_trade_closed;
-        else             r->bbroker->on_trade_closed = r->on_trade_closed;
+        if (r->broker) r->broker->on_trade_closed  = r->on_trade_closed;   // orb + trend
+        else           r->bbroker->on_trade_closed = r->on_trade_closed;   // mtf_scalper
 
         // Lockstep start: close a resumed MTF leg at its entry price so broker
         // and strategy agree on flat before the first tick arrives.
@@ -321,15 +413,9 @@ int main(int argc, char** argv) {
             reason.c_str());
         account.set_halt(reason);
         for (auto& r : runners) {
-            if (r->strategy) {
-                r->strategy->halt_trading(reason);
-                r->broker->flatten("account_halt", now_us(),
-                                   r->strategy->last_price());
-            } else {
-                r->mtf->halt_trading(reason);
-                r->bbroker->flatten("account_halt", now_us(),
-                                    r->bbroker->last_price());
-            }
+            r->s_halt(reason);
+            if (r->broker) r->broker->flatten("account_halt", now_us(), r->last_price());
+            else           r->bbroker->flatten("account_halt", now_us(), r->bbroker->last_price());
         }
         persist_account();
     };
@@ -338,9 +424,14 @@ int main(int argc, char** argv) {
         halt_all(reason);
 
     // ── Main loop ────────────────────────────────────────────────────────────
-    int64_t watermark = now_us() - 5LL * 60 * 1'000'000;  // seed 5 min of context
-    LOG("[PAPER] Tick watermark seeded at %s (now − 5 min)",
-        paper::PaperDb::format_ts(watermark).c_str());
+    int64_t watermark = g_replay ? g_replay_clock
+                                 : now_us() - 5LL * 60 * 1'000'000;  // seed 5 min of context
+    LOG("[PAPER] Tick watermark seeded at %s (%s)",
+        paper::PaperDb::format_ts(watermark).c_str(), g_replay ? "replay start" : "now − 5 min");
+    if (g_replay)
+        LOG("[PAPER] REPLAY %s → %s as account '%s' — engine clock follows tick timestamps",
+            paper::PaperDb::format_ts(g_replay_clock).c_str(),
+            paper::PaperDb::format_ts(g_replay_to).c_str(), fleet.account_label.c_str());
 
     // Reference-feed 1m bar aggregator state (SMT/intermarket module)
     int64_t ref_watermark = watermark;
@@ -352,17 +443,50 @@ int main(int argc, char** argv) {
     int ctl_every_ms = 1000;
     int64_t last_ctl_ms = 0;
     double last_price = 0.0;
+    int64_t prev_tick_ts = 0;                                   // feed-gap guard
+    const int64_t feed_gap_reset_us = (int64_t)fleet.feed_gap_reset_secs * 1'000'000LL;
 
     while (!g_stop) {
         auto ticks = db->poll_ticks(feed_symbol, watermark, 5000);
+        if (g_replay) {
+            bool past_end = ticks.empty() || ticks.front().ts_us > g_replay_to;
+            if (past_end) {
+                LOG("[PAPER] REPLAY complete at %s", paper::PaperDb::format_ts(watermark).c_str());
+                break;
+            }
+            while (!ticks.empty() && ticks.back().ts_us > g_replay_to) ticks.pop_back();
+        }
         for (const auto& t : ticks) {
+            // Feed-gap guard: after a hole in the tick stream (collector down,
+            // forced logout, box asleep) the first tick back is NOT a signal —
+            // an ORB range built on one minute of ticks and a Donchian channel
+            // with a 90-minute hole both fire on the jump. Flat, un-halted
+            // orb/trend strategies restart their session state; open
+            // positions keep their stops; MTF keeps its bar history.
+            if (prev_tick_ts && t.ts_us - prev_tick_ts > feed_gap_reset_us) {
+                int n = 0;
+                for (auto& r : runners)
+                    if (r->gap_resettable()) {
+                        r->s_reset();
+                        if (r->strategy) r->strategy->seed_trades_today(r->trades);
+                        else             r->trend->seed_trades_today(r->trades);
+                        ++n;
+                    }
+                LOG("[PAPER] WARN feed gap %.0fs (%s -> %s) — session reset on %d flat strategies; "
+                    "%zu keep their positions/halts",
+                    (t.ts_us - prev_tick_ts) / 1e6, paper::PaperDb::format_ts(prev_tick_ts).c_str(),
+                    paper::PaperDb::format_ts(t.ts_us).c_str(), n, runners.size() - (size_t)n);
+            }
+            prev_tick_ts = t.ts_us;
             watermark = t.ts_us;
+            if (g_replay) g_replay_clock = t.ts_us;
             last_price = t.price;
             OrbTick ot{t.ts_us, t.price, t.size, t.is_buy};
             for (auto& r : runners) {
-                if (r->strategy) {
+                if (r->broker) {
                     r->broker->on_tick(ot);     // broker first: signals fill on NEXT tick
-                    r->strategy->on_tick(ot);
+                    if (r->strategy) r->strategy->on_tick(ot);
+                    else             r->trend->on_tick(ot);
                 } else {
                     // bracket broker first; bracket/qty come from the strategy's
                     // state as of the previous tick — signals fill on the next.
@@ -388,9 +512,11 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 if (bar_min != ref_bar_min) {   // minute rolled → emit bar
-                    for (auto& r : runners)
+                    for (auto& r : runners) {
                         if (r->mtf && r->mtf->wants_reference_feed())
                             r->mtf->on_reference_bar(ref_hi, ref_lo, ref_close);
+                        if (r->trend) r->trend->on_reference_bar(t.ts_us, ref_close);
+                    }
                     ref_bar_min = bar_min;
                     ref_hi = ref_lo = t.price;
                 } else {
@@ -409,21 +535,19 @@ int main(int argc, char** argv) {
 
         // Periodic EOD signal check (wall clock — ticks may be sparse).
         int eh, em;
-        utc_now_et(eh, em);
-        for (auto& r : runners) {
-            if (r->strategy) r->strategy->check_eod(eh, em);
-            else             r->mtf->check_time_flatten(eh, em);
-        }
+        if (g_replay) utc_us_to_et(g_replay_clock, eh, em);
+        else          utc_now_et(eh, em);
+        for (auto& r : runners) r->s_eod(eh, em);
 
         // Day rollover at 18:00 ET.
-        std::string d = paper::et_trade_date(now_us());
+        std::string d = paper::et_trade_date(clock_us());
         if (d != cur_date) {
             LOG("[PAPER] Day rollover %s → %s — resetting sessions",
                 cur_date.c_str(), d.c_str());
             cur_date = d;
             for (auto& r : runners) {
-                if (r->strategy) {
-                    r->strategy->reset_session();
+                if (r->broker) {
+                    r->s_reset();
                     r->broker->reset_day();
                 } else {
                     r->mtf->reset_session();
@@ -448,7 +572,7 @@ int main(int argc, char** argv) {
         // Manual control channel: dashboard-written paper_control rows.
         // Runs even with zero ticks (loop spins on the poll sleep).
         int64_t now_ms = now_us() / 1000;
-        if (now_ms - last_ctl_ms >= ctl_every_ms) {
+        if (!g_replay && now_ms - last_ctl_ms >= ctl_every_ms) {
             last_ctl_ms = now_ms;
             for (const auto& ctl : db->poll_control()) {
                 Runner* hit = nullptr;
@@ -462,8 +586,7 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 if (ctl.action == "disable") {
-                    if (hit->strategy) hit->strategy->halt_trading("manual_disable");
-                    else               hit->mtf->halt_trading("manual_disable");
+                    hit->s_halt("manual_disable");
                 } else if (ctl.action == "enable") {
                     if (hit->risk().halted()) {
                         LOG("[PAPER] WARN control #%lld: enable %s refused — "
@@ -472,12 +595,10 @@ int main(int argc, char** argv) {
                         db->consume_control(ctl.id);
                         continue;
                     }
-                    if (hit->strategy) hit->strategy->unhalt_trading("manual_enable");
-                    else               hit->mtf->unhalt_trading("manual_enable");
+                    hit->s_unhalt("manual_enable");
                 } else if (ctl.action == "flatten") {
-                    if (hit->strategy)
-                        hit->broker->flatten("manual", now_us(),
-                                             hit->strategy->last_price());
+                    if (hit->broker)
+                        hit->broker->flatten("manual", now_us(), hit->last_price());
                     else
                         hit->bbroker->flatten("manual", now_us(),
                                               hit->bbroker->last_price());
@@ -501,7 +622,7 @@ int main(int argc, char** argv) {
             persist_account();
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(fleet.poll_ms));
+        if (!g_replay) std::this_thread::sleep_for(std::chrono::milliseconds(fleet.poll_ms));
     }
 
     // ── Graceful shutdown ────────────────────────────────────────────────────

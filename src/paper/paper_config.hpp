@@ -19,6 +19,7 @@
       "commission_rt": 1.0,
       "slippage_ticks": 1,
       "poll_ms": 100,
+      "feed_gap_reset_secs": 300,          // tick hole > this: flat orb/trend strategies reset (no entries on the jump)
       "strategy_daily_loss_limit": -250.0, // per-strategy halt threshold
       "strategies": [
         {"id": "orb_5_15_10", "engine": "orb", "enabled": true,
@@ -65,6 +66,7 @@ struct FleetConfig {
     int         slippage_ticks        = 1;
     int         poll_ms               = 100;
     double      strategy_daily_loss_limit = -250.0;  // per-strategy halt
+    int         feed_gap_reset_secs   = 300;         // tick hole longer than this → flat orb/trend strategies restart their session
 
     std::vector<FleetStrategy> strategies;
 
@@ -89,6 +91,7 @@ struct FleetConfig {
         c.commission_rt         = json_dbl(text, "commission_rt",         c.commission_rt);
         c.slippage_ticks        = json_int(text, "slippage_ticks",        c.slippage_ticks);
         c.poll_ms               = json_int(text, "poll_ms",               c.poll_ms);
+        c.feed_gap_reset_secs   = json_int(text, "feed_gap_reset_secs",   c.feed_gap_reset_secs);
         c.strategy_daily_loss_limit = json_dbl(text, "strategy_daily_loss_limit",
                                                c.strategy_daily_loss_limit);
 
