@@ -40,8 +40,32 @@ message ResponseLogin {
   string template_version = 153634;
   repeated string user_msg = 132760;
   repeated string rp_code = 132766;
+  string fcm_id = 154013;             // FCM the login belongs to (authoritative)
+  string ib_id = 154014;              // IB the login belongs to (authoritative)
   string unique_user_id = 153428;
   double heartbeat_interval = 153633;
+}
+
+// ── Account list (tid 302 → 303) — ORDER_PLANT ─────────────────────────────
+// Lists the accounts this login may trade, with the fcm_id/ib_id Rithmic
+// expects on every order-plant request for them. Sent once after login so
+// the executor never depends on a hand-typed fcm/ib in config.
+message RequestAccountList {
+  int32  template_id       = 154467;   // 302
+  repeated string user_msg = 132760;
+  string fcm_id            = 154013;
+  string ib_id             = 154014;
+  int32  user_type         = 154036;   // Rithmic UserType enum; 3 = USER_TYPE_TRADER
+}
+message ResponseAccountList {
+  int32  template_id                 = 154467;   // 303 (one per account; rp_code set on the terminal message)
+  repeated string user_msg           = 132760;
+  repeated string rq_handler_rp_code = 132764;
+  repeated string rp_code            = 132766;
+  string fcm_id                      = 154013;
+  string ib_id                       = 154014;
+  string account_id                  = 154008;
+  string account_name                = 154002;
 }
 
 message RequestLogout {
@@ -268,10 +292,16 @@ message RequestModifyOrder {
 // ── Template 316 — Cancel Order ───────────────────────────────────
 message RequestCancelOrder {
   int32 template_id = 154467;
+  repeated string user_msg = 132760;
+  string window_name = 154629;
   string basket_id = 110300;
   string account_id = 154008;
   string fcm_id = 154013;
   string ib_id = 154014;
+  // Same enum/tag as RequestNewOrder.manual_or_auto_select (1=MANUAL, 2=AUTO).
+  // Rithmic answered every cancel that omitted it with rp_code=1045
+  // (2026-09-21, Tradeify "simulator" route), leaving superseded stops working.
+  int32 manual_or_auto = 154710;
 }
 
 // ── Template 317 — Cancel Order Response ──────────────────────────

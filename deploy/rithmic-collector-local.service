@@ -1,0 +1,37 @@
+# rithmic-collector-local.service — 24/7 tick collector on the LOCAL box
+# (systemd USER unit; the deploy/*.service templates next to it are Oracle-only).
+#
+# Install once:
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/rithmic-collector-local.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now rithmic-collector-local
+# Check:   systemctl --user status rithmic-collector-local ; tail -f data/logs/collector.log
+# Stop:    systemctl --user stop rithmic-collector-local
+#
+# The collector logs into Rithmic's TICKER_PLANT with the RITHMIC_AMP_* aliases
+# from .env (the active broker — Tradeify today) and writes NQ + ES ticks to the
+# local Postgres `ticks` table, which feeds the paper fleet, the chart, and any
+# nq_executor running with RITHMIC_MD_PROVIDER=pg. A prop login allows ONE
+# TICKER_PLANT session, so the executor must be in pg mode while this runs.
+[Unit]
+Description=Rithmic tick collector (NQ/ES → local Postgres), 24/7
+After=network-online.target postgresql.service
+Wants=network-online.target
+# rp_code 13 (rapid-login refusal) backs off 300s inside the binary; never
+# stop restarting because of it.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/rithmic_engine
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/collector.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/collector.log
+Restart=always
+RestartSec=15
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+[Install]
+WantedBy=default.target

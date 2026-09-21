@@ -1,0 +1,24 @@
+# paper-engine-local.service — 24/7 paper fleet on the LOCAL box (systemd USER unit).
+# Install: cp deploy/paper-engine-local.service ~/.config/systemd/user/ && systemctl --user daemon-reload
+#          systemctl --user enable --now paper-engine-local
+# The dashboard's Paper ▶/■ buttons drive this unit when it is installed.
+[Unit]
+Description=Paper strategy fleet (config/paper_fleet.json) on the collector's Postgres ticks
+After=network-online.target postgresql.service rithmic-collector-local.service
+Wants=rithmic-collector-local.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+EnvironmentFile=/home/theone/Desktop/rithmic_engine/.env
+ExecStart=/home/theone/Desktop/rithmic_engine/build/paper_engine --config config/paper_fleet.json
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/paper_engine.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/paper_engine.log
+Restart=always
+RestartSec=10
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+[Install]
+WantedBy=default.target

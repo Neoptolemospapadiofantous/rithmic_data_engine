@@ -9,6 +9,127 @@ Dates are in ISO-8601 order (newest first).
 
 ## [Unreleased]
 
+### Fixed
+- **Stop cancels were being refused by Rithmic (rp_code=1045) — every trailing-stop
+  update left the superseded stop WORKING** (`proto/rithmic.proto`,
+  `src/execution/executor_main.cpp`, `tools/cancel_stops_main.cpp`). `RequestCancelOrder`
+  omitted `manual_or_auto` (tag 154710, the field new orders send as
+  `manual_or_auto_select`); Rithmic answered each cancel with `ResponseCancelOrder`
+  `rp_code=1045` and no notification, and the executor never parsed tid 317, so the
+  refusal was invisible — 2026-09-21 on Tradeify, 9 stale SELL stops sat "trigger
+  pending" behind 725 silently refused re-cancels. All cancel builders now send
+  `manual_or_auto=2` (AUTO); verified live: all 9 cancelled within 200 ms.
+  `cancel_stops` also cancels by Rithmic's `server_basket_id` (the client `MNQ-…` id
+  is refused too), logs tid 317 responses, and bounds its close. This supersedes the
+  "cancel ACK reverse map" fix, which could not have helped.
+- **ORDER_PLANT login refusal no longer hammers Rithmic** (`src/execution/executor_main.cpp`):
+  a rejected login (`rp_code=13` — returned both for "too many rapid logins / duplicate
+  session" and for bad credentials) used to `co_return` into the 10s cycle loop, i.e. a
+  fresh login every ~13s that kept 13 coming back on its own. The rejection is now logged
+  with the server's text plus an audit row, and the cycle loop backs off 300s
+  (`g_reconnect_delay_s`, reset to 10s on the next successful login).
+- **SIGTERM works outside a live session.** `main()` set SIGINT/SIGTERM to `SIG_IGN` and
+  relied on the session's `asio::signal_set`, which is only armed after ORDER_PLANT login —
+  so `pkill -SIGTERM` was a no-op for an executor stuck in the connect phase or the
+  reconnect sleep. Both now route to `handle_signal` (flag only), the sleep is sliced 1s,
+  and the handler is re-armed before each sleep.
+- **Subscription rejections log the server's reason** (order updates tid=309, market data
+  tid=101) instead of just the numeric `rp_code`; a rejected order-update subscription
+  also writes an `audit_log` error.
+
+### Added
+- **`pg` market-data source: the executor trades on the collector's Postgres ticks**
+  (`RITHMIC_MD_PROVIDER=pg`; `orb_config.hpp` `md_provider`/`md_feed_symbol`/`md_poll_ms`,
+  `executor_main.cpp` `pg_feed_loop`). A prop-firm login allows ONE TICKER_PLANT session,
+  so the executor's own MD login and the 24/7 collector could not coexist (each kicked the
+  other every ~35s on 2026-09-21). In pg mode the executor opens no MD session at all:
+  `pg_feed_loop` polls `ticks` (symbol `md_feed_symbol`, default NQ, every `md_poll_ms`)
+  from "now" (never replays history; the ORB is restored from `live_sessions`) and feeds
+  the same `process_tick` handler the WebSocket loop uses. A stale-feed watchdog
+  (`tick_timeout_s`, active window or in-position) halts NEW entries with reason
+  `pg_feed_stale`, writes an `audit_log` error and fires `grid-notify`; the first tick
+  after that unhalts. "MD connected" (`md_up()`) reports feed freshness in pg mode.
+  Enabled for `tradeify` via `.env.tradeify` (`RITHMIC_MD_PROVIDER=pg`); verified live
+  mid-session: ORB/trade count restored, order plant OK, ticks ~300 ms behind the wire.
+- **24/7 collector as a systemd user unit** (`deploy/rithmic-collector-local.service`,
+  installed to `~/.config/systemd/user/`, `Restart=always`): the local box's only
+  Rithmic MD session. Feeds the paper fleet, the chart and pg-mode executors.
+- **Whole local stack under systemd user units, enabled at boot, linger on**
+  (founder: "lets have it running 24/7"): `deploy/paper-engine-local.service` and the
+  template `deploy/nq-executor-local@.service` (EnvironmentFile `.env` + `.env.%I`,
+  `Restart=always`, NO_DEPLOY guard, SIGTERM with a 45s stop window for the exit fill).
+  The executor's own midnight-ET rollover plus the live_sessions/live_trades restore on
+  restart make a wrapper unnecessary. The dashboard's Go Live / Stop / Paper ▶■ now drive
+  the units when installed (`systemctl --user restart|stop`), so a stop is never undone
+  by `Restart=always`; without the units the nohup path is unchanged.
+- **Trade context dataset** (`migrations/011_trade_context.sql`, computed by the
+  dashboard's new `ui/routers/insights.py`): for every closed live/paper trade, the
+  opening-range size, entry minutes after 09:30, distance beyond the level at fill,
+  pre-5/15-minute range and volume, overnight (Globex) range, open gap, day range at
+  entry, hold time, MAE/MFE and MFE capture — all from the collector's `ticks`. Served as
+  win-rate/expectancy buckets on the dashboard's /strategies page ("What good trades
+  look like"). Buckets under 20 trades are flagged thin.
+- **Trade-quality model** (dashboard `ui/services/trade_model.py`, LightGBM): a classifier
+  for p(win) and a regressor for expected P&L over the trade-context features (+ the
+  strategy's stop/trail and hour of day). Time-ordered hold-out (latest 30%), reported
+  against the win-rate baseline, plus a "trade only what the model liked" replay on the
+  hold-out and gain-based importances. Refuses to train below 60 closed trades or 12 of
+  either class (today: 22 trades, 21W/1L → refused, by design). Endpoints
+  `GET /api/cpp/insights/model`, `POST /api/cpp/insights/train`, `POST /api/cpp/insights/score`;
+  auto-retrains daily 16:30 ET; model scores annotate best/worst trades on /strategies.
+  Verified on a synthetic set with a planted signal (AUC 0.70 out-of-sample, planted
+  drivers ranked top). **The executor does not consult it** — strategy logic untouched;
+  wiring a gate is a separate, explicit decision.
+- **Model zoo — ten analysis models** (dashboard `ui/services/models/`, page `/models`,
+  API `/api/cpp/models[/train-all|/{name}/train|/{name}/predict]`, daily train-all
+  16:30 ET), ranked by expected payoff: 1 day-type classifier (pre-open, from overnight
+  bars), 2 trade filter, 3 adaptive stop & trail (quantile regression on MAE / MFE),
+  4 breakout-failure (events mined from ticks at every opening-range cross), 5 variant
+  selection (Thompson bandit over the paper fleet), 6 exit/stall model (trade paths
+  rebuilt from ticks, 30 s samples, stall-rule replay), 7 regime clustering (k-means on
+  hourly bars, P&L per regime per strategy), 8 fill-quality (live trades only),
+  9 trade-management policy search (offline-RL baseline replaying real tick paths under a
+  trail/BE/time-stop grid), 10 GRU sequence model on 1-minute bars. Shared rules in
+  `base.py`: refuse below the model's minimum data, time-ordered hold-out only, baseline
+  next to every score. All ten refuse on 2026-09-21 data (3 days of ticks, 22 trades) and
+  all ten train correctly on synthetic sets. None is consulted by the executor.
+- **Account-list verification after ORDER_PLANT login** (tid=302 `RequestAccountList` →
+  303, new messages in `proto/rithmic.proto`; `ResponseLogin` gains `fcm_id`/`ib_id`).
+  The executor adopts the fcm/ib Rithmic reports for the configured `account_id` and
+  refuses to proceed (300s backoff, audit row) when that account is not in the login's
+  list — which is exactly what `1088 user has no permission to this account` meant on
+  2026-09-21: the Tradeify configs carried the Rithmic *username* (`RTU…`) as
+  `account_id`; the tradeable account is the `RTG…` id the list returns.
+
+### Changed
+- `config/tradeify1_config.json`: `trade_contract` MNQM6 → MNQZ6 (June contract had
+  expired; MD subscription failed `rp_code=7`, no ticks).
+- `config/tradeify_config.json` + `config/tradeify1_config.json` (+ the `.env`
+  `RITHMIC_ENV_TRADEIFY_ORDER_ACCOUNT` / `RITHMIC_TRADEIFY_ACCOUNT` aliases):
+  `account_id` RTU989361488 → **RTG25785042011**, the account Rithmic's account list
+  returns for this login (RTU… is the username). Verified live: order-update
+  subscription now `rp_code=0`. Both labels are the SAME prop account — run only one;
+  `tradeify` carries the 25K Growth limits (-500 / 1000), `tradeify1` the template's.
+
+### Removed
+- **`tradeify1` account label retired** (founder: "remove tradeify1"). It was a
+  dashboard-created duplicate of the same Rithmic account as `tradeify` with the template's
+  loose limits ($50k / -$1000 / $2000 vs the real 25K Growth -$500 / $1000). Config moved to
+  `config/archived/tradeify1_config.json` (the dashboard ignores `archived/`), its env file
+  and backup moved alongside (mode 600), its `live_position`/`live_sessions` rows deleted;
+  it never closed a trade.
+
+### Operational notes
+- **Collector + executor cannot share the Tradeify login.** With the `tradeify` executor
+  live (MD + ORDER_PLANT), starting `build/rithmic_engine` (reads `RITHMIC_AMP_*`, aliased
+  to the same Tradeify credentials) made Rithmic force-logout the executor's MD (tid=77)
+  every ~35s. Collector stopped; it needs its own MD login before the chart's intraday
+  ticks and the paper fleet can run alongside a live Tradeify executor.
+- Local launches (`~/Desktop/bot` backend, `CPP_LOCAL=1`) used to `.`-source `.env` /
+  `.env.<account>`; an unquoted password containing `<` was truncated silently and the
+  executor looped on `rp_code=13` for hours. Values in both files are now quoted and the
+  backend loads them literally (systemd `EnvironmentFile=` semantics).
+
 ---
 
 ## 2026-09-20 — Paper per-trade MAE/MFE (excursion tracking)

@@ -61,6 +61,7 @@
 #include <csignal>
 #include <cstdint>
 #include <cstring>
+#include <cstdlib>
 #include <ctime>
 #include <deque>
 #include <filesystem>
@@ -84,6 +85,13 @@ namespace fs        = std::filesystem;
 // ─── Globals ──────────────────────────────────────────────────────────────────
 static std::atomic<bool> g_running{true};
 static std::atomic<bool> g_flatten_requested{false}; // set by signal handler; acted on in eod_loop
+// Delay before the outer cycle loop reconnects. Normally 10s; a session that
+// ends on an ORDER_PLANT login refusal raises it so we do not hammer Rithmic
+// with a fresh login every 13s (rp_code=13 = "too many rapid logins /
+// duplicate session", which such a loop then keeps triggering on its own).
+static constexpr int kReconnectDelayNormalS  = 10;
+static constexpr int kReconnectDelayRefusedS = 300;
+static std::atomic<int> g_reconnect_delay_s{kReconnectDelayNormalS};
 
 // ─── Position DB write helper ─────────────────────────────────────────────────
 // Reads current state from order_mgr + strategy and issues an UPSERT to
@@ -461,6 +469,7 @@ struct OrderPlant {
         req.set_account_id(account_id_str);
         req.set_fcm_id(fcm_id);
         req.set_ib_id(ib_id);
+        req.set_manual_or_auto(2);  // AUTO — omitted → rp_code=1045, cancel silently refused
         try {
             if (write_q) write_q->enqueue(proto_frame(req));
             else         ws->write(asio::buffer(proto_frame(req)));
@@ -508,6 +517,7 @@ struct OrderPlant {
             req.set_account_id(account_id);
             req.set_fcm_id(fcm_id);
             req.set_ib_id(ib_id);
+            req.set_manual_or_auto(2);  // AUTO — omitted → rp_code=1045, cancel silently refused
             try {
                 if (write_q) write_q->enqueue(proto_frame(req));
                 else         ws->write(asio::buffer(proto_frame(req)));
@@ -703,10 +713,23 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     WsWriteQueue md_write_q;
     WsWriteQueue op_write_q;
 
+    // pg mode: true while the collector's ticks are arriving; the stale-feed
+    // watchdog clears it. md_up() is what the UI/DB see as "MD connected".
+    std::atomic<bool> pg_feed_fresh{false};
+    auto md_up = [&]() -> bool {
+        return orb_cfg.md_from_pg() ? pg_feed_fresh.load() : bool(md_ws);
+    };
+
 #ifndef USE_RAPI_SDK
     // ── MD plant connection (WebSocket — skipped when USE_RAPI_SDK is set) ───────
     // In SDK mode the native R|API+ TCP feed owns the AMP session; opening a
     // WebSocket session simultaneously triggers a FORCED LOGOUT storm.
+    // In pg mode there is no MD session either — the collector owns it.
+    if (orb_cfg.md_from_pg()) {
+        LOG("[PG-FEED] MD provider=pg: no Rithmic MD session; ticks come from the "
+            "collector's Postgres feed (symbol=%s, poll=%dms)",
+            orb_cfg.md_feed_symbol.c_str(), orb_cfg.md_poll_ms);
+    } else {
     LOG("[EXECUTOR] Connecting to MD plant: %s", orb_cfg.md_url.c_str());
     try {
         md_ws = co_await connect_ws(ioc, ssl_ctx, orb_cfg.md_url);
@@ -841,10 +864,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         LOG("[EXECUTOR] Subscribed to %s/%s last trade",
             trade_symbol.c_str(), orb_cfg.exchange.c_str());
     }
+    }  // !md_from_pg()
 #endif  // !USE_RAPI_SDK
 
     // ── ORDER_PLANT connection (live mode only) ───────────────────────────────
     std::unique_ptr<WsStream> op_ws;
+    // fcm/ib as Rithmic reports them for this login (ResponseLogin, refined by
+    // the account list below). Config values are only the fallback: a wrong
+    // hand-typed pair makes every order-plant request for the account fail
+    // with rp_code=1088 "user has no permission to this account".
+    std::string fcm_id_r = orb_cfg.fcm_id;
+    std::string ib_id_r  = orb_cfg.ib_id;
     if (!orb_cfg.dry_run) {
         LOG("[EXECUTOR] Connecting to ORDER_PLANT: %s", orb_cfg.rithmic_url.c_str());
         try {
@@ -909,12 +939,34 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                         bool ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
                         if (!ok) {
-                            LOG("[EXECUTOR] FATAL: ORDER_PLANT login failed — rp_code=%s",
-                                resp.rp_code().empty() ? "?" : resp.rp_code(0).c_str());
+                            // The server ANSWERED the login — auth/config refusal,
+                            // not a network fault. rp_code 13 is returned both for
+                            // "too many rapid logins / duplicate session" (clears
+                            // by itself) and for bad credentials, so retry on a
+                            // long cadence rather than every 10s: rapid retries
+                            // are exactly what keeps 13 coming back.
+                            std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
+                            std::string txt = resp.rp_code().size() > 1 ? resp.rp_code(1) : "";
+                            LOG("[EXECUTOR] FATAL: ORDER_PLANT login REJECTED by server "
+                                "(rp_code=%s %s) — retrying in %ds. Check %s_USER/"
+                                "%s_PASSWORD (an unquoted password with shell "
+                                "metacharacters is truncated when the env file is "
+                                "sourced) and that no other session holds this login.",
+                                rpc.c_str(), txt.c_str(), kReconnectDelayRefusedS,
+                                orb_cfg.order_env_prefix.c_str(),
+                                orb_cfg.order_env_prefix.c_str());
+                            audit_log.error("session.order_plant_login_rejected",
+                                "ORDER_PLANT auth rejected rp_code=" + rpc + " " + txt);
+                            g_reconnect_delay_s = kReconnectDelayRefusedS;
                             co_return;
                         }
-                        LOG("[EXECUTOR] ORDER_PLANT login OK unique_user_id=%s",
-                            resp.unique_user_id().c_str());
+                        g_reconnect_delay_s = kReconnectDelayNormalS;
+                        if (!resp.fcm_id().empty()) fcm_id_r = resp.fcm_id();
+                        if (!resp.ib_id().empty())  ib_id_r  = resp.ib_id();
+                        LOG("[EXECUTOR] ORDER_PLANT login OK unique_user_id=%s fcm_id='%s' ib_id='%s'%s",
+                            resp.unique_user_id().c_str(), fcm_id_r.c_str(), ib_id_r.c_str(),
+                            (fcm_id_r != orb_cfg.fcm_id || ib_id_r != orb_cfg.ib_id)
+                                ? " (differs from config — using the server's values)" : "");
                         audit_log.info("session.order_plant_login", "ORDER_PLANT login OK");
                         break;
                     }
@@ -932,8 +984,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             op_write_q.attach(order_plant->ws.get());
             order_plant->write_q    = &op_write_q;
             order_plant->account_id  = orb_cfg.account_id;
-            order_plant->fcm_id      = orb_cfg.fcm_id;
-            order_plant->ib_id       = orb_cfg.ib_id;
+            order_plant->fcm_id      = fcm_id_r;
+            order_plant->ib_id       = ib_id_r;
             order_plant->trade_route = orb_cfg.trade_route;  // fallback; overridden below
             order_plant->connected   = true;
             LOG("[EXECUTOR] ORDER_PLANT connected — live orders enabled (account=%s)",
@@ -1001,13 +1053,94 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         order_plant->trade_route.c_str());
             }
 
+            // Verify the configured account against the login's account list
+            // (tid=302 RequestAccountList → 303) and adopt the fcm_id/ib_id
+            // Rithmic reports for it. 2026-09-21: the Tradeify config carried
+            // fcm/ib "Tradeify"/"Tradeify" and every order-plant request for
+            // the account came back 1088 "user has no permission to this
+            // account" — orders would have been refused and fills never seen.
+            {
+                rti::RequestAccountList al_req;
+                al_req.set_template_id(302);
+                if (!fcm_id_r.empty()) al_req.set_fcm_id(fcm_id_r);
+                if (!ib_id_r.empty())  al_req.set_ib_id(ib_id_r);
+                al_req.set_user_type(3);  // USER_TYPE_TRADER
+                co_await op_write_q.write(proto_frame(al_req));
+                LOG("[ORDER_PLANT] Sent RequestAccountList (tid=302)");
+
+                beast::flat_buffer al_buf;
+                bool got_list = false, matched = false;
+                std::string avail;
+                for (int i = 0; i < 50; ++i) {
+                    al_buf.clear();
+                    beast::get_lowest_layer(*order_plant->ws).expires_after(
+                        std::chrono::seconds(5));
+                    try {
+                        co_await order_plant->ws->async_read(al_buf, asio::use_awaitable);
+                    } catch (std::exception& e) {
+                        LOG("[ORDER_PLANT] Account list read timeout/error: %s — "
+                            "keeping fcm_id='%s' ib_id='%s'",
+                            e.what(), fcm_id_r.c_str(), ib_id_r.c_str());
+                        break;
+                    }
+                    beast::get_lowest_layer(*order_plant->ws).expires_never();
+                    auto pl = proto_strip(beast::buffers_to_string(al_buf.data()));
+                    rti::Base base; if (!base.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
+                    if (base.template_id() != 303) continue;
+                    rti::ResponseAccountList al;
+                    if (!al.ParseFromString(pl)) { LOG("[EXECUTOR] proto parse failed"); continue; }
+                    if (!al.account_id().empty()) {
+                        got_list = true;
+                        avail += al.account_id() + "(" + al.fcm_id() + "/" + al.ib_id() + ") ";
+                        LOG("[ORDER_PLANT] ResponseAccountList: account=%s name='%s' fcm=%s ib=%s rp=%s",
+                            al.account_id().c_str(), al.account_name().c_str(),
+                            al.fcm_id().c_str(), al.ib_id().c_str(),
+                            al.rp_code().empty() ? "" : al.rp_code(0).c_str());
+                        if (al.account_id() == orb_cfg.account_id) {
+                            matched = true;
+                            if (al.fcm_id() != fcm_id_r || al.ib_id() != ib_id_r) {
+                                LOG("[ORDER_PLANT] Adopting fcm_id='%s' ib_id='%s' for account %s "
+                                    "(was '%s'/'%s')",
+                                    al.fcm_id().c_str(), al.ib_id().c_str(),
+                                    orb_cfg.account_id.c_str(),
+                                    fcm_id_r.c_str(), ib_id_r.c_str());
+                                fcm_id_r = al.fcm_id();
+                                ib_id_r  = al.ib_id();
+                                order_plant->fcm_id = fcm_id_r;
+                                order_plant->ib_id  = ib_id_r;
+                            }
+                        }
+                    } else if (!al.rp_code().empty() && al.rp_code(0) != "0") {
+                        LOG("[ORDER_PLANT] RequestAccountList rejected (rp_code=%s %s)",
+                            al.rp_code(0).c_str(),
+                            al.rp_code().size() > 1 ? al.rp_code(1).c_str() : "");
+                    }
+                    // rp_code present = terminal message of the list.
+                    if (!al.rp_code().empty()) break;
+                }
+                if (got_list && !matched) {
+                    LOG("[EXECUTOR] FATAL: account_id '%s' is not in this login's account list "
+                        "[%s] — every order and the order-update subscription would be refused "
+                        "(rp_code=1088). Fix account_id in the config or %s_ACCOUNT. Retrying in %ds.",
+                        orb_cfg.account_id.c_str(), avail.c_str(),
+                        orb_cfg.order_env_prefix.c_str(), kReconnectDelayRefusedS);
+                    audit_log.error("session.account_not_permitted",
+                        "account_id " + orb_cfg.account_id + " not in login's account list [" + avail + "]");
+                    g_reconnect_delay_s = kReconnectDelayRefusedS;
+                    co_return;
+                }
+                if (!got_list)
+                    LOG("[ORDER_PLANT] WARNING: account list unavailable — using fcm_id='%s' ib_id='%s'",
+                        fcm_id_r.c_str(), ib_id_r.c_str());
+            }
+
             // Subscribe to order updates (template 308 = RequestSubscribeForOrderUpdates).
             // Without this subscription Rithmic will NOT deliver tid=351/352 notifications.
             {
                 rti::RequestSubscribeForOrderUpdates sub;
                 sub.set_template_id(308);
-                sub.set_fcm_id(orb_cfg.fcm_id);
-                sub.set_ib_id(orb_cfg.ib_id);
+                sub.set_fcm_id(fcm_id_r);
+                sub.set_ib_id(ib_id_r);
                 sub.set_account_id(orb_cfg.account_id);
                 try {
                     co_await op_write_q.write(proto_frame(sub));
@@ -1031,8 +1164,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     rti::RequestPnLPositionUpdates pnl_req;
                     pnl_req.set_template_id(400);
                     pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
-                    pnl_req.set_fcm_id(orb_cfg.fcm_id);
-                    pnl_req.set_ib_id(orb_cfg.ib_id);
+                    pnl_req.set_fcm_id(fcm_id_r);
+                    pnl_req.set_ib_id(ib_id_r);
                     pnl_req.set_account_id(orb_cfg.account_id);
                     co_await op_write_q.write(proto_frame(pnl_req));
                     LOG("[EXECUTOR] [RECONNECT-RECON] RequestPnLPositionUpdates SUBSCRIBE sent "
@@ -1106,8 +1239,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 rti::ResponseSubscribeForOrderUpdates resp;
                 if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                 std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
-                LOG("[EXECUTOR] Order update subscription %s (rp_code=%s)",
-                    rpc == "0" ? "OK" : "FAILED", rpc.c_str());
+                std::string txt = resp.rp_code().size() > 1 ? resp.rp_code(1) : "";
+                LOG("[EXECUTOR] Order update subscription %s (rp_code=%s %s)",
+                    rpc == "0" ? "OK" : "FAILED", rpc.c_str(), txt.c_str());
+                if (rpc != "0")
+                    audit_log.error("session.order_updates_rejected",
+                        "RequestSubscribeForOrderUpdates rejected rp_code=" + rpc + " " + txt);
 
             } else if (tid == 313 || tid == 315) {
                 // 313 = preliminary gateway ack (rq_handler_rp_code only)
@@ -1192,8 +1329,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             cancel_req.set_template_id(316);
                             cancel_req.set_basket_id(notif.basket_id());
                             cancel_req.set_account_id(orb_cfg.account_id);
-                            cancel_req.set_fcm_id(orb_cfg.fcm_id);
-                            cancel_req.set_ib_id(orb_cfg.ib_id);
+                            cancel_req.set_fcm_id(fcm_id_r);
+                            cancel_req.set_ib_id(ib_id_r);
+                            cancel_req.set_manual_or_auto(2);  // AUTO — omitted → rp_code=1045, cancel silently refused
                             try {
                                 co_await op_write_q.write(proto_frame(cancel_req));
                                 LOG("[EXECUTOR] [STARTUP-RECON] cancel sent basket=%s",
@@ -1276,7 +1414,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                        is_entry && !is_stop);
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                       bool(md_ws));
+                                       md_up());
                     }
                 } else if ((int)notif.notify_type() == 3) {
                     // Cancel ACK on tid=351 — Legends routing delivers cancel confirmations
@@ -1308,7 +1446,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         order_mgr.on_order_rejected(client_id, "cancelled_no_fill");
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                       bool(md_ws));
+                                       md_up());
                     }
                 }
 
@@ -1369,7 +1507,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                        is_entry && !is_stop);
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                       bool(md_ws));
+                                       md_up());
                     }
                 } else if (notify_type == 2) { // MODIFY ACK
                     LOG("[EXECUTOR] Stop MODIFIED by exchange: client=%s server=%s — trail ACKed",
@@ -1462,8 +1600,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             }
                             rti::RequestNewOrder unwind_req;
                             unwind_req.set_template_id(312);
-                            unwind_req.set_fcm_id(orb_cfg.fcm_id);
-                            unwind_req.set_ib_id(orb_cfg.ib_id);
+                            unwind_req.set_fcm_id(fcm_id_r);
+                            unwind_req.set_ib_id(ib_id_r);
                             unwind_req.set_account_id(orb_cfg.account_id);
                             unwind_req.set_symbol(trade_symbol);
                             unwind_req.set_exchange(orb_cfg.exchange);
@@ -1518,7 +1656,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         // 5s doesn't leave a stale LONG/SHORT for the next restart to find.
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected,
-                                       orb_cfg.point_value, bool(md_ws));
+                                       orb_cfg.point_value, md_up());
                     }
                 }
 
@@ -1562,8 +1700,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     rti::RequestPnLPositionUpdates pnl_req;
                     pnl_req.set_template_id(400);
                     pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
-                    pnl_req.set_fcm_id(orb_cfg.fcm_id);
-                    pnl_req.set_ib_id(orb_cfg.ib_id);
+                    pnl_req.set_fcm_id(fcm_id_r);
+                    pnl_req.set_ib_id(ib_id_r);
                     pnl_req.set_account_id(orb_cfg.account_id);
                     co_await op_write_q.write(proto_frame(pnl_req));
                     LOG("[EXECUTOR] [STARTUP-RECON] RequestPnLPositionUpdates SUBSCRIBE sent "
@@ -1668,6 +1806,35 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
             }
 
+            // pg-feed stale watchdog: the collector (or Postgres) stopped
+            // delivering ticks. Halt NEW entries — an open position keeps its
+            // exchange-held stop — alert, and let pg_feed_loop unhalt on resume.
+            if (orb_cfg.md_from_pg() && orb_cfg.tick_timeout_s > 0) {
+                int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                int64_t silence_s = now_s - last_tick_epoch_s.load();
+                int et_min_total  = et_h * 60 + et_m;
+                int active_start  = orb_cfg.session_open_hour * 60 + orb_cfg.session_open_min - 5;
+                int active_end    = orb_cfg.eod_flatten_hour  * 60 + orb_cfg.eod_flatten_min;
+                bool in_position  = !order_mgr.is_flat();
+                if ((et_min_total >= active_start && et_min_total <= active_end) || in_position) {
+                    if (silence_s >= orb_cfg.tick_timeout_s && pg_feed_fresh.exchange(false)) {
+                        LOG("[PG-FEED] STALE: no tick for %lds (timeout=%ds) — collector/Postgres "
+                            "down? halting new entries until ticks resume%s",
+                            (long)silence_s, orb_cfg.tick_timeout_s,
+                            in_position ? " (open position keeps its exchange stop)" : "");
+                        audit_log.error("feed.stale",
+                            "pg feed silent " + std::to_string(silence_s) + "s");
+                        strategy.halt_trading("pg_feed_stale");
+                        // grid-notify is the grid's Telegram channel; fail-open.
+                        std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                                     ": tick feed stale " + std::to_string(silence_s) +
+                                     "s — collector down? new entries halted\" "
+                                     ">/dev/null 2>&1 &").c_str());
+                    }
+                }
+            }
+
             // Date rollover check
             std::string new_date = today_date_str();
             if (new_date != today) {
@@ -1731,7 +1898,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 try {
                     flush_position(db.get(), today, order_mgr, strategy,
                                    orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                   bool(md_ws));
+                                   md_up());
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] DB flush_position (trade close) failed: %s", e.what());
                     if (db) db->reconnect();
@@ -1804,7 +1971,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 try {
                     flush_position(db.get(), today, order_mgr, strategy,
                                    orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                   bool(md_ws));
+                                   md_up());
                 } catch (std::exception& e) {
                     LOG("[EXECUTOR] DB flush_position failed: %s", e.what());
                     if (db) db->reconnect();
@@ -1843,7 +2010,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         LOG("[EXECUTOR] PENDING_ENTRY timeout — entry cancelled, state FLAT");
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected,
-                                       orb_cfg.point_value, bool(md_ws));
+                                       orb_cfg.point_value, md_up());
                     }
                 } else if (wsnap.state == PosState::LONG || wsnap.state == PosState::SHORT) {
                     if (held >= 120 && held % 60 == 0)
@@ -1906,8 +2073,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             rti::RequestPnLPositionUpdates pnl_req;
                             pnl_req.set_template_id(400);
                             pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
-                            pnl_req.set_fcm_id(orb_cfg.fcm_id);
-                            pnl_req.set_ib_id(orb_cfg.ib_id);
+                            pnl_req.set_fcm_id(fcm_id_r);
+                            pnl_req.set_ib_id(ib_id_r);
                             pnl_req.set_account_id(orb_cfg.account_id);
                             co_await op_write_q.write(proto_frame(pnl_req));
                             pnl_resubscribed = true;
@@ -2079,10 +2246,133 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // Never co_return on disconnect — reconnects internally so ORDER_PLANT stays
     // alive. md_ws is reset to nullptr on error; the inner reconnect loop restores
     // it before the next read.
+    // Tick handler shared by every feed (WebSocket MD, pg poll): trail/stop
+    // check, strategy, and the per-minute visibility log.
+    bool first_tick_received = false;
+    int  last_log_minute     = -1;
+    auto process_tick = [&](const OrbTick& tick) {
+                // Check trailing stop on every tick; flush DB immediately on SL move
+                if (order_mgr.check_trail_and_stop(tick.price)) {
+                    flush_position(db.get(), today, order_mgr, strategy,
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                   md_up());
+                }
+
+                // Feed strategy
+                strategy.on_tick(tick);
+
+                // ── Cycle visibility logs ─────────────────────────────────────
+                int et_h, et_m;
+                current_et(et_h, et_m);
+
+                if (!first_tick_received) {
+                    first_tick_received = true;
+                    LOG("[EXECUTOR] First tick: px=%.2f ET=%02d:%02d",
+                        tick.price, et_h, et_m);
+                }
+
+                int cur_min = et_h * 60 + et_m;
+                if (cur_min != last_log_minute) {
+                    last_log_minute = cur_min;
+                    if (!strategy.orb_set()) {
+                        double oh = strategy.orb_high();
+                        double ol = strategy.orb_low();
+                        bool   has = (oh > ol) && (ol < 1e10);
+                        LOG("[EXECUTOR] ORB building ET=%02d:%02d px=%.2f %s",
+                            et_h, et_m, tick.price,
+                            has ? (std::string("range=[") +
+                                   std::to_string((int)ol) + ".." +
+                                   std::to_string((int)oh) + "]").c_str()
+                                : "(no range yet)");
+                    } else {
+                        Position psnap = order_mgr.position_snapshot();
+                        const char* pss;
+                        switch (psnap.state) {
+                            case PosState::FLAT:          pss = "FLAT";          break;
+                            case PosState::PENDING_ENTRY: pss = "PENDING_ENTRY"; break;
+                            case PosState::LONG:          pss = "LONG";          break;
+                            case PosState::SHORT:         pss = "SHORT";         break;
+                            case PosState::PENDING_EXIT:  pss = "PENDING_EXIT";  break;
+                            default:                      pss = "?";             break;
+                        }
+                        LOG("[EXECUTOR] ET=%02d:%02d px=%.2f "
+                            "orb=[%.2f..%.2f] dist_long=%+.1f dist_short=%+.1f "
+                            "pos=%s sl=%.2f trades=%d/%d",
+                            et_h, et_m, tick.price,
+                            strategy.orb_low(), strategy.orb_high(),
+                            tick.price - strategy.orb_high(),
+                            strategy.orb_low() - tick.price,
+                            pss, psnap.sl_price,
+                            strategy.session().trades_today,
+                            orb_cfg.max_daily_trades);
+                    }
+                }
+    };
+
+    // ── pg feed: poll the collector's ticks table ─────────────────────────────
+    // Watermark starts at "now" so a restart never replays history (the ORB is
+    // restored from live_sessions, not rebuilt from old ticks). Rows are read
+    // in (ts_event, seq) order exactly as the paper engine does.
+    auto pg_feed_loop = [&]() -> asio::awaitable<void> {
+        asio::steady_timer t(ex);
+        auto now_us = []() -> int64_t {
+            return std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count();
+        };
+        int64_t watermark_us = now_us() - 1'000'000LL;
+        bool db_warned = false;
+        LOG("[PG-FEED] Polling ticks symbol=%s every %dms (collector feed)",
+            orb_cfg.md_feed_symbol.c_str(), orb_cfg.md_poll_ms);
+        while (g_running) {
+            if (db && db->is_connected()) {
+                std::string wm  = std::to_string(watermark_us);
+                const char* params[2] = { wm.c_str(), orb_cfg.md_feed_symbol.c_str() };
+                PGresult* r = PQexecParams(db->raw_conn(),
+                    "SELECT (EXTRACT(EPOCH FROM ts_event)*1000000)::bigint, price, size, is_buy "
+                    "FROM ticks WHERE ts_event > to_timestamp($1::double precision / 1000000.0) "
+                    "AND symbol = $2 ORDER BY ts_event, seq LIMIT 5000",
+                    2, nullptr, params, nullptr, nullptr, 0);
+                if (r && PQresultStatus(r) == PGRES_TUPLES_OK) {
+                    db_warned = false;
+                    int n = PQntuples(r);
+                    if (n > 0) {
+                        last_tick_epoch_s.store(
+                            std::chrono::duration_cast<std::chrono::seconds>(
+                                std::chrono::system_clock::now().time_since_epoch()).count());
+                        if (!pg_feed_fresh.exchange(true)) {
+                            LOG("[PG-FEED] ticks flowing (%d rows)", n);
+                            if (strategy.session().risk_halted &&
+                                strategy.session().halt_reason == "pg_feed_stale")
+                                strategy.unhalt_trading("pg feed resumed");
+                        }
+                    }
+                    for (int i = 0; i < n; ++i) {
+                        int64_t ts_us = std::atoll(PQgetvalue(r, i, 0));
+                        double  px    = std::atof(PQgetvalue(r, i, 1));
+                        int64_t sz    = std::atoll(PQgetvalue(r, i, 2));
+                        bool    buy   = std::strcmp(PQgetvalue(r, i, 3), "t") == 0;
+                        watermark_us  = ts_us;
+                        if (px <= 0.0 || sz <= 0) continue;
+                        OrbTick tick{ts_us, px, sz, buy};
+                        process_tick(tick);
+                    }
+                } else if (!db_warned) {
+                    LOG("[PG-FEED] WARN poll failed: %s (further errors suppressed)",
+                        r ? PQresultErrorMessage(r) : "null result");
+                    db_warned = true;
+                }
+                if (r) PQclear(r);
+            } else if (!db_warned) {
+                LOG("[PG-FEED] WARN no DB connection — cannot read ticks");
+                db_warned = true;
+            }
+            t.expires_after(std::chrono::milliseconds(orb_cfg.md_poll_ms));
+            co_await t.async_wait(asio::use_awaitable);
+        }
+    };
+
     auto md_loop = [&]() -> asio::awaitable<void> {
         beast::flat_buffer buf;
-        bool first_tick_received = false;
-        int  last_log_minute     = -1;
         while (g_running) {
             // ── reconnect if md_ws is down ─────────────────────────────────
             while (g_running && !md_ws) {
@@ -2219,63 +2509,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                               + lt.usecs();
                 OrbTick tick{ts_us, lt.trade_price(), lt.trade_size(),
                              lt.aggressor() == rti::LastTrade::BUY};
-
-                // Check trailing stop on every tick; flush DB immediately on SL move
-                if (order_mgr.check_trail_and_stop(tick.price)) {
-                    flush_position(db.get(), today, order_mgr, strategy,
-                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                   bool(md_ws));
-                }
-
-                // Feed strategy
-                strategy.on_tick(tick);
-
-                // ── Cycle visibility logs ─────────────────────────────────────
-                int et_h, et_m;
-                current_et(et_h, et_m);
-
-                if (!first_tick_received) {
-                    first_tick_received = true;
-                    LOG("[EXECUTOR] First tick: px=%.2f ET=%02d:%02d",
-                        tick.price, et_h, et_m);
-                }
-
-                int cur_min = et_h * 60 + et_m;
-                if (cur_min != last_log_minute) {
-                    last_log_minute = cur_min;
-                    if (!strategy.orb_set()) {
-                        double oh = strategy.orb_high();
-                        double ol = strategy.orb_low();
-                        bool   has = (oh > ol) && (ol < 1e10);
-                        LOG("[EXECUTOR] ORB building ET=%02d:%02d px=%.2f %s",
-                            et_h, et_m, tick.price,
-                            has ? (std::string("range=[") +
-                                   std::to_string((int)ol) + ".." +
-                                   std::to_string((int)oh) + "]").c_str()
-                                : "(no range yet)");
-                    } else {
-                        Position psnap = order_mgr.position_snapshot();
-                        const char* pss;
-                        switch (psnap.state) {
-                            case PosState::FLAT:          pss = "FLAT";          break;
-                            case PosState::PENDING_ENTRY: pss = "PENDING_ENTRY"; break;
-                            case PosState::LONG:          pss = "LONG";          break;
-                            case PosState::SHORT:         pss = "SHORT";         break;
-                            case PosState::PENDING_EXIT:  pss = "PENDING_EXIT";  break;
-                            default:                      pss = "?";             break;
-                        }
-                        LOG("[EXECUTOR] ET=%02d:%02d px=%.2f "
-                            "orb=[%.2f..%.2f] dist_long=%+.1f dist_short=%+.1f "
-                            "pos=%s sl=%.2f trades=%d/%d",
-                            et_h, et_m, tick.price,
-                            strategy.orb_low(), strategy.orb_high(),
-                            tick.price - strategy.orb_high(),
-                            strategy.orb_low() - tick.price,
-                            pss, psnap.sl_price,
-                            strategy.session().trades_today,
-                            orb_cfg.max_daily_trades);
-                    }
-                }
+                process_tick(tick);
 
             } else if (tid == 18) {
                 // Server-sent RequestHeartbeat — must respond with ResponseHeartbeat (tid=19)
@@ -2293,8 +2527,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 rti::ResponseMarketDataUpdate resp;
                 if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
                 std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
-                LOG("[EXECUTOR] MD subscription %s (rp_code=%s)",
-                    rpc == "0" ? "OK" : "FAILED", rpc.c_str());
+                std::string txt = resp.rp_code().size() > 1 ? resp.rp_code(1) : "";
+                LOG("[EXECUTOR] MD subscription %s (rp_code=%s %s)",
+                    rpc == "0" ? "OK" : "FAILED", rpc.c_str(), txt.c_str());
             } else if (tid == 77) {
                 // ForcedLogout — server is closing this session; brief cooldown then reconnect
                 LOG("[EXECUTOR] MD: FORCED LOGOUT (tid=77) — reconnecting MD without touching ORDER_PLANT");
@@ -2535,7 +2770,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         sdk_feed.stop();
     }
 #else
-    co_await md_loop();
+    if (orb_cfg.md_from_pg()) co_await pg_feed_loop();
+    else                      co_await md_loop();
 #endif
 
     carried_pos = order_mgr.position_snapshot();  // preserve state across reconnects (#2)
@@ -2569,11 +2805,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
-    // SIGINT/SIGTERM handled by asio::signal_set inside the session coroutine
-    // (immediate flatten_now rather than waiting up to 1s for eod_loop tick).
-    // Keep SIG_IGN for accidental double-CTRL+C before ASIO loop starts.
-    std::signal(SIGINT,  SIG_IGN);
-    std::signal(SIGTERM, SIG_IGN);
+    // SIGINT/SIGTERM are handled by asio::signal_set inside the session coroutine
+    // once ORDER_PLANT is up (immediate flatten_now rather than waiting up to 1s
+    // for the eod_loop tick). Outside that window — the connect/login phase and
+    // the reconnect sleep between cycles — handle_signal just clears g_running so
+    // the cycle loop exits after the current attempt. These used to be SIG_IGN,
+    // which made `pkill -SIGTERM` a no-op for an executor stuck retrying a login.
+    std::signal(SIGINT,  handle_signal);
+    std::signal(SIGTERM, handle_signal);
 
     // ── Parse args ────────────────────────────────────────────────────────────
     std::string config_path = "config/orb_config.json";
@@ -2681,8 +2920,17 @@ int main(int argc, char* argv[]) {
         }
 
         if (g_running) {
-            LOG("[EXECUTOR] Reconnecting in 10s...");
-            std::this_thread::sleep_for(std::chrono::seconds(10));
+            const int delay_s = g_reconnect_delay_s.load();
+            LOG("[EXECUTOR] Reconnecting in %ds...", delay_s);
+            // The session's asio::signal_set restores the default disposition
+            // when it is destroyed; re-arm our flag handler so SIGTERM during
+            // the sleep stops the loop instead of killing the process outright.
+            std::signal(SIGINT,  handle_signal);
+            std::signal(SIGTERM, handle_signal);
+            // Sleep in 1s slices so SIGTERM still stops us promptly during a
+            // long post-refusal backoff.
+            for (int i = 0; i < delay_s && g_running; ++i)
+                std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 

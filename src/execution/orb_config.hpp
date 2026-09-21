@@ -96,6 +96,16 @@ struct OrbConfig {
     // ── Rithmic MD connection (AMP — TICKER_PLANT) ───────────────────
     // AMP credentials for market data; Legends/Tradeify ORDER_PLANT has
     // its own session via RITHMIC_LEGENDS_* — no session conflict.
+    // Market-data source. Provider name from RITHMIC_MD_PROVIDER: a broker name
+    // (legends/tradeify/amp → WebSocket TICKER_PLANT login with MD_<PROVIDER>_*
+    // creds) or "pg" → no Rithmic MD session at all: ticks are read from the
+    // collector's Postgres `ticks` table (same feed the paper fleet uses), so
+    // the one TICKER_PLANT session a prop login allows can belong to the
+    // 24/7 collector instead of this executor.
+    std::string md_provider    = "legends";
+    std::string md_feed_symbol = "NQ";   // symbol the collector writes (pg mode)
+    int         md_poll_ms     = 100;    // pg mode poll cadence
+    bool md_from_pg() const { return md_provider == "pg"; }
     std::string md_user;
     std::string md_password;
     std::string md_system_name  = "Rithmic 01";
@@ -183,6 +193,7 @@ struct OrbConfig {
         // Corresponding env vars: MD_{PROVIDER}_USER / _PASSWORD / _SYSTEM / _URL
         {
             std::string provider = env("RITHMIC_MD_PROVIDER", "legends");
+            c.md_provider = provider;
             // Uppercase provider name for env var lookup
             std::string up = provider;
             for (char& ch : up) ch = (char)toupper((unsigned char)ch);
@@ -242,6 +253,8 @@ struct OrbConfig {
 
         c.symbol         = json_str(text, "symbol",         c.symbol);
         c.trade_contract = json_str(text, "trade_contract", c.trade_contract);
+        c.md_feed_symbol = json_str(text, "md_feed_symbol", c.md_feed_symbol);
+        c.md_poll_ms     = json_int(text, "md_poll_ms",     c.md_poll_ms);
         c.exchange       = json_str(text, "exchange",       c.exchange);
         c.point_value    = json_dbl(text, "point_value",    c.point_value);
         c.environment       = json_str(text, "environment",       c.environment);

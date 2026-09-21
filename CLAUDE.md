@@ -96,6 +96,16 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   `nq_executor` as `nohup` subprocesses (per-account config, e.g.
   `./build/nq_executor --config config/tradeify_config.json`).
 - To stop a local executor: `pkill -SIGTERM -f 'nq_executor --config'` (SIGTERM flattens and exits cleanly).
+- **Tick collector runs 24/7 as a systemd USER unit** `rithmic-collector-local`
+  (`deploy/rithmic-collector-local.service`, installed in `~/.config/systemd/user/`;
+  `systemctl --user status rithmic-collector-local`, log `data/logs/collector.log`). It is
+  the box's ONLY Rithmic market-data session (a prop login allows one TICKER_PLANT
+  session) and feeds the paper fleet, the chart and pg-mode executors.
+- **Live executors run on the collector's feed**: `RITHMIC_MD_PROVIDER=pg` in
+  `.env.<account>` (set for `tradeify`) makes `nq_executor` open no MD session and poll
+  the Postgres `ticks` table instead (`md_feed_symbol`, default NQ). Do not start an
+  executor in WebSocket MD mode (any other provider) while the collector runs — Rithmic
+  force-logs-out one of them every ~35s.
 
 **WARNING — Oracle failback:** before starting an executor on Oracle (failback or
 deploy), kill any locally running executors for the same account. There is currently
