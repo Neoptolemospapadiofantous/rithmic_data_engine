@@ -75,7 +75,7 @@ say "handoff trigger: $reason"
 stop_inst "$FROM" || { say "ABORT: $FROM would not stop"; notify "🔴 handoff ($ACC): $FROM would not stop — check RTrader"; exit 1; }
 say "$FROM stopped"
 if start_inst "$TO"; then
-  notify "🟢 handoff ($ACC): $FROM done ($reason) → $TO LIVE until 15:55 ET"
+  notify "🟢 handoff ($ACC): $FROM done ($reason) → $TO LIVE (its window: config/$TO_config.json; supertrend flattens 12:00 ET = 19:00 CY)"
 else
   touch NO_DEPLOY
   notify "🔴 handoff ($ACC): $TO failed to start clean — NO executor on the account, NO_DEPLOY set. Check $OUT"
