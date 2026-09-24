@@ -1,5 +1,5 @@
 {
-  "_comment": "LIVE TREND ENGINE: trend_supertrend_7_3_1m (paper fleet: +84 USD bbo / 7 trades / 3 days \u2014 tiny sample). RTH window 09:30-15:55 (engine flattens at 15:55, executor backstop 15:56), 2 MNQ, max 5 entries. Takes over from ORB via scripts/strategy_handoff.sh once ORB has used its trades or at 10:00 ET (only when flat). One executor per account.",
+  "_comment": "LIVE TREND ENGINE: trend_supertrend_7_3_1m (paper fleet: +84 USD bbo / 7 trades / 3 days \u2014 tiny sample). Window 09:30-12:00 ET (founder 2026-09-24: flatten after 19:00 Cyprus) \u2014 engine flattens at 12:00 ET, executor backstop 12:01; 2 MNQ, max 5 entries. Takes over from ORB via scripts/strategy_handoff.sh once ORB has used its trades or at 10:00 ET (only when flat); stays up idle until the 16:00 ET hand-back to ORB. One executor per account.",
   "account_label": "tradeify",
   "order_env_prefix": "RITHMIC_TRADEIFY",
   "dry_run": false,
@@ -23,8 +23,8 @@
   "trail_be_offset": 1.0,
   "max_daily_trades": 5,
   "last_entry_hour": 23,
-  "eod_flatten_hour": 15,
-  "eod_flatten_min": 56,
+  "eod_flatten_hour": 12,
+  "eod_flatten_min": 1,
   "session_open_hour": 9,
   "session_open_min": 30,
   "qty": 2,
@@ -40,5 +40,5 @@
   "st_len": 7,
   "st_mult": 3.0,
   "win_start": 930,
-  "win_end": 1555
+  "win_end": 1200
 }
