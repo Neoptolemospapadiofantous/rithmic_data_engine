@@ -165,6 +165,10 @@ struct OrbConfig {
     // mode/params read from the same file by TrendConfig::from_json_string). One engine per
     // process; the per-account instance lock keeps two engines off one account.
     std::string engine           = "orb";
+    // Trend engine on the pg feed only: replay this many minutes of recorded ticks at startup
+    // so bars/indicators are warm when the executor takes over mid-session (signals during
+    // the replay are ignored — no orders). 0 = cold start.
+    int warmup_minutes           = 0;
     std::string order_env_prefix = "RITHMIC_LEGENDS"; // prefix for ORDER_PLANT env vars
 
     // ── Account ───────────────────────────────────────────────────
@@ -246,6 +250,7 @@ struct OrbConfig {
         c.account_label    = json_str(text, "account_label",    c.account_label);
         c.strategy         = json_str(text, "strategy",         c.strategy);
         c.engine           = json_str(text, "engine",           c.engine);
+        c.warmup_minutes   = json_int(text, "warmup_minutes",   c.warmup_minutes);
         c.order_env_prefix = json_str(text, "order_env_prefix", c.order_env_prefix);
 
         // ORDER_PLANT credentials — derived from order_env_prefix so any account works
