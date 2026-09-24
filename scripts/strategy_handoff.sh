@@ -51,12 +51,14 @@ start_inst() { # prove position truth + flat, else stop it again
   fi
   say "$1 up: $line"; return 0; }
 
-# is <inst> flat? its live_position row (by its own strategy tag) AND the last broker line agree
+# is <inst> done and clean? its live_position row (by its own strategy tag) AND the last broker line agree
 is_flat() {
-  local st net; st=$("${PSQL[@]}" -c "SELECT state FROM live_position WHERE account_label='$ACC'
+  local st net pend; st=$("${PSQL[@]}" -c "SELECT state FROM live_position WHERE account_label='$ACC'
           AND strategy='$(tag_of "$1")' ORDER BY last_updated DESC LIMIT 1")
   net=$(grep -a '\[BROKER\]' "$(logf "$1")" | tail -1 | grep -o 'exchange_net=[-0-9]*' | cut -d= -f2)
-  [[ "$st" == FLAT && "${net:-1}" == 0 ]]; }
+  # …and no stop cancel still unconfirmed (a stopped process no longer reads its ACK)
+  pend=$("${PSQL[@]}" -c "SELECT count(*) FROM pending_stop_cancels WHERE account_label='$ACC'")
+  [[ "$st" == FLAT && "${net:-1}" == 0 && "${pend:-1}" == 0 ]]; }
 
 say "=== handoff armed: $FROM → $TO (switch ${SWITCH_ET} ET, hard ${HARD_ET} ET, back ${BACK_ET} ET) ==="
 START_LINE=$(wc -l < "$(logf "$FROM")" 2>/dev/null || echo 0)

@@ -86,15 +86,15 @@ struct MockExchange {
         om.map_server_basket(o->client, o->server);
         om.on_stop_server_mapped(o->client, o->server);
     }
-    // Rithmic: a cancel by server id, or by a client id that has been mapped, is
-    // honoured; a cancel by an UNMAPPED client id answers "Cancellation Failed".
+    // Rithmic routes RequestCancelOrder by ITS server basket id: a cancel carrying our
+    // client id (user_tag) answers "Cancellation Failed" and the order keeps working.
     void process_cancels(bool fail_all = false) {
         flush();
         auto reqs = cancel_reqs; cancel_reqs.clear();
         for (const auto& id : reqs) {
             Ord* o = find(id);
             if (!o || !o->working) continue;                       // already gone: nothing to do
-            bool ok = !fail_all && (id == o->server || o->mapped);
+            bool ok = !fail_all && id == o->server;
             if (ok) {
                 o->working = false;
                 notif::handle_cancel_notification(om, 3, "Cancel received", o->client, o->server);
@@ -395,6 +395,65 @@ TEST(rejected_stop_releases_db_guard) {
     x.assert_clean("rejected_stop");
 }
 
+// 20. audit #2: a "Cancellation Failed" for the PREVIOUS trade's stop (its client-id
+//     cancel is re-sent at every close) must not touch the CURRENT trade's stop
+TEST(cancel_failed_from_previous_trade_is_not_readopted) {
+    MockExchange x; x.auto_map = false;
+    x.om.on_signal(OrbSignal::BUY, 20000.0, "t1");
+    std::string e1 = x.om.position_snapshot().basket_id_entry;
+    x.map(e1); x.fill(e1, 20000.0);
+    std::string stop1 = x.stop_id();                           // never mapped
+    x.om.flatten_now("eod_flatten", 20002.0);                  // client-id cancel of stop1
+    for (auto& o : x.orders) if (o.type != 4 && o.working) x.map(o.client);
+    x.fill_markets(20002.0);                                   // trade 1 closed, recancel queued
+    x.auto_map = true;
+    x.om.on_signal(OrbSignal::SELL, 20001.0, "t2 reversal");  // trade 2 opens before the answers
+    x.fill(x.om.position_snapshot().basket_id_entry, 20001.0);
+    std::string stop2 = x.stop_id();
+    x.process_cancels();                                       // stop1 → Cancellation Failed
+    ASSERT_EQ(x.stop_id(), stop2);                             // current stop kept
+    ASSERT(x.find(stop2)->working);
+    x.map(stop1);                                              // late map → cancel by server id
+    x.process_cancels();
+    ASSERT(!x.find(stop1)->working);
+    x.fill(stop2, 20016.0);
+    x.assert_clean("prev_trade_cancel_failed");
+}
+// 21. audit #4: a stuck exit is cancelled by SERVER id before the retry
+TEST(stuck_exit_retry_cancels_old_exit_by_server_id) {
+    MockExchange x; enter(x, OrbSignal::BUY, 20000.0);
+    x.om.flatten_now("eod_flatten", 19995.0);
+    x.process_cancels();                                       // stop gone
+    std::string old_exit = x.om.position_snapshot().basket_id_exit;
+    x.om.retry_stuck_exit(19990.0);                            // old exit never filled
+    x.process_cancels();
+    ASSERT(!x.find(old_exit)->working);                        // really cancelled
+    x.fill(x.om.position_snapshot().basket_id_exit, 19990.0);
+    x.assert_clean("stuck_exit");
+}
+// 22. audit #4: EOD flatten while the entry is still pending cancels it by server id
+TEST(flatten_pending_entry_cancels_by_server_id) {
+    MockExchange x;
+    x.om.on_signal(OrbSignal::SELL, 20000.0, "entry");
+    x.flush();
+    std::string entry = x.om.position_snapshot().basket_id_entry;
+    x.om.flatten_now("eod_flatten", 20000.0);
+    x.process_cancels();
+    ASSERT(!x.find(entry)->working);
+    x.assert_clean("pending_entry_flatten");
+}
+// 23. audit #4: entry cancelled before its server id mapped → re-sent when it maps
+TEST(pending_entry_timeout_cancel_resent_on_late_map) {
+    MockExchange x; x.auto_map = false;
+    x.om.on_signal(OrbSignal::BUY, 20000.0, "entry");
+    std::string entry = x.om.position_snapshot().basket_id_entry;
+    ASSERT(x.om.pending_entry_timeout_check(0));               // times out → cancel by client id
+    x.process_cancels();                                       // refused
+    ASSERT(x.find(entry)->working);
+    x.map(entry);                                              // late map → re-sent by server id
+    x.assert_clean("entry_timeout_late_map");
+}
+
 int main() {
     std::cout << "test_trade_end_invariant — every trade end leaves 0 working orders and net 0\n";
     RUN(stop_loss_fill_long);
@@ -416,6 +475,10 @@ int main() {
     RUN(orphan_fill_while_flat_is_unwound);
     RUN(duplicate_exit_report_after_close_is_not_a_ghost);
     RUN(rejected_stop_releases_db_guard);
+    RUN(cancel_failed_from_previous_trade_is_not_readopted);
+    RUN(stuck_exit_retry_cancels_old_exit_by_server_id);
+    RUN(flatten_pending_entry_cancels_by_server_id);
+    RUN(pending_entry_timeout_cancel_resent_on_late_map);
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed ? 1 : 0;
 }

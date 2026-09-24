@@ -9,6 +9,36 @@ Dates are in ISO-8601 order (newest first).
 
 ## [Unreleased]
 
+### Fixed — stale orders after a trade (2026-09-24 re-audit, 23 trade-end scenarios)
+- **Breakeven before the stop's server id mapped left NO exchange stop**: the client-id cancel
+  failed, `on_cancel_failed` re-adopted the old stop and cancelled the replacement, then the
+  LATE-MAP cancel by server id killed the old stop too. A failure on the client-id attempt is
+  now ignored once a server-id cancel for that stop is in flight.
+- **A failed cancel from the PREVIOUS trade's stop was applied to the current trade** (swapped
+  out its real stop — wrong direction after a reversal). Cancelled stops carry the trade they
+  belonged to; only the same trade may re-adopt.
+- **Entry/exit cancels went by client id** (EOD cancel of a pending entry, pending-entry timeout,
+  stuck-exit retry) — Rithmic cannot route those, the orders kept resting. They now use the
+  server id, or are re-sent by server id when it maps; a retried stuck exit is guarded like a
+  cancelled stop.
+- Daily-trade-limit no longer exits the process (outside cycle_mode): exiting in the same tick
+  as the close skipped the post-close recancel window.
+- Ghost-fill halt clears on any tid=451 update showing exchange flat + consistent (it could
+  block entries for the rest of the session).
+- New alarm: a cancelled stop unconfirmed for 60 s → CRITICAL log + grid-notify (2026-09-21:
+  nine refused cancels left stops working 41–52 min).
+- `scripts/strategy_handoff.sh`: ORB → trend handoff during RTH (one executor at a time),
+  waits for flat + no pending stop cancel, hands back to ORB after the session.
+
+### Known open (audit 2026-09-24, not yet fixed)
+- SIGTERM shutdown stops reading ORDER_PLANT notifications before the drain waits end; cleanup
+  of a stop whose cancel failed at shutdown relies on the next start's tid=351 open-order cancel.
+- In-process reconnect mid-trade: ghost unwind clears deferred snapshot cancels; the live stop's
+  server id is not persisted at submit.
+- Unwind orders (stale-stop 4-tick limits, NET-RECON) are never cancelled/retried if they rest.
+- tid=352 per-fill sizes feed the cumulative dedupe (second equal partial dropped; relies on the
+  tid=351 COMPLETE). Partial entry > 5 s: reconciler treats PENDING_ENTRY as 0 held.
+
 ### Added
 - **Live executor runs any trend-engine variant (`"engine": "trend"`).** `run_executor` /
   `flush_position` are templated on the strategy type; `main` builds `OrbStrategy` or

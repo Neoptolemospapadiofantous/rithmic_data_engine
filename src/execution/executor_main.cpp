@@ -1543,6 +1543,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         // the order manager agree again. This is what would have closed the
         // 2026-09-23 orphan long within seconds instead of 32 minutes.
         auto verdict = net_recon.observe(consistent, now_ms, orb_cfg.net_mismatch_grace_ms);
+        // Exchange flat and we are flat: nothing is open, so a ghost-fill halt from an
+        // unknown fill that has since netted out must not block entries for the rest of
+        // the session (it only cleared on a snapshot or after the reconciler had acted).
+        if (net == 0 && consistent && order_mgr.is_flat()) order_mgr.confirm_exchange_flat();
         if (verdict == NetReconciler::Verdict::MISMATCH_ACT) {
             auto snap = order_mgr.position_snapshot();
             auto plan = notif::plan_unwind(net, snap, orb_cfg.qty);
@@ -2323,19 +2327,24 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
                 pos_write_counter = 0;
 
-                // All daily trades exhausted and position is flat — shut down cleanly.
-                // In cycle_mode the wrapper immediately restarts for the next cycle.
+                // All daily trades exhausted and position is flat. The strategy already refuses
+                // new entries at the limit. Outside cycle_mode the process STAYS UP: exiting in
+                // the same tick as the close skipped the post-close recancel window and left
+                // nothing reading cancel ACKs / late stop fills (and systemd restarts it anyway).
                 if (strategy.session().trades_today >= orb_cfg.max_daily_trades &&
                     order_mgr.position_snapshot().state == PosState::FLAT) {
-                    LOG("[EXECUTOR] Daily trade limit reached (%d/%d) — shutting down%s",
+                    LOG("[EXECUTOR] Daily trade limit reached (%d/%d)%s",
                         strategy.session().trades_today, orb_cfg.max_daily_trades,
-                        orb_cfg.cycle_mode ? " (cycle complete)" : "");
+                        orb_cfg.cycle_mode ? " — shutting down (cycle complete)"
+                                           : " — no new entries today; staying up to guard open orders");
                     if (audit_conn)
                         audit_log.info("session.daily_limit",
-                            orb_cfg.cycle_mode ? "cycle complete — clean exit" : "all trades done — clean exit");
-                    g_running = false;
-                    ioc_ref.stop();
-                    co_return;
+                            orb_cfg.cycle_mode ? "cycle complete — clean exit" : "all trades done — idle");
+                    if (orb_cfg.cycle_mode) {
+                        g_running = false;
+                        ioc_ref.stop();
+                        co_return;
+                    }
                 }
             }
 
@@ -2375,6 +2384,39 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     order_mgr.recancel_pending_stops();
                     order_plant->flush_order_notifications();
                     last_background_recancel_s = now_s;
+                }
+            }
+
+            // Stale-order alarm: a cancelled stop is normally ACKed in ~150 ms. One still
+            // unconfirmed after 60 s may be WORKING at the exchange with nothing behind it
+            // (2026-09-21: nine superseded stops stayed live 41–52 min while Rithmic refused
+            // the cancels silently). The recancel loops keep retrying; this makes it loud.
+            if (!orb_cfg.dry_run) {
+                static int64_t stale_cancel_since_s = 0;
+                static bool    stale_cancel_alerted = false;
+                const int pending = order_mgr.pending_cancelled_stop_count();
+                const int64_t now_s = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                if (pending > 0) {
+                    if (stale_cancel_since_s == 0) stale_cancel_since_s = now_s;
+                    if (!stale_cancel_alerted && now_s - stale_cancel_since_s >= 60) {
+                        stale_cancel_alerted = true;
+                        LOG("[EXECUTOR] CRITICAL: %d cancelled stop(s) unconfirmed for %llds — may still be "
+                            "WORKING at the exchange", pending, (long long)(now_s - stale_cancel_since_s));
+                        audit_log.error("order.stale_cancel", std::to_string(pending) + " stop cancel(s) unconfirmed >60s");
+                        int rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label + ": " +
+                            std::to_string(pending) + " cancelled stop(s) NOT confirmed after 60s — check "
+                            "RTrader for working orders\" >/dev/null 2>&1 &").c_str());
+                        (void)rc;
+                    }
+                } else if (stale_cancel_since_s != 0) {
+                    if (stale_cancel_alerted) {
+                        LOG("[EXECUTOR] stale-cancel alarm cleared — all cancels confirmed");
+                        int rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                            ": stale stop cancels now confirmed\" >/dev/null 2>&1 &").c_str());
+                        (void)rc;
+                    }
+                    stale_cancel_since_s = 0; stale_cancel_alerted = false;
                 }
             }
 

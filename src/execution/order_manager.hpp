@@ -256,8 +256,34 @@ public:
             LOG("[OM] CANCEL-FAILED for %s — not a guarded stop, ignoring", id.c_str());
             return;
         }
-        stop_resubmit_pending_ = false;
+        // A failure reported against our CLIENT id is only the client-id attempt. If the
+        // server id has since mapped, a cancel by server id is already in flight (LATE-MAP
+        // or recancel) and is the one that counts — re-adopting here would cancel the
+        // replacement while the server-id cancel kills the old stop: no stop at all.
+        if (server_id.empty()) {
+            for (const auto& [sid, cid] : server_to_client_cancelled_) {
+                if (cid == client_id) {
+                    LOG("[OM] CANCEL-FAILED for client-id attempt on %s ignored — cancel by server "
+                        "id %s is in flight", client_id.c_str(), sid.c_str());
+                    return;
+                }
+            }
+        }
         bool in_trade = (pos_.state == PosState::LONG || pos_.state == PosState::SHORT);
+        // A stop cancelled for an EARLIER trade (recancels of client-id cancels are re-sent
+        // at every close) must never be re-adopted by the current trade: it can point the
+        // wrong way after a reversal and would replace the real stop. Keep its guard.
+        if (in_trade) {
+            auto t = cancelled_stop_trade_.find(client_id);
+            if (t == cancelled_stop_trade_.end() || t->second != trade_seq_) {
+                LOG("[OM] CRITICAL: CANCEL-FAILED for stop %s from an EARLIER trade — it may still be "
+                    "working; guard kept, current stop %s untouched (late mapping re-sends the "
+                    "cancel, a fill is unwound by the reconciler)",
+                    client_id.c_str(), pos_.basket_id_stop.empty() ? "(none)" : pos_.basket_id_stop.c_str());
+                return;
+            }
+        }
+        stop_resubmit_pending_ = false;
         if (!in_trade) {
             LOG("[OM] CRITICAL: CANCEL-FAILED for stop %s while %s — that stop is LIVE on the "
                 "exchange with no position behind it; guard kept (fill → unwind, "
@@ -372,6 +398,7 @@ public:
         lat_.on_signal(basket, price, /*is_entry=*/true, orb_boundary);
 
         pos_ = Position{};
+        ++trade_seq_;
         pos_.state         = PosState::PENDING_ENTRY;
         pos_.direction     = sig;
         pos_.basket_id_entry = basket;
@@ -894,8 +921,7 @@ public:
             // arrives after pos_ is cleared, the spurious-fill handler will unwind it.
             pending_cancel_basket_  = pos_.basket_id_entry;
             pending_cancel_was_buy_ = (pos_.direction == OrbSignal::BUY);
-            if (cancel_cb_ && !pos_.basket_id_entry.empty())
-                cancel_cb_(pos_.basket_id_entry);
+            cancel_order_locked(pos_.basket_id_entry, "pending entry");
             pos_ = Position{};
             return;
         }
@@ -924,7 +950,14 @@ public:
             old_basket.empty() ? "(none)" : old_basket.c_str(), current_price,
             pos_.exit_reason.c_str());
         if (!old_basket.empty()) {
-            if (cancel_cb_) cancel_cb_(old_basket);
+            // By server id when mapped (a client-id cancel is refused and the old exit
+            // would keep resting). Guard it like a cancelled stop so a late fill is
+            // unwound and the post-close recancel keeps retrying it by server id.
+            const std::string sid = cancel_id_for_locked(old_basket);
+            if (sid != old_basket) server_to_client_cancelled_[sid] = old_basket;
+            else                   client_only_cancels_.insert(old_basket);
+            cancelled_stop_trade_[old_basket] = trade_seq_;
+            cancel_order_locked(old_basket, "stuck exit");
             cancelled_stops_[old_basket] = exit_was_buy;
             if (cancel_persist_cb_) cancel_persist_cb_(old_basket, exit_was_buy);
             // The just-cancelled exit is now the order most likely to late-fill
@@ -1052,6 +1085,15 @@ public:
         if (client_id.empty() || server_id.empty()) return;
         std::lock_guard<std::mutex> lk(state_mu_);
         server_to_client_orders_[server_id] = client_id;
+        if (unmapped_order_cancels_.erase(client_id) > 0) {
+            if (auto g = cancelled_stops_.find(client_id); g != cancelled_stops_.end()) {
+                server_to_client_cancelled_[server_id] = client_id;
+                client_only_cancels_.erase(client_id);
+            }
+            LOG("[OM] LATE-MAP: cancelled order client=%s now has server=%s — re-sending the "
+                "cancel by server id", client_id.c_str(), server_id.c_str());
+            if (cancel_cb_) cancel_cb_(server_id);
+        }
     }
 
     // Fill dedupe: the same fill can be delivered on tid=351 (cumulative
@@ -1084,8 +1126,7 @@ public:
         // the spurious-fill handler unwinds it immediately.
         pending_cancel_basket_  = pos_.basket_id_entry;
         pending_cancel_was_buy_ = (pos_.direction == OrbSignal::BUY);
-        if (cancel_cb_ && !pos_.basket_id_entry.empty())
-            cancel_cb_(pos_.basket_id_entry);
+        cancel_order_locked(pos_.basket_id_entry, "timed-out entry");
         pos_ = Position{};
         return true;
     }
@@ -1164,6 +1205,11 @@ private:
     // Fill dedupe: basket_id → largest fill quantity already processed.
     // tid=351 reports cumulative total_fill_size; tid=352 per-event fill_size.
     std::unordered_map<std::string, int> processed_fill_qty_;
+    // trade each cancelled stop/exit belonged to (on_cancel_failed must not re-adopt a
+    // stop from an earlier trade), and entry/exit cancels still waiting for a server id
+    uint64_t trade_seq_ = 0;
+    std::unordered_map<std::string, uint64_t> cancelled_stop_trade_;
+    std::unordered_set<std::string> unmapped_order_cancels_;
     // Bounded: one entry per filled order; a session has at most a few dozen.
     void prune_processed_fills_locked() {
         if (processed_fill_qty_.size() > 512) processed_fill_qty_.clear();
@@ -1341,6 +1387,28 @@ private:
         submit_stop_order_locked(new_sl);
     }
 
+    // The id Rithmic can act on for one of our orders: its server basket id once a
+    // tid=351 mapped it, else our client id (which Rithmic cannot route — the caller must
+    // make sure the cancel is re-sent when the mapping arrives).
+    std::string cancel_id_for_locked(const std::string& client_id) const {
+        for (const auto& [sid, cid] : server_to_client_orders_)
+            if (cid == client_id) return sid;
+        return client_id;
+    }
+
+    // Cancel an entry/exit order (not the stop) by the id Rithmic can route. Unmapped →
+    // remember it; map_server_basket() re-sends the cancel by server id when it maps.
+    void cancel_order_locked(const std::string& client_id, const char* what) {
+        if (client_id.empty() || !cancel_cb_) return;
+        const std::string id = cancel_id_for_locked(client_id);
+        if (id == client_id) {
+            unmapped_order_cancels_.insert(client_id);
+            LOG("[OM] WARN: %s %s has no server id yet — cancel sent by client id (Rithmic may "
+                "refuse); it is re-sent by server id as soon as one maps", what, client_id.c_str());
+        }
+        cancel_cb_(id);
+    }
+
     // Cancel stop without replacing (called while state_mu_ held)
     void cancel_stop_locked() {
         if (pos_.basket_id_stop.empty() || !cancel_cb_) return;
@@ -1350,6 +1418,7 @@ private:
         last_stop_was_buy_    = was_buy_stop;
         // Also add to persistent map — cancel confirmation may never arrive
         cancelled_stops_[pos_.basket_id_stop] = was_buy_stop;
+        cancelled_stop_trade_[pos_.basket_id_stop] = trade_seq_;
         if (cancel_persist_cb_) cancel_persist_cb_(pos_.basket_id_stop, was_buy_stop);
         // Populate reverse map before clearing so cancel ACKs (and post-close recancels)
         // can resolve the client basket by server basket ID.
