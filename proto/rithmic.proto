@@ -154,17 +154,22 @@ message LastTrade {
 
 // ── Template 151 — Best Bid / Offer (top of book) ─────────────────
 
+// Field numbers verified on the wire 2026-09-22 (protoc --decode_raw of live
+// Tradeify frames): the previous 1542xx/1543xx numbers were never sent, so every
+// BBO parsed empty and was dropped. presence_bits: 1 = bid, 2 = ask, 4 = lean_price.
 message BestBidOffer {
   int32  template_id   = 154467;
   string symbol        = 110100;
   string exchange      = 110101;
   int32  presence_bits = 149138;
-  double bid_price     = 154277;
-  int32  bid_size      = 154273;
-  int32  bid_orders    = 154305;
-  double ask_price     = 154278;
-  int32  ask_size      = 154274;
-  int32  ask_orders    = 154306;
+  bool   is_snapshot   = 110121;
+  double bid_price     = 100022;
+  int32  bid_size      = 100030;
+  int32  bid_orders    = 159000;
+  double ask_price     = 100025;
+  int32  ask_size      = 100031;
+  int32  ask_orders    = 159002;
+  double lean_price    = 154909;   // Rithmic's size-weighted "lean" (micro) price
   int32  ssboe         = 150100;
   int32  usecs         = 150101;
 }
@@ -429,4 +434,21 @@ message ResponseFrontMonthContract {
   string exchange         = 110101;
   string trading_symbol   = 157942;
   string trading_exchange = 157943;
+}
+
+// ── Template 402/403 — PnL position snapshot on demand ─────────────────
+// The tid=400 subscription streams tid=451 only on change; an idle account
+// may send nothing for minutes. 402 forces a snapshot (delivered as
+// tid=451 records with is_snapshot=true, then a 403 with rp_code).
+message RequestPnLPositionSnapshot {
+  int32 template_id = 154467;
+  repeated string user_msg = 132760;
+  string fcm_id = 154013;
+  string ib_id = 154014;
+  string account_id = 154008;
+}
+message ResponsePnLPositionSnapshot {
+  int32 template_id = 154467;
+  repeated string user_msg = 132760;
+  repeated string rp_code = 132766;
 }

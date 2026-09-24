@@ -57,6 +57,23 @@ inline int us_et_offset(const struct tm& utc_tm) {
     return (hour < 6) ? 4 : 5;        // fall back at 06:00 UTC
 }
 
+// ─── Trading date (CME / prop-firm day) ──────────────────────────────────────
+// The futures trading day — and a prop firm's daily loss limit (Tradeify resets at
+// 17:00 CT = 18:00 ET) — runs 18:00 ET → 17:00 ET. Trades from 18:00 ET onward belong
+// to the NEXT date, so an evening session never inherits the day that just closed.
+// Returns YYYY-MM-DD for the Unix time `tt`.
+inline std::string trading_date_str(time_t tt) {
+    struct tm utc_tm;
+    gmtime_r(&tt, &utc_tm);
+    time_t et_t = tt - us_et_offset(utc_tm) * 3600;
+    struct tm et_tm;
+    gmtime_r(&et_t, &et_tm);
+    if (et_tm.tm_hour >= 18) { et_t += 24 * 3600; gmtime_r(&et_t, &et_tm); }
+    char buf[16];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d", &et_tm);
+    return buf;
+}
+
 struct OrbConfig {
     // ── Strategy params ────────────────────────────────────────────
     int    orb_minutes         = 15;   // opening range duration (9:30–9:45 ET)
@@ -74,6 +91,7 @@ struct OrbConfig {
     int    news_blackout_min   = 5;    // minutes before/after news event to block entry
     int    stop_cooldown_secs  = 5;    // seconds to block re-entry after any stop exit (0=disabled)
     int    sl_fire_timeout_ms  = 3000; // ms before software SL fires if exchange stop is unresponsive
+    int    net_mismatch_grace_ms = 5000; // ms the exchange net position may disagree with ours (in-flight fills) before the difference is unwound and entries halt
     int    qty                 = 1;    // contract quantity per trade
 
     // ── Session open (defaults: RTH 9:30 ET) ──────────────────────
@@ -102,6 +120,21 @@ struct OrbConfig {
     // collector's Postgres `ticks` table (same feed the paper fleet uses), so
     // the one TICKER_PLANT session a prop login allows can belong to the
     // 24/7 collector instead of this executor.
+    // Paper-fleet book knobs (see paper/paper_quote.hpp). All off by default.
+    std::string fill_model        = "last_slip";   // last_slip | bbo
+    double      spread_gate_ticks = 0.0;           // block entries when spread > N ticks
+    double      spread_gate_rel   = 0.0;           // block when spread > k × rolling mean
+    double      imbalance_min     = 0.0;           // longs need bid share ≥ x (shorts ≤ 1−x)
+    bool        microprice_lead   = false;         // microprice must lean the entry's way
+    double      imbalance_max     = 0.0;           // INVERTED: longs need bid share ≤ x (fade the stacked side)
+    double      book_exit_flip    = 0.0;           // in a long: flatten when bid share ≤ x (mirror for shorts)
+    bool        book_be_on_flip   = false;         // move the stop to break-even as soon as the book flips against
+    double      book_tp_imbalance = 0.0;           // in profit and the book stacks in favour ≥ x → take profit
+    double      book_tp_min_pts   = 1.0;           // …only once at least this many points in profit (slippage + commission cover)
+    int         book_size_agree   = 0;             // extra contracts when the book agrees with the entry
+    int         fill_wait_secs    = 0;             // wait up to N s for spread ≤ 1 tick / microprice lean before filling
+    std::string base_id;                           // sibling variants: the strategy this derives from
+    std::string overlay;                           // sibling variants: which overlay ("sg","imb","micro","all"…)
     std::string md_provider    = "legends";
     std::string md_feed_symbol = "NQ";   // symbol the collector writes (pg mode)
     int         md_poll_ms     = 100;    // pg mode poll cadence
@@ -128,6 +161,10 @@ struct OrbConfig {
     // ── Instance identity ──────────────────────────────────────────
     std::string account_label    = "legends";         // DB tag: "legends", "tradeify", …
     std::string strategy         = "ORB";             // DB strategy tag — must differ per strategy sharing an account
+    // Which strategy class the executor runs: "orb" (OrbStrategy) or "trend" (TrendStrategy,
+    // mode/params read from the same file by TrendConfig::from_json_string). One engine per
+    // process; the per-account instance lock keeps two engines off one account.
+    std::string engine           = "orb";
     std::string order_env_prefix = "RITHMIC_LEGENDS"; // prefix for ORDER_PLANT env vars
 
     // ── Account ───────────────────────────────────────────────────
@@ -208,6 +245,7 @@ struct OrbConfig {
         // Instance identity — read first so the prefix drives all credential lookups
         c.account_label    = json_str(text, "account_label",    c.account_label);
         c.strategy         = json_str(text, "strategy",         c.strategy);
+        c.engine           = json_str(text, "engine",           c.engine);
         c.order_env_prefix = json_str(text, "order_env_prefix", c.order_env_prefix);
 
         // ORDER_PLANT credentials — derived from order_env_prefix so any account works
@@ -244,6 +282,7 @@ struct OrbConfig {
         c.news_blackout_min    = json_int(text,  "news_blackout_min",    c.news_blackout_min);
         c.stop_cooldown_secs   = json_int(text,  "stop_cooldown_secs",   c.stop_cooldown_secs);
         c.sl_fire_timeout_ms   = json_int(text,  "sl_fire_timeout_ms",   c.sl_fire_timeout_ms);
+        c.net_mismatch_grace_ms = json_int(text, "net_mismatch_grace_ms", c.net_mismatch_grace_ms);
         c.qty                  = json_int(text,  "qty",                  c.qty);
 
         c.trailing_drawdown_cap = json_dbl(text, "trailing_drawdown_cap", c.trailing_drawdown_cap);
@@ -316,6 +355,13 @@ struct OrbConfig {
             strategy.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos)
             throw std::runtime_error(std::string("FATAL: invalid config key 'strategy'") +
                 " — must match [A-Za-z0-9_]+ (got '" + strategy + "')");
+        if (engine != "orb" && engine != "trend")
+            throw std::runtime_error("FATAL: invalid config key 'engine' — must be \"orb\" or \"trend\" (got '" +
+                                     engine + "')");
+        // live_trades / live_sessions rows are keyed by the strategy tag — a trend engine
+        // writing under "ORB" would be counted as ORB trades and restart-seeded as ORB.
+        if (engine == "trend" && strategy == "ORB")
+            throw std::runtime_error("FATAL: engine \"trend\" needs its own 'strategy' tag (not \"ORB\")");
     }
 
 private:

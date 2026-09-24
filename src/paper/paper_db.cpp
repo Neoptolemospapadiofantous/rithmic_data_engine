@@ -51,6 +51,18 @@ static const char* kSchemaSQL[] = {
     // MAE/MFE columns (added 2026-09-20) — idempotent for existing tables
     R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS mae_pts DOUBLE PRECISION)sql",
     R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS mfe_pts DOUBLE PRECISION)sql",
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS entry_bbo DOUBLE PRECISION)sql",
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS exit_bbo DOUBLE PRECISION)sql",
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS pnl_bbo_usd DOUBLE PRECISION)sql",
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS spread_entry_ticks DOUBLE PRECISION)sql",
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS spread_exit_ticks DOUBLE PRECISION)sql",
+    R"sql(ALTER TABLE paper_trades ADD COLUMN IF NOT EXISTS fill_model TEXT)sql",
+    R"sql(CREATE TABLE IF NOT EXISTS paper_signals (
+              id BIGSERIAL PRIMARY KEY, strategy_id TEXT NOT NULL, account_label TEXT NOT NULL,
+              ts TIMESTAMPTZ NOT NULL, direction TEXT, price DOUBLE PRECISION,
+              spread_ticks DOUBLE PRECISION, imbalance DOUBLE PRECISION, microprice_dev_ticks DOUBLE PRECISION,
+              spread_rel DOUBLE PRECISION, decision TEXT NOT NULL, reason TEXT))sql",
+    R"sql(CREATE INDEX IF NOT EXISTS idx_paper_signals_strat_ts ON paper_signals (strategy_id, ts))sql",
     R"sql(CREATE TABLE IF NOT EXISTS paper_daily (
   strategy_id TEXT NOT NULL REFERENCES paper_strategies(strategy_id),
   trade_date DATE NOT NULL,
@@ -197,21 +209,28 @@ void PaperDb::record_trade(const PaperTradeRow& t) {
     std::string comm = std::to_string(t.commission);
     std::string mae  = std::to_string(t.mae_pts);
     std::string mfe  = std::to_string(t.mfe_pts);
-    const char* params[15] = {
+    std::string ebbo = std::to_string(t.entry_bbo), xbbo = std::to_string(t.exit_bbo);
+    std::string pbbo = std::to_string(t.pnl_bbo_usd);
+    std::string spe  = std::to_string(t.spread_entry_ticks), spx = std::to_string(t.spread_exit_ticks);
+    const char* params[21] = {
         t.strategy_id.c_str(), t.account_label.c_str(), t.symbol.c_str(),
         t.direction.c_str(), qty.c_str(), ets.c_str(), ep.c_str(),
         xts.c_str(), xp.c_str(), pts.c_str(), usd.c_str(), comm.c_str(),
         t.exit_reason.c_str(), mae.c_str(), mfe.c_str(),
+        ebbo.c_str(), xbbo.c_str(), pbbo.c_str(), spe.c_str(), spx.c_str(), t.fill_model.c_str(),
     };
     PGresult* res = PQexecParams(conn_,
         R"sql(INSERT INTO paper_trades
               (strategy_id, account_label, symbol, direction, qty,
                entry_time, entry_price, exit_time, exit_price,
-               pnl_pts, pnl_usd, commission, exit_reason, mae_pts, mfe_pts)
+               pnl_pts, pnl_usd, commission, exit_reason, mae_pts, mfe_pts,
+               entry_bbo, exit_bbo, pnl_bbo_usd, spread_entry_ticks, spread_exit_ticks, fill_model)
               VALUES ($1,$2,$3,$4,$5::int,$6::timestamptz,$7::float8,
                       $8::timestamptz,$9::float8,$10::float8,$11::float8,$12::float8,$13,
-                      $14::float8,$15::float8))sql",
-        15, nullptr, params, nullptr, nullptr, 0);
+                      $14::float8,$15::float8,
+                      NULLIF($16::float8,0),NULLIF($17::float8,0),$18::float8,
+                      NULLIF($19::float8,-1),NULLIF($20::float8,-1),$21))sql",
+        21, nullptr, params, nullptr, nullptr, 0);
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
         LOG("[PAPER-DB] WARN record_trade(%s): %s", t.strategy_id.c_str(),
             res ? PQresultErrorMessage(res) : "null result");
@@ -225,6 +244,55 @@ void PaperDb::record_trade(const PaperTradeRow& t) {
     PGresult* nr = PQexecParams(conn_,
         "SELECT pg_notify('paper_update', $1)", 1, nullptr, np, nullptr, nullptr, 0);
     if (nr) PQclear(nr);
+}
+
+void PaperDb::record_signal(const PaperSignalRow& s) {
+    std::string ts = format_ts(s.ts_us);
+    std::string px = std::to_string(s.price), sp = std::to_string(s.spread_ticks), im = std::to_string(s.imbalance);
+    std::string md = std::to_string(s.microprice_dev_ticks), sr = std::to_string(s.spread_rel);
+    const char* params[11] = { s.strategy_id.c_str(), s.account_label.c_str(), ts.c_str(), s.direction.c_str(),
+                               px.c_str(), sp.c_str(), im.c_str(), md.c_str(), sr.c_str(),
+                               s.decision.c_str(), s.reason.c_str() };
+    PGresult* res = PQexecParams(conn_,
+        R"sql(INSERT INTO paper_signals (strategy_id, account_label, ts, direction, price, spread_ticks, imbalance,
+                                         microprice_dev_ticks, spread_rel, decision, reason)
+              VALUES ($1,$2,$3::timestamptz,$4,$5::float8,NULLIF($6::float8,-1),NULLIF($7::float8,-1),
+                      $8::float8,NULLIF($9::float8,-1),$10,$11))sql",
+        11, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+        LOG("[PAPER-DB] WARN record_signal(%s): %s", s.strategy_id.c_str(), res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
+}
+
+std::vector<PaperDb::BboRow> PaperDb::poll_bbo(const std::string& symbol, int64_t after_us, int limit) {
+    std::string ts  = format_ts(after_us);
+    std::string lim = std::to_string(limit);
+    const char* params[3] = { ts.c_str(), symbol.c_str(), lim.c_str() };
+    PGresult* res = PQexecParams(conn_,
+        R"sql(SELECT (EXTRACT(EPOCH FROM ts_event)*1000000)::bigint, bid_price, bid_size, ask_price, ask_size
+              FROM bbo WHERE ts_event > $1::timestamptz AND symbol = $2
+              ORDER BY ts_event LIMIT $3::int)sql",
+        3, nullptr, params, nullptr, nullptr, 0);
+    std::vector<BboRow> out;
+    if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
+        if (!bbo_error_logged_) {
+            LOG("[PAPER-DB] WARN poll_bbo: %s (further errors suppressed)", res ? PQresultErrorMessage(res) : "null result");
+            bbo_error_logged_ = true;
+        }
+        if (res) PQclear(res);
+        return out;
+    }
+    bbo_error_logged_ = false;
+    const int n = PQntuples(res);
+    out.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        if (!PQgetisnull(res, i, 1)) { last_bid_ = std::atof(PQgetvalue(res, i, 1)); last_bid_sz_ = std::atoi(PQgetvalue(res, i, 2)); }
+        if (!PQgetisnull(res, i, 3)) { last_ask_ = std::atof(PQgetvalue(res, i, 3)); last_ask_sz_ = std::atoi(PQgetvalue(res, i, 4)); }
+        if (last_bid_ <= 0.0 || last_ask_ <= 0.0) continue;         // still one-sided
+        out.push_back(BboRow{std::atoll(PQgetvalue(res, i, 0)), last_bid_, last_ask_, last_bid_sz_, last_ask_sz_});
+    }
+    PQclear(res);
+    return out;
 }
 
 // ── registry / resume ────────────────────────────────────────────────────────
@@ -474,31 +542,33 @@ std::optional<bool> PaperDb::load_enabled(const std::string& strategy_id) {
 
 // ── seeding queries ──────────────────────────────────────────────────────────
 
+// All three are scoped to account_label_ when set (set_account_label()); an unset
+// label (unit tests, tools) keeps the historical unscoped behaviour.
 double PaperDb::sum_pnl(const std::string& strategy_id) {
-    const char* params[1] = { strategy_id.c_str() };
+    const char* params[2] = { strategy_id.c_str(), account_label_.c_str() };
     std::string v = exec_scalar(
-        "SELECT COALESCE(SUM(pnl_usd),0) FROM paper_trades WHERE strategy_id=$1",
-        params, 1, "sum_pnl");
+        "SELECT COALESCE(SUM(pnl_usd),0) FROM paper_trades WHERE strategy_id=$1 AND ($2 = '' OR account_label=$2)",
+        params, 2, "sum_pnl");
     return v.empty() ? 0.0 : std::atof(v.c_str());
 }
 
 double PaperDb::sum_pnl_since(const std::string& strategy_id, int64_t since_us) {
     std::string ts = format_ts(since_us);
-    const char* params[2] = { strategy_id.c_str(), ts.c_str() };
+    const char* params[3] = { strategy_id.c_str(), ts.c_str(), account_label_.c_str() };
     std::string v = exec_scalar(
         "SELECT COALESCE(SUM(pnl_usd),0) FROM paper_trades "
-        "WHERE strategy_id=$1 AND exit_time >= $2::timestamptz",
-        params, 2, "sum_pnl_since");
+        "WHERE strategy_id=$1 AND exit_time >= $2::timestamptz AND ($3 = '' OR account_label=$3)",
+        params, 3, "sum_pnl_since");
     return v.empty() ? 0.0 : std::atof(v.c_str());
 }
 
 int PaperDb::count_trades_since(const std::string& strategy_id, int64_t since_us) {
     std::string ts = format_ts(since_us);
-    const char* params[2] = { strategy_id.c_str(), ts.c_str() };
+    const char* params[3] = { strategy_id.c_str(), ts.c_str(), account_label_.c_str() };
     std::string v = exec_scalar(
         "SELECT COUNT(*) FROM paper_trades "
-        "WHERE strategy_id=$1 AND entry_time >= $2::timestamptz",
-        params, 2, "count_trades_since");
+        "WHERE strategy_id=$1 AND entry_time >= $2::timestamptz AND ($3 = '' OR account_label=$3)",
+        params, 3, "count_trades_since");
     return v.empty() ? 0 : std::atoi(v.c_str());
 }
 

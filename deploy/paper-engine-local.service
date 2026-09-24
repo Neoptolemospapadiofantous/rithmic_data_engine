@@ -19,6 +19,9 @@ Restart=always
 RestartSec=10
 KillSignal=SIGTERM
 TimeoutStopSec=20
+# Keep the fleet resident but bounded — it must never compete with the live executor.
+MemoryMin=64M
+MemoryMax=2G
 
 [Install]
 WantedBy=default.target

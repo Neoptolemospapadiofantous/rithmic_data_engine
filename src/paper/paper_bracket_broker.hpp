@@ -32,6 +32,7 @@
 #include <string>
 
 #include "paper_db.hpp"
+#include "paper_quote.hpp"
 #include "orb_config.hpp"      // OrbConfig (risk knobs), us_et_offset
 #include "risk_manager.hpp"
 #include "orb_strategy.hpp"    // OrbTick / OrbSignal
@@ -70,6 +71,15 @@ public:
         if (sig != OrbSignal::BUY && sig != OrbSignal::SELL) return;
         if (halted()) return;
         const int dir = (sig == OrbSignal::BUY) ? 1 : -1;
+        {
+            const std::string blocked = qs_.gate(cfg_, dir, last_tick_us_, tick_size_);
+            log_signal(dir, reason, blocked);
+            if (!blocked.empty()) {
+                LOG("[PAPER %s] %s signal (%s) blocked by book gate: %s", strategy_id_.c_str(),
+                    dir > 0 ? "BUY" : "SELL", reason.c_str(), blocked.c_str());
+                return;
+            }
+        }
         // Reversal: the strategy permits flips (enters opposite while holding).
         // Exit the current leg at market on the next tick, then enter the new
         // direction on the tick after — by then the strategy's bracket is the
@@ -80,7 +90,25 @@ public:
             return;
         }
         if (pos_dir_ != 0 || pending_dir_ != 0) return;   // single position
-        pending_dir_ = dir;
+        pending_dir_ = dir; pending_since_us_ = last_tick_us_;
+    }
+
+    // ── Top of book (collector bbo stream) ───────────────────────────────────
+    void on_quote(const paper::Quote& q) { qs_.on_quote(q, tick_size_); }
+    const paper::QuoteState& quotes() const { return qs_; }
+
+    void log_signal(int dir, const std::string& reason, const std::string& blocked) {
+        if (!store_) return;
+        PaperSignalRow r;
+        r.strategy_id = strategy_id_; r.account_label = account_label_;
+        r.ts_us = last_tick_us_; r.direction = dir > 0 ? "LONG" : "SHORT"; r.price = last_price_;
+        r.reason = reason; r.decision = blocked.empty() ? "taken" : "blocked:" + blocked;
+        if (qs_.fresh(last_tick_us_)) {
+            r.spread_ticks = qs_.q.spread_ticks(tick_size_); r.imbalance = qs_.q.imbalance();
+            r.microprice_dev_ticks = tick_size_ > 0 ? (qs_.q.microprice() - qs_.q.mid()) / tick_size_ : 0.0;
+            r.spread_rel = qs_.spread_ema > 0 ? r.spread_ticks / qs_.spread_ema : -1.0;
+        }
+        store_->record_signal(r);
     }
 
     // ── One tick. strat_stop/strat_tp are the strategy's current bracket ────
@@ -105,10 +133,18 @@ public:
         }
 
         // 1. Pending entry fills at this tick (signal came earlier).
-        if (pending_dir_ != 0 && pos_dir_ == 0) {
-            if (!halted())
-                enter(pending_dir_, t.price + pending_dir_ * slip_, t.ts_micros,
-                      strat_qty, strat_stop, strat_tp);
+        if (pending_dir_ != 0 && pos_dir_ == 0 &&
+            !(cfg_.fill_wait_secs > 0 && t.ts_micros - pending_since_us_ < (int64_t)cfg_.fill_wait_secs * 1'000'000 &&
+              !qs_.fill_ready(pending_dir_, t.ts_micros, tick_size_))) {
+            if (!halted()) {
+                const int    dir       = pending_dir_;
+                const double slip_fill = t.price + dir * slip_;
+                const double book_fill = qs_.market_fill(dir, t.ts_micros, slip_fill, t.price);   // never better than the print (stale-quote guard)
+                const bool   use_book  = cfg_.fill_model == "bbo" && qs_.fresh(t.ts_micros);
+                entry_bbo_    = book_fill;
+                spread_entry_ = qs_.fresh(t.ts_micros) ? qs_.q.spread_ticks(tick_size_) : -1.0;
+                enter(dir, use_book ? book_fill : slip_fill, t.ts_micros, strat_qty, strat_stop, strat_tp);
+            }
             pending_dir_ = 0;
         }
 
@@ -130,6 +166,18 @@ public:
              (pos_dir_ < 0 && t.price <= tp_price_))) {
             exit_position(tp_price_, t.ts_micros, "target");
             return;
+        }
+
+        // 4b. Book-driven exits / break-even (paper_quote.hpp).
+        {
+            const double pnl_now = (t.price - entry_price_) * pos_dir_;
+            const std::string why = qs_.book_exit(cfg_, pos_dir_, t.ts_micros, pnl_now);
+            if (!why.empty()) { exit_position(t.price - pos_dir_ * slip_, t.ts_micros, why); return; }
+            if (cfg_.book_be_on_flip && qs_.flipped_against(pos_dir_, t.ts_micros) &&
+                (t.price - entry_price_) * pos_dir_ > cfg_.trail_be_offset) {        // never on the wrong side of the market
+                const double be = snap(entry_price_ + pos_dir_ * cfg_.trail_be_offset, pos_dir_);
+                if ((pos_dir_ > 0 && be > stop_price_) || (pos_dir_ < 0 && be < stop_price_)) stop_price_ = be;
+            }
         }
 
         // 5. Strategy-requested market flatten (osc/time/trend/session exits).
@@ -221,7 +269,7 @@ private:
     void enter(int dir, double fill, int64_t ts_us, int qty,
                double stop, double tp) {
         pos_dir_       = dir;
-        qty_           = std::max(1, qty);
+        qty_           = std::max(1, qty) + ((cfg_.book_size_agree > 0 && qs_.fresh(ts_us) && qs_.agrees(dir)) ? cfg_.book_size_agree : 0);
         entry_price_   = fill;
         entry_time_us_ = ts_us;
         mfe_           = 0.0;
@@ -250,6 +298,9 @@ private:
     }
 
     void exit_position(double fill, int64_t ts_us, const std::string& reason) {
+        const bool   fresh    = qs_.fresh(ts_us);
+        const double exit_bbo = fresh ? qs_.market_fill(-pos_dir_, ts_us, fill, fill) : fill;
+        if (cfg_.fill_model == "bbo" && fresh) fill = exit_bbo;
         PaperTradeRow tr;
         tr.strategy_id   = strategy_id_;
         tr.account_label = account_label_;
@@ -263,6 +314,12 @@ private:
         tr.pnl_pts       = (fill - entry_price_) * pos_dir_;
         tr.commission    = cfg_.commission_rt * qty_;
         tr.pnl_usd       = tr.pnl_pts * cfg_.point_value * qty_ - tr.commission;
+        tr.fill_model    = cfg_.fill_model;
+        tr.entry_bbo     = entry_bbo_ > 0.0 ? entry_bbo_ : entry_price_;
+        tr.exit_bbo      = exit_bbo;
+        tr.pnl_bbo_usd   = (tr.exit_bbo - tr.entry_bbo) * pos_dir_ * cfg_.point_value * qty_ - tr.commission;
+        tr.spread_entry_ticks = spread_entry_;
+        tr.spread_exit_ticks  = fresh ? qs_.q.spread_ticks(tick_size_) : -1.0;
         // Fold the exit tick into the excursion bounds, then persist them
         if (tr.pnl_pts > mfe_) mfe_ = tr.pnl_pts;
         if (tr.pnl_pts < mae_) mae_ = tr.pnl_pts;
@@ -317,6 +374,9 @@ private:
     double      tick_size_;
     double      slip_;
     PaperStore* store_;   // not owned; may be null
+    paper::QuoteState qs_;                       // top of book (paper_quote.hpp)
+    double      entry_bbo_ = 0.0, spread_entry_ = -1.0;
+    int64_t     pending_since_us_ = 0;
     RiskManager risk_;
 
     int     pos_dir_ = 0;         // +1 long, -1 short, 0 flat

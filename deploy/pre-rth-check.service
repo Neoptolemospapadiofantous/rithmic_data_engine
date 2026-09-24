@@ -1,0 +1,7 @@
+[Unit]
+Description=09:00 ET readiness report for the live executor (Telegram via grid-notify)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/pre_rth_check.sh tradeify

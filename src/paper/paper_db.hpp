@@ -45,6 +45,18 @@ struct PaperTradeRow {
     double      mae_pts = 0.0;   // max adverse excursion (≤ 0)
     double      mfe_pts = 0.0;   // max favorable excursion
     std::string exit_reason;
+    // Book shadow (paper_quote.hpp): the same trade filled at bid/ask, whatever
+    // fill model the strategy ran with. −1 spread = no fresh quote at that moment.
+    double      entry_bbo = 0.0, exit_bbo = 0.0, pnl_bbo_usd = 0.0;
+    double      spread_entry_ticks = -1.0, spread_exit_ticks = -1.0;
+    std::string fill_model = "last_slip";
+};
+
+// One entry signal as the broker saw it — taken or blocked by a book gate.
+struct PaperSignalRow {
+    std::string strategy_id, account_label, direction, decision, reason;
+    int64_t     ts_us = 0;
+    double      price = 0.0, spread_ticks = -1.0, imbalance = -1.0, microprice_dev_ticks = 0.0, spread_rel = -1.0;
 };
 
 struct PaperDailyRow {
@@ -81,6 +93,7 @@ public:
     virtual ~PaperStore() = default;
     virtual void save_position(const PaperPositionRow& p) = 0;  // upsert
     virtual void record_trade(const PaperTradeRow& t) = 0;      // insert + NOTIFY
+    virtual void record_signal(const PaperSignalRow&) {}        // paper_signals (optional)
 };
 
 // ── PaperDb ──────────────────────────────────────────────────────────────────
@@ -118,6 +131,10 @@ public:
     // day counts or positions (paper_strategies/positions are keyed by
     // strategy_id alone, so a replay would otherwise overwrite the live rows).
     void set_trades_only(bool v) { trades_only_ = v; }
+    // Label every seeding query is scoped to. paper_trades is keyed by strategy_id
+    // across labels (live + replay 'audit' rows share ids), so an unscoped SUM
+    // would seed live P&L / trade counts / halts from audit replays.
+    void set_account_label(const std::string& l) { account_label_ = l; }
     bool trades_only() const { return trades_only_; }
 
     std::vector<PaperControlRow> poll_control();
@@ -130,6 +147,10 @@ public:
     int    count_trades_since(const std::string& strategy_id, int64_t since_us);
 
     // Tick polling (shared live feed written by the collector)
+    void record_signal(const PaperSignalRow& s) override;
+    struct BboRow { int64_t ts_us; double bid, ask; int bid_sz, ask_sz; };
+    // Quotes after `after_us` (one-sided rows forward-filled from the last seen side).
+    std::vector<BboRow> poll_bbo(const std::string& symbol, int64_t after_us, int limit = 5000);
     struct TickRow { int64_t ts_us; double price; int64_t size; bool is_buy; };
     std::vector<TickRow> poll_ticks(const std::string& symbol, int64_t after_us,
                                     int limit = 5000);
@@ -141,7 +162,10 @@ public:
 private:
     PGconn* conn_ = nullptr;
     bool    trades_only_       = false;  // replay/audit isolation (see set_trades_only)
+    std::string account_label_;          // scope for the seeding queries (set_account_label)
     bool    poll_error_logged_ = false;  // rate-limit poll_ticks WARN spam
+    bool    bbo_error_logged_  = false;
+    double  last_bid_ = 0.0, last_ask_ = 0.0; int last_bid_sz_ = 0, last_ask_sz_ = 0;   // poll_bbo forward-fill
     bool    ctl_error_logged_  = false;  // rate-limit poll_control WARN spam
 
     std::string exec_scalar(const std::string& sql, const char* const* params,

@@ -53,7 +53,10 @@
 struct TrendConfig {
     std::string mode = "donchian";
     int  tf_min = 5;
-    int  win_start = 930, win_end = 1555;   // ET HHMM: entries allowed [start, end); flatten at end
+    int  win_start = 930, win_end = 1555;   // ET HHMM: entries allowed [start, end); flatten at end. start > end = wraps midnight (e.g. 2000-0230)
+    // Which stretch of the day VWAP / cumulative delta / the "session open" (drive, gap,
+    // trend_day) anchor to: "rth" 09:30-16:00, "globex" 18:00→17:00, "window" = win_start..win_end.
+    std::string session = "rth";
     bool allow_longs = true, allow_shorts = true;
     bool exit_on_flip = true;               // supertrend / ema modes: opposite signal closes the trade
     int  time_stop_min = 0;                 // 0 = none
@@ -81,12 +84,38 @@ struct TrendConfig {
     int rs_lookback_min = 15; double rs_min_bp = 5.0;
     // tod_momentum
     int tod_hhmm = 1000; int tod_lookback_min = 15; double tod_min_atr = 0.8; int tod_window_min = 30;
+    // ── families added 2026-09-21 ──
+    // trend_day: recognise a trend day after td_check_min, then buy/sell every pullback to VWAP (or the fast EMA)
+    int td_check_min = 60; double td_min_atr = 1.5; double td_vwap_frac = 0.8; std::string td_pullback = "vwap";  // vwap | ema
+    // failed_breakout (turtle soup): a donchian_n break that closes back inside within fb_bars → fade it
+    int fb_bars = 3;
+    // keltner_ride: close outside ema20 ± kc_mult×ATR enters; close back through ema20 exits (exit_on_flip)
+    // ichimoku: tenkan/kijun/senkou spans on the tf frame; kijun cross with close beyond the cloud
+    int ichi_tenkan = 9, ichi_kijun = 26, ichi_senkou = 52;
+    // roc_momentum: ROC over roc_bars ≥ roc_min_atr×ATR and a fresh roc_hi_bars high of that ROC
+    int roc_bars = 12; double roc_min_atr = 2.0; int roc_hi_bars = 20;
+    // delta_trend: price AND session cumulative delta both make a dt_bars high (divergence blocks)
+    int dt_bars = 10;
+    // fib_pullback: retrace of the last fib_swing_bars impulse into [fib_lo, fib_hi], resume through the prior bar
+    int fib_swing_bars = 20; double fib_lo = 0.382, fib_hi = 0.618;
+    // vwap_fade (mean reversion): close ≥ mr_dev_atr×ATR from VWAP then a bar closing back toward it; target VWAP
+    double mr_dev_atr = 2.0; double mr_target_atr = 0.2;
+    // band_fade (mean reversion): close outside Bollinger(bb_len, bb_mult) then back inside; target the band mid
+    // rsi2_pullback (Connors): RSI(rsi_len) ≤ rsi_buy (≥ rsi_sell) with close on the trend side of the slow EMA
+    int rsi_len = 2; double rsi_buy = 10.0, rsi_sell = 90.0, rsi_exit = 50.0;
+    // book_imbalance (needs the collector's bbo stream): bid share ≥ bi_min held for bi_hold_secs with
+    // spread ≤ bi_max_spread_ticks → long (mirror ≤ 1−bi_min → short); flat when it normalises to bi_exit
+    double bi_min = 0.70, bi_exit = 0.55, bi_max_spread_ticks = 2.0; int bi_hold_secs = 5;
+    // generic gates / exits usable by ANY mode
+    int htf_tf_min = 0; int htf_ema = 21;        // >0: longs only when the htf close is above its EMA (mirror for shorts)
+    double chandelier_mult = 0.0;                // >0: flatten when close falls chandelier_mult×ATR from the best price since entry
 
     static TrendConfig from_json_string(const std::string& t) {
         TrendConfig c;
         c.mode = jstr(t, "mode", c.mode);
         c.tf_min = jint(t, "tf_min", c.tf_min);
         c.win_start = jint(t, "win_start", c.win_start); c.win_end = jint(t, "win_end", c.win_end);
+        c.session = jstr(t, "session", c.session);
         c.allow_longs = jbool(t, "allow_longs", c.allow_longs); c.allow_shorts = jbool(t, "allow_shorts", c.allow_shorts);
         c.exit_on_flip = jbool(t, "exit_on_flip", c.exit_on_flip);
         c.time_stop_min = jint(t, "time_stop_min", c.time_stop_min);
@@ -108,6 +137,19 @@ struct TrendConfig {
         c.rs_lookback_min = jint(t, "rs_lookback_min", c.rs_lookback_min); c.rs_min_bp = jdbl(t, "rs_min_bp", c.rs_min_bp);
         c.tod_hhmm = jint(t, "tod_hhmm", c.tod_hhmm); c.tod_lookback_min = jint(t, "tod_lookback_min", c.tod_lookback_min);
         c.tod_min_atr = jdbl(t, "tod_min_atr", c.tod_min_atr); c.tod_window_min = jint(t, "tod_window_min", c.tod_window_min);
+        c.td_check_min = jint(t, "td_check_min", c.td_check_min); c.td_min_atr = jdbl(t, "td_min_atr", c.td_min_atr);
+        c.td_vwap_frac = jdbl(t, "td_vwap_frac", c.td_vwap_frac); c.td_pullback = jstr(t, "td_pullback", c.td_pullback);
+        c.fb_bars = jint(t, "fb_bars", c.fb_bars);
+        c.ichi_tenkan = jint(t, "ichi_tenkan", c.ichi_tenkan); c.ichi_kijun = jint(t, "ichi_kijun", c.ichi_kijun); c.ichi_senkou = jint(t, "ichi_senkou", c.ichi_senkou);
+        c.roc_bars = jint(t, "roc_bars", c.roc_bars); c.roc_min_atr = jdbl(t, "roc_min_atr", c.roc_min_atr); c.roc_hi_bars = jint(t, "roc_hi_bars", c.roc_hi_bars);
+        c.dt_bars = jint(t, "dt_bars", c.dt_bars);
+        c.fib_swing_bars = jint(t, "fib_swing_bars", c.fib_swing_bars); c.fib_lo = jdbl(t, "fib_lo", c.fib_lo); c.fib_hi = jdbl(t, "fib_hi", c.fib_hi);
+        c.mr_dev_atr = jdbl(t, "mr_dev_atr", c.mr_dev_atr); c.mr_target_atr = jdbl(t, "mr_target_atr", c.mr_target_atr);
+        c.rsi_len = jint(t, "rsi_len", c.rsi_len); c.rsi_buy = jdbl(t, "rsi_buy", c.rsi_buy); c.rsi_sell = jdbl(t, "rsi_sell", c.rsi_sell); c.rsi_exit = jdbl(t, "rsi_exit", c.rsi_exit);
+        c.htf_tf_min = jint(t, "htf_tf_min", c.htf_tf_min); c.htf_ema = jint(t, "htf_ema", c.htf_ema);
+        c.bi_min = jdbl(t, "bi_min", c.bi_min); c.bi_exit = jdbl(t, "bi_exit", c.bi_exit);
+        c.bi_max_spread_ticks = jdbl(t, "bi_max_spread_ticks", c.bi_max_spread_ticks); c.bi_hold_secs = jint(t, "bi_hold_secs", c.bi_hold_secs);
+        c.chandelier_mult = jdbl(t, "chandelier_mult", c.chandelier_mult);
         return c;
     }
 
@@ -141,7 +183,7 @@ struct TrendSession {
 class TrendStrategy {
 public:
     using SignalCallback = std::function<void(OrbSignal, double, const std::string&)>;
-    struct Bar { int mod = -1; int64_t ts = 0; double o = 0, h = 0, l = 0, c = 0; double v = 0; };
+    struct Bar { int mod = -1; int64_t ts = 0; double o = 0, h = 0, l = 0, c = 0; double v = 0; double bv = 0; };   // bv = aggressor-buy volume
 
     TrendStrategy(const TrendConfig& tc, const OrbConfig& risk) : tc_(tc), risk_(risk) {
         if (tc_.tf_min < 1) tc_.tf_min = 1;
@@ -157,9 +199,12 @@ public:
         rth_seen_ = false; in_rth_ = false; vwap_pv_ = vwap_v_ = 0.0; vwap_hist_.clear();
         drive_dir_ = 0; drive_done_ = false; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
+        td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
+        imb_dir_ = 0; imb_since_ = 0;
+        best_px_ = 0.0;
         sess_.trades_today = 0; sess_.in_position = false; sess_.risk_halted = false; sess_.halt_reason.clear();
-        LOG("[TREND %s] Session reset (tf=%dm window %04d-%04d)%s", tc_.mode.c_str(), tc_.tf_min,
-            tc_.win_start, tc_.win_end, have_prev_ ? "" : " — no prior day yet");
+        LOG("[TREND %s] Session reset (tf=%dm window %04d-%04d anchor=%s)%s", tc_.mode.c_str(), tc_.tf_min,
+            tc_.win_start, tc_.win_end, tc_.session.c_str(), have_prev_ ? "" : " — no prior day yet");
     }
     void halt_trading(const std::string& why) { sess_.risk_halted = true; sess_.halt_reason = why; LOG("[TREND %s] halted: %s", tc_.mode.c_str(), why.c_str()); }
     void unhalt_trading(const std::string& why) { if (!sess_.risk_halted) return; sess_.risk_halted = false; sess_.halt_reason.clear(); LOG("[TREND %s] unhalted: %s", tc_.mode.c_str(), why.c_str()); }
@@ -185,9 +230,33 @@ public:
         if (ref_closes_.size() > 400) ref_closes_.pop_front();
     }
 
+    // Top of book (bid, bid_size, ask, ask_size). Only book_imbalance decides on it;
+    // every mode keeps the latest quote for logging/analysis.
+    void on_quote(int64_t ts_us, double bid, int bid_sz, double ask, int ask_sz, double tick = 0.25) {
+        q_bid_ = bid; q_ask_ = ask; q_bsz_ = bid_sz; q_asz_ = ask_sz; q_ts_ = ts_us;
+        if (tc_.mode != "book_imbalance" || bid <= 0 || ask < bid) return;
+        const int n = bid_sz + ask_sz; if (n <= 0) return;
+        const double imb = (double)bid_sz / n, spread = (ask - bid) / tick, mid = (bid + ask) / 2.0;
+        int h, m; to_et(ts_us, h, m); const int hhmm = h * 100 + m;
+        const int side = imb >= tc_.bi_min ? 1 : imb <= 1.0 - tc_.bi_min ? -1 : 0;
+        if (side != imb_dir_) { imb_dir_ = side; imb_since_ = ts_us; }
+        last_px_ = mid; last_ts_ = ts_us;
+        if (sess_.in_position) {
+            if ((pos_dir_ > 0 && imb <= tc_.bi_exit) || (pos_dir_ < 0 && imb >= 1.0 - tc_.bi_exit))
+                emit(OrbSignal::FLATTEN_EOD, mid, "imbalance_normalised");
+            return;
+        }
+        if (side == 0 || ts_us - imb_since_ < (int64_t)tc_.bi_hold_secs * 1'000'000LL) return;
+        if (spread > tc_.bi_max_spread_ticks) return;
+        if (can_enter(hhmm, side)) emit(side > 0 ? OrbSignal::BUY : OrbSignal::SELL, mid,
+                                        side > 0 ? "book_imbalance_bid" : "book_imbalance_ask");
+    }
+
     void check_eod(int h, int m) {
         int hhmm = h * 100 + m;
-        if (hhmm >= tc_.win_end && sess_.in_position && !eod_emitted_) {
+        const bool past_end = tc_.win_start <= tc_.win_end ? hhmm >= tc_.win_end
+                                                           : (hhmm >= tc_.win_end && hhmm < tc_.win_start);
+        if (past_end && sess_.in_position && !eod_emitted_) {
             eod_emitted_ = true;
             emit(OrbSignal::FLATTEN_EOD, last_px_, "session_end");
         }
@@ -198,16 +267,17 @@ public:
         int h, m; to_et(t.ts_micros, h, m);
         const int mod = h * 60 + m;
         last_px_ = t.price; last_ts_ = t.ts_micros;
-        // session phases
-        const bool rth = mod >= 9 * 60 + 30 && mod < 16 * 60;
-        if (rth && !in_rth_) {            // RTH start: VWAP + day range + drive/gap state
-            in_rth_ = true; rth_seen_ = true;
+        // session phases (in_rth_ = "inside the anchor session", see TrendConfig::session)
+        const bool rth = in_session(mod);
+        if (rth && !in_rth_) {            // session start: VWAP + day range + drive/gap state
+            in_rth_ = true; rth_seen_ = true; cum_delta_ = 0.0; delta_hist_.clear(); td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0;
             vwap_pv_ = vwap_v_ = 0.0; vwap_hist_.clear();
             day_hi_ = std::numeric_limits<double>::lowest(); day_lo_ = std::numeric_limits<double>::max();
             rth_open_ = t.price; rth_open_mod_ = mod;
             gap_ = have_prev_ ? (t.price - prev_close_) : 0.0;
         }
         if (!rth && in_rth_) in_rth_ = false;
+        if (in_window((mod / 60) * 100 + mod % 60) != was_in_window_) { was_in_window_ = !was_in_window_; if (was_in_window_) eod_emitted_ = false; }
         if (rth) {
             vwap_pv_ += t.price * (double)t.size; vwap_v_ += (double)t.size; rth_close_ = t.price;
             day_hi_ = std::max(day_hi_, t.price); day_lo_ = std::min(day_lo_, t.price);
@@ -217,10 +287,12 @@ public:
         // 1m bar
         if (m1_.mod != mod) {
             if (m1_.mod >= 0) on_m1_close(m1_, h, m);
-            m1_ = Bar{mod, t.ts_micros, t.price, t.price, t.price, t.price, (double)t.size};
+            m1_ = Bar{mod, t.ts_micros, t.price, t.price, t.price, t.price, (double)t.size, t.is_buy ? (double)t.size : 0.0};
         } else {
             m1_.h = std::max(m1_.h, t.price); m1_.l = std::min(m1_.l, t.price); m1_.c = t.price; m1_.v += (double)t.size;
+            if (t.is_buy) m1_.bv += (double)t.size;
         }
+        if (rth) { cum_delta_ += t.is_buy ? (double)t.size : -(double)t.size; }
     }
 
 private:
@@ -231,12 +303,21 @@ private:
         h = (int)((et / 3600) % 24); if (h < 0) h += 24; m = (int)((et % 3600) / 60);
     }
     double vwap() const { return vwap_v_ > 0 ? vwap_pv_ / vwap_v_ : 0.0; }
-    bool in_window(int hhmm) const { return hhmm >= tc_.win_start && hhmm < tc_.win_end; }
+    bool in_window(int hhmm) const {
+        return tc_.win_start <= tc_.win_end ? (hhmm >= tc_.win_start && hhmm < tc_.win_end)
+                                            : (hhmm >= tc_.win_start || hhmm < tc_.win_end);   // wraps midnight
+    }
+    // session membership for the VWAP / delta / session-open anchor
+    bool in_session(int mod) const {
+        if (tc_.session == "globex") return !(mod >= 17 * 60 && mod < 18 * 60);
+        if (tc_.session == "window") return in_window((mod / 60) * 100 + mod % 60);
+        return mod >= 9 * 60 + 30 && mod < 16 * 60;                                            // rth
+    }
     double atr() const { return atr_; }
     void emit(OrbSignal s, double px, const std::string& why) {
         if (cb_) cb_(s, px, why);
         if (s == OrbSignal::BUY || s == OrbSignal::SELL) {
-            sess_.in_position = true; ++sess_.trades_today; pos_dir_ = (s == OrbSignal::BUY) ? 1 : -1; entry_ts_ = last_ts_;
+            sess_.in_position = true; ++sess_.trades_today; pos_dir_ = (s == OrbSignal::BUY) ? 1 : -1; entry_ts_ = last_ts_; best_px_ = px;
             LOG("[TREND %s] %s signal @%.2f (%s) trades_today=%d", tc_.mode.c_str(), s == OrbSignal::BUY ? "LONG" : "SHORT", px, why.c_str(), sess_.trades_today);
         }
     }
@@ -246,6 +327,11 @@ private:
         if (sess_.trades_today >= risk_.max_daily_trades) return false;
         if (dir > 0 && !tc_.allow_longs) return false;
         if (dir < 0 && !tc_.allow_shorts) return false;
+        if (tc_.htf_tf_min > 0) {                 // higher-timeframe alignment gate
+            if (htf_ema_ <= 0 || htf_n_ < tc_.htf_ema) return false;
+            if (dir > 0 && htf_close_ <= htf_ema_) return false;
+            if (dir < 0 && htf_close_ >= htf_ema_) return false;
+        }
         return true;
     }
 
@@ -270,7 +356,18 @@ private:
             on_tf_close(tf_cur_, hhmm);
             tf_cur_.mod = -1;
         }
-        if (in_rth_) vwap_hist_.push_back(vwap());
+        if (in_rth_) {
+            vwap_hist_.push_back(vwap());
+            delta_hist_.push_back(cum_delta_); if (delta_hist_.size() > 600) delta_hist_.pop_front();
+            const double vw = vwap();
+            if (vw > 0) { ++vwap_side_n_; if ((b.c > vw && td_dir_ >= 0) || (b.c < vw && td_dir_ <= 0)) ++vwap_side_ok_; }
+        }
+        // higher-timeframe EMA for the alignment gate (closes sampled at htf bucket ends)
+        if (tc_.htf_tf_min > 0 && (b.mod + 1) % tc_.htf_tf_min == 0) {
+            htf_close_ = b.c; ++htf_n_;
+            htf_ema_ = htf_ema_ <= 0 ? b.c : htf_ema_ + (2.0 / (tc_.htf_ema + 1)) * (b.c - htf_ema_);
+        }
+        if (tc_.mode == "trend_day") recognise_trend_day(b, hhmm);
         // minute-driven modes
         if (tc_.mode == "gap_go") mode_gap(b, hhmm);
         else if (tc_.mode == "tod_momentum") mode_tod(b, hhmm);
@@ -294,7 +391,23 @@ private:
         ema20_ = ema20_ <= 0 ? b.c : ema20_ + (2.0 / 21.0) * (b.c - ema20_);
         vol_hist_.push_back(b.v); if (vol_hist_.size() > 200) vol_hist_.pop_front();
         if (atr_ <= 0) return;
+        // generic chandelier exit (any mode): best price since entry minus k×ATR
+        if (sess_.in_position && tc_.chandelier_mult > 0) {
+            best_px_ = pos_dir_ > 0 ? std::max(best_px_, b.h) : std::min(best_px_, b.l);
+            const double stop = best_px_ - pos_dir_ * tc_.chandelier_mult * atr_;
+            if ((pos_dir_ > 0 && b.c < stop) || (pos_dir_ < 0 && b.c > stop)) { emit(OrbSignal::FLATTEN_EOD, b.c, "chandelier"); return; }
+        }
         if (tc_.mode == "donchian")       mode_donchian(b, hhmm);
+        else if (tc_.mode == "trend_day")     mode_trend_day(b, hhmm);
+        else if (tc_.mode == "failed_breakout") mode_failed_breakout(b, hhmm);
+        else if (tc_.mode == "keltner_ride")  mode_keltner(b, hhmm);
+        else if (tc_.mode == "ichimoku")      mode_ichimoku(b, hhmm);
+        else if (tc_.mode == "roc_momentum")  mode_roc(b, hhmm);
+        else if (tc_.mode == "delta_trend")   mode_delta(b, hhmm);
+        else if (tc_.mode == "fib_pullback")  mode_fib(b, hhmm);
+        else if (tc_.mode == "vwap_fade")     mode_vwap_fade(b, hhmm);
+        else if (tc_.mode == "band_fade")     mode_band_fade(b, hhmm);
+        else if (tc_.mode == "rsi2_pullback") mode_rsi2(b, hhmm);
         else if (tc_.mode == "ema_pullback") mode_ema_pullback(b, hhmm);
         else if (tc_.mode == "vwap_trend")   mode_vwap(b, hhmm);
         else if (tc_.mode == "opening_drive") mode_drive(b, hhmm);
@@ -451,6 +564,175 @@ private:
         else if (mv < 0 && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "tod_continuation_short");
     }
 
+    // ── families added 2026-09-21 ───────────────────────────────────────────
+    // trend_day: after td_check_min minutes of RTH decide once per day whether this
+    // is a trend day — net move ≥ td_min_atr×ATR from the open AND ≥ td_vwap_frac of
+    // minute closes on one side of VWAP. Then every pullback to VWAP / the fast EMA
+    // that closes back with the trend is an entry (bounded by max_daily_trades).
+    void recognise_trend_day(const Bar& b, int /*hhmm*/) {
+        if (!in_rth_ || td_done_ || atr_ <= 0) return;
+        if (b.mod < rth_open_mod_ + tc_.td_check_min) return;
+        td_done_ = true;
+        const double mv = b.c - rth_open_;
+        const int dir = std::fabs(mv) >= tc_.td_min_atr * atr_ ? (mv > 0 ? 1 : -1) : 0;
+        // side-of-VWAP consistency measured against the candidate direction
+        int ok = 0, n = 0;
+        for (size_t i = 0; i < vwap_hist_.size() && i < m1_hist_.size(); ++i) {
+            const size_t k = m1_hist_.size() - vwap_hist_.size() + i; if (k >= m1_hist_.size()) continue;
+            const double vw = vwap_hist_[i]; if (vw <= 0) continue; ++n;
+            if ((dir > 0 && m1_hist_[k].c > vw) || (dir < 0 && m1_hist_[k].c < vw)) ++ok;
+        }
+        const double frac = n ? (double)ok / n : 0.0;
+        td_dir_ = (dir != 0 && frac >= tc_.td_vwap_frac) ? dir : 0;
+        LOG("[TREND trend_day] after %dm: move %+.2f (atr %.2f) vwap-side %.0f%% → %s", tc_.td_check_min, mv, atr_,
+            100 * frac, td_dir_ > 0 ? "UP trend day" : td_dir_ < 0 ? "DOWN trend day" : "not a trend day");
+    }
+    void mode_trend_day(const Bar& b, int hhmm) {
+        if (td_dir_ == 0 || !in_rth_) return;
+        const double ref = tc_.td_pullback == "ema" ? ema_f_ : vwap(); if (ref <= 0) return;
+        const double tol = tc_.vwap_tol_atr * atr_;
+        if (td_dir_ > 0 && b.l <= ref + tol && b.c > ref && b.c > b.o && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "trend_day_pullback_long");
+        else if (td_dir_ < 0 && b.h >= ref - tol && b.c < ref && b.c < b.o && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "trend_day_pullback_short");
+    }
+    // failed_breakout (turtle soup): a close outside the donchian_n channel arms a
+    // fade; if within fb_bars the close comes back inside, enter against the break.
+    void mode_failed_breakout(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); const int N = tc_.donchian_n;
+        if ((int)n < N + 2) return;
+        double hh = std::numeric_limits<double>::lowest(), ll = std::numeric_limits<double>::max();
+        for (size_t i = n - 1 - N; i < n - 1; ++i) { hh = std::max(hh, tf_[i].h); ll = std::min(ll, tf_[i].l); }
+        if (fb_dir_ != 0) {
+            ++fb_age_;
+            if (fb_age_ > tc_.fb_bars) { fb_dir_ = 0; fb_age_ = 0; }
+            else if (fb_dir_ > 0 && b.c < fb_level_) { fb_dir_ = 0; if (can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "failed_break_high"); return; }
+            else if (fb_dir_ < 0 && b.c > fb_level_) { fb_dir_ = 0; if (can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "failed_break_low"); return; }
+        }
+        if (fb_dir_ == 0) {
+            if (b.c > hh) { fb_dir_ = 1; fb_level_ = hh; fb_age_ = 0; }
+            else if (b.c < ll) { fb_dir_ = -1; fb_level_ = ll; fb_age_ = 0; }
+        }
+    }
+    // keltner_ride: enter on a close outside the Keltner channel, ride while closes
+    // hold beyond the mid-line; a close back through ema20 flattens (exit_on_flip).
+    void mode_keltner(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); if (n < 22) return;
+        const double up = ema20_ + tc_.kc_mult * atr_, dn = ema20_ - tc_.kc_mult * atr_;
+        if (sess_.in_position && tc_.exit_on_flip && ((pos_dir_ > 0 && b.c < ema20_) || (pos_dir_ < 0 && b.c > ema20_))) {
+            emit(OrbSignal::FLATTEN_EOD, b.c, "keltner_mid_cross"); return;
+        }
+        const Bar& p = tf_[n - 2];
+        if (p.c <= up && b.c > up && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "keltner_break_up");
+        else if (p.c >= dn && b.c < dn && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "keltner_break_down");
+    }
+    // ichimoku: tenkan/kijun midpoints; the cloud that applies to this bar was
+    // drawn ichi_kijun bars ago. Entry = close crosses kijun with close beyond the cloud.
+    double mid_range(size_t end_excl, int len) const {
+        double hh = std::numeric_limits<double>::lowest(), ll = std::numeric_limits<double>::max();
+        for (size_t i = end_excl - len; i < end_excl; ++i) { hh = std::max(hh, tf_[i].h); ll = std::min(ll, tf_[i].l); }
+        return (hh + ll) / 2.0;
+    }
+    void mode_ichimoku(const Bar& b, int hhmm) {
+        const size_t n = tf_.size();
+        if ((int)n < tc_.ichi_senkou + tc_.ichi_kijun + 2) return;
+        const double kijun = mid_range(n, tc_.ichi_kijun), kijun_prev = mid_range(n - 1, tc_.ichi_kijun);
+        const size_t back = n - tc_.ichi_kijun;                                   // cloud for this bar
+        const double span_a = (mid_range(back, tc_.ichi_tenkan) + mid_range(back, tc_.ichi_kijun)) / 2.0;
+        const double span_b = mid_range(back, tc_.ichi_senkou);
+        const double cloud_top = std::max(span_a, span_b), cloud_bot = std::min(span_a, span_b);
+        if (sess_.in_position && tc_.exit_on_flip && ((pos_dir_ > 0 && b.c < kijun) || (pos_dir_ < 0 && b.c > kijun))) {
+            emit(OrbSignal::FLATTEN_EOD, b.c, "kijun_cross"); return;
+        }
+        const Bar& p = tf_[n - 2];
+        if (p.c <= kijun_prev && b.c > kijun && b.c > cloud_top && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "ichimoku_kijun_up");
+        else if (p.c >= kijun_prev && b.c < kijun && b.c < cloud_bot && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "ichimoku_kijun_down");
+    }
+    // roc_momentum: rate of change over roc_bars in ATR units; enter when it is
+    // both large and a fresh roc_hi_bars extreme (momentum accelerating, not fading).
+    void mode_roc(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); if ((int)n < tc_.roc_bars + tc_.roc_hi_bars + 1) return;
+        auto roc_at = [&](size_t i) { return (tf_[i].c - tf_[i - tc_.roc_bars].c) / atr_; };
+        const double r = roc_at(n - 1);
+        double hi = std::numeric_limits<double>::lowest(), lo = std::numeric_limits<double>::max();
+        for (size_t i = n - 1 - tc_.roc_hi_bars; i < n - 1; ++i) { const double x = roc_at(i); hi = std::max(hi, x); lo = std::min(lo, x); }
+        if (r >= tc_.roc_min_atr && r > hi && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "roc_new_high");
+        else if (r <= -tc_.roc_min_atr && r < lo && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "roc_new_low");
+    }
+    // delta_trend: price makes a dt_bars high AND the session's cumulative delta
+    // (aggressor buys − sells) makes a dt_bars high on the same bar. Price high
+    // without delta high is a divergence and blocks the entry.
+    void mode_delta(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); if ((int)n < tc_.dt_bars + 2 || !in_rth_) return;
+        const size_t need = (size_t)tc_.dt_bars * tc_.tf_min;
+        if (delta_hist_.size() < need) return;
+        double ph = std::numeric_limits<double>::lowest(), pl = std::numeric_limits<double>::max();
+        for (size_t i = n - 1 - tc_.dt_bars; i < n - 1; ++i) { ph = std::max(ph, tf_[i].h); pl = std::min(pl, tf_[i].l); }
+        // delta_hist_ holds the cumulative delta at each PRIOR minute close (this
+        // bar's minute is appended after the tf close); cum_delta_ is live.
+        double dh = std::numeric_limits<double>::lowest(), dl = std::numeric_limits<double>::max();
+        for (size_t i = delta_hist_.size() - need; i < delta_hist_.size(); ++i) { dh = std::max(dh, delta_hist_[i]); dl = std::min(dl, delta_hist_[i]); }
+        const double d = cum_delta_;
+        if (b.c > ph && d > dh && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "price_delta_high");
+        else if (b.c < pl && d < dl && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "price_delta_low");
+    }
+    // fib_pullback: last impulse = extreme-to-extreme over fib_swing_bars in the
+    // direction of the EMA trend; a bar that dips into the fib_lo..fib_hi retrace
+    // zone and closes above the prior bar's high resumes the impulse.
+    void mode_fib(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); if ((int)n < tc_.fib_swing_bars + 2 || ema_f_ <= 0 || ema_s_ <= 0) return;
+        const bool up = ema_f_ > ema_s_, dn = ema_f_ < ema_s_;
+        size_t ilo = n - 1 - tc_.fib_swing_bars, ihi = ilo;
+        for (size_t i = n - 1 - tc_.fib_swing_bars; i < n - 1; ++i) { if (tf_[i].l < tf_[ilo].l) ilo = i; if (tf_[i].h > tf_[ihi].h) ihi = i; }
+        const Bar& p = tf_[n - 2];
+        if (up && ihi > ilo) {                                    // impulse low → high
+            const double rng = tf_[ihi].h - tf_[ilo].l; if (rng < atr_) return;
+            const double z_hi = tf_[ihi].h - tc_.fib_lo * rng, z_lo = tf_[ihi].h - tc_.fib_hi * rng;
+            if (p.l <= z_hi && p.l >= z_lo && b.c > p.h && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "fib_retrace_long");
+        } else if (dn && ilo > ihi) {                             // impulse high → low
+            const double rng = tf_[ihi].h - tf_[ilo].l; if (rng < atr_) return;
+            const double z_lo = tf_[ilo].l + tc_.fib_lo * rng, z_hi = tf_[ilo].l + tc_.fib_hi * rng;
+            if (p.h >= z_lo && p.h <= z_hi && b.c < p.l && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "fib_retrace_short");
+        }
+    }
+    // vwap_fade (mean reversion): the previous close stretched ≥ mr_dev_atr×ATR
+    // from VWAP and this bar closes back toward it → fade. Target: VWAP ± mr_target_atr.
+    void mode_vwap_fade(const Bar& b, int hhmm) {
+        if (!in_rth_ || vwap_v_ <= 0) return;
+        const double vw = vwap(); const size_t n = tf_.size(); if (n < 3) return;
+        if (sess_.in_position && std::fabs(b.c - vw) <= tc_.mr_target_atr * atr_) { emit(OrbSignal::FLATTEN_EOD, b.c, "vwap_target"); return; }
+        const Bar& p = tf_[n - 2];
+        const double dev = tc_.mr_dev_atr * atr_;
+        if (p.c >= vw + dev && b.c < p.c && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "vwap_fade_short");
+        else if (p.c <= vw - dev && b.c > p.c && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "vwap_fade_long");
+    }
+    // band_fade (mean reversion): close outside the Bollinger band, then a close
+    // back inside → fade toward the band mid; a close through the mid is the target.
+    void mode_band_fade(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); if ((int)n < tc_.bb_len + 2) return;
+        double mean = 0; for (size_t i = n - tc_.bb_len; i < n; ++i) mean += tf_[i].c; mean /= tc_.bb_len;
+        double var = 0; for (size_t i = n - tc_.bb_len; i < n; ++i) var += (tf_[i].c - mean) * (tf_[i].c - mean); var /= tc_.bb_len;
+        const double sd = std::sqrt(var); const double up = mean + tc_.bb_mult * sd, dn = mean - tc_.bb_mult * sd;
+        if (sess_.in_position && ((pos_dir_ > 0 && b.c >= mean) || (pos_dir_ < 0 && b.c <= mean))) { emit(OrbSignal::FLATTEN_EOD, b.c, "band_mid_target"); return; }
+        const Bar& p = tf_[n - 2];
+        if (p.c > up && b.c < up && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "band_fade_short");
+        else if (p.c < dn && b.c > dn && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "band_fade_long");
+    }
+    // rsi2_pullback (Connors): RSI(rsi_len) oversold with the close above the slow
+    // EMA → long (mirror); exit when RSI crosses back through rsi_exit.
+    double rsi(int len) const {
+        const size_t n = tf_.size(); if ((int)n < len + 1) return 50.0;
+        double g = 0, l = 0;
+        for (size_t i = n - len; i < n; ++i) { const double d = tf_[i].c - tf_[i - 1].c; if (d > 0) g += d; else l -= d; }
+        if (g + l <= 0) return 50.0;
+        return 100.0 * g / (g + l);
+    }
+    void mode_rsi2(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); if ((int)n < tc_.ema_slow + 2 || ema_s_ <= 0) return;
+        const double r = rsi(tc_.rsi_len);
+        if (sess_.in_position && ((pos_dir_ > 0 && r >= tc_.rsi_exit) || (pos_dir_ < 0 && r <= tc_.rsi_exit))) { emit(OrbSignal::FLATTEN_EOD, b.c, "rsi_exit"); return; }
+        if (r <= tc_.rsi_buy && b.c > ema_s_ && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "rsi2_oversold_in_uptrend");
+        else if (r >= tc_.rsi_sell && b.c < ema_s_ && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "rsi2_overbought_in_downtrend");
+    }
+
     // ── state ────────────────────────────────────────────────────────────────
     TrendConfig tc_; OrbConfig risk_; SignalCallback cb_;
     TrendSession sess_;
@@ -467,4 +749,13 @@ private:
     int drive_dir_ = 0; bool drive_done_ = false; double gap_ = 0; bool gap_done_ = false; bool tod_done_ = false;
     int squeeze_count_ = 0; int st_dir_ = 0; double st_up_ = 0, st_dn_ = 0; int reenter_dir_ = 0;
     std::deque<double> ref_closes_;
+    // families added 2026-09-21
+    int td_dir_ = 0; bool td_done_ = false; int vwap_side_ok_ = 0, vwap_side_n_ = 0;
+    int fb_dir_ = 0, fb_age_ = 0; double fb_level_ = 0;
+    double cum_delta_ = 0; std::deque<double> delta_hist_;
+    double htf_ema_ = 0, htf_close_ = 0; int htf_n_ = 0;
+    double best_px_ = 0;
+    bool was_in_window_ = false;
+    double q_bid_ = 0, q_ask_ = 0; int q_bsz_ = 0, q_asz_ = 0; int64_t q_ts_ = 0;   // latest quote
+    int imb_dir_ = 0; int64_t imb_since_ = 0;                                          // book_imbalance state
 };

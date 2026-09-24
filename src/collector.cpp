@@ -593,6 +593,7 @@ asio::awaitable<void> Collector::status_log_coro() {
                 (long long)sentinel_->alert_count(),
                 s.latest.c_str(),
                 s.price ? std::to_string(*s.price).c_str() : "n/a");
+            LOG("  frames by template: %s", client_->template_counts().c_str());
         } catch (...) {}
     }
 }

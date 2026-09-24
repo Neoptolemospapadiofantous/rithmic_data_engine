@@ -32,6 +32,12 @@ Restart=always
 RestartSec=15
 KillSignal=SIGTERM
 TimeoutStopSec=20
+# Memory-pressure protection: the only market-data session feeds the live executor (see
+# nq-executor-local@.service for why 100 and not lower).
+OOMScoreAdjust=100
+MemoryMin=256M
+CPUWeight=1000
+IOWeight=1000
 
 [Install]
 WantedBy=default.target

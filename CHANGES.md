@@ -10,6 +10,367 @@ Dates are in ISO-8601 order (newest first).
 ## [Unreleased]
 
 ### Added
+- **Live executor runs any trend-engine variant (`"engine": "trend"`).** `run_executor` /
+  `flush_position` are templated on the strategy type; `main` builds `OrbStrategy` or
+  `TrendStrategy` (params read by `TrendConfig::from_json_string` from the same file) and runs
+  the unchanged session loop — same OrderManager, orphan guards, NetReconciler, risk and broker
+  day-P&L halt. ORB-only paths (chase filter, `seed_orb_range`, ORB minute log) are compiled out
+  for trend. A trend signal that leaves the order manager FLAT (entry rejected, exit while
+  already flat) releases the engine after `emit()` returns, so it cannot sit "in position" all
+  day. Trend adds an executor backstop flatten at `eod_flatten_hour:min`. `rs_continuation` and
+  `book_imbalance` are refused (the executor feeds no ES bars / BBO). Config validation: engine
+  must be orb|trend and a trend engine needs its own `strategy` tag. First config:
+  `config/tradeify_trend_config.json` (trend_supertrend_7_3_1m). Tests in test_trend_strategy.
+- `scripts/stack_status.sh` / `make stack-status`: one index of every trading process — units
+  with pid/RSS/OOM score, STRAY executors/collectors not owned by their unit, feed age, last
+  broker line, memory and Chrome inside/outside the browser cap. Exit 1 = not ready.
+- `scripts/overnight_live_test.sh`: unattended drill → live ORB (18:05 ET, 2 MNQ) → live trend
+  (19:00–20:00 ET, 2 MNQ) → production hand-back, each start gated on PNL plant + `[BROKER]` +
+  flat exchange; any failure stops everything, sets NO_DEPLOY and alerts.
+- `scripts/pre_rth_check.sh` + `deploy/pre-rth-check.{service,timer}`: weekday 09:00 ET
+  readiness report to Telegram.
+- `deploy/dashboard-api-local.service`: the :8080 dashboard backend as a managed unit
+  (MemoryMax 4G) instead of a terminal process. `deploy/browsers.slice` + `scripts/chrome-capped`
+  (installed as the google-chrome desktop entry): Chrome capped at 10 GB.
+
+### Changed
+- **Trading date rolls at 18:00 ET** (`trading_date_str`, orb_config.hpp): the executor's
+  "today" — trade_date, daily P&L seed, trades_today seed, rollover reset — now matches CME and
+  Tradeify's daily reset (17:00 CT). An evening session no longer inherits the closed day's P&L
+  and trade count (it previously did until midnight ET). RTH rows are unchanged.
+- **Instance lock is per account** (orb_db.hpp `instance_lock_key`): one executor per account
+  whatever its engine/strategy tag, so an ORB and a trend executor can never trade one account
+  at once.
+- Local units: executor + collector `OOMScoreAdjust=100` (user services defaulted to 200, which
+  made a 7 MB executor a likelier OOM victim than browser tabs), `MemoryMin`, `CPUWeight/IOWeight
+  1000`; paper engine `MemoryMin=64M MemoryMax=2G`.
+
+### Fixed
+- `collector_watchdog.sh`: `08xx`/`09xx` ET times were parsed as octal (`value too great for
+  base`), so the market-hours check misfired 08:00–09:59 ET. Also adds a once-per-episode
+  memory-pressure alert (< 2 GB available, or swap ≥ 95% with < 4 GB available).
+- **Orphaned stop → hidden position → broker liquidation (2026-09-23, tradeify, ~$600).**
+  A stop cancelled by CLIENT id (server basket not yet mapped) came back
+  `Cancellation Failed` (tid=351 notify_type=17), which the executor did not handle; at
+  FLAT the guard was purged as "confirmed"; 12s later the still-working stop filled
+  2 MNQ and the fill was logged as `unknown user_tag … ignoring (not our order)`; the
+  account stayed long 2 through five restarts (the tid=451 position snapshot was only
+  requested when the DB said non-flat) until Tradeify auto-liquidated it 32 minutes later.
+  `src/execution/order_manager.hpp`: client-id cancels are tracked (`client_only_cancels_`)
+  and never purged as confirmed; `on_stop_server_mapped()` re-sends such a cancel by server
+  id the moment the id arrives; `on_cancel_failed()` re-adopts the still-live stop (at its
+  real level) while in a trade and cancels the replacement, or keeps the guard when flat;
+  `net_qty_consistent()` + `NetReconciler` express "does the exchange agree with us".
+  `src/execution/executor_main.cpp`: fills on our account for orders we do not track are
+  routed into the order manager's stale-stop guards (FLAT → unwind/ghost-halt; in a trade →
+  halt entries) instead of ignored; `Cancellation Failed` is handled; the tid=451
+  subscription is unconditional on every start and reconnect; every update is reconciled
+  against our state and a mismatch older than `net_mismatch_grace_ms` (new config,
+  default 5000) is unwound once and halts entries; the broker's own `day_pnl` is checked
+  against `daily_loss_limit` and halts + flattens (`RiskManager::halt_external`).
+  Six regression tests replay the sequence (`tests/execution/test_order_manager.cpp`).
+  **And the position feed itself never worked**: the whole log held zero tid=451 updates,
+  because `RequestPnLPositionUpdates` was sent on the ORDER plant while Rithmic serves
+  position/P&L on the PNL plant. The executor now opens a third session (`PNL_PLANT`
+  login → tid=400 subscribe → tid=402 forced snapshot, `proto/rithmic.proto` gains 402/403),
+  reads it in `pnl_loop`, heartbeats it, and halts entries (`pnl_plant_unavailable` /
+  `pnl_subscribe_rejected`) when it is missing — no position truth, no trading. Verified
+  live on tradeify: snapshot net 0 with 12 buys/12 sells, balance 24,584.52, day P&L
+  -605.34 → broker guard halted at once.
+  **Testable and drillable.** `src/execution/notification_router.hpp` holds the routing
+  policy for unowned fills, cancel outcomes, the unwind plan (extra contracts → trade them
+  away; position closed externally → `OrderManager::adopt_external_close`, never re-enter)
+  and the broker-P&L check; `tests/execution/test_incident_replay.cpp` (new gate binary)
+  replays the incident's own prices, ids and message order through it and asserts the
+  position is closed within seconds in every variant. `nq_executor --drill orphan` +
+  `scripts/drill_orphan.sh <account> recover|crash` run the same shape on the REAL account
+  with one contract (strategy halted): an untracked BUY 1 after the exchange confirms flat,
+  then the guards and the PNL-plant reconciliation must close it (PASS/FAIL, exit code,
+  grid-notify); `crash` SIGKILLs the process before the unwind and proves the restart path.
+
+
+### Added
+- **Eleven more signal families in the trend engine, fleet 110 → 150** (founder: "add as
+  many uncorrelated strategies with different variations"; `src/execution/trend_strategy.hpp`,
+  `tests/execution/test_trend_strategy.cpp` 32 checks, `config/paper_fleet.json` +40).
+  Trend: `trend_day` (recognises a trend day after N minutes — net move ≥ k×ATR and ≥ 80%
+  of minute closes on one side of VWAP — then buys every VWAP / fast-EMA pullback),
+  `failed_breakout` (turtle soup: a Donchian break that closes back inside within N bars
+  is faded — the negative of the Donchian family), `keltner_ride`, `ichimoku`
+  (Tenkan/Kijun/Senkou, cloud filter), `roc_momentum` (ROC in ATR units at a fresh
+  extreme), `delta_trend` (price high confirmed by a session cumulative-delta high from
+  the tick aggressor flag; divergence blocks), `fib_pullback` (38–62% retrace of the last
+  impulse, resumption close). Mean reversion, the least correlated to everything above:
+  `vwap_fade` (≥ k×ATR from VWAP then a turn back, target VWAP), `band_fade` (Bollinger
+  close outside then back inside, target the mid), `rsi2_pullback` (Connors RSI-2 on the
+  trend side of the slow EMA). Two generic overlays usable by ANY mode: `htf_tf_min` /
+  `htf_ema` (higher-timeframe alignment gate in `can_enter`) and `chandelier_mult`
+  (flatten k×ATR off the best price since entry). Bars now carry aggressor-buy volume.
+  Replay 2026-09-21 (afternoon data only): 22 of the 40 new variants fired — losers
+  `mr_vwap_fade_1m` −69.5, `fail_bo_10_1m` −52.0, `delta_trend_1m` −52.0; winners
+  `trend_day_ema_1m` +100.0, `trend_tod_1530_close_drive` +46.5. Dashboard: analysis text
+  for every mode (mean-reversion modes labelled as such), gate/exit rules, and
+  coverage-aware silence reasons.
+
+### Added
+- **Four new models in the zoo (10 → 14)** (founder: "go for it"; dashboard
+  `ui/services/models/`): **#11 exit_optimizer** — re-simulates every closed trade on its
+  own recorded 1-minute path under a grid of break-even trigger / trail step / delay rules
+  with the brokers' exact mechanics (incl. the live working-stop rule), chooses per engine ×
+  session on earlier days and judges on later days against the live rule 3/10/300;
+  **#12 signal_meta** — LightGBM classifier over the signal log (every base entry taken,
+  with the book at the signal) predicting P&L > 0, with base rate and a gate backtest;
+  **#13 overlay_uplift** — per overlay, the contexts (engine × session × spread × bid share)
+  where the paired value vs the base is positive, bootstrap CI per context, regressor when
+  ≥300 rows; **#14 fill_cost** — LightGBM regressor of the recorded book cost ($) from spread,
+  book state, session, engine and hold time, vs the mean-cost baseline. All refuse below
+  their minimum data and report a time-ordered hold-out; none is wired into trading.
+
+### Added
+- **Collector runs 24/7 with an external watchdog** (founder: "make sure that the collector
+  runs 24/7 uninterrupted"; `scripts/collector_watchdog.sh`,
+  `deploy/rithmic-collector-watchdog.{service,timer}`, installed as a user timer every
+  2 min). Independent of the collector's in-process link watchdog: restarts the unit if it
+  is not active or if the newest NQ tick is older than 120 s while CME Globex is open
+  (Sun 18:00 → Fri 17:00 ET, daily halt 17:00–18:03 excluded), alerts once via grid-notify
+  and once on recovery, rotates the append-only logs daily above 50 MB (copy + truncate,
+  gzip), and writes `data/validation/collector_watchdog.json`. Drilled live: a forced
+  stale threshold restarted the collector and alerted; the next run reported recovery and
+  ticks resumed within seconds. Fleet audit: tick-feed and feed-hole checks are
+  market-hours aware (closed market → warn, not fail) and show the watchdog's last run.
+  State verified: units enabled + lingering, sleep-on-AC "nothing", no unplanned reconnect
+  in 36 h; disk 93% used but the DB grows ~250 MB/day against 67 GB free.
+
+### Changed
+- **Live ORB allowed 5 trades a day** (`config/tradeify_config.json` `max_daily_trades` 3 → 5;
+  founder: "add more trades a day to 5 live orb"). Worst case five full stops at 2 MNQ
+  = −$340 plus $40 commission, inside the −$500 daily halt. Restarted flat before the open.
+- **Live executor sized to 2 MNQ** (`config/tradeify_config.json` `qty` 1 → 2; founder:
+  "make it 2 sure"). Per full 15-pt stop −$68, three stops −$204 (daily halt −$500),
+  Monday's +96-pt trade would be +$376. Restarted flat at 07:05 ET before the open.
+
+### Fixed
+- **Paper trailing exits were tighter than live** (`src/paper/paper_broker.hpp`,
+  `src/execution/order_manager.hpp` `exchange_stop()`, parity + broker tests): the live
+  executor re-places its resting exchange stop only when the in-memory level is ≥
+  `trail_step` beyond the last placed stop (cancel/resubmit suppression), and its software
+  backstop watches the EXCHANGE stop — so the working live stop steps up in 10-pt jumps.
+  The paper broker ratcheted every tick and exited at the in-memory level. It now keeps a
+  `placed_stop_` with the same rule and exits against it; `stop_price_` stays the display
+  value. The parity test now compares the two WORKING stops (0 ticks apart on all paths),
+  and the golden file is re-frozen for this intended change (trail exits later, larger
+  give-back — that is what live does). Board wording updated.
+
+### Added
+- **Validation system — every strategy, number and comparison has an independent check**
+  (founder: "create a comprehensive plan … and create it"). Four layers:
+  1. *Rules*: `tests/paper/test_parity_paper_vs_live.cpp` drives the paper broker and the
+     LIVE `OrderManager` with the same config and price path and asserts the stop never
+     differs by more than the tick snap, break-even fires on the same tick, and the exit
+     reason matches (5 paths: BE-only long/short, trail long/short, plain stop). This is
+     the test that would have caught the 2026-09-23 break-even mismatch. In hermes.
+  2. *Numbers*: `scripts/golden_replay.sh` + `tests/golden/2026-09-22_rth_open.csv` — a
+     frozen 09:25–11:00 window (830 trades across the 1,553-strategy fleet, bid/ask shadow
+     included) replayed on every full `make hermes` and diffed trade-by-trade; `--twice`
+     requires byte-identical output (determinism, verified). `make golden`,
+     `make golden-freeze`. Fleet audit recomputes every strategy's n, wins, total,
+     expectancy, profit factor and max drawdown in plain SQL and compares with the
+     insights API (`Performance KPIs` section).
+  3. *Live vs replay*: dashboard `ui/routers/validate.py` — `POST /api/cpp/validate/parity`
+     replays the Globex day and matches each live trade to a replay trade (same strategy,
+     direction, entry within 3 s), listing live-only, replay-only, P&L and exit-reason
+     differences per engine; `GET /api/cpp/validate/status`. Scheduled in `ui/app.py`:
+     fleet audit every hour, parity + audit at 18:30 ET, Telegram alerts via grid-notify on
+     the first failure and on recovery (`data/validation/`).
+  4. *Statistics*: the Compare leaderboard adds a bootstrap 90% CI and P(mean > 0) over
+     per-base paired deltas and a verdict that stays "insufficient evidence" until ≥30
+     paired signals across ≥2 sessions — direction is shown, decisions are withheld.
+  Strategies page → Audit tab gains a Validation panel (golden, parity, hourly audit, hermes).
+
+### Fixed
+- **Paper break-even now matches the live executor** (`src/paper/paper_broker.hpp`,
+  `tests/paper/test_paper_broker.cpp`): the paper broker moved the stop to break-even only
+  after the 300 s trail delay, while `order_manager.hpp` moves it the first time MFE reaches
+  `trail_be_trigger`, with no delay (the trail alone waits for the delay). Paper now does
+  the same; the test that encoded the old rule was replaced by two that encode the live one.
+  `PaperDb` seeding queries stay unscoped when no account label is set (tests, tools).
+  Board wording for break-even / trailing corrected to the code.
+- **Break-even on book flip could put the stop on the wrong side of the market**: a flip
+  while the trade was under water moved the stop to entry+1 above price, which the paper
+  broker then "filled" at a price better than reality. The overlay now moves the stop only
+  when price is already beyond the break-even level (new broker test); its measured value
+  is re-derived below.
+
+### Fixed
+- **Three honesty fixes found by auditing the book layer** (`paper_quote.hpp`, both brokers,
+  dashboard `compare.py` / `paper.py`): (1) a book fill could look better than reality when
+  the quote was stale during a spike — 246 of 1,668 replay trades beat the reported fill by
+  more than $2; the honest fill is now never better than the print that triggered it
+  (0 of 1,667 after), and the SQL back-fill applies the same floor. (2) "Take profit into
+  pressure" fired 65 times at ~zero profit because slippage ate a one-tick gain; it now needs
+  `book_tp_min_pts` (1.0) first. (3) The replay endpoint cleared audit trades but not audit
+  signals, so gate values and blocked counts for the replay label accumulated across runs
+  (they doubled between two runs); the signal log is cleared per replay too. Round-2 numbers
+  were re-derived after the fixes.
+
+### Added
+- **Book overlays, round 2 — six more ways to use the bid/ask, as paired siblings** (founder:
+  "lets try them"; `src/paper/paper_quote.hpp`, both brokers, `OrbConfig` paper knobs). Entry:
+  `imbalance_max` (INVERTED gate — only when the book leans against the move; the round-1
+  numbers showed the book at a breakout is contrarian). Management/exit: `book_exit_flip`
+  (flatten when the book flips against the position), `book_be_on_flip` (stop to break-even
+  on the flip, no trail delay), `book_tp_imbalance` (in profit and the book stacks in favour →
+  take profit). Sizing: `book_size_agree` (+N contracts when the book agrees at fill).
+  Execution: `fill_wait_secs` (wait up to N s for a 1-tick spread or a microprice lean).
+  Siblings `__inv __bx __bbe __btp __sz __wait` for the 105 bases with ≥2 live trades →
+  fleet 923 → 1553 (1.3% CPU, 30 MB). Compare page: entry gates are scored by "what they
+  removed", exit/sizing/execution overlays by paired Δ P&L, with the book-exit count per
+  sibling; a "Live executor vs the book" line gives the real account's slippage beyond the
+  touch at signal time. Model features `bbo_imb_open15` / `bbo_imb_persist_open15`
+  (opening-book pressure and its persistence). Unit test: 55 checks.
+
+### Added
+- **The paper fleet reads the book: honest fills, entry gates, a signal log, an
+  order-book family, and ~300 sibling variants to compare against** (founder: "Honest
+  paper fills, Entry gates on the signal engines, New signal families, Data-quality and
+  execution analytics"). `src/paper/paper_quote.hpp` (new): `Quote`/`QuoteState` — spread
+  in ticks, bid-share imbalance, microprice, freshness (5 s), the gates and the honest
+  market fill. Both paper brokers now take the collector's BBO stream (`PaperDb::poll_bbo`,
+  one-sided rows forward-filled; the runner applies quotes in tick-time order, live and in
+  replay). **Every paper trade carries its bid/ask SHADOW fill** (`entry_bbo`, `exit_bbo`,
+  `pnl_bbo_usd`, `spread_entry/exit_ticks`, `fill_model`; migration 013) whatever fill
+  model it ran with — buy at ask, sell at bid, stops no better than the touch — so the cost
+  of the book is measured on the same trade. `OrbConfig` gains paper-only knobs (no strategy
+  logic touched): `fill_model` (`last_slip` default | `bbo`), `spread_gate_ticks`,
+  `spread_gate_rel` (× rolling spread), `imbalance_min`, `microprice_lead`, `base_id`,
+  `overlay`. A gated signal is logged, taken or `blocked:<reason>`, with the book at that
+  instant, in the new `paper_signals` table — join a sibling to its base by time to see
+  exactly what a gate removed. Trend engine: `on_quote` + mode `book_imbalance` (sustained
+  bid share ≥ x for N s with a tight spread → with the pressure; flat when it normalises).
+  Fleet 197 → 923: 179 bases (every strategy that has traded + every non-09:30 session variant) × 4
+  overlays (`__sg` spread ≤ 1.5× rolling, `__imb` bid share 0.55, `__micro`, `__all`) +
+  10 `book_imb_*` variants across sessions (one on `fill_model=bbo`); 3.7% CPU, 23 MB. Bases are untouched;
+  siblings carry `base_id`/`overlay` in their params. Unit test: 49 checks incl. gates,
+  fills and the imbalance mode. Replay of 2026-09-22 RTH across 923: 619 trades, all with
+  shadow fills — reported avg $1.60/trade vs $0.57 at the book (≈ $1.03 spread cost at a
+  2.2-tick entry spread); gates logged 619 taken / 172 blocked on imbalance / 52 on
+  microprice. Dashboard: **Compare page** (`/compare`, `ui/routers/compare.py`) — honest-fill
+  panel (same trades, reported vs at-the-book, by session / engine / strategy, winners that
+  flip to losers), overlay leaderboard (better/worse/same bases, Δ P&L, paired Δ expectancy,
+  signals blocked), base-vs-siblings table, and a signal-by-signal view per base (book at
+  the signal, each sibling's decision and outcome). Replay reasons are sibling-aware ("gate
+  removed every signal — imbalance ×3"); board analyses list the overlay rules; the fleet
+  audit gains a "Book layer" section (shadow fill on every trade, sibling ⊆ base signals,
+  shadow never better than reported). Model feature `bbo_spread_rel_1h` (spread regime).
+
+### Changed
+- **Paper fleet account envelope switched off** (`config/paper_fleet.json`
+  `daily_loss_limit` / `trailing_drawdown_cap` = 0, both disable their check). 197 strategies
+  × 1 MNQ on one $25k envelope is not an account: on 2026-09-22 the fleet ran +3.1k by 10:13
+  and gave back 2.6k, the $1k trailing cap latched at the 18:00 rollover, every strategy was
+  halted and the evening session gathered nothing. The risk unit is the per-strategy
+  `strategy_daily_loss_limit` (−250/day) and the per-strategy max-drawdown KPI; the account
+  envelope stays available for a curated live-sized subset later. Halt cleared with the
+  fleet stopped (peak reset to equity).
+
+### Fixed
+- **Live executor took no trade on 2026-09-22: its session open had been rewritten to
+  17:31** (`config/tradeify_config.json`, dashboard `cpp_engine.py go_live`). The go-live
+  endpoint defaulted `open_in_minutes=20` and PATCHED `session_open_hour/min` into the
+  account config file; the 17:30 ET go-live on 09-21 (single-feed switch) therefore left
+  `session_open=17:31` on disk, the 24/7 unit reloaded it at 17:30, the ORB window
+  17:31–17:36 sat inside the Globex halt, no range ever formed, and the executor logged
+  "ORB building … (no range yet)" for the whole 09-22 session while the feed was complete.
+  Config restored to 09:30 (`git checkout`), executor restarted flat at 18:04 ET. go-live
+  now defaults to the RTH open; `open_in_minutes` / `session_open_*` are explicit-only test
+  overrides and documented as persisting in the file. The fleet audit gains a "Live
+  executor" section (session open must be 09:30, dry_run, trade_route, contract, today's
+  ORB/trades) so a drifted config is red on the strategies page before the next open.
+
+### Fixed
+- **End-of-window flatten was batch-granular in replay** (`src/paper/paper_main.cpp`): the
+  runner asked strategies to flatten once per poll batch on the wall clock (5,000 ticks ≈
+  minutes of replay time), so a strategy whose window ends at 14:00 could be stopped out at
+  14:04 in a replay while live (100 ms polls) would have flattened at 14:00:00 — audits did
+  not match live. The check now also runs on every minute boundary of TICK time in both
+  modes; verified: `mr_vwap_fade_5m_midday` exits `signal_flatten` at 14:00:00 (−3.0) instead
+  of `stop` at 14:04:58 (−25.5). Found by the fleet audit (`scratchpad/audit_fleet.py`:
+  every closed trade checked against its own strategy's window, flatten time, daily cap,
+  P&L arithmetic, direction sign and MAE ≤ P&L ≤ MFE — 0 failures after the fix).
+- Per-strategy KPIs (dashboard `insights.py`): expectancy, max drawdown of the cumulative
+  curve, average hold, trades/day and a per-session split, shown on the strategies page.
+- **Strategies page as a control centre** (dashboard `strategies/page.tsx`): four tabs —
+  Fleet, Replay, Audit, Insights & KPIs — with live badges (audit fail/warn, replay traded
+  count, trade count); the Fleet tab gains a search box (name, engine, any param), family
+  filters (ORB / MTF / Trend / Mean reversion), session filters (RTH, pre-market, London,
+  Asia, evening, Globex day, derived from each strategy's own window) and status filters
+  (traded today / never traded / halted); each row's drawer shows its KPIs (expectancy,
+  profit factor, max drawdown, hold, trades/day, win rate, MFE capture, sessions) and a
+  "view trades on chart" link (`/chart?paper=<id>` deep link); the Replay tab gains presets
+  (yesterday RTH, today so far, last overnight, last 24 h) and a name filter.
+- **Chart page shows the fleet** (dashboard `chart/page.tsx`, `paper.py chart_trades`,
+  `chart.py /api/data/range`): defaults to the Paper Fleet source over the collector's own
+  tick window (`pg_start`/`pg_end`), overlays every strategy's entries and exits with one
+  stable colour per strategy and the strategy name on the marker, unions the executor's
+  real fills as `LIVE <account>`, groups the selector by engine, and adds a "Strategies in
+  view" legend (n, W/L, P&L, open positions) that isolates a strategy on click.
+- **Fleet audit on the strategies page** (dashboard `ui/routers/fleet_audit.py`,
+  `GET/POST /api/cpp/fleet-audit[/run]`): the five audit sections (processes & feed, fleet
+  state, trade integrity, model input data, KPIs) as a collapsible panel with a run button —
+  seconds to run, no replay, no writes; the last result is cached and shown on load.
+
+### Fixed
+- **Top-of-book (BBO) had been silently dropped since the collector was written**
+  (`proto/rithmic.proto`, `src/client.cpp`, `src/collector.cpp`). The collector subscribed
+  `LAST_TRADE|BBO` on every connection, Rithmic acknowledged (`rp_code=0`) and streamed
+  ~150 BestBidOffer frames a minute, but the proto carried invented field numbers
+  (1542xx/1543xx) so every frame parsed with no bid and no ask and was dropped before
+  the counter — `bbo=0` in every status line, 0 rows in `bbo`, and nothing said why.
+  Verified on the wire with a raw-frame dump + `protoc --decode_raw`: bid 100022/100030,
+  ask 100025/100031, orders 159000/159002, lean (micro) price 154909, is_snapshot 110121;
+  presence_bits 1 bid / 2 ask / 4 lean. The "depth" request sent update_bits 64, which
+  is HIGH_BID_LOW_ASK (template 153) — not depth; it is off by default now
+  (`RITHMIC_MD_DEPTH_BITS`). ORDER_BOOK (bit 4, template 156) answers with an EMPTY book
+  (presence_bits 0) on the Tradeify login, i.e. aggregated L2 is not entitled; depth-by-order
+  (160) never arrives. Diagnostics kept: per-template frame counts in the status line,
+  `ResponseMarketDataUpdate` rp_code logging, `RITHMIC_MD_DUMP_DIR` raw dumps,
+  `RITHMIC_MD_EXTRA_BITS`. Dashboard: four top-of-book features
+  (`bbo_spread_ticks_1m`, `bbo_imbalance_1m`, `bbo_microprice_dev_ticks`, `bbo_updates_5m`)
+  in `features.py`, NaN for trades before the fix.
+
+### Added
+- **All-sessions fleet, 150 → 197** (founder: "want strategies to trade on all markets to
+  gather more data per session"). The trend engine gains a session anchor
+  (`session` = `rth` | `globex` | `window`: what VWAP, cumulative delta and the "session
+  open" used by opening_drive / gap / trend_day are measured from) and entry windows that
+  cross midnight (`win_start` > `win_end`, e.g. 2000–0230, with the flatten at the wrapped
+  end). 47 new variants: **Asia** 20:00–02:30 (Tokyo-open ORBs, 21:30 HK-open momentum,
+  Donchian, VWAP/band fades, Keltner, supertrend, NR7, RSI-2, delta, two MTF windows),
+  **London** 02:30–07:30 (03:00 drive, Asia-range break, 03:30 EU-cash momentum, trend day,
+  the full mode set, MTF), **US pre-market** 07:00–09:25 (08:30 data-release momentum,
+  drive, fades, MTF), **US evening** 18:00–23:00 (Globex reopen drive, Donchian, fades,
+  Keltner, RSI-2, MTF) and four **whole-Globex-day** trend followers on 15/60-minute bars.
+  Every session now feeds the dataset; insights gain a per-session bucket
+  (`by_session`, ET: Asia / Asia late / London / US pre-market / RTH open / midday / close /
+  US evening) on the strategies page. Caveat recorded up front: overnight paper fills at one
+  tick of slippage are optimistic in a thin book — trust the fill-quality model before
+  sizing anything there.
+
+### Fixed
+- **Whole fleet halted `account_trailing_dd` on a phantom peak; seed queries read audit rows**
+  (`src/paper/paper_db.{hpp,cpp}`, `src/paper/paper_main.cpp`). Two residues of the first,
+  un-isolated replay on 2026-09-21: (1) it had written the phantom post-gap P&L into the LIVE
+  `paper_account` row (peak 26,532 vs a real day peak of 25,472), so the persistent
+  trailing-drawdown halt fired at the next restart and every strategy sat idle; the row is
+  rebuilt from the label's own closed trades (equity = peak = 25,457.5). (2) `sum_pnl`,
+  `sum_pnl_since` and `count_trades_since` matched on `strategy_id` alone — `paper_trades`
+  is keyed by strategy across labels, so the 101 audit rows were seeding live daily trade
+  counts, P&L and halts at every restart. All three are now scoped by
+  `PaperDb::set_account_label(fleet.account_label)`. Operational note: the fleet persists
+  its in-memory account state back to `paper_account` while running — repair the row with
+  the unit STOPPED, or the repair is overwritten before the restart reads it.
+
+### Added (earlier today)
 - **Trend engine — 11 configurable trend modes, 28 fleet variants (fleet 82 → 110)**
   (`src/execution/trend_strategy.hpp`, `tests/execution/test_trend_strategy.cpp`,
   `src/paper/paper_main.cpp` engine `"trend"`, `config/paper_fleet.json`). One

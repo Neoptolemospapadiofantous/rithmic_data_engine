@@ -95,6 +95,22 @@ add_executable(test_order_manager
 target_include_directories(test_order_manager PRIVATE src/execution src/)
 target_compile_features(test_order_manager PRIVATE cxx_std_20)
 
+add_executable(test_incident_replay
+    tests/execution/test_incident_replay.cpp
+    src/execution/order_manager.cpp
+    src/execution/risk_manager.cpp
+)
+target_include_directories(test_incident_replay PRIVATE src/execution src/)
+target_compile_features(test_incident_replay PRIVATE cxx_std_20)
+
+add_executable(test_trade_end_invariant
+    tests/execution/test_trade_end_invariant.cpp
+    src/execution/order_manager.cpp
+    src/execution/risk_manager.cpp
+)
+target_include_directories(test_trade_end_invariant PRIVATE src/execution src/)
+target_compile_features(test_trade_end_invariant PRIVATE cxx_std_20)
+
 add_executable(test_lifecycle
     tests/execution/test_lifecycle.cpp
     src/execution/order_manager.cpp
@@ -110,6 +126,8 @@ add_test(NAME risk_manager_tests    COMMAND test_risk_manager)
 add_test(NAME orb_strategy_tests    COMMAND test_orb_strategy)
 add_test(NAME order_manager_tests   COMMAND test_order_manager)
 add_test(NAME lifecycle_tests       COMMAND test_lifecycle)
+add_test(NAME incident_replay_tests COMMAND test_incident_replay)
+add_test(NAME trade_end_invariant_tests COMMAND test_trade_end_invariant)
 add_test(NAME paper_broker_tests    COMMAND test_paper_broker
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_test(NAME mtf_scalper_tests     COMMAND test_mtf_scalper)
@@ -233,6 +251,17 @@ target_link_libraries(test_paper_broker PRIVATE
     ${PostgreSQL_LIBRARIES}
 )
 target_compile_features(test_paper_broker PRIVATE cxx_std_20)
+
+add_executable(test_parity_paper_vs_live
+    tests/paper/test_parity_paper_vs_live.cpp
+    src/paper/paper_db.cpp
+    src/execution/order_manager.cpp
+    src/execution/risk_manager.cpp
+)
+target_include_directories(test_parity_paper_vs_live PRIVATE src/execution/ src/ src/paper/ ${PostgreSQL_INCLUDE_DIRS})
+target_link_libraries(test_parity_paper_vs_live PRIVATE ${PostgreSQL_LIBRARIES})
+target_compile_features(test_parity_paper_vs_live PRIVATE cxx_std_20)
+add_test(NAME parity_paper_vs_live COMMAND test_parity_paper_vs_live)
 
 add_executable(test_bracket_broker
     tests/paper/test_bracket_broker.cpp

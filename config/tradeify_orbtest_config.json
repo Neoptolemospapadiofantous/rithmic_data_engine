@@ -1,5 +1,5 @@
 {
-  "_comment": "Tradeify account \u2014 nq_executor-24x7@tradeify.service",
+  "_comment": "OVERNIGHT LIVE TEST 2026-09-24 01:05 Cyprus (18:05 ET, right after Tradeify's 17:00 CT reset): production ORB logic on a Globex-reopen range, 2 MNQ, max 5 entries. Run by scripts/overnight_live_test.sh via nq-executor-local@tradeify_orbtest. Production stays config/tradeify_config.json (09:30). Own strategy tag ORB_TEST so its trades do not use up production ORB's 5 trades for the same trading date (daily P&L still sums every tag on the account).",
   "account_label": "tradeify",
   "order_env_prefix": "RITHMIC_TRADEIFY",
   "dry_run": false,
@@ -23,14 +23,15 @@
   "trail_be_offset": 1.0,
   "max_daily_trades": 5,
   "last_entry_hour": 23,
-  "eod_flatten_hour": 15,
-  "eod_flatten_min": 55,
-  "session_open_hour": 9,
-  "session_open_min": 30,
+  "eod_flatten_hour": 18,
+  "eod_flatten_min": 50,
+  "session_open_hour": 18,
+  "session_open_min": 5,
   "qty": 2,
   "commission_rt": 4.0,
   "tick_timeout_s": 30,
   "stop_cooldown_secs": 5,
   "cycle_mode": false,
-  "cycle_start_epoch": 0
+  "cycle_start_epoch": 0,
+  "strategy": "ORB_TEST"
 }

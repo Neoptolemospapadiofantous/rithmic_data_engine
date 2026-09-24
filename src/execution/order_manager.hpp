@@ -202,6 +202,139 @@ public:
             server_id.c_str(), client_id.c_str());
     }
 
+    // A tid=351/352 notification told us the exchange basket id behind one of our
+    // stop client ids. Two cases:
+    //   • it is the LIVE stop → remember the id for trail cancels (set_stop_server_basket)
+    //   • it is a stop we already tried to cancel BY CLIENT ID (server id was not
+    //     mapped in time) → that cancel failed at Rithmic and the stop is still
+    //     working: record the mapping and re-send the cancel by server id NOW.
+    // The executor calls this for every notification that carries both ids.
+    void on_stop_server_mapped(const std::string& client_id, const std::string& server_id) {
+        if (client_id.empty() || server_id.empty()) return;
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (!pos_.basket_id_stop.empty() && client_id == pos_.basket_id_stop) {
+            if (stop_server_basket_ != server_id) {
+                stop_server_basket_ = server_id;
+                LOG("[OM] Stop server basket_id mapped: client=%s server=%s",
+                    client_id.c_str(), server_id.c_str());
+            }
+            return;
+        }
+        auto it = cancelled_stops_.find(client_id);
+        if (it == cancelled_stops_.end()) return;
+        bool already_known = false;
+        for (const auto& [sid, cid] : server_to_client_cancelled_)
+            if (cid == client_id && sid == server_id) { already_known = true; break; }
+        if (already_known) return;
+        server_to_client_cancelled_[server_id] = client_id;
+        client_only_cancels_.erase(client_id);
+        if (cancel_persist_server_id_cb_) cancel_persist_server_id_cb_(client_id, server_id);
+        LOG("[OM] LATE-MAP: cancelled stop client=%s now has server=%s — re-sending cancel "
+            "by server id (the client-id cancel cannot have been honoured)",
+            client_id.c_str(), server_id.c_str());
+        if (cancel_cb_) cancel_cb_(server_id);
+    }
+
+    // Rithmic answered a cancel with "Cancellation Failed" (tid=351 notify_type=17):
+    // the stop is STILL WORKING on the exchange. `id` is whatever the notification
+    // carried — our client id (when we cancelled by client id) or the server id.
+    //   • still in the trade: re-adopt that stop as the live protective stop. If a
+    //     replacement stop was already submitted, cancel it — two working stops for
+    //     one position is a double-exit. The trail logic will retry the cancel by
+    //     server id once one is mapped.
+    //   • already flat: keep the guard; the fill (if it comes) is unwound and the
+    //     late server mapping re-sends the cancel.
+    void on_cancel_failed(const std::string& id) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        std::string client_id = id;
+        std::string server_id;
+        if (auto s = server_to_client_cancelled_.find(id); s != server_to_client_cancelled_.end()) {
+            client_id = s->second; server_id = id;
+        }
+        auto g = cancelled_stops_.find(client_id);
+        if (g == cancelled_stops_.end()) {
+            LOG("[OM] CANCEL-FAILED for %s — not a guarded stop, ignoring", id.c_str());
+            return;
+        }
+        stop_resubmit_pending_ = false;
+        bool in_trade = (pos_.state == PosState::LONG || pos_.state == PosState::SHORT);
+        if (!in_trade) {
+            LOG("[OM] CRITICAL: CANCEL-FAILED for stop %s while %s — that stop is LIVE on the "
+                "exchange with no position behind it; guard kept (fill → unwind, "
+                "server mapping → recancel)",
+                client_id.c_str(), pos_.state == PosState::FLAT ? "FLAT" : "not in a trade");
+            return;
+        }
+        // Drop the replacement stop, if any, before re-adopting the old one.
+        if (!pos_.basket_id_stop.empty() && pos_.basket_id_stop != client_id) {
+            LOG("[OM] CANCEL-FAILED: old stop %s still working — cancelling replacement %s "
+                "to avoid two working stops",
+                client_id.c_str(), pos_.basket_id_stop.c_str());
+            cancel_stop_locked();
+        }
+        double level = 0.0;
+        if (auto l = cancelled_stop_levels_.find(client_id); l != cancelled_stop_levels_.end())
+            level = l->second;
+        cancelled_stops_.erase(g);
+        client_only_cancels_.erase(client_id);
+        cancelled_stop_levels_.erase(client_id);
+        if (last_stop_for_unwind_ == client_id) last_stop_for_unwind_.clear();
+        if (!server_id.empty()) server_to_client_cancelled_.erase(server_id);
+        if (cancel_remove_cb_) cancel_remove_cb_(client_id);
+        pos_.basket_id_stop = client_id;
+        stop_server_basket_ = server_id;
+        if (level != 0.0) last_exchange_sl_ = level;
+        LOG("[OM] CRITICAL: CANCEL-FAILED — re-adopted stop %s (server=%s) as the live "
+            "exchange stop at %.2f; in-memory sl=%.2f will be re-applied once the server "
+            "id maps",
+            client_id.c_str(), server_id.empty() ? "unmapped" : server_id.c_str(),
+            last_exchange_sl_, pos_.sl_price);
+    }
+
+    // The exchange no longer holds the position we are tracking (manual close in
+    // RTrader, broker liquidation). Cancel our protective stop — a stop with no
+    // position behind it OPENS a trade when it fires — and record the close so the
+    // trade log stays truthful. Never sends an exit: there is nothing to exit.
+    void adopt_external_close(double ref_price, const std::string& reason = "external_close") {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT &&
+            pos_.state != PosState::PENDING_EXIT) return;
+        if (!pos_.basket_id_stop.empty()) cancel_stop_locked();
+        double px = ref_price > 0.0 ? ref_price : pos_.entry_price;
+        pos_.exit_price  = px;
+        pos_.exit_reason = reason;
+        double pts = (pos_.direction == OrbSignal::BUY) ? px - pos_.entry_price
+                                                        : pos_.entry_price - px;
+        pos_.pnl_points = pts;
+        pos_.pnl_usd    = pts * cfg_.point_value * pos_.qty - cfg_.commission_rt * pos_.qty;
+        LOG("[OM] CRITICAL: position closed EXTERNALLY (%s) — adopting FLAT at ref %.2f "
+            "(entry %.2f, %.2fpts); protective stop cancelled",
+            reason.c_str(), px, pos_.entry_price, pts);
+        completed_pos_   = pos_;
+        trade_completed_ = true;
+        risk_.on_trade_pnl(pos_.pnl_usd);
+        pos_ = Position{};
+        server_to_client_orders_.clear();
+        prune_processed_fills_locked();   // late duplicate fills must still dedupe (see close path)
+    }
+
+    // Does an exchange-reported net quantity agree with what we believe we hold?
+    // PENDING states accept both sides of the transition (the fill is in flight).
+    bool net_qty_consistent(int exchange_net) const {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        int held = (pos_.qty > 0 ? pos_.qty : cfg_.qty);
+        int dir  = (pos_.direction == OrbSignal::BUY) ? +held
+                 : (pos_.direction == OrbSignal::SELL) ? -held : 0;
+        switch (pos_.state) {
+            case PosState::FLAT:          return exchange_net == 0;
+            case PosState::LONG:          return exchange_net == +held;
+            case PosState::SHORT:         return exchange_net == -held;
+            case PosState::PENDING_ENTRY: return exchange_net == 0 || exchange_net == dir;
+            case PosState::PENDING_EXIT:  return exchange_net == 0 || exchange_net == dir;
+        }
+        return exchange_net == 0;
+    }
+
     // ── Called by OrbStrategy signal callback ─────────────────────────────────
     void on_signal(OrbSignal sig, double price, const std::string& reason, double orb_boundary = 0.0) {
         if (sig == OrbSignal::FLATTEN_EOD) {
@@ -290,13 +423,16 @@ public:
                     basket_id.c_str(), pos_.basket_id_entry.c_str());
                 return;
             }
-            // Partial-fill guard: fill_qty < qty means the order wasn't fully filled.
-            // Multi-lot partial fills are not supported (position tracking is all-or-nothing).
-            // At qty=1 a partial fill is physically impossible; this is a safety net.
+            // Partial fill (fill_qty = CUMULATIVE quantity so far, < qty): the order is
+            // still working. Do not change state — the tid=351 COMPLETE notification
+            // carries the full cumulative quantity and completes the transition (the
+            // executor's fill dedupe lets a higher cumulative through). Treating a partial
+            // as full would place a stop for contracts we do not hold. If the COMPLETE
+            // never arrived, the tid=451 NetReconciler resolves the mismatch.
             if (fill_qty > 0 && fill_qty < pos_.qty) {
-                LOG("[OM] WARN: partial ENTRY fill basket=%s fill_qty=%d expected=%d "
-                    "— treating as full fill; multi-lot partial fills not supported",
-                    basket_id.c_str(), fill_qty, pos_.qty);
+                LOG("[OM] PARTIAL ENTRY fill basket=%s cumulative=%d/%d px=%.2f — waiting for "
+                    "the complete fill", basket_id.c_str(), fill_qty, pos_.qty, fill_price);
+                return;
             }
 
             pos_.entry_price       = fill_price;
@@ -461,17 +597,21 @@ public:
                 return;
             }
 
+            // Partial exit fill (cumulative < qty): the stop/exit order still has contracts
+            // working and we still hold the rest — going FLAT here left the remainder of a
+            // stop working on the exchange with nothing behind it. Wait for the COMPLETE
+            // fill; state (and the trail/stop logic) stays as it is.
+            if (fill_qty > 0 && fill_qty < pos_.qty) {
+                LOG("[OM] PARTIAL EXIT fill basket=%s cumulative=%d/%d px=%.2f — waiting for "
+                    "the complete fill", basket_id.c_str(), fill_qty, pos_.qty, fill_price);
+                return;
+            }
+
             // Exchange stop filled directly (state still LONG/SHORT) — set exit reason
             if (pos_.state == PosState::LONG || pos_.state == PosState::SHORT) {
                 pos_.exit_reason = (basket_id == pos_.basket_id_stop)
                     ? "exchange_stop" : "unknown_exit";
                 pos_.state = PosState::PENDING_EXIT;
-            }
-
-            if (fill_qty > 0 && fill_qty < pos_.qty) {
-                LOG("[OM] WARN: partial EXIT fill basket=%s fill_qty=%d expected=%d "
-                    "— treating as full fill; multi-lot partial fills not supported",
-                    basket_id.c_str(), fill_qty, pos_.qty);
             }
 
             pos_.exit_price  = fill_price;
@@ -525,10 +665,15 @@ public:
 
             pos_ = Position{};  // back to FLAT
             trade_completed_ = true;
-            // Reject-correlation and fill-dedupe state is scoped to the lifetime of
-            // the trade's orders (baskets are unique per order) — drop it at close.
+            // Reject-correlation state is scoped to the trade's orders — drop it at close.
+            // Fill-dedupe state is NOT: the same exit fill is reported twice (tid=352
+            // per-fill, then the tid=351 COMPLETE with the cumulative qty) and the second
+            // copy often lands AFTER this close. With the dedupe cleared it looked like an
+            // unowned fill on our account → ghost-halt, which stopped the 2026-09-24 01:15
+            // ORB test for the rest of its session. Baskets are unique per order, so keep
+            // the record (bounded) across trades.
             server_to_client_orders_.clear();
-            processed_fill_qty_.clear();
+            prune_processed_fills_locked();
             // last_stop_for_unwind_ intentionally NOT cleared here.
             // It persists until clear_post_close_recancels() (5s window) so that if
             // the just-cancelled stop fires late it is recognised as STALE-STOP-FILL
@@ -545,21 +690,28 @@ public:
             // cleared here — they persist until clear_post_close_recancels().
             if (!cancelled_stops_.empty()) {
                 size_t confirmed_cnt = 0, pending_cnt = 0;
-                for (const auto& [bid, _] : cancelled_stops_) {
+                std::unordered_map<std::string, bool> keep;
+                for (const auto& [bid, was_buy] : cancelled_stops_) {
                     bool has_pending_server_cancel = false;
                     for (const auto& [sid, cid] : server_to_client_cancelled_)
                         if (cid == bid) { has_pending_server_cancel = true; break; }
-                    if (has_pending_server_cancel) {
-                        ++pending_cnt;  // keep in DB; ACK or startup will clean up
+                    // A cancel sent by client id was never acknowledged either — the
+                    // absence of a server mapping is NOT confirmation. Keep it live in
+                    // memory AND in the DB until an ACK, a fill (→ unwind) or a late
+                    // server mapping (→ recancel) resolves it.
+                    if (has_pending_server_cancel || client_only_cancels_.count(bid)) {
+                        ++pending_cnt;
+                        keep.emplace(bid, was_buy);
                     } else {
                         ++confirmed_cnt;
                         if (cancel_remove_cb_) cancel_remove_cb_(bid);
                     }
                 }
                 LOG("[OM] FLAT — purged %zu confirmed trail-cancel guard(s) from DB; "
-                    "kept %zu with unconfirmed server cancel (server IDs kept for 5s recancel window)",
+                    "kept %zu unconfirmed (server-id cancels awaiting ACK + client-id cancels "
+                    "awaiting a server mapping) — any of them firing is unwound",
                     confirmed_cnt, pending_cnt);
-                cancelled_stops_.clear();
+                cancelled_stops_.swap(keep);
                 // server_to_client_cancelled_ intentionally NOT cleared here
             }
             if (!unwind_baskets_.empty()) {
@@ -582,6 +734,10 @@ public:
 
     // ── Periodic check: trailing stop and SL hit (call every tick or 1s) ─────
     // Returns true if SL price changed (BE or trail move) — caller should flush DB.
+    // The stop actually WORKING at the exchange (moves only in ≥ trail_step jumps —
+    // see update_stop_order_locked); pos_.sl_price is the in-memory/display value.
+    double exchange_stop() const { std::lock_guard<std::mutex> lk(state_mu_); return last_exchange_sl_ != 0.0 ? last_exchange_sl_ : pos_.sl_price; }
+
     bool check_trail_and_stop(double current_price) {
         std::lock_guard<std::mutex> lk(state_mu_);
         if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return false;
@@ -814,7 +970,11 @@ public:
             }
         } else if (pos_.basket_id_stop == resolved ||
                    (!stop_server_basket_.empty() && stop_server_basket_ == basket_id)) {
-            // Stop order rejected — clear basket so software SL fallback activates
+            // Stop order rejected — clear basket so software SL fallback activates.
+            // It never worked at the exchange, so it can never fill: drop the DB guard
+            // written at submit, or every restart re-cancels it, gets "Cancellation
+            // Failed" and logs a false "stop is LIVE" alarm (2026-09-24 overnight test).
+            if (cancel_remove_cb_) cancel_remove_cb_(pos_.basket_id_stop);
             pos_.basket_id_stop.clear();
             stop_server_basket_.clear();  // stale server mapping no longer valid
             LOG("[OM] CRITICAL: Exchange stop rejected — software SL fallback now active (sl=%.2f)",
@@ -832,6 +992,8 @@ public:
             if (it->second == basket_id) it = server_to_client_cancelled_.erase(it);
             else ++it;
         }
+        client_only_cancels_.erase(basket_id);
+        cancelled_stop_levels_.erase(basket_id);
         // Always clean DB: flat purge may have preserved this row pending this ACK
         if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
         if (last_stop_for_unwind_ == basket_id) last_stop_for_unwind_.clear();
@@ -854,6 +1016,8 @@ public:
         const std::string client_id = it->second;
         server_to_client_cancelled_.erase(it);
         cancelled_stops_.erase(client_id);
+        client_only_cancels_.erase(client_id);
+        cancelled_stop_levels_.erase(client_id);
         // Always clean DB: flat purge may have preserved this row pending this ACK
         if (cancel_remove_cb_) cancel_remove_cb_(client_id);
         if (last_stop_for_unwind_ == client_id) last_stop_for_unwind_.clear();
@@ -1000,6 +1164,10 @@ private:
     // Fill dedupe: basket_id → largest fill quantity already processed.
     // tid=351 reports cumulative total_fill_size; tid=352 per-event fill_size.
     std::unordered_map<std::string, int> processed_fill_qty_;
+    // Bounded: one entry per filled order; a session has at most a few dozen.
+    void prune_processed_fills_locked() {
+        if (processed_fill_qty_.size() > 512) processed_fill_qty_.clear();
+    }
 
     // Stale stop unwind state (fires when old stop fills after position already closed)
     std::string last_stop_for_unwind_;      // basket of stop sent to cancel at position close
@@ -1014,6 +1182,16 @@ private:
     // Populated in cancel_stop_locked(); used to resolve cancel ACKs that arrive
     // with empty user_tag (external cancellations via RTrader).
     std::unordered_map<std::string, std::string> server_to_client_cancelled_;
+    // Stops whose cancel went out by CLIENT id because the server basket was not
+    // mapped yet. Rithmic cannot route such a cancel ("Cancellation Failed"), so
+    // these stops are still WORKING on the exchange until a server id arrives and
+    // the cancel is re-sent. They must never be purged as "confirmed".
+    // 2026-09-23: one of these was purged at FLAT, fired 12s later, and left the
+    // account long 2 MNQ that the executor knew nothing about.
+    std::unordered_set<std::string> client_only_cancels_;
+    // Exchange stop level at the moment each cancel was sent (client id → price),
+    // so a stop re-adopted after "Cancellation Failed" gets its real level back.
+    std::unordered_map<std::string, double> cancelled_stop_levels_;
 
     CancelPersistCb         cancel_persist_cb_;
     CancelRemoveCb          cancel_remove_cb_;
@@ -1188,9 +1366,16 @@ private:
         // the server basket hasn't been mapped yet (race: cancel before first notification).
         const std::string& cancel_id = stop_server_basket_.empty()
                                        ? pos_.basket_id_stop : stop_server_basket_;
+        cancelled_stop_levels_[pos_.basket_id_stop] =
+            last_exchange_sl_ != 0.0 ? last_exchange_sl_ : pos_.sl_price;
         if (stop_server_basket_.empty()) {
-            LOG("[OM] WARN: server ID not yet mapped — using client ID as fallback "
-                "(BE fired before first tid=351 notification arrived) client=%s",
+            // Rithmic routes cancels by its own basket id; a client-id cancel comes
+            // back "Cancellation Failed" and the stop keeps working. Remember that so
+            // the guard survives FLAT and the cancel is re-sent when the id maps.
+            client_only_cancels_.insert(pos_.basket_id_stop);
+            LOG("[OM] WARN: server ID not yet mapped — cancel sent by client ID, which "
+                "Rithmic may refuse; stop %s stays guarded until a server ID maps and "
+                "the cancel is re-sent (or it fills and is unwound)",
                 pos_.basket_id_stop.c_str());
         }
         LOG("[OM] STOP-CANCEL: client=%s server=%s sl=%.2f dir=%s "
@@ -1292,6 +1477,32 @@ private:
             if (it->second == client_id) it = server_to_client_cancelled_.erase(it);
             else ++it;
         }
+        client_only_cancels_.erase(client_id);
+        cancelled_stop_levels_.erase(client_id);
+    }
+};
+
+// ─── Exchange net-position reconciliation ──────────────────────────────────────
+// Pure timing state for "does the exchange agree with us?". The executor feeds
+// every AccountPnLPositionUpdate (tid=451) through observe(); a mismatch that
+// persists past the grace window (in-flight fills need a moment to settle) is
+// acted on exactly once — unwind the difference and halt entries — and the
+// state re-arms only after the exchange and the order manager agree again.
+struct NetReconciler {
+    enum class Verdict { OK, MISMATCH_WAIT, MISMATCH_ACT };
+    int64_t mismatch_since_ms = 0;   // 0 = currently consistent
+    bool    acted             = false;
+
+    Verdict observe(bool consistent, int64_t now_ms, int grace_ms) {
+        if (consistent) {
+            mismatch_since_ms = 0;
+            acted = false;
+            return Verdict::OK;
+        }
+        if (mismatch_since_ms == 0) mismatch_since_ms = now_ms;
+        if (acted || now_ms - mismatch_since_ms < grace_ms) return Verdict::MISMATCH_WAIT;
+        acted = true;
+        return Verdict::MISMATCH_ACT;
     }
 };
 

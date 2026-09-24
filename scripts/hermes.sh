@@ -39,7 +39,8 @@ record() {
 log "=== BUILD ==="
 if cmake --build "$BUILD" -j"$(nproc)" --target \
     rithmic_engine nq_executor audit_daemon \
-    test_orb_strategy test_trend_strategy test_risk_manager test_validator test_order_manager test_lifecycle test_db \
+    test_orb_strategy test_trend_strategy test_risk_manager test_validator test_order_manager test_lifecycle test_incident_replay test_trade_end_invariant test_db \
+    test_paper_broker test_parity_paper_vs_live \
     > "$LOG_DIR/build.log" 2>&1; then
   record PASS build "cmake --build succeeded"
 else
@@ -48,7 +49,7 @@ fi
 
 # ── 2. Unit tests (no DB, no network) ─────────────────────────────────────────
 log "=== UNIT TESTS ==="
-for bin in test_orb_strategy test_trend_strategy test_risk_manager test_validator test_order_manager test_lifecycle; do
+for bin in test_orb_strategy test_trend_strategy test_risk_manager test_validator test_order_manager test_lifecycle test_incident_replay test_trade_end_invariant test_paper_broker test_parity_paper_vs_live; do
   target="$BUILD/$bin"
   if [[ ! -x "$target" ]]; then
     record FAIL "$bin" "binary not found at $target"
@@ -62,6 +63,16 @@ for bin in test_orb_strategy test_trend_strategy test_risk_manager test_validato
     echo "$out" >> "$LOG"
   fi
 done
+
+# ── 2b. Golden-day regression (skipped in --fast mode: replays ~1.5 h of ticks) ──
+if [[ $FAST -eq 0 ]]; then
+  log "=== GOLDEN REPLAY ==="
+  if out=$(bash scripts/golden_replay.sh 2>&1); then
+    record PASS golden_replay "$(echo "$out" | tail -1 | tr -d '"' | cut -c1-160)"
+  else
+    record FAIL golden_replay "$(echo "$out" | tail -2 | tr -d '"' | tr '\n' ' ' | cut -c1-200)"
+  fi
+fi
 
 # ── 3. DB test (skipped in --fast mode) ───────────────────────────────────────
 if [[ $FAST -eq 0 ]]; then

@@ -1897,6 +1897,166 @@ TEST(pnl_short_loss_scales_with_qty_and_commission_rt) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// 2026-09-23 incident: a stop cancelled BY CLIENT ID (server id not mapped yet)
+// came back "Cancellation Failed", was purged as "confirmed" at FLAT, fired 12s
+// later and left the account long 2 MNQ that nobody knew about until the broker
+// liquidated it. These tests replay that sequence against the order manager.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Drive a SHORT to the point where BE has cancelled the original stop by client id
+// (never mapped) and submitted a replacement. Returns the original stop's client id.
+static std::string drive_short_to_client_id_cancel(Fixture& f) {
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "orb_breakout_short");
+    sim_entry_fill(f, 19000.0);
+    std::string old_stop = f.om.position_snapshot().basket_id_stop;
+    ASSERT(!old_stop.empty());
+    f.om.check_trail_and_stop(18994.5);   // MFE 5.5 → BE: cancel old stop, submit new
+    ASSERT(!f.cancelled_baskets.empty());
+    ASSERT_EQ(f.cancelled_baskets.back(), old_stop);   // cancelled by CLIENT id
+    ASSERT(f.om.position_snapshot().basket_id_stop != old_stop);  // replacement live
+    return old_stop;
+}
+
+// 63. The guard for a client-id-cancelled stop survives the FLAT purge, and when
+//     that stop fires later it is unwound instead of ignored.
+TEST(client_only_cancel_guard_survives_flat_purge_and_unwinds_late_fire) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;
+    Fixture f(cfg);
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+
+    // Replacement stop rejected by the exchange → software SL fallback (as on 09-23)
+    f.om.on_order_rejected(f.om.position_snapshot().basket_id_stop,
+                           "buy order stop price must be above trade price");
+    ASSERT(f.om.position_snapshot().basket_id_stop.empty());
+
+    // Price crosses the in-memory SL → software exit → fill → FLAT
+    f.om.check_trail_and_stop(18999.5);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    sim_exit_fill(f, 18999.5);
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+
+    // The old stop was never acknowledged cancelled: guard must still be armed.
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);
+
+    // 12s later the old stop fires (BUY 2 @ 19015) — must be unwound, not ignored.
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.on_fill_notification(old_stop, 19015.0, 2, /*is_entry_fill=*/false);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before + 1);   // unwind order sent
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+    ASSERT(!f.om.is_entry_halted());                       // handled, not ghost-halted
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+}
+
+// 64. A late server-id mapping of a client-id-cancelled stop re-sends the cancel
+//     by server id, and the server ACK then clears the guard.
+TEST(late_server_map_resends_cancel_for_cancelled_stop) {
+    Fixture f;
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+    std::size_t cancels_before = f.cancelled_baskets.size();
+
+    f.om.on_stop_server_mapped(old_stop, "SRV-37816417");
+    ASSERT_EQ(f.cancelled_baskets.size(), cancels_before + 1);
+    ASSERT_EQ(f.cancelled_baskets.back(), std::string("SRV-37816417"));
+    ASSERT_EQ(f.om.unconfirmed_server_cancels(), 1);
+
+    // Mapping the same pair again must not spam another cancel.
+    f.om.on_stop_server_mapped(old_stop, "SRV-37816417");
+    ASSERT_EQ(f.cancelled_baskets.size(), cancels_before + 1);
+
+    f.om.on_cancel_confirmed_by_server_basket("SRV-37816417");
+    ASSERT_EQ(f.om.unconfirmed_server_cancels(), 0);
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+}
+
+// 65. "Cancellation Failed" while still in the trade: the old stop is re-adopted
+//     as the live exchange stop (at its real level), the replacement is cancelled,
+//     and the software SL does not fire off the in-memory level.
+TEST(cancel_failed_readopts_old_stop_while_in_trade) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_fire_timeout_ms = 3000;
+    Fixture f(cfg);
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+    std::string new_stop = f.om.position_snapshot().basket_id_stop;
+
+    f.om.on_cancel_failed(old_stop);
+    auto snap = f.om.position_snapshot();
+    ASSERT_EQ(snap.basket_id_stop, old_stop);                 // re-adopted
+    ASSERT_EQ(f.cancelled_baskets.back(), new_stop);          // replacement cancelled
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);        // replacement now guarded
+    ASSERT_NEAR(f.om.exchange_stop(), 19010.0, 0.001);        // original level restored
+
+    // In-memory SL (BE/trail) is breached but the exchange stop at 19010 is not:
+    // no software exit may fire.
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.check_trail_and_stop(18999.5);
+    ASSERT_EQ(f.om.state(), PosState::SHORT);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);
+
+    // Exchange level breached: tier-2 timer starts, still no immediate exit.
+    f.om.check_trail_and_stop(19010.5);
+    ASSERT_EQ(f.om.state(), PosState::SHORT);
+}
+
+// 66. "Cancellation Failed" after the position is already flat keeps the guard
+//     armed and sends nothing.
+TEST(cancel_failed_while_flat_keeps_guard) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;
+    Fixture f(cfg);
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+    f.om.on_order_rejected(f.om.position_snapshot().basket_id_stop, "rejected");
+    f.om.check_trail_and_stop(18999.5);
+    sim_exit_fill(f, 18999.5);
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.on_cancel_failed(old_stop);
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);
+    ASSERT(!f.om.is_entry_halted());
+}
+
+// 67. net_qty_consistent: what exchange net quantities agree with each state.
+TEST(net_qty_consistent_by_state) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;
+    Fixture f(cfg);
+    ASSERT(f.om.net_qty_consistent(0));
+    ASSERT(!f.om.net_qty_consistent(2));
+    ASSERT(!f.om.net_qty_consistent(-2));
+
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "orb_breakout_short");  // PENDING_ENTRY
+    ASSERT(f.om.net_qty_consistent(0));
+    ASSERT(f.om.net_qty_consistent(-2));
+    ASSERT(!f.om.net_qty_consistent(2));
+
+    sim_entry_fill(f, 19000.0);                                       // SHORT
+    ASSERT(f.om.net_qty_consistent(-2));
+    ASSERT(!f.om.net_qty_consistent(0));
+    ASSERT(!f.om.net_qty_consistent(-1));
+
+    f.om.flatten_now("test", 19001.0);                                // PENDING_EXIT
+    ASSERT(f.om.net_qty_consistent(0));
+    ASSERT(f.om.net_qty_consistent(-2));
+    ASSERT(!f.om.net_qty_consistent(2));
+}
+
+// 68. NetReconciler: acts once after the grace window, re-arms only after agreement.
+TEST(net_reconciler_acts_once_after_grace) {
+    using V = NetReconciler::Verdict;
+    NetReconciler r;
+    ASSERT(r.observe(true,  0,     5000) == V::OK);
+    ASSERT(r.observe(false, 1000,  5000) == V::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 3000,  5000) == V::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 6001,  5000) == V::MISMATCH_ACT);
+    ASSERT(r.observe(false, 9000,  5000) == V::MISMATCH_WAIT);   // already acted
+    ASSERT(r.observe(true,  9500,  5000) == V::OK);              // re-armed
+    ASSERT(r.observe(false, 20000, 5000) == V::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 25001, 5000) == V::MISMATCH_ACT);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -1964,6 +2124,12 @@ int main() {
     RUN(tid352_duplicate_exit_fill_does_not_ghost_halt);
     RUN(pnl_scales_with_qty_and_commission_rt);
     RUN(pnl_short_loss_scales_with_qty_and_commission_rt);
+    RUN(client_only_cancel_guard_survives_flat_purge_and_unwinds_late_fire);
+    RUN(late_server_map_resends_cancel_for_cancelled_stop);
+    RUN(cancel_failed_readopts_old_stop_while_in_trade);
+    RUN(cancel_failed_while_flat_keeps_guard);
+    RUN(net_qty_consistent_by_state);
+    RUN(net_reconciler_acts_once_after_grace);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

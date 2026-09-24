@@ -169,6 +169,21 @@ struct FleetConfig {
         c.session_open_hour  = json_int(p, "session_open_hour",  c.session_open_hour);
         c.session_open_min   = json_int(p, "session_open_min",   c.session_open_min);
         c.daily_loss_limit   = json_dbl(p, "daily_loss_limit",   c.daily_loss_limit);
+        // book overlays / fill model (paper_quote.hpp)
+        c.fill_model         = json_str(p, "fill_model",         c.fill_model);
+        c.spread_gate_ticks  = json_dbl(p, "spread_gate_ticks",  c.spread_gate_ticks);
+        c.spread_gate_rel    = json_dbl(p, "spread_gate_rel",    c.spread_gate_rel);
+        c.imbalance_min      = json_dbl(p, "imbalance_min",      c.imbalance_min);
+        c.microprice_lead    = json_bool(p, "microprice_lead",   c.microprice_lead);
+        c.imbalance_max      = json_dbl(p, "imbalance_max",      c.imbalance_max);
+        c.book_exit_flip     = json_dbl(p, "book_exit_flip",     c.book_exit_flip);
+        c.book_be_on_flip    = json_bool(p, "book_be_on_flip",   c.book_be_on_flip);
+        c.book_tp_imbalance  = json_dbl(p, "book_tp_imbalance",  c.book_tp_imbalance);
+        c.book_tp_min_pts    = json_dbl(p, "book_tp_min_pts",    c.book_tp_min_pts);
+        c.book_size_agree    = json_int(p, "book_size_agree",    c.book_size_agree);
+        c.fill_wait_secs     = json_int(p, "fill_wait_secs",     c.fill_wait_secs);
+        c.base_id            = json_str(p, "base_id",            c.base_id);
+        c.overlay            = json_str(p, "overlay",            c.overlay);
         return c;
     }
 

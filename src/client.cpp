@@ -215,9 +215,13 @@ asio::awaitable<void> RithmicClient::subscribe(WsStream& ws,
     req.set_symbol(symbol);
     req.set_exchange(exchange);
     req.set_request(rti::RequestMarketDataUpdate::SUBSCRIBE);
-    req.set_update_bits(1 | 2);  // LAST_TRADE | BBO
+    // LAST_TRADE | BBO, plus any bits from RITHMIC_MD_EXTRA_BITS (Rithmic update_bits:
+    // 1 LAST_TRADE, 2 BBO, 4 ORDER_BOOK (aggregated L2, template 156), 64 HIGH_BID_LOW_ASK …)
+    const char* extra = std::getenv("RITHMIC_MD_EXTRA_BITS");
+    const uint32_t bits = (1u | 2u) | (extra ? (uint32_t)std::atoi(extra) : 0u);
+    req.set_update_bits(bits);
     co_await ws_write(ws, frame(req));
-    LOG("Subscribed to %s/%s (LAST_TRADE|BBO)", symbol.c_str(), exchange.c_str());
+    LOG("Subscribed to %s/%s (update_bits=%u)", symbol.c_str(), exchange.c_str(), bits);
 }
 
 asio::awaitable<void> RithmicClient::subscribe_depth(WsStream& ws,
@@ -228,7 +232,12 @@ asio::awaitable<void> RithmicClient::subscribe_depth(WsStream& ws,
     req.set_symbol(symbol);
     req.set_exchange(exchange);
     req.set_request(rti::RequestMarketDataUpdate::SUBSCRIBE);
-    req.set_update_bits(64);  // DEPTH_BY_ORDER
+    // NOTE: 64 is HIGH_BID_LOW_ASK in Rithmic's update_bits, not depth. Depth-by-order
+    // (template 160) is a separate request family; kept env-tunable while that is verified.
+    const char* db = std::getenv("RITHMIC_MD_DEPTH_BITS");
+    const uint32_t bits = db ? (uint32_t)std::atoi(db) : 0u;
+    if (bits == 0) co_return;               // default: no extra request (bit 64 only yields HighBidLowAsk, template 153)
+    req.set_update_bits(bits);
     co_await ws_write(ws, frame(req));
     LOG("Subscribed depth-by-order for %s/%s", symbol.c_str(), exchange.c_str());
 }
@@ -439,6 +448,26 @@ void RithmicClient::dispatch_message(const std::string& payload) {
     if (!base.ParseFromString(payload)) {
         LOG("WARN: dropping malformed frame (%zu bytes, header unparseable)",
             payload.size());
+        return;
+    }
+
+    const int tid = base.template_id();
+    ++tmpl_counts_[tid];
+    // Raw dump of the first few frames of any non-trade template for offline decoding
+    // (protoc --decode_raw): set RITHMIC_MD_DUMP_DIR to enable.
+    if (tid != 150 && tid != 18 && tid != 19) {
+        static const char* dump_dir = std::getenv("RITHMIC_MD_DUMP_DIR");
+        if (dump_dir && dumped_[tid] < 5) {
+            const std::string fn = std::string(dump_dir) + "/t" + std::to_string(tid) + "_" + std::to_string(dumped_[tid]) + ".bin";
+            if (FILE* f = std::fopen(fn.c_str(), "wb")) { std::fwrite(payload.data(), 1, payload.size(), f); std::fclose(f); ++dumped_[tid]; }
+        }
+    }
+    if (tid == 101) {                       // ResponseMarketDataUpdate — refusals were invisible before
+        rti::ResponseMarketDataUpdate r;
+        if (r.ParseFromString(payload)) {
+            std::string codes; for (const auto& c : r.rp_code()) { if (!codes.empty()) codes += ","; codes += c; }
+            LOG("ResponseMarketDataUpdate (101): rp_code=[%s]", codes.c_str());
+        }
         return;
     }
 
@@ -741,4 +770,10 @@ asio::awaitable<void> RithmicClient::run() {
             co_await t.async_wait(use_awaitable);
         }
     }
+}
+
+std::string RithmicClient::template_counts() const {
+    std::string out;
+    for (const auto& [t, n] : tmpl_counts_) { if (!out.empty()) out += " "; out += std::to_string(t) + ":" + std::to_string(n); }
+    return out;
 }

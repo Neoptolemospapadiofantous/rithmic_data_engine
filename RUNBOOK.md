@@ -119,6 +119,37 @@ journalctl -u nq_executor@tradeify -f
 
 ---
 
+## Local: which strategy is live, and switching it
+
+One executor per account (the instance lock is account-wide). The live strategy is chosen by
+WHICH unit instance runs; each instance reads `config/<instance>_config.json` and `.env.<instance>`
+(symlink to `.env.tradeify`).
+
+| Instance | Config | Strategy |
+|---|---|---|
+| `nq-executor-local@tradeify` | `tradeify_config.json` | ORB, 09:30 ET, 2 MNQ (production) |
+| `nq-executor-local@tradeify_trend` | `tradeify_trend_config.json` | trend engine (`"engine": "trend"`, `mode` + params) |
+| `nq-executor-local@tradeify_orbtest` | `tradeify_orbtest_config.json` | ORB on an 18:05 ET range (test only) |
+
+Switch (only when FLAT, between sessions): `make stack-status` → `systemctl --user stop
+nq-executor-local@<old>` → `pgrep -x nq_executor` is empty → `systemctl --user start
+nq-executor-local@<new>` → within ~5 s the log shows `PNL_PLANT position subscription OK` and a
+`[BROKER] … exchange_net=0` line. No `[BROKER]` line = no position truth = stop it. Pick a trend
+variant from the paper fleet (`/strategies`); copy its `params` into the trend config and give it
+the RTH window (`win_start 930`, `win_end 1555`, `eod_flatten 15:56`). Modes `rs_continuation` and
+`book_imbalance` are refused (no ES/BBO feed in the executor).
+
+Daily 09:00 ET: `pre-rth-check.timer` sends a readiness line to Telegram. Before trading, keep
+Chrome under its cap: quit it fully and relaunch from the dock (`scripts/chrome-capped`) —
+`make stack-status` shows how much Chrome sits outside `browsers.slice`.
+
+Overnight test (`scripts/overnight_live_test.sh`, schedule with
+`systemd-run --user --on-calendar='YYYY-MM-DD 01:01:00' --collect -p WorkingDirectory=$PWD
+$PWD/scripts/overnight_live_test.sh tradeify`): drill → ORB 18:05 ET → trend 19:00–20:00 ET →
+production. Log `data/logs/overnight_live_test.log`; progress + result on Telegram.
+
+---
+
 ## Emergency procedures
 
 ### Stop immediately

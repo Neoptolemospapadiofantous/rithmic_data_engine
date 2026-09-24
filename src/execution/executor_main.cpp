@@ -32,7 +32,12 @@
 
 #include "orb_config.hpp"
 #include "orb_strategy.hpp"
+#include "trend_strategy.hpp"
+#include <type_traits>
+#include <fstream>
+#include <sstream>
 #include "order_manager.hpp"
+#include "notification_router.hpp"
 #include "risk_manager.hpp"
 #include "latency_logger.hpp"
 #include "orb_db.hpp"
@@ -62,6 +67,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
 #include <ctime>
 #include <deque>
 #include <filesystem>
@@ -85,6 +91,17 @@ namespace fs        = std::filesystem;
 // ─── Globals ──────────────────────────────────────────────────────────────────
 static std::atomic<bool> g_running{true};
 static std::atomic<bool> g_flatten_requested{false}; // set by signal handler; acted on in eod_loop
+// ── Live fire drill (--drill orphan) ──────────────────────────────────────────
+// Reproduces the 2026-09-23 failure shape on the real account with ONE contract:
+// once the exchange confirms FLAT, the executor sends an order it does NOT track
+// (foreign user_tag). The fill must be routed into the stale-stop guards (ghost
+// halt) and the PNL-plant reconciliation must unwind it within the grace window.
+// The strategy is halted for the whole run; the process exits 0 on PASS, 2 on FAIL.
+static std::string        g_drill;                 // "" = normal run
+static std::atomic<bool>  g_drill_sent{false};
+static std::atomic<bool>  g_drill_passed{false};
+static std::atomic<int64_t> g_drill_sent_ms{0};
+static std::atomic<int>   g_exit_code{0};
 // Delay before the outer cycle loop reconnects. Normally 10s; a session that
 // ends on an ORDER_PLANT login refusal raises it so we do not hammer Rithmic
 // with a fresh login every 13s (rp_code=13 = "too many rapid logins /
@@ -96,10 +113,11 @@ static std::atomic<int> g_reconnect_delay_s{kReconnectDelayNormalS};
 // ─── Position DB write helper ─────────────────────────────────────────────────
 // Reads current state from order_mgr + strategy and issues an UPSERT to
 // live_position. Safe to call at any frequency — OrbDB::write_position never throws.
+template <class Strategy>
 static void flush_position(OrbDB* db,
                             const std::string& today,
                             const OrderManager& order_mgr,
-                            const OrbStrategy& strategy,
+                            const Strategy& strategy,
                             bool op_connected,
                             double point_value = 2.0,
                             bool md_connected = false) {
@@ -218,17 +236,16 @@ static void current_et(int& h, int& m) {
     m = et_tm.tm_min;
 }
 
+static std::string read_text_file(const std::string& path) {
+    std::ifstream f(path);
+    std::stringstream ss; ss << f.rdbuf();
+    return ss.str();
+}
+
+// The executor's "today" is the TRADING date (rolls at 18:00 ET, when CME opens the
+// next day and the prop firm resets its daily loss limit) — see trading_date_str.
 static std::string today_date_str() {
-    auto now = std::chrono::system_clock::now();
-    time_t tt = std::chrono::system_clock::to_time_t(now);
-    struct tm utc_tm;
-    gmtime_r(&tt, &utc_tm);
-    time_t et_t = tt - us_et_offset(utc_tm) * 3600;
-    struct tm et_tm;
-    gmtime_r(&et_t, &et_tm);
-    char buf[16];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d", &et_tm);
-    return buf;
+    return trading_date_str(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 }
 
 // ─── WebSocket helpers ────────────────────────────────────────────────────────
@@ -534,12 +551,14 @@ struct OrderPlant {
 
 // ─── Main executor coroutine ──────────────────────────────────────────────────
 // risk, strategy, and today are owned by main() and survive reconnects.
+template <class Strategy>
 asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                    asio::io_context& ioc_ref,
                                    RiskManager& risk,
-                                   OrbStrategy& strategy,
+                                   Strategy& strategy,
                                    std::string& today,
                                    Position& carried_pos) {
+    constexpr bool kOrb = std::is_same_v<Strategy, OrbStrategy>;
     // ── Component construction ────────────────────────────────────────────────
     // tick_value = point_value × tick_size (NQ: 20.0×0.25=$5.00, MNQ: 2.0×0.25=$0.50)
     LatencyLogger lat(orb_cfg.point_value * NQ_TICK_SIZE);
@@ -561,6 +580,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     }
     carried_pos = Position{};  // reset; will be populated again at session end
 
+    // Trend engine only (see the callback): set when a signal left the order manager FLAT.
+    std::string strategy_unsettled;
+    auto settle_strategy = [&]() {
+        if constexpr (!kOrb) {
+            if (strategy_unsettled.empty()) return;
+            if (order_mgr.position_snapshot().state == PosState::FLAT && strategy.session().in_position) {
+                LOG("[EXECUTOR] trend engine released — order manager stayed FLAT (%s)",
+                    strategy_unsettled.c_str());
+                strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:" + strategy_unsettled);
+            }
+            strategy_unsettled.clear();
+        }
+    };
+
     // Wire strategy → order_mgr
     strategy.set_signal_callback(
         [&](OrbSignal sig, double price, const std::string& reason) {
@@ -581,7 +614,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     eod_snap.basket_id_entry.c_str(), eod_snap.basket_id_exit.c_str(),
                     price);
             }
-            if (orb_cfg.max_entry_offset > 0.0 && sig != OrbSignal::FLATTEN_EOD) {
+            if (kOrb && orb_cfg.max_entry_offset > 0.0 && sig != OrbSignal::FLATTEN_EOD) {
                 double orb_level = (sig == OrbSignal::BUY) ? strategy.orb_high() : strategy.orb_low();
                 double offset = (sig == OrbSignal::BUY) ? (price - orb_level) : (orb_level - price);
                 if (offset > orb_cfg.max_entry_offset) {
@@ -596,6 +629,15 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             : (sig == OrbSignal::SELL) ? strategy.orb_low()
                             : 0.0;
             order_mgr.on_signal(sig, price, reason, boundary);
+            if constexpr (!kOrb) {
+                // The trend engine books its own position right AFTER this callback returns.
+                // If the order manager did not act (entry rejected by risk/halt/not-FLAT, or a
+                // managed exit while already flat) nothing will ever report the trade closed,
+                // and the engine would sit "in position" for the rest of the day. Record it
+                // here; settle_strategy() releases the engine once emit() has finished.
+                if (order_mgr.position_snapshot().state == PosState::FLAT)
+                    strategy_unsettled = reason.empty() ? "no_order" : reason;
+            }
         }
     );
 
@@ -712,6 +754,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // ORDER_PLANT streams (finding: Beast forbids overlapping async_write).
     WsWriteQueue md_write_q;
     WsWriteQueue op_write_q;
+    WsWriteQueue pnl_write_q;   // PNL_PLANT stream (position / P&L updates)
 
     // pg mode: true while the collector's ticks are arriving; the stale-feed
     // watchdog clears it. md_up() is what the UI/DB see as "MD connected".
@@ -1159,26 +1202,103 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // top of this coroutine. Subscribe to PnL/position updates so the tid=451
             // snapshot can confirm net_qty and auto-unwind — the same auto-recovery the
             // fresh-start path below uses. Without this the halt persisted forever.
-            if (carried_nonflat) {
-                try {
-                    rti::RequestPnLPositionUpdates pnl_req;
-                    pnl_req.set_template_id(400);
-                    pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
-                    pnl_req.set_fcm_id(fcm_id_r);
-                    pnl_req.set_ib_id(ib_id_r);
-                    pnl_req.set_account_id(orb_cfg.account_id);
-                    co_await op_write_q.write(proto_frame(pnl_req));
-                    LOG("[EXECUTOR] [RECONNECT-RECON] RequestPnLPositionUpdates SUBSCRIBE sent "
-                        "— awaiting tid=451 snapshot to reconcile carried position");
-                } catch (std::exception& e) {
-                    LOG("[EXECUTOR] [RECONNECT-RECON] PnL subscribe FAILED: %s "
-                        "— manual intervention required (entries stay halted)", e.what());
-                }
-            }
+            // Position/P&L subscription is sent on the PNL_PLANT session below.
+            // (It was sent here, on the ORDER_PLANT, until 2026-09-23 — and was
+            // never answered: Rithmic serves tid=400/401/451 on the PNL plant.)
 
         } catch (std::exception& e) {
             LOG("[EXECUTOR] FATAL: ORDER_PLANT connect failed: %s", e.what());
             co_return;
+        }
+    }
+
+
+    // ── PNL_PLANT connection (live mode only) ─────────────────────────────────
+    // Position and P&L updates (tid=400 → 401 → 451 stream) are served by
+    // Rithmic's PNL plant, NOT the order plant. Until 2026-09-23 the subscribe
+    // went out on the order plant and was never answered, so the executor had
+    // no source of truth for what the account held — an orphaned stop's fill
+    // left it long 2 MNQ for 32 minutes. Without this session entries stay
+    // halted: no position feed, no trading.
+    std::unique_ptr<WsStream> pnl_ws;
+    bool pnl_connected = false;
+    if (!orb_cfg.dry_run) {
+        LOG("[EXECUTOR] Connecting to PNL_PLANT: %s", orb_cfg.rithmic_url.c_str());
+        try {
+            pnl_ws = co_await connect_ws(ioc, ssl_ctx, orb_cfg.rithmic_url);
+            rti::RequestLogin req;
+            req.set_template_id(10);
+            req.set_template_version("3.9");
+            req.set_user(orb_cfg.rithmic_user);
+            req.set_password(orb_cfg.rithmic_password);
+            req.set_system_name(orb_cfg.rithmic_system_name);
+            req.set_app_name(orb_cfg.app_name);
+            req.set_app_version(orb_cfg.app_version);
+            req.set_infra_type(rti::RequestLogin::PNL_PLANT);
+            co_await ws_write(*pnl_ws, proto_frame(req));
+            beast::flat_buffer buf;
+            beast::get_lowest_layer(*pnl_ws).expires_after(std::chrono::seconds(15));
+            bool login_ok = false;
+            for (;;) {
+                buf.clear();
+                co_await pnl_ws->async_read(buf, asio::use_awaitable);
+                auto payload = proto_strip(beast::buffers_to_string(buf.data()));
+                rti::Base base;
+                if (!base.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
+                if (base.template_id() == 11) {
+                    rti::ResponseLogin resp;
+                    if (!resp.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed"); continue; }
+                    login_ok = !resp.rp_code().empty() && resp.rp_code(0) == "0";
+                    if (!login_ok) {
+                        std::string rpc = resp.rp_code().empty() ? "?" : resp.rp_code(0);
+                        std::string txt = resp.rp_code().size() > 1 ? resp.rp_code(1) : "";
+                        LOG("[EXECUTOR] CRITICAL: PNL_PLANT login REJECTED (rp_code=%s %s)",
+                            rpc.c_str(), txt.c_str());
+                        audit_log.error("session.pnl_plant_login_rejected",
+                            "PNL_PLANT auth rejected rp_code=" + rpc + " " + txt);
+                    } else {
+                        LOG("[EXECUTOR] PNL_PLANT login OK unique_user_id=%s",
+                            resp.unique_user_id().c_str());
+                    }
+                    break;
+                }
+            }
+            beast::get_lowest_layer(*pnl_ws).expires_never();
+            if (login_ok) {
+                rti::RequestHeartbeat hb;
+                hb.set_template_id(18);
+                hb.set_ssboe(hb_ssboe_now());
+                co_await ws_write(*pnl_ws, proto_frame(hb));
+                pnl_write_q.attach(pnl_ws.get());
+                pnl_connected = true;
+                rti::RequestPnLPositionUpdates pnl_req;
+                pnl_req.set_template_id(400);
+                pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
+                pnl_req.set_fcm_id(fcm_id_r);
+                pnl_req.set_ib_id(ib_id_r);
+                pnl_req.set_account_id(orb_cfg.account_id);
+                co_await pnl_write_q.write(proto_frame(pnl_req));
+                LOG("[EXECUTOR] PNL_PLANT connected — RequestPnLPositionUpdates SUBSCRIBE sent "
+                    "(acct=%s fcm=%s ib=%s); awaiting tid=401 ack + tid=451 snapshot",
+                    orb_cfg.account_id.c_str(), fcm_id_r.c_str(), ib_id_r.c_str());
+                // The subscription only streams on change; an idle account can stay
+                // silent for minutes. Force an initial snapshot so the reconciler
+                // starts from the exchange's truth, not from silence.
+                rti::RequestPnLPositionSnapshot snap_req;
+                snap_req.set_template_id(402);
+                snap_req.set_fcm_id(fcm_id_r);
+                snap_req.set_ib_id(ib_id_r);
+                snap_req.set_account_id(orb_cfg.account_id);
+                co_await pnl_write_q.write(proto_frame(snap_req));
+                LOG("[EXECUTOR] PNL_PLANT RequestPnLPositionSnapshot (tid=402) sent");
+            }
+        } catch (std::exception& e) {
+            LOG("[EXECUTOR] CRITICAL: PNL_PLANT connect failed: %s", e.what());
+        }
+        if (!pnl_connected) {
+            strategy.halt_trading("pnl_plant_unavailable");
+            audit_log.error("session.pnl_plant",
+                "PNL_PLANT unavailable — no position feed, entries halted");
         }
     }
 
@@ -1189,6 +1309,294 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // net_qty!=0 (position live — the stop must stay).
     std::vector<std::string> deferred_snapshot_cancels;
     bool defer_snapshot_cancels = carried_nonflat;
+
+    // Exchange-vs-memory position reconciliation state (fed by every tid=451 update).
+    NetReconciler net_recon;
+    bool   net_halt_active    = false;
+    bool   broker_loss_halted = false;
+    double last_broker_bal    = std::nan("");
+    double last_broker_dpnl   = std::nan("");
+
+    // Send an order that closes `qty` contracts the exchange holds and we do not
+    // (startup ghost, continuous mismatch). Aggressive LIMIT off the last price
+    // (prop routes may reject MARKET); MARKET only when no price exists yet. The
+    // basket is registered so its fill is recognised as a correction.
+    auto send_unwind = [&](int qty, bool unwind_is_buy, const char* why)
+        -> asio::awaitable<bool> {
+        if (qty <= 0 || !order_plant->connected || !order_plant->ws) co_return false;
+        std::string basket_id = orb_cfg.symbol + "-unwind-" +
+            std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count());
+        constexpr double UNWIND_TICK = 0.25;
+        constexpr int    UNWIND_OFFSET_TICKS = 50; // ~12.5 pts: crosses the spread
+        double last_px = strategy.last_price();
+        int    order_type = 2; // MARKET
+        double limit_px   = 0.0;
+        if (last_px > 0.0) {
+            order_type = 1; // LIMIT
+            limit_px = unwind_is_buy ? last_px + UNWIND_OFFSET_TICKS * UNWIND_TICK
+                                     : last_px - UNWIND_OFFSET_TICKS * UNWIND_TICK;
+        } else {
+            LOG("[EXECUTOR] [%s] WARNING: no price ref for unwind — sending MARKET "
+                "(may be rejected; close via RTrader if so)", why);
+        }
+        rti::RequestNewOrder req;
+        req.set_template_id(312);
+        req.set_fcm_id(fcm_id_r);
+        req.set_ib_id(ib_id_r);
+        req.set_account_id(orb_cfg.account_id);
+        req.set_symbol(trade_symbol);
+        req.set_exchange(orb_cfg.exchange);
+        req.set_quantity(qty);
+        req.set_order_type(order_type);
+        if (order_type == 1) req.set_price(limit_px);
+        req.set_transaction_type(unwind_is_buy ? 1 : 2);
+        req.set_user_tag(basket_id);
+        req.set_duration(rti::RequestNewOrder::DAY);
+        req.set_manual_or_auto_select(rti::RequestNewOrder::AUTO);
+        req.set_trade_route(order_plant->trade_route);
+        try {
+            co_await op_write_q.write(proto_frame(req));
+            LOG("[EXECUTOR] [%s] unwind sent: %s %s px=%.2f qty=%d basket=%s",
+                why, unwind_is_buy ? "BUY" : "SELL", order_type == 1 ? "LIMIT" : "MARKET",
+                limit_px, qty, basket_id.c_str());
+            order_mgr.register_unwind_basket(basket_id);
+            co_return true;
+        } catch (std::exception& e) {
+            LOG("[EXECUTOR] [%s] unwind send FAILED: %s — MANUAL INTERVENTION REQUIRED",
+                why, e.what());
+            co_return false;
+        }
+    };
+    // ── Position / P&L update (tid=451) ──────────────────────────────────────
+    // Shared by pnl_loop (the PNL plant, where Rithmic actually serves these)
+    // and op_loop (kept as a fallback should the order plant ever deliver one).
+    auto handle_pos_update = [&](const std::string& payload) -> asio::awaitable<void> {
+        // AccountPnLPositionUpdate — real-time position/PnL from exchange.
+        // Startup snapshot (is_snapshot=true) shows current net position;
+        // used to detect ghost positions left by previous session.
+        rti::AccountPnLPositionUpdate pos_upd;
+        if (!pos_upd.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed tid=451"); co_return; }
+
+        LOG("[EXECUTOR] [POS-UPDATE] tid=451 is_snap=%d acct=%s "
+            "fill_buy=%d fill_sell=%d net_qty=%d open_pnl='%s'",
+            (int)pos_upd.is_snapshot(),
+            pos_upd.account_id().c_str(),
+            pos_upd.fill_buy_qty(), pos_upd.fill_sell_qty(),
+            pos_upd.net_quantity(),
+            pos_upd.open_position_pnl().c_str());
+
+        if (pos_upd.account_id() != orb_cfg.account_id) co_return;
+        const int  net        = pos_upd.net_quantity();
+        const bool consistent = order_mgr.net_qty_consistent(net);
+        const int64_t now_ms  = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+
+        // ── Broker truth: balance and day P&L ─────────────────────────────
+        // The risk manager's equity is synthetic (starting balance + our own
+        // trade log). The broker's day P&L includes positions we never knew
+        // about — on 2026-09-23 that was $598 on an orphaned long while our
+        // log said -$25. The prop firm's own limit tripped at -$600; ours
+        // (daily_loss_limit) is checked here against THEIR number so we act
+        // first.
+        auto to_d = notif::parse_decimal;
+        double broker_bal  = to_d(pos_upd.account_balance());
+        double broker_dpnl = to_d(pos_upd.day_pnl());
+        if (std::isnan(broker_dpnl)) {
+            double o = to_d(pos_upd.day_open_pnl()), c = to_d(pos_upd.day_closed_pnl());
+            if (!std::isnan(o) || !std::isnan(c))
+                broker_dpnl = (std::isnan(o) ? 0.0 : o) + (std::isnan(c) ? 0.0 : c);
+        }
+        if ((!std::isnan(broker_bal)  && broker_bal  != last_broker_bal) ||
+            (!std::isnan(broker_dpnl) && broker_dpnl != last_broker_dpnl)) {
+            last_broker_bal  = broker_bal;
+            last_broker_dpnl = broker_dpnl;
+            LOG("[EXECUTOR] [BROKER] balance=%.2f day_pnl=%.2f exchange_net=%d "
+                "ours_consistent=%d",
+                broker_bal, broker_dpnl, net, (int)consistent);
+        }
+        if (!broker_loss_halted &&
+            notif::broker_loss_breached(broker_dpnl, orb_cfg.daily_loss_limit)) {
+            broker_loss_halted = true;
+            LOG("[EXECUTOR] CRITICAL: broker day_pnl %.2f <= daily_loss_limit %.2f — "
+                "halting and flattening", broker_dpnl, orb_cfg.daily_loss_limit);
+            risk.halt_external("broker_day_pnl " + std::to_string(broker_dpnl) +
+                      " <= limit " + std::to_string(orb_cfg.daily_loss_limit));
+            strategy.halt_trading("broker_day_pnl_limit");
+            if (!order_mgr.is_flat())
+                order_mgr.flatten_now("broker_day_pnl_limit", strategy.last_price());
+            audit_log.error("risk.broker_day_pnl",
+                "broker day_pnl " + std::to_string(broker_dpnl));
+            int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                         ": BROKER DAY P&L " + std::to_string((int)broker_dpnl) +
+                         " hit daily_loss_limit — halted + flattened\" "
+                         ">/dev/null 2>&1 &").c_str());
+            (void)notify_rc;  // fail-open: grid-notify absent is not an executor error
+        }
+
+        // ── Startup / reconnect snapshot ───────────────────────────────────
+        if (pos_upd.is_snapshot()) {
+            if (net != 0 && consistent) {
+                // The exchange holds exactly what we believe we hold (reconnect
+                // mid-trade). Keep the deferred working orders — they are its
+                // protective stops.
+                if (defer_snapshot_cancels) {
+                    defer_snapshot_cancels = false;
+                    LOG("[EXECUTOR] [STARTUP-RECON] net_qty=%d matches our position — "
+                        "keeping %zu deferred working order(s) (protective stops)",
+                        net, deferred_snapshot_cancels.size());
+                    deferred_snapshot_cancels.clear();
+                }
+                if (strategy.session().halt_reason.rfind("startup_", 0) == 0 ||
+                    strategy.session().halt_reason == "reconnect_unreconciled_position")
+                    strategy.unhalt_trading("startup_position_matches_exchange");
+            } else if (net != 0 && !net_recon.acted) {
+                // Position on the exchange that we do NOT hold in memory.
+                if (defer_snapshot_cancels) {
+                    defer_snapshot_cancels = false;
+                    LOG("[EXECUTOR] [STARTUP-RECON] net_qty=%d — position live: keeping "
+                        "%zu deferred working order(s) (protective stops)",
+                        net, deferred_snapshot_cancels.size());
+                    deferred_snapshot_cancels.clear();
+                }
+                bool ghost_is_long = (net > 0);
+                LOG("[EXECUTOR] [STARTUP-RECON] GHOST POSITION CONFIRMED: "
+                    "net_qty=%d (%s %d) — sending immediate unwind",
+                    net, ghost_is_long ? "LONG" : "SHORT", std::abs(net));
+                bool unwind_sent = co_await send_unwind(std::abs(net), !ghost_is_long,
+                                                        "STARTUP-RECON");
+                // Arm the continuous reconciler so it does not fire a second
+                // unwind for the same mismatch during the grace window.
+                net_recon.mismatch_since_ms = now_ms;
+                net_recon.acted = true;
+                net_halt_active = true;
+                // Only unhalt strategy if the unwind order was actually dispatched.
+                // If send failed, stay halted — operator must confirm flat and restart.
+                if (unwind_sent)
+                    strategy.unhalt_trading("startup_ghost_position_cleared");
+                else
+                    strategy.halt_trading("startup_ghost_unwind_failed");
+            } else if (net == 0) {
+                LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
+            if (g_drill == "orphan" && !g_drill_sent.exchange(true)) {
+                // The untracked order: 1 contract, aggressive LIMIT off the last price,
+                // a user_tag the order manager has never seen. Exactly the shape of
+                // the orphaned stop's fill on 2026-09-23.
+                double last_px = strategy.last_price();
+                std::string tag = "DRILL-orphan-" + std::to_string(now_ms);
+                rti::RequestNewOrder req;
+                req.set_template_id(312);
+                req.set_fcm_id(fcm_id_r);
+                req.set_ib_id(ib_id_r);
+                req.set_account_id(orb_cfg.account_id);
+                req.set_symbol(trade_symbol);
+                req.set_exchange(orb_cfg.exchange);
+                req.set_quantity(1);
+                if (last_px > 0.0) { req.set_order_type(1); req.set_price(last_px + 50 * 0.25); }
+                else               { req.set_order_type(2); }
+                req.set_transaction_type(1);   // BUY
+                req.set_user_tag(tag);
+                req.set_duration(rti::RequestNewOrder::DAY);
+                req.set_manual_or_auto_select(rti::RequestNewOrder::AUTO);
+                req.set_trade_route(order_plant->trade_route);
+                try {
+                    co_await op_write_q.write(proto_frame(req));
+                    g_drill_sent_ms = now_ms;
+                    LOG("[DRILL] orphan order sent: BUY 1 %s tag=%s px_ref=%.2f — expecting: "
+                        "unowned fill → ghost halt; tid=451 net=+1; NET-RECON unwind after "
+                        "%dms; net=0 → PASS", trade_symbol.c_str(), tag.c_str(), last_px,
+                        orb_cfg.net_mismatch_grace_ms);
+                } catch (std::exception& e) {
+                    LOG("[DRILL] FAIL: could not send the orphan order: %s", e.what());
+                    g_exit_code = 2; g_running = false;
+                }
+            }
+                // Exchange is flat: any deferred working orders from the tid=351
+                // snapshot are stale (carried position no longer exists) — cancel now.
+                if (!deferred_snapshot_cancels.empty()) {
+                    LOG("[EXECUTOR] [STARTUP-RECON] draining %zu deferred snapshot "
+                        "cancel(s) (stale working orders)",
+                        deferred_snapshot_cancels.size());
+                    for (const auto& bid : deferred_snapshot_cancels)
+                        order_plant->send_cancel(bid, orb_cfg.account_id);
+                    deferred_snapshot_cancels.clear();
+                }
+                defer_snapshot_cancels = false;
+                // Clear ghost-fill halt in OrderManager (covers: stale stop fired
+                // then manually closed via RTrader before this snapshot arrived).
+                order_mgr.confirm_exchange_flat();
+                // If strategy was halted waiting for position confirm, clear it
+                if (strategy.session().halt_reason.rfind("startup_", 0) == 0 ||
+                    strategy.session().halt_reason == "reconnect_unreconciled_position")
+                    strategy.unhalt_trading("startup_position_confirmed_flat");
+                // Immediately persist FLAT state to DB so a crash within the next
+                // 5s doesn't leave a stale LONG/SHORT for the next restart to find.
+                flush_position(db.get(), today, order_mgr, strategy,
+                               orb_cfg.dry_run || order_plant->connected,
+                               orb_cfg.point_value, md_up());
+            }
+        }
+
+        // ── Continuous reconciliation (every update, snapshot or not) ──────
+        // A mismatch that outlives the grace window is acted on once: unwind
+        // the difference, halt entries, alert. Re-arms when the exchange and
+        // the order manager agree again. This is what would have closed the
+        // 2026-09-23 orphan long within seconds instead of 32 minutes.
+        auto verdict = net_recon.observe(consistent, now_ms, orb_cfg.net_mismatch_grace_ms);
+        if (verdict == NetReconciler::Verdict::MISMATCH_ACT) {
+            auto snap = order_mgr.position_snapshot();
+            auto plan = notif::plan_unwind(net, snap, orb_cfg.qty);
+            int expected = plan.expected;
+            int diff = net - expected;
+            LOG("[EXECUTOR] CRITICAL: [NET-RECON] exchange net=%d but we hold %d "
+                "(state=%d) for >%dms — unwinding %d and halting entries",
+                net, expected, (int)snap.state, orb_cfg.net_mismatch_grace_ms,
+                std::abs(diff));
+            audit_log.error("position.net_mismatch",
+                "exchange net " + std::to_string(net) + " vs ours " +
+                std::to_string(expected));
+            strategy.halt_trading("exchange_net_mismatch");
+            net_halt_active = true;
+            if (plan.adopt_flat) {
+                // Our tracked position is gone from the exchange: cancel the stop and
+                // close the record — do not re-enter to match a book that is wrong.
+                order_mgr.adopt_external_close(strategy.last_price(), "external_close");
+                flush_position(db.get(), today, order_mgr, strategy,
+                               orb_cfg.dry_run || order_plant->connected,
+                               orb_cfg.point_value, md_up());
+            }
+            bool sent = plan.qty > 0 ? co_await send_unwind(plan.qty, plan.is_buy, "NET-RECON")
+                                     : true;
+            int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                         ": POSITION MISMATCH exchange net=" + std::to_string(net) +
+                         " ours=" + std::to_string(expected) +
+                         (sent ? " — unwind sent, entries halted" :
+                                 " — UNWIND SEND FAILED, close manually") +
+                         "\" >/dev/null 2>&1 &").c_str());
+            (void)notify_rc;  // fail-open
+        } else if (verdict == NetReconciler::Verdict::OK && net_halt_active) {
+            net_halt_active = false;
+            if (net == 0) order_mgr.confirm_exchange_flat();
+            LOG("[EXECUTOR] [NET-RECON] exchange net=%d consistent again — mismatch cleared",
+                net);
+            if (g_drill_sent && !g_drill_passed.exchange(true)) {
+                int64_t took = now_ms - g_drill_sent_ms;
+                LOG("[DRILL] PASS: untracked position detected and closed; exchange flat "
+                    "again %lld ms after the orphan order — exiting", (long long)took);
+                int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                    ": DRILL PASS — orphan position closed in " + std::to_string(took) +
+                    " ms\" >/dev/null 2>&1 &").c_str());
+                (void)notify_rc;
+                g_running = false;
+                ioc_ref.stop();
+            }
+            if (strategy.session().halt_reason == "exchange_net_mismatch" ||
+                strategy.session().halt_reason == "unowned_fill_in_trade")
+                strategy.unhalt_trading("exchange_net_consistent");
+        }
+
+    };
+
     auto op_loop = [&]() -> asio::awaitable<void> {
         if (!order_plant->connected || !order_plant->ws) co_return;
         beast::flat_buffer buf;
@@ -1358,12 +1766,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Map server→client basket IDs for entry/exit orders as well: gateway
                 // rejects (tid=313/315 ResponseNewOrder) carry only the server basket_id.
                 order_mgr.map_server_basket(notif.user_tag(), notif.basket_id());
-                // When our stop order reaches the exchange, capture the server basket_id.
-                if (order_mgr.is_stop_basket(notif.user_tag()) && !notif.basket_id().empty()) {
-                    LOG("[EXECUTOR] Stop server basket mapped: client=%s → server=%s",
-                        notif.user_tag().c_str(), notif.basket_id().c_str());
-                    order_mgr.set_stop_server_basket(notif.basket_id());
-                }
+                // Server basket id for a stop: the live one (trail cancels need it) OR
+                // one we already tried to cancel by client id — that cancel failed at
+                // Rithmic and the stop is still working; the OM re-sends it by server id.
+                order_mgr.on_stop_server_mapped(notif.user_tag(), notif.basket_id());
                 // Legends routing delivers fills as COMPLETE (15) on tid=351 rather than
                 // ExchangeOrderNotification (352). Detect by total_fill_size > 0.
                 if (notif.total_fill_size() > 0) {
@@ -1415,7 +1821,46 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
                                        md_up());
+                    } else if (notif.account_id().empty() ||
+                               notif.account_id() == orb_cfg.account_id) {
+                        // A fill on OUR account for an order we do not track: an
+                        // orphaned stop whose cancel failed, a broker liquidation, a
+                        // manual RTrader order. 2026-09-23: this was logged as "not our
+                        // order" while the executor's own orphaned stop filled 2 MNQ.
+                        // FLAT → run the order manager's stale-stop guards (cancelled
+                        // stop → unwind, unknown → ghost-halt). In a trade → halt
+                        // entries; the tid=451 reconciliation unwinds any mismatch.
+                        LOG("[EXECUTOR] CRITICAL: tid=351 fill on our account for an order we "
+                            "do not own (user_tag='%s' basket=%s px=%.2f qty=%d state=%d)",
+                            client_id.c_str(), notif.basket_id().c_str(), fill_px,
+                            notif.total_fill_size(), (int)order_mgr.state());
+                        auto r = notif::handle_unowned_fill(
+                            order_mgr, client_id, notif.basket_id(), notif.account_id(),
+                            orb_cfg.account_id, fill_px, notif.total_fill_size(),
+                            [&](const std::string& why) { strategy.halt_trading(why); });
+                        LOG("[EXECUTOR] unowned fill → %s",
+                            r == notif::UnownedFill::GUARDS_RUN ? "stale-stop guards run" :
+                            r == notif::UnownedFill::HALTED    ? "entries halted (in a trade)" :
+                            r == notif::UnownedFill::DUPLICATE ? "duplicate, skipped" : "other account");
+                        if (r == notif::UnownedFill::GUARDS_RUN)
+                            flush_position(db.get(), today, order_mgr, strategy,
+                                           orb_cfg.dry_run || order_plant->connected,
+                                           orb_cfg.point_value, md_up());
                     }
+                } else if ((int)notif.notify_type() == 17 ||
+                           notif.status() == "Cancellation Failed") {
+                    // The order is STILL WORKING. Until 2026-09-23 this fell through
+                    // unhandled: a stop cancelled by client id (server id not mapped
+                    // yet) kept working, fired 12s after the position was closed, and
+                    // the resulting long went unnoticed until the broker liquidated it.
+                    LOG("[EXECUTOR] tid=351 CANCEL FAILED: tag=%s basket=%s status=%s — order still live",
+                        notif.user_tag().c_str(), notif.basket_id().c_str(), notif.status().c_str());
+                    notif::handle_cancel_notification(order_mgr, (int)notif.notify_type(),
+                                                      notif.status(), notif.user_tag(),
+                                                      notif.basket_id());
+                    flush_position(db.get(), today, order_mgr, strategy,
+                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                   md_up());
                 } else if ((int)notif.notify_type() == 3) {
                     // Cancel ACK on tid=351 — Legends routing delivers cancel confirmations
                     // here rather than on ExchangeOrderNotification (tid=352).
@@ -1486,10 +1931,25 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     bool is_stop  = order_mgr.is_stop_basket(client_id);
                     bool is_exit  = order_mgr.is_exit_basket(client_id);
                     if (!is_entry && !is_stop && !is_exit) {
-                        LOG("[EXECUTOR] tid=352 fill for unknown user_tag='%s' basket=%s "
-                            "px=%.2f qty=%d — ignoring (not our order)",
-                            client_id.c_str(), notif.basket_id().c_str(),
-                            notif.fill_price(), notif.fill_size());
+                        // Our account, an order we do not track — the exact message the
+                        // 2026-09-23 orphaned-stop fill produced ("ignoring (not our order)").
+                        LOG("[EXECUTOR] CRITICAL: tid=352 fill for an order we do not own "
+                            "(acct=%s user_tag='%s' basket=%s px=%.2f qty=%d state=%d)",
+                            notif.account_id().c_str(), client_id.c_str(),
+                            notif.basket_id().c_str(), notif.fill_price(), notif.fill_size(),
+                            (int)order_mgr.state());
+                        auto r = notif::handle_unowned_fill(
+                            order_mgr, client_id, notif.basket_id(), notif.account_id(),
+                            orb_cfg.account_id, notif.fill_price(), notif.fill_size(),
+                            [&](const std::string& why) { strategy.halt_trading(why); });
+                        LOG("[EXECUTOR] unowned fill → %s",
+                            r == notif::UnownedFill::GUARDS_RUN ? "stale-stop guards run" :
+                            r == notif::UnownedFill::HALTED    ? "entries halted (in a trade)" :
+                            r == notif::UnownedFill::DUPLICATE ? "duplicate, skipped" : "other account");
+                        if (r == notif::UnownedFill::GUARDS_RUN)
+                            flush_position(db.get(), today, order_mgr, strategy,
+                                           orb_cfg.dry_run || order_plant->connected,
+                                           orb_cfg.point_value, md_up());
                     } else if (order_mgr.fill_already_processed(client_id,
                                                                 notif.fill_size())) {
                         // Duplicate delivery of a fill already processed via tid=351.
@@ -1523,146 +1983,80 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 } else if (notify_type == 4) { // TRIGGER PENDING (stop armed)
                     LOG("[EXECUTOR] Stop ARMED (trigger pending): client=%s server=%s",
                         notif.user_tag().c_str(), notif.basket_id().c_str());
+                    // Late mapping of a stop we already tried to cancel by client id
+                    // → the OM re-sends the cancel by server id.
+                    order_mgr.on_stop_server_mapped(notif.user_tag(), notif.basket_id());
                 }
 
             } else if (tid == 451) {
-                // AccountPnLPositionUpdate — real-time position/PnL from exchange.
-                // Startup snapshot (is_snapshot=true) shows current net position;
-                // used to detect ghost positions left by previous session.
-                rti::AccountPnLPositionUpdate pos_upd;
-                if (!pos_upd.ParseFromString(payload)) { LOG("[EXECUTOR] proto parse failed tid=451"); continue; }
-
-                LOG("[EXECUTOR] [POS-UPDATE] tid=451 is_snap=%d acct=%s "
-                    "fill_buy=%d fill_sell=%d net_qty=%d open_pnl='%s'",
-                    (int)pos_upd.is_snapshot(),
-                    pos_upd.account_id().c_str(),
-                    pos_upd.fill_buy_qty(), pos_upd.fill_sell_qty(),
-                    pos_upd.net_quantity(),
-                    pos_upd.open_position_pnl().c_str());
-
-                // Only act on snapshots for our account (net_quantity is account-wide;
-                // since we trade only 1 contract this equals our position).
-                if (pos_upd.is_snapshot() && pos_upd.account_id() == orb_cfg.account_id) {
-                    int net = pos_upd.net_quantity();
-                    if (net != 0) {
-                        // Position is live — any deferred working orders may be its
-                        // protective stops: keep them, stop deferring.
-                        if (defer_snapshot_cancels) {
-                            defer_snapshot_cancels = false;
-                            LOG("[EXECUTOR] [STARTUP-RECON] net_qty=%d — position live: keeping "
-                                "%zu deferred working order(s) (protective stops)",
-                                net, deferred_snapshot_cancels.size());
-                            deferred_snapshot_cancels.clear();
-                        }
-                        bool ghost_is_long = (net > 0);
-                        LOG("[EXECUTOR] [STARTUP-RECON] GHOST POSITION CONFIRMED: "
-                            "net_qty=%d (%s %d) — sending immediate unwind",
-                            net, ghost_is_long ? "LONG" : "SHORT", std::abs(net));
-                        // Unwind: sell if ghost long, buy if ghost short
-                        bool unwind_is_buy = !ghost_is_long;
-                        bool unwind_sent = false;
-                        if (order_plant->connected && order_plant->ws) {
-                            std::string basket_id =
-                                orb_cfg.symbol + "-startup-recon-"
-                                + std::to_string(std::chrono::duration_cast<
-                                    std::chrono::milliseconds>(
-                                    std::chrono::system_clock::now()
-                                        .time_since_epoch()).count());
-                            constexpr double TICK = 0.25;
-                            // Use last known price from live_position for unwind limit
-                            double ref = 0.0;
-                            {
-                                auto snap = order_mgr.position_snapshot();
-                                ref = snap.sl_price > 0 ? snap.sl_price : 0.0;
-                            }
-                            // Legends prop accounts reject MARKET (type=2) — use an
-                            // aggressive LIMIT that crosses the spread immediately.
-                            // Prefer strategy.last_price() as anchor (available on
-                            // reconnect; 0 on cold first boot).  Fall back to MARKET
-                            // only when absolutely no price reference exists.
-                            constexpr double UNWIND_TICK = 0.25;
-                            constexpr int UNWIND_OFFSET_TICKS = 50; // ~12.5 pts
-                            double last_px = strategy.last_price();
-                            int    unwind_order_type;
-                            double unwind_limit_px = 0.0;
-                            if (last_px > 0.0) {
-                                unwind_order_type = 1; // LIMIT
-                                unwind_limit_px = unwind_is_buy
-                                    ? last_px + UNWIND_OFFSET_TICKS * UNWIND_TICK
-                                    : last_px - UNWIND_OFFSET_TICKS * UNWIND_TICK;
-                            } else {
-                                // No price reference yet (cold start before first tick).
-                                // Fall back to MARKET — may be rejected by Legends.
-                                unwind_order_type = 2; // MARKET
-                                LOG("[EXECUTOR] [STARTUP-RECON] WARNING: no price ref for ghost unwind "
-                                    "— sending MARKET (may be rejected by Legends; "
-                                    "manually close via RTrader if rejected)");
-                            }
-                            rti::RequestNewOrder unwind_req;
-                            unwind_req.set_template_id(312);
-                            unwind_req.set_fcm_id(fcm_id_r);
-                            unwind_req.set_ib_id(ib_id_r);
-                            unwind_req.set_account_id(orb_cfg.account_id);
-                            unwind_req.set_symbol(trade_symbol);
-                            unwind_req.set_exchange(orb_cfg.exchange);
-                            unwind_req.set_quantity(std::abs(net));
-                            unwind_req.set_order_type(unwind_order_type);
-                            if (unwind_order_type == 1)
-                                unwind_req.set_price(unwind_limit_px);
-                            unwind_req.set_transaction_type(unwind_is_buy ? 1 : 2);
-                            unwind_req.set_user_tag(basket_id);
-                            unwind_req.set_duration(rti::RequestNewOrder::DAY);
-                            unwind_req.set_manual_or_auto_select(rti::RequestNewOrder::AUTO);
-                            unwind_req.set_trade_route(order_plant->trade_route);
-                            try {
-                                co_await op_write_q.write(proto_frame(unwind_req));
-                                LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind sent: "
-                                    "%s %s px=%.2f qty=%d basket=%s",
-                                    unwind_is_buy ? "BUY" : "SELL",
-                                    unwind_order_type == 1 ? "LIMIT" : "MARKET",
-                                    unwind_limit_px, std::abs(net), basket_id.c_str());
-                                // Register so the fill is recognised instead of
-                                // triggering a second GHOST-FILL log.
-                                order_mgr.register_unwind_basket(basket_id);
-                                unwind_sent = true;
-                            } catch (std::exception& e) {
-                                LOG("[EXECUTOR] [STARTUP-RECON] Ghost-unwind FAILED: %s "
-                                    "— MANUAL INTERVENTION REQUIRED", e.what());
-                            }
-                        }
-                        // Only unhalt strategy if the unwind order was actually dispatched.
-                        // If send failed, stay halted — operator must confirm flat and restart.
-                        if (unwind_sent)
-                            strategy.unhalt_trading("startup_ghost_position_cleared");
-                    } else {
-                        LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
-                        // Exchange is flat: any deferred working orders from the tid=351
-                        // snapshot are stale (carried position no longer exists) — cancel now.
-                        if (!deferred_snapshot_cancels.empty()) {
-                            LOG("[EXECUTOR] [STARTUP-RECON] draining %zu deferred snapshot "
-                                "cancel(s) (stale working orders)",
-                                deferred_snapshot_cancels.size());
-                            for (const auto& bid : deferred_snapshot_cancels)
-                                order_plant->send_cancel(bid, orb_cfg.account_id);
-                            deferred_snapshot_cancels.clear();
-                        }
-                        defer_snapshot_cancels = false;
-                        // Clear ghost-fill halt in OrderManager (covers: stale stop fired
-                        // then manually closed via RTrader before this snapshot arrived).
-                        order_mgr.confirm_exchange_flat();
-                        // If strategy was halted waiting for position confirm, clear it
-                        strategy.unhalt_trading("startup_position_confirmed_flat");
-                        // Immediately persist FLAT state to DB so a crash within the next
-                        // 5s doesn't leave a stale LONG/SHORT for the next restart to find.
-                        flush_position(db.get(), today, order_mgr, strategy,
-                                       orb_cfg.dry_run || order_plant->connected,
-                                       orb_cfg.point_value, md_up());
-                    }
-                }
-
+                co_await handle_pos_update(payload);
             }
         }
     };
+
+    // ── PNL_PLANT receive loop ────────────────────────────────────────────────
+    auto pnl_loop = [&]() -> asio::awaitable<void> {
+        if (!pnl_connected || !pnl_ws) co_return;
+        beast::flat_buffer buf;
+        while (g_running) {
+            buf.clear();
+            try {
+                co_await pnl_ws->async_read(buf, asio::use_awaitable);
+            } catch (std::exception& e) {
+                if (!g_running) co_return;
+                LOG("[EXECUTOR] PNL_PLANT read error: %s — position feed lost; "
+                    "triggering full reconnect", e.what());
+                pnl_connected = false;
+                carried_pos = order_mgr.position_snapshot();
+                ioc_ref.stop();
+                co_return;
+            }
+            std::string payload;
+            try {
+                payload = proto_strip(beast::buffers_to_string(buf.data()));
+            } catch (std::exception& e) {
+                LOG("[EXECUTOR] PNL_PLANT malformed frame: %s", e.what());
+                continue;
+            }
+            rti::Base base;
+            if (!base.ParseFromString(payload)) continue;
+            int tid = base.template_id();
+            if (tid == 19) continue;   // heartbeat
+            if (tid == 401) {
+                rti::ResponsePnLPositionUpdates r;
+                if (r.ParseFromString(payload)) {
+                    std::string rpc = r.rp_code().empty() ? "?" : r.rp_code(0);
+                    std::string txt = r.rp_code().size() > 1 ? r.rp_code(1) : "";
+                    if (rpc == "0") {
+                        LOG("[EXECUTOR] PNL_PLANT position subscription OK");
+                    } else {
+                        LOG("[EXECUTOR] CRITICAL: PNL_PLANT subscription REJECTED "
+                            "(rp_code=%s %s) — no position feed, entries halted",
+                            rpc.c_str(), txt.c_str());
+                        strategy.halt_trading("pnl_subscribe_rejected");
+                    }
+                }
+                continue;
+            }
+            if (tid == 451) { co_await handle_pos_update(payload); continue; }
+            if (tid == 403) {
+                rti::ResponsePnLPositionSnapshot r;
+                if (r.ParseFromString(payload)) {
+                    std::string rpc = r.rp_code().empty() ? "?" : r.rp_code(0);
+                    std::string txt = r.rp_code().size() > 1 ? r.rp_code(1) : "";
+                    if (rpc == "0")
+                        LOG("[EXECUTOR] PNL_PLANT snapshot request OK (tid=403)");
+                    else
+                        LOG("[EXECUTOR] WARNING: PNL_PLANT snapshot request rejected "
+                            "(rp_code=%s %s)", rpc.c_str(), txt.c_str());
+                }
+                continue;
+            }
+            if (tid == 450) continue;   // InstrumentPnLPositionUpdate — per-symbol detail, not needed
+            LOG("[EXECUTOR] pnl_loop tid=%d len=%zu", tid, payload.size());
+        }
+    };
+
 
     // Session setup — on reconnect, today/risk/strategy already have the day's state.
     // Only initialize today on first run (empty string signals first call).
@@ -1691,32 +2085,19 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 "halting entries. Requesting exchange position snapshot to auto-verify.",
                 prior_state.c_str());
             strategy.halt_trading("startup_stale_position_" + prior_state);
-            // Subscribe to PnL/position updates so the exchange sends a tid=451 snapshot.
-            // If net_qty=0 the existing tid=451 handler calls unhalt_trading() automatically
-            // — no manual restart needed when the prior exit order already filled.
-            // If net_qty!=0 the handler sends an unwind order and then unhalts.
-            if (order_plant->connected && order_plant->ws) {
-                try {
-                    rti::RequestPnLPositionUpdates pnl_req;
-                    pnl_req.set_template_id(400);
-                    pnl_req.set_request(rti::RequestPnLPositionUpdates::SUBSCRIBE);
-                    pnl_req.set_fcm_id(fcm_id_r);
-                    pnl_req.set_ib_id(ib_id_r);
-                    pnl_req.set_account_id(orb_cfg.account_id);
-                    co_await op_write_q.write(proto_frame(pnl_req));
-                    LOG("[EXECUTOR] [STARTUP-RECON] RequestPnLPositionUpdates SUBSCRIBE sent "
-                        "— awaiting tid=451 snapshot to auto-verify and unhalt");
-                } catch (std::exception& e) {
-                    LOG("[EXECUTOR] [STARTUP-RECON] PnL subscribe FAILED: %s "
-                        "— manual restart required to clear halt", e.what());
-                }
-            }
         } else if (prior_state == "PENDING_ENTRY") {
             LOG("[EXECUTOR] WARNING: live_position shows PENDING_ENTRY from prior cycle — "
                 "snapshot reconciliation should cancel the residual entry order.");
         }
     }
+    // The tid=451 position snapshot that verifies the account arrives on the
+    // PNL_PLANT session (subscribed right after its login above).
 
+    if (!g_drill.empty()) {
+        strategy.halt_trading("drill_mode");
+        LOG("[DRILL] mode=%s — strategy halted for the whole run; waiting for the exchange "
+            "to confirm FLAT before placing the untracked order", g_drill.c_str());
+    }
     LOG("[EXECUTOR] Session date: %s  dry_run=%s",
         today.c_str(), orb_cfg.dry_run ? "TRUE" : "FALSE");
     if (orb_cfg.dry_run)
@@ -1755,6 +2136,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     LOG("[EXECUTOR] Heartbeat send failed on ORDER_PLANT");
                 }
             }
+            if (pnl_connected && pnl_ws) {
+                try {
+                    co_await pnl_write_q.write(proto_frame(hb));
+                } catch (...) {
+                    LOG("[EXECUTOR] Heartbeat send failed on PNL_PLANT");
+                }
+            }
         }
     };
 
@@ -1772,6 +2160,21 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             eod_timer.expires_after(std::chrono::seconds(1));
             co_await eod_timer.async_wait(asio::use_awaitable);
 
+            if (g_drill_sent && !g_drill_passed) {
+                int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
+                if (now_ms - g_drill_sent_ms > 90'000) {
+                    LOG("[DRILL] FAIL: 90s after the orphan order the exchange is still not "
+                        "confirmed flat — CLOSE THE POSITION IN RTRADER NOW");
+                    int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                        ": DRILL FAIL — orphan position NOT closed, close it by hand\" "
+                        ">/dev/null 2>&1 &").c_str());
+                    (void)notify_rc;
+                    g_drill_passed = true;   // report once
+                    g_exit_code = 2; g_running = false;
+                    ioc_ref.stop();
+                }
+            }
             // Deferred flatten from signal handler (#5 — signal handler is mutex-free)
             if (g_flatten_requested.exchange(false)) {
                 LOG("[EXECUTOR] Kill signal — flattening position");
@@ -1784,6 +2187,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             int et_h, et_m;
             current_et(et_h, et_m);
             strategy.check_eod(et_h, et_m);
+            settle_strategy();
+            if constexpr (!kOrb) {
+                // Backstop: the trend engine flattens at its own win_end; the executor also
+                // enforces the config's eod_flatten time so a mis-set window can never carry
+                // a live position past it.
+                static std::string eod_backstop_day;
+                if (et_h == orb_cfg.eod_flatten_hour && et_m == orb_cfg.eod_flatten_min &&
+                    eod_backstop_day != today &&
+                    order_mgr.position_snapshot().state != PosState::FLAT) {
+                    eod_backstop_day = today;
+                    LOG("[EXECUTOR] trend EOD backstop %02d:%02d ET — flattening", et_h, et_m);
+                    order_mgr.flatten_now("eod_backstop", strategy.last_price());
+                }
+            }
 
             // MD tick silence watchdog — force-close stale MD WS so md_loop reconnects.
             // Only active during the session window (orb_open - 5 min to eod_flatten).
@@ -1827,10 +2244,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             "pg feed silent " + std::to_string(silence_s) + "s");
                         strategy.halt_trading("pg_feed_stale");
                         // grid-notify is the grid's Telegram channel; fail-open.
-                        std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                        int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
                                      ": tick feed stale " + std::to_string(silence_s) +
                                      "s — collector down? new entries halted\" "
                                      ">/dev/null 2>&1 &").c_str());
+                        (void)notify_rc;  // fail-open
                     }
                 }
             }
@@ -2260,6 +2678,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 
                 // Feed strategy
                 strategy.on_tick(tick);
+                settle_strategy();
 
                 // ── Cycle visibility logs ─────────────────────────────────────
                 int et_h, et_m;
@@ -2274,7 +2693,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 int cur_min = et_h * 60 + et_m;
                 if (cur_min != last_log_minute) {
                     last_log_minute = cur_min;
-                    if (!strategy.orb_set()) {
+                    if constexpr (!kOrb) {
+                        Position psnap = order_mgr.position_snapshot();
+                        LOG("[EXECUTOR] TREND ET=%02d:%02d px=%.2f pos_state=%d engine_in_pos=%d sl=%.2f trades=%d/%d%s",
+                            et_h, et_m, tick.price, (int)psnap.state,
+                            (int)strategy.session().in_position, psnap.sl_price,
+                            strategy.session().trades_today, orb_cfg.max_daily_trades,
+                            strategy.session().risk_halted ? (" HALTED:" + strategy.session().halt_reason).c_str() : "");
+                    } else if (!strategy.orb_set()) {
                         double oh = strategy.orb_high();
                         double ol = strategy.orb_low();
                         bool   has = (oh > ol) && (ol < 1e10);
@@ -2628,6 +3054,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     asio::co_spawn(ex, heartbeat_loop(),  asio::detached);
     asio::co_spawn(ex, eod_loop(),        asio::detached);
     asio::co_spawn(ex, op_loop(),         asio::detached);
+    asio::co_spawn(ex, pnl_loop(),        asio::detached);
     // legends_md_loop disabled — separate comparison feed; not needed for live trading.
     // asio::co_spawn(ex, legends_md_loop(), asio::detached);
 
@@ -2647,7 +3074,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             double sh = std::atof(PQgetvalue(r, 0, 0));
             double sl = std::atof(PQgetvalue(r, 0, 1));
             if (sh > sl && sh > 0.0) {
-                strategy.seed_orb_range(sh, sl);
+                if constexpr (kOrb) strategy.seed_orb_range(sh, sl);
                 LOG("[EXECUTOR] ORB seeded high=%.2f low=%.2f — first real tick will anchor price, cross detection armed", sh, sl);
             }
         }
@@ -2823,6 +3250,12 @@ int main(int argc, char* argv[]) {
             config_path = argv[++i];
         else if (std::strcmp(argv[i], "--dry-run") == 0)
             force_dry_run = true;
+        else if (std::strcmp(argv[i], "--drill") == 0 && i + 1 < argc)
+            g_drill = argv[++i];
+    }
+    if (!g_drill.empty() && g_drill != "orphan") {
+        std::fprintf(stderr, "FATAL: unknown --drill '%s' (known: orphan)\n", g_drill.c_str());
+        return 1;
     }
 
     LOG("[EXECUTOR] NQ ORB Execution Engine starting");
@@ -2874,10 +3307,12 @@ int main(int argc, char* argv[]) {
     // ── Run ───────────────────────────────────────────────────────────────────
     // Hoist session components so they survive reconnects.
     RiskManager  risk(orb_cfg, orb_cfg.starting_balance);
-    OrbStrategy  strategy(orb_cfg);
     std::string  today;        // empty = first run; triggers reset_session/reset_daily
     Position     carried_pos;  // non-FLAT on reconnect → halt + warn (#2)
 
+    // The session loop is identical for every engine; the strategy object is built once
+    // here and survives reconnects exactly like risk/today/carried_pos.
+    auto run_session_loop = [&](auto& strategy) -> int {
     int exit_code = 0;
     int cycle     = 0;
     while (g_running) {
@@ -2934,6 +3369,28 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    return exit_code;
+    };
+
+    int exit_code = 0;
+    if (orb_cfg.engine == "trend") {
+        const TrendConfig tcfg = TrendConfig::from_json_string(read_text_file(config_path));
+        // The live executor feeds trades only — no ES reference bars and no BBO quotes.
+        if (tcfg.mode == "rs_continuation" || tcfg.mode == "book_imbalance") {
+            std::fprintf(stderr, "FATAL: trend mode '%s' needs a feed the live executor does not provide\n",
+                         tcfg.mode.c_str());
+            return 1;
+        }
+        LOG("[EXECUTOR] engine=trend mode=%s tf=%dm window=%04d-%04d strategy_tag=%s",
+            tcfg.mode.c_str(), tcfg.tf_min, tcfg.win_start, tcfg.win_end, orb_cfg.strategy.c_str());
+        TrendStrategy strategy(tcfg, orb_cfg);
+        exit_code = run_session_loop(strategy);
+    } else {
+        OrbStrategy strategy(orb_cfg);
+        exit_code = run_session_loop(strategy);
+    }
+
     LOG("[EXECUTOR] Shutdown complete");
+    if (g_exit_code != 0) return g_exit_code;   // drill verdict
     return exit_code;
 }

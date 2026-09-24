@@ -66,10 +66,11 @@ public:
 
     // ── Single-instance guard (multi-executor safety) ─────────────────────────
     // Acquires a PostgreSQL session-level advisory lock keyed on a stable hash of
-    // (account_label, strategy). A second executor started with the same pair gets
-    // false and must refuse to trade; different strategy on the same account gets
-    // its own lock. The lock is released on close()/destruction or automatically
-    // by the server if the connection dies.
+    // the ACCOUNT alone: one executor per account, whatever its engine or strategy
+    // tag. Two engines (e.g. ORB + trend) on one account would size, risk-check and
+    // reconcile against the same exchange position without knowing about each other.
+    // A second executor gets false and must refuse to trade. The lock is released on
+    // close()/destruction or automatically by the server if the connection dies.
     bool acquire_instance_lock(const std::string& account_label,
                                const std::string& strategy) {
         if (!is_connected()) reconnect();
@@ -183,7 +184,7 @@ public:
         snprintf(fill,   sizeof(fill),   "%.4f", pos.fill_price_actual);
         snprintf(besl,   sizeof(besl),   "%.4f", pos.be_sl_price);
 
-        const char* params[24] = {
+        const char* params[25] = {
             account_label_.c_str(),    // $1  account_label
             instrument_.c_str(),       // $2  instrument
             trade_date.c_str(),        // $3  trade_date
@@ -208,6 +209,8 @@ public:
             echase,                    // $22 entry_price_chase_ticks
             etslip,                    // $23 entry_true_slip_ticks
             besl,                      // $24 be_sl_price
+            strategy_.c_str(),         // $25 strategy — without it every row defaulted to 'ORB',
+                                       //     so a trend/test trade used up ORB's max_daily_trades
         };
 
         exec_params(
@@ -216,7 +219,7 @@ public:
             " entry_price, exit_price, sl_price, qty, pnl_points, pnl_usd, exit_reason,"
             " signal_to_submit_us, submit_to_fill_ms, entry_slippage_ticks, exit_slippage_ticks,"
             " mae_pts, mfe_pts, trigger_price, fill_price,"
-            " entry_price_chase_ticks, entry_true_slip_ticks, be_sl_price)"
+            " entry_price_chase_ticks, entry_true_slip_ticks, be_sl_price, strategy)"
             " VALUES"
             "($1, $2, $3::date, $4,"
             " to_timestamp($5::bigint / 1000000.0),"
@@ -226,8 +229,8 @@ public:
             " $14::bigint, $15::bigint, $16::int, $17::int,"
             " $18::double precision, $19::double precision,"
             " $20::double precision, $21::double precision,"
-            " $22::int, $23::int, $24::double precision)",
-            24, params);
+            " $22::int, $23::int, $24::double precision, $25)",
+            25, params);
 
         LOG("[ORBDB] Trade written: %s %.4f→%.4f pnl=%.2f mae=%.2f mfe=%.2f slip=%.2fpts",
             direction.c_str(), pos.entry_price, pos.exit_price, pos.pnl_usd,
@@ -860,7 +863,8 @@ private:
     // restarts, no dependence on PG-version-specific hashtext().
     static int64_t instance_lock_key(const std::string& account_label,
                                      const std::string& strategy) {
-        const std::string s = "nq_executor:" + account_label + ":" + strategy;
+        (void)strategy;   // account-wide on purpose — see acquire_instance_lock
+        const std::string s = "nq_executor:" + account_label;
         uint64_t h = 1469598103934665603ULL;
         for (unsigned char c : s) {
             h ^= c;

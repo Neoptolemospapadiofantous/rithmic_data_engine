@@ -1,4 +1,4 @@
-.PHONY: build test hermes hermes-fast hermes-note hermes-fleet hermes-fleet-fast hermes-lifecycle hermes-lifecycle-once hermes-lifecycle-local coordinator-start coordinator-once coordinator-status agent-run obsidian-daily obsidian-session push-eod deploy deploy-dry clean
+.PHONY: golden golden-freeze build test hermes hermes-fast hermes-note hermes-fleet hermes-fleet-fast hermes-lifecycle hermes-lifecycle-once hermes-lifecycle-local coordinator-start coordinator-once coordinator-status agent-run obsidian-daily obsidian-session push-eod deploy deploy-dry clean stack-status
 
 BUILD_DIR := build
 JOBS      := $(shell nproc)
@@ -20,12 +20,21 @@ test-unit:
 	$(BUILD_DIR)/test_risk_manager
 	$(BUILD_DIR)/test_validator
 
+# Golden-day regression: replay a frozen window and diff every trade against tests/golden/.
+golden:
+	@bash scripts/golden_replay.sh --twice
+golden-freeze:
+	@bash scripts/golden_replay.sh --freeze
+
 # Full test suite including DB test.
 test: test-unit
 	$(BUILD_DIR)/test_db
 
 # ── Hermes CI loop ─────────────────────────────────────────────────────────────
 # Full check: build + all tests + audit_daemon (local/testing only).
+stack-status:  ## index every trading process: units, strays, feed, memory (exit 1 = not ready)
+	@bash scripts/stack_status.sh
+
 hermes:
 	@bash scripts/hermes.sh
 

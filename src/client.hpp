@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstring>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -86,6 +87,8 @@ public:
     // Set the callback invoked for each tick / BBO / depth event
     void set_on_tick(TickCallback cb)   { on_tick_  = std::move(cb); }
     void set_on_bbo(BBOCallback cb)     { on_bbo_   = std::move(cb); }
+    // Diagnostics: "150:12345 151:0 156:0 …" — raw inbound frames per template id.
+    std::string template_counts() const;
     void set_on_depth(DepthCallback cb) { on_depth_ = std::move(cb); }
 
     // Run the connection + reconnection loop (runs until stop() is called)
@@ -164,6 +167,8 @@ private:
     TickCallback       on_tick_;
     BBOCallback        on_bbo_;
     DepthCallback      on_depth_;
+    std::map<int, long long> tmpl_counts_;     // dispatch thread only
+    std::map<int, int>       dumped_;          // raw payloads written per template (RITHMIC_MD_DUMP_DIR)
     double             heartbeat_interval_ = 30.0;
     std::atomic<bool>  running_{true};
     std::atomic<bool>  hb_response_pending_{false}; // set by dispatch_message on template 18

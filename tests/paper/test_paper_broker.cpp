@@ -190,20 +190,66 @@ TEST(trail_ratchet_never_retreats) {
     ASSERT_NEAR(b.stop_price(), 20012.00, 1e-9);
 }
 
-TEST(breakeven_move_requires_trigger_and_delay) {
+// Break-even is IMMEDIATE (same rule as the live executor, order_manager.hpp): the
+// first tick at which MFE ≥ trail_be_trigger moves the stop to entry + be_offset,
+// no matter how long the trade has been open. The TRAIL still waits for
+// trail_delay_secs (and the same MFE trigger).
+TEST(breakeven_immediate_trail_after_delay) {
     FakeStore store;
     OrbConfig cfg = make_cfg();                     // delay 300s, trigger 3
     auto b = make_broker(store, cfg);
     signal_buy(b, et_ts(10, 0), 20000.0);
     b.on_tick(tick(et_ts(10, 0, 1), 20000.0));      // entry @ 20000.25
 
-    b.on_tick(tick(et_ts(10, 1, 40), 20006.0));     // mfe 5.75 but only 99s
-    ASSERT_NEAR(b.stop_price(), 19985.25, 1e-9);    // not armed yet
+    b.on_tick(tick(et_ts(10, 0, 30), 20002.0));     // mfe 1.75 < trigger → stop untouched
+    ASSERT_NEAR(b.stop_price(), 19985.25, 1e-9);
 
-    b.on_tick(tick(et_ts(10, 5, 2), 20006.0));      // elapsed 301s, mfe ok
+    b.on_tick(tick(et_ts(10, 1, 40), 20006.0));     // mfe 5.75 at 99s → BE NOW (no delay)
     ASSERT_NEAR(b.stop_price(), 20001.25, 1e-9);    // entry + be_offset
 
-    b.on_tick(tick(et_ts(10, 5, 30), 20001.25));    // stop at BE fires
+    b.on_tick(tick(et_ts(10, 2, 0), 20020.0));      // still inside the delay → no trail yet
+    ASSERT_NEAR(b.stop_price(), 20001.25, 1e-9);
+
+    b.on_tick(tick(et_ts(10, 5, 2), 20020.0));      // 301s → trail arms: in-memory stop = price − 10
+    ASSERT_NEAR(b.stop_price(), 20010.0, 1e-9);
+    ASSERT_NEAR(b.placed_stop(), 20001.25, 1e-9);   // …but 20010 is only 8.75 beyond the placed BE stop → not re-placed (live suppression)
+
+    b.on_tick(tick(et_ts(10, 5, 10), 20009.75));    // below the in-memory stop, above the WORKING stop → still in
+    ASSERT(b.in_position());
+
+    b.on_tick(tick(et_ts(10, 5, 20), 20025.0));     // in-memory 20015, ≥10 beyond 20001.25 → placed
+    ASSERT_NEAR(b.placed_stop(), 20015.0, 1e-9);
+
+    b.on_tick(tick(et_ts(10, 5, 30), 20014.75));    // through the working stop
+    ASSERT(!b.in_position());
+    ASSERT_STREQ(store.trades[0].exit_reason, "trail");
+}
+
+// Book overlays: break-even on book flip moves the stop to entry+offset only while
+// price is already beyond that level; a flip while under water leaves the stop alone.
+TEST(book_be_on_flip_never_on_wrong_side_of_market) {
+    FakeStore store;
+    OrbConfig cfg = make_cfg(); cfg.book_be_on_flip = true;
+    auto b = make_broker(store, cfg);
+    signal_buy(b, et_ts(10, 0), 20000.0);
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));      // entry @ 20000.25, stop 19985.25
+    b.on_quote(paper::Quote{et_ts(10, 0, 10), 19997.75, 19998.00, 2, 9});   // book flips against (0.18 bid share)
+    b.on_tick(tick(et_ts(10, 0, 11), 19998.0));     // under water → stop must NOT move
+    ASSERT_NEAR(b.stop_price(), 19985.25, 1e-9);
+    b.on_quote(paper::Quote{et_ts(10, 0, 40), 20002.75, 20003.00, 2, 9});   // still against, but price +2.5
+    b.on_tick(tick(et_ts(10, 0, 41), 20003.0));     // beyond entry+1 → BE on flip fires
+    ASSERT_NEAR(b.stop_price(), 20001.25, 1e-9);
+    ASSERT(b.in_position());
+}
+
+TEST(breakeven_exit_reason_when_stopped_at_be) {
+    FakeStore store;
+    OrbConfig cfg = make_cfg();
+    auto b = make_broker(store, cfg);
+    signal_buy(b, et_ts(10, 0), 20000.0);
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));      // entry @ 20000.25
+    b.on_tick(tick(et_ts(10, 0, 20), 20004.0));     // mfe 3.75 → BE at 20001.25 immediately
+    b.on_tick(tick(et_ts(10, 0, 40), 20001.25));    // stop at BE fires
     ASSERT(!b.in_position());
     ASSERT_STREQ(store.trades[0].exit_reason, "breakeven");
 }
@@ -215,9 +261,10 @@ TEST(trail_exit_reason) {
     auto b = make_broker(store, cfg);
     signal_buy(b, et_ts(10, 0), 20000.0);
     b.on_tick(tick(et_ts(10, 0, 1), 20000.0));
-    b.on_tick(tick(et_ts(10, 1, 1), 20020.0));      // arm + trail to 20010
-    ASSERT_NEAR(b.stop_price(), 20010.00, 1e-9);
-    b.on_tick(tick(et_ts(10, 2), 20009.0));         // through trailed stop
+    b.on_tick(tick(et_ts(10, 1, 1), 20025.0));      // BE (20001.25) then trail to 20015 — ≥ trail_step beyond the placed BE stop, so it is re-placed
+    ASSERT_NEAR(b.stop_price(), 20015.00, 1e-9);
+    ASSERT_NEAR(b.placed_stop(), 20015.00, 1e-9);
+    b.on_tick(tick(et_ts(10, 2), 20014.0));         // through the working trailed stop (20015)
     ASSERT(!b.in_position());
     ASSERT_STREQ(store.trades[0].exit_reason, "trail");
     ASSERT(store.trades[0].pnl_usd > 0.0);

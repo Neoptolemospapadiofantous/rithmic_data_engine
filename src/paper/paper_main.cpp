@@ -12,6 +12,7 @@
 #include "orb_strategy.hpp"
 #include "mtf_scalper_strategy.hpp"
 #include "trend_strategy.hpp"
+#include "paper_quote.hpp"
 #include "paper_broker.hpp"
 #include "paper_bracket_broker.hpp"
 #include "paper_config.hpp"
@@ -117,6 +118,10 @@ struct Runner {
     void s_eod(int h, int m)              { if (strategy) strategy->check_eod(h, m);     else if (trend) trend->check_eod(h, m);     else mtf->check_time_flatten(h, m); }
     // Feed-gap guard (orb + trend only): a strategy that is flat and not halted
     // can safely restart its session state after a hole in the tick stream.
+    void on_quote(const paper::Quote& q, double tick) {
+        if (broker) broker->on_quote(q); else bbroker->on_quote(q);
+        if (trend) trend->on_quote(q.ts_us, q.bid, q.bid_sz, q.ask, q.ask_sz, tick);
+    }
     bool gap_resettable() const {
         if (mtf) return false;
         if (broker->direction() != 0 || halted()) return false;
@@ -197,6 +202,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     LOG("[PAPER] Connected to PostgreSQL — schema ensured");
+    db->set_account_label(fleet.account_label);   // seeding queries never see another label's rows
     if (g_replay) {
         db->set_trades_only(true);
         LOG("[PAPER] REPLAY isolation: the store will record paper_trades (label '%s') only — "
@@ -444,6 +450,17 @@ int main(int argc, char** argv) {
     int64_t last_ctl_ms = 0;
     double last_price = 0.0;
     int64_t prev_tick_ts = 0;                                   // feed-gap guard
+    // Top-of-book stream: quotes are applied to every runner in tick-time order
+    // (a quote is visible once its timestamp is ≤ the tick being processed).
+    std::deque<paper::Quote> qbuf; int64_t bbo_watermark = watermark; int64_t quotes_seen = 0;
+    auto refill_quotes = [&]() {
+        if (!qbuf.empty()) return;
+        for (const auto& b : db->poll_bbo(feed_symbol, bbo_watermark, 5000)) {
+            qbuf.push_back(paper::Quote{b.ts_us, b.bid, b.ask, b.bid_sz, b.ask_sz});
+            bbo_watermark = b.ts_us;
+        }
+    };
+    int last_eod_minute = -1;                                   // tick-time minute of the last EOD check
     const int64_t feed_gap_reset_us = (int64_t)fleet.feed_gap_reset_secs * 1'000'000LL;
 
     while (!g_stop) {
@@ -480,6 +497,24 @@ int main(int argc, char** argv) {
             prev_tick_ts = t.ts_us;
             watermark = t.ts_us;
             if (g_replay) g_replay_clock = t.ts_us;
+            // quotes up to this tick
+            refill_quotes();
+            while (!qbuf.empty() && qbuf.front().ts_us <= t.ts_us) {
+                for (auto& r : runners) r->on_quote(qbuf.front(), fleet.tick_size);
+                qbuf.pop_front(); ++quotes_seen;
+                if (qbuf.empty()) refill_quotes();
+            }
+            // End-of-window check on every minute boundary of TICK time (not wall
+            // clock): a strategy whose window ends at 14:00 must flatten on the
+            // first 14:00 tick, in replay exactly as live. The wall-clock check
+            // below only covers sparse-tick stretches.
+            {
+                int th, tm; utc_us_to_et(t.ts_us, th, tm);
+                if (th * 60 + tm != last_eod_minute) {
+                    last_eod_minute = th * 60 + tm;
+                    for (auto& r : runners) r->s_eod(th, tm);
+                }
+            }
             last_price = t.price;
             OrbTick ot{t.ts_us, t.price, t.size, t.is_buy};
             for (auto& r : runners) {

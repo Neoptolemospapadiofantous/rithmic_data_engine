@@ -200,6 +200,14 @@ public:
         return { equity_, peak_equity_, daily_pnl_ };
     }
 
+    // Halt on evidence this manager cannot see itself — the broker's own day P&L
+    // (tid=451), which includes positions our trade log never recorded. Persists
+    // like any other risk halt (live_sessions.risk_halted).
+    void halt_external(const std::string& reason) {
+        std::lock_guard<std::mutex> lk(mu_);
+        halt(reason);
+    }
+
 private:
     void halt(const std::string& reason) {
         halted_      = true;

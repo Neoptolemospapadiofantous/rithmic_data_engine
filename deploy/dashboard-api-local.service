@@ -1,0 +1,27 @@
+# Dashboard backend (~/Desktop/bot, FastAPI on :8080). Until 2026-09-23 it was started by hand
+# from a terminal: it died with the terminal and nothing restarted it. The executor does NOT depend
+# on it (orders never route through the dashboard) — this unit only keeps the UI up.
+# MemoryMax: it has reached 3-4 GB when analytics ran on the request path; a runaway backend is
+# restarted here instead of pushing the box into swap while the executor is trading.
+[Unit]
+Description=Trading dashboard backend (bot ui.app on :8080, CPP_LOCAL via bot/.env)
+After=network-online.target postgresql.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/bot
+ExecStart=/home/theone/Desktop/bot/.venv/bin/python -m ui.app
+StandardOutput=append:/tmp/ui_app.log
+StandardError=append:/tmp/ui_app.log
+Restart=always
+RestartSec=10
+KillSignal=SIGTERM
+TimeoutStopSec=20
+MemoryHigh=3G
+MemoryMax=4G
+CPUWeight=50
+
+[Install]
+WantedBy=default.target
