@@ -76,6 +76,7 @@ trades_summary() {
 
 say "=== overnight live test start (account $ACC) ==="
 # ── 1. pre-flight ─────────────────────────────────────────────────────────────
+[[ -f "config/${ACC}_orbtest_config.json" ]] || { say "config/${ACC}_orbtest_config.json missing — it is archived when not in use: git mv config/archived/${ACC}_orbtest_config.json config/ && ln -sf .env.${ACC} .env.${ACC}_orbtest"; exit 1; }
 h=$(et_hm); (( h >= 1700 && h < 1830 )) || { say "not started in the 17:00–18:30 ET slot (now $h) — refusing"; \
   notify "🔴 overnight live test ($ACC) did not run: started at $h ET, outside its slot"; exit 1; }
 wait_until_et 1802
