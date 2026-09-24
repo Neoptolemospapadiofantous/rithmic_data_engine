@@ -454,6 +454,51 @@ TEST(pending_entry_timeout_cancel_resent_on_late_map) {
     x.assert_clean("entry_timeout_late_map");
 }
 
+// 24. audit #6: the OLD stop fires while its cancel (trail/breakeven replace) is in flight —
+//     it is the exit: trade closed, replacement stop cancelled, nothing left
+TEST(replaced_stop_fills_before_cancel_is_the_exit) {
+    MockExchange x; enter(x, OrbSignal::SELL, 20000.0);
+    std::string old_stop = x.stop_id();
+    x.om.check_trail_and_stop(19996.0);                       // BE: cancel old, new stop sent
+    x.flush();
+    std::string repl = x.stop_id();
+    ASSERT(repl != old_stop);
+    x.cancel_reqs.clear();                                    // the old cancel has not landed…
+    x.fill(old_stop, 20015.0);                                // …and the old stop fires
+    ASSERT(x.om.is_flat());                                   // treated as the exit
+    ASSERT(!x.om.is_entry_halted());
+    x.assert_clean("replaced_stop_fill");                     // replacement cancelled
+}
+// 25. audit #5: an unwind that RESTS is retried — NetReconciler re-acts after retry_ms
+TEST(net_reconciler_retries_a_mismatch_that_survives_the_unwind) {
+    NetReconciler r;                                             // clocks are steady_clock ms (never 0)
+    ASSERT(r.observe(false, 100000, 5000, 15000) == NetReconciler::Verdict::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 105000, 5000, 15000) == NetReconciler::Verdict::MISMATCH_ACT);
+    ASSERT(r.observe(false, 110000, 5000, 15000) == NetReconciler::Verdict::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 120000, 5000, 15000) == NetReconciler::Verdict::MISMATCH_ACT);  // retry
+    ASSERT(r.observe(false, 121000, 5000, 15000) == NetReconciler::Verdict::MISMATCH_WAIT);
+    ASSERT(r.observe(true, 122000, 5000, 15000) == NetReconciler::Verdict::OK);
+    NetReconciler once;                                        // retry_ms=0: old behaviour
+    once.observe(false, 100000, 5000); ASSERT(once.observe(false, 105000, 5000) == NetReconciler::Verdict::MISMATCH_ACT);
+    ASSERT(once.observe(false, 160000, 5000) == NetReconciler::Verdict::MISMATCH_WAIT);
+}
+// 26. audit #8: a PARTIAL entry (1 of 2 filled, rest working) is a consistent state —
+//     the reconciler must not unwind it while the entry is still in flight
+TEST(partial_entry_is_consistent_while_pending) {
+    MockExchange x;
+    x.om.on_signal(OrbSignal::SELL, 20000.0, "entry");
+    std::string entry = x.om.position_snapshot().basket_id_entry;
+    x.fill(entry, 20000.0, 1);
+    ASSERT(x.om.net_qty_consistent(-1));
+    ASSERT(x.om.net_qty_consistent(0) && x.om.net_qty_consistent(-2));
+    ASSERT(!x.om.net_qty_consistent(+1) && !x.om.net_qty_consistent(-3));
+    x.reconcile(20000.0);                                      // no action
+    ASSERT_EQ(x.working(), 1);
+    x.fill(entry, 20000.0, 1);
+    x.fill(x.stop_id(), 20015.0);
+    x.assert_clean("partial_entry_consistent");
+}
+
 int main() {
     std::cout << "test_trade_end_invariant — every trade end leaves 0 working orders and net 0\n";
     RUN(stop_loss_fill_long);
@@ -479,6 +524,9 @@ int main() {
     RUN(stuck_exit_retry_cancels_old_exit_by_server_id);
     RUN(flatten_pending_entry_cancels_by_server_id);
     RUN(pending_entry_timeout_cancel_resent_on_late_map);
+    RUN(replaced_stop_fills_before_cancel_is_the_exit);
+    RUN(net_reconciler_retries_a_mismatch_that_survives_the_unwind);
+    RUN(partial_entry_is_consistent_while_pending);
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed ? 1 : 0;
 }

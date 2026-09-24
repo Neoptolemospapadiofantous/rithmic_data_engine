@@ -30,14 +30,26 @@ Dates are in ISO-8601 order (newest first).
 - `scripts/strategy_handoff.sh`: ORB → trend handoff during RTH (one executor at a time),
   waits for flat + no pending stop cancel, hands back to ORB after the session.
 
-### Known open (audit 2026-09-24, not yet fixed)
-- SIGTERM shutdown stops reading ORDER_PLANT notifications before the drain waits end; cleanup
-  of a stop whose cancel failed at shutdown relies on the next start's tid=351 open-order cancel.
-- In-process reconnect mid-trade: ghost unwind clears deferred snapshot cancels; the live stop's
-  server id is not persisted at submit.
-- Unwind orders (stale-stop 4-tick limits, NET-RECON) are never cancelled/retried if they rest.
-- tid=352 per-fill sizes feed the cumulative dedupe (second equal partial dropped; relies on the
-  tid=351 COMPLETE). Partial entry > 5 s: reconciler treats PENDING_ENTRY as 0 held.
+### Fixed — remaining audit items (2026-09-24, afternoon)
+- **Shutdown drain**: SIGTERM sets `g_draining` before `g_running=false`; the ORDER/PNL plant
+  readers, heartbeat and the 1 s housekeeping loop keep running (tick feed stopped, strategy
+  halted) so exit fills, cancel ACKs, "Cancellation Failed", late server ids and reconciler
+  unwinds are still processed. Phase-2 runs ≥ 8 s and up to 25 s while a cancel is
+  unconfirmed or the exchange disagrees with us.
+- **Reconnect mid-trade**: when the startup snapshot unwinds a position this process does not
+  own, the previous cycle's working orders are CANCELLED by server id (were kept as
+  "protective stops" protecting nothing). The live stop's server id is persisted to
+  `pending_stop_cancels` as soon as it maps.
+- **Unwinds are retried**: NetReconciler re-acts every 15 s while a mismatch survives an
+  action, cancelling the previous unwind (by server id) first; the executor re-checks the last
+  exchange net every second (tid=451 updates only arrive on account changes).
+- **tid=352 fills use the cumulative `total_fill_size`** (per-event sizes made the second equal
+  partial look like a duplicate).
+- **Partial entry/exit is consistent while pending**: any net between 0 and the full position on
+  the position's side (was: only 0 or full → a partial entry was unwound after 5 s).
+- **A replaced stop that fires before its cancel lands is the exit** (was routed as unowned:
+  entries halted while in the trade, then a second exit flipped the net).
+  Tests: test_trade_end_invariant 26/26 (#24–26 fail on 5eba64a).
 
 ### Added
 - **Live executor runs any trend-engine variant (`"engine": "trend"`).** `run_executor` /

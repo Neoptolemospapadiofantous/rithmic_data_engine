@@ -215,6 +215,9 @@ public:
         if (!pos_.basket_id_stop.empty() && client_id == pos_.basket_id_stop) {
             if (stop_server_basket_ != server_id) {
                 stop_server_basket_ = server_id;
+                // The live stop is tracked in the DB from submit; store its server id too so
+                // a restart can cancel it by the id Rithmic routes (not our client id).
+                if (cancel_persist_server_id_cb_) cancel_persist_server_id_cb_(client_id, server_id);
                 LOG("[OM] Stop server basket_id mapped: client=%s server=%s",
                     client_id.c_str(), server_id.c_str());
             }
@@ -355,8 +358,13 @@ public:
             case PosState::FLAT:          return exchange_net == 0;
             case PosState::LONG:          return exchange_net == +held;
             case PosState::SHORT:         return exchange_net == -held;
-            case PosState::PENDING_ENTRY: return exchange_net == 0 || exchange_net == dir;
-            case PosState::PENDING_EXIT:  return exchange_net == 0 || exchange_net == dir;
+            // An order in flight may be PARTIALLY filled: any net between 0 and the full
+            // position, on the position's side, is a legitimate intermediate state (a partial
+            // entry must not be unwound while the rest of the entry is still working).
+            case PosState::PENDING_ENTRY:
+            case PosState::PENDING_EXIT:
+                return dir >= 0 ? (exchange_net >= 0 && exchange_net <= dir)
+                                : (exchange_net <= 0 && exchange_net >= dir);
         }
         return exchange_net == 0;
     }
@@ -634,6 +642,20 @@ public:
                 return;
             }
 
+            // A replaced stop of this trade filled before its cancel landed: it is the exit.
+            // Drop its guard now — its cancel will come back "Cancellation Failed"/filled
+            // and must not keep a false "stop still LIVE" guard afterwards.
+            if (cancelled_stops_.erase(basket_id) > 0) {
+                client_only_cancels_.erase(basket_id);
+                cancelled_stop_levels_.erase(basket_id);
+                cancelled_stop_trade_.erase(basket_id);
+                for (auto it = server_to_client_cancelled_.begin(); it != server_to_client_cancelled_.end();)
+                    it = (it->second == basket_id) ? server_to_client_cancelled_.erase(it) : std::next(it);
+                if (last_stop_for_unwind_ == basket_id) last_stop_for_unwind_.clear();
+                if (cancel_remove_cb_) cancel_remove_cb_(basket_id);
+                LOG("[OM] replaced stop %s filled before its cancel — treating it as the exit",
+                    basket_id.c_str());
+            }
             // Exchange stop filled directly (state still LONG/SHORT) — set exit reason
             if (pos_.state == PosState::LONG || pos_.state == PosState::SHORT) {
                 pos_.exit_reason = (basket_id == pos_.basket_id_stop)
@@ -1081,6 +1103,12 @@ public:
     // Map a server-assigned basket_id to our client user_tag (tid=351/352 notifications
     // carry both). Gateway rejects (tid=313/315) carry only the server basket_id, so
     // on_order_rejected() resolves them through this map.
+    // Public, locking variant — the executor cancels its own unwind orders with it.
+    std::string routable_id(const std::string& client_id) const {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        return cancel_id_for_locked(client_id);
+    }
+
     void map_server_basket(const std::string& client_id, const std::string& server_id) {
         if (client_id.empty() || server_id.empty()) return;
         std::lock_guard<std::mutex> lk(state_mu_);
@@ -1151,7 +1179,16 @@ public:
 
     bool is_stop_basket(const std::string& basket_id) const {
         std::lock_guard<std::mutex> lk(state_mu_);
-        return !pos_.basket_id_stop.empty() && pos_.basket_id_stop == basket_id;
+        if (!pos_.basket_id_stop.empty() && pos_.basket_id_stop == basket_id) return true;
+        // A stop of THIS trade whose cancel is still in flight (trail/breakeven replace) is
+        // still ours: if it fires, it IS the exit. Routed as unowned it only halted entries
+        // while we stayed in the trade and later sent a second exit (net flipped by qty).
+        if (pos_.state == PosState::LONG || pos_.state == PosState::SHORT) {
+            auto t = cancelled_stop_trade_.find(basket_id);
+            return t != cancelled_stop_trade_.end() && t->second == trade_seq_ &&
+                   cancelled_stops_.count(basket_id) > 0;
+        }
+        return false;
     }
 
     // True when basket_id matches the current market-exit order (from initiate_exit_locked).
@@ -1561,16 +1598,26 @@ struct NetReconciler {
     enum class Verdict { OK, MISMATCH_WAIT, MISMATCH_ACT };
     int64_t mismatch_since_ms = 0;   // 0 = currently consistent
     bool    acted             = false;
+    int64_t acted_ms          = 0;   // when we last acted (retry clock)
 
-    Verdict observe(bool consistent, int64_t now_ms, int grace_ms) {
+    // retry_ms > 0: a mismatch that SURVIVES an action (the unwind rested, was rejected or
+    // failed to send) is acted on again every retry_ms — the caller cancels the previous
+    // unwind first. 0 = act once per mismatch (the old behaviour).
+    Verdict observe(bool consistent, int64_t now_ms, int grace_ms, int retry_ms = 0) {
         if (consistent) {
             mismatch_since_ms = 0;
             acted = false;
+            acted_ms = 0;
             return Verdict::OK;
         }
         if (mismatch_since_ms == 0) mismatch_since_ms = now_ms;
-        if (acted || now_ms - mismatch_since_ms < grace_ms) return Verdict::MISMATCH_WAIT;
+        if (acted) {
+            if (retry_ms > 0 && now_ms - acted_ms >= retry_ms) { acted_ms = now_ms; return Verdict::MISMATCH_ACT; }
+            return Verdict::MISMATCH_WAIT;
+        }
+        if (now_ms - mismatch_since_ms < grace_ms) return Verdict::MISMATCH_WAIT;
         acted = true;
+        acted_ms = now_ms;
         return Verdict::MISMATCH_ACT;
     }
 };

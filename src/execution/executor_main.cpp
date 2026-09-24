@@ -34,6 +34,7 @@
 #include "orb_strategy.hpp"
 #include "trend_strategy.hpp"
 #include <type_traits>
+#include <climits>
 #include <fstream>
 #include <sstream>
 #include "order_manager.hpp"
@@ -91,6 +92,11 @@ namespace fs        = std::filesystem;
 // ─── Globals ──────────────────────────────────────────────────────────────────
 static std::atomic<bool> g_running{true};
 static std::atomic<bool> g_flatten_requested{false}; // set by signal handler; acted on in eod_loop
+// Shutdown drain: g_running is false (no new ticks, no new entries) but the ORDER/PNL
+// plant readers and the 1 s housekeeping loop keep running until the drain ends, so exit
+// fills, cancel ACKs, "Cancellation Failed", late server ids and reconciler unwinds are
+// still processed. Before 2026-09-24 they all stopped the moment SIGTERM arrived.
+static std::atomic<bool> g_draining{false};
 // ── Live fire drill (--drill orphan) ──────────────────────────────────────────
 // Reproduces the 2026-09-23 failure shape on the real account with ONE contract:
 // once the exchange confirms FLAT, the executor sends an order it does NOT track
@@ -1316,6 +1322,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     bool   broker_loss_halted = false;
     double last_broker_bal    = std::nan("");
     double last_broker_dpnl   = std::nan("");
+    int         last_exch_net = INT_MIN;   // last tid=451 net (reconciler re-check each second)
+    std::string last_unwind_basket;        // last unwind sent — cancelled before a retry
 
     // Send an order that closes `qty` contracts the exchange holds and we do not
     // (startup ghost, continuous mismatch). Aggressive LIMIT off the last price
@@ -1361,6 +1369,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 why, unwind_is_buy ? "BUY" : "SELL", order_type == 1 ? "LIMIT" : "MARKET",
                 limit_px, qty, basket_id.c_str());
             order_mgr.register_unwind_basket(basket_id);
+            last_unwind_basket = basket_id;
             co_return true;
         } catch (std::exception& e) {
             LOG("[EXECUTOR] [%s] unwind send FAILED: %s — MANUAL INTERVENTION REQUIRED",
@@ -1368,6 +1377,82 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             co_return false;
         }
     };
+    // ── Exchange-vs-memory reconciliation ─────────────────────────────────────
+    // Run on every tid=451 update AND once a second from eod_loop while the last known
+    // exchange net disagrees with us (451 updates only arrive on account changes, so a
+    // resting unwind would otherwise never be retried).
+    auto reconcile_net = [&](int net, bool consistent, int64_t now_ms) -> asio::awaitable<void> {
+        auto verdict = net_recon.observe(consistent, now_ms, orb_cfg.net_mismatch_grace_ms,
+                                         /*retry_ms=*/15000);
+        // Exchange flat and we are flat: nothing is open, so a ghost-fill halt from an
+        // unknown fill that has since netted out must not block entries for the rest of
+        // the session (it only cleared on a snapshot or after the reconciler had acted).
+        if (net == 0 && consistent && order_mgr.is_flat()) order_mgr.confirm_exchange_flat();
+        if (verdict == NetReconciler::Verdict::MISMATCH_ACT) {
+            auto snap = order_mgr.position_snapshot();
+            auto plan = notif::plan_unwind(net, snap, orb_cfg.qty);
+            int expected = plan.expected;
+            int diff = net - expected;
+            LOG("[EXECUTOR] CRITICAL: [NET-RECON] exchange net=%d but we hold %d "
+                "(state=%d) for >%dms — unwinding %d and halting entries",
+                net, expected, (int)snap.state, orb_cfg.net_mismatch_grace_ms,
+                std::abs(diff));
+            audit_log.error("position.net_mismatch",
+                "exchange net " + std::to_string(net) + " vs ours " +
+                std::to_string(expected));
+            strategy.halt_trading("exchange_net_mismatch");
+            net_halt_active = true;
+            if (plan.adopt_flat) {
+                // Our tracked position is gone from the exchange: cancel the stop and
+                // close the record — do not re-enter to match a book that is wrong.
+                order_mgr.adopt_external_close(strategy.last_price(), "external_close");
+                flush_position(db.get(), today, order_mgr, strategy,
+                               orb_cfg.dry_run || order_plant->connected,
+                               orb_cfg.point_value, md_up());
+            }
+            // A retry: the previous unwind is still resting (or was rejected) — cancel it by
+            // server id first so a late fill cannot overshoot the fresh one.
+            if (!last_unwind_basket.empty()) {
+                const std::string cid = order_mgr.routable_id(last_unwind_basket);
+                LOG("[EXECUTOR] [NET-RECON] mismatch persists — cancelling previous unwind %s (id %s)",
+                    last_unwind_basket.c_str(), cid.c_str());
+                if (!orb_cfg.dry_run && order_plant->connected) order_plant->send_cancel(cid, orb_cfg.account_id);
+                last_unwind_basket.clear();
+            }
+            bool sent = plan.qty > 0 ? co_await send_unwind(plan.qty, plan.is_buy, "NET-RECON")
+                                     : true;
+            int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                         ": POSITION MISMATCH exchange net=" + std::to_string(net) +
+                         " ours=" + std::to_string(expected) +
+                         (sent ? " — unwind sent, entries halted" :
+                                 " — UNWIND SEND FAILED, close manually") +
+                         "\" >/dev/null 2>&1 &").c_str());
+            (void)notify_rc;  // fail-open
+        } else if (verdict == NetReconciler::Verdict::OK) {
+            last_unwind_basket.clear();
+        }
+        if (verdict == NetReconciler::Verdict::OK && net_halt_active) {
+            net_halt_active = false;
+            if (net == 0) order_mgr.confirm_exchange_flat();
+            LOG("[EXECUTOR] [NET-RECON] exchange net=%d consistent again — mismatch cleared",
+                net);
+            if (g_drill_sent && !g_drill_passed.exchange(true)) {
+                int64_t took = now_ms - g_drill_sent_ms;
+                LOG("[DRILL] PASS: untracked position detected and closed; exchange flat "
+                    "again %lld ms after the orphan order — exiting", (long long)took);
+                int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                    ": DRILL PASS — orphan position closed in " + std::to_string(took) +
+                    " ms\" >/dev/null 2>&1 &").c_str());
+                (void)notify_rc;
+                g_running = false;
+                ioc_ref.stop();
+            }
+            if (strategy.session().halt_reason == "exchange_net_mismatch" ||
+                strategy.session().halt_reason == "unowned_fill_in_trade")
+                strategy.unhalt_trading("exchange_net_consistent");
+        }
+    };
+
     // ── Position / P&L update (tid=451) ──────────────────────────────────────
     // Shared by pnl_loop (the PNL plant, where Rithmic actually serves these)
     // and op_loop (kept as a fallback should the order plant ever deliver one).
@@ -1453,10 +1538,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             } else if (net != 0 && !net_recon.acted) {
                 // Position on the exchange that we do NOT hold in memory.
                 if (defer_snapshot_cancels) {
+                    // The position is about to be UNWOUND (this process does not own it),
+                    // so the previous cycle's stops protect nothing: left working, one would
+                    // OPEN a position when it fires. Cancel them by server id (the snapshot
+                    // carries it) together with the unwind.
                     defer_snapshot_cancels = false;
-                    LOG("[EXECUTOR] [STARTUP-RECON] net_qty=%d — position live: keeping "
-                        "%zu deferred working order(s) (protective stops)",
+                    LOG("[EXECUTOR] [STARTUP-RECON] net_qty=%d — position will be unwound: "
+                        "cancelling %zu deferred working order(s) of the previous cycle",
                         net, deferred_snapshot_cancels.size());
+                    for (const auto& bid : deferred_snapshot_cancels)
+                        order_plant->send_cancel(bid, orb_cfg.account_id);
                     deferred_snapshot_cancels.clear();
                 }
                 bool ghost_is_long = (net > 0);
@@ -1469,6 +1560,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // unwind for the same mismatch during the grace window.
                 net_recon.mismatch_since_ms = now_ms;
                 net_recon.acted = true;
+                net_recon.acted_ms = now_ms;
                 net_halt_active = true;
                 // Only unhalt strategy if the unwind order was actually dispatched.
                 // If send failed, stay halted — operator must confirm flat and restart.
@@ -1542,74 +1634,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         // the difference, halt entries, alert. Re-arms when the exchange and
         // the order manager agree again. This is what would have closed the
         // 2026-09-23 orphan long within seconds instead of 32 minutes.
-        auto verdict = net_recon.observe(consistent, now_ms, orb_cfg.net_mismatch_grace_ms);
-        // Exchange flat and we are flat: nothing is open, so a ghost-fill halt from an
-        // unknown fill that has since netted out must not block entries for the rest of
-        // the session (it only cleared on a snapshot or after the reconciler had acted).
-        if (net == 0 && consistent && order_mgr.is_flat()) order_mgr.confirm_exchange_flat();
-        if (verdict == NetReconciler::Verdict::MISMATCH_ACT) {
-            auto snap = order_mgr.position_snapshot();
-            auto plan = notif::plan_unwind(net, snap, orb_cfg.qty);
-            int expected = plan.expected;
-            int diff = net - expected;
-            LOG("[EXECUTOR] CRITICAL: [NET-RECON] exchange net=%d but we hold %d "
-                "(state=%d) for >%dms — unwinding %d and halting entries",
-                net, expected, (int)snap.state, orb_cfg.net_mismatch_grace_ms,
-                std::abs(diff));
-            audit_log.error("position.net_mismatch",
-                "exchange net " + std::to_string(net) + " vs ours " +
-                std::to_string(expected));
-            strategy.halt_trading("exchange_net_mismatch");
-            net_halt_active = true;
-            if (plan.adopt_flat) {
-                // Our tracked position is gone from the exchange: cancel the stop and
-                // close the record — do not re-enter to match a book that is wrong.
-                order_mgr.adopt_external_close(strategy.last_price(), "external_close");
-                flush_position(db.get(), today, order_mgr, strategy,
-                               orb_cfg.dry_run || order_plant->connected,
-                               orb_cfg.point_value, md_up());
-            }
-            bool sent = plan.qty > 0 ? co_await send_unwind(plan.qty, plan.is_buy, "NET-RECON")
-                                     : true;
-            int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
-                         ": POSITION MISMATCH exchange net=" + std::to_string(net) +
-                         " ours=" + std::to_string(expected) +
-                         (sent ? " — unwind sent, entries halted" :
-                                 " — UNWIND SEND FAILED, close manually") +
-                         "\" >/dev/null 2>&1 &").c_str());
-            (void)notify_rc;  // fail-open
-        } else if (verdict == NetReconciler::Verdict::OK && net_halt_active) {
-            net_halt_active = false;
-            if (net == 0) order_mgr.confirm_exchange_flat();
-            LOG("[EXECUTOR] [NET-RECON] exchange net=%d consistent again — mismatch cleared",
-                net);
-            if (g_drill_sent && !g_drill_passed.exchange(true)) {
-                int64_t took = now_ms - g_drill_sent_ms;
-                LOG("[DRILL] PASS: untracked position detected and closed; exchange flat "
-                    "again %lld ms after the orphan order — exiting", (long long)took);
-                int notify_rc = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
-                    ": DRILL PASS — orphan position closed in " + std::to_string(took) +
-                    " ms\" >/dev/null 2>&1 &").c_str());
-                (void)notify_rc;
-                g_running = false;
-                ioc_ref.stop();
-            }
-            if (strategy.session().halt_reason == "exchange_net_mismatch" ||
-                strategy.session().halt_reason == "unowned_fill_in_trade")
-                strategy.unhalt_trading("exchange_net_consistent");
-        }
+        last_exch_net = net;
+        co_await reconcile_net(net, consistent, now_ms);
 
     };
 
     auto op_loop = [&]() -> asio::awaitable<void> {
         if (!order_plant->connected || !order_plant->ws) co_return;
         beast::flat_buffer buf;
-        while (g_running) {
+        while (g_running || g_draining) {
             buf.clear();
             try {
                 co_await order_plant->ws->async_read(buf, asio::use_awaitable);
             } catch (std::exception& e) {
-                if (!g_running) co_return;
+                if (!g_running && !g_draining) co_return;
                 LOG("[EXECUTOR] ORDER_PLANT read error: %s — triggering full reconnect", e.what());
                 // Capture position state HERE: ioc_ref.stop() destroys the suspended
                 // run_executor frame, so the normal capture after md_loop never runs.
@@ -1919,6 +1957,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // our user_tag in every notification.
                 if (notify_type == 5) {
                     const std::string& client_id = notif.user_tag();
+                    // tid=352 fill_size is PER EVENT; the order manager and the fill dedupe
+                    // work on the CUMULATIVE quantity (as tid=351 reports it). With per-event
+                    // sizes the second of two 1-lot partials looked like a duplicate.
+                    const int cum_fill_352 = notif.total_fill_size() > 0 ? notif.total_fill_size()
+                                                                         : notif.fill_size();
                     order_mgr.map_server_basket(client_id, notif.basket_id());
                     if (notif.fill_size() > orb_cfg.qty) {
                         LOG("[EXECUTOR] WARNING: fill qty=%d exceeds expected position size=%d "
@@ -1954,12 +1997,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             flush_position(db.get(), today, order_mgr, strategy,
                                            orb_cfg.dry_run || order_plant->connected,
                                            orb_cfg.point_value, md_up());
-                    } else if (order_mgr.fill_already_processed(client_id,
-                                                                notif.fill_size())) {
+                    } else if (order_mgr.fill_already_processed(client_id, cum_fill_352)) {
                         // Duplicate delivery of a fill already processed via tid=351.
-                        LOG("[EXECUTOR] tid=352 duplicate fill skipped: client=%s qty=%d "
+                        LOG("[EXECUTOR] tid=352 duplicate fill skipped: client=%s cumulative=%d "
                             "(already processed)",
-                            client_id.c_str(), notif.fill_size());
+                            client_id.c_str(), cum_fill_352);
                     } else {
                         if (is_stop) {
                             LOG("[EXECUTOR] Exchange STOP filled client_id=%s (server=%s) px=%.2f — treating as exit",
@@ -1967,7 +2009,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         }
                         order_mgr.on_fill_notification(client_id,
                                                        notif.fill_price(),
-                                                       notif.fill_size(),
+                                                       cum_fill_352,
                                                        is_entry && !is_stop);
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
@@ -2002,12 +2044,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     auto pnl_loop = [&]() -> asio::awaitable<void> {
         if (!pnl_connected || !pnl_ws) co_return;
         beast::flat_buffer buf;
-        while (g_running) {
+        while (g_running || g_draining) {
             buf.clear();
             try {
                 co_await pnl_ws->async_read(buf, asio::use_awaitable);
             } catch (std::exception& e) {
-                if (!g_running) co_return;
+                if (!g_running && !g_draining) co_return;
                 LOG("[EXECUTOR] PNL_PLANT read error: %s — position feed lost; "
                     "triggering full reconnect", e.what());
                 pnl_connected = false;
@@ -2118,10 +2160,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // ── Heartbeat timer ───────────────────────────────────────────────────────
     asio::steady_timer hb_timer(ex);
     auto heartbeat_loop = [&]() -> asio::awaitable<void> {
-        while (g_running) {
+        while (g_running || g_draining) {
             hb_timer.expires_after(std::chrono::seconds(5));
             co_await hb_timer.async_wait(asio::use_awaitable);
-            if (!g_running) co_return;
+            if (!g_running && !g_draining) co_return;
             rti::RequestHeartbeat hb;
             hb.set_template_id(18);
             hb.set_ssboe(hb_ssboe_now());
@@ -2160,9 +2202,18 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         int ghost_halt_secs = 0;        // seconds ghost_halted_ has been active this cycle
         int64_t post_close_window_until_s    = 0;  // epoch-s; intensive per-second recancel window
         int64_t last_background_recancel_s   = 0;  // epoch-s; last background 30s recancel fire
-        while (g_running) {
+        while (g_running || g_draining) {
             eod_timer.expires_after(std::chrono::seconds(1));
             co_await eod_timer.async_wait(asio::use_awaitable);
+
+            // Reconciler re-check (see reconcile_net): only while we disagree with the
+            // last exchange net the PNL plant reported.
+            if (pnl_connected && last_exch_net != INT_MIN &&
+                !order_mgr.net_qty_consistent(last_exch_net)) {
+                const int64_t rnow_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
+                co_await reconcile_net(last_exch_net, false, rnow_ms);
+            }
 
             if (g_drill_sent && !g_drill_passed) {
                 int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -2186,7 +2237,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 audit_log.info("session.eod_flatten", "EOD position flattened (kill signal)");
             }
 
-            if (!g_running) co_return;
+            if (!g_running && !g_draining) co_return;
 
             int et_h, et_m;
             current_et(et_h, et_m);
@@ -3027,7 +3078,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         int sig = co_await sigs.async_wait(asio::use_awaitable);
         LOG("[EXECUTOR] Signal %d received — pending_cancelled_stops=%d",
             sig, order_mgr.pending_cancelled_stop_count());
+        g_draining = true;                        // before g_running: readers must not exit
         g_running = false;
+        strategy.halt_trading("shutdown");
         order_mgr.flatten_now("kill_signal");
         if (audit_conn)
             audit_log.info("session.eod_flatten", "kill signal immediate flatten");
@@ -3063,9 +3116,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             int pending = order_mgr.pending_cancelled_stop_count();
             LOG("[EXECUTOR] Phase-2 drain: holding io_context open 8s for late stop fires "
                 "(pending_cancelled_stops=%d)", pending);
+            // At least 8 s, then keep going (up to 25 s, inside the unit's 45 s stop budget)
+            // while a cancel is unconfirmed or the exchange still disagrees with us — the
+            // readers and the reconciler are live during the drain.
             constexpr int kExtraMs     = 8000;
+            constexpr int kMaxMs       = 25000;
             constexpr int kExtraTickMs = 500;
-            for (int i = 0; i < kExtraMs / kExtraTickMs; ++i) {
+            auto unsettled = [&] {
+                return order_mgr.pending_cancelled_stop_count() > 0 ||
+                       (last_exch_net != INT_MIN && !order_mgr.net_qty_consistent(last_exch_net));
+            };
+            for (int i = 0; i < kMaxMs / kExtraTickMs && (i < kExtraMs / kExtraTickMs || unsettled()); ++i) {
                 asio::steady_timer t(ex);
                 t.expires_after(std::chrono::milliseconds(kExtraTickMs));
                 co_await t.async_wait(asio::use_awaitable);
@@ -3085,6 +3146,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 LOG("[EXECUTOR] Phase-2 drain complete — all cancelled stops confirmed or handled");
         }
 
+        if (last_exch_net != INT_MIN && !order_mgr.net_qty_consistent(last_exch_net))
+            LOG("[EXECUTOR] CRITICAL: shutting down with exchange net=%d not matching our state — "
+                "the next start's snapshot will unwind it; check RTrader", last_exch_net);
+        g_draining = false;
         LOG("[EXECUTOR] Shutdown complete");
         ioc_ref.stop();
     };
