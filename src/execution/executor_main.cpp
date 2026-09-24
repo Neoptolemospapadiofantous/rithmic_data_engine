@@ -2233,7 +2233,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // Deferred flatten from signal handler (#5 — signal handler is mutex-free)
             if (g_flatten_requested.exchange(false)) {
                 LOG("[EXECUTOR] Kill signal — flattening position");
-                order_mgr.flatten_now("kill_signal");
+                order_mgr.flatten_now("kill_signal", strategy.last_price());
                 audit_log.info("session.eod_flatten", "EOD position flattened (kill signal)");
             }
 
@@ -3081,7 +3081,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         g_draining = true;                        // before g_running: readers must not exit
         g_running = false;
         strategy.halt_trading("shutdown");
-        order_mgr.flatten_now("kill_signal");
+        order_mgr.flatten_now("kill_signal", strategy.last_price());   // 0 → stop-anchored price
         if (audit_conn)
             audit_log.info("session.eod_flatten", "kill signal immediate flatten");
 

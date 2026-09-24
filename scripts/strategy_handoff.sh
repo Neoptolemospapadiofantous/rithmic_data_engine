@@ -14,16 +14,20 @@
 #   3. at back_et, stop <to_inst> and restart <from_inst> so the next session starts as
 #      configured (production ORB for tomorrow's 09:30).
 # Log: data/logs/strategy_handoff.log; every step goes to Telegram via grid-notify.
+# DRY=1: rehearsal with dry-run instances (no broker feed) — readiness = the executor's own
+# startup lines, flat = its live_position row; nothing else changes.
 set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"; cd "$REPO"
 ACC="${1:?account}"; FROM="${2:?from instance}"; TO="${3:?to instance}"
 SWITCH_ET="${4:-1000}"; HARD_ET="${5:-1030}"; BACK_ET="${6:-1600}"
-OUT="data/logs/strategy_handoff.log"
+DRY="${DRY:-0}"
+OUT="data/logs/strategy_handoff.log"; [[ "$DRY" == 1 ]] && OUT="data/logs/strategy_handoff_dry.log"
 set -a; . ./.env 2>/dev/null; set +a; export PGPASSWORD="${PG_PASSWORD:-}"
 PSQL=(psql -h "${PG_HOST:-localhost}" -U "${PG_USER:-rithmic_user}" -d "${PG_DB:-rithmic}" -Atq)
 
 say()    { echo "[$(date '+%F %T') ET $(TZ=America/New_York date +%H:%M)] $*" | tee -a "$OUT"; }
-notify() { for b in "$HOME/.local/bin/grid-notify" "$HOME/.config/ecosystem/bin/grid-notify"; do
+notify() { [[ "$DRY" == 1 ]] && { say "(dry notify) $1"; return; }
+         for b in "$HOME/.local/bin/grid-notify" "$HOME/.config/ecosystem/bin/grid-notify"; do
              [[ -x "$b" ]] && { "$b" "$1" >/dev/null 2>&1 || true; return; }; done; }
 et_hm()  { echo $((10#$(TZ=America/New_York date +%H%M))); }
 unit()   { echo "nq-executor-local@$1"; }
@@ -31,16 +35,24 @@ logf()   { echo "data/logs/nq_executor_$1.log"; }
 tag_of() { local t; t=$(grep -o '"strategy": *"[^"]*"' "config/$1_config.json" | sed 's/.*"\([^"]*\)"$/\1/' | head -1)
            echo "${t:-ORB}"; }   # OrbConfig default tag
 
+# Stopped = THIS unit has no main process and is not active. (A box-wide "no nq_executor
+# anywhere" check aborted the handoff after the stop whenever any other executor ran,
+# leaving the account with no executor at all.)
 stop_inst() {
   local u; u=$(unit "$1"); systemctl --user stop "$u" 2>/dev/null
   for _ in $(seq 60); do
-    [[ "$(systemctl --user show -p MainPID --value "$u")" == 0 ]] && ! pgrep -x nq_executor >/dev/null && return 0
+    [[ "$(systemctl --user show -p MainPID --value "$u")" == 0 && \
+       "$(systemctl --user is-active "$u")" != active ]] && return 0
     sleep 1
   done; return 1; }
 
 start_inst() { # prove position truth + flat, else stop it again
-  local u l s line; u=$(unit "$1"); l=$(logf "$1"); s=$(wc -l < "$l" 2>/dev/null || echo 0)
+  local u l s line; u=$(unit "$1"); l=$(logf "$1"); s=0; [[ -f "$l" ]] && s=$(wc -l < "$l")
   systemctl --user start "$u" || return 1
+  if [[ "$DRY" == 1 ]]; then
+    for _ in $(seq 60); do tail -n +"$((s + 1))" "$l" 2>/dev/null | grep -aq 'DRY RUN' && { say "$1 up (dry)"; return 0; }; sleep 1; done
+    say "ERROR: $1 (dry) did not start"; stop_inst "$1"; return 1
+  fi
   for _ in $(seq 90); do
     line=$(tail -n +"$((s + 1))" "$l" 2>/dev/null | grep -a '\[BROKER\]' | tail -1)
     [[ -n "$line" ]] && break; sleep 1
@@ -56,6 +68,7 @@ is_flat() {
   local st net pend; st=$("${PSQL[@]}" -c "SELECT state FROM live_position WHERE account_label='$ACC'
           AND strategy='$(tag_of "$1")' ORDER BY last_updated DESC LIMIT 1")
   net=$(grep -a '\[BROKER\]' "$(logf "$1")" | tail -1 | grep -o 'exchange_net=[-0-9]*' | cut -d= -f2)
+  [[ "$DRY" == 1 ]] && net=0
   # …and no stop cancel still unconfirmed (a stopped process no longer reads its ACK)
   pend=$("${PSQL[@]}" -c "SELECT count(*) FROM pending_stop_cancels WHERE account_label='$ACC'")
   [[ "$st" == FLAT && "${net:-1}" == 0 && "${pend:-1}" == 0 ]]; }

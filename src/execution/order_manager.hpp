@@ -1541,7 +1541,9 @@ private:
         // crosses the spread immediately. 50-tick offset (~12.5 pts) when no ref_price
         // is available (kill signal); 4-tick offset otherwise (same as entry orders).
         constexpr double TICK = 0.25;
-        int offset_ticks = (ref_price > 0.0) ? 4 : 50;
+        // Kill-signal exits keep the 50-tick offset even with a price: the process is going
+        // away and must not leave a resting exit behind.
+        int offset_ticks = (ref_price > 0.0 && reason != "kill_signal") ? 4 : 50;
         double limit_px = exit_is_buy
             ? ref_price + offset_ticks * TICK
             : ref_price - offset_ticks * TICK;
