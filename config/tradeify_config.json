@@ -28,7 +28,7 @@
   "session_open_hour": 9,
   "session_open_min": 30,
   "qty": 2,
-  "commission_rt": 4.0,
+  "commission_rt": 1.82,
   "tick_timeout_s": 30,
   "stop_cooldown_secs": 5,
   "cycle_mode": false,
