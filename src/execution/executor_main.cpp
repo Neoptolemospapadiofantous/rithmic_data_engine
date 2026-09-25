@@ -588,10 +588,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 
     // Trend engine only (see the callback): set when a signal left the order manager FLAT.
     std::string strategy_unsettled;
-    // Trend engine only: true while the pg feed replays warmup_minutes of history — the
-    // strategy builds its bars, every signal it emits is dropped (never an order).
-    bool warming_up = false;
-    int  warmup_signals_dropped = 0;
     auto settle_strategy = [&]() {
         if constexpr (!kOrb) {
             if (strategy_unsettled.empty()) return;
@@ -607,7 +603,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // Wire strategy → order_mgr
     strategy.set_signal_callback(
         [&](OrbSignal sig, double price, const std::string& reason) {
-            if (warming_up) { ++warmup_signals_dropped; return; }   // history replay: no orders
             if (sig == OrbSignal::FLATTEN_EOD) {
                 Position eod_snap = order_mgr.position_snapshot();
                 const char* eod_ss;
@@ -2844,29 +2839,6 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 std::chrono::system_clock::now().time_since_epoch()).count();
         };
         int64_t watermark_us = now_us() - 1'000'000LL;
-        int64_t warmup_until_us = 0;
-        if constexpr (!kOrb) {
-            if (orb_cfg.warmup_minutes > 0) {
-                warmup_until_us = watermark_us;
-                watermark_us   -= (int64_t)orb_cfg.warmup_minutes * 60'000'000LL;
-                warming_up = true;
-                LOG("[PG-FEED] warm-up: replaying the last %d min of ticks into the strategy "
-                    "(signals ignored, no orders)", orb_cfg.warmup_minutes);
-            }
-        }
-        // Replay caught up with the present: the engine may believe it is "in position" or
-        // have counted replayed entries — release it and restore the real trade count.
-        auto end_warmup = [&]() {
-            if constexpr (!kOrb) {
-                warming_up = false;
-                if (strategy.session().in_position)
-                    strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD, "warmup_replay");
-                int done = (db && db->is_connected()) ? db->count_today_trades(today, orb_cfg.cycle_start_epoch) : 0;
-                strategy.seed_trades_today(done);
-                LOG("[PG-FEED] warm-up complete — %d replayed signal(s) ignored; live from now, "
-                    "trades_today=%d", warmup_signals_dropped, done);
-            }
-        };
         bool db_warned = false;
         LOG("[PG-FEED] Polling ticks symbol=%s every %dms (collector feed)",
             orb_cfg.md_feed_symbol.c_str(), orb_cfg.md_poll_ms);
@@ -2901,13 +2873,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         watermark_us  = ts_us;
                         if (px <= 0.0 || sz <= 0) continue;
                         OrbTick tick{ts_us, px, sz, buy};
-                        if (warming_up) {
-                            if (ts_us < warmup_until_us) { strategy.on_tick(tick); continue; }
-                            end_warmup();
-                        }
                         process_tick(tick);
                     }
-                    if (warming_up && n < 5000) end_warmup();   // history exhausted
                 } else if (!db_warned) {
                     LOG("[PG-FEED] WARN poll failed: %s (further errors suppressed)",
                         r ? PQresultErrorMessage(r) : "null result");
