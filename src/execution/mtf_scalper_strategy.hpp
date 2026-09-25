@@ -137,6 +137,12 @@ public:
         day_closed_pnl_ = 0.0;
         funnel_         = MtfFunnel{};
         eod_flat_emitted_ = false;
+        // Matches OrbStrategy/TrendStrategy: a halt (often set by the host for an
+        // external condition — stale feed, unreconciled position) does not carry
+        // across a fresh trading day; the host re-evaluates and re-halts at
+        // startup if the condition is still true.
+        risk_halted_ = false;
+        halt_reason_.clear();
         LOG("[MTF] Session reset — warmup kept (%ld bars), window %s ET",
             bar_index_ + 1, cfg_.session_window.c_str());
     }
@@ -161,6 +167,20 @@ public:
     // dir = direction of the CLOSED position (BUY=was long, SELL=was short).
     void notify_trade_filled(OrbSignal dir, const std::string& exit_reason = "",
                              double pnl = 0.0) {
+        // A direction-less notification (FLATTEN_EOD/NONE) is the live executor's
+        // "release whatever you think you hold" — warm-up replay ended, or the
+        // order manager never acted on the signal. No trade happened: clear the
+        // leg and touch NO guardrail accounting (a release after two losses must
+        // not reset the cooldown streak). Found by the 2026-09-25 dry-run smoke
+        // test (the engine sat "in position" all session) + review.
+        const int closed_dir = (dir == OrbSignal::BUY) ? +1 : (dir == OrbSignal::SELL) ? -1 : 0;
+        if (closed_dir == 0) {
+            clear_position();
+            LOG("[MTF] Released (%s) — no trade accounted, streak=%d trades_today=%d/%d",
+                exit_reason.empty() ? "?" : exit_reason.c_str(), loss_streak_,
+                trades_today_, cfg_.max_daily_trades);
+            return;
+        }
         // Guardrail accounting (Pine :1060-1070 — every closed trade).
         day_closed_pnl_ += pnl;
         equity_         += pnl;
@@ -177,7 +197,6 @@ public:
         // Clear position only if this notification matches the open leg —
         // on a reversal the host reports the closed leg AFTER the strategy
         // already tracks the new one.
-        const int closed_dir = (dir == OrbSignal::BUY) ? +1 : (dir == OrbSignal::SELL) ? -1 : 0;
         if (pos_dir_ == 0 || closed_dir == pos_dir_)
             clear_position();
         LOG("[MTF] Trade closed (%s) pnl=%.2f streak=%d trades_today=%d/%d",
@@ -245,11 +264,13 @@ public:
 
     void halt_trading(const std::string& reason) {
         risk_halted_ = true;
+        halt_reason_ = reason;
         LOG("[MTF] Trading halted: %s", reason.c_str());
     }
     void unhalt_trading(const std::string& reason) {
         if (!risk_halted_) return;
         risk_halted_ = false;
+        halt_reason_.clear();
         LOG("[MTF] Trading unhalted: %s", reason.c_str());
     }
 
@@ -264,6 +285,24 @@ public:
         LOG("[MTF] Seeded state: trades_today=%d day_closed_pnl=%.2f equity=%.2f",
             trades_today_, day_closed_pnl_, equity_);
     }
+    // Live-executor compatibility shim: run_executor<Strategy> (executor_main.cpp)
+    // is templated across OrbStrategy/TrendStrategy/MtfScalperStrategy and calls a
+    // shared host-contract surface. These forward to the equivalents above/below —
+    // no decision logic here, purely host glue (mirrors TrendStrategy's own stubs
+    // in trend_strategy.hpp).
+    void seed_trades_today(int n) { trades_today_ = n; }
+    void check_eod(int et_hour, int et_min) { check_time_flatten(et_hour, et_min); }
+    double orb_high() const { return 0.0; }
+    double orb_low()  const { return 0.0; }
+    bool   orb_set()  const { return false; }
+    double last_price() const { return last_price_; }
+    struct HostSession {
+        int trades_today = 0; bool in_position = false; bool risk_halted = false;
+        std::string halt_reason; double orb_high = 0.0, orb_low = 0.0; bool orb_set = false;
+    };
+    HostSession session() const {
+        return HostSession{trades_today_, pos_dir_ != 0, risk_halted_, halt_reason_, 0.0, 0.0, false};
+    }
 
     // ── Bracket / sizing accessors (host maintains the OCO) ─────────────────
     double cur_stop() const { return cur_stop_; }
@@ -274,6 +313,7 @@ public:
     double entry_price() const { return entry_price_; }
     bool   exit_pending() const { return exit_pending_; }
     int    trades_today() const { return trades_today_; }
+    int    loss_streak()  const { return loss_streak_; }
     double equity() const { return equity_; }
     const MtfFunnel& funnel() const { return funnel_; }
 
@@ -365,6 +405,7 @@ private:
     std::deque<MinuteBar> hist_;       // completed 1m bars, oldest→newest
     long    bar_index_ = -1;
     bool    risk_halted_ = false;
+    std::string halt_reason_;
     double  last_price_ = 0.0;
     double  equity_;
 
@@ -1199,10 +1240,12 @@ private:
         // ── host-side pending-order machinery (cfg pb_valid_bars etc.) ──────
         const bool enter_l = (long_signal_ && !cfg_.use_conf_tf) || conf_go_l_;
         const bool enter_s = (short_signal_ && !cfg_.use_conf_tf) || conf_go_s_;
-        if (enter_l && pos_dir_ <= 0 && !exit_pending_ && qty_calc(equity_) > 0) {
+        const bool can_l = pos_dir_ == 0 || (cfg_.allow_flips && pos_dir_ < 0);
+        const bool can_s = pos_dir_ == 0 || (cfg_.allow_flips && pos_dir_ > 0);
+        if (enter_l && can_l && !exit_pending_ && qty_calc(equity_) > 0) {
             open_position(+1, bar.close, entry_reason(true));
             if (retest_l_) { bo_lvl_l_ = mtf::NaN; bo_bar_l_ = -1; }
-        } else if (enter_s && pos_dir_ >= 0 && !exit_pending_ && qty_calc(equity_) > 0) {
+        } else if (enter_s && can_s && !exit_pending_ && qty_calc(equity_) > 0) {
             open_position(-1, bar.close, entry_reason(false));
             if (retest_s_) { bo_lvl_s_ = mtf::NaN; bo_bar_s_ = -1; }
         }

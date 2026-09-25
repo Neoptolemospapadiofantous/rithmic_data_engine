@@ -33,6 +33,7 @@
 #include "orb_config.hpp"
 #include "orb_strategy.hpp"
 #include "trend_strategy.hpp"
+#include "mtf_scalper_strategy.hpp"
 #include <type_traits>
 #include <climits>
 #include <fstream>
@@ -564,7 +565,9 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                    Strategy& strategy,
                                    std::string& today,
                                    Position& carried_pos) {
-    constexpr bool kOrb = std::is_same_v<Strategy, OrbStrategy>;
+    constexpr bool kOrb   = std::is_same_v<Strategy, OrbStrategy>;
+    constexpr bool kTrend = std::is_same_v<Strategy, TrendStrategy>;
+    constexpr bool kMtf   = std::is_same_v<Strategy, MtfScalperStrategy>;
     // ── Component construction ────────────────────────────────────────────────
     // tick_value = point_value × tick_size (NQ: 20.0×0.25=$5.00, MNQ: 2.0×0.25=$0.50)
     LatencyLogger lat(orb_cfg.point_value * NQ_TICK_SIZE);
@@ -639,7 +642,20 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             double boundary = (sig == OrbSignal::BUY)  ? strategy.orb_high()
                             : (sig == OrbSignal::SELL) ? strategy.orb_low()
                             : 0.0;
-            order_mgr.on_signal(sig, price, reason, boundary);
+            if constexpr (kMtf) {
+                // The strategy's own stop DISTANCE at signal time (its cur_stop() is
+                // already set inside open_position() before this callback fires) —
+                // the entry order gets this instead of cfg_.sl_points. Only r_unit is
+                // taken from current_bracket(): position SIZE stays cfg_.qty, same as
+                // ORB/Trend — the strategy's own risk_pct/qty_calc() dynamic sizing is
+                // deliberately not wired live (a fixed, auditable qty per account is
+                // the established convention here; see config's qty/qty_max).
+                double sl_dist = (sig == OrbSignal::BUY || sig == OrbSignal::SELL)
+                    ? strategy.current_bracket().r_unit : 0.0;
+                order_mgr.on_signal(sig, price, reason, boundary, sl_dist);
+            } else {
+                order_mgr.on_signal(sig, price, reason, boundary);
+            }
             if constexpr (!kOrb) {
                 // The trend engine books its own position right AFTER this callback returns.
                 // If the order manager did not act (entry rejected by risk/halt/not-FLAT, or a
@@ -1865,6 +1881,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                        fill_px,
                                                        notif.total_fill_size(),
                                                        is_entry && !is_stop);
+                        if constexpr (kMtf) {
+                            // Refine the strategy's assumed (bar-close) entry price with
+                            // the real fill and recompute its bracket — "never-retreat"
+                            // inside notify_entry_filled() keeps any tighter stop that
+                            // check_external_stop() already ratcheted in the meantime.
+                            if (is_entry && !is_stop)
+                                strategy.notify_entry_filled(order_mgr.position_snapshot().direction, fill_px);
+                        }
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
                                        md_up());
@@ -2016,6 +2040,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                                        notif.fill_price(),
                                                        cum_fill_352,
                                                        is_entry && !is_stop);
+                        if constexpr (kMtf) {
+                            if (is_entry && !is_stop)
+                                strategy.notify_entry_filled(order_mgr.position_snapshot().direction, notif.fill_price());
+                        }
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
                                        md_up());
@@ -2346,7 +2374,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // Check for completed trades → write to DB + immediately flush position
             Position completed;
             if (order_mgr.pop_trade_completed(completed)) {
-                strategy.notify_trade_filled(completed.direction, completed.exit_reason);
+                // mtf_scalper's cooldown/daily-loss guardrails need the real pnl; ORB/Trend
+                // don't take a 3rd argument (their exit logic doesn't depend on it).
+                if constexpr (kMtf) strategy.notify_trade_filled(completed.direction, completed.exit_reason, completed.pnl_usd);
+                else                strategy.notify_trade_filled(completed.direction, completed.exit_reason);
                 // Belt-and-suspenders: re-send cancel for any stop the exchange might
                 // still hold, then flush tid=308 to prompt Rithmic to deliver the ACK.
                 if (!orb_cfg.dry_run) {
@@ -2767,11 +2798,37 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     bool first_tick_received = false;
     int  last_log_minute     = -1;
     auto process_tick = [&](const OrbTick& tick) {
-                // Check trailing stop on every tick; flush DB immediately on SL move
-                if (order_mgr.check_trail_and_stop(tick.price)) {
-                    flush_position(db.get(), today, order_mgr, strategy,
-                                   orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
-                                   md_up());
+                // Bracket check on every tick, BEFORE the strategy sees this tick
+                // (mirrors PaperBracketBroker's ordering: bracket first, signals fill
+                // on the next tick) — flush DB immediately on any SL move.
+                if constexpr (kMtf) {
+                    // mtf_scalper owns its stop/target math (cur_stop()/cur_tp()); the
+                    // host only checks price against them and maintains the resting
+                    // exchange stop. check_trail_and_stop's cfg_-driven BE/trail math
+                    // (ORB/Trend only) does not apply here.
+                    if (order_mgr.check_external_stop(tick.price, strategy.cur_stop())) {
+                        flush_position(db.get(), today, order_mgr, strategy,
+                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                       md_up());
+                    }
+                    double tp = strategy.cur_tp();   // NaN = trailing armed, no target leg
+                    if (!std::isnan(tp) && tp > 0.0) {
+                        Position psnap = order_mgr.position_snapshot();
+                        bool hit = (psnap.direction == OrbSignal::BUY  && tick.price >= tp) ||
+                                   (psnap.direction == OrbSignal::SELL && tick.price <= tp);
+                        if (hit) {
+                            order_mgr.flatten_now("target", tick.price);
+                            flush_position(db.get(), today, order_mgr, strategy,
+                                           orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                           md_up());
+                        }
+                    }
+                } else {
+                    if (order_mgr.check_trail_and_stop(tick.price)) {
+                        flush_position(db.get(), today, order_mgr, strategy,
+                                       orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
+                                       md_up());
+                    }
                 }
 
                 // Feed strategy
@@ -2791,11 +2848,22 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 int cur_min = et_h * 60 + et_m;
                 if (cur_min != last_log_minute) {
                     last_log_minute = cur_min;
-                    if constexpr (!kOrb) {
+                    if constexpr (kTrend) {
                         Position psnap = order_mgr.position_snapshot();
                         LOG("[EXECUTOR] TREND ET=%02d:%02d px=%.2f pos_state=%d engine_in_pos=%d sl=%.2f trades=%d/%d%s",
                             et_h, et_m, tick.price, (int)psnap.state,
                             (int)strategy.session().in_position, psnap.sl_price,
+                            strategy.session().trades_today, orb_cfg.max_daily_trades,
+                            strategy.session().risk_halted ? (" HALTED:" + strategy.session().halt_reason).c_str() : "");
+                    } else if constexpr (kMtf) {
+                        Position psnap = order_mgr.position_snapshot();
+                        double tp = strategy.cur_tp();
+                        LOG("[EXECUTOR] MTF ET=%02d:%02d px=%.2f pos_state=%d engine_in_pos=%d "
+                            "stop=%.2f tp=%s trades=%d/%d%s",
+                            et_h, et_m, tick.price, (int)psnap.state,
+                            (int)strategy.session().in_position, psnap.sl_price,
+                            std::isnan(tp) ? (strategy.in_position() ? "trailing" : "-")
+                                           : (std::to_string(tp)).c_str(),
                             strategy.session().trades_today, orb_cfg.max_daily_trades,
                             strategy.session().risk_halted ? (" HALTED:" + strategy.session().halt_reason).c_str() : "");
                     } else if (!strategy.orb_set()) {
@@ -3524,6 +3592,29 @@ int main(int argc, char* argv[]) {
         LOG("[EXECUTOR] engine=trend mode=%s tf=%dm window=%04d-%04d strategy_tag=%s",
             tcfg.mode.c_str(), tcfg.tf_min, tcfg.win_start, tcfg.win_end, orb_cfg.strategy.c_str());
         TrendStrategy strategy(tcfg, orb_cfg);
+        exit_code = run_session_loop(strategy);
+    } else if (orb_cfg.engine == "mtf_scalper") {
+        const MtfScalperConfig mcfg = MtfScalperConfig::from_json_string(read_text_file(config_path));
+        // The live executor feeds trades only — no ES/reference bars and no BBO quotes,
+        // same constraint as trend's rs_continuation/book_imbalance above. trigger_mode
+        // "smt" needs a reference feed to ever fire at all (it would just never enter);
+        // use_smt_entry/use_im_filter degrade gracefully (logged, inert) so are not fatal.
+        if (mcfg.trigger_mode == "smt") {
+            std::fprintf(stderr, "FATAL: mtf_scalper trigger_mode 'smt' needs a reference feed "
+                                  "the live executor does not provide — it would never enter\n");
+            return 1;
+        }
+        // The order manager ignores a BUY/SELL while not FLAT, but the strategy would already
+        // track the new leg and push ITS stop onto the old position (wrong side of the
+        // market → forced exit → phantom leg for the session). No reversal support live.
+        if (mcfg.allow_flips) {
+            std::fprintf(stderr, "FATAL: mtf_scalper live needs \"allow_flips\": false in the config "
+                                  "— the executor cannot reverse a position\n");
+            return 1;
+        }
+        LOG("[EXECUTOR] engine=mtf_scalper trigger_mode=%s session=%s strategy_tag=%s",
+            mcfg.trigger_mode.c_str(), mcfg.session_window.c_str(), orb_cfg.strategy.c_str());
+        MtfScalperStrategy strategy(mcfg);
         exit_code = run_session_loop(strategy);
     } else {
         OrbStrategy strategy(orb_cfg);

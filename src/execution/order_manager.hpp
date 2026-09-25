@@ -370,7 +370,14 @@ public:
     }
 
     // ── Called by OrbStrategy signal callback ─────────────────────────────────
-    void on_signal(OrbSignal sig, double price, const std::string& reason, double orb_boundary = 0.0) {
+    // desired_sl_dist: 0.0 (default, ORB/Trend) = use cfg_.sl_points at fill time via
+    // compute_sl(). > 0.0 (mtf_scalper) = the strategy's own stop DISTANCE at signal
+    // time (BracketSpec::r_unit) — the entry stop is placed at fill_price ∓ this
+    // distance instead of cfg_.sl_points, then check_external_stop() ratchets it
+    // bar by bar from the strategy's own cur_stop(). A distance, not an absolute
+    // price, because the real fill can land a few ticks from the signal price.
+    void on_signal(OrbSignal sig, double price, const std::string& reason,
+                   double orb_boundary = 0.0, double desired_sl_dist = 0.0) {
         if (sig == OrbSignal::FLATTEN_EOD) {
             flatten_now("eod_flatten", price);
             return;
@@ -413,6 +420,7 @@ public:
         pos_.qty           = cfg_.qty;
         pos_.trigger_price = price;   // ORB breakout level at time of order submission
         pos_.fill_time     = std::chrono::steady_clock::now(); // placeholder until fill
+        pending_entry_sl_dist_ = desired_sl_dist;
 
         send_market_order(basket, is_buy, price, "entry");
     }
@@ -480,8 +488,12 @@ public:
             pending_cancel_basket_.clear();
             pending_cancel_was_buy_ = false;
 
-            // Place stop-loss
-            double sl = compute_sl(fill_price, pos_.direction);
+            // Place stop-loss: the strategy's own distance (mtf_scalper) if it supplied
+            // one at signal time, else the config's flat sl_points (ORB/Trend).
+            double sl = (pending_entry_sl_dist_ > 0.0)
+                ? compute_sl_dist(fill_price, pos_.direction, pending_entry_sl_dist_)
+                : compute_sl(fill_price, pos_.direction);
+            pending_entry_sl_dist_ = 0.0;
             pos_.sl_price = sl;
 
             auto lat_rec = lat_.on_fill(basket_id, fill_price);
@@ -929,6 +941,99 @@ public:
         return sl_moved;
     }
 
+    // mtf_scalper's per-tick bracket check. The strategy computes its OWN ratcheting
+    // stop (cur_stop()); the host pushes it here every tick instead of deriving a new
+    // stop from cfg_.trail_be_trigger/trail_step (that math is check_trail_and_stop's,
+    // ORB/Trend only — untouched by this method). strat_stop is an ABSOLUTE price,
+    // NaN/<=0 = "no update this tick" (mirrors PaperBracketBroker::update_bracket).
+    //
+    // Deliberately a SEPARATE method rather than a refactor of check_trail_and_stop:
+    // that function carries the tier-1/tier-2 software-SL breach detection hardened by
+    // the 2026-09-23 orphaned-stop incident (see project notes), and this keeps that
+    // code path for ORB/Trend completely unmodified. The breach-detection block below
+    // is intentionally a near-duplicate of check_trail_and_stop's, so a future change
+    // to one may need the same change in the other — grep for "TRAIL-CHECK"/"MTF-CHECK".
+    bool check_external_stop(double current_price, double strat_stop) {
+        std::lock_guard<std::mutex> lk(state_mu_);
+        if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return false;
+
+        bool is_long = (pos_.state == PosState::LONG);
+        double mfe_now = is_long
+            ? current_price - pos_.entry_price
+            : pos_.entry_price - current_price;
+        double mae_now = is_long
+            ? pos_.entry_price - current_price
+            : current_price - pos_.entry_price;
+        if (mfe_now > pos_.mfe) pos_.mfe = mfe_now;
+        if (mae_now > pos_.mae) pos_.mae = mae_now;
+
+        double effective_sl = (!pos_.basket_id_stop.empty() && last_exchange_sl_ != 0.0)
+            ? last_exchange_sl_ : pos_.sl_price;
+        bool sl_breached = (is_long  && current_price <= effective_sl) ||
+                           (!is_long && current_price >= effective_sl);
+
+        LOG("[OM] MTF-CHECK: %s price=%.2f sl=%.2f exch_sl=%.2f strat_stop=%.2f "
+            "mfe=%.2f mae=%.2f sl_breached=%d stop=%s",
+            is_long ? "LONG" : "SHORT", current_price, pos_.sl_price, effective_sl,
+            strat_stop, pos_.mfe, pos_.mae, (int)sl_breached,
+            pos_.basket_id_stop.empty() ? "(none)" : pos_.basket_id_stop.c_str());
+
+        if (sl_breached) {
+            if (pos_.basket_id_stop.empty()) {
+                LOG("[OM] Software SL hit (%s, no exchange stop): price=%.2f sl=%.2f",
+                    is_long ? "LONG" : "SHORT", current_price, pos_.sl_price);
+                sl_breach_time_ = {};
+                initiate_exit_locked("stop_loss", current_price);
+                return false;
+            }
+            if (stop_resubmit_pending_) {
+                stop_resubmit_pending_ = false;
+                sl_breach_time_ = {};
+                LOG("[OM] SL breach in stop-resubmit window (new stop in-flight): "
+                    "price=%.2f sl=%.2f — firing immediate software SL",
+                    current_price, pos_.sl_price);
+                initiate_exit_locked("stop_loss_resubmit", current_price);
+                return false;
+            }
+            if (sl_breach_time_ == std::chrono::steady_clock::time_point{}) {
+                sl_breach_time_ = std::chrono::steady_clock::now();
+            } else {
+                auto breach_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - sl_breach_time_).count();
+                if (breach_ms >= (int64_t)cfg_.sl_fire_timeout_ms) {
+                    LOG("[OM] Software SL timeout (%s, exchange stop unresponsive %ldms): "
+                        "price=%.2f sl=%.2f basket=%s",
+                        is_long ? "LONG" : "SHORT", (long)breach_ms,
+                        current_price, pos_.sl_price, pos_.basket_id_stop.c_str());
+                    sl_breach_time_ = {};
+                    initiate_exit_locked("stop_loss_timeout", current_price);
+                    return false;
+                }
+            }
+        } else {
+            sl_breach_time_ = {};
+            stop_resubmit_pending_ = false;
+        }
+
+        // Adopt the strategy's stop only if it TIGHTENS (never loosens — matches
+        // PaperBracketBroker::update_bracket and mtf_scalper_strategy.hpp's own
+        // "never-retreat" contract for cur_stop()).
+        bool sl_moved = false;
+        if (!std::isnan(strat_stop) && strat_stop > 0.0) {
+            strat_stop = snap_stop(strat_stop, is_long ? OrbSignal::BUY : OrbSignal::SELL);
+            bool improves = is_long ? (strat_stop > pos_.sl_price) : (strat_stop < pos_.sl_price);
+            if (improves) {
+                double old_sl = pos_.sl_price;
+                pos_.sl_price = strat_stop;
+                sl_moved = true;
+                LOG("[OM] MTF stop update: price=%.2f old_sl=%.2f new_sl=%.2f",
+                    current_price, old_sl, strat_stop);
+                update_stop_order_locked(old_sl, strat_stop);
+            }
+        }
+        return sl_moved;
+    }
+
     // ── Force flatten (EOD or kill switch) ────────────────────────────────────
     void flatten_now(const std::string& reason, double price = 0.0) {
         std::lock_guard<std::mutex> lk(state_mu_);
@@ -1297,6 +1402,11 @@ private:
     // storms: only update the exchange stop when sl moved by >= trail_step.
     double last_exchange_sl_  = 0.0;
 
+    // mtf_scalper only: stop DISTANCE captured at signal time (on_signal's
+    // desired_sl_dist), consumed once by the entry fill handler then cleared.
+    // 0.0 (default) = ORB/Trend path, unaffected.
+    double pending_entry_sl_dist_ = 0.0;
+
     // Breach timer for the software SL timeout tier.
     // Set when price first violates SL while an exchange stop basket is active.
     // Software SL fires if the exchange stop hasn't responded within cfg_.sl_fire_timeout_ms.
@@ -1316,6 +1426,25 @@ private:
     double compute_sl(double fill_price, OrbSignal dir) const {
         if (dir == OrbSignal::BUY)  return fill_price - cfg_.sl_points;
         if (dir == OrbSignal::SELL) return fill_price + cfg_.sl_points;
+        return fill_price;
+    }
+
+    // Snap a stop to the NQ/MNQ 0.25 tick grid in the ADVERSE direction (long: floor,
+    // short: ceil) — mirrors paper_bracket_broker.hpp snap(). mtf_scalper's stops are
+    // ATR-derived decimals; CME rejects an off-increment STOP_MARKET trigger, which would
+    // leave the position on the software SL only (naked if the process dies). Floor/ceil
+    // are monotone, so the strategy's tighten-only ratchet is preserved.
+    static double snap_stop(double px, OrbSignal dir) {
+        constexpr double TICK = 0.25;
+        const double t = px / TICK;
+        return (dir == OrbSignal::BUY ? std::floor(t + 1e-9) : std::ceil(t - 1e-9)) * TICK;
+    }
+
+    // Same as compute_sl() but with a caller-supplied distance instead of cfg_.sl_points
+    // (mtf_scalper's own ATR-based r_unit, captured at signal time — see on_signal()).
+    static double compute_sl_dist(double fill_price, OrbSignal dir, double dist) {
+        if (dir == OrbSignal::BUY)  return snap_stop(fill_price - dist, dir);
+        if (dir == OrbSignal::SELL) return snap_stop(fill_price + dist, dir);
         return fill_price;
     }
 

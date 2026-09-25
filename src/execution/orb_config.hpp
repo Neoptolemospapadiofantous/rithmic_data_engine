@@ -161,13 +161,14 @@ struct OrbConfig {
     // ── Instance identity ──────────────────────────────────────────
     std::string account_label    = "legends";         // DB tag: "legends", "tradeify", …
     std::string strategy         = "ORB";             // DB strategy tag — must differ per strategy sharing an account
-    // Which strategy class the executor runs: "orb" (OrbStrategy) or "trend" (TrendStrategy,
-    // mode/params read from the same file by TrendConfig::from_json_string). One engine per
-    // process; the per-account instance lock keeps two engines off one account.
+    // Which strategy class the executor runs: "orb" (OrbStrategy), "trend" (TrendStrategy) or
+    // "mtf_scalper" (MtfScalperStrategy) — mode/params for the latter two read from the same
+    // file by TrendConfig::from_json_string / MtfScalperConfig::from_json_string. One engine
+    // per process; the per-account instance lock keeps two engines off one account.
     std::string engine           = "orb";
-    // Trend engine on the pg feed only: replay this many minutes of recorded ticks at startup
-    // so bars/indicators are warm when the executor takes over mid-session (signals during
-    // the replay are ignored — no orders). 0 = cold start.
+    // Trend/mtf_scalper engines on the pg feed only: replay this many minutes of recorded
+    // ticks at startup so bars/indicators are warm when the executor takes over mid-session
+    // (signals during the replay are ignored — no orders). 0 = cold start.
     int warmup_minutes           = 0;
     std::string order_env_prefix = "RITHMIC_LEGENDS"; // prefix for ORDER_PLANT env vars
 
@@ -360,13 +361,13 @@ struct OrbConfig {
             strategy.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos)
             throw std::runtime_error(std::string("FATAL: invalid config key 'strategy'") +
                 " — must match [A-Za-z0-9_]+ (got '" + strategy + "')");
-        if (engine != "orb" && engine != "trend")
-            throw std::runtime_error("FATAL: invalid config key 'engine' — must be \"orb\" or \"trend\" (got '" +
-                                     engine + "')");
-        // live_trades / live_sessions rows are keyed by the strategy tag — a trend engine
+        if (engine != "orb" && engine != "trend" && engine != "mtf_scalper")
+            throw std::runtime_error("FATAL: invalid config key 'engine' — must be \"orb\", \"trend\" or "
+                                     "\"mtf_scalper\" (got '" + engine + "')");
+        // live_trades / live_sessions rows are keyed by the strategy tag — a non-ORB engine
         // writing under "ORB" would be counted as ORB trades and restart-seeded as ORB.
-        if (engine == "trend" && strategy == "ORB")
-            throw std::runtime_error("FATAL: engine \"trend\" needs its own 'strategy' tag (not \"ORB\")");
+        if ((engine == "trend" || engine == "mtf_scalper") && strategy == "ORB")
+            throw std::runtime_error("FATAL: engine \"" + engine + "\" needs its own 'strategy' tag (not \"ORB\")");
     }
 
 private:

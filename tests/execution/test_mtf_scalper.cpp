@@ -1223,6 +1223,176 @@ TEST(im_filter_passes_correlated_reference) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// Live-executor host-compatibility shims (mtf_scalper_strategy.hpp additions for
+// run_executor<Strategy> in executor_main.cpp — pure host glue, no decision logic).
+// ═════════════════════════════════════════════════════════════════════════════
+
+TEST(host_session_reflects_state) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    auto sess0 = s.session();
+    ASSERT_EQ(sess0.trades_today, 0);
+    ASSERT(!sess0.in_position);
+    ASSERT(!sess0.risk_halted);
+    ASSERT(sess0.halt_reason.empty());
+    ASSERT(!sess0.orb_set);   // mtf_scalper has no ORB concept — always false
+
+    feed_flag_long(s, 0, 600, 100.0);
+    flush(s, 0, 612, 110.5);
+    ASSERT_EQ(sigs.size(), (size_t)1);
+    ASSERT(s.session().in_position);
+    ASSERT_EQ(s.session().trades_today, 1);
+}
+
+TEST(host_halt_reason_set_and_cleared) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    s.halt_trading("pg_feed_stale");
+    ASSERT(s.session().risk_halted);
+    ASSERT_EQ(s.session().halt_reason, std::string("pg_feed_stale"));
+
+    s.unhalt_trading("pg feed resumed");
+    ASSERT(!s.session().risk_halted);
+    ASSERT(s.session().halt_reason.empty());
+}
+
+// reset_session() must clear a halt — matches OrbStrategy/TrendStrategy (a halt set
+// for an external condition does not carry across a fresh trading day; the host
+// re-evaluates and re-halts at startup if still true).
+TEST(reset_session_clears_halt) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    s.halt_trading("startup_stale_position_LONG");
+    ASSERT(s.session().risk_halted);
+
+    s.reset_session();
+    ASSERT(!s.session().risk_halted);
+    ASSERT(s.session().halt_reason.empty());
+}
+
+TEST(check_eod_forwards_to_check_time_flatten) {
+    MtfScalperConfig cfg = base_cfg();   // base_cfg() turns use_session off; re-enable it
+    cfg.use_session = true;
+    cfg.flat_at_session_end = true;
+    cfg.session_window = "0900-1200";
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    feed_flag_long(s, 0, 600, 100.0);
+    flush(s, 0, 612, 110.5);
+    ASSERT(s.in_position());
+
+    s.check_eod(13, 0);   // past session end (12:00 ET) — flattens like check_time_flatten
+    ASSERT_EQ(sigs.back().signal, OrbSignal::FLATTEN_EOD);
+}
+
+TEST(seed_trades_today_sets_counter) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    s.seed_trades_today(3);
+    ASSERT_EQ(s.trades_today(), 3);
+    ASSERT_EQ(s.session().trades_today, 3);
+}
+
+TEST(orb_compat_stubs_are_inert) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    ASSERT_NEAR(s.orb_high(), 0.0, 0.0001);
+    ASSERT_NEAR(s.orb_low(),  0.0, 0.0001);
+    ASSERT(!s.orb_set());
+}
+
+// The live executor releases the engine with a direction-less notification after
+// the warm-up replay (and when the order manager never acted on a signal). It must
+// clear the leg the strategy believes it holds — a matching-direction-only rule left
+// the engine "in position" for the whole session (2026-09-25 dry-run smoke test).
+TEST(directionless_notify_releases_position) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    feed_flag_long(s, 0, 600, 100.0);
+    flush(s, 0, 612, 110.5);
+    ASSERT(s.in_position());
+    ASSERT(!std::isnan(s.cur_tp()));
+
+    // Wrong-direction leg report (reversal semantics) must NOT clear the open long…
+    s.notify_trade_filled(OrbSignal::SELL, "stop");
+    ASSERT(s.in_position());
+
+    // …but the host's direction-less release always does.
+    s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "warmup_replay");
+    ASSERT(!s.in_position());
+    ASSERT(!s.exit_pending());
+    ASSERT(std::isnan(s.cur_tp()));
+    ASSERT(std::isnan(s.cur_stop()));
+}
+
+// allow_flips=false (the live setting): an opposite flag while positioned does NOT
+// reverse the leg — the live executor cannot reverse a position and would otherwise
+// push the new leg's stop onto the old one. Default true keeps paper parity.
+TEST(allow_flips_false_blocks_reversal_entry) {
+    {
+        MtfScalperConfig cfg = base_cfg();   // default: flips allowed (paper)
+        std::vector<CapturedSignal> sigs;
+        MtfScalperStrategy s = make_strategy(cfg, sigs);
+        feed_flag_long(s, 0, 600, 100.0);  flush(s, 0, 612, 110.5);
+        ASSERT_EQ(sigs.size(), (size_t)1);
+        feed_flag_bear(s, 0, 613, 110.5);  flush(s, 0, 625, 100.0);
+        ASSERT(sigs.size() >= 2);
+        ASSERT(sigs.back().signal == OrbSignal::SELL);
+        ASSERT_EQ(s.pos_dir(), -1);
+    }
+    {
+        MtfScalperConfig cfg = base_cfg();
+        cfg.allow_flips = false;
+        std::vector<CapturedSignal> sigs;
+        MtfScalperStrategy s = make_strategy(cfg, sigs);
+        feed_flag_long(s, 0, 600, 100.0);  flush(s, 0, 612, 110.5);
+        ASSERT_EQ(sigs.size(), (size_t)1);
+        feed_flag_bear(s, 0, 613, 110.5);  flush(s, 0, 625, 100.0);
+        ASSERT_EQ(sigs.size(), (size_t)1);   // no flip
+        ASSERT_EQ(s.pos_dir(), +1);          // still long
+    }
+}
+
+// A direction-less release (order rejected / warm-up end) is not a trade: it must not
+// touch the loss-streak cooldown or equity.
+TEST(directionless_release_keeps_guardrail_accounting) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+    feed_flag_long(s, 0, 600, 100.0);  flush(s, 0, 612, 110.5);
+    s.notify_trade_filled(OrbSignal::BUY, "stop", -50.0);
+    ASSERT_EQ(s.loss_streak(), 1);
+    const double eq = s.equity();
+
+    s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:no_order");
+    ASSERT_EQ(s.loss_streak(), 1);
+    ASSERT_NEAR(s.equity(), eq, 1e-9);
+    ASSERT(!s.in_position());
+}
+
+TEST(last_price_tracks_ticks) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+
+    s.on_tick({bar_ts_us(0, 600, 0), 101.25, 1, true});
+    ASSERT_NEAR(s.last_price(), 101.25, 0.0001);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(indicators_match_reference_250_bars);
     RUN(indicators_constant_series);
@@ -1261,6 +1431,17 @@ int main() {
     RUN(im_filter_blocks_uncorrelated_reference);
     RUN(im_filter_passes_correlated_reference);
     RUN(config_from_json_string);
+
+    RUN(host_session_reflects_state);
+    RUN(host_halt_reason_set_and_cleared);
+    RUN(reset_session_clears_halt);
+    RUN(check_eod_forwards_to_check_time_flatten);
+    RUN(seed_trades_today_sets_counter);
+    RUN(orb_compat_stubs_are_inert);
+    RUN(directionless_notify_releases_position);
+    RUN(allow_flips_false_blocks_reversal_entry);
+    RUN(directionless_release_keeps_guardrail_accounting);
+    RUN(last_price_tracks_ticks);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

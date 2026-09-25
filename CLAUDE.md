@@ -35,10 +35,10 @@ Agent prompts live in `scripts/fleet_agents.json`.
 Everything is C++. There is no Python in this project.
 
 - **`rithmic_engine`** — WebSocket tick collector (market data → PostgreSQL)
-- **`nq_executor`** — ORB strategy + order execution (production trader)
+- **`nq_executor`** — order execution (production trader); one engine per process — `orb` (OrbStrategy), `trend` (TrendStrategy), or `mtf_scalper` (MtfScalperStrategy) via `config`'s `"engine"` key
 - **`audit_daemon`** — 17-check quality daemon (local/testing only — NOT on Oracle)
 - **Build**: `cmake -B build && cmake --build build -j$(nproc)`
-- **Tests**: `build/test_orb_strategy`, `build/test_trend_strategy`, `build/test_risk_manager`, `build/test_validator`, `build/test_db`
+- **Tests**: `build/test_orb_strategy`, `build/test_trend_strategy`, `build/test_mtf_scalper`, `build/test_risk_manager`, `build/test_order_manager`, `build/test_validator`, `build/test_db`, `build/test_lifecycle`, `build/test_incident_replay`, `build/test_trade_end_invariant`, `build/test_paper_broker`, `build/test_bracket_broker`, `build/test_parity_paper_vs_live` (the full list `scripts/hermes.sh` runs)
 
 ## What to improve (in priority order)
 
@@ -78,9 +78,12 @@ If tests break because of your changes: fix the code OR add tests that cover the
 | `src/audit_daemon_main.cpp` | 17-check quality daemon source |
 | `src/execution/executor_main.cpp` | nq_executor entry point |
 | `src/execution/orb_strategy.cpp` | ORB strategy implementation |
-| `src/execution/trend_strategy.hpp` | Configurable trend engine (11 modes) used by the paper fleet — `tests/execution/test_trend_strategy.cpp` |
+| `src/execution/trend_strategy.hpp` | Configurable trend engine (2 dozen modes) used by the paper fleet and, since 2026-09-25, live (`"engine": "trend"`) — `tests/execution/test_trend_strategy.cpp` |
+| `src/execution/mtf_scalper_strategy.hpp` | "Momentum Scalper — MTF Flag AutoPilot v5" (Pine port); self-managed bracket via `cur_stop()`/`cur_tp()` — live since 2026-09-25 (`"engine": "mtf_scalper"`) — `tests/execution/test_mtf_scalper.cpp` |
+| `src/execution/mtf_scalper_config.hpp` | mtf_scalper's own config fields, read from the same JSON file as `OrbConfig` (flat snake_case, like trend) |
+| `src/paper/paper_bracket_broker.hpp` | Paper-fleet fill simulator for mtf_scalper (strategy-owned bracket) — the live executor's `OrderManager::check_external_stop()` mirrors its stop/target semantics — `tests/paper/test_bracket_broker.cpp` |
 | `src/paper/paper_main.cpp` | Paper fleet runner (engines orb / mtf_scalper / trend, replay mode, feed-gap guard) |
-| `src/execution/order_manager.cpp` | Order lifecycle management |
+| `src/execution/order_manager.cpp` | Order lifecycle management; `check_trail_and_stop()` (ORB/Trend, cfg-driven BE/trail) vs `check_external_stop()` (mtf_scalper, strategy-driven ratchet — deliberately NOT a shared refactor, see its header comment) |
 | `src/execution/risk_manager.cpp` | Pre-trade risk checks |
 | `src/client.cpp` | WebSocket client (Boost.Beast) |
 | `src/db.cpp` | PostgreSQL I/O (libpq) |
@@ -108,6 +111,20 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   the Postgres `ticks` table instead (`md_feed_symbol`, default NQ). Do not start an
   executor in WebSocket MD mode (any other provider) while the collector runs — Rithmic
   force-logs-out one of them every ~35s.
+- **ORB → momentum-scalper hand-off (tradeify, since 2026-09-25)**: ORB (`tradeify`) opens
+  09:30 ET; `scripts/strategy_handoff.sh tradeify tradeify tradeify_scalper` waits until ORB
+  is done (5/5 trades, or flat at 10:00 ET = 17:00 Cyprus), stops it, starts
+  `nq-executor-local@tradeify_scalper` (`config/tradeify_scalper_config.json`, engine
+  `mtf_scalper`, window 10:00–12:00 ET, 2 MNQ) and restores ORB at 16:00 ET. Armed every
+  weekday 09:29 ET by `strategy-handoff.timer` (`deploy/strategy-handoff.{service,timer}`,
+  installed in `~/.config/systemd/user/`): `systemctl --user enable --now strategy-handoff.timer`
+  to run it daily, `disable --now` for ORB-only. The hand-off needs the scalper LIVE
+  (`dry_run: false`) — a dry-run executor opens no PNL plant and fails the script's
+  "[BROKER] + flat" readiness check (it is then stopped and `NO_DEPLOY` set).
+  A dry-run instance opens NO Rithmic session at all, so it can rehearse in parallel with the
+  live ORB (`config/tradeify_dryscalper_config.json`, label `tradeify_dry` so its DB rows stay
+  separate). Retired instances go to `config/archived/` — that is what takes them off the
+  dashboard's live board (it lists `config/*_config.json` minus `archived/`).
 
 **WARNING — Oracle failback:** before starting an executor on Oracle (failback or
 deploy), kill any locally running executors for the same account. There is currently

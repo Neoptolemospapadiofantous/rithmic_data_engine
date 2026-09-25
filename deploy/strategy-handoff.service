@@ -1,0 +1,27 @@
+# strategy-handoff.service — arm the ORB → momentum-scalper hand-off for today's RTH
+# session on the tradeify account (LOCAL box, systemd USER unit; fired by
+# strategy-handoff.timer at 09:29 New York time, Mon–Fri).
+#
+# What it runs: scripts/strategy_handoff.sh tradeify tradeify tradeify_scalper
+#   1. waits until the ORB instance (nq-executor-local@tradeify) is DONE — it logged
+#      "Daily trade limit reached", or it is FLAT at/after 10:00 ET (= 17:00 Cyprus);
+#      a trade still open then may finish until the 10:30 ET hard deadline
+#   2. stops ORB, starts nq-executor-local@tradeify_scalper and requires it to come up
+#      clean (PNL plant + [BROKER] exchange_net=0 within 90 s) — else stops it, sets
+#      NO_DEPLOY and alerts via grid-notify (Telegram)
+#   3. at 16:00 ET stops the scalper and restores ORB for the next 09:30 session
+# The process therefore lives for the whole RTH day; Type=simple is intended.
+# Install: cp deploy/strategy-handoff.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now strategy-handoff.timer
+# Disable the daily hand-off (ORB only): systemctl --user disable --now strategy-handoff.timer
+[Unit]
+Description=Arm today's ORB → momentum-scalper hand-off (tradeify)
+After=nq-executor-local@tradeify.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/strategy_handoff.sh tradeify tradeify tradeify_scalper
+# The script tees its own log to data/logs/strategy_handoff.log; the journal gets a copy.
+StandardOutput=journal
+StandardError=journal

@@ -24,6 +24,13 @@ struct MtfScalperConfig {
     bool    auto_mode_flag_fix = true;
     bool    allow_longs        = true;
     bool    allow_shorts       = true;
+    // Pine enters the opposite direction while positioned (a "flip"; the paper
+    // bracket broker exits the old leg first). The live executor cannot reverse
+    // a position — its order manager ignores a signal while not FLAT while the
+    // strategy would already track the new leg — so the live config sets this
+    // false (executor_main refuses to start otherwise). Paper fleet: 0 reversals
+    // in 2,603 mtf trades to 2026-09-25, so the default keeps paper parity at no cost.
+    bool    allow_flips        = true;
     int64_t date_start_epoch   = 0;   // 0 = unbounded (live default)
     int64_t date_end_epoch     = 0;   // 0 = unbounded
 
@@ -219,6 +226,7 @@ struct MtfScalperConfig {
         c.auto_mode_flag_fix = json_bool(text, "auto_mode_flag_fix", c.auto_mode_flag_fix);
         c.allow_longs   = json_bool(text, "allow_longs",  c.allow_longs);
         c.allow_shorts  = json_bool(text, "allow_shorts", c.allow_shorts);
+        c.allow_flips   = json_bool(text, "allow_flips",  c.allow_flips);
         c.date_start_epoch = (int64_t)json_dbl(text, "date_start_epoch", (double)c.date_start_epoch);
         c.date_end_epoch   = (int64_t)json_dbl(text, "date_end_epoch",   (double)c.date_end_epoch);
 

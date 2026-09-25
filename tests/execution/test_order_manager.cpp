@@ -2057,6 +2057,132 @@ TEST(net_reconciler_acts_once_after_grace) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// mtf_scalper live wiring: on_signal's desired_sl_dist param + check_external_stop().
+// The strategy (MtfScalperStrategy) owns its own ratcheting stop instead of the
+// cfg_.sl_points/trail_step math check_trail_and_stop uses for ORB/Trend.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 69. desired_sl_dist (mtf_scalper path): the entry stop uses the strategy's own
+//     distance from FILL price, not cfg_.sl_points.
+TEST(mtf_entry_uses_desired_sl_dist_not_cfg_sl_points) {
+    Fixture f;   // make_cfg(): sl_points = 10.0
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, /*desired_sl_dist=*/5.0);
+    sim_entry_fill(f, 19002.0);   // fill differs slightly from signal price
+
+    auto snap = f.om.position_snapshot();
+    ASSERT_NEAR(snap.sl_price, 19002.0 - 5.0, 0.001);   // fill ∓ dist, not cfg.sl_points
+}
+
+// 70. desired_sl_dist=0.0 (the default, ORB/Trend's call shape): behaves exactly as
+//     before — falls back to cfg_.sl_points. Regression guard for the on_signal change.
+TEST(mtf_entry_zero_dist_falls_back_to_cfg_sl_points) {
+    Fixture f;   // sl_points = 10.0
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");   // old 3-arg call shape
+    sim_entry_fill(f, 19000.0);
+
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19000.0 - 10.0, 0.001);
+}
+
+// 71. check_external_stop: a tighter strategy stop is adopted (long).
+TEST(mtf_external_stop_tightens_long) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 18990.0
+
+    bool moved = f.om.check_external_stop(19005.0, /*strat_stop=*/18995.0);
+    ASSERT(moved);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18995.0, 0.001);
+}
+
+// 72. check_external_stop never loosens the stop (long) — mirrors
+//     mtf_scalper_strategy.hpp's own "never-retreat" contract for cur_stop().
+TEST(mtf_external_stop_never_loosens_long) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 18990.0
+
+    bool moved = f.om.check_external_stop(19005.0, /*strat_stop=*/18980.0);  // looser
+    ASSERT(!moved);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18990.0, 0.001);
+}
+
+// 73. Same ratchet direction check, short side (tighter = lower stop moving down).
+TEST(mtf_external_stop_tightens_short) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "flag_break_short", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 19010.0
+
+    bool moved = f.om.check_external_stop(18995.0, /*strat_stop=*/19004.0);
+    ASSERT(moved);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19004.0, 0.001);
+
+    bool loosened = f.om.check_external_stop(18995.0, /*strat_stop=*/19020.0);
+    ASSERT(!loosened);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19004.0, 0.001);
+}
+
+// 74. NaN / non-positive strat_stop is a no-op (the strategy's "no update this tick"
+//     signal — e.g. before the bracket is initialised).
+TEST(mtf_external_stop_ignores_nan_or_nonpositive) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);
+
+    ASSERT(!f.om.check_external_stop(19005.0, std::nan("")));
+    ASSERT(!f.om.check_external_stop(19005.0, 0.0));
+    ASSERT(!f.om.check_external_stop(19005.0, -1.0));
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18990.0, 0.001);
+}
+
+// 75. Flat: check_external_stop is a no-op (no position to update).
+TEST(mtf_external_stop_noop_when_flat) {
+    Fixture f;
+    ASSERT(!f.om.check_external_stop(19000.0, 18995.0));
+    ASSERT(f.om.is_flat());
+}
+
+// 76. Breach detection (tier-2, same shape as check_trail_and_stop's own tests):
+//     price trades through the exchange-held stop — check_external_stop fires the
+//     software SL exit exactly like check_trail_and_stop does, independent of
+//     whatever strat_stop is passed that same tick.
+TEST(mtf_external_stop_tier2_fires_after_breach_timeout) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_fire_timeout_ms = 0;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 18990.0
+    ASSERT(!f.om.position_snapshot().basket_id_stop.empty());
+
+    f.om.check_external_stop(18985.0, 18990.0);   // first tick below sl — starts timer
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.check_external_stop(18985.0, 18990.0);   // second tick — fires
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    ASSERT(f.sent_baskets.size() > sends_before);
+}
+
+// 77. Stops are snapped to the 0.25 tick grid in the ADVERSE direction (long: floor,
+//     short: ceil) — CME rejects an off-increment STOP_MARKET trigger, and the strategy's
+//     ATR-based distances are arbitrary decimals. Mirrors paper_bracket_broker.hpp snap().
+TEST(mtf_stops_snapped_to_tick_adverse) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 5.3);
+    sim_entry_fill(f, 19002.0);                                    // 18996.7 → 18996.5
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18996.5, 0.001);
+    ASSERT(f.om.check_external_stop(19010.0, 18999.13));           // → 18999.0
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18999.0, 0.001);
+
+    Fixture g;
+    g.om.on_signal(OrbSignal::SELL, 19000.0, "flag_break_short", 0.0, 5.3);
+    sim_entry_fill(g, 19000.0);                                    // 19005.3 → 19005.5
+    ASSERT_NEAR(g.om.position_snapshot().sl_price, 19005.5, 0.001);
+    ASSERT(g.om.check_external_stop(18990.0, 19002.87));           // → 19003.0
+    ASSERT_NEAR(g.om.position_snapshot().sl_price, 19003.0, 0.001);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -2130,6 +2256,16 @@ int main() {
     RUN(cancel_failed_while_flat_keeps_guard);
     RUN(net_qty_consistent_by_state);
     RUN(net_reconciler_acts_once_after_grace);
+
+    RUN(mtf_entry_uses_desired_sl_dist_not_cfg_sl_points);
+    RUN(mtf_entry_zero_dist_falls_back_to_cfg_sl_points);
+    RUN(mtf_external_stop_tightens_long);
+    RUN(mtf_external_stop_never_loosens_long);
+    RUN(mtf_external_stop_tightens_short);
+    RUN(mtf_external_stop_ignores_nan_or_nonpositive);
+    RUN(mtf_external_stop_noop_when_flat);
+    RUN(mtf_external_stop_tier2_fires_after_breach_timeout);
+    RUN(mtf_stops_snapped_to_tick_adverse);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;
