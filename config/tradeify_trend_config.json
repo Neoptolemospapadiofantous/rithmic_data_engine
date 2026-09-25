@@ -1,5 +1,5 @@
 {
-  "_comment": "LIVE TREND ENGINE: trend_supertrend_7_3_1m (paper fleet: +84 USD bbo / 7 trades / 3 days \u2014 tiny sample). Window 09:30-12:00 ET (founder 2026-09-24: flatten after 19:00 Cyprus) \u2014 engine flattens at 12:00 ET, executor backstop 12:01; 2 MNQ, max 5 entries. Takes over from ORB via scripts/strategy_handoff.sh once ORB has used its trades or at 10:00 ET (only when flat); stays up idle until the 16:00 ET hand-back to ORB. One executor per account.",
+  "_comment": "LIVE TREND ENGINE: fib_pb_1m_deep (Fibonacci pullback, 1m; paper fleet 2026-09-22..24: 12 trades, 3/3 green days, +$313, PF 19 \u2014 small sample). Takes over from ORB via scripts/strategy_handoff.sh once ORB has used its trades or at 10:00 ET (only when flat); window 09:30-12:00 ET (flattens 12:00 ET = 19:00 CY), executor backstop 12:01; 2 MNQ, max 5 entries; 60 min warm-up replay at start. Replaced supertrend (TREND_ST) 2026-09-24. One executor per account.",
   "account_label": "tradeify",
   "order_env_prefix": "RITHMIC_TRADEIFY",
   "dry_run": false,
@@ -16,8 +16,8 @@
   "trailing_drawdown_cap": 1000.0,
   "consistency_cap_pct": 0.3,
   "orb_minutes": 5,
-  "sl_points": 12.0,
-  "trail_step": 8.0,
+  "sl_points": 8.0,
+  "trail_step": 6.0,
   "trail_be_trigger": 3.0,
   "trail_delay_secs": 300,
   "trail_be_offset": 1.0,
@@ -34,11 +34,13 @@
   "cycle_mode": false,
   "cycle_start_epoch": 0,
   "engine": "trend",
-  "strategy": "TREND_ST",
-  "mode": "supertrend",
+  "strategy": "FIB_PB",
+  "mode": "fib_pullback",
   "tf_min": 1,
-  "st_len": 7,
-  "st_mult": 3.0,
+  "fib_swing_bars": 30,
+  "fib_lo": 0.5,
+  "fib_hi": 0.786,
   "win_start": 930,
-  "win_end": 1200
+  "win_end": 1200,
+  "warmup_minutes": 60
 }
