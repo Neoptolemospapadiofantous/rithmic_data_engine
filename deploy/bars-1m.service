@@ -1,0 +1,14 @@
+# bars-1m.service — roll the collector's ticks up into the bars_1m table every minute
+# (scripts/refresh_bars.sh → SELECT refresh_bars_1m(); see scripts/sql/bars_1m.sql).
+# The dashboard's /chart, /models and /insights read bars_1m instead of re-aggregating
+# hundreds of thousands of ticks per request. Fired by bars-1m.timer.
+# Install: cp deploy/bars-1m.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now bars-1m.timer
+[Unit]
+Description=1-minute OHLCV rollup of ticks into bars_1m
+After=postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/refresh_bars.sh

@@ -4,7 +4,7 @@
 # day — past the 10:30 ET hard deadline the script would flatten a live ORB trade.
 # Same timezone-suffix form as pre-rth-check.timer (systemd >= 235).
 [Unit]
-Description=Weekday 09:29 New York arming of the ORB → momentum-scalper hand-off
+Description=Weekday 09:29 New York arming of the ORB → hand-off engine
 
 [Timer]
 OnCalendar=Mon..Fri 09:29 America/New_York

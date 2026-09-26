@@ -249,6 +249,115 @@ int main() {
         bool buy = false; for (auto& r : out) if (r.why == "fib_retrace_long") buy = true;
         CHECK(buy, "fib_pullback: BUY the resumption out of the retracement zone");
     }
+    // ── ema_ribbon: 3-EMA stack pullback, then unstack flattens ──────────────
+    {
+        TrendConfig tc; tc.mode = "ema_ribbon"; tc.tf_min = 1;
+        tc.ribbon_fast = 3; tc.ribbon_mid = 5; tc.ribbon_slow = 8;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        std::vector<double> path; for (int i = 0; i < 18; ++i) path.push_back(20000.0 + 3 * i);   // steady climb, stacks the ribbon
+        path.push_back(20040.0);                                                                    // pullback bar: dips to the mid EMA
+        path.push_back(20055.0);                                                                    // resumes above the pullback bar's high
+        for (int i = 1; i <= 4; ++i) path.push_back(20055.0 - 15 * i);                              // sharp reversal → unstacks
+        feed_path(s, path, 9, 30);
+        bool buy = false, flat = false;
+        for (auto& r : out) { if (r.why == "ribbon_pullback_long") buy = true; if (r.why == "ribbon_unstack") flat = true; }
+        CHECK(buy, "ema_ribbon: BUY the pullback to the mid EMA while fast>mid>slow");
+        CHECK(flat, "ema_ribbon: flatten once the stack unstacks");
+    }
+    // ── thrust_fade: a parabolic run that fails to extend gets faded ────────
+    {
+        TrendConfig tc; tc.mode = "thrust_fade"; tc.tf_min = 1;
+        tc.thrust_bars = 3; tc.thrust_min_atr = 2.0; tc.thrust_retrace_frac = 0.5; tc.thrust_target_atr = 1.0;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        std::vector<double> path(6, 20000.0);                                    // baseline (small ATR)
+        path.push_back(20020.0); path.push_back(20040.0); path.push_back(20060.0); // 3-bar thrust, ~40pt run
+        path.push_back(20055.0);                                                   // fails to extend, retraces past the mid — fade short
+        path.push_back(20030.0); path.push_back(20030.0);                          // continues down to the fade target (+1 bar to close it)
+        feed_path(s, path, 9, 30);
+        bool sell = false, tgt = false;
+        for (auto& r : out) { if (r.why == "thrust_exhaustion_fade_short") sell = true; if (r.why == "thrust_target") tgt = true; }
+        CHECK(sell, "thrust_fade: SELL when the up-thrust fails to extend and retraces");
+        CHECK(tgt, "thrust_fade: flatten once the fade reaches its ATR target");
+    }
+    // ── tape modes: bars with controlled volume / aggressor side ────────────
+    // feed one 1m bar at (h, m): 4 prints o→l→h→c; buy volume = vol×share on the o/h
+    // prints, sell volume on the l/c prints (sizes are integers, vol ≥ 4).
+    auto feed_bar = [](TrendStrategy& s, int h, int m, double o, double hi, double lo, double c, int vol, double share) {
+        int bv = (int)std::lround(vol * share), sv = vol - bv;
+        int b1 = bv / 2, b2 = bv - b1, s1 = sv / 2, s2 = sv - s1;
+        if (b1 > 0) s.on_tick(OrbTick{at(h, m, 0),  o,  (int64_t)b1, true});
+        if (s1 > 0) s.on_tick(OrbTick{at(h, m, 15), lo, (int64_t)s1, false});
+        if (b2 > 0) s.on_tick(OrbTick{at(h, m, 30), hi, (int64_t)b2, true});
+        if (s2 > 0) s.on_tick(OrbTick{at(h, m, 45), c,  (int64_t)s2, false});
+        else        s.on_tick(OrbTick{at(h, m, 45), c,  1, true});
+    };
+    auto minute = [](int i, int& h, int& m) { int t = 9 * 60 + 30 + i; h = t / 60; m = t % 60; };
+    // absorption_reversal: 25 quiet bars, a 5-bar +15 run, then a huge-volume bar with no
+    // range (buyers absorbed), then a close back below its midpoint → SELL.
+    {
+        TrendConfig tc; tc.mode = "absorption_reversal"; tc.tf_min = 1; tc.vol_avg_bars = 10;
+        tc.abs_vol_mult = 2.0; tc.abs_max_range_atr = 0.5; tc.abs_min_move_atr = 1.5; tc.abs_move_bars = 5; tc.abs_delta_min = 0.6;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        int i = 0, h, m; double px = 20000.0;
+        for (; i < 25; ++i) { minute(i, h, m); feed_bar(s, h, m, px, px + 1.0, px - 1.0, px, 60, 0.5); }
+        for (int k = 0; k < 5; ++k, ++i) { minute(i, h, m); feed_bar(s, h, m, px, px + 3.2, px - 0.2, px + 3.0, 60, 0.5); px += 3.0; }
+        minute(i++, h, m); feed_bar(s, h, m, px, px + 0.3, px - 0.2, px + 0.1, 240, 0.7);   // absorption: 4× volume, no range, buyers
+        CHECK(out.empty(), "absorption: arms on the absorption bar, no entry yet");
+        minute(i++, h, m); feed_bar(s, h, m, px + 0.1, px + 0.2, px - 1.5, px - 1.2, 60, 0.4);  // closes back through the midpoint
+        minute(i++, h, m); feed_bar(s, h, m, px - 1.2, px - 1.0, px - 1.6, px - 1.4, 60, 0.5);  // completes that bar
+        bool sell = false; for (auto& r : out) if (r.why == "absorption_fade_short") sell = true;
+        CHECK(sell, "absorption: SELL when the next bar closes back through the absorption bar's midpoint");
+    }
+    // delta_divergence (dd_bars=5): a new 5-bar high with sellers on the breakout bar and a
+    // 5-bar delta sum below its recent max → SELL.
+    {
+        TrendConfig tc; tc.mode = "delta_divergence"; tc.tf_min = 1; tc.dd_bars = 5;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        int i = 0, h, m; double px = 20000.0;
+        for (; i < 12; ++i) { minute(i, h, m); feed_bar(s, h, m, px, px + 1.0, px - 1.0, px, 60, 0.5); }
+        for (int k = 0; k < 5; ++k, ++i) { minute(i, h, m); feed_bar(s, h, m, px, px + 2.2, px - 0.2, px + 2.0, 60, 0.8); px += 2.0; }  // strong buying
+        CHECK(out.empty(), "delta_divergence: confirmed buying makes no signal");
+        minute(i++, h, m); feed_bar(s, h, m, px, px + 2.5, px - 0.5, px + 1.0, 60, 0.2);   // new high, sellers dominant
+        minute(i++, h, m); feed_bar(s, h, m, px + 1.0, px + 1.2, px + 0.5, px + 0.8, 60, 0.5);
+        bool sell = false; for (auto& r : out) if (r.why == "delta_divergence_short") sell = true;
+        CHECK(sell, "delta_divergence: SELL a new high the delta does not confirm");
+    }
+    // volume_burst: a 4× volume bar closing at its high with 80% buy share in an uptrend → BUY.
+    {
+        TrendConfig tc; tc.mode = "volume_burst"; tc.tf_min = 1; tc.vol_avg_bars = 10; tc.vb_vol_mult = 2.5; tc.vb_trend_agree = true;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        int i = 0, h, m; double px = 20000.0;
+        for (; i < 12; ++i) { minute(i, h, m); feed_bar(s, h, m, px, px + 1.0, px - 1.0, px, 60, 0.5); }
+        for (int k = 0; k < 3; ++k, ++i) { minute(i, h, m); feed_bar(s, h, m, px, px + 1.2, px - 0.2, px + 1.0, 60, 0.55); px += 1.0; }  // mild uptrend
+        minute(i++, h, m); feed_bar(s, h, m, px, px + 4.0, px - 0.2, px + 4.0, 240, 0.8);   // the burst, closes at its high
+        minute(i++, h, m); feed_bar(s, h, m, px + 4.0, px + 4.2, px + 3.6, px + 3.9, 60, 0.5);
+        bool buy = false; for (auto& r : out) if (r.why == "volume_burst_long") buy = true;
+        CHECK(buy, "volume_burst: BUY a high-volume bar closing at its high with the aggressors long");
+    }
+    // book_imbalance with bi_invert: a bid-stacked book held for the hold time is FADED (SELL).
+    {
+        TrendConfig tc; tc.mode = "book_imbalance"; tc.bi_invert = true; tc.bi_min = 0.70; tc.bi_hold_secs = 2;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        s.on_tick(OrbTick{at(10, 0, 0), 20000.0, 1, true});
+        s.on_quote(at(10, 0, 1), 19999.75, 90, 20000.0, 10);   // bid-stacked → side arms
+        s.on_quote(at(10, 0, 4), 19999.75, 90, 20000.0, 10);   // held 3 s ≥ hold
+        CHECK(!out.empty() && out[0].sig == OrbSignal::SELL && out[0].why == "book_fade_bid",
+              "book_fade: SELL into a bid-stacked book (inverted imbalance)");
+        s.on_quote(at(10, 0, 9), 19999.75, 50, 20000.0, 50);   // normalised → flat
+        CHECK(out.size() == 2 && out[1].why == "imbalance_normalised", "book_fade: flattens when the book normalises");
+    }
     // ── roc_momentum: accelerating move fires; flat tape does not ───────────
     {
         TrendConfig tc; tc.mode = "roc_momentum"; tc.tf_min = 1; tc.roc_bars = 3; tc.roc_min_atr = 1.0; tc.roc_hi_bars = 3;

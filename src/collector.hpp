@@ -89,6 +89,7 @@ private:
     std::unique_ptr<Wal<BBORow>>   bbo_wal_;
     std::unique_ptr<Wal<DepthRow>> depth_wal_;
     std::unique_ptr<DataSentinel>  sentinel_;
+    std::vector<SentinelAlertRow>  sentinel_pending_;  // writer thread — alerts held across a dead DB connection
     asio::io_context               ioc_;
     std::unique_ptr<RithmicClient> client_;
 

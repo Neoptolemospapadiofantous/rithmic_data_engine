@@ -108,6 +108,25 @@ PaperDb::~PaperDb() {
     if (conn_) PQfinish(conn_);
 }
 
+// libpq only notices a dead server on the first failed round-trip (that call returns a
+// null result and PQstatus flips to CONNECTION_BAD); from the next call on we reset the
+// connection in place. Rate-limited so a long outage costs one attempt per 5 s, not one
+// per tick. Callers keep their existing "null result → WARN" handling for the one call
+// that hits the dead socket.
+PGconn* PaperDb::live() {
+    if (conn_ && PQstatus(conn_) == CONNECTION_OK) return conn_;
+    const auto now = std::chrono::steady_clock::now();
+    if (now - last_reset_ < std::chrono::seconds(5)) return conn_;
+    last_reset_ = now;
+    if (!conn_) return conn_;
+    PQreset(conn_);
+    if (PQstatus(conn_) == CONNECTION_OK)
+        LOG("[PAPER-DB] reconnected to PostgreSQL");
+    else
+        LOG("[PAPER-DB] WARN reconnect failed: %s", PQerrorMessage(conn_));
+    return conn_;
+}
+
 std::string PaperDb::format_ts(int64_t ts_micros) {
     time_t secs   = static_cast<time_t>(ts_micros / 1'000'000);
     int    micros = static_cast<int>(ts_micros % 1'000'000);
@@ -123,7 +142,7 @@ std::string PaperDb::format_ts(int64_t ts_micros) {
 
 void PaperDb::ensure_schema() {
     for (const char* sql : kSchemaSQL) {
-        PGresult* res = PQexec(conn_, sql);
+        PGresult* res = PQexec(live(), sql);
         if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
             std::string msg = res ? PQresultErrorMessage(res) : "null result";
             if (res) PQclear(res);
@@ -134,7 +153,7 @@ void PaperDb::ensure_schema() {
 }
 
 void PaperDb::exec_silent(const std::string& sql) {
-    PGresult* r = PQexec(conn_, sql.c_str());
+    PGresult* r = PQexec(live(), sql.c_str());
     if (r) {
         auto s = PQresultStatus(r);
         if (s != PGRES_COMMAND_OK && s != PGRES_TUPLES_OK)
@@ -145,7 +164,7 @@ void PaperDb::exec_silent(const std::string& sql) {
 
 std::string PaperDb::exec_scalar(const std::string& sql, const char* const* params,
                                  int nparams, const char* ctx) {
-    PGresult* res = PQexecParams(conn_, sql.c_str(), nparams, nullptr, params,
+    PGresult* res = PQexecParams(live(), sql.c_str(), nparams, nullptr, params,
                                  nullptr, nullptr, 0);
     if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
         std::string msg = res ? PQresultErrorMessage(res) : "null result";
@@ -180,7 +199,7 @@ void PaperDb::save_position(const PaperPositionRow& p) {
         p.direction != 0 ? tp.c_str() : nullptr,
         upnl.c_str(),
     };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(INSERT INTO paper_positions
               (strategy_id, direction, qty, entry_price, entry_time,
                stop_price, target_price, unrealized_pnl, updated_at)
@@ -219,7 +238,7 @@ void PaperDb::record_trade(const PaperTradeRow& t) {
         t.exit_reason.c_str(), mae.c_str(), mfe.c_str(),
         ebbo.c_str(), xbbo.c_str(), pbbo.c_str(), spe.c_str(), spx.c_str(), t.fill_model.c_str(),
     };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(INSERT INTO paper_trades
               (strategy_id, account_label, symbol, direction, qty,
                entry_time, entry_price, exit_time, exit_price,
@@ -241,7 +260,7 @@ void PaperDb::record_trade(const PaperTradeRow& t) {
 
     // Wake any listener (backend dashboard); non-fatal by design.
     const char* np[1] = { t.strategy_id.c_str() };
-    PGresult* nr = PQexecParams(conn_,
+    PGresult* nr = PQexecParams(live(),
         "SELECT pg_notify('paper_update', $1)", 1, nullptr, np, nullptr, nullptr, 0);
     if (nr) PQclear(nr);
 }
@@ -253,7 +272,7 @@ void PaperDb::record_signal(const PaperSignalRow& s) {
     const char* params[11] = { s.strategy_id.c_str(), s.account_label.c_str(), ts.c_str(), s.direction.c_str(),
                                px.c_str(), sp.c_str(), im.c_str(), md.c_str(), sr.c_str(),
                                s.decision.c_str(), s.reason.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(INSERT INTO paper_signals (strategy_id, account_label, ts, direction, price, spread_ticks, imbalance,
                                          microprice_dev_ticks, spread_rel, decision, reason)
               VALUES ($1,$2,$3::timestamptz,$4,$5::float8,NULLIF($6::float8,-1),NULLIF($7::float8,-1),
@@ -268,7 +287,7 @@ std::vector<PaperDb::BboRow> PaperDb::poll_bbo(const std::string& symbol, int64_
     std::string ts  = format_ts(after_us);
     std::string lim = std::to_string(limit);
     const char* params[3] = { ts.c_str(), symbol.c_str(), lim.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(SELECT (EXTRACT(EPOCH FROM ts_event)*1000000)::bigint, bid_price, bid_size, ask_price, ask_size
               FROM bbo WHERE ts_event > $1::timestamptz AND symbol = $2
               ORDER BY ts_event LIMIT $3::int)sql",
@@ -304,7 +323,7 @@ void PaperDb::upsert_strategy(const std::string& id, const std::string& account_
     const char* en = enabled ? "true" : "false";
     const char* params[5] = { id.c_str(), account_label.c_str(), engine.c_str(),
                               params_json.c_str(), en };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(INSERT INTO paper_strategies (strategy_id, account_label, engine, params_json, enabled)
               VALUES ($1,$2,$3,$4::jsonb,$5::boolean)
               ON CONFLICT (strategy_id) DO UPDATE SET
@@ -320,7 +339,7 @@ void PaperDb::upsert_strategy(const std::string& id, const std::string& account_
 std::optional<PaperPositionRow> PaperDb::load_position(const std::string& strategy_id) {
     if (trades_only_) return std::nullopt;
     const char* params[1] = { strategy_id.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(SELECT direction, qty, entry_price,
                      (EXTRACT(EPOCH FROM entry_time)*1000000)::bigint,
                      stop_price, target_price, unrealized_pnl
@@ -354,7 +373,7 @@ std::optional<PaperDailyRow> PaperDb::load_daily(const std::string& strategy_id,
                                                  const std::string& trade_date) {
     if (trades_only_) return std::nullopt;
     const char* params[2] = { strategy_id.c_str(), trade_date.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(SELECT trades, wins, pnl_usd, halted, COALESCE(halt_reason,'')
               FROM paper_daily WHERE strategy_id=$1 AND trade_date=$2::date)sql",
         2, nullptr, params, nullptr, nullptr, 0);
@@ -381,7 +400,7 @@ std::optional<PaperDailyRow> PaperDb::load_daily(const std::string& strategy_id,
 std::optional<PaperAccountRow> PaperDb::load_account(const std::string& account_label) {
     if (trades_only_) return std::nullopt;
     const char* params[1] = { account_label.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(SELECT starting_balance, equity, peak_equity, day_pnl, day_start_equity,
                      COALESCE(to_char(trade_date,'YYYY-MM-DD'),''), halted,
                      COALESCE(halt_reason,'')
@@ -419,7 +438,7 @@ void PaperDb::upsert_daily(const PaperDailyRow& d) {
     const char* params[6] = { d.strategy_id.c_str(), d.trade_date.c_str(),
                               trades.c_str(), wins.c_str(), pnl.c_str(), halted };
     // halt_reason only updated when present
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(INSERT INTO paper_daily (strategy_id, trade_date, trades, wins, pnl_usd, halted)
               VALUES ($1,$2::date,$3::int,$4::int,$5::float8,$6::boolean)
               ON CONFLICT (strategy_id, trade_date) DO UPDATE SET
@@ -433,7 +452,7 @@ void PaperDb::upsert_daily(const PaperDailyRow& d) {
     if (!d.halt_reason.empty()) {
         const char* hp[3] = { d.halt_reason.c_str(), d.strategy_id.c_str(),
                               d.trade_date.c_str() };
-        PGresult* hr = PQexecParams(conn_,
+        PGresult* hr = PQexecParams(live(),
             "UPDATE paper_daily SET halt_reason=$1 WHERE strategy_id=$2 AND trade_date=$3::date",
             3, nullptr, hp, nullptr, nullptr, 0);
         if (hr) PQclear(hr);
@@ -456,7 +475,7 @@ void PaperDb::upsert_account(const PaperAccountRow& a) {
         halted,
         a.halt_reason.empty() ? nullptr : a.halt_reason.c_str(),
     };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         R"sql(INSERT INTO paper_account
               (account_label, starting_balance, equity, peak_equity, day_pnl,
                day_start_equity, trade_date, halted, halt_reason, updated_at)
@@ -479,7 +498,7 @@ void PaperDb::upsert_account(const PaperAccountRow& a) {
 
 std::vector<PaperControlRow> PaperDb::poll_control() {
     if (trades_only_) return {};
-    PGresult* res = PQexec(conn_,
+    PGresult* res = PQexec(live(),
         "SELECT id, strategy_id, action FROM paper_control "
         "WHERE consumed_at IS NULL ORDER BY id");
     std::vector<PaperControlRow> out;
@@ -512,7 +531,7 @@ void PaperDb::consume_control(int64_t id) {
 
     std::string sid = std::to_string(id);
     const char* params[1] = { sid.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         "UPDATE paper_control SET consumed_at=now() WHERE id=$1::bigint",
         1, nullptr, params, nullptr, nullptr, 0);
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
@@ -524,7 +543,7 @@ void PaperDb::consume_control(int64_t id) {
 std::optional<bool> PaperDb::load_enabled(const std::string& strategy_id) {
     if (trades_only_) return std::nullopt;
     const char* params[1] = { strategy_id.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    PGresult* res = PQexecParams(live(),
         "SELECT enabled FROM paper_strategies WHERE strategy_id=$1",
         1, nullptr, params, nullptr, nullptr, 0);
     if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
@@ -579,11 +598,15 @@ std::vector<PaperDb::TickRow> PaperDb::poll_ticks(const std::string& symbol,
     std::string ts  = format_ts(after_us);
     std::string lim = std::to_string(limit);
     const char* params[3] = { ts.c_str(), symbol.c_str(), lim.c_str() };
-    PGresult* res = PQexecParams(conn_,
+    // ORDER BY must be a TOTAL order or the replay is not reproducible: `seq` is only the
+    // 0..4 sub-index inside a Rithmic batch, so 20 % of the ticks in a busy window share
+    // (ts_event, seq) and their order fell to the heap/plan — the golden replay drifted after
+    // a VACUUM (2026-09-26). (ts_event, seq, price, size) is the dedup key's order: fixed.
+    PGresult* res = PQexecParams(live(),
         R"sql(SELECT (EXTRACT(EPOCH FROM ts_event)*1000000)::bigint, price, size, is_buy
               FROM ticks
               WHERE ts_event > $1::timestamptz AND symbol = $2
-              ORDER BY ts_event, seq
+              ORDER BY ts_event, seq, price, size
               LIMIT $3::int)sql",
         3, nullptr, params, nullptr, nullptr, 0);
     std::vector<TickRow> out;
@@ -610,6 +633,14 @@ std::vector<PaperDb::TickRow> PaperDb::poll_ticks(const std::string& symbol,
         out.push_back(t);
     }
     PQclear(res);
+    // Page boundary: the next poll asks for ts_event > (last row's ts), so a same-microsecond
+    // group cut by LIMIT would lose its tail. Hand back the whole group next time instead.
+    if (n == limit && out.size() > 1) {
+        const int64_t last = out.back().ts_us;
+        size_t k = out.size();
+        while (k > 1 && out[k - 1].ts_us == last) --k;
+        if (out[k - 1].ts_us != last) out.resize(k);
+    }
     return out;
 }
 

@@ -8,6 +8,7 @@
     Also implements the PaperStore interface consumed by PaperBroker so the
     broker is testable without a database.
     ═══════════════════════════════════════════════════════════════════════════ */
+#include <chrono>
 #include <libpq-fe.h>
 
 #include <optional>
@@ -161,6 +162,11 @@ public:
 
 private:
     PGconn* conn_ = nullptr;
+    // Every query goes through live(): a dead connection (Postgres restarted — 2026-09-26 the
+    // engine sat on one for 6 min, 9.6k failed writes) is PQreset() in place, at most once
+    // per 5 s. Same idea as TickDB::reconnect() / OrbDB::reconnect() in the other processes.
+    PGconn* live();
+    std::chrono::steady_clock::time_point last_reset_{};
     bool    trades_only_       = false;  // replay/audit isolation (see set_trades_only)
     std::string account_label_;          // scope for the seeding queries (set_account_label)
     bool    poll_error_logged_ = false;  // rate-limit poll_ticks WARN spam

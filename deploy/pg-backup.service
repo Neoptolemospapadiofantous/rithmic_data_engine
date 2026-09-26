@@ -1,0 +1,14 @@
+[Unit]
+Description=Nightly pg_dump of the rithmic Postgres database (scripts/pg_backup.sh; weekly off-box copy on Sundays)
+# Local-box user unit (install: cp deploy/pg-backup.{service,timer} ~/.config/systemd/user/ &&
+# systemctl --user daemon-reload && systemctl --user enable --now pg-backup.timer).
+# Postgres itself is NOT part of the 03:00 bot backup — this is the only copy of the trades and ticks.
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/Desktop/rithmic_engine
+ExecStart=/usr/bin/bash %h/Desktop/rithmic_engine/scripts/pg_backup.sh --verify
+StandardOutput=append:%h/Desktop/rithmic_engine/data/logs/pg_backup.log
+StandardError=append:%h/Desktop/rithmic_engine/data/logs/pg_backup.log
+Nice=10
+IOSchedulingClass=idle

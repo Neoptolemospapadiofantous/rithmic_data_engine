@@ -1,0 +1,13 @@
+# strategy-rotation.timer — Sunday 18:30 New York (Globex has reopened, the week's paper
+# data is complete, next hand-off is Monday 10:00 ET). Persistent=true: a missed run
+# (box off) fires at the next boot — the script itself refuses to touch the config while
+# the hand-off instance is live, so a late run inside Monday's window is a safe no-op.
+[Unit]
+Description=Weekly Sunday 18:30 New York rotation of the ORB → hand-off engine
+
+[Timer]
+OnCalendar=Sun 18:30 America/New_York
+Persistent=true
+
+[Install]
+WantedBy=timers.target

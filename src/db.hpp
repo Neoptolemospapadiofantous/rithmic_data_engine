@@ -70,15 +70,6 @@ struct SentinelAlertRow {
     double      value = 0.0;
 };
 
-struct GateResult {
-    std::string gate_name;
-    std::string status;     // "pass", "fail", "skip"
-    double      threshold  = 0.0;
-    double      actual     = 0.0;
-    std::string details_json;
-    int64_t     session_id = 0;
-};
-
 // PostgreSQL + TimescaleDB tick database.
 //
 // Schema:
@@ -124,11 +115,10 @@ public:
     void write_metric(const QualityMetric& m);
     void write_metrics(const std::vector<QualityMetric>& ms);
 
-    // Sentinel alerts
-    void write_sentinel_alerts(const std::vector<SentinelAlertRow>& alerts);
-
-    // Gate results
-    void write_gate_result(const GateResult& g);
+    // Sentinel alerts. Returns how many leading rows were consumed: all of them normally
+    // (a per-row data error is logged and skipped), fewer only when the connection died
+    // mid-batch — the caller keeps the tail and retries after reconnecting.
+    size_t write_sentinel_alerts(const std::vector<SentinelAlertRow>& alerts);
 
     // Read helpers
     int64_t               row_count();

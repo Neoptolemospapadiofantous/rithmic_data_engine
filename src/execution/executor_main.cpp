@@ -34,6 +34,8 @@
 #include "orb_strategy.hpp"
 #include "trend_strategy.hpp"
 #include "mtf_scalper_strategy.hpp"
+#include "../paper/paper_quote.hpp"   // top-of-book state + entry gates shared with the paper fleet
+#include <deque>
 #include <type_traits>
 #include <climits>
 #include <fstream>
@@ -572,6 +574,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // tick_value = point_value × tick_size (NQ: 20.0×0.25=$5.00, MNQ: 2.0×0.25=$0.50)
     LatencyLogger lat(orb_cfg.point_value * NQ_TICK_SIZE);
     OrderManager  order_mgr(orb_cfg, risk, lat);
+    // Top of book from the collector's bbo table (pg feed only), merged into the tick
+    // stream by time. Drives the OrbConfig book entry gates (the paper fleet's overlays —
+    // spread_gate_*, imbalance_min, imbalance_max, microprice_lead) and, for the trend
+    // engine, book_imbalance / book_fade signals via strategy.on_quote().
+    paper::QuoteState book;
+    int64_t last_tick_us = 0;
 
     // ── Reconnect reconciliation (#2) ─────────────────────────────────────────
     // If the previous session ended with an open position (e.g. disconnect while
@@ -636,6 +644,21 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         "(orb=%.2f px=%.2f reason=%s)",
                         offset, orb_cfg.max_entry_offset, orb_level, price, reason.c_str());
                     strategy.notify_trade_filled(sig);  // reset in_position for re-entry
+                    return;
+                }
+            }
+            if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) {
+                // Book entry gates — the same QuoteState::gate() the paper brokers apply, so a
+                // gated paper variant (__sg/__imb/__micro/__inv/__all) behaves the same live.
+                // No gate configured → always "" and nothing changes for ORB/trend/mtf.
+                const std::string blocked = book.gate(orb_cfg, sig == OrbSignal::BUY ? 1 : -1,
+                                                      last_tick_us, NQ_TICK_SIZE);
+                if (!blocked.empty()) {
+                    LOG("[EXECUTOR] Signal SKIPPED — book gate '%s' (imb=%.2f spread=%.1ft fresh=%d reason=%s)",
+                        blocked.c_str(), book.q.imbalance(), book.q.spread_ticks(NQ_TICK_SIZE),
+                        (int)book.fresh(last_tick_us), reason.c_str());
+                    if constexpr (kOrb) strategy.notify_trade_filled(sig);   // reset in_position for re-entry
+                    else strategy_unsettled = "book_gate:" + blocked;         // settle_strategy() releases the engine
                     return;
                 }
             }
@@ -740,7 +763,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
 
     // Wire order_mgr → order_plant (uses order_plant->trade_symbol for the specific contract)
     order_mgr.set_order_callback(
-        [&order_plant, &orb_cfg, &audit_log](const std::string& basket_id,
+        [&order_plant, &orb_cfg, &audit_log, &db](const std::string& basket_id,
                                  const std::string& /*symbol*/,
                                  const std::string& exchange,
                                  int qty, int order_type, bool is_buy,
@@ -754,12 +777,18 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 audit_log.info("order.submitted",
                     basket_id + " " + (is_buy ? "BUY" : "SELL"));
             }
+            if (db) db->write_order_event(result.empty() ? "new_order_failed" : "new_order_sent",
+                                          basket_id, "", user_tag, order_type, "",
+                                          is_buy ? "BUY" : "SELL", qty, price, 0.0, 0, 0, "",
+                                          orb_cfg.dry_run ? "dry_run" : sym);
             return !result.empty();
         }
     );
     order_mgr.set_cancel_callback(
-        [&order_plant](const std::string& basket_id) {
+        [&order_plant, &db](const std::string& basket_id) {
             order_plant->send_cancel(basket_id, order_plant->account_id);
+            if (db) db->write_order_event("cancel_sent", basket_id, "", "", 316, "", "",
+                                          0, 0.0, 0.0, 0, 0, "", "");
         }
     );
     // ── SSL context, executor refs, and trade symbol (shared setup) ─────────────
@@ -1725,10 +1754,15 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 if (resp.rp_code().empty()) {
                     LOG("[EXECUTOR] ResponseNewOrder (ack) basket=%s",
                         resp.basket_id().c_str());
+                    if (db) db->write_order_event("gateway_ack", resp.basket_id(), "", "", tid, "", "",
+                                                  0, 0.0, 0.0, 0, 0, "", "");
                 } else {
                     std::string rpc = resp.rp_code(0);
                     LOG("[EXECUTOR] ResponseNewOrder basket=%s rp_code=%s",
                         resp.basket_id().c_str(), rpc.c_str());
+                    if (db) db->write_order_event(rpc != "0" ? "gateway_reject" : "gateway_ack",
+                                                  resp.basket_id(), "", "", tid, "", "",
+                                                  0, 0.0, 0.0, 0, 0, rpc, "");
                     if (rpc != "0") {
                         LOG("[EXECUTOR] Order REJECTED at gateway: basket=%s code=%s",
                             resp.basket_id().c_str(), rpc.c_str());
@@ -1755,6 +1789,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     notif.fcm_id().c_str(), notif.ib_id().c_str(), notif.account_id().c_str(),
                     notif.symbol().c_str(), notif.exchange().c_str(), notif.user_tag().c_str(),
                     notif.quantity());
+                if (db) db->write_order_event("rithmic_notify", notif.basket_id(),
+                                              notif.original_basket_id(), notif.user_tag(),
+                                              (int)notif.notify_type(), notif.status(), "",
+                                              notif.quantity(), notif.price(), notif.avg_fill_price(),
+                                              0, notif.total_fill_size(), "",
+                                              notif.is_snapshot() ? "snapshot" : "");
 
                 // ── Startup order reconciliation ─────────────────────────────────
                 // is_snapshot=1 messages arrive after subscribing for order updates
@@ -1979,6 +2019,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     notif.fill_price(),
                     notif.fill_size(),
                     notif.status().c_str());
+                if (db) db->write_order_event("exchange_notify", notif.basket_id(), "",
+                                              notif.user_tag(), notify_type, notif.status(), "",
+                                              0, 0.0, notif.fill_price(), notif.fill_size(),
+                                              notif.total_fill_size(), "", "");
 
                 // ExchangeOrderNotification::NotifyType::FILL = 5
                 // Correlate fills via user_tag (our client-side tracking ID).
@@ -2798,6 +2842,22 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     bool first_tick_received = false;
     int  last_log_minute     = -1;
     auto process_tick = [&](const OrbTick& tick) {
+                last_tick_us = tick.ts_micros;   // book freshness is judged against the print, not wall time
+                // Book exits (book_exit_flip / book_tp_imbalance — the paper fleet's __bx/__btp
+                // overlays): the same QuoteState::book_exit() the paper brokers run, as a market
+                // flatten. Off unless the config sets them.
+                if (orb_cfg.book_exit_flip > 0.0 || orb_cfg.book_tp_imbalance > 0.0) {
+                    Position bp = order_mgr.position_snapshot();
+                    if (bp.state == PosState::LONG || bp.state == PosState::SHORT) {
+                        const int dir = bp.state == PosState::LONG ? 1 : -1;
+                        const std::string why = book.book_exit(orb_cfg, dir, last_tick_us,
+                                                               (tick.price - bp.entry_price) * dir);
+                        if (!why.empty()) {
+                            LOG("[EXECUTOR] Book exit '%s' (imb=%.2f) — flattening", why.c_str(), book.q.imbalance());
+                            order_mgr.flatten_now(why, tick.price);
+                        }
+                    }
+                }
                 // Bracket check on every tick, BEFORE the strategy sees this tick
                 // (mirrors PaperBracketBroker's ordering: bracket first, signals fill
                 // on the next tick) — flush DB immediately on any SL move.
@@ -2850,10 +2910,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     last_log_minute = cur_min;
                     if constexpr (kTrend) {
                         Position psnap = order_mgr.position_snapshot();
-                        LOG("[EXECUTOR] TREND ET=%02d:%02d px=%.2f pos_state=%d engine_in_pos=%d sl=%.2f trades=%d/%d%s",
+                        LOG("[EXECUTOR] TREND ET=%02d:%02d px=%.2f pos_state=%d engine_in_pos=%d sl=%.2f trades=%d/%d book=%s%s",
                             et_h, et_m, tick.price, (int)psnap.state,
                             (int)strategy.session().in_position, psnap.sl_price,
                             strategy.session().trades_today, orb_cfg.max_daily_trades,
+                            book.fresh(last_tick_us) ? (std::to_string(book.q.imbalance()).substr(0, 4)).c_str() : "none",
                             strategy.session().risk_halted ? (" HALTED:" + strategy.session().halt_reason).c_str() : "");
                     } else if constexpr (kMtf) {
                         Position psnap = order_mgr.position_snapshot();
@@ -2935,9 +2996,46 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     "trades_today=%d", warmup_signals_dropped, done);
             }
         };
+        // Top of book (collector's bbo table), merged into the tick stream by time exactly as
+        // paper_main does: every quote up to a print's timestamp is applied BEFORE that print,
+        // so the gates and book_imbalance see the book as it stood at the trade. Same watermark
+        // as the ticks, so the warm-up replay warms the book too. bbo absent/empty → no quotes,
+        // gates report "no_quote" (a gated config on a box without bbo blocks every entry —
+        // by design: an ungated fallback would silently be a different strategy).
+        int64_t bbo_watermark_us = watermark_us;
+        std::deque<paper::Quote> qbuf;
+        auto feed_quotes_until = [&](int64_t ts_us) {
+            if (qbuf.empty() && db && db->is_connected()) {
+                std::string wm = std::to_string(bbo_watermark_us);
+                const char* params[2] = { wm.c_str(), orb_cfg.md_feed_symbol.c_str() };
+                PGresult* r = PQexecParams(db->raw_conn(),
+                    "SELECT (EXTRACT(EPOCH FROM ts_event)*1000000)::bigint, bid_price, bid_size, "
+                    "ask_price, ask_size FROM bbo WHERE ts_event > to_timestamp($1::double precision / 1000000.0) "
+                    "AND symbol = $2 ORDER BY ts_event LIMIT 5000",
+                    2, nullptr, params, nullptr, nullptr, 0);
+                if (r && PQresultStatus(r) == PGRES_TUPLES_OK) {
+                    for (int i = 0, n = PQntuples(r); i < n; ++i) {
+                        paper::Quote q;
+                        q.ts_us  = std::atoll(PQgetvalue(r, i, 0));
+                        q.bid    = std::atof(PQgetvalue(r, i, 1)); q.bid_sz = std::atoi(PQgetvalue(r, i, 2));
+                        q.ask    = std::atof(PQgetvalue(r, i, 3)); q.ask_sz = std::atoi(PQgetvalue(r, i, 4));
+                        bbo_watermark_us = q.ts_us;
+                        if (q.valid()) qbuf.push_back(q);
+                    }
+                }
+                if (r) PQclear(r);
+            }
+            while (!qbuf.empty() && qbuf.front().ts_us <= ts_us) {
+                const paper::Quote& q = qbuf.front();
+                book.on_quote(q, NQ_TICK_SIZE);
+                if constexpr (kTrend) strategy.on_quote(q.ts_us, q.bid, q.bid_sz, q.ask, q.ask_sz, NQ_TICK_SIZE);
+                qbuf.pop_front();
+            }
+        };
         bool db_warned = false;
-        LOG("[PG-FEED] Polling ticks symbol=%s every %dms (collector feed)",
-            orb_cfg.md_feed_symbol.c_str(), orb_cfg.md_poll_ms);
+        LOG("[PG-FEED] Polling ticks symbol=%s every %dms (collector feed)%s",
+            orb_cfg.md_feed_symbol.c_str(), orb_cfg.md_poll_ms,
+            book.any_gate(orb_cfg) ? " + bbo (book gates on)" : " + bbo");
         while (g_running) {
             if (db && db->is_connected()) {
                 std::string wm  = std::to_string(watermark_us);
@@ -2945,11 +3043,24 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 PGresult* r = PQexecParams(db->raw_conn(),
                     "SELECT (EXTRACT(EPOCH FROM ts_event)*1000000)::bigint, price, size, is_buy "
                     "FROM ticks WHERE ts_event > to_timestamp($1::double precision / 1000000.0) "
-                    "AND symbol = $2 ORDER BY ts_event, seq LIMIT 5000",
+                    // Total order (dedup-key order): `seq` is only a 0..4 batch sub-index, so
+                    // (ts_event, seq) alone left same-microsecond ticks in heap order — the
+                    // paper replay drifted after a VACUUM (2026-09-26). Same clause as
+                    // PaperDb::poll_ticks, so live and paper see the identical tick sequence.
+                    "AND symbol = $2 ORDER BY ts_event, seq, price, size LIMIT 5000",
                     2, nullptr, params, nullptr, nullptr, 0);
                 if (r && PQresultStatus(r) == PGRES_TUPLES_OK) {
                     db_warned = false;
                     int n = PQntuples(r);
+                    // Page boundary: a same-microsecond group cut by LIMIT would lose its tail
+                    // (next poll asks for ts_event > last ts). Leave the group for the next poll.
+                    int n_use = n;
+                    if (n == 5000) {
+                        const int64_t last_ts = std::atoll(PQgetvalue(r, n - 1, 0));
+                        int k = n;
+                        while (k > 1 && std::atoll(PQgetvalue(r, k - 1, 0)) == last_ts) --k;
+                        if (std::atoll(PQgetvalue(r, k - 1, 0)) != last_ts) n_use = k;
+                    }
                     if (n > 0) {
                         last_tick_epoch_s.store(
                             std::chrono::duration_cast<std::chrono::seconds>(
@@ -2961,7 +3072,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                 strategy.unhalt_trading("pg feed resumed");
                         }
                     }
-                    for (int i = 0; i < n; ++i) {
+                    for (int i = 0; i < n_use; ++i) {
                         int64_t ts_us = std::atoll(PQgetvalue(r, i, 0));
                         double  px    = std::atof(PQgetvalue(r, i, 1));
                         int64_t sz    = std::atoll(PQgetvalue(r, i, 2));
@@ -2969,6 +3080,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         watermark_us  = ts_us;
                         if (px <= 0.0 || sz <= 0) continue;
                         OrbTick tick{ts_us, px, sz, buy};
+                        feed_quotes_until(ts_us);
                         if (warming_up) {
                             if (ts_us < warmup_until_us) { strategy.on_tick(tick); continue; }
                             end_warmup();
@@ -3452,12 +3564,18 @@ int main(int argc, char* argv[]) {
     // ── Parse args ────────────────────────────────────────────────────────────
     std::string config_path = "config/orb_config.json";
     bool force_dry_run = false;
+    // --check-config: load + validate the config (account/risk fields, engine-specific
+    // checks) and exit 0 without connecting anywhere — used by scripts/rotate_handoff.sh
+    // to prove a generated hand-off config before installing it.
+    bool check_only = false;
 
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--config") == 0 && i + 1 < argc)
             config_path = argv[++i];
         else if (std::strcmp(argv[i], "--dry-run") == 0)
             force_dry_run = true;
+        else if (std::strcmp(argv[i], "--check-config") == 0)
+            check_only = true;
         else if (std::strcmp(argv[i], "--drill") == 0 && i + 1 < argc)
             g_drill = argv[++i];
     }
@@ -3580,17 +3698,30 @@ int main(int argc, char* argv[]) {
     return exit_code;
     };
 
+    // Book entry gates (the paper fleet's overlay keys) are applied live only from the pg feed.
+    if (paper::QuoteState{}.any_gate(orb_cfg) && !orb_cfg.md_from_pg()) {
+        std::fprintf(stderr, "FATAL: book gates (spread_gate_*/imbalance_min/imbalance_max/microprice_lead) "
+                             "need the collector's bbo stream — set RITHMIC_MD_PROVIDER=pg\n");
+        return 1;
+    }
+
     int exit_code = 0;
     if (orb_cfg.engine == "trend") {
         const TrendConfig tcfg = TrendConfig::from_json_string(read_text_file(config_path));
-        // The live executor feeds trades only — no ES reference bars and no BBO quotes.
-        if (tcfg.mode == "rs_continuation" || tcfg.mode == "book_imbalance") {
-            std::fprintf(stderr, "FATAL: trend mode '%s' needs a feed the live executor does not provide\n",
-                         tcfg.mode.c_str());
+        // No ES reference feed live (rs_continuation). The book (bbo) is only on the pg feed.
+        if (tcfg.mode == "rs_continuation") {
+            std::fprintf(stderr, "FATAL: trend mode 'rs_continuation' needs the ES reference feed the live "
+                                 "executor does not provide\n");
+            return 1;
+        }
+        if (tcfg.mode == "book_imbalance" && !orb_cfg.md_from_pg()) {
+            std::fprintf(stderr, "FATAL: trend mode 'book_imbalance' needs the collector's bbo stream — "
+                                 "set RITHMIC_MD_PROVIDER=pg\n");
             return 1;
         }
         LOG("[EXECUTOR] engine=trend mode=%s tf=%dm window=%04d-%04d strategy_tag=%s",
             tcfg.mode.c_str(), tcfg.tf_min, tcfg.win_start, tcfg.win_end, orb_cfg.strategy.c_str());
+        if (check_only) { LOG("[EXECUTOR] --check-config OK (engine=trend)"); return 0; }
         TrendStrategy strategy(tcfg, orb_cfg);
         exit_code = run_session_loop(strategy);
     } else if (orb_cfg.engine == "mtf_scalper") {
@@ -3614,9 +3745,11 @@ int main(int argc, char* argv[]) {
         }
         LOG("[EXECUTOR] engine=mtf_scalper trigger_mode=%s session=%s strategy_tag=%s",
             mcfg.trigger_mode.c_str(), mcfg.session_window.c_str(), orb_cfg.strategy.c_str());
+        if (check_only) { LOG("[EXECUTOR] --check-config OK (engine=mtf_scalper)"); return 0; }
         MtfScalperStrategy strategy(mcfg);
         exit_code = run_session_loop(strategy);
     } else {
+        if (check_only) { LOG("[EXECUTOR] --check-config OK (engine=orb)"); return 0; }
         OrbStrategy strategy(orb_cfg);
         exit_code = run_session_loop(strategy);
     }

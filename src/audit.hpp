@@ -14,8 +14,9 @@
 // Standard events:
 //   collector.start / collector.stop
 //   connection.established / connection.lost
-//   ticks.written   details: "count=N"
 //   error           details: "<message>"
+// (ticks.written — one row per write batch — was retired 2026-09-26: it was 99.98 % of the
+//  table. Tick counts are in quality_metrics.)
 class AuditLog {
 public:
     enum class Severity { INFO, WARN, ERROR };
@@ -50,7 +51,14 @@ private:
 
     static constexpr size_t MAX_BUF = 10000;
 
+    // flush() repairs a dead connection itself (PQreset, at most once per 5 s) — the
+    // executor hands it a standalone PGconn* nobody else resets, so a Postgres restart
+    // used to leave audit_log dark until the process was restarted (2026-09-26).
+    bool ensure_connected();
+
     PGconn*           conn_;
     mutable std::mutex mu_;
     std::vector<Event> buf_;
+    std::chrono::steady_clock::time_point last_reset_{};
+    bool              reset_logged_ = false;
 };

@@ -1,0 +1,12 @@
+# bars-1m.timer — every minute, a few seconds past the minute so the collector has flushed
+# the minute that just closed (refresh recomputes the last stored minute anyway).
+[Unit]
+Description=Every-minute bars_1m rollup
+
+[Timer]
+OnCalendar=*:*:05
+AccuracySec=1s
+Persistent=false
+
+[Install]
+WantedBy=timers.target

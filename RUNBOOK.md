@@ -32,7 +32,8 @@ For each session confirm in `data/logs/nq_executor.log`:
 - Signal fires on breakout bar close outside range
 - `trade_open` logged with correct SL and target
 - `trade_close` logged on SL/target hit or EOD
-- `session_summary` row written at EOD flatten time
+- EOD flatten logged and the day's `live_trades` rows all closed (`exit_time` set) — there is
+  no `session_summary` table any more (dropped 2026-09-26, it was never written)
 
 ---
 

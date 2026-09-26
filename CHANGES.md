@@ -9,6 +9,120 @@ Dates are in ISO-8601 order (newest first).
 
 ## [Unreleased]
 
+### Fixed — every process survives a Postgres restart (2026-09-26)
+A `systemctl restart postgresql` (applying the shared_buffers/work_mem tuning) found three
+processes that did not heal on their own:
+- **paper_engine** sat on the dead connection for 6 min (9.6k failed writes). Every query
+  now goes through `PaperDb::live()`, which `PQreset()`s a dead connection in place (at most
+  once per 5 s). Verified with `pg_terminate_backend`: one WARN, then
+  `[PAPER-DB] reconnected to PostgreSQL`.
+- **rithmic_engine (collector)**: the writer thread already reconnected before each tick/BBO
+  drain, but on a quiet weekend nothing is written, so nothing reconnected — and the status
+  coroutine's `db_->summary()` failure was swallowed by `catch (...) {}`, so the per-minute
+  status line simply went silent for 13 min. Now: the status path logs the failure and
+  reconnects `db_` (opened read-only, so the io thread never runs schema DDL);
+  `flush_sentinel`/`flush_metrics` call `ensure_db_connected()` like the drains; and
+  `write_sentinel_alerts` returns how many rows it consumed, so alerts are held in
+  `sentinel_pending_` (cap 5000) across a dead connection instead of dropped.
+  Verified live: kill → `status query failed … DB connection lost, reconnecting` →
+  `PostgreSQL reconnected` → status line back 60 s later.
+- **nq_executor**: `OrbDB` already reconnects before every query (and re-takes the instance
+  lock), but the standalone `AuditLog` connection had no owner to reset it, so `audit_log`
+  went dark until the next process restart. `AuditLog::flush()` now repairs its connection
+  itself (`PQreset`, 5 s rate limit, events stay buffered). Takes effect on the executor's
+  next restart.
+
+### Changed — the evening batch (2026-09-26, founder: "1,3,4,6,7,10. do all rest")
+- **Hand-off engine is `FIB_PB_1M_DEEP`** (`rotate_handoff.sh --force fib_pb_1m_deep`: config
+  generated from the paper params, validated, old `MTF_FLAGS_V5` config archived to
+  `config/archived/handoff_history/`, `dry_run:true` carried). Monday's rehearsal config is a
+  dry-run copy (label `tradeify_dry`). Tuesday go-live unchanged: flip `dry_run`, enable the timer.
+- **Fleet pruned to 635 active of 1,675**: `nr7`, `supertrend`, `roc_momentum`, `trend_day`, all
+  `globex_*`, and the overlays `__micro __imb __all __sz __wait __bx __bbe` set `enabled:false`
+  (rows kept, `paper_strategies.enabled` mirrored); `__pm` set removed; `__open` siblings added
+  for every 1-minute trend base (30); `__inv` on the new `__am`/`__open` winners (6 — the backfill
+  shows the gate blocks trend entries almost entirely: 1–2 trades each, so expect them inert).
+  Backfill re-run for the new fleet (130 s, 5,512 trades / 522 strategies); `__open` held:
+  donchian_10 +12.9, ema_pb +11.5, keltner +9.6, delta_div_1m_30 +8.8, ema_ribbon_1m +7.7 per contract.
+- **ORB post-stop cooldown runs on the engine clock** (`orb_strategy.hpp`, founder-approved: tick
+  timestamps instead of `steady_clock`). Test `notify_trade_filled_cooldown_applies_to_all_exits`
+  now also asserts re-entry AFTER the cooldown.
+- **Total tick order in both pg feeds** (`PaperDb::poll_ticks`, executor pg feed): `seq` is only a
+  0..4 batch sub-index, so `ORDER BY ts_event, seq` left 20 % of ticks in heap order and the golden
+  replay drifted after a VACUUM; now `ORDER BY ts_event, seq, price, size` (the dedup key) plus a
+  page-boundary guard that never splits a same-microsecond group. Live and paper now see the
+  identical tick sequence. Golden `--twice` pairs: 90 → 0 differing rows; baseline re-frozen (394).
+  **Residual**: runs minutes apart still differ by 10–24 ORB re-entry rows with md5-identical inputs
+  — open defect, evidence and next step in TODO.md.
+- **`live_order_events`** (`OrbDB::write_order_event`, never throws, one WARN a minute at most):
+  new_order_sent / new_order_failed / cancel_sent / gateway_ack / gateway_reject / rithmic_notify
+  (tid=351, raw fields) / exchange_notify (tid=352). Executor restarted; first rows Monday.
+- **`audit_log` trimmed**: the collector no longer writes `ticks.written` per batch; the 1,799,790
+  existing rows deleted, `VACUUM FULL` → 252 MB → 160 kB (461 real events). DB 2,217 → 1,979 MB.
+- **Backup**: `scripts/pg_backup.sh` + `pg-backup.timer` (02:40 nightly, `--verify`, keep 14,
+  Sunday off-box copy to Oracle — best-effort, Oracle unreachable tonight). First dump 65 MB / 7 s.
+- **New tables/functions**: `contracts` (+ `third_friday()`, `front_month()`), `calendar`
+  (+ `upcoming_events()`), `session_stats` (+ `refresh_session_stats()`), `book_1m`
+  (+ `refresh_book_1m()`), views `bars_5m/15m/1h`; `refresh_bars.sh` applies and refreshes them
+  every minute (1.7 s first run incl. the 10,885-row book_1m backfill). Decisions recorded in
+  TODO.md: keep `idx_ticks_ts` (collector summary), keep ES (mtf_smt reference).
+
+### Added — 63 paper-fleet variants: time-of-day windows + tape grid (2026-09-26, founder: "add new variation of strategies")
+- The 7-day leaderboard BY SLOT (`strategy_leaderboard(7, true, …)`) showed the same modes winning in
+  one hour and losing in another: fib_pullback +4.0/ct PF 2.5 and rsi2 +3.7 in 10:00–12:00 but
+  −9.7 / −7.0 over lunch; vwap_fade +13.6/ct PF 9.9 only after 13:30; ORB +3.8 PF 2.9 in
+  09:30–10:00 and −3.6 after; almost everything negative 12:00–13:30. Most variants trade all of RTH,
+  so afternoon losses bury morning edges. New sibling variants (`base_id`/`overlay` like the book
+  overlays): `__am` (entries 10:00–12:00, 14 trend + 6 mtf via `session_window`), `__pm`
+  (13:30–15:55, 11 mean-reversion/fade), `__open` (09:30–10:00, 10), `__am_htf` / `__am_chand` /
+  `__am_ts` (the never-varied generic knobs on the four AM winners), plus a `volume_burst_*` /
+  `delta_div_*` parameter grid (10). Fleet 1,597 → 1,660; paper engine restarted, 1660/1660 active.
+- **Backfill replay the same evening** (`paper_engine --account-label backfill --replay-from
+  '2026-09-21 09:25' --replay-to '2026-09-25 16:05'`, 590 s, 13,051 trades / 1,298 strategies):
+  the recorded ticks let every strategy, new ones included, be scored on the same five sessions
+  instead of waiting for the forward test. Per contract: the `__open` window (09:30–10:00) was
+  positive on all 9 variants (donchian_10_1m +12.9 PF 2.8, ema_pb_9_21_1m +11.5 PF 4.2, keltner +9.6,
+  roc_6 +8.0 — each above its all-day base, i.e. the window removes losses); `__am` mixed
+  (ema_pb_9_21_1m +8.7 PF 3.0, ichimoku_1m_fast +11.8, volume_burst_notrend +11.2, mtf_htf30 +4.5 vs
+  base −3.9, mtf_flags_v5 +2.3 vs base −0.5; delta_div and supertrend lose 10–12); `__pm` NOT
+  supported (vwap_fade_1m −1.6 on 25 trades — the earlier +13.6 came from overlay rows and the
+  double-counted audit day); HTF gate helps ema_pb (8.7 → 12.6) and vwap_5m, hurts fib_pb
+  (3.7 → −1.5); chandelier 2 ATR and 45-min time stop never triggered on 1-minute scalps (identical
+  numbers — inert knobs there); tape modes only work on the 1-minute frame (volume_burst_1m_notrend
+  +11.6 PF 5.4, cl05 +10.7, delta_div_1m_wide +8.3, _12 +6.4; every 2m/3m/5m variant negative).
+  12–25 trades each over 5 sessions — directions, not verdicts.
+- `strategy_leaderboard()` gained `p_paper_label` (default `'tradeify'`): it had excluded only the
+  `golden` label, so the dashboard's `audit` replay of 09-25 was double-counted in every strategy's
+  7-day stats (and would have fed Sunday's rotation). The dashboard endpoint takes `?label=` and
+  the Leaderboard tab has a **data:** selector (live paper fleet / replay: backfill / audit).
+- `mtf_flags_v5__am` is the honest paper twin of the live hand-off config (which trades 10:00–12:00,
+  while `mtf_flags_v5` trades 09:00–12:00 and loses the 09:30–10:00 hour) — repoint `paper_source`
+  once it has a week of data (TODO.md §4).
+- Golden replay: re-frozen after the change (new variants add trades). NOTE the replay is not fully
+  deterministic: `OrbStrategy`'s post-stop cooldown is `steady_clock` (orb_strategy.hpp:192, a
+  strategy-logic file — not touched), so `orb_*_2nd*` re-entries vary with replay speed. Measured
+  with two back-to-back replays of the same window: 20 differing rows on the pre-change fleet, 90
+  on the larger one (all ORB families) — pre-existing, and it grows with fleet size because the
+  replay runs slower. Founder's call whether the cooldown may switch to the engine clock.
+
+### Removed — the old Python bot's Postgres mirror tables (2026-09-26, founder: "full tidy")
+- Dropped `trade_log` (175 rows), `daily_stats` (1), `orders` (24), `gate_results` (114) —
+  all last written 2026-05-11 by the retired Python dual-write — plus the never-written
+  `trades`, `latency_log`, `session_summary`, and the three views over `trade_log`
+  (`v_daily_pnl`, `v_equity_curve`, `v_loss_limit_status`). Rows archived first to
+  `data/archive/legacy_pg_20260926/*.csv`. `loss_limits` stays (live risk limits).
+- `TickDB::ensure_schema()` no longer creates them; `write_gate_result`/`GateResult` removed
+  (no caller). `migrations/20260926_drop_legacy_tables.sql` sorts last so a fresh
+  `provision_oracle.sh` ends in the same state.
+- Dashboard (`~/Desktop/bot`): the `latency_log` query in `cpp_engine.py` is gone
+  (`latency` stays `[]`), the dead `pg_insert_trade/daily_stat/order` helpers are removed,
+  `pg_write_gate_result` is a no-op (its four callers are the legacy backtest pipeline),
+  `scripts/pipeline_status.py` deleted. NOTE: `/api/stats/*` and `/api/chart/stats` were
+  unaffected — they read the legacy SQLite file, not Postgres.
+- Decided the same day: retention = keep everything for now (2.2 GB, ~200–250 MB/day,
+  disk 93%); partitioning/TimescaleDB = leave as is (Timescale is not installed; the
+  collector's `create_hypertable` WARNs at startup are harmless).
+
 ### Fixed — stale orders after a trade (2026-09-24 re-audit, 23 trade-end scenarios)
 - **Breakeven before the stop's server id mapped left NO exchange stop**: the client-id cancel
   failed, `on_cancel_failed` re-adopted the old stop and cancelled the replacement, then the

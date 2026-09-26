@@ -685,8 +685,74 @@ public:
         PQclear(res);
     }
 
+    // ── Order-event trail (2026-09-26) ───────────────────────────────────────────
+    // One row per order message, outbound or inbound: RequestNewOrder / RequestCancelOrder we
+    // sent, every ResponseNewOrder (gateway ack / reject), RithmicOrderNotification (tid=351)
+    // and ExchangeOrderNotification (tid=352) — raw fields, no interpretation. The 09-21 and
+    // 09-23 stop incidents were reconstructed from log files; this is the queryable record.
+    // NEVER throws: the executor's message loop must not die on a DB hiccup.
+    void write_order_event(const char* kind, const std::string& basket_id,
+                           const std::string& orig_basket_id, const std::string& user_tag,
+                           int notify_type, const std::string& status, const char* side,
+                           int qty, double price, double fill_price, int fill_qty,
+                           int total_fill, const std::string& rp_code, const std::string& detail) {
+        static const char* sql =
+            "INSERT INTO live_order_events (account_label, strategy, kind, basket_id, orig_basket_id,"
+            " user_tag, notify_type, status, side, qty, price, fill_price, fill_qty, total_fill,"
+            " rp_code, detail) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)";
+        char nt[16], q[16], px[32], fpx[32], fq[16], tf[16];
+        snprintf(nt,  sizeof(nt),  "%d", notify_type);
+        snprintf(q,   sizeof(q),   "%d", qty);
+        snprintf(px,  sizeof(px),  "%.4f", price);
+        snprintf(fpx, sizeof(fpx), "%.4f", fill_price);
+        snprintf(fq,  sizeof(fq),  "%d", fill_qty);
+        snprintf(tf,  sizeof(tf),  "%d", total_fill);
+        const char* params[16] = {
+            account_label_.c_str(), strategy_.c_str(), kind,
+            basket_id.empty() ? nullptr : basket_id.c_str(),
+            orig_basket_id.empty() ? nullptr : orig_basket_id.c_str(),
+            user_tag.empty() ? nullptr : user_tag.c_str(),
+            nt, status.empty() ? nullptr : status.c_str(), side,
+            q, px, fpx, fq, tf,
+            rp_code.empty() ? nullptr : rp_code.c_str(),
+            detail.empty() ? nullptr : detail.c_str() };
+        try { exec_params(sql, 16, params); }
+        catch (std::exception& e) {
+            static int64_t last_warn = 0;
+            const int64_t now = (int64_t)time(nullptr);
+            if (now - last_warn >= 60) {   // one line a minute, not one per message
+                LOG("[ORBDB] write_order_event failed (%s): %s", kind, e.what());
+                last_warn = now;
+            }
+        }
+    }
+
 private:
     void ensure_schema() {
+        exec(R"(
+            CREATE TABLE IF NOT EXISTS live_order_events (
+                id              BIGSERIAL PRIMARY KEY,
+                ts              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                account_label   TEXT NOT NULL,
+                strategy        TEXT NOT NULL,
+                kind            TEXT NOT NULL,   -- new_order_sent | cancel_sent | gateway_ack | gateway_reject | rithmic_notify | exchange_notify
+                basket_id       TEXT,
+                orig_basket_id  TEXT,
+                user_tag        TEXT,            -- our client-side id
+                notify_type     INTEGER,
+                status          TEXT,
+                side            TEXT,
+                qty             INTEGER,
+                price           DOUBLE PRECISION,
+                fill_price      DOUBLE PRECISION,
+                fill_qty        INTEGER,
+                total_fill      INTEGER,
+                rp_code         TEXT,
+                detail          TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_live_order_events_acct_ts ON live_order_events(account_label, ts DESC);
+            CREATE INDEX IF NOT EXISTS idx_live_order_events_tag ON live_order_events(user_tag);
+        )");
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_trades (
                 id                      BIGSERIAL PRIMARY KEY,

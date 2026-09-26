@@ -2,7 +2,7 @@
 /*  ═══════════════════════════════════════════════════════════════════════════
     trend_strategy.hpp — configurable trend-following signal generator.
 
-    One engine ("trend"), eleven entry modes, one shared exit manager (the
+    One engine ("trend"), two dozen entry modes, one shared exit manager (the
     paper broker's stop / break-even / trail from the OrbConfig risk knobs,
     plus optional flip / time-stop / session-end flattens emitted here).
 
@@ -28,6 +28,14 @@
                       while its own trend is up (mirror for shorts)
       tod_momentum    at a clock time, continuation of the prior L-minute move
                       when it is ≥ k·ATR
+      ema_ribbon      three stacked EMAs (fast>mid>slow, or the mirror) confirm a
+                      strong trend; enter on a pullback to the mid EMA that closes
+                      back through the pullback bar's extreme; flips out if the
+                      stack unstacks
+      thrust_fade     a run of consecutive same-direction bars covering ≥ k·ATR
+                      (a parabolic thrust) followed by a bar that fails to extend
+                      and retraces back through it → fade the exhaustion, target
+                      k·ATR back toward the entry
 
     Pure signal generator: no I/O beyond LOG. Mirrors OrbStrategy's host contract
     (set_signal_callback / on_tick / check_eod / reset_session / halt / notify).
@@ -106,6 +114,37 @@ struct TrendConfig {
     // book_imbalance (needs the collector's bbo stream): bid share ≥ bi_min held for bi_hold_secs with
     // spread ≤ bi_max_spread_ticks → long (mirror ≤ 1−bi_min → short); flat when it normalises to bi_exit
     double bi_min = 0.70, bi_exit = 0.55, bi_max_spread_ticks = 2.0; int bi_hold_secs = 5;
+    // ema_ribbon: three stacked EMAs confirm the trend (stricter than ema_pullback's
+    // 2-line cross); entry is a pullback to the MID line, reusing pullback_tol_atr /
+    // pullback_lookback. Flips flat (exit_on_flip) the moment the stack unstacks.
+    int ribbon_fast = 8, ribbon_mid = 21, ribbon_slow = 50;
+    // thrust_fade: thrust_bars consecutive same-direction closes covering
+    // ≥ thrust_min_atr×ATR mark a parabolic run; a bar that fails to make a new
+    // extreme and closes back thrust_retrace_frac of the way through the last
+    // thrust bar's range fades it; target thrust_target_atr×ATR from the fade entry.
+    int thrust_bars = 4; double thrust_min_atr = 2.5, thrust_retrace_frac = 0.5, thrust_target_atr = 1.0;
+    // ── tape (order-flow) modes: every tick carries the aggressor side, so each tf bar has
+    // volume v and aggressor-buy volume bv (bar delta = 2·bv − v, buy share = bv / v).
+    // absorption_reversal: a bar with volume ≥ abs_vol_mult × the avg of the prior vol_avg_bars
+    // bars but range ≤ abs_max_range_atr×ATR, ending a ≥ abs_min_move_atr×ATR move over
+    // abs_move_bars bars (heavy volume, no progress = the passive side absorbing) arms a fade;
+    // within abs_arm_bars, a close back through the absorption bar's midpoint enters against the
+    // move. abs_delta_min > 0 also requires the aggressors to sit on the absorbed side (buy
+    // share ≥ x for an up-move).
+    double abs_vol_mult = 2.0, abs_max_range_atr = 0.5, abs_min_move_atr = 1.5, abs_delta_min = 0.0;
+    int abs_move_bars = 5, abs_arm_bars = 2;
+    // delta_divergence: price makes a new dd_bars-bar high while the rolling dd_bars-bar delta
+    // sum does not (below its own max over the prior dd_bars windows) and the breakout bar's
+    // delta ≤ 0 → sellers into a new high, fade it short (mirror long).
+    int dd_bars = 20;
+    // volume_burst: bar volume ≥ vb_vol_mult × avg, close in the top vb_close_loc of its range
+    // with buy share ≥ vb_delta_min → continuation long (mirror short); vb_trend_agree also
+    // requires ema_fast > ema_slow (mirror).
+    double vb_vol_mult = 2.5, vb_close_loc = 0.7, vb_delta_min = 0.6; bool vb_trend_agree = true;
+    // book_imbalance: bi_invert FADES the stacked side instead of following it — the paper fleet's
+    // __inv overlay (imbalance_max) was the only book overlay with an edge (PF 2.19 vs 0.92 base,
+    // 2026-09-25); this makes it a first-class trigger with its own hold/threshold variants.
+    bool bi_invert = false;
     // generic gates / exits usable by ANY mode
     int htf_tf_min = 0; int htf_ema = 21;        // >0: longs only when the htf close is above its EMA (mirror for shorts)
     double chandelier_mult = 0.0;                // >0: flatten when close falls chandelier_mult×ATR from the best price since entry
@@ -150,6 +189,18 @@ struct TrendConfig {
         c.bi_min = jdbl(t, "bi_min", c.bi_min); c.bi_exit = jdbl(t, "bi_exit", c.bi_exit);
         c.bi_max_spread_ticks = jdbl(t, "bi_max_spread_ticks", c.bi_max_spread_ticks); c.bi_hold_secs = jint(t, "bi_hold_secs", c.bi_hold_secs);
         c.chandelier_mult = jdbl(t, "chandelier_mult", c.chandelier_mult);
+        c.ribbon_fast = jint(t, "ribbon_fast", c.ribbon_fast); c.ribbon_mid = jint(t, "ribbon_mid", c.ribbon_mid);
+        c.ribbon_slow = jint(t, "ribbon_slow", c.ribbon_slow);
+        c.thrust_bars = jint(t, "thrust_bars", c.thrust_bars); c.thrust_min_atr = jdbl(t, "thrust_min_atr", c.thrust_min_atr);
+        c.thrust_retrace_frac = jdbl(t, "thrust_retrace_frac", c.thrust_retrace_frac);
+        c.thrust_target_atr = jdbl(t, "thrust_target_atr", c.thrust_target_atr);
+        c.abs_vol_mult = jdbl(t, "abs_vol_mult", c.abs_vol_mult); c.abs_max_range_atr = jdbl(t, "abs_max_range_atr", c.abs_max_range_atr);
+        c.abs_min_move_atr = jdbl(t, "abs_min_move_atr", c.abs_min_move_atr); c.abs_delta_min = jdbl(t, "abs_delta_min", c.abs_delta_min);
+        c.abs_move_bars = jint(t, "abs_move_bars", c.abs_move_bars); c.abs_arm_bars = jint(t, "abs_arm_bars", c.abs_arm_bars);
+        c.dd_bars = jint(t, "dd_bars", c.dd_bars);
+        c.vb_vol_mult = jdbl(t, "vb_vol_mult", c.vb_vol_mult); c.vb_close_loc = jdbl(t, "vb_close_loc", c.vb_close_loc);
+        c.vb_delta_min = jdbl(t, "vb_delta_min", c.vb_delta_min); c.vb_trend_agree = jbool(t, "vb_trend_agree", c.vb_trend_agree);
+        c.bi_invert = jbool(t, "bi_invert", c.bi_invert);
         return c;
     }
 
@@ -201,7 +252,7 @@ public:
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
         td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
         imb_dir_ = 0; imb_since_ = 0;
-        best_px_ = 0.0;
+        best_px_ = 0.0; thrust_entry_ref_ = 0.0; abs_dir_ = 0; abs_age_ = 0; abs_mid_ = 0.0;
         sess_.trades_today = 0; sess_.in_position = false; sess_.risk_halted = false; sess_.halt_reason.clear();
         LOG("[TREND %s] Session reset (tf=%dm window %04d-%04d anchor=%s)%s", tc_.mode.c_str(), tc_.tf_min,
             tc_.win_start, tc_.win_end, tc_.session.c_str(), have_prev_ ? "" : " — no prior day yet");
@@ -236,7 +287,10 @@ public:
         q_bid_ = bid; q_ask_ = ask; q_bsz_ = bid_sz; q_asz_ = ask_sz; q_ts_ = ts_us;
         if (tc_.mode != "book_imbalance" || bid <= 0 || ask < bid) return;
         const int n = bid_sz + ask_sz; if (n <= 0) return;
-        const double imb = (double)bid_sz / n, spread = (ask - bid) / tick, mid = (bid + ask) / 2.0;
+        const double raw = (double)bid_sz / n, spread = (ask - bid) / tick, mid = (bid + ask) / 2.0;
+        // bi_invert: a bid-stacked book reads as the SHORT side — fade the displayed size
+        // instead of following it. Entry side, hold and the normalised-exit all use `imb`.
+        const double imb = tc_.bi_invert ? 1.0 - raw : raw;
         int h, m; to_et(ts_us, h, m); const int hhmm = h * 100 + m;
         const int side = imb >= tc_.bi_min ? 1 : imb <= 1.0 - tc_.bi_min ? -1 : 0;
         if (side != imb_dir_) { imb_dir_ = side; imb_since_ = ts_us; }
@@ -249,7 +303,8 @@ public:
         if (side == 0 || ts_us - imb_since_ < (int64_t)tc_.bi_hold_secs * 1'000'000LL) return;
         if (spread > tc_.bi_max_spread_ticks) return;
         if (can_enter(hhmm, side)) emit(side > 0 ? OrbSignal::BUY : OrbSignal::SELL, mid,
-                                        side > 0 ? "book_imbalance_bid" : "book_imbalance_ask");
+                                        tc_.bi_invert ? (side > 0 ? "book_fade_ask" : "book_fade_bid")
+                                                      : (side > 0 ? "book_imbalance_bid" : "book_imbalance_ask"));
     }
 
     void check_eod(int h, int m) {
@@ -350,7 +405,7 @@ private:
             if (tf_cur_.mod >= 0) on_tf_close(tf_cur_, hhmm);   // safety: a gap skipped the last minute
             tf_cur_ = b; tf_cur_.mod = key * tc_.tf_min;
         } else {
-            tf_cur_.h = std::max(tf_cur_.h, b.h); tf_cur_.l = std::min(tf_cur_.l, b.l); tf_cur_.c = b.c; tf_cur_.v += b.v;
+            tf_cur_.h = std::max(tf_cur_.h, b.h); tf_cur_.l = std::min(tf_cur_.l, b.l); tf_cur_.c = b.c; tf_cur_.v += b.v; tf_cur_.bv += b.bv;
         }
         if ((b.mod + 1) / tc_.tf_min != key) {                  // last minute of the bucket
             on_tf_close(tf_cur_, hhmm);
@@ -389,7 +444,11 @@ private:
         ema_s_prev5_.push_back(ema_s_); if (ema_s_prev5_.size() > 6) ema_s_prev5_.pop_front();
         ema_s_ = ema_s_ <= 0 ? b.c : ema_s_ + (2.0 / (tc_.ema_slow + 1)) * (b.c - ema_s_);
         ema20_ = ema20_ <= 0 ? b.c : ema20_ + (2.0 / 21.0) * (b.c - ema20_);
+        ema_rf_ = ema_rf_ <= 0 ? b.c : ema_rf_ + (2.0 / (tc_.ribbon_fast + 1)) * (b.c - ema_rf_);
+        ema_rm_ = ema_rm_ <= 0 ? b.c : ema_rm_ + (2.0 / (tc_.ribbon_mid + 1)) * (b.c - ema_rm_);
+        ema_rs_ = ema_rs_ <= 0 ? b.c : ema_rs_ + (2.0 / (tc_.ribbon_slow + 1)) * (b.c - ema_rs_);
         vol_hist_.push_back(b.v); if (vol_hist_.size() > 200) vol_hist_.pop_front();
+        bar_delta_hist_.push_back(2.0 * b.bv - b.v); if (bar_delta_hist_.size() > 400) bar_delta_hist_.pop_front();
         if (atr_ <= 0) return;
         // generic chandelier exit (any mode): best price since entry minus k×ATR
         if (sess_.in_position && tc_.chandelier_mult > 0) {
@@ -415,6 +474,11 @@ private:
         else if (tc_.mode == "squeeze")      mode_squeeze(b, hhmm);
         else if (tc_.mode == "supertrend")   mode_supertrend(b, hhmm);
         else if (tc_.mode == "nr7")          mode_nr7(b, hhmm);
+        else if (tc_.mode == "ema_ribbon")   mode_ema_ribbon(b, hhmm);
+        else if (tc_.mode == "thrust_fade")  mode_thrust_fade(b, hhmm);
+        else if (tc_.mode == "absorption_reversal") mode_absorption(b, hhmm);
+        else if (tc_.mode == "delta_divergence")    mode_delta_div(b, hhmm);
+        else if (tc_.mode == "volume_burst")        mode_volume_burst(b, hhmm);
     }
 
     // ── modes ────────────────────────────────────────────────────────────────
@@ -732,6 +796,121 @@ private:
         if (r <= tc_.rsi_buy && b.c > ema_s_ && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "rsi2_oversold_in_uptrend");
         else if (r >= tc_.rsi_sell && b.c < ema_s_ && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "rsi2_overbought_in_downtrend");
     }
+    // ema_ribbon: fast/mid/slow EMAs fully stacked (fast>mid>slow, or the mirror)
+    // — a stricter trend filter than ema_pullback's single fast/slow cross. Entry
+    // is a pullback to the MID line that closes back through the touching bar's
+    // extreme, same shape as ema_pullback. Unstacking flattens (exit_on_flip).
+    void mode_ema_ribbon(const Bar& b, int hhmm) {
+        const size_t n = tf_.size();
+        if ((int)n < tc_.ribbon_slow + 6) return;
+        const bool up = ema_rf_ > ema_rm_ && ema_rm_ > ema_rs_;
+        const bool dn = ema_rf_ < ema_rm_ && ema_rm_ < ema_rs_;
+        if (sess_.in_position && tc_.exit_on_flip && ((pos_dir_ > 0 && !up) || (pos_dir_ < 0 && !dn))) {
+            emit(OrbSignal::FLATTEN_EOD, b.c, "ribbon_unstack"); return;
+        }
+        if (!up && !dn) return;
+        const double tol = tc_.pullback_tol_atr * atr_;
+        bool touched = false; double trig_hi = 0, trig_lo = 0;
+        for (int k = 2; k <= tc_.pullback_lookback + 1 && (int)n - k >= 0; ++k) {
+            const Bar& x = tf_[n - k];
+            if (up && x.l <= ema_rm_ + tol) { touched = true; trig_hi = std::max(trig_hi, x.h); }
+            if (dn && x.h >= ema_rm_ - tol) { touched = true; trig_lo = (trig_lo == 0) ? x.l : std::min(trig_lo, x.l); }
+        }
+        if (!touched) return;
+        if (up && b.c > trig_hi && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "ribbon_pullback_long");
+        else if (dn && trig_lo > 0 && b.c < trig_lo && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "ribbon_pullback_short");
+    }
+    // thrust_fade (climax exhaustion): thrust_bars consecutive same-direction
+    // closes covering ≥ thrust_min_atr×ATR mark a parabolic run in the LAST
+    // completed bar of the window; a bar that fails to extend the run's extreme
+    // and closes back thrust_retrace_frac of the way through that bar's range
+    // fades it. Pure price action — no band, VWAP or oscillator involved, which
+    // is what makes it distinct from vwap_fade / band_fade / rsi2_pullback.
+    void mode_thrust_fade(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(); const int T = tc_.thrust_bars;
+        if ((int)n < T + 2 || atr_ <= 0) return;
+        if (sess_.in_position) {
+            const double tgt = tc_.thrust_target_atr * atr_;
+            if ((pos_dir_ > 0 && b.c >= thrust_entry_ref_ + tgt) || (pos_dir_ < 0 && b.c <= thrust_entry_ref_ - tgt)) {
+                emit(OrbSignal::FLATTEN_EOD, b.c, "thrust_target"); return;
+            }
+        }
+        bool up_run = true, dn_run = true;
+        for (size_t i = n - 1 - T; i < n - 1; ++i) {
+            if (tf_[i].c <= tf_[i].o) up_run = false;
+            if (tf_[i].c >= tf_[i].o) dn_run = false;
+        }
+        const Bar& last = tf_[n - 2];                       // last completed thrust-candidate bar
+        const Bar& first = tf_[n - 1 - T];
+        const double run = last.c - first.o;
+        const bool thrust_up = up_run && run >= tc_.thrust_min_atr * atr_;
+        const bool thrust_dn = dn_run && -run >= tc_.thrust_min_atr * atr_;
+        if (!thrust_up && !thrust_dn) return;
+        const double rng = last.h - last.l; if (rng <= 0) return;
+        if (thrust_up && b.h <= last.h && b.c < last.h - tc_.thrust_retrace_frac * rng && can_enter(hhmm, -1)) {
+            thrust_entry_ref_ = b.c; emit(OrbSignal::SELL, b.c, "thrust_exhaustion_fade_short");
+        } else if (thrust_dn && b.l >= last.l && b.c > last.l + tc_.thrust_retrace_frac * rng && can_enter(hhmm, +1)) {
+            thrust_entry_ref_ = b.c; emit(OrbSignal::BUY, b.c, "thrust_exhaustion_fade_long");
+        }
+    }
+
+    // ── tape (order-flow) modes ──────────────────────────────────────────────
+    static double buy_share(const Bar& b) { return b.v > 0 ? b.bv / b.v : 0.5; }
+    // average volume of the n completed bars BEFORE the current one (vol_hist_ already holds it)
+    double avg_vol_prior(int n) const {
+        if (n <= 0 || (int)vol_hist_.size() < n + 1) return 0.0;
+        double s = 0; for (size_t i = vol_hist_.size() - 1 - n; i < vol_hist_.size() - 1; ++i) s += vol_hist_[i];
+        return s / n;
+    }
+    // absorption_reversal: heavy volume, no progress at the end of a move → the passive side is
+    // absorbing; fade when the next bar(s) close back through the absorption bar's midpoint.
+    void mode_absorption(const Bar& b, int hhmm) {
+        if (abs_dir_ != 0) {
+            const int d = abs_dir_;
+            if (++abs_age_ > tc_.abs_arm_bars) { abs_dir_ = 0; }
+            else if (d > 0 && b.c < abs_mid_ && can_enter(hhmm, -1)) { abs_dir_ = 0; emit(OrbSignal::SELL, b.c, "absorption_fade_short"); return; }
+            else if (d < 0 && b.c > abs_mid_ && can_enter(hhmm, +1)) { abs_dir_ = 0; emit(OrbSignal::BUY, b.c, "absorption_fade_long"); return; }
+            if (abs_dir_ != 0) return;
+        }
+        const size_t n = tf_.size(); const int L = tc_.abs_move_bars;
+        if ((int)n < L + 2) return;
+        const double avg = avg_vol_prior(tc_.vol_avg_bars); if (avg <= 0) return;
+        if (b.v < tc_.abs_vol_mult * avg || (b.h - b.l) > tc_.abs_max_range_atr * atr_) return;
+        const double move = b.c - tf_[n - 1 - L].c, share = buy_share(b);
+        if (move >= tc_.abs_min_move_atr * atr_ && (tc_.abs_delta_min <= 0 || share >= tc_.abs_delta_min)) {
+            abs_dir_ = +1; abs_mid_ = (b.h + b.l) / 2.0; abs_age_ = 0;
+        } else if (-move >= tc_.abs_min_move_atr * atr_ && (tc_.abs_delta_min <= 0 || share <= 1.0 - tc_.abs_delta_min)) {
+            abs_dir_ = -1; abs_mid_ = (b.h + b.l) / 2.0; abs_age_ = 0;
+        }
+    }
+    // delta_divergence: a new N-bar price high the N-bar delta sum does not confirm, with sellers
+    // on the breakout bar itself → fade short (mirror long).
+    void mode_delta_div(const Bar& b, int hhmm) {
+        const size_t n = tf_.size(), m = bar_delta_hist_.size(); const int N = tc_.dd_bars;
+        if (N < 2 || (int)n < 2 * N + 1 || (int)m < 2 * N + 1) return;
+        double hh = std::numeric_limits<double>::lowest(), ll = std::numeric_limits<double>::max();
+        for (size_t i = n - 1 - N; i < n - 1; ++i) { hh = std::max(hh, tf_[i].h); ll = std::min(ll, tf_[i].l); }
+        auto wsum = [&](size_t end_excl) { double s = 0; for (size_t i = end_excl - N; i < end_excl; ++i) s += bar_delta_hist_[i]; return s; };
+        const double cur = wsum(m);
+        double wmax = std::numeric_limits<double>::lowest(), wmin = std::numeric_limits<double>::max();
+        for (size_t e = m - N; e < m; ++e) { const double w = wsum(e); wmax = std::max(wmax, w); wmin = std::min(wmin, w); }
+        const double bd = bar_delta_hist_.back();
+        if (b.h > hh && cur < wmax && bd <= 0 && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "delta_divergence_short");
+        else if (b.l < ll && cur > wmin && bd >= 0 && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "delta_divergence_long");
+    }
+    // volume_burst: a high-volume bar closing near its extreme with the aggressors on that side →
+    // continuation in the burst's direction (optionally only with the EMA trend).
+    void mode_volume_burst(const Bar& b, int hhmm) {
+        const double avg = avg_vol_prior(tc_.vol_avg_bars);
+        if (avg <= 0 || b.v < tc_.vb_vol_mult * avg) return;
+        const double rng = b.h - b.l; if (rng <= 0) return;
+        const double loc = (b.c - b.l) / rng, share = buy_share(b);
+        const bool up_ok = !tc_.vb_trend_agree || ema_f_ > ema_s_, dn_ok = !tc_.vb_trend_agree || ema_f_ < ema_s_;
+        if (loc >= tc_.vb_close_loc && share >= tc_.vb_delta_min && up_ok && can_enter(hhmm, +1))
+            emit(OrbSignal::BUY, b.c, "volume_burst_long");
+        else if (loc <= 1.0 - tc_.vb_close_loc && share <= 1.0 - tc_.vb_delta_min && dn_ok && can_enter(hhmm, -1))
+            emit(OrbSignal::SELL, b.c, "volume_burst_short");
+    }
 
     // ── state ────────────────────────────────────────────────────────────────
     TrendConfig tc_; OrbConfig risk_; SignalCallback cb_;
@@ -758,4 +937,8 @@ private:
     bool was_in_window_ = false;
     double q_bid_ = 0, q_ask_ = 0; int q_bsz_ = 0, q_asz_ = 0; int64_t q_ts_ = 0;   // latest quote
     int imb_dir_ = 0; int64_t imb_since_ = 0;                                          // book_imbalance state
+    double ema_rf_ = 0, ema_rm_ = 0, ema_rs_ = 0;                                       // ema_ribbon
+    double thrust_entry_ref_ = 0;                                                      // thrust_fade
+    int abs_dir_ = 0, abs_age_ = 0; double abs_mid_ = 0.0;                              // absorption_reversal (armed fade)
+    std::deque<double> bar_delta_hist_;                                                // per tf bar: 2·bv − v
 };

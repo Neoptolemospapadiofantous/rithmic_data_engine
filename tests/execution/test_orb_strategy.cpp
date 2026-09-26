@@ -485,13 +485,20 @@ TEST(notify_trade_filled_cooldown_applies_to_all_exits) {
     s.notify_trade_filled(OrbSignal::BUY, "eod_flatten");
     ASSERT(!s.session().in_position);
 
-    // Cooldown is now active (2s). Try to re-enter: prev_price=19105 (outside range),
-    // so we need a cross from inside. Feed an inside tick first to reset prev_price,
-    // then a breakout tick — cooldown must block the breakout signal.
-    s.on_tick(make_tick(10, 10, 1, 19099.0));  // pull back inside range — no signal expected
+    // Cooldown is now active for 2 s of ENGINE time (the last tick was 10:10:00, so until
+    // 10:10:02 — since 2026-09-26 the cooldown runs on tick timestamps, not steady_clock, so a
+    // replay reproduces it). Try to re-enter: prev_price=19105 (outside range), so we need a
+    // cross from inside. Feed an inside tick first to reset prev_price, then a breakout tick.
+    s.on_tick(make_tick(10, 10, 0, 19099.0));  // pull back inside range — no signal expected
     ASSERT(signals.empty());
-    s.on_tick(make_tick(10, 10, 2, 19105.0));  // cross above orb_high — blocked by cooldown
+    s.on_tick(make_tick(10, 10, 1, 19105.0));  // cross above orb_high at +1 s — blocked by cooldown
     ASSERT(signals.empty());  // cooldown blocking re-entry
+    // Once engine time passes the cooldown the same cross fires again.
+    s.on_tick(make_tick(10, 10, 2, 19099.0));  // inside again (at +2 s the cooldown has expired)
+    ASSERT(signals.empty());
+    s.on_tick(make_tick(10, 10, 3, 19105.0));  // cross above orb_high at +3 s — allowed
+    ASSERT_EQ(signals.size(), (size_t)1);
+    ASSERT(signals[0].signal == OrbSignal::BUY);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

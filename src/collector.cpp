@@ -136,7 +136,10 @@ static bool depth_from_line(const std::string& line, DepthRow& r) {
 // ── Collector ──────────────────────────────────────────────────────
 
 Collector::Collector(const Config& cfg) : cfg_(cfg) {
-    db_        = std::make_unique<TickDB>(cfg_.pg_connstr());
+    // read_only: skips ensure_schema() — db_writer_ owns the schema, and this connection is
+    // reconnected from the io_context thread (status_log_coro), where a DDL burst would stall
+    // WebSocket frame handling.
+    db_        = std::make_unique<TickDB>(cfg_.pg_connstr(), /*read_only=*/true);
     db_writer_ = std::make_unique<TickDB>(cfg_.pg_connstr());
     audit_     = std::make_unique<AuditLog>(db_writer_->conn());
     wal_       = std::make_unique<Wal<TickRow>>(cfg_.wal_path(),
@@ -439,9 +442,9 @@ int Collector::write_tick_batch(std::vector<TickRow> batch) {
         LOG("  Wrote %d ticks (session=%lld rejected=%lld)",
             n, (long long)session_total_.load(),
                (long long)rejected_total_.load());
-        audit_->info("ticks.written",
-                     "count=" + std::to_string(n) +
-                     " batch=" + std::to_string(batch.size()));
+        // No audit_log row per batch any more (2026-09-26): `ticks.written` was 99.98 % of
+        // audit_log — 257k rows / 252 MB a day of nothing but a tick counter. The count lives
+        // in quality_metrics (`session_ticks`, every minute) and in the log line above.
         return n;
 
     } catch (std::exception& e) {
@@ -527,20 +530,34 @@ int Collector::write_depth_batch(std::vector<DepthRow> batch) {
 // ── flush_sentinel — drain alerts from DataSentinel to DB ─────────
 
 void Collector::flush_sentinel() {
-    auto alerts = sentinel_->drain_alerts();
-    if (alerts.empty()) return;
+    // Runs on the writer thread only (writer_loop + stop), so sentinel_pending_ needs no lock.
+    static constexpr size_t kMaxPending = 5000;  // ~a day of alerts; older ones are dropped first
 
-    std::vector<SentinelAlertRow> rows;
-    rows.reserve(alerts.size());
-    for (auto& a : alerts) {
-        rows.push_back({session_id_, a.check, a.severity, a.message, a.value});
-    }
+    auto alerts = sentinel_->drain_alerts();
+    for (auto& a : alerts)
+        sentinel_pending_.push_back({session_id_, a.check, a.severity, a.message, a.value});
+    if (sentinel_pending_.empty()) return;
+    if (sentinel_pending_.size() > kMaxPending)
+        sentinel_pending_.erase(sentinel_pending_.begin(),
+                                sentinel_pending_.end() - kMaxPending);
 
     try {
-        db_writer_->write_sentinel_alerts(rows);
-        LOG("  Flushed %zu sentinel alerts", alerts.size());
+        // Same guard the tick/bbo/depth drains have. Without it a Postgres restart on a
+        // quiet weekend (2026-09-26: no ticks → no write → no reconnect) left this
+        // connection dead and every alert was dropped with a one-line error. Now a
+        // connection-loss failure keeps the rows here and the next flush retries them.
+        ensure_db_connected();
+        const size_t done = db_writer_->write_sentinel_alerts(sentinel_pending_);
+        sentinel_pending_.erase(sentinel_pending_.begin(),
+                                sentinel_pending_.begin() + static_cast<std::ptrdiff_t>(done));
+        if (sentinel_pending_.empty())
+            LOG("  Flushed %zu sentinel alerts", done);
+        else
+            LOG("  Flushed %zu sentinel alerts — %zu held for retry (DB connection lost)",
+                done, sentinel_pending_.size());
     } catch (std::exception& e) {
-        LOG("  Sentinel alert flush failed: %s", e.what());
+        LOG("  Sentinel alert flush failed: %s — %zu alerts held for retry",
+            e.what(), sentinel_pending_.size());
     }
 }
 
@@ -564,6 +581,7 @@ void Collector::flush_metrics() {
             : 0.0;
         ms.push_back({"rejection_rate_pct", reject_rate, ""});
 
+        ensure_db_connected();
         db_writer_->write_metrics(ms);
     } catch (std::exception& e) {
         LOG("  Metrics flush failed: %s", e.what());
@@ -594,7 +612,20 @@ asio::awaitable<void> Collector::status_log_coro() {
                 s.latest.c_str(),
                 s.price ? std::to_string(*s.price).c_str() : "n/a");
             LOG("  frames by template: %s", client_->template_counts().c_str());
-        } catch (...) {}
+        } catch (std::exception& e) {
+            // 2026-09-26: a Postgres restart left db_ (this thread's read-only connection,
+            // also used for sentinel alerts) dead; the old `catch (...) {}` hid it and the
+            // status line went silent for 13 min. Say so, and reset the connection here —
+            // the writer thread has ensure_db_connected(), this connection had nothing.
+            LOG("  status query failed: %s%s", e.what(),
+                db_->is_connected() ? "" : " — DB connection lost, reconnecting");
+            if (!db_->is_connected()) {
+                try { db_->reconnect(); }
+                catch (std::exception& e2) { LOG("  DB reconnect failed: %s", e2.what()); }
+            }
+        } catch (...) {
+            LOG("  status query failed: %s", "unknown error");
+        }
     }
 }
 

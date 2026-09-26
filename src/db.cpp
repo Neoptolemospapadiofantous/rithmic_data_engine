@@ -426,181 +426,10 @@ void TickDB::ensure_schema() {
             ON loss_limits(symbol, active, updated_at DESC);
     )");
 
-    // ── Trade log — bot writes trades for engine to audit ──────────
-    // Schema aligned with bot's SQLite trades table (python/db/models.py)
-    exec(R"(
-        CREATE TABLE IF NOT EXISTS trade_log (
-            id              BIGSERIAL    PRIMARY KEY,
-            session_id      BIGINT,
-            strategy        VARCHAR(32)  NOT NULL DEFAULT 'micro_orb',
-            mode            VARCHAR(16)  NOT NULL DEFAULT 'backtest',
-            trade_date      DATE         NOT NULL,
-            entry_time      TIMESTAMPTZ  NOT NULL,
-            exit_time       TIMESTAMPTZ,
-            symbol          VARCHAR(32)  NOT NULL DEFAULT 'NQ',
-            direction       VARCHAR(8)   NOT NULL DEFAULT 'long',
-            entry_price     DOUBLE PRECISION NOT NULL,
-            exit_price      DOUBLE PRECISION,
-            quantity        INTEGER      NOT NULL DEFAULT 1,
-            gross_pnl       DOUBLE PRECISION DEFAULT 0.0,
-            commission      DOUBLE PRECISION DEFAULT 4.0,
-            slippage        DOUBLE PRECISION DEFAULT 0.0,
-            net_pnl         DOUBLE PRECISION DEFAULT 0.0,
-            points          DOUBLE PRECISION DEFAULT 0.0,
-            ticks           DOUBLE PRECISION DEFAULT 0.0,
-            exit_reason     VARCHAR(32),
-            params_json     TEXT,
-            features_json   TEXT,
-            created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_trade_log_date
-            ON trade_log(trade_date DESC);
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_trade_log_entry
-            ON trade_log(session_id, entry_time);
-    )");
-    // Add columns that may be missing on existing installs (must run BEFORE index creation)
-    exec_silent("ALTER TABLE trade_log ADD COLUMN IF NOT EXISTS strategy   VARCHAR(32) NOT NULL DEFAULT 'micro_orb';");
-    exec_silent("ALTER TABLE trade_log ADD COLUMN IF NOT EXISTS mode       VARCHAR(16) NOT NULL DEFAULT 'backtest';");
-    exec_silent("ALTER TABLE trade_log ADD COLUMN IF NOT EXISTS slippage   DOUBLE PRECISION DEFAULT 0.0;");
-    exec_silent("ALTER TABLE trade_log ADD COLUMN IF NOT EXISTS points     DOUBLE PRECISION DEFAULT 0.0;");
-    exec_silent("ALTER TABLE trade_log ADD COLUMN IF NOT EXISTS ticks      DOUBLE PRECISION DEFAULT 0.0;");
-    exec_silent("ALTER TABLE trade_log ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();");
-    // Indexes on new columns — safe now that columns exist
-    exec_silent("CREATE INDEX IF NOT EXISTS idx_trade_log_strategy ON trade_log(strategy, mode);");
-    exec_silent("CREATE INDEX IF NOT EXISTS idx_trade_log_entry_time ON trade_log(entry_time DESC);");
-
-    // ── Daily stats — bot writes daily P&L aggregates ───────────────
-    // Schema aligned with bot's SQLite daily_stats table
-    exec(R"(
-        CREATE TABLE IF NOT EXISTS daily_stats (
-            id              BIGSERIAL    PRIMARY KEY,
-            strategy        VARCHAR(32)  NOT NULL DEFAULT 'micro_orb',
-            mode            VARCHAR(16)  NOT NULL DEFAULT 'backtest',
-            stat_date       DATE         NOT NULL,
-            total_pnl       DOUBLE PRECISION DEFAULT 0.0,
-            trade_count     INTEGER      DEFAULT 0,
-            win_count       INTEGER      DEFAULT 0,
-            loss_count      INTEGER      DEFAULT 0,
-            win_rate        DOUBLE PRECISION DEFAULT 0.0,
-            avg_win         DOUBLE PRECISION DEFAULT 0.0,
-            avg_loss        DOUBLE PRECISION DEFAULT 0.0,
-            max_win         DOUBLE PRECISION DEFAULT 0.0,
-            max_loss        DOUBLE PRECISION DEFAULT 0.0,
-            profit_factor   DOUBLE PRECISION,
-            max_drawdown    DOUBLE PRECISION DEFAULT 0.0,
-            session_id      BIGINT,
-            created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-            UNIQUE(strategy, mode, stat_date, session_id)
-        );
-        CREATE INDEX IF NOT EXISTS idx_daily_date
-            ON daily_stats(stat_date DESC);
-        CREATE INDEX IF NOT EXISTS idx_daily_strategy
-            ON daily_stats(strategy, mode);
-    )");
-
-    // ── Orders — bot writes order lifecycle for live/paper trading ──
-    // Schema aligned with bot's SQLite orders table
-    exec(R"(
-        CREATE TABLE IF NOT EXISTS orders (
-            id              BIGSERIAL    PRIMARY KEY,
-            trade_id        BIGINT,
-            session_id      BIGINT,
-            order_type      VARCHAR(16)  NOT NULL DEFAULT 'market',
-            side            VARCHAR(8)   NOT NULL,
-            quantity        INTEGER      NOT NULL DEFAULT 1,
-            price           DOUBLE PRECISION,
-            fill_price      DOUBLE PRECISION,
-            status          VARCHAR(16)  NOT NULL DEFAULT 'pending',
-            broker_order_id VARCHAR(64),
-            submitted_at    TIMESTAMPTZ,
-            filled_at       TIMESTAMPTZ,
-            cancelled_at    TIMESTAMPTZ,
-            error_msg       TEXT,
-            created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_orders_trade
-            ON orders(trade_id);
-        CREATE INDEX IF NOT EXISTS idx_orders_status
-            ON orders(status);
-        CREATE INDEX IF NOT EXISTS idx_orders_session
-            ON orders(session_id);
-    )");
-
-    // ── Gate results — records pipeline gate pass/fail ──────────────
-    exec(R"(
-        CREATE TABLE IF NOT EXISTS gate_results (
-            id            BIGSERIAL    PRIMARY KEY,
-            ts            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-            gate_name     VARCHAR(64)  NOT NULL,
-            status        VARCHAR(16)  NOT NULL DEFAULT 'pending',
-            threshold     DOUBLE PRECISION,
-            actual_value  DOUBLE PRECISION,
-            details_json  TEXT,
-            session_id    BIGINT
-        );
-        CREATE INDEX IF NOT EXISTS idx_gate_results_ts
-            ON gate_results(ts DESC);
-        CREATE INDEX IF NOT EXISTS idx_gate_results_name
-            ON gate_results(gate_name, ts DESC);
-    )");
-
-    // ── Gate-ready SQL views (non-fatal — require sufficient data) ──
-    exec_silent(R"(
-        CREATE OR REPLACE VIEW v_daily_pnl AS
-        SELECT
-            trade_date,
-            symbol,
-            COUNT(*)                   AS trade_count,
-            SUM(net_pnl)               AS daily_pnl,
-            SUM(CASE WHEN net_pnl > 0 THEN 1 ELSE 0 END) AS wins,
-            SUM(CASE WHEN net_pnl < 0 THEN 1 ELSE 0 END) AS losses,
-            MAX(net_pnl)               AS best_trade,
-            MIN(net_pnl)               AS worst_trade,
-            SUM(SUM(net_pnl)) OVER (ORDER BY trade_date) AS cumulative_pnl
-        FROM trade_log
-        GROUP BY trade_date, symbol
-        ORDER BY trade_date;
-    )");
-
-    exec_silent(R"(
-        CREATE OR REPLACE VIEW v_equity_curve AS
-        SELECT
-            entry_time,
-            net_pnl,
-            SUM(net_pnl) OVER (ORDER BY entry_time) AS equity
-        FROM trade_log
-        ORDER BY entry_time;
-    )");
-
-    exec_silent(R"(
-        CREATE OR REPLACE VIEW v_loss_limit_status AS
-        SELECT
-            ll.symbol,
-            ll.daily_loss_limit,
-            ll.weekly_loss_limit,
-            ll.max_drawdown,
-            ll.max_daily_trades,
-            COALESCE(d.daily_pnl, 0)   AS today_pnl,
-            COALESCE(d.trade_count, 0)  AS today_trades,
-            COALESCE(w.weekly_pnl, 0)   AS week_pnl,
-            CASE WHEN COALESCE(d.daily_pnl, 0)  <= ll.daily_loss_limit  THEN TRUE ELSE FALSE END AS daily_breached,
-            CASE WHEN COALESCE(w.weekly_pnl, 0)  <= ll.weekly_loss_limit THEN TRUE ELSE FALSE END AS weekly_breached,
-            CASE WHEN COALESCE(d.trade_count, 0) >= ll.max_daily_trades  THEN TRUE ELSE FALSE END AS trade_limit_hit
-        FROM loss_limits ll
-        LEFT JOIN (
-            SELECT symbol, SUM(net_pnl) AS daily_pnl, COUNT(*) AS trade_count
-            FROM trade_log
-            WHERE trade_date = CURRENT_DATE
-            GROUP BY symbol
-        ) d ON d.symbol = ll.symbol
-        LEFT JOIN (
-            SELECT symbol, SUM(net_pnl) AS weekly_pnl
-            FROM trade_log
-            WHERE trade_date >= date_trunc('week', CURRENT_DATE)
-            GROUP BY symbol
-        ) w ON w.symbol = ll.symbol
-        WHERE ll.active = TRUE;
-    )");
+    // 2026-09-26: the old Python bot's mirror tables (trade_log, daily_stats, orders,
+    // gate_results — last written 2026-05-11) and the three views over trade_log were
+    // dropped; rows archived in data/archive/legacy_pg_20260926/. Live trades are in
+    // live_trades (OrbDB), paper trades in paper_trades. Do not re-add them here.
 
     // ── Feature store views (require TimescaleDB bars) ──────────────
     exec_silent(R"(
@@ -1082,13 +911,14 @@ void TickDB::write_metrics(const std::vector<QualityMetric>& ms) {
 
 // ── sentinel alerts ───────────────────────────────────────────────
 
-void TickDB::write_sentinel_alerts(const std::vector<SentinelAlertRow>& alerts) {
-    if (alerts.empty()) return;
+size_t TickDB::write_sentinel_alerts(const std::vector<SentinelAlertRow>& alerts) {
+    if (alerts.empty()) return 0;
 
     const char* sql =
         "INSERT INTO sentinel_alerts (session_id, check_name, severity, message, value)"
         " VALUES ($1, $2, $3, $4, $5)";
 
+    size_t done = 0;
     for (auto& a : alerts) {
         std::string s_sid   = std::to_string(a.session_id);
         std::string s_value = std::to_string(a.value);
@@ -1097,36 +927,21 @@ void TickDB::write_sentinel_alerts(const std::vector<SentinelAlertRow>& alerts) 
             a.message.c_str(), s_value.c_str()
         };
         PGresult* res = PQexecParams(conn_, sql, 5, nullptr, params, nullptr, nullptr, 0);
-        if (res) {
-            if (PQresultStatus(res) != PGRES_COMMAND_OK)
-                LOG("write_sentinel_alerts error: %s", PQresultErrorMessage(res));
-            PQclear(res);
+        std::string err;
+        if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+            err = res ? PQresultErrorMessage(res) : PQerrorMessage(conn_);
+        if (res) PQclear(res);
+        // A dead connection is the caller's problem (it keeps the tail and reconnects);
+        // a per-row data error is logged and the remaining rows still go in.
+        if (!err.empty() && PQstatus(conn_) != CONNECTION_OK) {
+            LOG("write_sentinel_alerts: connection lost after %zu/%zu rows: %s",
+                done, alerts.size(), err.c_str());
+            return done;
         }
+        if (!err.empty()) LOG("write_sentinel_alerts error: %s", err.c_str());
+        ++done;
     }
-}
-
-// ── gate results ──────────────────────────────────────────────────
-
-void TickDB::write_gate_result(const GateResult& g) {
-    const char* sql =
-        "INSERT INTO gate_results (gate_name, status, threshold, actual_value, details_json, session_id)"
-        " VALUES ($1, $2, $3, $4, $5, $6)";
-    std::string s_thresh = std::to_string(g.threshold);
-    std::string s_actual = std::to_string(g.actual);
-    std::string s_sid    = std::to_string(g.session_id);
-    const char* params[6] = {
-        g.gate_name.c_str(), g.status.c_str(),
-        s_thresh.c_str(), s_actual.c_str(),
-        g.details_json.empty() ? nullptr : g.details_json.c_str(),
-        s_sid.c_str()
-    };
-    PGresult* res = PQexecParams(conn_, sql, 6, nullptr,
-                                  params, nullptr, nullptr, 0);
-    if (res) {
-        if (PQresultStatus(res) != PGRES_COMMAND_OK)
-            LOG("write_gate_result error: %s", PQresultErrorMessage(res));
-        PQclear(res);
-    }
+    return done;
 }
 
 // ── read ───────────────────────────────────────────────────────────

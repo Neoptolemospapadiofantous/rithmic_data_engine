@@ -1,6 +1,6 @@
 {
-  "_comment": "MONDAY 2026-09-28 REHEARSAL (dry-run, label tradeify_dry): a copy of config/tradeify_handoff_config.json as promoted 2026-09-26 — fib_pb_1m_deep in the 10:00-12:00 slot. Started/stopped by the scalper-rehearsal-{start,stop} timers (names kept). Archive after Tuesday go-live. HAND-OFF ENGINE, rotated 2026-09-26T22:15:57+03:00 by scripts/rotate_handoff.sh from paper strategy fib_pb_1m_deep (trend): 7d in the 10:00-12:00 ET slot: 12 trades / 4 sessions, net $168.5, PF 5.814285714285714. Takes over from ORB via scripts/strategy_handoff.sh at 10:00 ET (only when flat); flattens at 12:00 ET, executor backstop +1 min; qty 2, max 5 entries. Sizing FIXED via qty (strategy-side sizing not wired live). Previous config in config/archived/handoff_history/.",
-  "account_label": "tradeify_dry",
+  "_comment": "HAND-OFF ENGINE, rotated 2026-09-26T22:15:57+03:00 by scripts/rotate_handoff.sh from paper strategy fib_pb_1m_deep (trend): 7d in the 10:00-12:00 ET slot: 12 trades / 4 sessions, net $168.5, PF 5.814285714285714. Takes over from ORB via scripts/strategy_handoff.sh at 10:00 ET (only when flat); flattens at 12:00 ET, executor backstop +1 min; qty 2, max 5 entries. Sizing FIXED via qty (strategy-side sizing not wired live). Previous config in config/archived/handoff_history/.",
+  "account_label": "tradeify",
   "order_env_prefix": "RITHMIC_TRADEIFY",
   "starting_balance": 25000.0,
   "symbol": "MNQ",

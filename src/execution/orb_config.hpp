@@ -251,6 +251,16 @@ struct OrbConfig {
         c.account_label    = json_str(text, "account_label",    c.account_label);
         c.strategy         = json_str(text, "strategy",         c.strategy);
         c.engine           = json_str(text, "engine",           c.engine);
+        // Book gates / exits (the paper fleet's overlay keys, same names as paper_config.hpp
+        // applies from params_json) — honoured live since 2026-09-25 on the pg feed (bbo).
+        c.spread_gate_ticks = json_dbl(text, "spread_gate_ticks", c.spread_gate_ticks);
+        c.spread_gate_rel   = json_dbl(text, "spread_gate_rel",   c.spread_gate_rel);
+        c.imbalance_min     = json_dbl(text, "imbalance_min",     c.imbalance_min);
+        c.imbalance_max     = json_dbl(text, "imbalance_max",     c.imbalance_max);
+        c.microprice_lead   = json_bool(text, "microprice_lead",  c.microprice_lead);
+        c.book_exit_flip    = json_dbl(text, "book_exit_flip",    c.book_exit_flip);
+        c.book_tp_imbalance = json_dbl(text, "book_tp_imbalance", c.book_tp_imbalance);
+        c.book_tp_min_pts   = json_dbl(text, "book_tp_min_pts",   c.book_tp_min_pts);
         c.warmup_minutes   = json_int(text, "warmup_minutes",   c.warmup_minutes);
         c.order_env_prefix = json_str(text, "order_env_prefix", c.order_env_prefix);
 
