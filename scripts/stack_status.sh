@@ -18,7 +18,7 @@ mb() { awk '/^VmRSS:/{printf "%d", $2/1024}' "/proc/$1/status" 2>/dev/null || ec
 
 echo "== units"
 declare -A MAINPID
-for u in rithmic-collector-local paper-engine-local "nq-executor-local@$ACCOUNT" dashboard-api-local; do
+for u in rithmic-collector-local paper-engine-local paper-engine-local-es "nq-executor-local@$ACCOUNT" dashboard-api-local; do
   st=$(systemctl --user is-active "$u" 2>/dev/null); pid=$(systemctl --user show -p MainPID --value "$u" 2>/dev/null)
   MAINPID[$u]=${pid:-0}
   if [[ "$st" == active && "${pid:-0}" != 0 ]]; then
@@ -33,13 +33,15 @@ done
 
 echo "== strays (processes not owned by their unit)"
 stray=0
-chk() { # name unit
-  local p; for p in $(pgrep -x "$1"); do
-    [[ "$p" == "${MAINPID[$2]:-0}" ]] && continue
-    warn "stray $1 pid=$p: $(tr '\0' ' ' < /proc/$p/cmdline | cut -c1-120)"; stray=1
+chk() { # name unit... — a process is owned if it is the MainPID of ANY of the listed units
+  local name=$1 p u owned; shift
+  for p in $(pgrep -x "$name"); do
+    owned=0; for u in "$@"; do [[ "$p" == "${MAINPID[$u]:-0}" ]] && owned=1; done
+    (( owned )) && continue
+    warn "stray $name pid=$p: $(tr '\0' ' ' < /proc/$p/cmdline | cut -c1-120)"; stray=1
   done; }
 chk rithmic_engine rithmic-collector-local
-chk paper_engine paper-engine-local
+chk paper_engine paper-engine-local paper-engine-local-es
 # every executor that is not the account unit's MainPID is a second writer candidate
 for p in $(pgrep -x nq_executor); do
   [[ "$p" == "${MAINPID[nq-executor-local@$ACCOUNT]:-0}" ]] && continue

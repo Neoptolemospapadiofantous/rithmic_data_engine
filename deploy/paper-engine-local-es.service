@@ -22,6 +22,8 @@ TimeoutStopSec=20
 # Keep the fleet resident but bounded — it must never compete with the live executor.
 MemoryMin=64M
 MemoryMax=2G
+# Same OOM priority as the collector/executor units (stack_status flags >100 as unprotected).
+OOMScoreAdjust=100
 
 [Install]
 WantedBy=default.target
