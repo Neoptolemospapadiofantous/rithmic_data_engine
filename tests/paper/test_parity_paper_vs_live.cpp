@@ -89,7 +89,73 @@ static void run_case(const char* name, int delay_secs, const std::vector<double>
     }
 }
 
+// Take-profit parity: paper fills at the target on the touch; live initiates its market exit
+// on the SAME tick (state → PENDING_EXIT) with the same reason.
+static void run_tp_case(const char* name, double tp_r, const std::vector<double>& path, int dir) {
+    OrbConfig cfg = cfg_for(100000); cfg.tp_r = tp_r;
+    NullStore store;
+    paper::PaperBroker pb("parity_tp", "test", "MNQ", cfg, 0.25, 1, &store);
+    pb.on_tick(OrbTick{ts(0), path[0], 1, true});
+    pb.on_signal(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, path[0], "parity");
+    RiskManager risk(cfg, 25000.0);
+    LatencyLogger lat;
+    OrderManager om(cfg, risk, lat);
+    om.set_order_callback([](const std::string&, const std::string&, const std::string&, int, int, bool, double, const std::string&) { return true; });
+    om.set_cancel_callback([](const std::string&) {});
+    om.on_signal(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, path[0], "parity");
+    size_t paper_exit_at = 0, live_exit_at = 0;
+    for (size_t i = 1; i < path.size(); ++i) {
+        const double px = path[i];
+        pb.on_tick(OrbTick{ts((int)i), px, 1, true});
+        if (i == 1) { auto snap = om.position_snapshot(); om.on_fill_notification(snap.basket_id_entry, px + dir * 0.25, 1, true); }
+        om.check_trail_and_stop(px);
+        if (!paper_exit_at && !pb.in_position()) paper_exit_at = i;
+        if (!live_exit_at && om.position_snapshot().state == PosState::PENDING_EXIT) live_exit_at = i;
+        if (paper_exit_at && live_exit_at) break;
+    }
+    std::printf("[%s] paper exit tick=%zu live exit tick=%zu\n", name, paper_exit_at, live_exit_at);
+    CHECK(paper_exit_at > 0 && paper_exit_at == live_exit_at, (std::string(name) + ": take-profit fires on the same tick in paper and live").c_str());
+    CHECK(!store.trades.empty() && store.trades[0].exit_reason == "take_profit", (std::string(name) + ": paper exit reason = take_profit").c_str());
+    CHECK(om.position_snapshot().basket_id_exit.find("") != std::string::npos, "live exit basket exists");
+}
+
+// Exit-side regime parity: both sides read ONE RegimeState; a trend-shaped session must trail
+// with trail_step_trend on both, a range-shaped one with trail_step_range + the range target.
+static void run_regime_exit_case(const char* name, double eff_last, const std::vector<double>& path, int dir, double expect_step) {
+    OrbConfig cfg = cfg_for(0); cfg.regime_exit_min_eff = 0.5; cfg.trail_step_trend = 20.0; cfg.trail_step_range = 4.0; cfg.tp_r_range = 0.0;
+    paper::RegimeState rs; rs.set_atr("2025-04-30", 100.0);
+    rs.on_tick("2025-04-30", 9, 30, ts(-1800), 20000.0);                       // open
+    rs.on_tick("2025-04-30", 9, 45, ts(-900),  eff_last > 0.5 ? 20040.0 : 20040.0);  // high 20040
+    rs.on_tick("2025-04-30", 9, 50, ts(-600),  eff_last > 0.5 ? 20036.0 : 20004.0);  // last: eff 0.9 (trend) or 0.1 (range)
+    CHECK((rs.eff() >= 0.5) == (eff_last > 0.5), (std::string(name) + ": regime fixture shape").c_str());
+    NullStore store;
+    paper::PaperBroker pb("parity_rg", "test", "MNQ", cfg, 0.25, 1, &store); pb.set_regime(&rs);
+    pb.on_tick(OrbTick{ts(0), path[0], 1, true}); pb.on_signal(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, path[0], "parity");
+    RiskManager risk(cfg, 25000.0); LatencyLogger lat; OrderManager om(cfg, risk, lat); om.set_regime(&rs);
+    om.set_order_callback([](const std::string&, const std::string&, const std::string&, int, int, bool, double, const std::string&) { return true; });
+    om.set_cancel_callback([](const std::string&) {});
+    om.on_signal(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, path[0], "parity");
+    int max_diff = 0; double last_sp = 0;
+    for (size_t i = 1; i < path.size(); ++i) {
+        pb.on_tick(OrbTick{ts((int)i), path[i], 1, true});
+        if (i == 1) { auto snap = om.position_snapshot(); om.on_fill_notification(snap.basket_id_entry, path[i] + dir * 0.25, 1, true); }
+        om.check_trail_and_stop(path[i]);
+        if (!pb.in_position()) break;
+        const double sp = pb.placed_stop(), sl = om.exchange_stop(); last_sp = sp;
+        max_diff = std::max(max_diff, (int)std::lround(std::fabs(sp - sl) / 0.25));
+    }
+    std::printf("[%s] max stop difference %d tick(s), final paper stop %.2f\n", name, max_diff, last_sp);
+    CHECK(max_diff <= 1, (std::string(name) + ": paper and live stops agree under the exit-side regime").c_str());
+    // the trailing stop sits expect_step behind the last high (long) — proves which step was in force
+    const double peak = *std::max_element(path.begin() + 1, path.end());
+    CHECK(std::fabs(last_sp - (peak - expect_step)) < 0.51, (std::string(name) + ": trail step in force = " + std::to_string(expect_step)).c_str());
+}
+
 int main() {
+    run_regime_exit_case("regime_exit_trend", 0.9, {20000.0, 20000.0, 20004.0, 20010.0, 20030.0, 20050.0, 20049.0}, +1, 20.0);
+    run_regime_exit_case("regime_exit_range", 0.1, {20000.0, 20000.0, 20004.0, 20010.0, 20030.0, 20050.0, 20049.0}, +1, 4.0);
+    run_tp_case("tp_long_2r",  2.0, {20000.0, 20000.0, 20010.0, 20020.0, 20029.0, 20031.0, 20040.0}, +1);  // target 20030.25
+    run_tp_case("tp_short_1r", 1.0, {20000.0, 20000.0, 19992.0, 19986.0, 19984.5, 19980.0}, -1);            // target 19984.75
     std::printf("test_parity_paper_vs_live\n");
     // 1. BE only (trail delay huge): +2 → nothing, +3.5 → BE at entry+1, then back to BE → 'breakeven'
     run_case("be_only_long", 100000, {20000.0, 20000.0, 20002.0, 20003.5, 20005.0, 20001.5, 20001.0}, +1, "breakeven");

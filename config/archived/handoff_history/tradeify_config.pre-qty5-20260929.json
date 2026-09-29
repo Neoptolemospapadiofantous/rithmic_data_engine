@@ -27,7 +27,7 @@
   "eod_flatten_min": 55,
   "session_open_hour": 9,
   "session_open_min": 30,
-  "qty": 5,
+  "qty": 2,
   "commission_rt": 0.0,
   "tick_timeout_s": 30,
   "stop_cooldown_secs": 5,

@@ -54,6 +54,12 @@ static int64_t g_replay_clock = 0;   // last replayed tick (us since epoch)
 static int64_t g_replay_to    = 0;
 
 static int64_t clock_us() { return g_replay ? g_replay_clock : now_us(); }
+// "YYYY-MM-DD" + 1 day (calendar), for the hold_pre_event filter
+static std::string next_ymd(const std::string& ymd) {
+    struct tm t{}; if (sscanf(ymd.c_str(), "%d-%d-%d", &t.tm_year, &t.tm_mon, &t.tm_mday) != 3) return ymd;
+    t.tm_year -= 1900; t.tm_mon -= 1; time_t tt = timegm(&t) + 86400; struct tm n; gmtime_r(&tt, &n);
+    char buf[16]; std::snprintf(buf, sizeof buf, "%04d-%02d-%02d", n.tm_year + 1900, n.tm_mon + 1, n.tm_mday); return buf;
+}
 
 static int64_t parse_et_us(const std::string& ymd_hm) {
     // "YYYY-MM-DD HH:MM" in America/New_York → us since epoch (uses the TZ env)
@@ -216,6 +222,14 @@ int main(int argc, char** argv) {
     const std::string session_date = paper::et_trade_date(clock_us());
     const int64_t day_start_us     = paper::et_day_start_us(clock_us());
     std::string cur_date = session_date;  // mutated on day rollover; shared with callbacks
+    // Session-shape regime gate (paper_quote.hpp): one state for the whole fleet — every
+    // strategy sees the same tape — with the prior day's ATR14 from session_stats.
+    paper::RegimeState regime;
+    bool event_day = db->calendar_event_day(cur_date);
+    bool event_next = db->calendar_event_day(next_ymd(cur_date));
+    regime.set_atr(cur_date, db->session_atr14_before(feed_symbol, cur_date));
+    LOG("[PAPER] Regime gate: date=%s prior ATR14=%.1f pts%s", cur_date.c_str(), regime.atr_pts,
+        regime.atr_pts > 0.0 ? "" : " (none — regime-gated variants stay flat until session_stats has a row)");
     LOG("[PAPER] Session trade_date=%s (day start %s)", session_date.c_str(),
         paper::PaperDb::format_ts(day_start_us).c_str());
 
@@ -380,6 +394,8 @@ int main(int argc, char** argv) {
         if (r->mtf_restart_flatten)
             r->bbroker->flatten("restart_flatten", now_us(), 0.0);
 
+        if (r->broker) r->broker->set_regime(&regime); else if (r->bbroker) r->bbroker->set_regime(&regime);
+        if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next); r->trend->set_day_atr(regime.atr_pts); }
         runners.push_back(std::move(r));
     }
 
@@ -473,7 +489,48 @@ int main(int argc, char** argv) {
             }
             while (!ticks.empty() && ticks.back().ts_us > g_replay_to) ticks.pop_back();
         }
+        // Day rollover at 18:00 ET. Called per tick with the TICK's time (before the feed-gap
+        // guard, which re-seeds trades_today from the runner's day count — on 2026-09-22 the
+        // 18:00 reopen gap reset ran first and carried the previous evening's hold into the
+        // new day, blocking the 18:00 entry) and again after each batch with the wall clock.
+        auto roll_day_if_needed = [&](int64_t at_us) {
+        std::string d = paper::et_trade_date(at_us);
+        if (d != cur_date) {
+            LOG("[PAPER] Day rollover %s → %s — resetting sessions",
+                cur_date.c_str(), d.c_str());
+            cur_date = d;
+            regime.set_atr(cur_date, db->session_atr14_before(feed_symbol, cur_date));
+            LOG("[PAPER] Regime gate: date=%s prior ATR14=%.1f pts", cur_date.c_str(), regime.atr_pts);
+            event_day = db->calendar_event_day(cur_date);
+            event_next = db->calendar_event_day(next_ymd(cur_date));
+            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next); r->trend->set_day_atr(regime.atr_pts); }
+            if (event_day) LOG("[PAPER] %s is a scheduled-release day (calendar) — news_break event-only variants armed", cur_date.c_str());
+            for (auto& r : runners) {
+                if (r->broker) {
+                    r->s_reset();
+                    r->broker->reset_day();
+                } else {
+                    r->mtf->reset_session();
+                    r->bbroker->reset_day();
+                    // MTF halts latch until explicitly cleared; lift at
+                    // rollover when the strategy's own risk manager is clear.
+                    if (!r->bbroker->risk().halted())
+                        r->mtf->unhalt_trading("day_rollover");
+                }
+                r->trades = 0;
+                r->wins   = 0;
+                r->pnl    = 0.0;
+            }
+            account.reset_day();
+            // A persistent account halt (e.g. trailing drawdown) survives
+            // rollover — re-apply it to every strategy.
+            if (account.halted())
+                halt_all(account.halt_reason());
+            persist_account();
+        }
+        };
         for (const auto& t : ticks) {
+            roll_day_if_needed(t.ts_us);   // the tick's own trading day, before anything else sees it
             // Feed-gap guard: after a hole in the tick stream (collector down,
             // forced logout, box asleep) the first tick back is NOT a signal —
             // an ORB range built on one minute of ticks and a Donchian channel
@@ -517,6 +574,10 @@ int main(int argc, char** argv) {
             }
             last_price = t.price;
             OrbTick ot{t.ts_us, t.price, t.size, t.is_buy};
+            {
+                int rh, rm; utc_us_to_et(t.ts_us, rh, rm);
+                regime.on_tick(cur_date, rh, rm, t.ts_us, t.price, (double)t.size);
+            }
             for (auto& r : runners) {
                 if (r->broker) {
                     r->broker->on_tick(ot);     // broker first: signals fill on NEXT tick
@@ -574,35 +635,7 @@ int main(int argc, char** argv) {
         else          utc_now_et(eh, em);
         for (auto& r : runners) r->s_eod(eh, em);
 
-        // Day rollover at 18:00 ET.
-        std::string d = paper::et_trade_date(clock_us());
-        if (d != cur_date) {
-            LOG("[PAPER] Day rollover %s → %s — resetting sessions",
-                cur_date.c_str(), d.c_str());
-            cur_date = d;
-            for (auto& r : runners) {
-                if (r->broker) {
-                    r->s_reset();
-                    r->broker->reset_day();
-                } else {
-                    r->mtf->reset_session();
-                    r->bbroker->reset_day();
-                    // MTF halts latch until explicitly cleared; lift at
-                    // rollover when the strategy's own risk manager is clear.
-                    if (!r->bbroker->risk().halted())
-                        r->mtf->unhalt_trading("day_rollover");
-                }
-                r->trades = 0;
-                r->wins   = 0;
-                r->pnl    = 0.0;
-            }
-            account.reset_day();
-            // A persistent account halt (e.g. trailing drawdown) survives
-            // rollover — re-apply it to every strategy.
-            if (account.halted())
-                halt_all(account.halt_reason());
-            persist_account();
-        }
+        roll_day_if_needed(clock_us());
 
         // Manual control channel: dashboard-written paper_control rows.
         // Runs even with zero ticks (loop spins on the poll sleep).

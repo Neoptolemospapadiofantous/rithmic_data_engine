@@ -21,6 +21,7 @@
 #include "orb_strategy.hpp"
 #include "latency_logger.hpp"
 #include "risk_manager.hpp"
+#include "../paper/paper_quote.hpp"   // RegimeState: exit-side regime (trail step / target by session shape)
 #include "log.hpp"
 #include <atomic>
 #include <chrono>
@@ -417,7 +418,7 @@ public:
         pos_.state         = PosState::PENDING_ENTRY;
         pos_.direction     = sig;
         pos_.basket_id_entry = basket;
-        pos_.qty           = cfg_.qty;
+        pos_.qty           = paper::RegimeState::qty_for(cfg_, regime_);   // volatility-targeted when vt_risk_usd is set
         pos_.trigger_price = price;   // ORB breakout level at time of order submission
         pos_.fill_time     = std::chrono::steady_clock::now(); // placeholder until fill
         pending_entry_sl_dist_ = desired_sl_dist;
@@ -611,7 +612,7 @@ public:
                         // persisted. Halt trading and require manual intervention.
                         // Warn if fill_qty is suspiciously large (could be a Rithmic internal
                         // notification or a fill for a different account's position).
-                        if (fill_qty > cfg_.qty) {
+                        if (fill_qty > std::max(cfg_.qty, pos_.qty)) {
                             LOG("[OM] GHOST-FILL WARN: fill_qty=%d > expected qty=%d "
                                 "— possible Rithmic internal notification or wrong-account fill "
                                 "(basket=%s px=%.2f)",
@@ -799,6 +800,10 @@ public:
     // see update_stop_order_locked); pos_.sl_price is the in-memory/display value.
     double exchange_stop() const { std::lock_guard<std::mutex> lk(state_mu_); return last_exchange_sl_ != 0.0 ? last_exchange_sl_ : pos_.sl_price; }
 
+    // Exit-side regime source (host-owned RegimeState; null = plain knobs).
+    void set_regime(const paper::RegimeState* r) { regime_ = r; }
+    const paper::RegimeState* regime_ = nullptr;
+
     bool check_trail_and_stop(double current_price) {
         std::lock_guard<std::mutex> lk(state_mu_);
         if (pos_.state != PosState::LONG && pos_.state != PosState::SHORT) return false;
@@ -881,6 +886,20 @@ public:
             stop_resubmit_pending_ = false;  // price above new stop — resubmit window safe
         }
 
+        // Fixed take-profit (tp_points / tp_r, 2026-09-28): on the touch, flatten at market
+        // through the same exit path as the software stop (cancels the exchange stop first).
+        // The paper broker fills at the target itself — parity is "same tick, same reason".
+        if (const double tp = paper::RegimeState::take_profit_for(cfg_, regime_); tp > 0.0) {
+            const double target = is_long ? pos_.entry_price + tp : pos_.entry_price - tp;
+            if ((is_long && current_price >= target) || (!is_long && current_price <= target)) {
+                LOG("[OM] Take-profit hit (%s): price=%.2f target=%.2f entry=%.2f",
+                    is_long ? "LONG" : "SHORT", current_price, target, pos_.entry_price);
+                sl_breach_time_ = {};
+                initiate_exit_locked("take_profit", current_price);
+                return false;
+            }
+        }
+
         // BE: immediate — no delay. Fires as soon as MFE passes trail_be_trigger.
         if (!pos_.be_triggered && pos_.mfe >= cfg_.trail_be_trigger) {
             pos_.be_triggered = true;
@@ -924,8 +943,8 @@ public:
         // Update trailing stop
         if (pos_.trailing_active) {
             double trail_sl = is_long
-                ? current_price - cfg_.trail_step
-                : current_price + cfg_.trail_step;
+                ? current_price - paper::RegimeState::trail_step_for(cfg_, regime_)
+                : current_price + paper::RegimeState::trail_step_for(cfg_, regime_);
 
             if ((is_long && trail_sl > pos_.sl_price) ||
                 (!is_long && trail_sl < pos_.sl_price)) {
@@ -1456,8 +1475,8 @@ private:
 
         if (cfg_.dry_run) {
             LOG("[OM] [DRY_RUN] Would send MKT %s qty=%d basket=%s",
-                is_buy ? "BUY" : "SELL", cfg_.qty, basket.c_str());
-            on_fill_notification_locked(basket, ref_price, cfg_.qty, /*is_entry=*/true);
+                is_buy ? "BUY" : "SELL", pos_.qty, basket.c_str());
+            on_fill_notification_locked(basket, ref_price, pos_.qty, /*is_entry=*/true);
             return;
         }
 
@@ -1473,7 +1492,7 @@ private:
         double limit_px = is_buy ? ref_price + OFFSET_TICKS * TICK
                                  : ref_price - OFFSET_TICKS * TICK;
         bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
-                             cfg_.qty, /*LIMIT=1*/1, is_buy, limit_px, user_tag);
+                             pos_.qty, /*LIMIT=1*/1, is_buy, limit_px, user_tag);   // pos_.qty: volatility-targeted when set
         if (!ok) {
             LOG("[OM] ERROR: order_cb_ returned false for basket=%s", basket.c_str());
             pos_ = Position{};
@@ -1498,7 +1517,7 @@ private:
         lat_.on_signal(basket, sl_price, /*is_entry=*/false);
         lat_.on_submit(basket, sl_price);
         bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,
-                            cfg_.qty, /*STOP_MARKET=4*/4, !stop_is_sell, sl_price, "stop_loss");
+                            pos_.qty > 0 ? pos_.qty : cfg_.qty, /*STOP_MARKET=4*/4, !stop_is_sell, sl_price, "stop_loss");
         if (!ok) {
             LOG("[OM] ERROR: stop order send failed — clearing basket, software SL active");
             pos_.basket_id_stop.clear();
@@ -1535,7 +1554,7 @@ private:
         // has moved by >= trail_step since the last submitted stop. The in-memory
         // pos_.sl_price is already updated by the caller for accurate DB display.
         if (last_exchange_sl_ != 0.0 &&
-            std::abs(new_sl - last_exchange_sl_) < cfg_.trail_step - 1e-9) {
+            std::abs(new_sl - last_exchange_sl_) < paper::RegimeState::trail_step_for(cfg_, regime_) - 1e-9) {
             return;
         }
 

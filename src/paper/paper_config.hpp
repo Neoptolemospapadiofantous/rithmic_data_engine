@@ -182,6 +182,26 @@ struct FleetConfig {
         c.book_tp_min_pts    = json_dbl(p, "book_tp_min_pts",    c.book_tp_min_pts);
         c.book_size_agree    = json_int(p, "book_size_agree",    c.book_size_agree);
         c.fill_wait_secs     = json_int(p, "fill_wait_secs",     c.fill_wait_secs);
+        c.tp_points          = json_dbl(p, "tp_points",          c.tp_points);
+        c.rvol_min           = json_dbl(p, "rvol_min",           c.rvol_min);
+        c.rvol_max           = json_dbl(p, "rvol_max",           c.rvol_max);
+        c.rvol_bars          = json_int(p, "rvol_bars",          c.rvol_bars);
+        c.vt_risk_usd        = json_dbl(p, "vt_risk_usd",        c.vt_risk_usd);
+        c.vt_qty_max         = json_int(p, "vt_qty_max",         c.vt_qty_max);
+        c.regime_exit_min_eff = json_dbl(p, "regime_exit_min_eff", c.regime_exit_min_eff);
+        c.trail_step_trend   = json_dbl(p, "trail_step_trend",   c.trail_step_trend);
+        c.trail_step_range   = json_dbl(p, "trail_step_range",   c.trail_step_range);
+        c.tp_r_range         = json_dbl(p, "tp_r_range",         c.tp_r_range);
+        c.tp_r               = json_dbl(p, "tp_r",               c.tp_r);
+        // regime gate (paper_quote.hpp RegimeState)
+        c.regime_min_range_atr = json_dbl(p, "regime_min_range_atr", c.regime_min_range_atr);
+        c.regime_max_range_atr = json_dbl(p, "regime_max_range_atr", c.regime_max_range_atr);
+        c.regime_min_eff       = json_dbl(p, "regime_min_eff",       c.regime_min_eff);
+        c.regime_max_eff       = json_dbl(p, "regime_max_eff",       c.regime_max_eff);
+        c.regime_min_move_atr  = json_dbl(p, "regime_min_move_atr",  c.regime_min_move_atr);
+        c.regime_max_move_atr  = json_dbl(p, "regime_max_move_atr",  c.regime_max_move_atr);
+        c.regime_with_move     = json_int(p, "regime_with_move",     c.regime_with_move);
+        c.regime_min_minutes   = json_int(p, "regime_min_minutes",   c.regime_min_minutes);
         c.base_id            = json_str(p, "base_id",            c.base_id);
         c.overlay            = json_str(p, "overlay",            c.overlay);
         return c;

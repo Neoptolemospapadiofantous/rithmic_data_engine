@@ -30,7 +30,7 @@
   "eod_flatten_min": 56,
   "session_open_hour": 9,
   "session_open_min": 30,
-  "qty": 5,
+  "qty": 1,
   "cycle_mode": false,
   "cycle_start_epoch": 0,
   "warmup_minutes": 300,

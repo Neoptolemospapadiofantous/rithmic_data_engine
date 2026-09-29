@@ -44,6 +44,147 @@ static void feed_path(TrendStrategy& s, const std::vector<double>& px_per_min, i
 int main() {
     std::printf("test_trend_strategy\n");
 
+    // ── atr_break (2026-09-29): close beyond open ± k × day ATR, one per side ──
+    {
+        TrendConfig tc; tc.mode = "atr_break"; tc.tf_min = 1; tc.ab_k = 0.5; tc.ab_anchor = "open"; tc.ab_day_atr = true;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); s.set_day_atr(100.0);                         // threshold = open ± 50
+        std::vector<double> path = {20000, 20010, 20030, 20060, 20070, 20070};   // 09:33 closes above 20050
+        feed_path(s, path, 9, 30);
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY && out[0].why == "atr_break_long", "atr_break: BUY through open + 0.5 ATR");
+        s.notify_trade_filled(OrbSignal::BUY, "test");
+        feed_path(s, {20080, 20090}, 9, 36);
+        CHECK(out.size() == 1, "atr_break: long side used once per session");
+        TrendConfig t2 = tc; t2.ab_day_atr = true; TrendStrategy s2(t2, risk_cfg()); int n2 = 0;
+        s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n2; }); s2.reset_session();   // no day ATR set
+        feed_path(s2, path, 9, 30);
+        CHECK(n2 == 0, "atr_break: silent without a day ATR (fail-closed)");
+    }
+    // ── vprofile (2026-09-29): yesterday's value area, fade the touch toward the POC ──
+    {
+        TrendConfig tc; tc.mode = "vprofile"; tc.tf_min = 1; tc.vp_style = "fade"; tc.vp_tol_atr = 0.5; tc.vp_va_frac = 0.7;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        // day 1: a bell of volume over 19995..20005 (peak at 20000), light tails at 20030 / 19970
+        auto bar = [&](int h, int m, double px, int64_t vol, int64_t day = 0) {
+            for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(h, m, k * 15) + day, px + (k % 2 ? 0.25 : -0.25), vol / 4, k % 2 == 0});
+        };
+        for (int m = 0; m < 20; ++m) { const int off = (m % 11) - 5; bar(9, 30 + m, 20000.0 + off, 400 + (5 - std::abs(off)) * 200); }
+        for (int m = 0; m < 5; ++m)  bar(9, 50 + m, 20030.0, 20);
+        for (int m = 0; m < 5; ++m)  bar(9, 55 + m, 19970.0, 20);
+        s.on_tick(OrbTick{at(16, 1), 20000.0, 1, true});                 // session end → profile finalised
+        CHECK(s.vp_ready() && std::fabs(s.vp_poc() - 20000.0) < 1.6, "vprofile: POC at the heavy price");   // 1-pt bins: 19999.5 or 20000.5
+        CHECK(s.vp_vah() > 20001.0 && s.vp_vah() < 20030.0 && s.vp_val() < 19999.0 && s.vp_val() > 19970.0, "vprofile: value area spans the bell and excludes the light tails");
+        const double vah = s.vp_vah(), poc = s.vp_poc();
+        s.reset_session();                                              // 18:00 rollover keeps the profile
+        const int64_t day2 = 86400LL * 1'000'000LL;
+        bar(9, 30, 20000.0, 100, day2); bar(9, 31, 20000.0, 100, day2);   // warm the ATR
+        for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(9, 32, k * 15) + day2, k < 2 ? vah + 1.0 : vah - 2.0, 25, true});   // touches VAH, closes below
+        bar(9, 33, vah - 2.0, 100, day2);                                // closes the 09:32 bar → SELL
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::SELL && out[0].why == "vp_fade_vah", "vprofile: fade the VAH touch");
+        for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(9, 34, k * 15) + day2, poc - 1.0, 25, true});   // reaches the POC
+        bar(9, 35, poc - 1.0, 100, day2);
+        CHECK(out.size() == 2 && out[1].sig == OrbSignal::FLATTEN_EOD && out[1].why == "vp_target", "vprofile: flattens at the POC");
+    }
+    // ── hold (beta, 2026-09-29): in at 15:55, survives the 18:00 reset, out at 09:30 next day ──
+    {
+        TrendConfig tc; tc.mode = "hold"; tc.tf_min = 1; tc.hold_entry_hhmm = 1555; tc.win_start = 1555; tc.win_end = 930;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        feed_path(s, std::vector<double>(3, 20000.0), 15, 53);            // 15:53–15:55 → the 15:55 bar closes at 15:56
+        feed_path(s, std::vector<double>(2, 20001.0), 15, 56);
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY && out[0].why == "hold_long", "hold: one BUY at the entry time");
+        s.check_eod(20, 0);                                                // overnight: not the window end
+        CHECK(out.size() == 1, "hold: no flatten during the night");
+        s.reset_session();                                                 // 18:00 rollover keeps the position
+        CHECK(s.session().in_position, "hold: position survives the session reset");
+        s.check_eod(9, 30);
+        CHECK(out.size() == 2 && out[1].sig == OrbSignal::FLATTEN_EOD && out[1].why == "session_end", "hold: flattened at the window end next morning");
+        // filters: turn-of-month blocks mid-month; pre-event needs the host flag; up-day needs the session up
+        TrendConfig tm = tc; tm.hold_tom = true; TrendStrategy s2(tm, risk_cfg()); int n2 = 0;
+        s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n2; }); s2.reset_session();
+        feed_path(s2, std::vector<double>(5, 20000.0), 15, 53);          // 2025-04-30 in the test clock: day 30 → allowed
+        CHECK(n2 == 1, "hold_tom: enters on the 30th");
+        TrendConfig pe = tc; pe.hold_pre_event = true; TrendStrategy s3(pe, risk_cfg()); int n3 = 0;
+        s3.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n3; }); s3.reset_session(); s3.set_event_next_day(false);
+        feed_path(s3, std::vector<double>(5, 20000.0), 15, 53);
+        CHECK(n3 == 0, "hold_pre_event: silent when tomorrow is not an event day");
+        s3.reset_session(); s3.set_event_next_day(true);
+        feed_path(s3, std::vector<double>(5, 20000.0), 15, 53);
+        CHECK(n3 == 1, "hold_pre_event: enters the day before an event");
+    }
+    // ── orb_retest (2026-09-28): break, then the pullback to the edge, enter on resumption ──
+    {
+        TrendConfig tc; tc.mode = "orb_retest"; tc.tf_min = 1; tc.ort_minutes = 5; tc.ort_tol_atr = 4.0; tc.ort_max_bars = 30;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        // 09:30–09:34 range at 20000 (±0.25), 09:35 closes 10 pts above (break — no entry),
+        // 09:36 dips back near the edge and closes above it (retest → BUY), 09:37 closes the bar
+        std::vector<double> path = {20000, 20000, 20000, 20000, 20000, 20010, 20003, 20003};
+        feed_path(s, path, 9, 30);
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY && out[0].why == "orb_retest_long", "orb_retest: BUY on the retest, not the break");
+        CHECK(out[0].px < 20005.0, "orb_retest: entry is the retest bar's close, not the breakout bar's");
+        // one retest per break: a second identical pullback stays silent while flat again
+        s.notify_trade_filled(OrbSignal::BUY, "test");
+        feed_path(s, {20010, 20003, 20003}, 9, 38);
+        CHECK(out.size() == 1, "orb_retest: long side used once per session");
+    }
+    // ── ib_break: first 10 minutes = balance, close beyond enters, extension target flattens ──
+    {
+        TrendConfig tc; tc.mode = "ib_break"; tc.tf_min = 1; tc.ib_minutes = 10; tc.ib_ext = 1.0;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        std::vector<double> path(10, 20000.0);            // balance 19999.75–20000.25 (0.5 wide)
+        path.push_back(20005.0);                           // 09:40 closes above → BUY, target 20000.25 + 0.5
+        path.push_back(20005.0);                           // 09:41: high 20005.25 ≥ target → flatten when it closes
+        path.push_back(20005.0);                           // 09:42 tick closes the 09:41 bar
+        feed_path(s, path, 9, 30);
+        CHECK(out.size() >= 1 && out[0].sig == OrbSignal::BUY && out[0].why == "ib_break_long", "ib_break: BUY on the balance break");
+        CHECK(out.size() == 2 && out[1].sig == OrbSignal::FLATTEN_EOD && out[1].why == "ib_target", "ib_break: flattens at the extension target");
+    }
+    // ── news_break: range from 08:30 for 5 min, break within the window; event-only gate ──
+    {
+        TrendConfig tc; tc.mode = "news_break"; tc.tf_min = 1; tc.nb_hhmm = 830; tc.nb_range_min = 5; tc.nb_window_min = 30;
+        tc.win_start = 800; tc.win_end = 1000;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        std::vector<double> path = {20000, 20000, 20000, 20000, 20000, 19990, 19990};
+        feed_path(s, path, 8, 30);
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::SELL && out[0].why == "news_break_short", "news_break: SELL on the post-release range break");
+        TrendConfig te = tc; te.nb_event_only = true;
+        TrendStrategy s2(te, risk_cfg()); int n = 0;
+        s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n; });
+        s2.reset_session(); s2.set_event_day(false);
+        feed_path(s2, path, 8, 30);
+        CHECK(n == 0, "news_break: event-only variant stays silent on a non-event day");
+        s2.reset_session(); s2.set_event_day(true);
+        feed_path(s2, path, 8, 30);
+        CHECK(n == 1, "news_break: event-only variant trades on an event day");
+    }
+    // ── gap_fade: day 1 sets the prior close; day 2 opens 30 pts higher, fades, flattens at 80 % filled ──
+    {
+        TrendConfig tc; tc.mode = "gap_fade"; tc.tf_min = 1; tc.gf_min_pts = 20; tc.gf_wait_min = 3; tc.gf_fill_frac = 0.8;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        feed_path(s, std::vector<double>(5, 20000.0), 9, 30);       // day 1: RTH close ≈ 20000
+        s.reset_session();                                          // 18:00 rollover: prior close = 20000
+        const int64_t day = 86400LL * 1'000'000LL;
+        auto tick2 = [&](int h, int m, int k, double p) { s.on_tick(OrbTick{at(h, m, k * 10) + day, p, 1, k % 2 == 0}); };
+        for (int m = 0; m < 3; ++m) for (int k = 0; k < 6; ++k) tick2(9, 30 + m, k, 20030.0 + (k % 2 ? 0.25 : -0.25));   // gap +30, holds
+        for (int k = 0; k < 6; ++k) tick2(9, 33, k, 20032.0 - k * 1.0);      // 09:33 opens 20032, closes 20027 (< open, < rth_open)
+        for (int k = 0; k < 6; ++k) tick2(9, 34, k, 20026.0);                 // closes the 09:33 bar → SELL
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::SELL && out[0].why == "gap_fade_short", "gap_fade: SELL when the gap starts closing");
+        for (int k = 0; k < 6; ++k) tick2(9, 35, k, 20004.0);                 // 80 % of 30 = 24 → target 20006; low 20004 reaches it
+        for (int k = 0; k < 6; ++k) tick2(9, 36, k, 20004.0);                 // closes the 09:35 bar → flatten
+        CHECK(out.size() == 2 && out[1].sig == OrbSignal::FLATTEN_EOD && out[1].why == "gap_filled", "gap_fade: flattens once the gap is 80 % filled");
+    }
     // ── donchian: 20 flat bars on 1m then a close above the range ──────────
     {
         TrendConfig tc; tc.mode = "donchian"; tc.tf_min = 1; tc.donchian_n = 20;

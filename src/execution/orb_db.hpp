@@ -503,6 +503,30 @@ public:
     }
 
     // ── Get total historical P&L (for seeding RiskManager on startup) ─────────
+    // Prior-day ATR14 (points) for the regime gate: newest session_stats row for
+    // `symbol` dated BEFORE `ymd` (the collector's feed symbol, e.g. NQ). 0.0 = none.
+    double session_atr14_before(const std::string& symbol, const std::string& ymd) {
+        const char* params[2] = {symbol.c_str(), ymd.c_str()};
+        PGresult* res = exec_params_query(
+            "SELECT atr14_pts FROM session_stats WHERE symbol=$1 AND session_date < $2::date"
+            " AND atr14_pts IS NOT NULL ORDER BY session_date DESC LIMIT 1", 2, params);
+        if (!res) return 0.0;
+        double atr = (PQntuples(res) > 0 && !PQgetisnull(res, 0, 0)) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
+        PQclear(res);
+        return atr;
+    }
+
+    // Scheduled-release day (calendar kind fomc / nfp) — news_break's nb_event_only.
+    bool calendar_event_day(const std::string& ymd) {
+        const char* params[1] = {ymd.c_str()};
+        PGresult* res = exec_params_query(
+            "SELECT count(*) FROM calendar WHERE day = $1::date AND kind IN ('fomc', 'nfp')", 1, params);
+        if (!res) return false;
+        const bool ev = PQntuples(res) > 0 && std::atoi(PQgetvalue(res, 0, 0)) > 0;
+        PQclear(res);
+        return ev;
+    }
+
     double get_total_pnl() {
         if (!is_connected()) reconnect();
 

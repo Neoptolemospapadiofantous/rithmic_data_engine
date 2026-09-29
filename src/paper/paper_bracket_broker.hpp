@@ -72,10 +72,11 @@ public:
         if (halted()) return;
         const int dir = (sig == OrbSignal::BUY) ? 1 : -1;
         {
-            const std::string blocked = qs_.gate(cfg_, dir, last_tick_us_, tick_size_);
+            std::string blocked = qs_.gate(cfg_, dir, last_tick_us_, tick_size_);
+        if (blocked.empty() && regime_) blocked = regime_->gate(cfg_, dir);   // regime gate, same slot
             log_signal(dir, reason, blocked);
             if (!blocked.empty()) {
-                LOG("[PAPER %s] %s signal (%s) blocked by book gate: %s", strategy_id_.c_str(),
+                LOG("[PAPER %s] %s signal (%s) blocked by gate: %s", strategy_id_.c_str(),
                     dir > 0 ? "BUY" : "SELL", reason.c_str(), blocked.c_str());
                 return;
             }
@@ -96,6 +97,7 @@ public:
     // ── Top of book (collector bbo stream) ───────────────────────────────────
     void on_quote(const paper::Quote& q) { qs_.on_quote(q, tick_size_); }
     const paper::QuoteState& quotes() const { return qs_; }
+    void set_regime(const paper::RegimeState* r) { regime_ = r; }
 
     void log_signal(int dir, const std::string& reason, const std::string& blocked) {
         if (!store_) return;
@@ -118,6 +120,9 @@ public:
         last_tick_us_ = t.ts_micros;
         last_price_   = t.price;
         utc_to_et(t.ts_micros, last_et_hour_, last_et_min_);
+        // Restart catch-up: a tick older than the resumed position's entry predates the trade
+        // and must not manage it (same guard as PaperBroker, 2026-09-29).
+        if (pos_dir_ != 0 && entry_time_us_ > 0 && t.ts_micros < entry_time_us_) return;
 
         // 0. Reversal flip: close the current leg at market and queue the
         //    opposite entry for the next tick. Skips the bracket update so the
@@ -375,6 +380,7 @@ private:
     double      slip_;
     PaperStore* store_;   // not owned; may be null
     paper::QuoteState qs_;                       // top of book (paper_quote.hpp)
+    const paper::RegimeState* regime_ = nullptr;  // session-shape gate, shared by the whole fleet (host-owned)
     double      entry_bbo_ = 0.0, spread_entry_ = -1.0;
     int64_t     pending_since_us_ = 0;
     RiskManager risk_;

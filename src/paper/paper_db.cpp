@@ -1,6 +1,7 @@
 /*  ═══════════════════════════════════════════════════════════════════════════
     paper_db.cpp — libpq implementation for the paper fleet tables
     ═══════════════════════════════════════════════════════════════════════════ */
+#include <cstdlib>
 #include "paper_db.hpp"
 #include "log.hpp"
 
@@ -176,6 +177,31 @@ std::string PaperDb::exec_scalar(const std::string& sql, const char* const* para
         out = PQgetvalue(res, 0, 0);
     PQclear(res);
     return out;
+}
+
+double PaperDb::session_atr14_before(const std::string& symbol, const std::string& ymd) {
+    const char* params[2] = {symbol.c_str(), ymd.c_str()};
+    try {
+        const std::string v = exec_scalar(
+            "SELECT atr14_pts FROM session_stats WHERE symbol = $1 AND session_date < $2::date "
+            "AND atr14_pts IS NOT NULL ORDER BY session_date DESC LIMIT 1", params, 2, "session_atr14");
+        return v.empty() ? 0.0 : std::atof(v.c_str());
+    } catch (const std::exception& e) {
+        LOG("[PAPER-DB] session_atr14_before(%s, %s) failed: %s", symbol.c_str(), ymd.c_str(), e.what());
+        return 0.0;
+    }
+}
+
+bool PaperDb::calendar_event_day(const std::string& ymd) {
+    const char* params[1] = {ymd.c_str()};
+    try {
+        const std::string v = exec_scalar(
+            "SELECT count(*) FROM calendar WHERE day = $1::date AND kind IN ('fomc', 'nfp')", params, 1, "calendar_event_day");
+        return !v.empty() && std::atoi(v.c_str()) > 0;
+    } catch (const std::exception& e) {
+        LOG("[PAPER-DB] calendar_event_day(%s) failed: %s", ymd.c_str(), e.what());
+        return false;
+    }
 }
 
 // ── PaperStore ───────────────────────────────────────────────────────────────

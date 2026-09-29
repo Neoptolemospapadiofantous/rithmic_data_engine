@@ -48,7 +48,7 @@ SELECT s.symbol,
        CASE WHEN third_friday(m.yr, m.mon) = DATE '2027-06-18'
             THEN 'third Friday is Juneteenth (exchange holiday) — expires Thu 17 Jun 2027; VERIFY with CME'
             ELSE NULL END
-FROM (VALUES ('NQ'), ('MNQ'), ('ES')) AS s(symbol)
+FROM (VALUES ('NQ'), ('MNQ'), ('ES'), ('MES'), ('RTY'), ('YM')) AS s(symbol)   -- 2026-09-28: +MES/RTY/YM (same quarterly rule); CL/GC roll monthly and are not modelled here
 CROSS JOIN (VALUES (2026, 9, 'U'), (2026, 12, 'Z'), (2027, 3, 'H'), (2027, 6, 'M'), (2027, 9, 'U')) AS m(yr, mon, code)
 ON CONFLICT (symbol, contract) DO NOTHING;
 

@@ -373,6 +373,11 @@ TEST(duplicate_exit_report_after_close_is_not_a_ghost) {
     auto r = notif::handle_unowned_fill(x.om, o->client, o->server, MockExchange::ACCT, MockExchange::ACCT,
                                         20001.0, o->filled, [&](const std::string& w) { x.halts.push_back(w); });
     ASSERT(r == notif::UnownedFill::DUPLICATE);
+    // executor_main asks this first so the routine second delivery is logged as a
+    // duplicate, not as a CRITICAL unowned fill (live 2026-09-28: every exit alarmed).
+    ASSERT(notif::unowned_fill_is_duplicate(x.om, o->client, o->server, o->filled));
+    ASSERT(!notif::unowned_fill_is_duplicate(x.om, "MNQ-never-seen-1", "0", 1));
+    ASSERT(!notif::unowned_fill_is_duplicate(x.om, o->client, o->server, o->filled + 1));
     ASSERT(!x.om.is_entry_halted());
     ASSERT(x.halts.empty());
     x.om.on_signal(OrbSignal::SELL, 20000.0, "next_trade");   // still allowed to trade

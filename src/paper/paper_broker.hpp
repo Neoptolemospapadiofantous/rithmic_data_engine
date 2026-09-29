@@ -89,10 +89,11 @@ public:
             return;
         }
         const int dir = (sig == OrbSignal::BUY) ? 1 : -1;
-        const std::string blocked = qs_.gate(cfg_, dir, last_tick_us_, tick_size_);
+        std::string blocked = qs_.gate(cfg_, dir, last_tick_us_, tick_size_);
+        if (blocked.empty() && regime_) blocked = regime_->gate(cfg_, dir);   // regime gate, same slot
         log_signal(dir, reason, blocked);
         if (!blocked.empty()) {
-            LOG("[PAPER %s] %s signal (%s) blocked by book gate: %s", strategy_id_.c_str(),
+            LOG("[PAPER %s] %s signal (%s) blocked by gate: %s", strategy_id_.c_str(),
                 dir > 0 ? "BUY" : "SELL", reason.c_str(), blocked.c_str());
             return;
         }
@@ -104,6 +105,7 @@ public:
     // ── Top of book (collector bbo stream) ───────────────────────────────────
     void on_quote(const paper::Quote& q) { qs_.on_quote(q, tick_size_); }
     const paper::QuoteState& quotes() const { return qs_; }
+    void set_regime(const paper::RegimeState* r) { regime_ = r; }
 
     void log_signal(int dir, const std::string& reason, const std::string& blocked) {
         if (!store_) return;
@@ -124,6 +126,11 @@ public:
         last_tick_us_ = t.ts_micros;
         last_price_   = t.price;
         utc_to_et(t.ts_micros, last_et_hour_, last_et_min_);
+        // Restart catch-up: the host replays the last 5 minutes of ticks after a resume. A tick
+        // older than the resumed position's entry predates the trade and must not manage it —
+        // on 2026-09-23 fourteen keltner variants were "stopped out" at 09:38 on a position
+        // entered at 09:43 (exit before entry, −$21.5 each). Track the tape, decide nothing.
+        if (pos_dir_ != 0 && entry_time_us_ > 0 && t.ts_micros < entry_time_us_) return;
 
         // 1. Pending entry fills at first tick after the signal (adverse slip).
         if (pending_dir_ != 0 && pos_dir_ == 0 &&
@@ -155,7 +162,10 @@ public:
         // 3. EOD wall-clock flatten (ET from tick time).
         int now_min = last_et_hour_ * 60 + last_et_min_;
         int eod_min = cfg_.eod_flatten_hour * 60 + cfg_.eod_flatten_min;
-        if (now_min >= eod_min) {
+        int open_min = cfg_.session_open_hour * 60 + cfg_.session_open_min;
+        const bool past_eod = eod_min < open_min ? (now_min >= eod_min && now_min < open_min)   // wraps midnight
+                                                 : (now_min >= eod_min);
+        if (past_eod) {
             exit_position(t.price - pos_dir_ * slip_, t.ts_micros, "eod");
             return;
         }
@@ -175,6 +185,18 @@ public:
             double fill = placed_stop_ - pos_dir_ * slip_;
             exit_position(fill, t.ts_micros, stop_exit_reason());
             return;
+        }
+        // 5b. Fixed take-profit (tp_points / tp_r): a resting limit at the target — fills AT
+        //     the target on the touch, no slippage (the live side flattens at market instead,
+        //     so paper is at most one tick optimistic here; see OrderManager::check_trail_and_stop).
+        if (const double tp = paper::RegimeState::take_profit_for(cfg_, regime_); tp > 0.0) {
+            const double target = entry_price_ + pos_dir_ * tp;
+            const bool hit = (pos_dir_ > 0) ? (t.price >= target) : (t.price <= target);
+            if (hit) {
+                LOG("[PAPER %s] Take-profit hit @ %.2f (target %.2f, +%.2f pts)", strategy_id_.c_str(), t.price, target, tp);
+                exit_position(target, t.ts_micros, "take_profit");
+                return;
+            }
         }
 
         // 5b. Book-driven management (paper_quote.hpp): flip exit / take-profit into
@@ -227,7 +249,7 @@ public:
 
         if (trail_armed_) {
             // Trail ratchet: stop → price ∓ trail_step, only tightening.
-            double cand = t.price - pos_dir_ * cfg_.trail_step;
+            double cand = t.price - pos_dir_ * paper::RegimeState::trail_step_for(cfg_, regime_);
             cand = snap(cand, pos_dir_);
             if ((pos_dir_ > 0 && cand > stop_price_) ||
                 (pos_dir_ < 0 && cand < stop_price_)) {
@@ -312,7 +334,8 @@ public:
 private:
     void enter(int dir, double fill, int64_t ts_us) {
         pos_dir_       = dir;
-        qty_           = cfg_.qty + ((cfg_.book_size_agree > 0 && qs_.fresh(ts_us) && qs_.agrees(dir)) ? cfg_.book_size_agree : 0);
+        qty_           = paper::RegimeState::qty_for(cfg_, regime_)   // volatility-targeted when vt_risk_usd is set
+                         + ((cfg_.book_size_agree > 0 && qs_.fresh(ts_us) && qs_.agrees(dir)) ? cfg_.book_size_agree : 0);
         entry_price_   = fill;
         entry_time_us_ = ts_us;
         stop_price_    = snap(fill - dir * cfg_.sl_points, dir);
@@ -332,7 +355,7 @@ private:
     // level is ≥ trail_step beyond it (the BE move from −sl_points always qualifies).
     void sync_placed_stop() {
         if (placed_stop_ <= 0.0) { placed_stop_ = stop_price_; return; }
-        if (std::fabs(stop_price_ - placed_stop_) >= cfg_.trail_step - 1e-9) placed_stop_ = stop_price_;
+        if (std::fabs(stop_price_ - placed_stop_) >= paper::RegimeState::trail_step_for(cfg_, regime_) - 1e-9) placed_stop_ = stop_price_;
     }
     std::string stop_exit_reason() const {
         double be = entry_price_ + pos_dir_ * cfg_.trail_be_offset;
@@ -417,7 +440,10 @@ private:
         int now_min   = last_et_hour_ * 60 + last_et_min_;
         int open_min  = cfg_.session_open_hour * 60 + cfg_.session_open_min;
         int eod_min   = cfg_.eod_flatten_hour * 60 + cfg_.eod_flatten_min;
-        if (now_min < open_min || now_min >= eod_min) return false;
+        // A window whose EOD is earlier than its open wraps midnight (overnight holds, 2026-09-29).
+        const bool inside = eod_min < open_min ? (now_min >= open_min || now_min < eod_min)
+                                               : (now_min >= open_min && now_min < eod_min);
+        if (!inside) return false;
         return last_et_hour_ < cfg_.last_entry_hour;
     }
 
@@ -440,6 +466,7 @@ private:
     double      slip_;
     PaperStore* store_;   // not owned; may be null
     paper::QuoteState qs_;                       // top of book (paper_quote.hpp)
+    const paper::RegimeState* regime_ = nullptr;  // session-shape gate, shared by the whole fleet (host-owned)
     double      entry_bbo_ = 0.0, spread_entry_ = -1.0;   // shadow fill of the open leg
     double      last_price_ = 0.0;               // last tick price (signal log)
     // The stop that would be WORKING at the exchange. The live executor moves its resting

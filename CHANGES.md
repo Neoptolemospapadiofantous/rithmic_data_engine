@@ -9,6 +9,225 @@ Dates are in ISO-8601 order (newest first).
 
 ## [Unreleased]
 
+### Changed — live size 5 MNQ on both ORB and the hand-off (2026-09-29, founder)
+- `config/tradeify_config.json` qty 2 → 5, `config/tradeify_handoff_config.json` qty 1 → 5
+  (previous files in `config/archived/handoff_history/*pre-qty5-20260929*`). Both validate; the ORB
+  executor was restarted pre-market (06:39 ET) and reconciled flat. Per-trade risk at the initial
+  stop: ORB 15 pts × $2 × 5 = $150, hand-off 8 pts × $2 × 5 = $80; the −$500 daily loss limit
+  now halts after about three ORB stops. The rotation carries qty across promotions.
+
+### Added — volume and volatility as generic filters, two new modes, everything forward-tests (2026-09-29)
+- Founder: "add these and also the beta we have. we want to have everything as filters to fully
+  understand what works and what doesn't." Filters, on OrbConfig so any base takes them, live and
+  paper alike: **relative-volume gate** `rvol_min` / `rvol_max` / `rvol_bars` — the last closed
+  minute's tick volume against the mean of the previous N minutes, kept by `RegimeState` from the
+  tick sizes (`rvol_low` / `rvol_high` / `rvol_warmup` in the signal log); **volatility-targeted
+  size** `vt_risk_usd` / `vt_qty_max` — contracts = risk ÷ (prior-day ATR14 × point value),
+  `RegimeState::qty_for`, used by the paper broker's entry and by `OrderManager` for the entry and
+  stop orders (dry-run fill too). The session-shape and with/against-move gates from 09-28 are the
+  filter form of the beta idea and already sit on 100+ bases.
+- Trend modes: **atr_break** (close beyond session open or prior close ± `ab_k` × ATR, prior-day
+  ATR14 from the host via `set_day_atr`, fail-closed without it) and **vprofile** (the prior RTH
+  session's volume profile in 1-pt bins → POC and a `vp_va_frac` value area; `break` through
+  VAH/VAL or `fade` a touch toward the POC with a strategy-owned `vp_target` flatten).
+- Tests: rvol gate on a synthetic tape, sizing (off / clamp / no ATR), a sized paper entry,
+  atr_break (one per side, fail-closed), vprofile (POC, value area, fade, target).
+- Matrix (`config/paper_volgrid_research.json`, label `volgrid`, 16 bases × 5 filters + 6
+  atr_break + 4 vprofile, six sessions): rvol ≥ 2.5 +$32.8/ct but 3 trades instead of 20;
+  rvol ≥ 1.5 +$10.8/ct and −$23 net (8 better / 4 worse); quiet tape ≤ 0.8 −$10.3/ct (1/7);
+  vol-targeting changes size only ($/ct identical, 2-lot version +$113 net); atr_break and
+  vprofile negative or tiny. All 90 are in the fleet per the no-pruning decision.
+
+### Fixed — the paper engine rolled the trading day AFTER the 18:00 feed-gap reset (2026-09-29)
+- Found while adding `beta_on_1800` (founder: the Tradeify-compatible overnight hold — enter at the
+  18:00 ET Globex reopen, out 09:30, inside one session). It entered only every other evening: at
+  18:00:00 the daily 17:00–18:00 maintenance hole fires the feed-gap guard, which resets flat
+  strategies and re-seeds `trades_today` from the runner's day count — still the PREVIOUS trading
+  day's, because the 18:00 rollover ran only after the tick batch. The 18:00 bar closed in between
+  and the previous evening's hold blocked the new one (`trades_today=1/1`). `paper_main` now rolls
+  the trading day per tick, from the tick's own time, before the gap guard; the wall-clock check
+  after each batch remains. Affects every strategy that trades the 18:00 reopen (`orb_t1800_globex_*`,
+  the Asia/Globex ids): their day counters now belong to the right day. Golden byte-identical
+  (its window is RTH). Hold mode logs why an entry was skipped.
+- Fleet: `beta_on_1800`, `beta_on_1800__htf`, `beta_on_1800__wide` (stop 400 — the 150-pt stop was
+  hit on three of six nights) and `es_beta_on_1800`. Six-night replay: −$34, −$4, −$302, +$183,
+  −$302, −$302 for the base — noise, as expected.
+
+### Fixed — a resumed paper position was managed by catch-up ticks older than its entry (2026-09-29)
+- Found through the dashboard's fleet audit ("max_daily_trades respected: violations 7", all
+  `keltner_ride_15_1m_chand*` on 2026-09-23). The engine restarted at 09:43:08 ET, resumed 14 open
+  shorts entered at 09:43:00 from `paper_positions`, then replayed its 5-minute tick catch-up from
+  09:38 — and stopped every one of them on a 09:38:13 print, writing trades whose exit precedes
+  their entry (−$21.5 each). Both paper brokers now ignore ticks older than the resumed position's
+  entry for management (`on_tick` early return); regression test `resume_ignores_ticks_before_entry`.
+- Audit hardening (dashboard `fleet_audit.py`): new check "exit after entry on every trade" (fails
+  on impossible rows, names them); the sibling-subset check now applies only to ENTRY-gate overlays
+  (sg/imb/micro/all/inv/sz/wait) and warns instead of failing — exit-side siblings (`__btp`, `__bx`,
+  `__bbe`, targets, wider trails, regime exits) leave the market earlier and legitimately take
+  entries their base sits out of; model-input coverage and the per-strategy KPI check are judged on
+  the FLEET label (replay grids never get context). Insights per-strategy KPIs likewise read the
+  fleet label only — that alone cleared 490 of 491 "mismatches". The feature-coverage check now
+  treats NaN-heavy rows as expected when there is no history to read: the first recorded RTH day
+  (recording started 2026-09-21 09:32 ET; even 1-minute returns are undefined for its first
+  trades) and the first minutes after a 2h+ feed hole (the Sunday Globex open). Fresh audit after
+  the quarantine: 0 fail, 0 warn, 58 ok.
+- The 14 impossible rows (09-23 09:43 → 09:38:13 and one 09-25 sibling, 14 strategies, −$303 in
+  total) were moved with their trade_context rows to the label `invalid_resume_20260923` — out of
+  the fleet, still in the database, reversible with one UPDATE. Fresh audit: 0 fail, 1 warn, 57 ok.
+
+### Added — beta-exposure strategies in the paper fleet (2026-09-29)
+- Founder asked what strategies give beta exposure, then "for now add the rest in leaderboard
+  rotation". New trend-engine mode `hold`: one entry at `hold_entry_hhmm` in `hold_dir`, exit at
+  the window end via `check_eod` (windows may wrap midnight), optional filters `hold_tom` (day ≥ 28
+  or ≤ 3), `hold_pre_event` (tomorrow is fomc/nfp — paper_main feeds `set_event_next_day`),
+  `hold_up_day`. A hold position survives the 18:00 ET `reset_session`. The paper broker's entry
+  window and EOD flatten now wrap midnight when EOD < open (overnight holds); normal windows are
+  unchanged (test). Seven trend tests + one broker test.
+- Fleet variants (1 MNQ, stop 150, no trail): `beta_on` 15:55→09:30 (the overnight premium),
+  `beta_on__htf` (4h EMA-20 filter), `beta_on_tom`, `beta_on_prefomc`, `beta_on_short` (control),
+  `beta_close` 15:00→15:59 on up days, `beta_day` 09:30→15:55, `beta_day__htf`; ES mirror gets
+  `es_beta_on`, `es_beta_on__htf`, `es_beta_day`. Label `beta` holds the six-session backfill —
+  noise at this horizon (overnight long −$433, short +$224, day long +$649, three 150-pt stops).
+- Paper only by construction: Tradeify forbids holding through 17:00 CT and the live executor's
+  EOD does not wrap midnight. Known edge: a Friday entry closes at the first tick after the weekend.
+
+### Changed — every strategy runs for ever; stats by week, month and year (2026-09-29)
+- Founder: "we want all to keep running for ever and get stats per week, month, year". The 1,040
+  strategies retired on 09-26 are enabled again and the 466 research ids from the 09-28 grids are
+  now fleet strategies too: `config/paper_fleet.json` = 2,170 enabled, paper_strategies all
+  enabled, engine restarted — 2170/2170 active at 4.5 % CPU / 40 MB. CLAUDE.md fleet rule (4) is
+  superseded: nothing is pruned again.
+- Dashboard: leaderboard periods gain this month / this year / 90 d / 365 d (calendar periods are
+  to-date, New York). New Strategies tab **Week · month · year** on `/api/cpp/strategies/periodic`:
+  one row per strategy (paper label + live tags) with all-time total, $/contract, trades, positive
+  periods / periods traded, and a cell per calendar period (net · trades); bucket week (Monday) /
+  month / year, search, sortable columns, server-side paging.
+- Strategies page (09-29 morning): registered ids outside the fleet config showed as `research` and
+  left the fleet count — moot now that all ids are in the fleet, kept for future grids.
+
+### Added — four trend modes, an ES mirror fleet, exit-side regime, and the trail-width finding (2026-09-28)
+- Founder: "do all you said". Queue and status in TODO.md ("Build queue 2026-09-28").
+- **Trend modes** (`trend_strategy.hpp`, strategy files otherwise untouched): `orb_retest` (enter on
+  the pullback to the broken range edge, one per side), `gap_fade` (fade a ≥ gf_min_pts gap toward
+  the prior close, strategy-owned `gap_filled` flatten), `news_break` (range from `nb_hhmm` for
+  `nb_range_min`, first close beyond it; `nb_event_only` reads `set_event_day`, which paper_main
+  and the executor feed from `calendar` kinds fomc/nfp), `ib_break` (initial balance break with a
+  strategy-owned `ib_target` flatten at ib_ext × the balance). Ten tests in test_trend_strategy.
+  Grid (label `newmodes`, 28 variants): gap_fade 2 gap days / 2 winners, news_break 14:00 five
+  small winners, 08:30 flat (needs `session_open_hour: 8` — the paper broker's own entry window
+  starts at 09:30), ib_break PF 0.35, orb_retest flat. Four keepers forward-test.
+- **ES mirror**: `config/paper_fleet_es.json` runs the top 24 NQ bases on the ES feed as MES
+  ($5/pt) under label `es`, ids `es_*`, point-denominated knobs scaled by the ES/NQ ATR14 ratio
+  (0.144) and the engine's hard-coded NQ base exits written explicitly at ES scale. Unit
+  `paper-engine-local-es.service` (deploy/, installed, enabled). Leaderboard: data label `es`.
+- **Exit-side regime**: `regime_exit_min_eff`, `trail_step_trend`, `trail_step_range`, `tp_r_range`
+  select the trail step / target from the session's efficiency at exit time; `RegimeState::
+  trail_step_for / take_profit_for` are the one selector both the paper broker and
+  `OrderManager` call (`set_regime` on both). Parity cases: trend and range shapes, 0 ticks apart.
+  Grid (label `rgexit`, 64 variants on 8 bases): every trail-25 setting beat its base 8/8. The
+  control (label `tr25`, plain `trail_step: 25`, no regime) beat the base by MORE on 7 of 8 —
+  orb_t1000_2nd_5 $198 → $746, fib day $394 → $703, ichimoku $289 → $696. Conclusion: the fleet's
+  trails (6/10/15) are too tight; the regime split adds nothing on this sample. Eight `__tr25`
+  keepers forward-test. Follow-up: trail sweep 25/35/50; trail 25 proposed for the live hand-off.
+- **Combined gates** (book fade + regime, label `combo`): 1–2 trades each, all losers — the gates
+  block each other. Not kept.
+- Research labels now in paper_trades: fibgrid, fibgrid2, rggrid, tpgrid, newmodes, combo, rgexit,
+  tr25 (+ backfill from 09-26). Research ids stay registered with enabled=false; keepers enabled.
+
+### Added — fixed take-profit exit, and why it is not the answer (2026-09-28)
+- `tp_points` / `tp_r` (target = tp_r × sl_points) on OrbConfig and paper params, off by default.
+  Paper broker: a resting limit that fills AT the target on the touch (`take_profit`). Live
+  `OrderManager::check_trail_and_stop`: flattens at market on the touch through the software-stop
+  exit path (cancels the exchange stop first). Parity test: same tick, same reason, long and short.
+- Grid (`config/paper_tp_research.json`, label `tpgrid`, 24 bases × tp_r 1/1.5/2/3, six sessions):
+  every R-multiple LOSES on average — Δnet per variant −$79 (1R), −$62 (1.5R), −$48 (2R), −$25 (3R);
+  win rate barely moves, profit factor falls from 2.30 to 1.35–2.25. The fleet's edge is the
+  trailing runner and a target caps it. Only 3R on the classic ORB bases (orb_3_15_*, orb_5_20_15,
+  orb_5_morning) came out ahead; those five forward-test as `__tp2`/`__tp3`. Not for fib/trend.
+
+### Added — the collector records eight instruments (2026-09-28)
+- Founder: "start getting data from more instruments". `RITHMIC_EXTRA_SYMBOLS` now accepts
+  `SYMBOL:EXCHANGE` per entry (config.hpp `ExtraSymbol`; default = the primary exchange), so
+  CBOT/NYMEX/COMEX roots ride the same session: `.env` = `ES,RTY,MNQ,MES,YM:CBOT,CL:NYMEX,GC:COMEX`.
+  Verified after the restart: ticks and BBO for all eight within a minute (LAST_TRADE|BBO for the
+  extras; depth stays NQ-only). `contracts` gains MES/RTY/YM on the quarterly rule; CL/GC roll
+  monthly and are not modelled. `bars_1m`, `book_1m` and `session_stats` pick new symbols up by
+  themselves. Disk: 93 % full, 66 GB free — expect ~2.5x today's tick volume; retention needs a
+  decision within about two months.
+
+### Added — regime gate: every strategy can trade only in a session shape (2026-09-28)
+- Founder: "what about regime filtering… lets try it". Evidence first: paper P&L per contract by the
+  day's closing type flips sign for almost every family (ORB +4.2 trend / −1.8 range, fib_pullback
+  +8.0 / −3.1, momentum scalper +0.3 / −9.6 with all of its −$23k on range days, vwap_trend and
+  failed_breakout the mirror). The day type is hindsight, so the gate reads only what is known at
+  entry time.
+- `paper::RegimeState` (paper_quote.hpp, beside the book gate): open/high/low/last since the 09:30 ET
+  open of the current trade date plus the prior day's ATR14 from `session_stats` → `range_atr`,
+  `eff` (|last−open|/range), `move_atr`. OrbConfig keys, all off by default: `regime_min/max_range_atr`,
+  `regime_min/max_eff`, `regime_min/max_move_atr`, `regime_with_move` (+1 with the session move,
+  −1 against), `regime_min_minutes` (15). Fail-CLOSED when an ATR reading is asked for and no
+  `session_stats` row exists — an ungated fallback would silently turn a variant into its base.
+- Applied in the same slot as the book gate in both paper brokers and the live executor
+  (`executor_main` seeds the ATR at session start and on the 18:00 ET rollover; blocked signals log
+  the readings). `PaperDb::session_atr14_before` / `OrbDB::session_atr14_before`. Strategy logic
+  untouched. Six tests in `test_paper_broker` (readings, warm-up, RTH-only, date reset, fail-closed
+  ATR, with/against the move, a blocked paper entry).
+- **Grid** (`config/paper_regime_research.json` → label `rggrid`, 24 top bases × 5 gates, six
+  sessions): no gate raised net P&L on average — they block 55–80 % of entries, mostly the 30-min
+  warm-up on early ORB entries (404 `regime_warmup` blocks) — but `rg_nochase` (≤0.5 ATR from the
+  open) and `rg_trend` (eff ≥0.5, with the move) were better per contract on the fib/ORB-2nd bases
+  (e.g. `fib_pb_1m_deep__am_x15__rg_nochase` $32.8/ct vs $26.6, `orb_t1030_2nd_5__rg_trend` $45.1
+  vs $11.1 on 5 trades). 09-21/22 had no prior ATR row, so ATR-gated variants sat out those days.
+  Eight `__rg_*` keepers added to the fleet for the forward test; 112 research ids stay registered
+  but disabled.
+- **Golden drift, new evidence (not caused by this change)**: the pre-change and post-change
+  `paper_engine` replay the golden window byte-identically (504 trades, twice each), yet the file
+  frozen at 20:11 the same day holds 408. Between the two runs `bbo` autovacuumed (21:03). The first
+  diverging row is an ORB-2nd entry FILL (30953.75 vs 30954.00) at 14:35:28.500174, a microsecond
+  that carries several ticks with the same `seq` and different prices — details in TODO.md.
+  Golden re-frozen for the fleet change (8 new rows).
+
+### Changed — hand-off FIB_PB_1M_DEEP: exits re-tuned, window 10:00–15:55 (2026-09-28)
+- Founder: "find more trades and also optimize these trades". Method per the paper-fleet research
+  rules: 162 replay variants over the six recorded sessions 09-21..09-28 (`config/paper_fib_research.json`
+  → label `fibgrid`, `config/paper_fib_research2.json` → label `fibgrid2`; ids `fibr_x_*` exits,
+  `fibr_e_*` entries, `fibc_*` combined; registered in `paper_strategies` then set `enabled=false`
+  so they never qualify for the rotation).
+- **Diagnosis**: 11 of the live twin's 18 trades were break-even scratches at +$0.50 after an average
+  6-pt MFE — `trail_be_trigger` 3 pulled the stop to entry+1 within seconds. Trail exits averaged
+  +$82 with 50-pt MFE; stops −$17.50.
+- **Exits** (base 10–12 entries, 13 trades): every combination with `trail_be_trigger` 3 ranked
+  last; means over the grid — BE 12: $217, 8: $201, 5: $190, 3: $127; trail 15: $229, 10: $172,
+  6: $150; sl 8: $209 vs 12: $158. Winner sl 8 / trail 15 / BE 8 / delay 0 → $349 PF 3.84 vs the
+  twin's $53. Today's single slot trade: $1 live → $133 under these exits.
+- **Entries**: zone 0.5–0.786 ($102 mean) beats 0.382–0.786 ($57) and 0.382–0.618 (−$30); swing 30
+  beats 20/45; cap 8 adds trades, not P&L; tf 2/3 min lose. More trades come from the WINDOW:
+  10:00–15:55 (no ORB conflict) 21 trades / $419 vs 10–12's 13 / $349 at cap 4; the 12:00 hour is
+  the weak one, 09:30–10:00 the best but ORB's.
+- **Live** (`config/tradeify_handoff_config.json`, from Tuesday 10:00): trail_step 6→15,
+  trail_be_trigger 3→8, trail_delay_secs 300→0, win_end 1200→1555, flatten 15:56, cap 4, qty 1;
+  `paper_source` → `fib_pb_1m_deep__day_x15`. Previous file in `config/archived/handoff_history/`.
+- **Fleet**: `fib_pb_1m_deep__am_x15`, `__am_x15b`, `__day_x15`, `__day_x15_m8` added (forward
+  test; paper engine restart scheduled 16:02 ET by a transient timer). Golden re-frozen for the
+  fleet change (the known ORB re-entry drift still applies).
+- Caveat: six sessions, ~45 % win rate, P&L carried by a few $150–190 trades; replay of the base
+  differed from its forward rows (22 trades / $127 vs 18 / $280), so read the forward test before
+  trusting the exact figures.
+
+### Changed — duplicate fill deliveries no longer log CRITICAL (2026-09-28)
+- Rithmic reports one fill twice (tid=352 exchange notification, then the tid=351 COMPLETE).
+  The second arrives after the basket is closed, so both executor fill branches treated it as an
+  unowned fill on our account and logged `CRITICAL: … order we do not own` before the router
+  classified it as a duplicate — on the first live FIB_PB_1M_DEEP session every exit alarmed.
+  New `notif::unowned_fill_is_duplicate()` (the router's own key rule, shared) is asked FIRST;
+  a duplicate logs `tid=35x duplicate delivery of a processed fill — skipped`, everything else
+  keeps the CRITICAL line and the guards/halt path unchanged. Test 18 in
+  `test_trade_end_invariant` pins the helper (true for the booked exit, false for an unknown
+  tag or a different cumulative qty).
+- Hand-off engine FIB_PB_1M_DEEP went LIVE 2026-09-28 at 1 MNQ, 10:00–12:00 ET (founder;
+  `config/tradeify_handoff_config.json` qty 2→1, dry_run false; `strategy-handoff.timer`
+  enabled). The Monday dry rehearsal was retired (timers disabled, config archived).
+
 ### Fixed — every process survives a Postgres restart (2026-09-26)
 A `systemctl restart postgresql` (applying the shared_buffers/work_mem tuning) found three
 processes that did not heal on their own:

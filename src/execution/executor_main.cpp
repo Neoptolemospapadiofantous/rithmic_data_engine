@@ -257,6 +257,17 @@ static std::string today_date_str() {
     return trading_date_str(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 }
 
+// ET wall time of a tick (for the regime gate's RTH window) — same arithmetic as paper_main.
+static void tick_et_hm(int64_t us, int& h, int& m) {
+    time_t tt = static_cast<time_t>(us / 1'000'000LL);
+    struct tm tm_utc;
+    gmtime_r(&tt, &tm_utc);
+    int64_t et = (int64_t)tt - us_et_offset(tm_utc) * 3600LL;
+    h = (int)((et / 3600) % 24);
+    if (h < 0) h += 24;
+    m = (int)((et % 3600) / 60);
+}
+
 // ─── WebSocket helpers ────────────────────────────────────────────────────────
 using WsStream = websocket::stream<beast::ssl_stream<beast::tcp_stream>>;
 
@@ -580,6 +591,11 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // engine, book_imbalance / book_fade signals via strategy.on_quote().
     paper::QuoteState book;
     int64_t last_tick_us = 0;
+    // Session-shape regime gate (paper_quote.hpp RegimeState) — declared here because the
+    // signal handler below reads it; its ATR is seeded once the DB exists (seed_regime_atr).
+    paper::RegimeState regime;
+    const std::string regime_symbol = orb_cfg.md_feed_symbol.empty() ? std::string("NQ") : orb_cfg.md_feed_symbol;
+    order_mgr.set_regime(&regime);   // exit-side regime: trail step / target by session shape
 
     // ── Reconnect reconciliation (#2) ─────────────────────────────────────────
     // If the previous session ended with an open position (e.g. disconnect while
@@ -651,12 +667,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 // Book entry gates — the same QuoteState::gate() the paper brokers apply, so a
                 // gated paper variant (__sg/__imb/__micro/__inv/__all) behaves the same live.
                 // No gate configured → always "" and nothing changes for ORB/trend/mtf.
-                const std::string blocked = book.gate(orb_cfg, sig == OrbSignal::BUY ? 1 : -1,
-                                                      last_tick_us, NQ_TICK_SIZE);
+                std::string blocked = book.gate(orb_cfg, sig == OrbSignal::BUY ? 1 : -1,
+                                                last_tick_us, NQ_TICK_SIZE);
+                if (blocked.empty()) blocked = regime.gate(orb_cfg, sig == OrbSignal::BUY ? 1 : -1);
                 if (!blocked.empty()) {
-                    LOG("[EXECUTOR] Signal SKIPPED — book gate '%s' (imb=%.2f spread=%.1ft fresh=%d reason=%s)",
+                    LOG("[EXECUTOR] Signal SKIPPED — gate '%s' (imb=%.2f spread=%.1ft fresh=%d | range/ATR=%.2f eff=%.2f move/ATR=%.2f min=%d reason=%s)",
                         blocked.c_str(), book.q.imbalance(), book.q.spread_ticks(NQ_TICK_SIZE),
-                        (int)book.fresh(last_tick_us), reason.c_str());
+                        (int)book.fresh(last_tick_us), regime.range_atr(), regime.eff(), regime.move_atr(),
+                        regime.minutes, reason.c_str());
                     if constexpr (kOrb) strategy.notify_trade_filled(sig);   // reset in_position for re-entry
                     else strategy_unsettled = "book_gate:" + blocked;         // settle_strategy() releases the engine
                     return;
@@ -725,6 +743,17 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     } catch (std::exception& e) {
         LOG("[EXECUTOR] WARNING: OrbDB failed (%s) — trades will not be persisted", e.what());
     }
+    // Session-shape regime gate (paper_quote.hpp RegimeState): the same gate the paper
+    // brokers apply, so a regime-gated paper variant (__rg_*) behaves the same live. ATR
+    // comes from session_stats for the collector's feed symbol; set at session start and
+    // on the date rollover below.
+    auto seed_regime_atr = [&](const std::string& d) {
+        const double atr = (db && db->is_connected()) ? db->session_atr14_before(regime_symbol, d) : 0.0;
+        regime.set_atr(d, atr);
+        if (paper::RegimeState::any_gate(orb_cfg))
+            LOG("[EXECUTOR] Regime gate: date=%s prior ATR14=%.1f pts%s", d.c_str(), atr,
+                atr > 0.0 ? "" : " (none — regime-gated entries stay blocked)");
+    };
 
     // ── AuditLog setup ────────────────────────────────────────────────────────
     PGconn* audit_conn = PQconnectdb(orb_cfg.pg_connstr().c_str());
@@ -1941,6 +1970,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         // FLAT → run the order manager's stale-stop guards (cancelled
                         // stop → unwind, unknown → ghost-halt). In a trade → halt
                         // entries; the tid=451 reconciliation unwinds any mismatch.
+                        // Classify BEFORE alarming: the tid=351 COMPLETE of a fill the
+                        // tid=352 path already booked lands after the basket closed and
+                        // reads as unowned on every normal exit (seen live 2026-09-28).
+                        if (notif::unowned_fill_is_duplicate(order_mgr, client_id, notif.basket_id(),
+                                                             notif.total_fill_size())) {
+                            LOG("[EXECUTOR] tid=351 duplicate delivery of a processed fill — skipped "
+                                "(user_tag='%s' basket=%s px=%.2f qty=%d)",
+                                client_id.c_str(), notif.basket_id().c_str(), fill_px,
+                                notif.total_fill_size());
+                        } else {
                         LOG("[EXECUTOR] CRITICAL: tid=351 fill on our account for an order we "
                             "do not own (user_tag='%s' basket=%s px=%.2f qty=%d state=%d)",
                             client_id.c_str(), notif.basket_id().c_str(), fill_px,
@@ -1957,6 +1996,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             flush_position(db.get(), today, order_mgr, strategy,
                                            orb_cfg.dry_run || order_plant->connected,
                                            orb_cfg.point_value, md_up());
+                        }
                     }
                 } else if ((int)notif.notify_type() == 17 ||
                            notif.status() == "Cancellation Failed") {
@@ -2053,6 +2093,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     if (!is_entry && !is_stop && !is_exit) {
                         // Our account, an order we do not track — the exact message the
                         // 2026-09-23 orphaned-stop fill produced ("ignoring (not our order)").
+                        if (notif::unowned_fill_is_duplicate(order_mgr, client_id, notif.basket_id(),
+                                                             notif.fill_size())) {
+                            LOG("[EXECUTOR] tid=352 duplicate delivery of a processed fill — skipped "
+                                "(user_tag='%s' basket=%s px=%.2f qty=%d)",
+                                client_id.c_str(), notif.basket_id().c_str(), notif.fill_price(),
+                                notif.fill_size());
+                        } else {
                         LOG("[EXECUTOR] CRITICAL: tid=352 fill for an order we do not own "
                             "(acct=%s user_tag='%s' basket=%s px=%.2f qty=%d state=%d)",
                             notif.account_id().c_str(), client_id.c_str(),
@@ -2070,6 +2117,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             flush_position(db.get(), today, order_mgr, strategy,
                                            orb_cfg.dry_run || order_plant->connected,
                                            orb_cfg.point_value, md_up());
+                        }
                     } else if (order_mgr.fill_already_processed(client_id, cum_fill_352)) {
                         // Duplicate delivery of a fill already processed via tid=351.
                         LOG("[EXECUTOR] tid=352 duplicate fill skipped: client=%s cumulative=%d "
@@ -2220,6 +2268,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         strategy.halt_trading("drill_mode");
         LOG("[DRILL] mode=%s — strategy halted for the whole run; waiting for the exchange "
             "to confirm FLAT before placing the untracked order", g_drill.c_str());
+    }
+    seed_regime_atr(today);
+    if constexpr (kTrend) {
+        const bool ev = db && db->is_connected() && db->calendar_event_day(today);
+        strategy.set_event_day(ev);
+        strategy.set_day_atr(regime.atr_pts);
+        if (ev) LOG("[EXECUTOR] %s is a scheduled-release day (calendar)", today.c_str());
     }
     LOG("[EXECUTOR] Session date: %s  dry_run=%s",
         today.c_str(), orb_cfg.dry_run ? "TRUE" : "FALSE");
@@ -2392,6 +2447,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 strategy.reset_session();
                 risk.reset_daily();
                 pos_write_counter = 0;
+                seed_regime_atr(today);
+                if constexpr (kTrend) { strategy.set_event_day(db && db->is_connected() && db->calendar_event_day(today)); strategy.set_day_atr(regime.atr_pts); }
                 LOG("[EXECUTOR] New trading day: %s", today.c_str());
             }
 
@@ -2843,6 +2900,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     int  last_log_minute     = -1;
     auto process_tick = [&](const OrbTick& tick) {
                 last_tick_us = tick.ts_micros;   // book freshness is judged against the print, not wall time
+                { int rh, rm; tick_et_hm(tick.ts_micros, rh, rm); regime.on_tick(today, rh, rm, tick.ts_micros, tick.price, (double)tick.size); }
                 // Book exits (book_exit_flip / book_tp_imbalance — the paper fleet's __bx/__btp
                 // overlays): the same QuoteState::book_exit() the paper brokers run, as a market
                 // flatten. Off unless the config sets them.

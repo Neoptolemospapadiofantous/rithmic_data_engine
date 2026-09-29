@@ -152,6 +152,11 @@ public:
     struct BboRow { int64_t ts_us; double bid, ask; int bid_sz, ask_sz; };
     // Quotes after `after_us` (one-sided rows forward-filled from the last seen side).
     std::vector<BboRow> poll_bbo(const std::string& symbol, int64_t after_us, int limit = 5000);
+    // Prior-day ATR14 (points) for the regime gate: the newest session_stats row for
+    // `symbol` dated BEFORE `ymd`. 0.0 when there is none (gate then fails closed).
+    double session_atr14_before(const std::string& symbol, const std::string& ymd);
+    // Scheduled-release day (calendar kind fomc / nfp) for the news_break mode's nb_event_only.
+    bool calendar_event_day(const std::string& ymd);
     struct TickRow { int64_t ts_us; double price; int64_t size; bool is_buy; };
     std::vector<TickRow> poll_ticks(const std::string& symbol, int64_t after_us,
                                     int limit = 5000);

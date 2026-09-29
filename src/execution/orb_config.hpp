@@ -133,6 +133,38 @@ struct OrbConfig {
     double      book_tp_min_pts   = 1.0;           // …only once at least this many points in profit (slippage + commission cover)
     int         book_size_agree   = 0;             // extra contracts when the book agrees with the entry
     int         fill_wait_secs    = 0;             // wait up to N s for spread ≤ 1 tick / microprice lean before filling
+    // Fixed take-profit (2026-09-28): the first exit that is neither a stop, a trail nor the
+    // window end. tp_points wins when set; else tp_r × sl_points. 0 = off (every existing
+    // strategy). Paper fills at the target (limit-like); live flattens at market on the touch.
+    double      tp_points         = 0.0;
+    double      tp_r              = 0.0;
+    double take_profit_pts() const { return tp_points > 0.0 ? tp_points : (tp_r > 0.0 ? tp_r * sl_points : 0.0); }
+    // Relative-volume gate (2026-09-29): the last closed minute's tick volume vs the mean of the
+    // previous rvol_bars closed minutes (paper_quote.hpp RegimeState). 0 = off.
+    double      rvol_min          = 0.0;           // entries need rvol ≥ x (participation)
+    double      rvol_max          = 0.0;           // …or rvol ≤ x (quiet tape)
+    int         rvol_bars         = 20;
+    // Volatility-targeted size (2026-09-29): contracts = vt_risk_usd / (prior-day ATR14 × point
+    // value), clamped to [1, vt_qty_max]; 0 = fixed `qty`. Same formula live and paper.
+    double      vt_risk_usd       = 0.0;
+    int         vt_qty_max        = 5;
+    // Exit-side regime (2026-09-28): once the session's efficiency reads ≥ regime_exit_min_eff
+    // the trade is managed as a TREND trade (trail_step_trend, no target); below it as a RANGE
+    // trade (trail_step_range, tp_r_range × sl_points). 0 = use trail_step / take_profit_pts().
+    double      regime_exit_min_eff = 0.0;
+    double      trail_step_trend    = 0.0;
+    double      trail_step_range    = 0.0;
+    double      tp_r_range          = 0.0;
+    // Regime gate (paper/paper_quote.hpp RegimeState) — session shape since the 09:30 open vs
+    // the prior day's ATR14. All off by default. Same keys live and paper (2026-09-28).
+    double      regime_min_range_atr = 0.0;        // day must have expanded ≥ x ATR so far
+    double      regime_max_range_atr = 0.0;        // …or at most x ATR
+    double      regime_min_eff       = 0.0;        // directional efficiency ≥ x (trending so far)
+    double      regime_max_eff       = 0.0;        // …≤ x (choppy so far)
+    double      regime_min_move_atr  = 0.0;        // |last − open| ≥ x ATR
+    double      regime_max_move_atr  = 0.0;        // …≤ x ATR (don't chase an extended session)
+    int         regime_with_move     = 0;          // 1 = only with the session move, -1 = only against
+    int         regime_min_minutes   = 15;         // readings need this long after the open
     std::string base_id;                           // sibling variants: the strategy this derives from
     std::string overlay;                           // sibling variants: which overlay ("sg","imb","micro","all"…)
     std::string md_provider    = "legends";
@@ -261,6 +293,25 @@ struct OrbConfig {
         c.book_exit_flip    = json_dbl(text, "book_exit_flip",    c.book_exit_flip);
         c.book_tp_imbalance = json_dbl(text, "book_tp_imbalance", c.book_tp_imbalance);
         c.book_tp_min_pts   = json_dbl(text, "book_tp_min_pts",   c.book_tp_min_pts);
+        c.tp_points            = json_dbl(text, "tp_points",            c.tp_points);
+        c.rvol_min             = json_dbl(text, "rvol_min",             c.rvol_min);
+        c.rvol_max             = json_dbl(text, "rvol_max",             c.rvol_max);
+        c.rvol_bars            = json_int(text, "rvol_bars",            c.rvol_bars);
+        c.vt_risk_usd          = json_dbl(text, "vt_risk_usd",          c.vt_risk_usd);
+        c.vt_qty_max           = json_int(text, "vt_qty_max",           c.vt_qty_max);
+        c.regime_exit_min_eff  = json_dbl(text, "regime_exit_min_eff",  c.regime_exit_min_eff);
+        c.trail_step_trend     = json_dbl(text, "trail_step_trend",     c.trail_step_trend);
+        c.trail_step_range     = json_dbl(text, "trail_step_range",     c.trail_step_range);
+        c.tp_r_range           = json_dbl(text, "tp_r_range",           c.tp_r_range);
+        c.tp_r                 = json_dbl(text, "tp_r",                 c.tp_r);
+        c.regime_min_range_atr = json_dbl(text, "regime_min_range_atr", c.regime_min_range_atr);
+        c.regime_max_range_atr = json_dbl(text, "regime_max_range_atr", c.regime_max_range_atr);
+        c.regime_min_eff       = json_dbl(text, "regime_min_eff",       c.regime_min_eff);
+        c.regime_max_eff       = json_dbl(text, "regime_max_eff",       c.regime_max_eff);
+        c.regime_min_move_atr  = json_dbl(text, "regime_min_move_atr",  c.regime_min_move_atr);
+        c.regime_max_move_atr  = json_dbl(text, "regime_max_move_atr",  c.regime_max_move_atr);
+        c.regime_with_move     = json_int(text, "regime_with_move",     c.regime_with_move);
+        c.regime_min_minutes   = json_int(text, "regime_min_minutes",   c.regime_min_minutes);
         c.warmup_minutes   = json_int(text, "warmup_minutes",   c.warmup_minutes);
         c.order_env_prefix = json_str(text, "order_env_prefix", c.order_env_prefix);
 

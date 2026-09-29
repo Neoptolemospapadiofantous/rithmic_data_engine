@@ -19,6 +19,16 @@ enum class UnownedFill { OTHER_ACCOUNT, DUPLICATE, GUARDS_RUN, HALTED };
 // FLAT → run the order manager's stale-stop guards (cancelled stop → unwind,
 // unknown → ghost-halt). In a trade → halt entries; the tid=451 reconciliation
 // unwinds any net mismatch. Until 2026-09-23 this fill was ignored outright.
+// The same fill is delivered twice (tid=352 exchange notification and the tid=351
+// COMPLETE), and by the second delivery the basket is already closed, so it looks
+// unowned. Ask this BEFORE logging anything alarming: a duplicate of a fill we
+// already booked is routine on every exit, not an incident.
+inline bool unowned_fill_is_duplicate(OrderManager& om, const std::string& client_id,
+                                      const std::string& server_basket, int qty) {
+    const std::string key = client_id.empty() ? server_basket : client_id;
+    return om.fill_already_processed(key, qty);
+}
+
 inline UnownedFill handle_unowned_fill(OrderManager& om,
                                        const std::string& client_id,
                                        const std::string& server_basket,
@@ -27,8 +37,8 @@ inline UnownedFill handle_unowned_fill(OrderManager& om,
                                        double px, int qty,
                                        const std::function<void(const std::string&)>& halt) {
     if (!notif_account.empty() && notif_account != our_account) return UnownedFill::OTHER_ACCOUNT;
+    if (unowned_fill_is_duplicate(om, client_id, server_basket, qty)) return UnownedFill::DUPLICATE;
     const std::string key = client_id.empty() ? server_basket : client_id;
-    if (om.fill_already_processed(key, qty)) return UnownedFill::DUPLICATE;
     if (om.is_flat()) {
         om.on_fill_notification(key, px, qty, /*is_entry_fill=*/false);
         return UnownedFill::GUARDS_RUN;

@@ -18,9 +18,11 @@ struct Config {
     std::string symbol      = "NQ";
     std::string exchange    = "CME";
     // Extra MD symbols subscribed alongside the primary one (LAST_TRADE|BBO
-    // only — no depth). Intermarket reference feeds, e.g. ES for the MTF
-    // SMT module. Comma-separated: RITHMIC_EXTRA_SYMBOLS=ES,YM
-    std::vector<std::string> extra_symbols;
+    // only — no depth). Intermarket reference feeds and research instruments.
+    // Comma-separated, each `SYMBOL` (primary exchange) or `SYMBOL:EXCHANGE`
+    // for another CME-Group venue: RITHMIC_EXTRA_SYMBOLS=ES,RTY,YM:CBOT,CL:NYMEX,GC:COMEX
+    struct ExtraSymbol { std::string symbol, exchange; };
+    std::vector<ExtraSymbol> extra_symbols;
 
     // ── PostgreSQL connection ──────────────────────────────────────
     std::string pg_host     = "localhost";
@@ -71,7 +73,12 @@ struct Config {
         c.app_version  = env("RITHMIC_APP_VERSION",   "1.0");
         c.symbol       = env("RITHMIC_SYMBOL",        "NQ");
         c.exchange     = env("RITHMIC_EXCHANGE",      "CME");
-        c.extra_symbols = split_csv(env("RITHMIC_EXTRA_SYMBOLS", ""));
+        for (const auto& item : split_csv(env("RITHMIC_EXTRA_SYMBOLS", ""))) {
+            auto colon = item.find(':');
+            ExtraSymbol e{trim(item.substr(0, colon)),
+                          colon == std::string::npos ? c.exchange : trim(item.substr(colon + 1))};
+            if (!e.symbol.empty() && e.symbol != c.symbol) c.extra_symbols.push_back(e);
+        }
         c.pg_host      = env("PG_HOST",               "localhost");
         c.pg_port      = env("PG_PORT",               "5432");
         c.pg_db        = env("PG_DB",                 "rithmic");
