@@ -504,10 +504,40 @@ TEST(config_valid_file_loads) {
     })");
     OrbConfig c = OrbConfig::from_file(path);
     std::remove(path.c_str());
-    ASSERT_EQ(c.account_label, std::string("tradeify1"));
+    // dry_run=true → the label carries the "_dry" suffix (test 38): simulated fills
+    // must never be written under a live label.
+    ASSERT_EQ(c.account_label, std::string("tradeify1_dry"));
     ASSERT_EQ(c.qty, 2);
     ASSERT(c.dry_run);
     ASSERT_NEAR(c.commission_rt, 1.04, 0.0001);
+}
+
+
+// 38. dry_run rows never land in the live history: the label gets a "_dry" suffix.
+TEST(config_dry_run_forces_dry_label) {
+    std::string path = write_temp_config("drylabel", R"({
+        "account_label": "tradeify",
+        "dry_run": true
+    })");
+    OrbConfig c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_EQ(c.account_label, std::string("tradeify_dry"));
+    ASSERT(c.dry_label_forced);
+    ASSERT(!c.apply_dry_run_label());                     // idempotent
+    ASSERT_EQ(OrbConfig::base_label(c.account_label), std::string("tradeify"));
+
+    path = write_temp_config("drylabel2", R"({ "account_label": "tradeify_dry", "dry_run": true })");
+    c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_EQ(c.account_label, std::string("tradeify_dry"));
+    ASSERT(!c.dry_label_forced);
+
+    path = write_temp_config("livelabel", R"({ "account_label": "tradeify", "dry_run": false })");
+    c = OrbConfig::from_file(path);
+    std::remove(path.c_str());
+    ASSERT_EQ(c.account_label, std::string("tradeify"));    // live labels untouched
+    ASSERT_EQ(OrbConfig::base_label("tradeify"), std::string("tradeify"));
+    ASSERT_EQ(OrbConfig::base_label("_dry"), std::string("_dry"));   // no empty base
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -552,6 +582,7 @@ int main() {
     RUN(config_validation_rejects_zero_drawdown_cap);
     RUN(config_validation_rejects_unsafe_account_label);
     RUN(config_valid_file_loads);
+    RUN(config_dry_run_forces_dry_label);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

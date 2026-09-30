@@ -736,6 +736,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             // (the normal case after a drawdown), giving correct trailing drawdown distance.
             risk.set_equity(hist_peak);
             risk.set_equity(orb_cfg.starting_balance + hist_pnl);
+            LOG("[EXECUTOR] [RISK-SEED] account-wide label=%s: equity=%.2f peak=%.2f "
+                "room=%.2f (cap %.0f) — synthetic gauge; the broker balance check below is "
+                "the one that matches the prop firm",
+                OrbConfig::base_label(orb_cfg.account_label).c_str(),
+                orb_cfg.starting_balance + hist_pnl, hist_peak,
+                (orb_cfg.starting_balance + hist_pnl) - (hist_peak - orb_cfg.trailing_drawdown_cap),
+                orb_cfg.trailing_drawdown_cap);
             // Seed today's realized P&L so a restarted process cannot re-spend the
             // daily loss limit already consumed before the restart.
             risk.seed_daily_pnl(db->seed_daily_pnl(orb_cfg.account_label, today_date_str()));
@@ -1401,6 +1408,16 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     bool   broker_loss_halted = false;
     double last_broker_bal    = std::nan("");
     double last_broker_dpnl   = std::nan("");
+    // Prop-firm trailing drawdown on the broker's balance (notif::broker_hwm): the mark
+    // is persisted per live label (live_account_hwm) so a restart cannot forget it.
+    bool   broker_dd_halted   = false;
+    double last_broker_hwm_logged_bal = std::nan("");
+    double broker_hwm         = notif::broker_hwm(
+        (db && db->is_connected()) ? db->get_account_hwm() : std::nan(""),
+        orb_cfg.starting_balance, std::nan(""));
+    LOG("[EXECUTOR] [BROKER-HWM] seed=%.2f (label=%s, cap=%.0f) — halt when balance <= %.2f",
+        broker_hwm, OrbConfig::base_label(orb_cfg.account_label).c_str(),
+        orb_cfg.trailing_drawdown_cap, broker_hwm - orb_cfg.trailing_drawdown_cap);
     int         last_exch_net = INT_MIN;   // last tid=451 net (reconciler re-check each second)
     std::string last_unwind_basket;        // last unwind sent — cancelled before a retry
 
@@ -1596,6 +1613,47 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                          " hit daily_loss_limit — halted + flattened\" "
                          ">/dev/null 2>&1 &").c_str());
             (void)notify_rc;  // fail-open: grid-notify absent is not an executor error
+        }
+
+        // ── Broker trailing drawdown (the prop firm's own account-killing rule) ──
+        // HWM = max(starting balance, persisted mark, every balance reported); new
+        // entries halt once balance <= HWM - trailing_drawdown_cap. The synthetic
+        // gauge in RiskManager cannot see fees, liquidations or other instances.
+        if (!std::isnan(broker_bal)) {
+            const double hwm_now = notif::broker_hwm(broker_hwm, orb_cfg.starting_balance, broker_bal);
+            if (hwm_now > broker_hwm) {
+                broker_hwm = hwm_now;
+                LOG("[EXECUTOR] [BROKER-HWM] new high-water mark %.2f — halt level now %.2f",
+                    broker_hwm, broker_hwm - orb_cfg.trailing_drawdown_cap);
+                if (db && db->is_connected() && !orb_cfg.dry_run) {
+                    try { db->set_account_hwm(broker_hwm); }
+                    catch (std::exception& e) { LOG("[EXECUTOR] set_account_hwm failed: %s", e.what()); }
+                }
+            }
+            const double room = notif::broker_drawdown_room(broker_bal, broker_hwm, orb_cfg.trailing_drawdown_cap);
+            if (broker_bal != last_broker_hwm_logged_bal) {
+                last_broker_hwm_logged_bal = broker_bal;
+                LOG("[EXECUTOR] [BROKER-HWM] balance=%.2f hwm=%.2f room=%.2f before the %.0f trailing cap",
+                    broker_bal, broker_hwm, room, orb_cfg.trailing_drawdown_cap);
+            }
+            if (!broker_dd_halted &&
+                notif::broker_drawdown_breached(broker_bal, broker_hwm, orb_cfg.trailing_drawdown_cap)) {
+                broker_dd_halted = true;
+                LOG("[EXECUTOR] CRITICAL: broker balance %.2f <= hwm %.2f - cap %.0f — "
+                    "halting new entries (prop-firm trailing drawdown)",
+                    broker_bal, broker_hwm, orb_cfg.trailing_drawdown_cap);
+                risk.halt_external("broker_trailing_drawdown balance " + std::to_string(broker_bal) +
+                                   " <= hwm " + std::to_string(broker_hwm) + " - cap " +
+                                   std::to_string(orb_cfg.trailing_drawdown_cap));
+                strategy.halt_trading("broker_trailing_drawdown");
+                audit_log.error("risk.broker_trailing_drawdown",
+                    "balance " + std::to_string(broker_bal) + " hwm " + std::to_string(broker_hwm));
+                int rc2 = std::system(("grid-notify \"nq_executor " + orb_cfg.account_label +
+                             ": BROKER BALANCE " + std::to_string((int)broker_bal) +
+                             " at the trailing drawdown cap (hwm " + std::to_string((int)broker_hwm) +
+                             ") — entries halted\" >/dev/null 2>&1 &").c_str());
+                (void)rc2;
+            }
         }
 
         // ── Startup / reconnect snapshot ───────────────────────────────────
@@ -3654,6 +3712,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     if (force_dry_run) orb_cfg.dry_run = true;
+    // Dry-run rows never land in the live history: the label must end in "_dry".
+    if (orb_cfg.apply_dry_run_label() || orb_cfg.dry_label_forced)
+        LOG("[EXECUTOR] WARN: dry_run=true but account_label did not end in \"_dry\" — "
+            "writing under label '%s' so simulated fills stay out of the live tables",
+            orb_cfg.account_label.c_str());
 
     // In cycle mode each cycle sets session_open = NOW(), so last_entry_hour
     // (designed for RTH "stop entering after 1 PM") would block every cycle
@@ -3664,8 +3727,8 @@ int main(int argc, char* argv[]) {
     LOG("[EXECUTOR] symbol=%s exchange=%s orb_min=%d sl=%.1fpts trail_step=%.1fpts",
         orb_cfg.symbol.c_str(), orb_cfg.exchange.c_str(),
         orb_cfg.orb_minutes, orb_cfg.sl_points, orb_cfg.trail_step);
-    LOG("[EXECUTOR] max_daily_trades=%d last_entry_hour=%d dry_run=%s",
-        orb_cfg.max_daily_trades, orb_cfg.last_entry_hour,
+    LOG("[EXECUTOR] max_daily_trades=%d last_entry=%02d:%02d ET dry_run=%s",
+        orb_cfg.max_daily_trades, orb_cfg.last_entry_hour, orb_cfg.last_entry_min,
         orb_cfg.dry_run ? "true" : "false");
     LOG("[EXECUTOR] risk: trailing_dd_cap=$%.0f consistency_cap=%.0f%%",
         orb_cfg.trailing_drawdown_cap, orb_cfg.consistency_cap_pct * 100.0);

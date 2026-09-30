@@ -34,6 +34,7 @@
 #include "risk_manager.hpp"
 #include "log.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <string>
@@ -71,6 +72,10 @@ public:
             return;
         }
         if (sig != OrbSignal::BUY && sig != OrbSignal::SELL) return;
+        // Start-up warm-up / gap re-feed: the host replays recorded ticks to rebuild the
+        // strategy's state — an entry signal from history is counted and dropped (no pending
+        // order, no paper_signals row). Exits above still manage a resumed position.
+        if (warmup_) { ++warmup_dropped_; return; }
         if (pos_dir_ != 0 || pending_dir_ != 0) return;         // only when flat
         if (halted()) return;
         std::string why;
@@ -182,7 +187,11 @@ public:
         bool stopped = (pos_dir_ > 0) ? (t.price <= placed_stop_)
                                       : (t.price >= placed_stop_);
         if (stopped) {
+            // Stop ± slippage — but never better than the print that crossed it: a tick that
+            // gaps through the stop fills where it printed (2026-09-30 audit: 10.8 % of stop
+            // exits had filled better than the crossing NQ print by more than a tick).
             double fill = placed_stop_ - pos_dir_ * slip_;
+            fill = (pos_dir_ > 0) ? std::min(fill, t.price) : std::max(fill, t.price);
             exit_position(fill, t.ts_micros, stop_exit_reason());
             return;
         }
@@ -212,7 +221,7 @@ public:
                 (t.price - entry_price_) * pos_dir_ > cfg_.trail_be_offset) {
                 double be = snap(entry_price_ + pos_dir_ * cfg_.trail_be_offset, pos_dir_);
                 if ((pos_dir_ > 0 && be > stop_price_) || (pos_dir_ < 0 && be < stop_price_)) {
-                    stop_price_ = be; be_moved_ = true; sl_dirty_ = true; sync_placed_stop();
+                    stop_price_ = be; be_moved_ = true; sl_dirty_ = true; sync_placed_stop(/*force=*/true);
                     LOG("[PAPER %s] BE move on book flip — stop=%.2f", strategy_id_.c_str(), stop_price_);
                 }
             }
@@ -234,7 +243,7 @@ public:
             if ((pos_dir_ > 0 && be > stop_price_) || (pos_dir_ < 0 && be < stop_price_)) {
                 stop_price_ = be;
                 sl_dirty_ = true;
-                sync_placed_stop();    // live re-places the exchange stop right here (16 pts ≥ trail_step)
+                sync_placed_stop(/*force=*/true);   // live sends the BE stop unconditionally (force=true, 2026-09-30)
                 LOG("[PAPER %s] BE move — stop=%.2f (entry%+.1f, mfe=%.2f)",
                     strategy_id_.c_str(), stop_price_, pos_dir_ * cfg_.trail_be_offset, mfe_);
             }
@@ -302,12 +311,17 @@ public:
     }
 
     void seed_entries_today(int n) { entries_today_ = n; }
+    // Warm-up mode (paper_main start-up replay / ORB gap re-feed): entry signals are dropped
+    // and counted; position management runs unchanged. Returns the count when switched off.
+    void set_warmup(bool on) { warmup_ = on; if (on) warmup_dropped_ = 0; }
+    int  warmup_dropped() const { return warmup_dropped_; }
 
     // ── State access ─────────────────────────────────────────────────────────
     bool   in_position()  const { return pos_dir_ != 0; }
     int    direction()    const { return pos_dir_; }
     int    qty()          const { return qty_; }
     double entry_price()  const { return entry_price_; }
+    int64_t entry_time_us() const { return entry_time_us_; }   // 0 when flat
     double stop_price()   const { return stop_price_; }
     double placed_stop()  const { return placed_stop_; }   // the working (exchange-equivalent) stop
     int    entries_today() const { return entries_today_; }
@@ -353,8 +367,12 @@ private:
 
     // Mirror of the live suppression: the working stop moves only when the in-memory
     // level is ≥ trail_step beyond it (the BE move from −sl_points always qualifies).
-    void sync_placed_stop() {
-        if (placed_stop_ <= 0.0) { placed_stop_ = stop_price_; return; }
+    // Mirrors OrderManager::update_stop_order_locked: an ordinary trail move re-places the
+    // working stop only when it is ≥ trail_step from the last placed one (storm filter);
+    // force=true (the break-even move) places it unconditionally — the live side dropped a
+    // 9-pt BE move under a 15-pt trail_step on 2026-09-29 (trade 66) and now forces it.
+    void sync_placed_stop(bool force = false) {
+        if (placed_stop_ <= 0.0 || force) { placed_stop_ = stop_price_; return; }
         if (std::fabs(stop_price_ - placed_stop_) >= paper::RegimeState::trail_step_for(cfg_, regime_) - 1e-9) placed_stop_ = stop_price_;
     }
     std::string stop_exit_reason() const {
@@ -489,6 +507,8 @@ private:
     bool    sl_dirty_ = false;
 
     int     pending_dir_ = 0;     // entry waiting for next tick
+    bool    warmup_ = false;      // entries suppressed (host replaying history)
+    int     warmup_dropped_ = 0;
     std::string pending_exit_reason_;
 
     int     entries_today_ = 0;

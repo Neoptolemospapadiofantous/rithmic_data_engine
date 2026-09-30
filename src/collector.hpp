@@ -33,7 +33,7 @@ public:
     // Bounded hand-off queue to the DB writer thread.  When full, batches
     // are dropped (counted + alerted) rather than blocking the WS event
     // loop — heartbeats and reads must never stall on PostgreSQL.
-    static constexpr size_t WRITER_QUEUE_MAX = 512;
+    static constexpr size_t WRITER_QUEUE_MAX = 8192;   // was 512: at 512 the paper fleet's position flush starved the writer and ticks were DROPPED (2,144 batches 09-29, 888 on 09-30 → 30–137 s feed gaps in RTH)
 
     explicit Collector(const Config& cfg);
     ~Collector();

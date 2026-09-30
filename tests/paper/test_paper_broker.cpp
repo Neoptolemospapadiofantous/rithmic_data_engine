@@ -156,6 +156,63 @@ TEST(stop_fill_adverse_slippage) {
     ASSERT_NEAR(tr.pnl_usd, -15.25 * 2.0 - 1.0, 1e-9);
 }
 
+TEST(stop_gap_through_fills_at_the_print) {
+    FakeStore store;
+    auto b = make_broker(store);
+    signal_buy(b, et_ts(10, 0), 20000.0);
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));      // entry @ 20000.25, stop 19985.25
+    ASSERT(b.in_position());
+    b.on_tick(tick(et_ts(10, 0, 30), 19983.00));    // gaps 2.25 pts THROUGH the stop
+    ASSERT(!b.in_position());
+    ASSERT_EQ(store.trades.size(), (size_t)1);
+    ASSERT_STREQ(store.trades[0].exit_reason, "stop");
+    ASSERT_NEAR(store.trades[0].exit_price, 19983.00, 1e-9);   // the print, not stop − 1 tick
+}
+
+TEST(short_stop_gap_through_fills_at_the_print) {
+    FakeStore store;
+    auto b = make_broker(store);
+    b.on_signal(OrbSignal::SELL, 20000.0, "t");
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));      // entry @ 19999.75, stop 20014.75
+    ASSERT(b.in_position());
+    b.on_tick(tick(et_ts(10, 0, 30), 20017.50));    // gaps through
+    ASSERT(!b.in_position());
+    ASSERT_NEAR(store.trades[0].exit_price, 20017.50, 1e-9);
+}
+
+TEST(warmup_drops_entries_and_counts_them) {
+    FakeStore store;
+    auto b = make_broker(store);
+    b.set_warmup(true);
+    signal_buy(b, et_ts(10, 0), 20000.0);
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));
+    ASSERT(!b.in_position());                        // no pending entry, no fill
+    ASSERT_EQ(b.warmup_dropped(), 1);
+    ASSERT_EQ(store.trades.size(), (size_t)0);
+    b.set_warmup(false);
+    signal_buy(b, et_ts(10, 1), 20000.0);
+    b.on_tick(tick(et_ts(10, 1, 1), 20000.0));
+    ASSERT(b.in_position());                         // live again
+}
+
+TEST(breakeven_stop_placed_even_below_trail_step) {
+    // 2026-09-28 hand-off shape: sl 8 / be_offset 1 / trail_step 15 — the 9-pt BE move is
+    // smaller than trail_step; live now forces it to the exchange, paper must place it too.
+    FakeStore store;
+    OrbConfig c = make_cfg();
+    c.sl_points = 8.0; c.trail_step = 15.0; c.trail_be_trigger = 3.0; c.trail_be_offset = 1.0;
+    c.trail_delay_secs = 300;
+    paper::PaperBroker b("t", "test", "MNQ", c, 0.25, 1, &store);
+    signal_buy(b, et_ts(10, 0), 20000.0);
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));      // entry 20000.25, stop 19992.25
+    b.on_tick(tick(et_ts(10, 0, 5), 20003.50));     // mfe 3.25 ≥ trigger → BE stop 20001.25
+    ASSERT_NEAR(b.stop_price(),   20001.25, 1e-9);
+    ASSERT_NEAR(b.placed_stop(),  20001.25, 1e-9);  // placed despite 9 pts < trail_step 15
+    b.on_tick(tick(et_ts(10, 0, 6), 20001.00));     // crosses the BE stop
+    ASSERT(!b.in_position());
+    ASSERT_STREQ(store.trades[0].exit_reason, "breakeven");
+}
+
 TEST(short_entry_and_stop) {
     FakeStore store;
     auto b = make_broker(store);
@@ -425,7 +482,7 @@ TEST(restart_resume_from_db) {
     ASSERT(b.in_position());
     ASSERT_NEAR(b.stop_price(), 19985.25, 1e-9);
 
-    b.on_tick(tick(et_ts(10, 5), 19980.0));         // through the stop
+    b.on_tick(tick(et_ts(10, 5), 19985.25));        // trades AT the stop (a gap-through fills at the print — see stop_gap_through_fills_at_the_print)
     ASSERT(!b.in_position());
     ASSERT_EQ(store.trades.size(), (size_t)1);
     ASSERT_NEAR(store.trades[0].pnl_pts, -15.25, 1e-9);   // stop − 1 tick adverse

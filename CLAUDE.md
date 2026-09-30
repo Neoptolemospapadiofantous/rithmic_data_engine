@@ -31,6 +31,34 @@ make hermes-fleet    ← launches 4 specialist agents in parallel, coordinator s
 After agents report: coordinator fixes CRITICAL/HIGH issues, re-runs hermes, writes fleet note to Obsidian.
 Agent prompts live in `scripts/fleet_agents.json`.
 
+## StarNet strategy desk (since 2026-09-30)
+
+A StarNet crew (`~/starnet`, :8787, via `starnet-adapter` :8099 → claude-bridge, ALL on
+`claude-opus-5-5` — the adapter's `STARNET_PIN_MODEL` forces it, founder's call) researches
+this repo from a **read-only clone** and never touches live trading. It runs as a **closed loop
+every hour, 24/7** (founder: use the subscription to the fullest). Times are Cyprus:
+
+| When | Who | What |
+|---|---|---|
+| every hour :00 | `rithmic-research-sync.timer` → `scripts/starnet/desk_cycle.sh` | `desk_replay.sh` replays every new `*-RESEARCHER*.md` proposal (new `desk_*` ids only, param keys checked against `config/paper_fleet.json`, ≤30 variants) over every recorded NQ session — **sessions before `HOLDOUT_FROM` (2026-09-28) under label `desk`, later ones (and every future session) under `desk_ho`** — then `sync_research_clone.sh` resets the clone to this checkout's committed HEAD and `export_research_data.sh` (read-only PG) writes `research_data/` (in-sample only; `desk_ho` never enters it) plus `fills_live.csv` / `fills_parity.csv` |
+| :02 | FILLS | `…-FILLS.md` — real live slippage per strategy/side and a `## Cost model` every ranking applies (runs only when live fills change) |
+| :05 | QUANT | `~/starnet-work/desk/<YYYY-MM-DD-HHMM>-QUANT.md` — per-contract ranking, raw and cost-adjusted |
+| :15 | PROPDESK | `…-PROPDESK.md` — bootstrap under the prop rules |
+| :27 | SKEPTIC | `…-SKEPTIC.md` — ROBUST / FRAGILE / NOISE |
+| :40 | SABLE (lead) | `…-STEER.md` — goal status, `## Stop`, `## Research next` per researcher |
+| :48 :51 :54 :57 | RESEARCHER (entries), EXITS, FLOWLAB (order flow), TIMELAB (time/regime) | `…-RESEARCHER[-EXITS|-FLOWLAB|-TIMELAB].md` — one ```json `{"variants":[…]}` block each; replayed at the next :00 → `…-REPLAY.md` (in-sample) + `~/starnet-work/holdout/…-HOLDOUT.md` |
+| 07:30 15:30 23:30 | SABLE (lead) | `…-BRIEF.md` — the ONLY reader of `~/starnet-work/holdout/`; recommends a desk variant only with holdout PASS (in-sample net > 0 AND ≥5 holdout trades with net > 0, PF ≥ 1); ends with BANDIT READINESS (READY at ≥20 forward sessions and ≥3 ROBUST candidates — no RL until then, founder 2026-09-30) |
+| :10 / :55 on a new commit; SCANNER 09:10, TESTGAP 12:10, RISKGUARD 20:10 daily | REGRESSION, DOCSYNC; SCANNER, TESTGAP, RISKGUARD | `~/starnet-work/findings/<YYYY-MM-DD-HHMM>-<AGENT>.md` |
+| 21:30 daily | HERMES (imported from the Hermes Agent profile `~/.hermes/profiles/researcher`, persona only, runs on the same Claude bridge) | `~/starnet-work/findings/<stamp>-HERMES.md` — re-checks every new finding, then builds and tests up to 3 fixes in `~/starnet-work/hermes-scratch` and publishes them as verified unified diffs; verdicts appended to `findings/_triage.md`. Nothing is applied to this repo automatically: apply a HERMES diff in an attended Claude Code session, then `make hermes`. |
+
+**Run only on change:** every chained job starts with its own cheap skip check in the prompt (is my input — research data hash, the upstream desk file, the clone commit, the live fills — newer than my last output?); if not, it writes nothing and replies `no new input` (~2 calls instead of a full run). **Do NOT gate with StarNet `contextFrom` or a pre-run `script`:** both taint the run and StarNet withdraws the agent's terminal ("untrusted-content-lockout") — even a silent script, because the shell tool reports empty output as the text "(no output)" (found and reverted 2026-09-30). **Holdout:** the loop (QUANT, PROPDESK, SKEPTIC, STEER, researchers) is told never to read `~/starnet-work/holdout/`; only the BRIEF judges desk variants out-of-sample. The fleet's own forward results on held-out dates are still visible to the loop, so the only fully clean test is future sessions. Night Shift is off (autonomy initiative `propose`).
+
+The desk works toward ONE StarNet goal (set 2026-09-30): find a strategy that passes the Tradeify evaluation on 1 NQ and prove it on paper (≥20 forward trades / 3+ sessions, SKEPTIC ROBUST, PROPDESK >50% to +$3,000 before breaching −$500 daily / $1,000 trailing / 30% consistency, ≤5 trades/day). Night Shift is steered to it. Going live stays the founder's decision: the desk only proposes. The `desk` label is research
+only (the live paper fleet is `tradeify`); `desk_replay.sh` deletes and re-writes rows of that label
+for the ids it replays and nothing else. Uncommitted work in this checkout is invisible to the crew.
+Jobs live in StarNet (`/api/cron`) and fire only while its scheduler is ARMED (`GET /api/cron` → `enabled: true`, `health.lastTickAt` recent; arm with `POST /api/cron/arm {"enabled":true}`). The adapter caps StarNet at 3000 calls/day, 4 in flight, and backs off 15 min
+after a subscription-limit error. Findings are not auto-applied — triage them in a session here.
+
 ## Stack
 Everything is C++. There is no Python in this project.
 
@@ -117,7 +145,26 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   the Postgres `ticks` table instead (`md_feed_symbol`, default NQ). Do not start an
   executor in WebSocket MD mode (any other provider) while the collector runs — Rithmic
   force-logs-out one of them every ~35s.
-- **ORB → hand-off engine (tradeify, since 2026-09-25)**: ORB (`tradeify`) opens 09:30 ET;
+- **Live-executor rules since 2026-09-30 (audit fixes, CHANGES.md):** a `dry_run: true` config writes under a label ending in `_dry` (appended automatically — simulated fills never reach the live tables); risk seeds are ACCOUNT-WIDE on the live label; the broker balance from tid=451 drives a persisted high-water mark (`live_account_hwm`) and halts entries at HWM − `trailing_drawdown_cap` (log `[BROKER-HWM]`); the break-even stop move always reaches the exchange; multi-lot rows record VWAP; `commission_rt` is the measured fee (1.82 MNQ — NQ unknown, see `_commission_note`).
+- **EXECUTION VALIDATION, EVERY DAY (founder 2026-09-30):** three timers guard the live path —
+  `pre-rth-check.timer` 09:00 ET (config + broker readiness incl. contract/roll, commission, drawdown
+  room), `execution-watch.timer` every 2 min in RTH (`scripts/execution_watch.sh`: unit, mode,
+  broker sessions, feed, standing halts, exchange-stop lag; alerts on transition) and
+  `execution-audit.timer` 16:10 ET (`scripts/execution_audit.sh [account] [date]`: signals → orders →
+  fills → live_trades → broker P&L reconciliation, stop integrity, limits, feed gaps; JSON in
+  `data/execution_audit/`). Run the audit by hand for any past date. A red line from any of them
+  before 09:30 ET means do not expect fills.
+- **LIVE SINCE 2026-09-30 10:47 ET: ORB only, 1 NQ (NQZ6), 3 trades/day, entries 09:35–10:30 ET
+  (`last_entry_hour 10` + `last_entry_min 30`), commission_rt 1.82 (MNQ figure — replace from a
+  Tradeify NQ statement).** The dry-run day 2026-09-30 was cleared on the founder's word.
+- **FEED-DROP TRAP (2026-09-30):** the paper fleet's Postgres write rate can starve the collector's
+  tick writer (queue 8192 batches now; "Writer queue full — dropped tick batch" in
+  `data/logs/collector.log` = live feed gaps). Paper flushes are change-only, batched, async-commit.
+  Never add a per-tick DB write to the paper engine; check the collector log after any fleet change.
+- **DRY-RUN HISTORY (founder 2026-09-29 evening: "test it for now")** — `config/tradeify_config.json` carries `dry_run: true`; nothing reaches the account until the founder says to flip it (then `--check-config` + `systemctl --user restart nq-executor-local@tradeify`). While dry, the 09:00 ET pre-RTH check reports red ("no [BROKER] line") by design.
+- **LIVE = ORB ONLY, 1 NQ (founder 2026-09-29: "lets run NQ for 1 contract not MNQ and we only keep ORB")**: `config/tradeify_config.json` is `symbol NQ / trade_contract NQZ6 / point_value 20 / qty 1` (previous 5-MNQ copy in `config/archived/live_history/`); the hand-off config moved to `config/archived/` (off the live board) and `strategy-rotation.timer` is disabled with it. The pg feed already ran on NQ ticks, so the executor now trades the instrument it watches. Risk knobs unchanged: SL 15 pts = $300/trade at $20/pt, daily_loss_limit −$500, trailing cap $1,000.
+- **HAND-OFF REMOVED FROM LIVE 2026-09-29 (founder: "remove FIB_PB_1M_DEEP from the live")**: `strategy-handoff.timer` is disabled, `config/tradeify_handoff_config.json` is `dry_run: true` (previous live copy in `config/archived/handoff_history/`), and ORB runs alone all day. To restore: set `dry_run: false`, validate with `--check-config`, `systemctl --user enable --now strategy-handoff.timer`. The description below is how it worked while live.
+- **ORB → hand-off engine (tradeify, 2026-09-25 → 2026-09-29)**: ORB (`tradeify`) opens 09:30 ET;
   `scripts/strategy_handoff.sh tradeify tradeify tradeify_handoff` waits until ORB is done
   (5/5 trades, or flat at 10:00 ET = 17:00 Cyprus), stops it, starts
   `nq-executor-local@tradeify_handoff` (`config/tradeify_handoff_config.json` — whichever
@@ -190,7 +237,15 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   __all __sz __wait __bx __bbe` — 635 of 1,675 configured strategies run. `__inv` is the only
   overlay that beats its bases, and it does NOT combine with trend entries (it blocks them).
   (5) Golden replay is deterministic since the ORB cooldown moved to the engine clock; re-freeze
-  (`make golden-freeze`) after every fleet change and read a FAIL by its diff.
+  (`make golden-freeze`) after every fleet change and read a FAIL by its diff. (6) **A restart is a
+  warm-up, not a catch-up (2026-09-30)**: `paper_engine` replays the last `warmup_bars` (1600) completed
+  1m bars with entries suppressed before going live, and logs "warm-up complete … N entry signal(s)
+  suppressed"; signals fired while the engine was down are NOT taken. Every start lands in
+  `paper_engine_runs`, and the leaderboard's `restart_sessions` flags sessions that began after a
+  03:00 ET start — `qualifies` needs 0 of them. Paper costs are the measured live ones
+  (`commission_rt` 1.82, `slippage_ticks` 3, stops fill at the crossing print); read `scratch_rate`
+  next to `win_rate` (breakeven scratches count as wins) and `trade_set_size` before calling a variant
+  distinct. Rows under `invalid_resume_*` / `invalid_warmup_*` labels are quarantined restart artefacts.
 
 **WARNING — Oracle failback:** before starting an executor on Oracle (failback or
 deploy), kill any locally running executors for the same account. There is currently

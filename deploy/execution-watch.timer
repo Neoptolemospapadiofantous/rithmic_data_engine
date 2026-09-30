@@ -1,0 +1,8 @@
+[Unit]
+Description=Run the execution watch every 2 minutes (acts only 09:25–16:05 ET on weekdays)
+[Timer]
+OnBootSec=120
+OnUnitActiveSec=2min
+AccuracySec=15s
+[Install]
+WantedBy=timers.target

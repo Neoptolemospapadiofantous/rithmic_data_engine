@@ -86,6 +86,7 @@ struct OrbConfig {
     double max_entry_offset    = 0.0;  // max pts from ORB level at signal time (0=disabled)
     int    max_daily_trades    = 3;    // max entries per session
     int    last_entry_hour     = 13;   // no new entries at or after this ET hour
+    int    last_entry_min      = 0;    // …and minute (10:30 = hour 10, min 30); 0 keeps the whole-hour rule
     int    eod_flatten_hour    = 15;   // EOD flatten hour (ET)
     int    eod_flatten_min     = 55;   // EOD flatten minute (ET)
     int    news_blackout_min   = 5;    // minutes before/after news event to block entry
@@ -344,6 +345,7 @@ struct OrbConfig {
         c.max_entry_offset     = json_dbl(text,  "max_entry_offset",     c.max_entry_offset);
         c.max_daily_trades     = json_int(text,  "max_daily_trades",     c.max_daily_trades);
         c.last_entry_hour      = json_int(text,  "last_entry_hour",      c.last_entry_hour);
+        c.last_entry_min       = json_int(text,  "last_entry_min",       c.last_entry_min);
         c.eod_flatten_hour     = json_int(text,  "eod_flatten_hour",     c.eod_flatten_hour);
         c.eod_flatten_min      = json_int(text,  "eod_flatten_min",      c.eod_flatten_min);
         c.news_blackout_min    = json_int(text,  "news_blackout_min",    c.news_blackout_min);
@@ -390,7 +392,36 @@ struct OrbConfig {
             c.pg_password = json_str(text, "pg_password", "");
 
         c.validate();
+        c.apply_dry_run_label();
         return c;
+    }
+
+    // A dry-run instance simulates its own fills and would otherwise write them into
+    // live_trades / live_sessions / live_position under the LIVE label — the dashboard,
+    // the leaderboard's live rows and the risk seeds cannot tell them apart (the
+    // 2026-09-29 NQ test ran under "tradeify" for a night). Rule: dry_run rows carry a
+    // label ending in "_dry" (strategy_leaderboard() and the board exclude %_dry%).
+    // Returns true when the label was rewritten. Idempotent.
+    bool apply_dry_run_label() {
+        if (!dry_run) return false;
+        const std::string sfx = "_dry";
+        if (account_label.size() >= sfx.size() &&
+            account_label.compare(account_label.size() - sfx.size(), sfx.size(), sfx) == 0)
+            return false;
+        account_label += sfx;
+        dry_label_forced = true;
+        return true;
+    }
+    bool dry_label_forced = false;   // set when apply_dry_run_label() rewrote the label
+
+    // The live label a dry-run label stands in for ("tradeify_dry" -> "tradeify"): the
+    // account-wide risk seeds and the broker high-water mark are keyed by it.
+    static std::string base_label(const std::string& label) {
+        const std::string sfx = "_dry";
+        if (label.size() > sfx.size() &&
+            label.compare(label.size() - sfx.size(), sfx.size(), sfx) == 0)
+            return label.substr(0, label.size() - sfx.size());
+        return label;
     }
 
     // ── Config validation — called at the end of from_file() ────────

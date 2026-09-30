@@ -1,0 +1,11 @@
+# execution-audit.service — post-session execution audit of the live executor (16:10 ET weekdays).
+# Install: cp deploy/execution-audit.{service,timer} ~/.config/systemd/user/ && systemctl --user daemon-reload
+#          systemctl --user enable --now execution-audit.timer
+[Unit]
+Description=Post-session execution audit (signals → orders → fills → broker) for the live executor
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/execution_audit.sh tradeify
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/execution_audit.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/execution_audit.log

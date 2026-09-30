@@ -244,6 +244,25 @@ TEST(broker_day_pnl_guard_on_reported_values) {
     ASSERT_NEAR(notif::parse_decimal("24584.52"), 24584.52, 0.001);
 }
 
+// 4b. Broker trailing drawdown on the balances the PNL plant reported (2026-09-29:
+//     balance 24321.76, never above the 25000 start → $321.76 of room, not $1000).
+TEST(broker_trailing_drawdown_on_reported_balances) {
+    double hwm = notif::broker_hwm(std::nan(""), 25000.0, std::nan(""));   // nothing persisted
+    ASSERT_NEAR(hwm, 25000.0, 0.001);
+    hwm = notif::broker_hwm(hwm, 25000.0, notif::parse_decimal("24794.24"));
+    ASSERT_NEAR(hwm, 25000.0, 0.001);                                       // below start: no new mark
+    ASSERT_NEAR(notif::broker_drawdown_room(24321.76, hwm, 1000.0), 321.76, 0.001);
+    ASSERT(!notif::broker_drawdown_breached(24321.76, hwm, 1000.0));
+    ASSERT(notif::broker_drawdown_breached(24000.00, hwm, 1000.0));         // at the cap
+    ASSERT(notif::broker_drawdown_breached(23990.00, hwm, 1000.0));
+    ASSERT(!notif::broker_drawdown_breached(std::nan(""), hwm, 1000.0));    // absent → no action
+    ASSERT(!notif::broker_drawdown_breached(23990.00, hwm, 0.0));           // cap disabled
+    hwm = notif::broker_hwm(hwm, 25000.0, 25410.50);                         // a new high
+    ASSERT_NEAR(hwm, 25410.50, 0.001);
+    ASSERT(notif::broker_drawdown_breached(24410.50, hwm, 1000.0));         // trails the mark
+    ASSERT_NEAR(notif::broker_hwm(25410.50, 25000.0, 25100.0), 25410.50, 0.001); // persisted mark wins
+}
+
 // 5. A fill for ANOTHER account on the same session is still ignored, and a
 //    duplicate delivery (tid=351 then tid=352) is not unwound twice.
 TEST(other_account_ignored_and_duplicate_not_unwound_twice) {
@@ -317,6 +336,7 @@ int main() {
     RUN(replay_as_it_happened_orphan_fill_is_unwound_not_ignored);
     RUN(replay_reconciler_closes_a_hidden_long_after_grace);
     RUN(broker_day_pnl_guard_on_reported_values);
+    RUN(broker_trailing_drawdown_on_reported_balances);
     RUN(other_account_ignored_and_duplicate_not_unwound_twice);
     RUN(unowned_fill_in_trade_halts_and_defers_to_reconciler);
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";

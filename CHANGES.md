@@ -7,6 +7,160 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-09-30 — execution validation every day; feed drops fixed; ORB live on 1 NQ, 3 trades, first hour
+
+Founder: "every day from now on we must validate and audit the execution process to be 100%
+everything works" (after a dry-run day — `dry_run: true` from the evening before, per "test it for
+now" — produced five simulated NQ winners that never reached Rithmic), then "clear todays trades and
+lets execute. also lets flip back to 3 trades instead of 5. and we only trade within the first 1 hour".
+
+**Live config** (`config/tradeify_config.json`): `dry_run false`, label `tradeify`, NQ/NQZ6, qty 1,
+`max_daily_trades 3`, new `last_entry_min` → entries until **10:30 ET** (OrbConfig gained
+`last_entry_min`, default 0 = the old whole-hour rule; `orb_strategy.hpp` compares hour*60+min —
+`tests/execution/test_orb_strategy.cpp::minute_cutoff_blocks_at_1030_allows_1029`). The day's
+`tradeify_dry` rows were deleted (founder's ask). Executor restarted live at 10:47 ET: ORDER_PLANT +
+PNL_PLANT connected, exchange flat, [BROKER-HWM] room $321.76.
+
+**Daily execution validation** (three layers, all Telegram via grid-notify):
+- `scripts/pre_rth_check.sh` (09:00 ET) now also asserts: dry_run false, label not `_dry`,
+  point_value matches the symbol, contract matches the symbol and is neither expired nor past its
+  roll date (`contracts`), qty ≥ 1, commission_rt > 0, ORDER_PLANT login since the last start,
+  drawdown room ≥ one stop; the green line prints the config summary.
+- `scripts/execution_watch.sh` + `execution-watch.timer` (every 2 min, acts 09:25–16:05 ET
+  weekdays): unit active, not dry, broker sessions since the last start, executor log alive, no
+  standing halt, exchange stop tracking the internal stop, feed fresh. Alerts once per transition.
+- `scripts/execution_audit.sh` + `execution-audit.timer` (16:10 ET): the session's log block
+  (live segments only) → mode, broker sessions, route, contract, every entry signal ended in a fill
+  or a logged timeout, no rejects, live_trades rows = exit fills, qty = config, broker day_pnl vs
+  recorded net within $1/contract + $2, exchange stop lag ≤ 15 s, BE moves replaced, no CRITICAL,
+  max_daily_trades and the entry cutoff respected, halts, feed gaps > 30 s in RTH. JSON report in
+  `data/execution_audit/<date>.json`, exit 1 on any FAIL. Run on 2026-09-29 it reproduces the
+  audit's findings (fee gap $73.90, two "Exchange stop rejected — software SL fallback" CRITICALs
+  that nobody had noticed, 137 s feed gap).
+
+**The feed was dropping ticks — a pre-existing defect, found by the new audit.** The collector's
+writer queue (`WRITER_QUEUE_MAX` 512) overflowed and DROPPED tick batches: 2,144 on 09-29, 888 on
+09-30 (mostly 15:00–18:00 EEST), producing the 30–137 s RTH feed gaps, the executor's
+`pg_feed_stale` halts and, on 09-30 17:49 EEST, an 85 s lag of the newest tick behind the clock.
+Cause: the paper fleet upserted all 2,271 `paper_positions` rows every 2 s, each an autocommit
+transaction with `synchronous_commit=on` (~300 fsync commits/s; 76.9 M lifetime updates on a
+2,271-row table) — the collector's tick INSERTs waited on WAL/IO behind it. Fixes: paper flush is
+change-only (per-row signature; a resting flat row is never rewritten), batched in ONE transaction,
+every 5 s, on a session with `synchronous_commit = off` (paper data only — collector and executor
+sessions untouched); `WRITER_QUEUE_MAX` 512 → 8192 so a burst buffers instead of dropping. Both
+paper units and the collector restarted on the new binaries (the executor was flat and past its
+entry cutoff). Verification: see the execution-audit report for 2026-10-01.
+
+## 2026-09-30 — paper fleet: start-up warm-up, honest costs, gap-through stop fills, leaderboard validity columns
+
+Audit follow-up (paper results + leaderboard). **Warm-up on start** (`paper_main.cpp`, fleet config
+`warmup_bars` = 1600): a live start replays the last 1600 completed 1m bars of recorded ticks (start
+resolved against `bars_1m`, so weekends and halts cost no bars) into every strategy with the brokers in
+warm-up mode — entry signals are counted and dropped, resumed positions are still managed, no
+paper_signals row, no position/account flush — then re-seeds today's counters, releases any strategy
+that believes it holds a suppressed entry (the executor's "release whatever you think you hold") and
+re-applies start-up halts. Until today a restart re-read 5 minutes: the momentum scalper needs 1500
+completed bars (`warmup_bars`) and traded nothing for a day after every restart, and 3 of the first 6
+forward sessions were restart days — the whole `qualifies` set on 2026-09-29 rested on them. Every
+engine start is now a row in **`paper_engine_runs`** (migrations/014, also in `ensure_schema`; history
+seeded from the engine logs' "Fleet ready" lines, 52 starts). **ORB gap re-feed**: after a feed gap on
+the same trading day the flat ORB strategies get the session's recorded ticks re-fed (entries
+suppressed) so they regain their opening range; trend/mtf keep bar history across the reset and are
+deliberately not re-fed (double-counted EMA/ATR bars). NOTE: the Sunday/holiday case remains — a
+restart right after a weekend finds fewer bars than 1600 in the window and warms with what exists.
+**Costs**: `commission_rt` 1.0 → **1.82** per contract round trip (Tradeify, measured on 09-28/29) and
+`slippage_ticks` 1 → **3** (live ORB entries averaged 4.4 ticks on a 4-tick marketable limit) in both
+fleet configs; **stop fills never better than the crossing print** (a gap through the stop fills where
+it printed — 10.8 % of stop exits had filled better than the NQ print by more than a tick) in both
+brokers, tests added. **Break-even stop mirrors live**: the live OrderManager now sends the BE move to
+the exchange regardless of the trail_step storm filter (trade 66 on 09-29 lost −8.25 × 5 lots because
+a 9-pt BE move under trail_step 15 was dropped); `PaperBroker::sync_placed_stop(force=true)` places it
+the same way, the parity test covers it. **Leaderboard** (`strategy_leaderboard.sql`, appended columns
+only): `restart_sessions` (sessions with an engine start 03:00 ET → slot end), `trade_set_id` /
+`trade_set_size` (identical trade sets — 7 mtf `__btp` variants share one), `positive_halves`,
+`scratch_rate` (49 % of exits are breakeven scratches and `wins` counts them); Sharpe/Sortino over the
+period's calendar sessions with flat days as 0 and NULL under 10 sessions (a 3-day strategy read 17.0);
+`qualifies` needs a real profit factor (no-loss rows have none) and `restart_sessions = 0` — on the
+7-day slot ranking 8 → **0** qualify. **Data repairs**: the 26 forward rows the 2026-09-23 09:43 ET
+restart produced in its 5-minute catch-up (entered 09:40:53, exited 09:40:53–09:41:03, written 09:43;
+prints confirmed, but no engine was running when they happened) relabelled `invalid_resume_20260923`,
+paper_daily rebuilt — 09-23 counters now equal the trades (1762 / −4001.33) where they disagreed by 8
+trades before. ⚠️ **A defect in this change's first deployment wrote 1,421 phantom rows** (12:00–12:05
+UTC 2026-09-30): the warm-up ended after one page because `poll_ticks` hands a LIMIT-cut same-
+microsecond group to the next page and the "history exhausted" test read the short page as the end,
+so the rest of 09-29 was processed live with entries enabled (583 duplicates of forward rows, 838
+signals the forward run never took). Relabelled `invalid_warmup_20260930` (not deleted — same rule as
+09-23), paper_daily 09-29/09-30 rebuilt (tradeify 3815 / −20731.50 and 289 / −1993.23, both equal to
+the trades; es 74 / −409.00), the end test now reads the tape's time, and a restart on the fixed
+binary wrote 0 such rows. A second defect on the next restart: five resumed overnight holds
+(`beta_on*`, entered 09-29 15:55/18:00) were flattened at their own entry tick — the trend strategy,
+seeded "in position", judged its window end against replayed ticks from BEFORE the entry. During
+warm-up a runner holding a resumed position now skips every tick AND every minute-boundary window-end
+check older than that entry (the replayed 09:30 ET boundary of the previous day had queued a FLATTEN_EOD
+on them; the broker already ignored the ticks), and the wall-clock EOD check is off while warming up
+(the strategies' state is in the replayed past). The rows joined the quarantine label (1,432 total), the
+positions were restored in `paper_positions` (direction is the TEXT `LONG`/`SHORT` the loader reads)
+from the rows + the engine's "Resumed" lines, and the engine resumed them. NOTE for the gate: the two
+paper units share `build/paper_engine` — stop BOTH before replacing it, or `cp` fails with "Text file
+busy" and the restart runs the old binary. Golden re-frozen: 2438 → 2448 trades (costs move every P&L; +10 trades from
+the wider fills). Replay mode never warms up and its `trades_only` store already skips paper_daily /
+positions / account (verified: every upsert guards on `trades_only_`).
+
+## 2026-09-30 — live executor: audit fixes (BE stop, fees + VWAP, account-wide drawdown, dry-run label)
+
+From the 2026-09-30 validity audit. All in `src/execution/`; tests in `tests/execution/`.
+
+- **Break-even stop reaches the exchange.** `update_stop_order_locked` gained `force`; the BE move
+  bypasses the trail_step storm filter (2026-09-29 trade 66: sl 8 / BE 1 / trail_step 15 — the 9-pt
+  BE move was dropped, the exchange stop filled at the original level, −$82.50 instead of ≈ +$10).
+  Test `be_move_smaller_than_trail_step_reaches_exchange`. ⚠️ `test_parity_paper_vs_live`
+  `regime_exit_trend` now FAILS by 64 ticks: `paper_broker.hpp` still models the old suppression
+  for the BE move (its `placed_stop` stays at the initial stop while live now sends BE). The paper
+  side needs the same exemption — owned by the paper-fleet change in flight, not done here.
+- **Fees and VWAP on live rows.** `config/tradeify_config.json` `commission_rt` 0 → 1.82 (the
+  MEASURED Tradeify MNQ fee per contract round trip: 09-28 $3.64 / 2 ct-RT, 09-29 $81.90 / 45 ct-RT;
+  `_commission_note` says the NQ fee is still unknown). Multi-lot entries/exits record the
+  qty-weighted average of the partial fills instead of the completing partial's price (09-29 rows
+  61/64/67/68/69 were off by $8). Test `multi_lot_partial_fills_record_vwap_entry_and_exit`.
+- **Trailing drawdown is account-wide and broker-anchored.** `OrbDB::get_total_pnl` /
+  `get_peak_equity` sum EVERY strategy and instrument on the live label (a `_dry` label seeds from
+  the label it rehearses for) — the MNQ ORB instance had seeded peak 25,367 from its own gross wins
+  while the account was at 24,321. New `live_account_hwm` table + `notif::broker_hwm /
+  broker_drawdown_breached / broker_drawdown_room`: the tid=451 balance feeds a persisted
+  high-water mark (max of starting balance, stored mark, every balance seen) and entries halt when
+  balance ≤ HWM − trailing_drawdown_cap, beside the existing broker daily-loss halt. Startup logs
+  `[RISK-SEED]` (synthetic, account-wide) and `[BROKER-HWM] seed=… halt when balance <= …`.
+  Test `broker_trailing_drawdown_on_reported_balances`. Today: HWM 25,000 → halt at 24,000; the
+  account is at 24,321.76 — $321.76 of room, one full NQ stop.
+- **Dry-run rows never land in the live history.** `OrbConfig::apply_dry_run_label()`: with
+  `dry_run: true` the label must end in `_dry` (appended with a WARN otherwise; `base_label()`
+  strips it for the seeds). `strategy_leaderboard()` and the board already exclude `%_dry%`.
+  Tests `config_dry_run_forces_dry_label`; `config_valid_file_loads` updated to the rule.
+- **loss_limits drift**: `migrations/20260930_loss_limits_max_daily_trades.sql` sets the dashboard's
+  `max_daily_trades` row to the config's 5 (the executor never reads that table; apply by hand).
+
+Gate: `make hermes-fast` 15 PASS / 1 FAIL (the parity case above). Dry-run unit restarted on the new
+binary: `Historical total_pnl=-537.50 (account-wide, label=tradeify)`, `peak_equity=25208.00`,
+`[RISK-SEED] … room=254.50`, `[BROKER-HWM] seed=25000.00 … halt when balance <= 24000.00`.
+
+## 2026-09-29 — live is ORB only, on 1 NQ
+
+**Then, founder: "test it for now" — `dry_run: true` on the same config; the instance opens no Rithmic session and simulates fills on the NQ feed until the founder flips it back.**
+
+Founder: "lets run NQ for 1 contract not MNQ and we only keep ORB". `config/tradeify_config.json`: symbol MNQ→NQ,
+trade_contract MNQZ6→NQZ6, point_value 2→20, qty 5→1 (archived copy in `config/archived/live_history/`), validated
+with `--check-config`, executor restarted flat after the close. `config/tradeify_handoff_config.json` archived and
+`strategy-rotation.timer` disabled — nothing else can reach the account. Risk limits untouched (SL 15 pts is now
+$300 a trade; the −$500 daily loss limit halts after two full stops).
+
+## 2026-09-29 — hand-off engine removed from live
+
+Founder: "remove FIB_PB_1M_DEEP from the live". `strategy-handoff.timer` disabled and stopped, the
+`tradeify_handoff` instance confirmed stopped, `config/tradeify_handoff_config.json` set to `dry_run: true`
+(live copy archived under `config/archived/handoff_history/`), validated with `--check-config`. ORB
+(`tradeify`, 5 MNQ) keeps running alone; the Sunday rotation still rewrites the hand-off config but
+nothing starts it. Restore path is in CLAUDE.md (Local mode).
+
 ## [Unreleased]
 
 ### Changed — live size 5 MNQ on both ORB and the hand-off (2026-09-29, founder)

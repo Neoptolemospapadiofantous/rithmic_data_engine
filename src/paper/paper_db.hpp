@@ -111,6 +111,9 @@ public:
 
     // PaperStore
     void save_position(const PaperPositionRow& p) override;
+    void begin_batch();          // wrap a flush of many rows in one transaction (one commit)
+    void commit_batch();
+    void relax_commit();         // SET synchronous_commit = off on this session (paper data only)
     void record_trade(const PaperTradeRow& t) override;  // insert + NOTIFY paper_update
 
     // Registry / resume
@@ -150,6 +153,7 @@ public:
     // Tick polling (shared live feed written by the collector)
     void record_signal(const PaperSignalRow& s) override;
     struct BboRow { int64_t ts_us; double bid, ask; int bid_sz, ask_sz; };
+    struct TickRow { int64_t ts_us; double price; int64_t size; bool is_buy; };
     // Quotes after `after_us` (one-sided rows forward-filled from the last seen side).
     std::vector<BboRow> poll_bbo(const std::string& symbol, int64_t after_us, int limit = 5000);
     // Prior-day ATR14 (points) for the regime gate: the newest session_stats row for
@@ -157,10 +161,19 @@ public:
     double session_atr14_before(const std::string& symbol, const std::string& ymd);
     // Scheduled-release day (calendar kind fomc / nfp) for the news_break mode's nb_event_only.
     bool calendar_event_day(const std::string& ymd);
-    struct TickRow { int64_t ts_us; double price; int64_t size; bool is_buy; };
     std::vector<TickRow> poll_ticks(const std::string& symbol, int64_t after_us,
                                     int limit = 5000);
 
+    // Engine-start ledger (paper_engine_runs, 2026-09-30): one row per process start, so the
+    // leaderboard can flag sessions that began after a restart (restart_sessions). Never throws.
+    void record_engine_run(int64_t started_us, const std::string& account_label, int strategies,
+                           int64_t warmup_from_us);
+    // Timestamp (us) of the `bars`-th most recent completed 1m bar of `symbol` in bars_1m — the
+    // start of the start-up warm-up replay. Falls back to before_us − bars minutes when bars_1m is
+    // missing or short.
+    int64_t warmup_start_us(const std::string& symbol, int bars, int64_t before_us);
+    // Recorded ticks in (after_us, until_us] — the warm-up / gap re-feed reader (same row order as poll_ticks).
+    std::vector<TickRow> poll_ticks_until(const std::string& symbol, int64_t after_us, int64_t until_us, int limit = 5000);
     static std::string format_ts(int64_t ts_micros);  // → "YYYY-MM-DD HH:MM:SS.ffffff+00"
 
     void exec_silent(const std::string& sql);

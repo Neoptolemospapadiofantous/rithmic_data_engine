@@ -527,25 +527,62 @@ public:
         return ev;
     }
 
+    // ── Account-wide realised P&L (all strategies, all instruments) ──────────
+    // Prop-firm limits are per ACCOUNT. Until 2026-09-30 this summed only the
+    // instance's own (label, instrument, strategy): the MNQ ORB instance seeded from its
+    // own +$367 of gross wins while the account had lost $325 on FIB and $598 on the
+    // 2026-09-23 liquidation, and a fresh NQ instance seeded from nothing at all.
+    // A "_dry" label seeds from the live label it rehearses for.
     double get_total_pnl() {
         if (!is_connected()) reconnect();
-
-        const char* params[3] = {
-            account_label_.c_str(),// $1
-            instrument_.c_str(),   // $2
-            strategy_.c_str()      // $3
-        };
-
+        const std::string base = base_label(account_label_);
+        const char* params[1] = { base.c_str() };
         PGresult* res = exec_params_query(
             "SELECT COALESCE(SUM(pnl_usd), 0.0) FROM live_trades"
-            " WHERE account_label=$1 AND instrument=$2 AND strategy=$3",
-            3, params);
+            " WHERE account_label=$1",
+            1, params);
 
         if (!res) return 0.0;
         double total = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
         PQclear(res);
-        LOG("[ORBDB] Historical total_pnl=%.2f", total);
+        LOG("[ORBDB] Historical total_pnl=%.2f (account-wide, label=%s)", total, base.c_str());
         return total;
+    }
+
+    static std::string base_label(const std::string& label) {
+        const std::string sfx = "_dry";
+        if (label.size() > sfx.size() &&
+            label.compare(label.size() - sfx.size(), sfx.size(), sfx) == 0)
+            return label.substr(0, label.size() - sfx.size());
+        return label;
+    }
+
+    // ── Broker high-water mark (prop-firm trailing drawdown anchor) ──────────
+    // Persisted per live label so a restart cannot forget a balance the account once
+    // reached. NaN when nothing is stored yet.
+    double get_account_hwm() {
+        if (!is_connected()) reconnect();
+        const std::string base = base_label(account_label_);
+        const char* params[1] = { base.c_str() };
+        PGresult* res = exec_params_query(
+            "SELECT high_water_mark FROM live_account_hwm WHERE account_label=$1", 1, params);
+        if (!res) return std::nan("");
+        double v = (PQntuples(res) > 0 && !PQgetisnull(res, 0, 0))
+                   ? std::atof(PQgetvalue(res, 0, 0)) : std::nan("");
+        PQclear(res);
+        return v;
+    }
+    void set_account_hwm(double hwm) {
+        const std::string base = base_label(account_label_);
+        char buf[32]; snprintf(buf, sizeof(buf), "%.2f", hwm);
+        const char* params[2] = { base.c_str(), buf };
+        exec_params(
+            "INSERT INTO live_account_hwm (account_label, high_water_mark, updated_at)"
+            " VALUES ($1, $2::double precision, NOW())"
+            " ON CONFLICT (account_label) DO UPDATE SET"
+            "   high_water_mark = GREATEST(live_account_hwm.high_water_mark, EXCLUDED.high_water_mark),"
+            "   updated_at = NOW()",
+            2, params);
     }
 
     // ── Get today's realized P&L for an account (for seeding RiskManager on restart) ──
@@ -580,14 +617,11 @@ public:
     // max cumulative P&L at any point in trade history.  Used to seed
     // RiskManager.peak_equity_ so the trailing drawdown cap is correct after
     // a cycle restart (otherwise it resets to starting_balance each cycle).
+    // Account-wide (all strategies, all instruments on the live label) — see get_total_pnl.
     double get_peak_equity(double starting_balance) {
         if (!is_connected()) reconnect();
-
-        const char* params[3] = {
-            account_label_.c_str(),
-            instrument_.c_str(),
-            strategy_.c_str()
-        };
+        const std::string base = base_label(account_label_);
+        const char* params[1] = { base.c_str() };
 
         PGresult* res = exec_params_query(
             "SELECT COALESCE(MAX(cum_pnl), 0.0) FROM ("
@@ -596,15 +630,16 @@ public:
             "    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW"
             "  ) AS cum_pnl"
             "  FROM live_trades"
-            "  WHERE account_label=$1 AND instrument=$2 AND strategy=$3"
+            "  WHERE account_label=$1"
             ") sub",
-            3, params);
+            1, params);
 
         if (!res) return starting_balance;
         double max_cum_pnl = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
         PQclear(res);
         double peak = starting_balance + std::max(0.0, max_cum_pnl);
-        LOG("[ORBDB] Historical peak_equity=%.2f (max_cum_pnl=%.2f)", peak, max_cum_pnl);
+        LOG("[ORBDB] Historical peak_equity=%.2f (account-wide max_cum_pnl=%.2f, label=%s)",
+            peak, max_cum_pnl, base.c_str());
         return peak;
     }
 
@@ -843,6 +878,15 @@ private:
         exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS instrument      TEXT NOT NULL DEFAULT 'MNQ'");
         exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS strategy        TEXT NOT NULL DEFAULT 'ORB'");
         exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS account_equity  DOUBLE PRECISION");
+
+        // Broker balance high-water mark per live label (prop-firm trailing drawdown anchor).
+        exec(R"(
+            CREATE TABLE IF NOT EXISTS live_account_hwm (
+                account_label   TEXT PRIMARY KEY,
+                high_water_mark DOUBLE PRECISION NOT NULL,
+                updated_at      TIMESTAMPTZ DEFAULT NOW()
+            )
+        )");
 
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_position (

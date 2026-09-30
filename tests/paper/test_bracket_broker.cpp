@@ -150,6 +150,32 @@ TEST(strategy_stop_ratchet_never_loosens_short) {
     ASSERT_NEAR(b->stop_price(), 103.5, 1e-9);
 }
 
+TEST(stop_gap_through_fills_at_the_print) {
+    FakeStore fs;
+    auto b = make_broker(fs);
+    b->on_signal(OrbSignal::BUY, 100.0, "x");
+    b->on_tick(tick(et_ts(10, 5), 100.0), 95.0, NaN_, 1);
+    b->on_tick(tick(et_ts(10, 9), 93.0), 95.0, NaN_, 1);     // gaps 2 pts through the stop
+    ASSERT(!b->in_position());
+    ASSERT_EQ(fs.trades.size(), 1u);
+    ASSERT_NEAR(fs.trades[0].exit_price, 93.0, 1e-9);        // the print, not 94.75
+    ASSERT_STREQ(fs.trades[0].exit_reason, "stop");
+}
+
+TEST(warmup_drops_entries_and_counts_them) {
+    FakeStore fs;
+    auto b = make_broker(fs);
+    b->set_warmup(true);
+    b->on_signal(OrbSignal::BUY, 100.0, "x");
+    b->on_tick(tick(et_ts(10, 5), 100.0), 95.0, NaN_, 1);
+    ASSERT(!b->in_position());
+    ASSERT_EQ(b->warmup_dropped(), 1);
+    b->set_warmup(false);
+    b->on_signal(OrbSignal::BUY, 100.0, "x");
+    b->on_tick(tick(et_ts(10, 6), 100.0), 95.0, NaN_, 1);
+    ASSERT(b->in_position());
+}
+
 TEST(stop_fills_at_stop_minus_slippage) {
     FakeStore fs;
     auto b = make_broker(fs);

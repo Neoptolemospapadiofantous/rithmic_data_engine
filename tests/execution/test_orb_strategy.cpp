@@ -502,6 +502,28 @@ TEST(notify_trade_filled_cooldown_applies_to_all_exits) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Minute-granular cutoff: last_entry 10:30 blocks 10:30 and later, allows 10:29 (founder 2026-09-30: first hour only)
+TEST(minute_cutoff_blocks_at_1030_allows_1029) {
+    OrbConfig cfg = make_cfg();
+    cfg.last_entry_hour = 10;
+    cfg.last_entry_min  = 30;
+    std::vector<CapturedSignal> signals;
+    OrbStrategy s = make_strategy(cfg, signals);
+    s.seed_orb_range(19100.0, 18950.0);
+    ASSERT(s.orb_set());
+    anchor_after_seed(s);
+    s.on_tick(make_tick(10, 30, 0, 19101.0));   // at the cutoff → blocked
+    ASSERT_EQ(signals.size(), (size_t)0);
+    s.on_tick(make_tick(10, 45, 0, 19102.0));   // after → blocked
+    ASSERT_EQ(signals.size(), (size_t)0);
+    OrbStrategy s2 = make_strategy(cfg, signals);
+    s2.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s2);
+    s2.on_tick(make_tick(10, 29, 59, 19101.0)); // one second before → allowed
+    ASSERT_EQ(signals.size(), (size_t)1);
+    ASSERT(signals[0].signal == OrbSignal::BUY);
+}
+
 int main() {
     RUN(orb_range_accumulates_during_window);
     RUN(no_signal_before_orb_set);
@@ -514,6 +536,7 @@ int main() {
     RUN(news_blackout_blocks_signal_at_830);
     RUN(signals_resume_after_news_blackout);
     RUN(no_signal_at_or_after_last_entry_hour);
+    RUN(minute_cutoff_blocks_at_1030_allows_1029);
     RUN(max_daily_trades_cap);
     RUN(risk_halt_blocks_all_signals);
     RUN(reset_session_clears_all_state);

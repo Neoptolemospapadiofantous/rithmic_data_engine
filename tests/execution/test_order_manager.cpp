@@ -2182,6 +2182,71 @@ TEST(mtf_stops_snapped_to_tick_adverse) {
     ASSERT_NEAR(g.om.position_snapshot().sl_price, 19003.0, 0.001);
 }
 
+
+// 63. The break-even move reaches the exchange even when it is smaller than trail_step
+//     (2026-09-29 trade 66: sl 8 / be_offset 1 / trail_step 15 → the 9-pt BE move was
+//     dropped by the storm filter and the exchange stop filled at the original level).
+TEST(be_move_smaller_than_trail_step_reaches_exchange) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_points        = 8.0;
+    cfg.trail_be_offset  = 1.0;
+    cfg.trail_be_trigger = 8.0;
+    cfg.trail_step       = 15.0;   // > the 9-pt BE move
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 30616.50 + 8.0, "fib_pullback");
+    sim_entry_fill(f, 30624.50);
+    ASSERT_EQ(f.sent_baskets.size(), (std::size_t)2);          // entry + initial stop
+    ASSERT(f.cancelled_baskets.empty());
+    std::string old_stop = f.om.position_snapshot().basket_id_stop;
+
+    f.om.check_trail_and_stop(30632.50);                        // mfe 8.0 → BE triggers
+    auto snap = f.om.position_snapshot();
+    ASSERT(snap.be_triggered);
+    ASSERT_NEAR(snap.sl_price, 30625.50, 0.001);                // entry + 1
+    ASSERT(!f.cancelled_baskets.empty());                       // old stop cancelled…
+    ASSERT_EQ(f.cancelled_baskets.back(), old_stop);
+    ASSERT_EQ(f.sent_baskets.size(), (std::size_t)3);          // …and the BE stop SENT
+    ASSERT(snap.basket_id_stop != old_stop);
+
+    // The storm filter still applies to ordinary trail moves smaller than trail_step.
+    std::size_t sends = f.sent_baskets.size();
+    f.om.check_trail_and_stop(30634.00);                        // trail_sl = 30619 < BE → no move
+    ASSERT_EQ(f.sent_baskets.size(), sends);
+}
+
+// 64. Multi-lot partial fills: the recorded entry/exit price is the qty-weighted average
+//     of the partials, not the price of the completing one (2026-09-29 five 5-lot rows
+//     were off by $8 in total).
+TEST(multi_lot_partial_fills_record_vwap_entry_and_exit) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty           = 5;
+    cfg.commission_rt = 0.0;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    std::string entry = f.om.position_snapshot().basket_id_entry;
+    f.om.on_fill_notification(entry, 19000.00, 2, /*is_entry=*/true);   // partial 2 @ 19000.00
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+    f.om.on_fill_notification(entry, 19001.00, 5, /*is_entry=*/true);   // complete 3 @ 19001.00
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    ASSERT_NEAR(f.om.position_snapshot().entry_price, 19000.60, 0.0001); // (2*19000+3*19001)/5
+
+    f.om.flatten_now("test", 19010.0);
+    std::string exit_b = f.om.position_snapshot().basket_id_exit;
+    f.om.on_fill_notification(exit_b, 19010.00, 1, /*is_entry=*/false);  // partial 1 @ 19010.00
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    f.om.on_fill_notification(exit_b, 19010.25, 5, /*is_entry=*/false);  // complete 4 @ 19010.25
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    // exit vwap = (1*19010.00 + 4*19010.25)/5 = 19010.20 ; pts = 9.60 ; $ = 9.60*2*5 = 96.00
+    ASSERT_NEAR(out.exit_price,  19010.20, 0.0001);
+    ASSERT_NEAR(out.pnl_points,  9.60,     0.0001);
+    ASSERT_NEAR(out.pnl_usd,     96.00,    0.001);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
@@ -2250,6 +2315,8 @@ int main() {
     RUN(tid352_duplicate_exit_fill_does_not_ghost_halt);
     RUN(pnl_scales_with_qty_and_commission_rt);
     RUN(pnl_short_loss_scales_with_qty_and_commission_rt);
+    RUN(be_move_smaller_than_trail_step_reaches_exchange);
+    RUN(multi_lot_partial_fills_record_vwap_entry_and_exit);
     RUN(client_only_cancel_guard_survives_flat_purge_and_unwinds_late_fire);
     RUN(late_server_map_resends_cancel_for_cancelled_stop);
     RUN(cancel_failed_readopts_old_stop_while_in_trade);

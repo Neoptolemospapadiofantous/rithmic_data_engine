@@ -92,6 +92,13 @@ static const char* kSchemaSQL[] = {
   consumed_at TIMESTAMPTZ))sql",
     R"sql(CREATE INDEX IF NOT EXISTS idx_paper_control_pending
   ON paper_control(consumed_at))sql",
+    // migrations/014_paper_engine_runs.sql — one row per engine start (restart_sessions in the leaderboard)
+    R"sql(CREATE TABLE IF NOT EXISTS paper_engine_runs (
+  started_at    TIMESTAMPTZ NOT NULL,
+  account_label TEXT        NOT NULL,
+  strategies    INTEGER     NOT NULL DEFAULT 0,
+  warmup_from   TIMESTAMPTZ,
+  UNIQUE (started_at, account_label)))sql",
 };
 
 PaperDb::PaperDb(const std::string& connstr) {
@@ -102,8 +109,22 @@ PaperDb::PaperDb(const std::string& connstr) {
         conn_ = nullptr;
         throw std::runtime_error("PostgreSQL connection failed: " + msg);
     }
+    relax_commit();
     ensure_schema();
 }
+
+// Paper state is derived data (re-buildable from the tape); it must never make the live
+// tick writer wait on WAL fsyncs. 2026-09-30: with synchronous_commit=on the fleet's
+// per-strategy position upserts (~300 commits/s) starved the collector's writer queue and
+// ticks were dropped in RTH. Session-local, so the collector/executor are untouched.
+void PaperDb::relax_commit() {
+    if (!conn_) return;
+    PGresult* r = PQexec(conn_, "SET synchronous_commit = off");
+    if (r) PQclear(r);
+}
+
+void PaperDb::begin_batch()  { PGresult* r = PQexec(live(), "BEGIN");  if (r) PQclear(r); }
+void PaperDb::commit_batch() { PGresult* r = PQexec(live(), "COMMIT"); if (r) PQclear(r); }
 
 PaperDb::~PaperDb() {
     if (conn_) PQfinish(conn_);
@@ -121,10 +142,12 @@ PGconn* PaperDb::live() {
     last_reset_ = now;
     if (!conn_) return conn_;
     PQreset(conn_);
-    if (PQstatus(conn_) == CONNECTION_OK)
+    if (PQstatus(conn_) == CONNECTION_OK) {
         LOG("[PAPER-DB] reconnected to PostgreSQL");
-    else
+        relax_commit();
+    } else {
         LOG("[PAPER-DB] WARN reconnect failed: %s", PQerrorMessage(conn_));
+    }
     return conn_;
 }
 
@@ -307,6 +330,76 @@ void PaperDb::record_signal(const PaperSignalRow& s) {
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
         LOG("[PAPER-DB] WARN record_signal(%s): %s", s.strategy_id.c_str(), res ? PQresultErrorMessage(res) : "null result");
     if (res) PQclear(res);
+}
+
+void PaperDb::record_engine_run(int64_t started_us, const std::string& account_label, int strategies,
+                                int64_t warmup_from_us) {
+    std::string ts = format_ts(started_us), n = std::to_string(strategies);
+    std::string wf = warmup_from_us > 0 ? format_ts(warmup_from_us) : "";
+    const char* params[4] = { ts.c_str(), account_label.c_str(), n.c_str(), wf.empty() ? nullptr : wf.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(INSERT INTO paper_engine_runs (started_at, account_label, strategies, warmup_from)
+              VALUES ($1::timestamptz, $2, $3::int, $4::timestamptz)
+              ON CONFLICT (started_at, account_label) DO NOTHING)sql",
+        4, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+        LOG("[PAPER-DB] WARN record_engine_run: %s", res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
+}
+
+int64_t PaperDb::warmup_start_us(const std::string& symbol, int bars, int64_t before_us) {
+    const int64_t fallback = before_us - (int64_t)bars * 60'000'000LL;
+    if (bars <= 0) return before_us;
+    std::string ts = format_ts(before_us), n = std::to_string(bars - 1);
+    const char* params[3] = { symbol.c_str(), ts.c_str(), n.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(SELECT (EXTRACT(EPOCH FROM minute)*1000000)::bigint FROM bars_1m
+              WHERE symbol = $1 AND minute < $2::timestamptz
+              ORDER BY minute DESC OFFSET $3::int LIMIT 1)sql",
+        3, nullptr, params, nullptr, nullptr, 0);
+    int64_t out = fallback;
+    if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
+        LOG("[PAPER-DB] WARN warmup_start_us: %s — falling back to %d minutes",
+            res ? PQresultErrorMessage(res) : "null result", bars);
+    } else if (PQntuples(res) == 1) {
+        out = std::atoll(PQgetvalue(res, 0, 0));
+    } else {
+        LOG("[PAPER-DB] warmup_start_us: bars_1m holds fewer than %d bars of %s — warm-up covers what exists", bars, symbol.c_str());
+        out = fallback;
+    }
+    if (res) PQclear(res);
+    return out;
+}
+
+std::vector<PaperDb::TickRow> PaperDb::poll_ticks_until(const std::string& symbol, int64_t after_us,
+                                                        int64_t until_us, int limit) {
+    std::string ts = format_ts(after_us), tu = format_ts(until_us), lim = std::to_string(limit);
+    const char* params[4] = { ts.c_str(), symbol.c_str(), tu.c_str(), lim.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(SELECT (EXTRACT(EPOCH FROM ts_event)*1000000)::bigint, price, size, is_buy
+              FROM ticks WHERE ts_event > $1::timestamptz AND symbol = $2 AND ts_event <= $3::timestamptz
+              ORDER BY ts_event, seq, price, size LIMIT $4::int)sql",
+        4, nullptr, params, nullptr, nullptr, 0);
+    std::vector<TickRow> out;
+    if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
+        LOG("[PAPER-DB] WARN poll_ticks_until: %s", res ? PQresultErrorMessage(res) : "null result");
+        if (res) PQclear(res);
+        return out;
+    }
+    const int n = PQntuples(res);
+    out.reserve(n);
+    for (int i = 0; i < n; ++i)
+        out.push_back(TickRow{ std::atoll(PQgetvalue(res, i, 0)), std::atof(PQgetvalue(res, i, 1)),
+                               std::atoll(PQgetvalue(res, i, 2)), std::strcmp(PQgetvalue(res, i, 3), "t") == 0 });
+    PQclear(res);
+    // Same page-boundary rule as poll_ticks: never split a same-microsecond group across pages.
+    if (n == limit && out.size() > 1) {
+        const int64_t last = out.back().ts_us;
+        size_t k = out.size();
+        while (k > 1 && out[k - 1].ts_us == last) --k;
+        if (out[k - 1].ts_us != last) out.resize(k);
+    }
+    return out;
 }
 
 std::vector<PaperDb::BboRow> PaperDb::poll_bbo(const std::string& symbol, int64_t after_us, int limit) {

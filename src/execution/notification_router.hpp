@@ -4,6 +4,7 @@
 // 2026-09-23 sequence through these functions with the log's own values.
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <functional>
@@ -103,6 +104,25 @@ inline double parse_decimal(const std::string& s) {
 
 inline bool broker_loss_breached(double day_pnl, double daily_loss_limit) {
     return !std::isnan(day_pnl) && daily_loss_limit < 0.0 && day_pnl <= daily_loss_limit;
+}
+
+// Prop-firm trailing drawdown on the BROKER's numbers. The high-water mark is the
+// highest of: the starting balance, the persisted mark, and every balance the PNL plant
+// has reported; NaN inputs are skipped. The executor's own risk gauge is synthetic
+// (starting balance + our trade log, per strategy/instrument until 2026-09-30) and on
+// 2026-09-29 believed it had $1,000 of room while the account had $321.76.
+inline double broker_hwm(double prev_hwm, double starting_balance, double balance) {
+    double h = std::isnan(prev_hwm) ? starting_balance : std::max(prev_hwm, starting_balance);
+    if (!std::isnan(balance) && balance > h) h = balance;
+    return h;
+}
+inline bool broker_drawdown_breached(double balance, double hwm, double trailing_cap) {
+    return !std::isnan(balance) && !std::isnan(hwm) && trailing_cap > 0.0 &&
+           balance <= hwm - trailing_cap;
+}
+// Dollars left before the trailing cap trips (negative = already through it).
+inline double broker_drawdown_room(double balance, double hwm, double trailing_cap) {
+    return balance - (hwm - trailing_cap);
 }
 
 } // namespace notif

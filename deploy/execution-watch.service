@@ -1,0 +1,9 @@
+# execution-watch.service — intraday execution watch, every 2 minutes during weekday RTH (silent otherwise).
+# Install: cp deploy/execution-watch.{service,timer} ~/.config/systemd/user/ && systemctl --user daemon-reload
+#          systemctl --user enable --now execution-watch.timer
+[Unit]
+Description=Intraday execution watch for the live executor (unit, mode, broker sessions, feed, stops)
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/execution_watch.sh tradeify

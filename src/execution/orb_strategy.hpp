@@ -147,7 +147,7 @@ public:
 
         // ORB set — check for breakout signal
         if (session_.trades_today >= cfg_.max_daily_trades) return;
-        if (et_hour >= cfg_.last_entry_hour) return;
+        if (et_hour * 60 + et_min >= cfg_.last_entry_hour * 60 + cfg_.last_entry_min) return;  // minute-granular entry cutoff (founder 2026-09-30: first hour only)
         if (is_news_blackout(et_hour, et_min)) {
             static int64_t last_blackout_log = 0;
             int64_t now_min = static_cast<int64_t>(tick.ts_micros / 1'000'000 / 60);

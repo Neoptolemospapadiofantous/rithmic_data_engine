@@ -432,6 +432,20 @@ public:
                                      double fill_price,
                                      int fill_qty,
                                      bool is_entry_fill) {
+        // Multi-lot orders fill in partials, each notification carrying the CUMULATIVE
+        // quantity and THAT fill's price. The recorded entry/exit price must be the
+        // qty-weighted average of the partials, not the price of the completing one
+        // (2026-09-29: five 5-lot rows off by $8 in total). Only our own position's
+        // baskets are accumulated; every other path keeps the raw fill price.
+        if (fill_qty > 0 && (basket_id == pos_.basket_id_entry ||
+                             basket_id == pos_.basket_id_stop  ||
+                             basket_id == pos_.basket_id_exit)) {
+            auto& acc = fill_acc_[basket_id];
+            const int inc = fill_qty - acc.first;
+            if (inc > 0) { acc.second += inc * fill_price; acc.first = fill_qty; }
+            if (acc.first > 0) fill_price = acc.second / acc.first;   // VWAP so far
+            if (fill_qty >= pos_.qty) fill_acc_.erase(basket_id);      // complete: done
+        }
 
         if (is_entry_fill) {
             if (pos_.state != PosState::PENDING_ENTRY) {
@@ -918,7 +932,7 @@ public:
                 sl_moved = true;
                 LOG("[OM] BE triggered — SL moved %.2f → %.2f (entry+%.1fpt)",
                     old_sl, be_sl, cfg_.trail_be_offset);
-                update_stop_order_locked(old_sl, be_sl);
+                update_stop_order_locked(old_sl, be_sl, /*force=*/true);
             } else {
                 LOG("[OM] BE triggered but be_sl=%.2f does not improve current sl=%.2f — no update",
                     be_sl, pos_.sl_price);
@@ -1366,6 +1380,8 @@ private:
     // Fill dedupe: basket_id → largest fill quantity already processed.
     // tid=351 reports cumulative total_fill_size; tid=352 per-event fill_size.
     std::unordered_map<std::string, int> processed_fill_qty_;
+    // basket -> {cumulative qty seen, notional} for VWAP across partial fills
+    std::unordered_map<std::string, std::pair<int, double>> fill_acc_;
     // trade each cancelled stop/exit belonged to (on_cancel_failed must not re-adopt a
     // stop from an earlier trade), and entry/exit cancels still waiting for a server id
     uint64_t trade_seq_ = 0;
@@ -1543,7 +1559,11 @@ private:
     // where the fill arrives *after* the position has already gone FLAT.
     // Net risk: a trailing move can trigger at the old SL level instead of the new one
     // — effectively a one-trail-step slip. Acceptable given Legends' modify restriction.
-    void update_stop_order_locked(double /*old_sl*/, double new_sl) {
+    // force=true bypasses the storm filter: the break-even move is sent once no matter
+    // how small it is. With sl_points 8 / be_offset 1 / trail_step 15 (the 2026-09-28
+    // hand-off config) the 9-pt BE move was silently dropped, the exchange kept the
+    // original stop, and trade 66 on 2026-09-29 lost -8.25 pts x 5 lots instead of +1.
+    void update_stop_order_locked(double /*old_sl*/, double new_sl, bool force = false) {
         if (cfg_.dry_run) {
             LOG("[OM] [DRY_RUN] Trail: would update stop to %.2f", new_sl);
             return;
@@ -1553,7 +1573,7 @@ private:
         // Suppress cancel+resubmit storm: only update the exchange stop when the SL
         // has moved by >= trail_step since the last submitted stop. The in-memory
         // pos_.sl_price is already updated by the caller for accurate DB display.
-        if (last_exchange_sl_ != 0.0 &&
+        if (!force && last_exchange_sl_ != 0.0 &&
             std::abs(new_sl - last_exchange_sl_) < paper::RegimeState::trail_step_for(cfg_, regime_) - 1e-9) {
             return;
         }

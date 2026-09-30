@@ -67,6 +67,11 @@ struct FleetConfig {
     int         poll_ms               = 100;
     double      strategy_daily_loss_limit = -250.0;  // per-strategy halt
     int         feed_gap_reset_secs   = 300;         // tick hole longer than this → flat orb/trend strategies restart their session
+    // Start-up warm-up (2026-09-30): replay this many completed 1m bars of recorded ticks into every
+    // strategy with entries suppressed before going live, so bar-history engines (mtf_scalper needs
+    // warmup_bars=1500 completed bars; trend EMAs/ATR) do not start cold after a restart. The bar
+    // count is resolved against bars_1m (weekends/halts cost no bars); 0 = old behaviour (5 min).
+    int         warmup_bars           = 1600;
 
     std::vector<FleetStrategy> strategies;
 
@@ -92,6 +97,7 @@ struct FleetConfig {
         c.slippage_ticks        = json_int(text, "slippage_ticks",        c.slippage_ticks);
         c.poll_ms               = json_int(text, "poll_ms",               c.poll_ms);
         c.feed_gap_reset_secs   = json_int(text, "feed_gap_reset_secs",   c.feed_gap_reset_secs);
+        c.warmup_bars           = json_int(text, "warmup_bars",           c.warmup_bars);
         c.strategy_daily_loss_limit = json_dbl(text, "strategy_daily_loss_limit",
                                                c.strategy_daily_loss_limit);
 

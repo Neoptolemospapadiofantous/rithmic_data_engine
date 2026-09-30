@@ -69,6 +69,7 @@ public:
             return;
         }
         if (sig != OrbSignal::BUY && sig != OrbSignal::SELL) return;
+        if (warmup_) { ++warmup_dropped_; return; }   // host replaying history — see PaperBroker
         if (halted()) return;
         const int dir = (sig == OrbSignal::BUY) ? 1 : -1;
         {
@@ -161,7 +162,10 @@ public:
         // 3. Stop: trade-through fills at stop ∓ slippage (adverse).
         if ((pos_dir_ > 0 && t.price <= stop_price_) ||
             (pos_dir_ < 0 && t.price >= stop_price_)) {
-            exit_position(stop_price_ - pos_dir_ * slip_, t.ts_micros, "stop");
+            // stop ± slippage, never better than the print that crossed it (gap-through fills there)
+            double fill = stop_price_ - pos_dir_ * slip_;
+            fill = (pos_dir_ > 0) ? std::min(fill, t.price) : std::max(fill, t.price);
+            exit_position(fill, t.ts_micros, "stop");
             return;
         }
 
@@ -242,12 +246,15 @@ public:
         risk_.reset_daily();
         risk_.update_unrealized(0.0);
     }
+    void set_warmup(bool on) { warmup_ = on; if (on) warmup_dropped_ = 0; }   // see PaperBroker::set_warmup
+    int  warmup_dropped() const { return warmup_dropped_; }
 
     // ── State access ─────────────────────────────────────────────────────────
     bool   in_position()  const { return pos_dir_ != 0; }
     int    direction()    const { return pos_dir_; }
     int    qty()          const { return qty_; }
     double entry_price()  const { return entry_price_; }
+    int64_t entry_time_us() const { return entry_time_us_; }   // 0 when flat
     double stop_price()   const { return stop_price_; }
     double last_price()   const { return last_price_; }
     bool   halted()       const { return risk_.halted(); }
@@ -395,6 +402,8 @@ private:
     double  mae_ = 0.0;             // max adverse excursion (pts, ≤ 0)
 
     int         pending_dir_ = 0; // entry waiting for next tick
+    bool        warmup_ = false;  // entries suppressed (host replaying history)
+    int         warmup_dropped_ = 0;
     int         pending_flip_ = 0; // reversal: exit current leg, enter opposite
     std::string pending_exit_reason_;
 
