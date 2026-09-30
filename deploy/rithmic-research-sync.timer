@@ -1,0 +1,13 @@
+# rithmic-research-sync.timer — every 2 hours, around the clock (2026-09-30: an hourly loop spent the 5-hour Claude
+# session limit in ~90 min; paced to fit it). Fires at even hours :00 (replay last cycle's RESEARCHER proposals, sync, export); the
+# StarNet jobs follow at :02 FILLS, :05 QUANT, :15 PROPDESK, :27 SKEPTIC, :40 STEER, :48-:57 the four researchers, whose proposals
+# the NEXT :00 replays. Persistent: a missed cycle is harmless late.
+[Unit]
+Description=Every-2h StarNet desk cycle (replay + sync + export)
+
+[Timer]
+OnCalendar=*-*-* 00/2:00:00 Asia/Nicosia
+Persistent=true
+
+[Install]
+WantedBy=timers.target

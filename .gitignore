@@ -47,3 +47,6 @@ NO_DEPLOY_DOES_NOT_EXIST_TEST
 build_*/
 .playwright-mcp/
 newstrategy
+
+# local paper-engine build dir
+build-paper/
