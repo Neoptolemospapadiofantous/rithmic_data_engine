@@ -30,6 +30,12 @@ if [[ -f "$L" ]]; then
   age=$(( $(date +%s) - $(stat -c %Y "$L") )); (( age <= 90 )) || problems+=("executor log silent for ${age}s")
   lasthalt=$(grep -aE 'Trading (un)?halted' <<<"$blk" | tail -1)
   [[ "$lasthalt" == *"Trading halted"* && "$lasthalt" != *shutdown* ]] && problems+=("halted: ${lasthalt##*Trading halted: }")
+  # an entry signal that produced neither a fill nor a logged timeout within 60 s = orders not reaching the exchange
+  nsig=$(grep -a 'Entry signal' <<<"$blk" | grep -avc 'DRY_RUN'); nfill=$(grep -ac 'FILL entry' <<<"$blk"); ntmo=$(grep -ac 'PENDING_ENTRY timeout — entry cancelled' <<<"$blk")
+  if (( nsig > nfill + ntmo )); then
+    lastsig=$(grep -a 'Entry signal' <<<"$blk" | grep -av 'DRY_RUN' | tail -1 | sed -E 's/^\[([0-9.]+)\].*/\1/')
+    python3 -c "import sys; sys.exit(0 if $(date +%s)-float('${lastsig:-0}') < 60 else 1)" || problems+=("entry signal without a fill or timeout for >60s (signals $nsig, fills $nfill, timeouts $ntmo)")
+  fi
   tc=$(grep -a 'TRAIL-CHECK' <<<"$blk" | tail -1)
   if [[ -n "$tc" ]]; then sl=$(grep -oE 'sl=[-0-9.]+' <<<"$tc" | head -1 | cut -d= -f2); ex=$(grep -oE 'exch_sl=[-0-9.]+' <<<"$tc" | cut -d= -f2)
     ts=$(sed -E 's/^\[([0-9.]+)\].*/\1/' <<<"$tc"); now=$(date +%s)
