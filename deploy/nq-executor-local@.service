@@ -1,0 +1,40 @@
+# nq-executor-local@<account>.service — live executor 24/7 on the LOCAL box (systemd USER unit).
+# Install: cp 'deploy/nq-executor-local@.service' ~/.config/systemd/user/ && systemctl --user daemon-reload
+#          systemctl --user enable --now nq-executor-local@tradeify
+# The dashboard's Go Live / Stop drive this unit when it is installed (config is
+# patched first, then the unit is (re)started). The executor itself rolls the
+# trading day over at midnight ET (resets ORB + daily counters) and restores
+# today's ORB / trade count / P&L from Postgres on every restart, so a plain
+# Restart=always is enough — no RTH wrapper needed. Honors the NO_DEPLOY lockfile.
+[Unit]
+Description=NQ ORB live executor for %I (24/7, restarts on crash)
+After=network-online.target postgresql.service rithmic-collector-local.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+EnvironmentFile=/home/theone/Desktop/rithmic_engine/.env
+EnvironmentFile=-/home/theone/Desktop/rithmic_engine/.env.%I
+UnsetEnvironment=NQ_FIRE_TEST_ORDER
+ExecStartPre=/bin/bash -c '[ ! -f /home/theone/Desktop/rithmic_engine/NO_DEPLOY ] || { echo "NO_DEPLOY lockfile present — refusing to start %I"; exit 1; }'
+ExecStart=/home/theone/Desktop/rithmic_engine/build/nq_executor --config config/%I_config.json
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/nq_executor_%I.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/nq_executor_%I.log
+Restart=always
+RestartSec=15
+# SIGTERM flattens + exits cleanly; give it time for the exchange exit fill.
+KillSignal=SIGTERM
+TimeoutStopSec=45
+# Memory-pressure protection (2026-09-23: 48 Chrome processes filled RAM+swap and the kernel OOM
+# killer fired). User services default to oom_score_adj=200, which made this 7 MB process score
+# higher than most browser tabs. 100 is the lowest an unprivileged user manager may set; Chrome
+# renderers run at 300, so they go first. MemoryMin keeps its pages out of swap.
+OOMScoreAdjust=100
+MemoryMin=128M
+CPUWeight=1000
+IOWeight=1000
+
+[Install]
+WantedBy=default.target

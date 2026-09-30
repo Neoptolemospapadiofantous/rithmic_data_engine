@@ -90,7 +90,7 @@ public:
         session_.reset();
         current_bar_ = MinuteBar{};
         eod_emitted_ = false;
-        cooldown_until_ = {};
+        cooldown_until_us_ = 0;
         seeded_ = false;
         LOG("[ORB] Session reset — ORB window %d min, SL=%.1f pts, trail_step=%.1f pts",
             cfg_.orb_minutes, cfg_.sl_points, cfg_.trail_step);
@@ -121,6 +121,7 @@ public:
         current_bar_.update(tick.price, tick.size);
         double prev_price = last_price_;
         last_price_ = tick.price;
+        last_ts_us_ = tick.ts_micros;
         last_et_hour_ = et_hour;
         last_et_min_  = et_min;
 
@@ -146,7 +147,7 @@ public:
 
         // ORB set — check for breakout signal
         if (session_.trades_today >= cfg_.max_daily_trades) return;
-        if (et_hour >= cfg_.last_entry_hour) return;
+        if (et_hour * 60 + et_min >= cfg_.last_entry_hour * 60 + cfg_.last_entry_min) return;  // minute-granular entry cutoff (founder 2026-09-30: first hour only)
         if (is_news_blackout(et_hour, et_min)) {
             static int64_t last_blackout_log = 0;
             int64_t now_min = static_cast<int64_t>(tick.ts_micros / 1'000'000 / 60);
@@ -189,8 +190,11 @@ public:
     void notify_trade_filled(OrbSignal /*dir*/, const std::string& exit_reason = "") {
         session_.in_position = false;
         if (cfg_.stop_cooldown_secs > 0) {
-            cooldown_until_ = std::chrono::steady_clock::now() +
-                              std::chrono::seconds(cfg_.stop_cooldown_secs);
+            // Engine clock (last tick's timestamp), not steady_clock — 2026-09-26, founder-approved:
+            // wall time made replays non-deterministic (5 s of a fast replay covered many replayed
+            // minutes) and blocked re-entries differently every run. Live, ticks arrive continuously,
+            // so tick time and wall time agree.
+            cooldown_until_us_ = last_ts_us_ + static_cast<int64_t>(cfg_.stop_cooldown_secs) * 1'000'000LL;
             LOG("[ORB] Trade closed (%s) — re-entry blocked for %ds",
                 exit_reason.empty() ? "?" : exit_reason.c_str(),
                 cfg_.stop_cooldown_secs);
@@ -230,7 +234,8 @@ private:
     int          last_et_min_  = 0;
     bool         eod_emitted_  = false;
     bool         seeded_       = false;
-    std::chrono::steady_clock::time_point cooldown_until_{};
+    int64_t      last_ts_us_        = 0;   // timestamp of the last tick seen (engine clock)
+    int64_t      cooldown_until_us_ = 0;   // re-entry blocked while last_ts_us_ < this
 
     static void utc_micros_to_et(int64_t ts_us, int& h, int& m, int& s) {
         int64_t ts_sec = ts_us / 1'000'000;
@@ -293,7 +298,7 @@ private:
 
     void check_breakout(double price, double prev_price, int /*et_hour*/, int /*et_min*/) {
         if (session_.in_position) return;
-        if (std::chrono::steady_clock::now() < cooldown_until_) return;
+        if (last_ts_us_ < cooldown_until_us_) return;
 
         double buy_level  = session_.orb_high + cfg_.breakout_buffer;
         double sell_level = session_.orb_low  - cfg_.breakout_buffer;

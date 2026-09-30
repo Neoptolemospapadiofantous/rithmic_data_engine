@@ -1,0 +1,24 @@
+# starnet.service — the StarNet sidecar (~/starnet, :8787) as a systemd USER unit, so the strategy desk
+# survives a reboot, a closed terminal or a crash (it ran from a VS Code terminal until 2026-09-30).
+# Install: cp deploy/starnet.service ~/.config/systemd/user/ && systemctl --user daemon-reload
+#          && systemctl --user enable --now starnet
+# The per-launch API token changes on every restart: reload any open StarNet browser tab afterwards.
+[Unit]
+Description=StarNet agent harness (rithmic strategy desk) on :8787
+After=network-online.target starnet-adapter.service
+Wants=starnet-adapter.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/starnet
+Environment=PATH=%h/.nvm/versions/node/v20.19.5/bin:%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.nvm/versions/node/v20.19.5/bin/node sidecar/index.js
+StandardOutput=append:%h/starnet/logs/sidecar.log
+StandardError=append:%h/starnet/logs/sidecar.log
+Restart=on-failure
+RestartSec=10
+# a stop must let an in-flight run settle its files; node exits on SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

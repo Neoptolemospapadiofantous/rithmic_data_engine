@@ -1,0 +1,16 @@
+{
+  "_comment": "DISABLED 2026-09-29 (founder: only ORB stays live; hand-off config archived, strategy-rotation.timer disabled). Weekly rotation of the ORB -> hand-off engine on tradeify (scripts/rotate_handoff.sh, strategy-rotation.timer Sun 18:30 ET). Candidates = paper strategies ranked by strategy_leaderboard(period_days, handoff_only) — the SAME function the /strategies board shows — that are live_runnable and pass the guardrails below. The incumbent is compared on its own paper twin (paper_source in the hand-off config), and a challenger must beat it by beat_incumbent_pct on net P&L over the same period, else the incumbent stays. rotate_handoff.sh never flips dry_run: it carries the current hand-off config's value across. Thresholds are deliberately above today's sample sizes (5 days of fleet history): until they are met the rotation keeps the incumbent and says so on Telegram.",
+  "enabled": false,
+  "account": "tradeify",
+  "instance": "tradeify_handoff",
+  "period_days": 7,
+  "handoff_only": true,
+  "slot_start": "10:00",
+  "slot_end": "12:00",
+  "min_trades": 20,
+  "min_sessions": 3,
+  "min_profit_factor": 1.0,
+  "beat_incumbent_pct": 20,
+  "qty": 2,
+  "max_daily_trades": 5
+}

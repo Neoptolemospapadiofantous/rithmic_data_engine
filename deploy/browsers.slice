@@ -1,0 +1,12 @@
+# Memory cap for Chrome (2026-09-23): 50 Chrome processes held 13 GB, swap was 99% full and the
+# kernel OOM killer fired while the live executor was running. Chrome launched through
+# scripts/chrome-capped (installed as the google-chrome desktop entry) lives here; under pressure
+# it is throttled at MemoryHigh and its tabs are killed at MemoryMax — never the trading services.
+[Unit]
+Description=Browsers (memory-capped so they cannot starve the trading stack)
+
+[Slice]
+MemoryHigh=9G
+MemoryMax=10G
+MemorySwapMax=2G
+CPUWeight=80

@@ -1,0 +1,14 @@
+# strategy-handoff.timer — fire strategy-handoff.service every weekday at 09:29 New York
+# time (one minute before ORB's 09:30 open; the service then waits for ORB to finish).
+# Persistent=false on purpose: a missed arming (box was off) must NOT fire late in the
+# day — past the 10:30 ET hard deadline the script would flatten a live ORB trade.
+# Same timezone-suffix form as pre-rth-check.timer (systemd >= 235).
+[Unit]
+Description=Weekday 09:29 New York arming of the ORB → hand-off engine
+
+[Timer]
+OnCalendar=Mon..Fri 09:29 America/New_York
+Persistent=false
+
+[Install]
+WantedBy=timers.target

@@ -1,4 +1,4 @@
-.PHONY: build test hermes hermes-fast hermes-note hermes-fleet hermes-fleet-fast hermes-lifecycle hermes-lifecycle-once hermes-lifecycle-local coordinator-start coordinator-once coordinator-status agent-run obsidian-daily obsidian-session push-eod deploy deploy-dry clean
+.PHONY: golden golden-freeze build test hermes hermes-fast hermes-note hermes-fleet hermes-fleet-fast hermes-lifecycle hermes-lifecycle-once hermes-lifecycle-local coordinator-start coordinator-once coordinator-status agent-run obsidian-daily obsidian-session push-eod deploy deploy-dry clean stack-status
 
 BUILD_DIR := build
 JOBS      := $(shell nproc)
@@ -20,12 +20,21 @@ test-unit:
 	$(BUILD_DIR)/test_risk_manager
 	$(BUILD_DIR)/test_validator
 
+# Golden-day regression: replay a frozen window and diff every trade against tests/golden/.
+golden:
+	@bash scripts/golden_replay.sh --twice
+golden-freeze:
+	@bash scripts/golden_replay.sh --freeze
+
 # Full test suite including DB test.
 test: test-unit
 	$(BUILD_DIR)/test_db
 
 # ── Hermes CI loop ─────────────────────────────────────────────────────────────
 # Full check: build + all tests + audit_daemon (local/testing only).
+stack-status:  ## index every trading process: units, strays, feed, memory (exit 1 = not ready)
+	@bash scripts/stack_status.sh
+
 hermes:
 	@bash scripts/hermes.sh
 
@@ -131,7 +140,7 @@ deploy:
 		fi; \
 		PGPASSWORD=testpass123 psql -h 127.0.0.1 -U rithmic_user -d rithmic \
 			-c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='"'"'rithmic_user'"'"' AND state='"'"'idle in transaction'"'"' AND pid != pg_backend_pid();" 2>/dev/null || true; \
-		for svc in rithmic-engine "nq_executor@RTH" "nq_executor@legends" "nq_executor-24x7@legends" "nq_executor-24x7@tradeify"; do \
+		for svc in rithmic-engine "nq_executor@tradeify" "nq_executor@legends" "nq_executor-24x7@legends" "nq_executor-24x7@tradeify"; do \
 			if systemctl is-active "$$svc" 2>/dev/null | grep -q "^active$$"; then \
 				echo "Restarting $$svc..."; \
 				sudo systemctl restart "$$svc"; \

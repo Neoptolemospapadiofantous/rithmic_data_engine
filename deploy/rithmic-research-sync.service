@@ -1,0 +1,9 @@
+# rithmic-research-sync.service — the deterministic half of each StarNet desk cycle: replay the
+# RESEARCHER's proposed variants (label 'desk'), then refresh the read-only research clone and export.
+[Unit]
+Description=StarNet desk cycle: replay proposals, sync research clone, export
+
+[Service]
+Type=oneshot
+ExecStart=%h/Desktop/rithmic_engine/scripts/starnet/desk_cycle.sh
+TimeoutStartSec=45min

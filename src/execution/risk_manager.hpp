@@ -41,14 +41,47 @@ public:
         LOG("[RISK] Seeded total_profit=%.2f from DB", total_profit_);
     }
 
+    // ── Seed today's realized P&L from DB on startup (call once after DB connect) ──
+    // Required for intra-day restarts (cycle mode restarts deliberately): without
+    // this, a process that already lost money today restarts with daily_pnl_=0 and
+    // can lose the full daily limit again. It also keeps the consistency-cap
+    // "prior profit" (total_profit_ - daily_pnl_) correct: get_total_pnl() already
+    // includes today's trades, so seeding daily_pnl_ excludes them from "prior".
+    void seed_daily_pnl(double today_pnl) {
+        std::lock_guard<std::mutex> lk(mu_);
+        daily_pnl_ = today_pnl;
+        LOG("[RISK] Seeded daily_pnl=%.2f from DB", daily_pnl_);
+    }
+
     // ── Called at start of each trading day ───────────────────────────────────
+    // Clears the daily P&L accumulator. Halts are cleared ONLY when their reason
+    // is daily_loss_limit — a trailing-drawdown or consistency-cap breach is an
+    // account-level (prop-firm account-killing) event and must survive midnight
+    // until clear_halt() is invoked manually.
     void reset_daily() {
         std::lock_guard<std::mutex> lk(mu_);
         daily_pnl_ = 0.0;
-        halted_    = false;
-        halt_reason_.clear();
+        if (halted_) {
+            if (halt_reason_.rfind("daily_loss_limit", 0) == 0) {
+                halted_ = false;
+                halt_reason_.clear();
+                LOG("[RISK] Daily reset — daily_loss_limit halt cleared");
+            } else {
+                LOG("[RISK] Daily reset — halt persists (%s); manual clear_halt() required",
+                    halt_reason_.c_str());
+            }
+        }
         LOG("[RISK] Daily reset — equity=%.2f peak=%.2f total_profit=%.2f",
             equity_, peak_equity_, total_profit_);
+    }
+
+    // ── Manual halt reset (operator action after reviewing a drawdown/consistency halt) ──
+    void clear_halt() {
+        std::lock_guard<std::mutex> lk(mu_);
+        if (!halted_) return;
+        LOG("[RISK] Manual halt clear — previous reason: %s", halt_reason_.c_str());
+        halted_ = false;
+        halt_reason_.clear();
     }
 
     // ── Called after each trade closes ────────────────────────────────────────
@@ -117,8 +150,10 @@ public:
             reason = "daily_loss_limit active";
             return false;
         }
-        // Re-check drawdown in real time (equity may have changed on open position)
-        double drawdown = peak_equity_ - equity_;
+        // Re-check drawdown in real time — includes unrealized P&L on any open
+        // position fed via update_unrealized(), so a deep open loss trips the
+        // trailing-drawdown gate before a new signal is accepted.
+        double drawdown = peak_equity_ - (equity_ + unrealized_pnl_);
         if (drawdown >= cfg_.trailing_drawdown_cap) {
             reason = "trailing_drawdown_cap active";
             return false;
@@ -129,6 +164,19 @@ public:
     bool can_trade() const {
         std::string ignored;
         return can_trade(ignored);
+    }
+
+    // ── Feed unrealized P&L of the open position (called from the tick path) ──
+    // Moves the effective equity used by can_trade()'s drawdown check without
+    // touching realized equity_ or peak_equity_. Call with 0.0 when flat.
+    // Does not trigger halts by itself; it gates NEW entries via can_trade().
+    void update_unrealized(double unrealized_pnl) {
+        std::lock_guard<std::mutex> lk(mu_);
+        if (!std::isfinite(unrealized_pnl)) {
+            LOG("[RISK] Ignoring non-finite unrealized P&L update");
+            return;
+        }
+        unrealized_pnl_ = unrealized_pnl;
     }
 
     // ── Update equity directly (e.g. from unrealised P&L on open position) ───
@@ -152,6 +200,14 @@ public:
         return { equity_, peak_equity_, daily_pnl_ };
     }
 
+    // Halt on evidence this manager cannot see itself — the broker's own day P&L
+    // (tid=451), which includes positions our trade log never recorded. Persists
+    // like any other risk halt (live_sessions.risk_halted).
+    void halt_external(const std::string& reason) {
+        std::lock_guard<std::mutex> lk(mu_);
+        halt(reason);
+    }
+
 private:
     void halt(const std::string& reason) {
         halted_      = true;
@@ -166,6 +222,7 @@ private:
     double       peak_equity_;
     double       total_profit_;
     double       daily_pnl_;
+    double       unrealized_pnl_ = 0.0;
     std::atomic<bool> halted_;
     std::string  halt_reason_;
 };

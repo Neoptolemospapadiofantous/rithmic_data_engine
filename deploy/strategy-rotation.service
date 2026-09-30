@@ -1,0 +1,19 @@
+# strategy-rotation.service — weekly performance rotation of the ORB → hand-off engine
+# (LOCAL box, systemd USER unit; fired by strategy-rotation.timer, Sunday 18:30 New York).
+# Runs scripts/rotate_handoff.sh: ranks every paper strategy with strategy_leaderboard()
+# (the /strategies board's ranking), applies config/rotation.json's guardrails, and only
+# then regenerates config/tradeify_handoff_config.json from the winner's paper params.
+# Keep-or-rotate, either way it logs to data/logs/rotation.log + data/rotation_last.json
+# and posts to Telegram. Never runs while the hand-off instance is live; never flips dry_run.
+# Install: cp deploy/strategy-rotation.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now strategy-rotation.timer
+# Rehearse a decision without writing: scripts/rotate_handoff.sh --dry-run
+[Unit]
+Description=Weekly rotation of the ORB → hand-off engine by paper performance (tradeify)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/rotate_handoff.sh
+StandardOutput=journal
+StandardError=journal

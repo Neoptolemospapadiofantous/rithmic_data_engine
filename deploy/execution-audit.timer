@@ -1,0 +1,7 @@
+[Unit]
+Description=Weekday post-session execution audit at 16:10 New York time
+[Timer]
+OnCalendar=Mon..Fri 16:10 America/New_York
+Persistent=false
+[Install]
+WantedBy=timers.target

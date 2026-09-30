@@ -1,0 +1,10 @@
+[Unit]
+Description=Run pg-backup.service nightly at 02:40 local (before the 03:00 bot backup, after the 02:30 hand-off-free quiet hour)
+
+[Timer]
+OnCalendar=*-*-* 02:40:00
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target

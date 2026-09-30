@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cassert>
 #include <cerrno>
+#include <cctype>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -91,6 +92,25 @@ static bool is_rth() {
     return h >= 13 && h < 21;
 }
 
+// Path of the config file validated by the config checks.
+// Overridable via AUDIT_CONFIG_PATH; defaults to config/live_config.json.
+static std::string config_path() {
+    const char* p = std::getenv("AUDIT_CONFIG_PATH");
+    return (p && *p) ? p : "config/live_config.json";
+}
+
+// Symbol queried by the data-freshness check against the ticks table.
+// Overridable via AUDIT_TICK_SYMBOL; defaults to NQ (matches collector's
+// RITHMIC_SYMBOL). Restricted to alphanumerics — it is interpolated into SQL.
+static std::string tick_symbol() {
+    const char* s = std::getenv("AUDIT_TICK_SYMBOL");
+    std::string sym = (s && *s) ? s : "NQ";
+    if (!std::all_of(sym.begin(), sym.end(),
+                     [](char c){ return std::isalnum(static_cast<unsigned char>(c)); }))
+        return "NQ";
+    return sym;
+}
+
 // Execute a single-column single-row int64 query; returns -2 on table-missing,
 // -1 on other error, the value on success.
 static int64_t query_int64(PGconn* conn, const char* sql,
@@ -152,11 +172,12 @@ static double query_double(PGconn* conn, const char* sql,
 // 1. Data freshness
 static CheckResult check_data_freshness(PGconn* conn) {
     bool missing = false;
-    const char* sql =
+    const std::string sym = tick_symbol();
+    const std::string sql =
         "SELECT EXTRACT(EPOCH FROM (NOW() - MAX(ts_event))) "
-        "FROM ticks WHERE symbol='MNQ'";
+        "FROM ticks WHERE symbol='" + sym + "'";
 
-    PGresult* res = PQexec(conn, sql);
+    PGresult* res = PQexec(conn, sql.c_str());
     if (!res) return {"data_freshness", "WARN", "DB query failed"};
 
     ExecStatusType st = PQresultStatus(res);
@@ -173,7 +194,7 @@ static CheckResult check_data_freshness(PGconn* conn) {
 
     if (PQntuples(res) == 0 || PQgetisnull(res, 0, 0)) {
         PQclear(res);
-        return {"data_freshness", "INFO", "no MNQ ticks recorded yet"};
+        return {"data_freshness", "INFO", "no " + sym + " ticks recorded yet"};
     }
 
     double age_secs = std::atof(PQgetvalue(res, 0, 0));
@@ -181,7 +202,7 @@ static CheckResult check_data_freshness(PGconn* conn) {
 
     char msg[128];
     double age_min = age_secs / 60.0;
-    std::snprintf(msg, sizeof(msg), "newest MNQ tick %.1f min ago", age_min);
+    std::snprintf(msg, sizeof(msg), "newest %s tick %.1f min ago", sym.c_str(), age_min);
 
     if (age_secs > 1800 && is_rth())   // >30 min during RTH
         return {"data_freshness", "WARN", msg};
@@ -617,11 +638,11 @@ static CheckResult check_zombie_trader() {
 
 // 15. Trading constants
 static CheckResult check_trading_constants() {
-    const fs::path cfg_path("config/live_config.json");
+    const fs::path cfg_path(config_path());
     std::error_code ec;
     if (!fs::exists(cfg_path, ec))
         return {"trading_constants", "FAIL",
-                "config/live_config.json not found"};
+                cfg_path.string() + " not found"};
 
     json j;
     try {
@@ -738,10 +759,10 @@ static CheckResult check_trading_constants() {
 
 // 16. Config schema
 static CheckResult check_config_schema() {
-    const fs::path cfg_path("config/live_config.json");
+    const fs::path cfg_path(config_path());
     std::error_code ec;
     if (!fs::exists(cfg_path, ec))
-        return {"config_schema", "FAIL", "config/live_config.json not found"};
+        return {"config_schema", "FAIL", cfg_path.string() + " not found"};
 
     json j;
     try {
@@ -967,7 +988,7 @@ static void write_metrics(PGconn* conn, const std::vector<CheckResult>& results)
     if (!conn || PQstatus(conn) != CONNECTION_OK) return;
 
     const char* sql =
-        "INSERT INTO quality_metrics (metric, value, labels, recorded_at) "
+        "INSERT INTO quality_metrics (metric, value, labels_json, ts) "
         "VALUES ($1, $2, $3, NOW()) "
         "ON CONFLICT DO NOTHING";
 

@@ -51,9 +51,40 @@ int AuditLog::pending() const {
     return static_cast<int>(buf_.size());
 }
 
+// ── connection repair ──────────────────────────────────────────────
+
+bool AuditLog::ensure_connected() {
+    if (!conn_) return false;
+    if (PQstatus(conn_) == CONNECTION_OK) {
+        if (reset_logged_) { LOG("Audit log: PostgreSQL connection restored"); reset_logged_ = false; }
+        return true;
+    }
+    const auto now = std::chrono::steady_clock::now();
+    if (now - last_reset_ < std::chrono::seconds(5)) return false;
+    last_reset_ = now;
+    PQreset(conn_);
+    if (PQstatus(conn_) == CONNECTION_OK) {
+        LOG("Audit log: PostgreSQL connection restored");
+        reset_logged_ = false;
+        return true;
+    }
+    if (!reset_logged_) {
+        LOG("Audit log: DB connection lost (%s) — events buffered, retrying every 5 s",
+            PQerrorMessage(conn_));
+        reset_logged_ = true;
+    }
+    return false;
+}
+
 // ── flush ──────────────────────────────────────────────────────────
 
 void AuditLog::flush() {
+    {
+        std::lock_guard lock(mu_);
+        if (buf_.empty()) return;
+    }
+    if (!ensure_connected()) return;  // events stay in buf_ (capped at MAX_BUF, oldest dropped)
+
     std::vector<Event> batch;
     {
         std::lock_guard lock(mu_);

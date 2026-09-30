@@ -105,8 +105,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::string q = "SELECT basket_id, account_label, instrument, was_buy_stop "
-                    "FROM pending_stop_cancels";
+    // server_basket_id is the id Rithmic assigned (RithmicOrderNotification
+    // basket_id); a cancel must name THAT id — our client id gets rp_code=1045.
+    std::string q = "SELECT basket_id, account_label, instrument, was_buy_stop, "
+                    "COALESCE(server_basket_id, '') FROM pending_stop_cancels";
     if (!account_label_filter.empty())
         q += " WHERE account_label = '" + account_label_filter + "'";
     q += " ORDER BY cancelled_at";
@@ -118,14 +120,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    struct StopRow { std::string basket_id, account_label, instrument; bool was_buy; };
+    struct StopRow { std::string basket_id, account_label, instrument; bool was_buy;
+                     std::string server_basket_id; };
     std::vector<StopRow> stops;
     for (int i = 0; i < PQntuples(res); ++i) {
         stops.push_back({
             PQgetvalue(res, i, 0),
             PQgetvalue(res, i, 1),
             PQgetvalue(res, i, 2),
-            std::string(PQgetvalue(res, i, 3)) == "t"
+            std::string(PQgetvalue(res, i, 3)) == "t",
+            PQgetvalue(res, i, 4)
         });
     }
     PQclear(res);
@@ -137,8 +141,9 @@ int main(int argc, char* argv[]) {
     }
     LOG("[CANCEL_STOPS] Found %zu pending stop(s) to cancel", stops.size());
     for (const auto& s : stops)
-        LOG("[CANCEL_STOPS]   basket=%s label=%s sym=%s dir=%s",
-            s.basket_id.c_str(), s.account_label.c_str(), s.instrument.c_str(),
+        LOG("[CANCEL_STOPS]   basket=%s server=%s label=%s sym=%s dir=%s",
+            s.basket_id.c_str(), s.server_basket_id.c_str(),
+            s.account_label.c_str(), s.instrument.c_str(),
             s.was_buy ? "BUY-stop(SHORT)" : "SELL-stop(LONG)");
 
     // ── Parse ORDER_PLANT URL ─────────────────────────────────────────────────
@@ -287,16 +292,19 @@ int main(int argc, char* argv[]) {
     // ── Send RequestCancelOrder for each basket ───────────────────────────────
     int sent = 0;
     for (const auto& s : stops) {
+        const std::string& cancel_id = s.server_basket_id.empty() ? s.basket_id
+                                                                  : s.server_basket_id;
         rti::RequestCancelOrder req;
         req.set_template_id(316);
-        req.set_basket_id(s.basket_id);
+        req.set_basket_id(cancel_id);
         req.set_account_id(account_id);
         req.set_fcm_id(fcm_id);
         req.set_ib_id(ib_id);
+        req.set_manual_or_auto(2);  // AUTO — omitted → rp_code=1045
         try {
             ws_write(proto_frame(req));
             LOG("[CANCEL_STOPS] RequestCancelOrder sent: basket=%s sym=%s dir=%s",
-                s.basket_id.c_str(), s.instrument.c_str(),
+                cancel_id.c_str(), s.instrument.c_str(),
                 s.was_buy ? "BUY-stop(SHORT)" : "SELL-stop(LONG)");
             ++sent;
         } catch (std::exception& e) {
@@ -321,6 +329,15 @@ int main(int argc, char* argv[]) {
                     (int)n.notify_type(), n.basket_id().c_str(),
                     n.user_tag().c_str(), n.status().c_str());
                 if ((int)n.notify_type() == 3) ++acked;
+            } else if (tid == 317) {
+                // ResponseCancelOrder — the server's verdict on the cancel itself.
+                // nq_executor never inspected these; on 2026-09-21 nine stale
+                // stops sat "trigger pending" through 725 silent responses.
+                rti::ResponseCancelOrder r; r.ParseFromString(pl);
+                LOG("[CANCEL_STOPS] tid=317 ResponseCancelOrder basket=%s rp_code=%s msg=%s",
+                    r.basket_id().c_str(),
+                    r.rp_code().empty() ? "?" : r.rp_code(0).c_str(),
+                    r.user_msg().empty() ? "" : r.user_msg(0).c_str());
             } else if (tid == 352) {
                 rti::ExchangeOrderNotification n; n.ParseFromString(pl);
                 LOG("[CANCEL_STOPS] tid=352 notify_type=%d basket=%s user_tag=%s",
@@ -333,6 +350,7 @@ int main(int argc, char* argv[]) {
     LOG("[CANCEL_STOPS] Done — %d cancel ACK(s) received. "
         "Verify positions in RTrader.", acked);
 
+    beast::get_lowest_layer(*ws).expires_after(std::chrono::seconds(3));
     try { ws->close(websocket::close_code::normal); } catch (...) {}
     return 0;
 }

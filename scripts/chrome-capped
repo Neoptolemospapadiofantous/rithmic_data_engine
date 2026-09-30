@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Launch Chrome inside browsers.slice (10 GB cap) so a browser can never starve the trading stack.
+# If Chrome is already running outside the slice, this call just hands the URL to that process and
+# exits — the cap takes effect once Chrome is fully quit and relaunched through here.
+exec systemd-run --user --scope --quiet --collect --slice=browsers.slice \
+     --unit="chrome-capped-$$" /usr/bin/google-chrome-stable "$@"

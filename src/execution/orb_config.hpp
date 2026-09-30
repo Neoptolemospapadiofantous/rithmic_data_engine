@@ -57,6 +57,23 @@ inline int us_et_offset(const struct tm& utc_tm) {
     return (hour < 6) ? 4 : 5;        // fall back at 06:00 UTC
 }
 
+// ─── Trading date (CME / prop-firm day) ──────────────────────────────────────
+// The futures trading day — and a prop firm's daily loss limit (Tradeify resets at
+// 17:00 CT = 18:00 ET) — runs 18:00 ET → 17:00 ET. Trades from 18:00 ET onward belong
+// to the NEXT date, so an evening session never inherits the day that just closed.
+// Returns YYYY-MM-DD for the Unix time `tt`.
+inline std::string trading_date_str(time_t tt) {
+    struct tm utc_tm;
+    gmtime_r(&tt, &utc_tm);
+    time_t et_t = tt - us_et_offset(utc_tm) * 3600;
+    struct tm et_tm;
+    gmtime_r(&et_t, &et_tm);
+    if (et_tm.tm_hour >= 18) { et_t += 24 * 3600; gmtime_r(&et_t, &et_tm); }
+    char buf[16];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d", &et_tm);
+    return buf;
+}
+
 struct OrbConfig {
     // ── Strategy params ────────────────────────────────────────────
     int    orb_minutes         = 15;   // opening range duration (9:30–9:45 ET)
@@ -69,11 +86,13 @@ struct OrbConfig {
     double max_entry_offset    = 0.0;  // max pts from ORB level at signal time (0=disabled)
     int    max_daily_trades    = 3;    // max entries per session
     int    last_entry_hour     = 13;   // no new entries at or after this ET hour
+    int    last_entry_min      = 0;    // …and minute (10:30 = hour 10, min 30); 0 keeps the whole-hour rule
     int    eod_flatten_hour    = 15;   // EOD flatten hour (ET)
     int    eod_flatten_min     = 55;   // EOD flatten minute (ET)
     int    news_blackout_min   = 5;    // minutes before/after news event to block entry
     int    stop_cooldown_secs  = 5;    // seconds to block re-entry after any stop exit (0=disabled)
     int    sl_fire_timeout_ms  = 3000; // ms before software SL fires if exchange stop is unresponsive
+    int    net_mismatch_grace_ms = 5000; // ms the exchange net position may disagree with ours (in-flight fills) before the difference is unwound and entries halt
     int    qty                 = 1;    // contract quantity per trade
 
     // ── Session open (defaults: RTH 9:30 ET) ──────────────────────
@@ -84,6 +103,7 @@ struct OrbConfig {
     double trailing_drawdown_cap = 2500.0; // max $ drawdown from equity peak
     double consistency_cap_pct   = 0.30;   // no single day > 30% of total profit
     double daily_loss_limit      = -1000.0; // halt if daily_pnl <= this value
+    double commission_rt         = 1.0;    // round-trip commission $ per contract
 
     // ── Rithmic instrument ─────────────────────────────────────────
     std::string symbol         = "MNQ";
@@ -95,6 +115,63 @@ struct OrbConfig {
     // ── Rithmic MD connection (AMP — TICKER_PLANT) ───────────────────
     // AMP credentials for market data; Legends/Tradeify ORDER_PLANT has
     // its own session via RITHMIC_LEGENDS_* — no session conflict.
+    // Market-data source. Provider name from RITHMIC_MD_PROVIDER: a broker name
+    // (legends/tradeify/amp → WebSocket TICKER_PLANT login with MD_<PROVIDER>_*
+    // creds) or "pg" → no Rithmic MD session at all: ticks are read from the
+    // collector's Postgres `ticks` table (same feed the paper fleet uses), so
+    // the one TICKER_PLANT session a prop login allows can belong to the
+    // 24/7 collector instead of this executor.
+    // Paper-fleet book knobs (see paper/paper_quote.hpp). All off by default.
+    std::string fill_model        = "last_slip";   // last_slip | bbo
+    double      spread_gate_ticks = 0.0;           // block entries when spread > N ticks
+    double      spread_gate_rel   = 0.0;           // block when spread > k × rolling mean
+    double      imbalance_min     = 0.0;           // longs need bid share ≥ x (shorts ≤ 1−x)
+    bool        microprice_lead   = false;         // microprice must lean the entry's way
+    double      imbalance_max     = 0.0;           // INVERTED: longs need bid share ≤ x (fade the stacked side)
+    double      book_exit_flip    = 0.0;           // in a long: flatten when bid share ≤ x (mirror for shorts)
+    bool        book_be_on_flip   = false;         // move the stop to break-even as soon as the book flips against
+    double      book_tp_imbalance = 0.0;           // in profit and the book stacks in favour ≥ x → take profit
+    double      book_tp_min_pts   = 1.0;           // …only once at least this many points in profit (slippage + commission cover)
+    int         book_size_agree   = 0;             // extra contracts when the book agrees with the entry
+    int         fill_wait_secs    = 0;             // wait up to N s for spread ≤ 1 tick / microprice lean before filling
+    // Fixed take-profit (2026-09-28): the first exit that is neither a stop, a trail nor the
+    // window end. tp_points wins when set; else tp_r × sl_points. 0 = off (every existing
+    // strategy). Paper fills at the target (limit-like); live flattens at market on the touch.
+    double      tp_points         = 0.0;
+    double      tp_r              = 0.0;
+    double take_profit_pts() const { return tp_points > 0.0 ? tp_points : (tp_r > 0.0 ? tp_r * sl_points : 0.0); }
+    // Relative-volume gate (2026-09-29): the last closed minute's tick volume vs the mean of the
+    // previous rvol_bars closed minutes (paper_quote.hpp RegimeState). 0 = off.
+    double      rvol_min          = 0.0;           // entries need rvol ≥ x (participation)
+    double      rvol_max          = 0.0;           // …or rvol ≤ x (quiet tape)
+    int         rvol_bars         = 20;
+    // Volatility-targeted size (2026-09-29): contracts = vt_risk_usd / (prior-day ATR14 × point
+    // value), clamped to [1, vt_qty_max]; 0 = fixed `qty`. Same formula live and paper.
+    double      vt_risk_usd       = 0.0;
+    int         vt_qty_max        = 5;
+    // Exit-side regime (2026-09-28): once the session's efficiency reads ≥ regime_exit_min_eff
+    // the trade is managed as a TREND trade (trail_step_trend, no target); below it as a RANGE
+    // trade (trail_step_range, tp_r_range × sl_points). 0 = use trail_step / take_profit_pts().
+    double      regime_exit_min_eff = 0.0;
+    double      trail_step_trend    = 0.0;
+    double      trail_step_range    = 0.0;
+    double      tp_r_range          = 0.0;
+    // Regime gate (paper/paper_quote.hpp RegimeState) — session shape since the 09:30 open vs
+    // the prior day's ATR14. All off by default. Same keys live and paper (2026-09-28).
+    double      regime_min_range_atr = 0.0;        // day must have expanded ≥ x ATR so far
+    double      regime_max_range_atr = 0.0;        // …or at most x ATR
+    double      regime_min_eff       = 0.0;        // directional efficiency ≥ x (trending so far)
+    double      regime_max_eff       = 0.0;        // …≤ x (choppy so far)
+    double      regime_min_move_atr  = 0.0;        // |last − open| ≥ x ATR
+    double      regime_max_move_atr  = 0.0;        // …≤ x ATR (don't chase an extended session)
+    int         regime_with_move     = 0;          // 1 = only with the session move, -1 = only against
+    int         regime_min_minutes   = 15;         // readings need this long after the open
+    std::string base_id;                           // sibling variants: the strategy this derives from
+    std::string overlay;                           // sibling variants: which overlay ("sg","imb","micro","all"…)
+    std::string md_provider    = "legends";
+    std::string md_feed_symbol = "NQ";   // symbol the collector writes (pg mode)
+    int         md_poll_ms     = 100;    // pg mode poll cadence
+    bool md_from_pg() const { return md_provider == "pg"; }
     std::string md_user;
     std::string md_password;
     std::string md_system_name  = "Rithmic 01";
@@ -116,6 +193,16 @@ struct OrbConfig {
 
     // ── Instance identity ──────────────────────────────────────────
     std::string account_label    = "legends";         // DB tag: "legends", "tradeify", …
+    std::string strategy         = "ORB";             // DB strategy tag — must differ per strategy sharing an account
+    // Which strategy class the executor runs: "orb" (OrbStrategy), "trend" (TrendStrategy) or
+    // "mtf_scalper" (MtfScalperStrategy) — mode/params for the latter two read from the same
+    // file by TrendConfig::from_json_string / MtfScalperConfig::from_json_string. One engine
+    // per process; the per-account instance lock keeps two engines off one account.
+    std::string engine           = "orb";
+    // Trend/mtf_scalper engines on the pg feed only: replay this many minutes of recorded
+    // ticks at startup so bars/indicators are warm when the executor takes over mid-session
+    // (signals during the replay are ignored — no orders). 0 = cold start.
+    int warmup_minutes           = 0;
     std::string order_env_prefix = "RITHMIC_LEGENDS"; // prefix for ORDER_PLANT env vars
 
     // ── Account ───────────────────────────────────────────────────
@@ -181,6 +268,7 @@ struct OrbConfig {
         // Corresponding env vars: MD_{PROVIDER}_USER / _PASSWORD / _SYSTEM / _URL
         {
             std::string provider = env("RITHMIC_MD_PROVIDER", "legends");
+            c.md_provider = provider;
             // Uppercase provider name for env var lookup
             std::string up = provider;
             for (char& ch : up) ch = (char)toupper((unsigned char)ch);
@@ -194,6 +282,38 @@ struct OrbConfig {
 
         // Instance identity — read first so the prefix drives all credential lookups
         c.account_label    = json_str(text, "account_label",    c.account_label);
+        c.strategy         = json_str(text, "strategy",         c.strategy);
+        c.engine           = json_str(text, "engine",           c.engine);
+        // Book gates / exits (the paper fleet's overlay keys, same names as paper_config.hpp
+        // applies from params_json) — honoured live since 2026-09-25 on the pg feed (bbo).
+        c.spread_gate_ticks = json_dbl(text, "spread_gate_ticks", c.spread_gate_ticks);
+        c.spread_gate_rel   = json_dbl(text, "spread_gate_rel",   c.spread_gate_rel);
+        c.imbalance_min     = json_dbl(text, "imbalance_min",     c.imbalance_min);
+        c.imbalance_max     = json_dbl(text, "imbalance_max",     c.imbalance_max);
+        c.microprice_lead   = json_bool(text, "microprice_lead",  c.microprice_lead);
+        c.book_exit_flip    = json_dbl(text, "book_exit_flip",    c.book_exit_flip);
+        c.book_tp_imbalance = json_dbl(text, "book_tp_imbalance", c.book_tp_imbalance);
+        c.book_tp_min_pts   = json_dbl(text, "book_tp_min_pts",   c.book_tp_min_pts);
+        c.tp_points            = json_dbl(text, "tp_points",            c.tp_points);
+        c.rvol_min             = json_dbl(text, "rvol_min",             c.rvol_min);
+        c.rvol_max             = json_dbl(text, "rvol_max",             c.rvol_max);
+        c.rvol_bars            = json_int(text, "rvol_bars",            c.rvol_bars);
+        c.vt_risk_usd          = json_dbl(text, "vt_risk_usd",          c.vt_risk_usd);
+        c.vt_qty_max           = json_int(text, "vt_qty_max",           c.vt_qty_max);
+        c.regime_exit_min_eff  = json_dbl(text, "regime_exit_min_eff",  c.regime_exit_min_eff);
+        c.trail_step_trend     = json_dbl(text, "trail_step_trend",     c.trail_step_trend);
+        c.trail_step_range     = json_dbl(text, "trail_step_range",     c.trail_step_range);
+        c.tp_r_range           = json_dbl(text, "tp_r_range",           c.tp_r_range);
+        c.tp_r                 = json_dbl(text, "tp_r",                 c.tp_r);
+        c.regime_min_range_atr = json_dbl(text, "regime_min_range_atr", c.regime_min_range_atr);
+        c.regime_max_range_atr = json_dbl(text, "regime_max_range_atr", c.regime_max_range_atr);
+        c.regime_min_eff       = json_dbl(text, "regime_min_eff",       c.regime_min_eff);
+        c.regime_max_eff       = json_dbl(text, "regime_max_eff",       c.regime_max_eff);
+        c.regime_min_move_atr  = json_dbl(text, "regime_min_move_atr",  c.regime_min_move_atr);
+        c.regime_max_move_atr  = json_dbl(text, "regime_max_move_atr",  c.regime_max_move_atr);
+        c.regime_with_move     = json_int(text, "regime_with_move",     c.regime_with_move);
+        c.regime_min_minutes   = json_int(text, "regime_min_minutes",   c.regime_min_minutes);
+        c.warmup_minutes   = json_int(text, "warmup_minutes",   c.warmup_minutes);
         c.order_env_prefix = json_str(text, "order_env_prefix", c.order_env_prefix);
 
         // ORDER_PLANT credentials — derived from order_env_prefix so any account works
@@ -225,19 +345,24 @@ struct OrbConfig {
         c.max_entry_offset     = json_dbl(text,  "max_entry_offset",     c.max_entry_offset);
         c.max_daily_trades     = json_int(text,  "max_daily_trades",     c.max_daily_trades);
         c.last_entry_hour      = json_int(text,  "last_entry_hour",      c.last_entry_hour);
+        c.last_entry_min       = json_int(text,  "last_entry_min",       c.last_entry_min);
         c.eod_flatten_hour     = json_int(text,  "eod_flatten_hour",     c.eod_flatten_hour);
         c.eod_flatten_min      = json_int(text,  "eod_flatten_min",      c.eod_flatten_min);
         c.news_blackout_min    = json_int(text,  "news_blackout_min",    c.news_blackout_min);
         c.stop_cooldown_secs   = json_int(text,  "stop_cooldown_secs",   c.stop_cooldown_secs);
         c.sl_fire_timeout_ms   = json_int(text,  "sl_fire_timeout_ms",   c.sl_fire_timeout_ms);
+        c.net_mismatch_grace_ms = json_int(text, "net_mismatch_grace_ms", c.net_mismatch_grace_ms);
         c.qty                  = json_int(text,  "qty",                  c.qty);
 
         c.trailing_drawdown_cap = json_dbl(text, "trailing_drawdown_cap", c.trailing_drawdown_cap);
         c.consistency_cap_pct   = json_dbl(text, "consistency_cap_pct",   c.consistency_cap_pct);
         c.daily_loss_limit      = json_dbl(text, "daily_loss_limit",      c.daily_loss_limit);
+        c.commission_rt         = json_dbl(text, "commission_rt",         c.commission_rt);
 
         c.symbol         = json_str(text, "symbol",         c.symbol);
         c.trade_contract = json_str(text, "trade_contract", c.trade_contract);
+        c.md_feed_symbol = json_str(text, "md_feed_symbol", c.md_feed_symbol);
+        c.md_poll_ms     = json_int(text, "md_poll_ms",     c.md_poll_ms);
         c.exchange       = json_str(text, "exchange",       c.exchange);
         c.point_value    = json_dbl(text, "point_value",    c.point_value);
         c.environment       = json_str(text, "environment",       c.environment);
@@ -254,31 +379,9 @@ struct OrbConfig {
         c.cycle_start_epoch  = (int64_t)json_dbl(text, "cycle_start_epoch",  (double)c.cycle_start_epoch);
         c.cycle_timeout_mins = json_int(text, "cycle_timeout_mins", c.cycle_timeout_mins);
 
-        // cycle_mode: look for "cycle_mode": true/false
-        {
-            auto pos = text.find("\"cycle_mode\"");
-            if (pos != std::string::npos) {
-                auto colon = text.find(':', pos);
-                if (colon != std::string::npos) {
-                    auto vp = text.find_first_not_of(" \t\r\n", colon + 1);
-                    if (vp != std::string::npos)
-                        c.cycle_mode = (text.substr(vp, 4) == "true");
-                }
-            }
-        }
-
-        // dry_run: look for "dry_run": true/false
-        {
-            auto pos = text.find("\"dry_run\"");
-            if (pos != std::string::npos) {
-                auto colon = text.find(':', pos);
-                if (colon != std::string::npos) {
-                    auto vp = text.find_first_not_of(" \t\r\n", colon + 1);
-                    if (vp != std::string::npos)
-                        c.dry_run = (text.substr(vp, 4) == "true");
-                }
-            }
-        }
+        // cycle_mode / dry_run: top-level boolean keys
+        c.cycle_mode = json_bool(text, "cycle_mode", c.cycle_mode);
+        c.dry_run    = json_bool(text, "dry_run",    c.dry_run);
 
         // DB overrides from JSON
         c.pg_host = json_str(text, "pg_host", c.pg_host);
@@ -288,7 +391,75 @@ struct OrbConfig {
         if (c.pg_password.empty())
             c.pg_password = json_str(text, "pg_password", "");
 
+        c.validate();
+        c.apply_dry_run_label();
         return c;
+    }
+
+    // A dry-run instance simulates its own fills and would otherwise write them into
+    // live_trades / live_sessions / live_position under the LIVE label — the dashboard,
+    // the leaderboard's live rows and the risk seeds cannot tell them apart (the
+    // 2026-09-29 NQ test ran under "tradeify" for a night). Rule: dry_run rows carry a
+    // label ending in "_dry" (strategy_leaderboard() and the board exclude %_dry%).
+    // Returns true when the label was rewritten. Idempotent.
+    bool apply_dry_run_label() {
+        if (!dry_run) return false;
+        const std::string sfx = "_dry";
+        if (account_label.size() >= sfx.size() &&
+            account_label.compare(account_label.size() - sfx.size(), sfx.size(), sfx) == 0)
+            return false;
+        account_label += sfx;
+        dry_label_forced = true;
+        return true;
+    }
+    bool dry_label_forced = false;   // set when apply_dry_run_label() rewrote the label
+
+    // The live label a dry-run label stands in for ("tradeify_dry" -> "tradeify"): the
+    // account-wide risk seeds and the broker high-water mark are keyed by it.
+    static std::string base_label(const std::string& label) {
+        const std::string sfx = "_dry";
+        if (label.size() > sfx.size() &&
+            label.compare(label.size() - sfx.size(), sfx.size(), sfx) == 0)
+            return label.substr(0, label.size() - sfx.size());
+        return label;
+    }
+
+    // ── Config validation — called at the end of from_file() ────────
+    // Throws std::runtime_error with a FATAL message naming the bad key.
+    void validate() const {
+        auto need_positive = [](const char* key, double v) {
+            if (v <= 0.0)
+                throw std::runtime_error(std::string("FATAL: invalid config key '") + key +
+                    "' — must be > 0 (got " + std::to_string(v) + ")");
+        };
+        need_positive("qty",                   (double)qty);
+        need_positive("orb_minutes",           (double)orb_minutes);
+        need_positive("trail_step",            trail_step);
+        need_positive("sl_points",             sl_points);
+        need_positive("trailing_drawdown_cap", trailing_drawdown_cap);
+
+        // account_label / strategy are interpolated into SQL identifiers and
+        // raw SQL strings (NOTIFY live_tick_<account>, startup ORB query) —
+        // restrict to a safe charset at load time.
+        auto need_safe_ident = [](const char* key, const std::string& v) {
+            if (v.empty() ||
+                v.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_") != std::string::npos)
+                throw std::runtime_error(std::string("FATAL: invalid config key '") + key +
+                    "' — must match [a-z0-9_]+ (got '" + v + "')");
+        };
+        need_safe_ident("account_label", account_label);
+        // strategy is uppercased ORB-style by convention — allow A-Z too
+        if (strategy.empty() ||
+            strategy.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos)
+            throw std::runtime_error(std::string("FATAL: invalid config key 'strategy'") +
+                " — must match [A-Za-z0-9_]+ (got '" + strategy + "')");
+        if (engine != "orb" && engine != "trend" && engine != "mtf_scalper")
+            throw std::runtime_error("FATAL: invalid config key 'engine' — must be \"orb\", \"trend\" or "
+                                     "\"mtf_scalper\" (got '" + engine + "')");
+        // live_trades / live_sessions rows are keyed by the strategy tag — a non-ORB engine
+        // writing under "ORB" would be counted as ORB trades and restart-seeded as ORB.
+        if ((engine == "trend" || engine == "mtf_scalper") && strategy == "ORB")
+            throw std::runtime_error("FATAL: engine \"" + engine + "\" needs its own 'strategy' tag (not \"ORB\")");
     }
 
 private:
@@ -305,9 +476,44 @@ private:
         return out;
     }
 
-    // Simple JSON field extractors (no deps)
+    // Simple JSON field extractors (no deps).
+    // All extractors match keys ONLY at top-level object depth (brace depth 1)
+    // and never inside string values — nested objects (e.g. "prop_firm": {...})
+    // and "_comment" strings quoting key names cannot shadow real keys.
+    //
+    // find_top_key: scan the whole document tracking brace/bracket depth and
+    // in-string state (with backslash escapes). A match must be the exact
+    // quoted key, at depth 1, followed by ':' (modulo whitespace) — a quoted
+    // string VALUE equal to "key" is not mistaken for a key.
+    static size_t find_top_key(const std::string& s, const std::string& key) {
+        const std::string needle = "\"" + key + "\"";
+        int  depth  = 0;
+        bool in_str = false;
+        for (size_t i = 0; i < s.size(); ++i) {
+            char c = s[i];
+            if (in_str) {
+                if (c == '\\') { ++i; continue; }   // skip escaped char
+                if (c == '"') in_str = false;
+                continue;
+            }
+            if (c == '"') {
+                if (depth == 1 && s.compare(i, needle.size(), needle) == 0) {
+                    size_t j = i + needle.size();
+                    while (j < s.size() &&
+                           (s[j] == ' ' || s[j] == '\t' || s[j] == '\r' || s[j] == '\n')) ++j;
+                    if (j < s.size() && s[j] == ':') return i;
+                }
+                in_str = true;
+                continue;
+            }
+            if (c == '{' || c == '[') ++depth;
+            else if (c == '}' || c == ']') --depth;
+        }
+        return std::string::npos;
+    }
+
     static int json_int(const std::string& s, const std::string& key, int def) {
-        auto pos = s.find("\"" + key + "\"");
+        auto pos = find_top_key(s, key);
         if (pos == std::string::npos) return def;
         auto colon = s.find(':', pos);
         if (colon == std::string::npos) return def;
@@ -318,7 +524,7 @@ private:
     }
 
     static double json_dbl(const std::string& s, const std::string& key, double def) {
-        auto pos = s.find("\"" + key + "\"");
+        auto pos = find_top_key(s, key);
         if (pos == std::string::npos) return def;
         auto colon = s.find(':', pos);
         if (colon == std::string::npos) return def;
@@ -328,18 +534,37 @@ private:
         catch (...) { return def; }
     }
 
-    static std::string json_str(const std::string& s,
-                                const std::string& key,
-                                const std::string& def) {
-        auto pos = s.find("\"" + key + "\"");
+    static bool json_bool(const std::string& s, const std::string& key, bool def) {
+        auto pos = find_top_key(s, key);
         if (pos == std::string::npos) return def;
         auto colon = s.find(':', pos);
         if (colon == std::string::npos) return def;
-        auto q1 = s.find('"', colon + 1);
-        if (q1 == std::string::npos) return def;
-        auto q2 = s.find('"', q1 + 1);
-        if (q2 == std::string::npos) return def;
-        return s.substr(q1 + 1, q2 - q1 - 1);
+        auto vp = s.find_first_not_of(" \t\r\n", colon + 1);
+        if (vp == std::string::npos) return def;
+        if (s.compare(vp, 4, "true")  == 0) return true;
+        if (s.compare(vp, 5, "false") == 0) return false;
+        return def;
+    }
+
+    static std::string json_str(const std::string& s,
+                                const std::string& key,
+                                const std::string& def) {
+        auto pos = find_top_key(s, key);
+        if (pos == std::string::npos) return def;
+        auto colon = s.find(':', pos);
+        if (colon == std::string::npos) return def;
+        auto vp = s.find_first_not_of(" \t\r\n", colon + 1);
+        if (vp == std::string::npos || s[vp] != '"') return def;
+        // Read the string honouring backslash escapes (\" and \\) so values
+        // containing escaped quotes are not truncated at the first inner quote.
+        std::string out;
+        for (size_t i = vp + 1; i < s.size(); ++i) {
+            char c = s[i];
+            if (c == '\\' && i + 1 < s.size()) { out += s[i + 1]; ++i; continue; }
+            if (c == '"') return out;
+            out += c;
+        }
+        return def;  // unterminated string
     }
 
     static void load_dotenv(const fs::path& path) {

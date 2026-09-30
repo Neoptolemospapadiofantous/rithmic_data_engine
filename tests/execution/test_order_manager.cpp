@@ -1708,6 +1708,546 @@ TEST(late_stop_fire_cleans_server_reverse_map) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — gateway-reject correlation (ResponseNewOrder has no user_tag)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 56. A gateway reject (tid=313/315) arrives with ONLY the server-assigned basket_id.
+//     After map_server_basket() (fed by tid=351/352 notifications), on_order_rejected
+//     must resolve it to the client basket and revert PENDING_ENTRY to FLAT.
+TEST(gateway_reject_resolved_via_server_basket_map_entry) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+
+    auto snap = f.om.position_snapshot();
+    const std::string client_entry = snap.basket_id_entry;
+    ASSERT(!client_entry.empty());
+
+    // tid=351 NEW notification maps server basket → client user_tag
+    f.om.map_server_basket(client_entry, "SRV-ENTRY-1");
+
+    // Gateway reject carries only the server basket_id — before the fix this could
+    // never match pos_.basket_id_entry and the entry stayed PENDING_ENTRY forever.
+    f.om.on_order_rejected("SRV-ENTRY-1", "gateway_reject_1043");
+
+    ASSERT(f.om.is_flat());
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+}
+
+// 57. Same correlation for a STOP order reject: server basket matched via the map
+//     (or via set_stop_server_basket) must clear basket_id_stop so the software SL
+//     fallback activates.
+TEST(gateway_reject_resolved_via_server_basket_map_stop) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    auto snap = f.om.position_snapshot();
+    const std::string client_stop = snap.basket_id_stop;
+    ASSERT(!client_stop.empty());
+
+    f.om.map_server_basket(client_stop, "SRV-STOP-1");
+    f.om.on_order_rejected("SRV-STOP-1", "gateway_reject_2010");
+
+    ASSERT(f.om.position_snapshot().basket_id_stop.empty());  // software SL active
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+}
+
+// 57b. Stop reject by server basket works even without map_server_basket, via the
+//      dedicated stop server-basket slot.
+TEST(stop_reject_matched_by_stop_server_basket) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT(!f.om.position_snapshot().basket_id_stop.empty());
+
+    f.om.set_stop_server_basket("SRV-STOP-9");
+    f.om.on_order_rejected("SRV-STOP-9", "gateway_reject_2010");
+
+    ASSERT(f.om.position_snapshot().basket_id_stop.empty());
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+}
+
+// 58. PENDING_ENTRY watchdog: entry stuck past the timeout is cancelled and reverts
+//     to FLAT; before the timeout it is left alone.
+TEST(pending_entry_timeout_cancels_and_reverts_to_flat) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+
+    // Not yet timed out — no-op
+    ASSERT(!f.om.pending_entry_timeout_check(10));
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+
+    // Timed out (timeout=0 → any age qualifies) — cancel + revert to FLAT
+    std::size_t cancels_before = f.cancelled_baskets.size();
+    ASSERT(f.om.pending_entry_timeout_check(0));
+    ASSERT(f.om.is_flat());
+    ASSERT(f.cancelled_baskets.size() > cancels_before);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — tid=352 fill gating / tid=351 cumulative-fill dedupe
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 59. The same fill delivered on tid=351 (cumulative total_fill_size) and again on
+//     tid=352 (per-event fill_size) must be processed once. Mirrors the executor's
+//     handler sequence: gate on basket role, then dedupe before on_fill_notification.
+TEST(tid352_duplicate_fill_after_tid351_is_deduped) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    auto snap = f.om.position_snapshot();
+    const std::string entry = snap.basket_id_entry;
+
+    // tid=351 COMPLETE fill (total_fill_size=1) — first delivery, not a duplicate
+    ASSERT(!f.om.fill_already_processed(entry, 1));
+    f.om.on_fill_notification(entry, 19000.0, 1, /*is_entry_fill=*/true);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    // tid=352 FILL for the same fill (fill_size=1) — duplicate, must be skipped
+    ASSERT(f.om.fill_already_processed(entry, 1));
+    // tid=351 re-delivery of the same COMPLETE (cumulative total still 1) — skipped
+    ASSERT(f.om.fill_already_processed(entry, 1));
+
+    // tid=351 partial-then-complete: partial total_fill=1 processed, then the
+    // COMPLETE notification arrives with cumulative total_fill=2 — NOT a duplicate
+    // of qty=1, so the dedupe lets it through exactly once.
+    ASSERT(!f.om.fill_already_processed(entry, 2));
+    ASSERT(f.om.fill_already_processed(entry, 2));   // its own re-delivery is caught
+}
+
+// 60. Duplicate EXIT fill: after a tid=351 exit fill closes the trade, the tid=352
+//     duplicate arrives while FLAT. The executor's gating (same as tid=351) sees the
+//     basket no longer matches any live order and ignores the fill before it can
+//     reach the FLAT unknown-fill branch — no false ghost halt.
+TEST(tid352_duplicate_exit_fill_does_not_ghost_halt) {
+    Fixture f;
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    f.om.flatten_now("eod_flatten", 19010.0);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+
+    auto snap = f.om.position_snapshot();
+    const std::string exit_basket = snap.basket_id_exit;
+    ASSERT(!exit_basket.empty());
+
+    // tid=351 exit fill — first delivery
+    ASSERT(!f.om.fill_already_processed(exit_basket, 1));
+    f.om.on_fill_notification(exit_basket, 19010.0, 1, /*is_entry_fill=*/false);
+    ASSERT(f.om.is_flat());
+    ASSERT(!f.om.is_entry_halted());
+
+    // tid=352 duplicate after close: executor gates on basket role first — the
+    // closed exit basket matches nothing, so on_fill_notification is never called.
+    ASSERT(!f.om.is_entry_basket(exit_basket));
+    ASSERT(!f.om.is_stop_basket(exit_basket));
+    ASSERT(!f.om.is_exit_basket(exit_basket));
+    ASSERT(!f.om.is_entry_halted());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Regression tests — P&L scales with qty and uses cfg.commission_rt
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 61. qty=3 LONG: pnl_usd = pts * point_value * qty − commission_rt * qty.
+//     entry=19000, exit=19010 → 10pts * $2 * 3 − $2.50 * 3 = $60.00 − $7.50 = $52.50
+TEST(pnl_scales_with_qty_and_commission_rt) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty           = 3;
+    cfg.commission_rt = 2.50;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    sim_entry_fill(f, 19000.0);
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    ASSERT_EQ(f.om.position_snapshot().qty, 3);
+
+    f.om.flatten_now("test", 19010.0);
+    sim_exit_fill(f, 19010.0);
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_NEAR(out.pnl_points, 10.0,  0.001);
+    ASSERT_NEAR(out.pnl_usd,    52.50, 0.001);
+}
+
+// 62. qty=2 SHORT loser with default commission_rt=1.0:
+//     entry=19000, exit=19005 → -5pts * $2 * 2 − $1.00 * 2 = -$20.00 − $2.00 = -$22.00
+TEST(pnl_short_loss_scales_with_qty_and_commission_rt) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;   // commission_rt defaults to 1.0
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "orb_breakdown");
+    sim_entry_fill(f, 19000.0);
+    f.om.flatten_now("test", 19005.0);
+    sim_exit_fill(f, 19005.0);
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    ASSERT_NEAR(out.pnl_points, -5.0,   0.001);
+    ASSERT_NEAR(out.pnl_usd,    -22.00, 0.001);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 2026-09-23 incident: a stop cancelled BY CLIENT ID (server id not mapped yet)
+// came back "Cancellation Failed", was purged as "confirmed" at FLAT, fired 12s
+// later and left the account long 2 MNQ that nobody knew about until the broker
+// liquidated it. These tests replay that sequence against the order manager.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Drive a SHORT to the point where BE has cancelled the original stop by client id
+// (never mapped) and submitted a replacement. Returns the original stop's client id.
+static std::string drive_short_to_client_id_cancel(Fixture& f) {
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "orb_breakout_short");
+    sim_entry_fill(f, 19000.0);
+    std::string old_stop = f.om.position_snapshot().basket_id_stop;
+    ASSERT(!old_stop.empty());
+    f.om.check_trail_and_stop(18994.5);   // MFE 5.5 → BE: cancel old stop, submit new
+    ASSERT(!f.cancelled_baskets.empty());
+    ASSERT_EQ(f.cancelled_baskets.back(), old_stop);   // cancelled by CLIENT id
+    ASSERT(f.om.position_snapshot().basket_id_stop != old_stop);  // replacement live
+    return old_stop;
+}
+
+// 63. The guard for a client-id-cancelled stop survives the FLAT purge, and when
+//     that stop fires later it is unwound instead of ignored.
+TEST(client_only_cancel_guard_survives_flat_purge_and_unwinds_late_fire) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;
+    Fixture f(cfg);
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+
+    // Replacement stop rejected by the exchange → software SL fallback (as on 09-23)
+    f.om.on_order_rejected(f.om.position_snapshot().basket_id_stop,
+                           "buy order stop price must be above trade price");
+    ASSERT(f.om.position_snapshot().basket_id_stop.empty());
+
+    // Price crosses the in-memory SL → software exit → fill → FLAT
+    f.om.check_trail_and_stop(18999.5);
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    sim_exit_fill(f, 18999.5);
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+
+    // The old stop was never acknowledged cancelled: guard must still be armed.
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);
+
+    // 12s later the old stop fires (BUY 2 @ 19015) — must be unwound, not ignored.
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.on_fill_notification(old_stop, 19015.0, 2, /*is_entry_fill=*/false);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before + 1);   // unwind order sent
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+    ASSERT(!f.om.is_entry_halted());                       // handled, not ghost-halted
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+}
+
+// 64. A late server-id mapping of a client-id-cancelled stop re-sends the cancel
+//     by server id, and the server ACK then clears the guard.
+TEST(late_server_map_resends_cancel_for_cancelled_stop) {
+    Fixture f;
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+    std::size_t cancels_before = f.cancelled_baskets.size();
+
+    f.om.on_stop_server_mapped(old_stop, "SRV-37816417");
+    ASSERT_EQ(f.cancelled_baskets.size(), cancels_before + 1);
+    ASSERT_EQ(f.cancelled_baskets.back(), std::string("SRV-37816417"));
+    ASSERT_EQ(f.om.unconfirmed_server_cancels(), 1);
+
+    // Mapping the same pair again must not spam another cancel.
+    f.om.on_stop_server_mapped(old_stop, "SRV-37816417");
+    ASSERT_EQ(f.cancelled_baskets.size(), cancels_before + 1);
+
+    f.om.on_cancel_confirmed_by_server_basket("SRV-37816417");
+    ASSERT_EQ(f.om.unconfirmed_server_cancels(), 0);
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 0);
+}
+
+// 65. "Cancellation Failed" while still in the trade: the old stop is re-adopted
+//     as the live exchange stop (at its real level), the replacement is cancelled,
+//     and the software SL does not fire off the in-memory level.
+TEST(cancel_failed_readopts_old_stop_while_in_trade) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_fire_timeout_ms = 3000;
+    Fixture f(cfg);
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+    std::string new_stop = f.om.position_snapshot().basket_id_stop;
+
+    f.om.on_cancel_failed(old_stop);
+    auto snap = f.om.position_snapshot();
+    ASSERT_EQ(snap.basket_id_stop, old_stop);                 // re-adopted
+    ASSERT_EQ(f.cancelled_baskets.back(), new_stop);          // replacement cancelled
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);        // replacement now guarded
+    ASSERT_NEAR(f.om.exchange_stop(), 19010.0, 0.001);        // original level restored
+
+    // In-memory SL (BE/trail) is breached but the exchange stop at 19010 is not:
+    // no software exit may fire.
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.check_trail_and_stop(18999.5);
+    ASSERT_EQ(f.om.state(), PosState::SHORT);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);
+
+    // Exchange level breached: tier-2 timer starts, still no immediate exit.
+    f.om.check_trail_and_stop(19010.5);
+    ASSERT_EQ(f.om.state(), PosState::SHORT);
+}
+
+// 66. "Cancellation Failed" after the position is already flat keeps the guard
+//     armed and sends nothing.
+TEST(cancel_failed_while_flat_keeps_guard) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;
+    Fixture f(cfg);
+    std::string old_stop = drive_short_to_client_id_cancel(f);
+    f.om.on_order_rejected(f.om.position_snapshot().basket_id_stop, "rejected");
+    f.om.check_trail_and_stop(18999.5);
+    sim_exit_fill(f, 18999.5);
+    ASSERT_EQ(f.om.state(), PosState::FLAT);
+
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.on_cancel_failed(old_stop);
+    ASSERT_EQ(f.om.pending_cancelled_stop_count(), 1);
+    ASSERT_EQ(f.sent_baskets.size(), sends_before);
+    ASSERT(!f.om.is_entry_halted());
+}
+
+// 67. net_qty_consistent: what exchange net quantities agree with each state.
+TEST(net_qty_consistent_by_state) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty = 2;
+    Fixture f(cfg);
+    ASSERT(f.om.net_qty_consistent(0));
+    ASSERT(!f.om.net_qty_consistent(2));
+    ASSERT(!f.om.net_qty_consistent(-2));
+
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "orb_breakout_short");  // PENDING_ENTRY
+    ASSERT(f.om.net_qty_consistent(0));
+    ASSERT(f.om.net_qty_consistent(-2));
+    ASSERT(!f.om.net_qty_consistent(2));
+
+    sim_entry_fill(f, 19000.0);                                       // SHORT
+    ASSERT(f.om.net_qty_consistent(-2));
+    ASSERT(!f.om.net_qty_consistent(0));
+    ASSERT(!f.om.net_qty_consistent(-1));
+
+    f.om.flatten_now("test", 19001.0);                                // PENDING_EXIT
+    ASSERT(f.om.net_qty_consistent(0));
+    ASSERT(f.om.net_qty_consistent(-2));
+    ASSERT(!f.om.net_qty_consistent(2));
+}
+
+// 68. NetReconciler: acts once after the grace window, re-arms only after agreement.
+TEST(net_reconciler_acts_once_after_grace) {
+    using V = NetReconciler::Verdict;
+    NetReconciler r;
+    ASSERT(r.observe(true,  0,     5000) == V::OK);
+    ASSERT(r.observe(false, 1000,  5000) == V::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 3000,  5000) == V::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 6001,  5000) == V::MISMATCH_ACT);
+    ASSERT(r.observe(false, 9000,  5000) == V::MISMATCH_WAIT);   // already acted
+    ASSERT(r.observe(true,  9500,  5000) == V::OK);              // re-armed
+    ASSERT(r.observe(false, 20000, 5000) == V::MISMATCH_WAIT);
+    ASSERT(r.observe(false, 25001, 5000) == V::MISMATCH_ACT);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// mtf_scalper live wiring: on_signal's desired_sl_dist param + check_external_stop().
+// The strategy (MtfScalperStrategy) owns its own ratcheting stop instead of the
+// cfg_.sl_points/trail_step math check_trail_and_stop uses for ORB/Trend.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// 69. desired_sl_dist (mtf_scalper path): the entry stop uses the strategy's own
+//     distance from FILL price, not cfg_.sl_points.
+TEST(mtf_entry_uses_desired_sl_dist_not_cfg_sl_points) {
+    Fixture f;   // make_cfg(): sl_points = 10.0
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, /*desired_sl_dist=*/5.0);
+    sim_entry_fill(f, 19002.0);   // fill differs slightly from signal price
+
+    auto snap = f.om.position_snapshot();
+    ASSERT_NEAR(snap.sl_price, 19002.0 - 5.0, 0.001);   // fill ∓ dist, not cfg.sl_points
+}
+
+// 70. desired_sl_dist=0.0 (the default, ORB/Trend's call shape): behaves exactly as
+//     before — falls back to cfg_.sl_points. Regression guard for the on_signal change.
+TEST(mtf_entry_zero_dist_falls_back_to_cfg_sl_points) {
+    Fixture f;   // sl_points = 10.0
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");   // old 3-arg call shape
+    sim_entry_fill(f, 19000.0);
+
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19000.0 - 10.0, 0.001);
+}
+
+// 71. check_external_stop: a tighter strategy stop is adopted (long).
+TEST(mtf_external_stop_tightens_long) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 18990.0
+
+    bool moved = f.om.check_external_stop(19005.0, /*strat_stop=*/18995.0);
+    ASSERT(moved);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18995.0, 0.001);
+}
+
+// 72. check_external_stop never loosens the stop (long) — mirrors
+//     mtf_scalper_strategy.hpp's own "never-retreat" contract for cur_stop().
+TEST(mtf_external_stop_never_loosens_long) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 18990.0
+
+    bool moved = f.om.check_external_stop(19005.0, /*strat_stop=*/18980.0);  // looser
+    ASSERT(!moved);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18990.0, 0.001);
+}
+
+// 73. Same ratchet direction check, short side (tighter = lower stop moving down).
+TEST(mtf_external_stop_tightens_short) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::SELL, 19000.0, "flag_break_short", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 19010.0
+
+    bool moved = f.om.check_external_stop(18995.0, /*strat_stop=*/19004.0);
+    ASSERT(moved);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19004.0, 0.001);
+
+    bool loosened = f.om.check_external_stop(18995.0, /*strat_stop=*/19020.0);
+    ASSERT(!loosened);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 19004.0, 0.001);
+}
+
+// 74. NaN / non-positive strat_stop is a no-op (the strategy's "no update this tick"
+//     signal — e.g. before the bracket is initialised).
+TEST(mtf_external_stop_ignores_nan_or_nonpositive) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);
+
+    ASSERT(!f.om.check_external_stop(19005.0, std::nan("")));
+    ASSERT(!f.om.check_external_stop(19005.0, 0.0));
+    ASSERT(!f.om.check_external_stop(19005.0, -1.0));
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18990.0, 0.001);
+}
+
+// 75. Flat: check_external_stop is a no-op (no position to update).
+TEST(mtf_external_stop_noop_when_flat) {
+    Fixture f;
+    ASSERT(!f.om.check_external_stop(19000.0, 18995.0));
+    ASSERT(f.om.is_flat());
+}
+
+// 76. Breach detection (tier-2, same shape as check_trail_and_stop's own tests):
+//     price trades through the exchange-held stop — check_external_stop fires the
+//     software SL exit exactly like check_trail_and_stop does, independent of
+//     whatever strat_stop is passed that same tick.
+TEST(mtf_external_stop_tier2_fires_after_breach_timeout) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_fire_timeout_ms = 0;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 10.0);
+    sim_entry_fill(f, 19000.0);   // sl = 18990.0
+    ASSERT(!f.om.position_snapshot().basket_id_stop.empty());
+
+    f.om.check_external_stop(18985.0, 18990.0);   // first tick below sl — starts timer
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+
+    std::size_t sends_before = f.sent_baskets.size();
+    f.om.check_external_stop(18985.0, 18990.0);   // second tick — fires
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    ASSERT(f.sent_baskets.size() > sends_before);
+}
+
+// 77. Stops are snapped to the 0.25 tick grid in the ADVERSE direction (long: floor,
+//     short: ceil) — CME rejects an off-increment STOP_MARKET trigger, and the strategy's
+//     ATR-based distances are arbitrary decimals. Mirrors paper_bracket_broker.hpp snap().
+TEST(mtf_stops_snapped_to_tick_adverse) {
+    Fixture f;
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "flag_break_long", 0.0, 5.3);
+    sim_entry_fill(f, 19002.0);                                    // 18996.7 → 18996.5
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18996.5, 0.001);
+    ASSERT(f.om.check_external_stop(19010.0, 18999.13));           // → 18999.0
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18999.0, 0.001);
+
+    Fixture g;
+    g.om.on_signal(OrbSignal::SELL, 19000.0, "flag_break_short", 0.0, 5.3);
+    sim_entry_fill(g, 19000.0);                                    // 19005.3 → 19005.5
+    ASSERT_NEAR(g.om.position_snapshot().sl_price, 19005.5, 0.001);
+    ASSERT(g.om.check_external_stop(18990.0, 19002.87));           // → 19003.0
+    ASSERT_NEAR(g.om.position_snapshot().sl_price, 19003.0, 0.001);
+}
+
+
+// 63. The break-even move reaches the exchange even when it is smaller than trail_step
+//     (2026-09-29 trade 66: sl 8 / be_offset 1 / trail_step 15 → the 9-pt BE move was
+//     dropped by the storm filter and the exchange stop filled at the original level).
+TEST(be_move_smaller_than_trail_step_reaches_exchange) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.sl_points        = 8.0;
+    cfg.trail_be_offset  = 1.0;
+    cfg.trail_be_trigger = 8.0;
+    cfg.trail_step       = 15.0;   // > the 9-pt BE move
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 30616.50 + 8.0, "fib_pullback");
+    sim_entry_fill(f, 30624.50);
+    ASSERT_EQ(f.sent_baskets.size(), (std::size_t)2);          // entry + initial stop
+    ASSERT(f.cancelled_baskets.empty());
+    std::string old_stop = f.om.position_snapshot().basket_id_stop;
+
+    f.om.check_trail_and_stop(30632.50);                        // mfe 8.0 → BE triggers
+    auto snap = f.om.position_snapshot();
+    ASSERT(snap.be_triggered);
+    ASSERT_NEAR(snap.sl_price, 30625.50, 0.001);                // entry + 1
+    ASSERT(!f.cancelled_baskets.empty());                       // old stop cancelled…
+    ASSERT_EQ(f.cancelled_baskets.back(), old_stop);
+    ASSERT_EQ(f.sent_baskets.size(), (std::size_t)3);          // …and the BE stop SENT
+    ASSERT(snap.basket_id_stop != old_stop);
+
+    // The storm filter still applies to ordinary trail moves smaller than trail_step.
+    std::size_t sends = f.sent_baskets.size();
+    f.om.check_trail_and_stop(30634.00);                        // trail_sl = 30619 < BE → no move
+    ASSERT_EQ(f.sent_baskets.size(), sends);
+}
+
+// 64. Multi-lot partial fills: the recorded entry/exit price is the qty-weighted average
+//     of the partials, not the price of the completing one (2026-09-29 five 5-lot rows
+//     were off by $8 in total).
+TEST(multi_lot_partial_fills_record_vwap_entry_and_exit) {
+    OrbConfig cfg = make_cfg(false);
+    cfg.qty           = 5;
+    cfg.commission_rt = 0.0;
+    Fixture f(cfg);
+
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "orb_breakout");
+    std::string entry = f.om.position_snapshot().basket_id_entry;
+    f.om.on_fill_notification(entry, 19000.00, 2, /*is_entry=*/true);   // partial 2 @ 19000.00
+    ASSERT_EQ(f.om.state(), PosState::PENDING_ENTRY);
+    f.om.on_fill_notification(entry, 19001.00, 5, /*is_entry=*/true);   // complete 3 @ 19001.00
+    ASSERT_EQ(f.om.state(), PosState::LONG);
+    ASSERT_NEAR(f.om.position_snapshot().entry_price, 19000.60, 0.0001); // (2*19000+3*19001)/5
+
+    f.om.flatten_now("test", 19010.0);
+    std::string exit_b = f.om.position_snapshot().basket_id_exit;
+    f.om.on_fill_notification(exit_b, 19010.00, 1, /*is_entry=*/false);  // partial 1 @ 19010.00
+    ASSERT_EQ(f.om.state(), PosState::PENDING_EXIT);
+    f.om.on_fill_notification(exit_b, 19010.25, 5, /*is_entry=*/false);  // complete 4 @ 19010.25
+    ASSERT(f.om.is_flat());
+
+    Position out;
+    ASSERT(f.om.pop_trade_completed(out));
+    // exit vwap = (1*19010.00 + 4*19010.25)/5 = 19010.20 ; pts = 9.60 ; $ = 9.60*2*5 = 96.00
+    ASSERT_NEAR(out.exit_price,  19010.20, 0.0001);
+    ASSERT_NEAR(out.pnl_points,  9.60,     0.0001);
+    ASSERT_NEAR(out.pnl_usd,     96.00,    0.001);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -1767,6 +2307,32 @@ int main() {
     RUN(exit_send_failure_reverts_to_position_and_restores_stop);
     RUN(stuck_exit_retry_resends_exit_and_unwinds_late_fill);
     RUN(late_stop_fire_cleans_server_reverse_map);
+    RUN(gateway_reject_resolved_via_server_basket_map_entry);
+    RUN(gateway_reject_resolved_via_server_basket_map_stop);
+    RUN(stop_reject_matched_by_stop_server_basket);
+    RUN(pending_entry_timeout_cancels_and_reverts_to_flat);
+    RUN(tid352_duplicate_fill_after_tid351_is_deduped);
+    RUN(tid352_duplicate_exit_fill_does_not_ghost_halt);
+    RUN(pnl_scales_with_qty_and_commission_rt);
+    RUN(pnl_short_loss_scales_with_qty_and_commission_rt);
+    RUN(be_move_smaller_than_trail_step_reaches_exchange);
+    RUN(multi_lot_partial_fills_record_vwap_entry_and_exit);
+    RUN(client_only_cancel_guard_survives_flat_purge_and_unwinds_late_fire);
+    RUN(late_server_map_resends_cancel_for_cancelled_stop);
+    RUN(cancel_failed_readopts_old_stop_while_in_trade);
+    RUN(cancel_failed_while_flat_keeps_guard);
+    RUN(net_qty_consistent_by_state);
+    RUN(net_reconciler_acts_once_after_grace);
+
+    RUN(mtf_entry_uses_desired_sl_dist_not_cfg_sl_points);
+    RUN(mtf_entry_zero_dist_falls_back_to_cfg_sl_points);
+    RUN(mtf_external_stop_tightens_long);
+    RUN(mtf_external_stop_never_loosens_long);
+    RUN(mtf_external_stop_tightens_short);
+    RUN(mtf_external_stop_ignores_nan_or_nonpositive);
+    RUN(mtf_external_stop_noop_when_flat);
+    RUN(mtf_external_stop_tier2_fires_after_breach_timeout);
+    RUN(mtf_stops_snapped_to_tick_adverse);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

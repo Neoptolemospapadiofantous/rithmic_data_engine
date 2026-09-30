@@ -16,6 +16,10 @@
 namespace asio_exp = boost::asio::experimental;
 using namespace asio_exp::awaitable_operators;
 
+// BestBidOffer presence_bits (proto/rithmic.proto:137)
+constexpr int32_t kPresenceBid = 0x1;
+constexpr int32_t kPresenceAsk = 0x2;
+
 // ── Constructor ────────────────────────────────────────────────────
 
 RithmicClient::RithmicClient(asio::io_context& ioc, const Config& cfg)
@@ -89,6 +93,31 @@ static asio::awaitable<void> ws_write(RithmicClient::WsStream& ws,
     co_await ws.async_write(asio::buffer(data), use_awaitable);
 }
 
+// ── read_with_timeout ──────────────────────────────────────────────
+
+asio::awaitable<std::string>
+RithmicClient::read_with_timeout(WsStream& ws, int timeout_s,
+                                 const char* waiting_for) {
+    auto ex = co_await asio::this_coro::executor;
+    asio::steady_timer deadline(ex);
+    deadline.expires_after(std::chrono::seconds(timeout_s));
+
+    beast::flat_buffer buf;
+    auto [order, rd_ec, rd_n, tm_ec] =
+        co_await asio_exp::make_parallel_group(
+            ws.async_read(buf, asio::deferred),
+            deadline.async_wait(asio::deferred)
+        ).async_wait(asio_exp::wait_for_one(), use_awaitable);
+
+    if (order[0] == 1)
+        throw std::runtime_error(
+            std::string("Rithmic: timed out (") + std::to_string(timeout_s) +
+            "s) waiting for " + waiting_for);
+    if (rd_ec) throw beast::system_error(rd_ec);
+
+    co_return strip_header(beast::buffers_to_string(buf.data()));
+}
+
 // ── get_system_info ────────────────────────────────────────────────
 
 asio::awaitable<void> RithmicClient::get_system_info(WsStream& ws) {
@@ -96,12 +125,12 @@ asio::awaitable<void> RithmicClient::get_system_info(WsStream& ws) {
     req.set_template_id(16);
     co_await ws_write(ws, frame(req));
 
-    // Wait for response with template_id == 17
-    beast::flat_buffer buf;
+    // Wait for response with template_id == 17 (15s timeout per read —
+    // a server that accepts the WS handshake but never replies must not
+    // hang us forever)
     for (;;) {
-        buf.clear();
-        co_await ws.async_read(buf, use_awaitable);
-        auto payload = strip_header(beast::buffers_to_string(buf.data()));
+        auto payload = co_await read_with_timeout(ws, 15,
+                                                  "ResponseRithmicSystemInfo (17)");
 
         rti::Base base;
         base.ParseFromString(payload);
@@ -139,12 +168,9 @@ asio::awaitable<void> RithmicClient::login(WsStream& ws) {
     req.set_infra_type(rti::RequestLogin::TICKER_PLANT);
     co_await ws_write(ws, frame(req));
 
-    // Wait for response with template_id == 11
-    beast::flat_buffer buf;
+    // Wait for response with template_id == 11 (15s timeout per read)
     for (;;) {
-        buf.clear();
-        co_await ws.async_read(buf, use_awaitable);
-        auto payload = strip_header(beast::buffers_to_string(buf.data()));
+        auto payload = co_await read_with_timeout(ws, 15, "ResponseLogin (11)");
 
         rti::Base base;
         base.ParseFromString(payload);
@@ -154,7 +180,7 @@ asio::awaitable<void> RithmicClient::login(WsStream& ws) {
         resp.ParseFromString(payload);
 
         if (!resp.rp_code().empty() && resp.rp_code(0) != "0")
-            throw LoginError("Login failed: " + resp.rp_code(0));
+            throw LoginError(resp.rp_code(0));
 
         if (resp.heartbeat_interval() > 0)
             heartbeat_interval_ = resp.heartbeat_interval();
@@ -189,9 +215,13 @@ asio::awaitable<void> RithmicClient::subscribe(WsStream& ws,
     req.set_symbol(symbol);
     req.set_exchange(exchange);
     req.set_request(rti::RequestMarketDataUpdate::SUBSCRIBE);
-    req.set_update_bits(1 | 2);  // LAST_TRADE | BBO
+    // LAST_TRADE | BBO, plus any bits from RITHMIC_MD_EXTRA_BITS (Rithmic update_bits:
+    // 1 LAST_TRADE, 2 BBO, 4 ORDER_BOOK (aggregated L2, template 156), 64 HIGH_BID_LOW_ASK …)
+    const char* extra = std::getenv("RITHMIC_MD_EXTRA_BITS");
+    const uint32_t bits = (1u | 2u) | (extra ? (uint32_t)std::atoi(extra) : 0u);
+    req.set_update_bits(bits);
     co_await ws_write(ws, frame(req));
-    LOG("Subscribed to %s/%s (LAST_TRADE|BBO)", symbol.c_str(), exchange.c_str());
+    LOG("Subscribed to %s/%s (update_bits=%u)", symbol.c_str(), exchange.c_str(), bits);
 }
 
 asio::awaitable<void> RithmicClient::subscribe_depth(WsStream& ws,
@@ -202,7 +232,12 @@ asio::awaitable<void> RithmicClient::subscribe_depth(WsStream& ws,
     req.set_symbol(symbol);
     req.set_exchange(exchange);
     req.set_request(rti::RequestMarketDataUpdate::SUBSCRIBE);
-    req.set_update_bits(64);  // DEPTH_BY_ORDER
+    // NOTE: 64 is HIGH_BID_LOW_ASK in Rithmic's update_bits, not depth. Depth-by-order
+    // (template 160) is a separate request family; kept env-tunable while that is verified.
+    const char* db = std::getenv("RITHMIC_MD_DEPTH_BITS");
+    const uint32_t bits = db ? (uint32_t)std::atoi(db) : 0u;
+    if (bits == 0) co_return;               // default: no extra request (bit 64 only yields HighBidLowAsk, template 153)
+    req.set_update_bits(bits);
     co_await ws_write(ws, frame(req));
     LOG("Subscribed depth-by-order for %s/%s", symbol.c_str(), exchange.c_str());
 }
@@ -273,7 +308,12 @@ RithmicClient::run_connection_test(TickDB& db, int n_ticks) {
         co_await get_system_info(*probe);
         push("RequestRithmicSystemInfo (16→17)", ms_since(t), true,
              "system=" + cfg_.system_name);
-        probe->async_close(websocket::close_code::normal, asio::detached);
+        // Await the close — a detached close would run its completion
+        // handler against a destroyed stream once probe leaves scope.
+        beast::get_lowest_layer(*probe).expires_after(std::chrono::seconds(10));
+        boost::system::error_code close_ec;
+        co_await probe->async_close(websocket::close_code::normal,
+                                    asio::redirect_error(use_awaitable, close_ec));
     } catch (std::exception& e) {
         push("Connect / SystemInfo", ms_since(t), false, e.what());
         co_return result;
@@ -391,7 +431,11 @@ RithmicClient::run_connection_test(TickDB& db, int n_ticks) {
     try {
         co_await unsubscribe(*ws, cfg_.symbol, cfg_.exchange);
         co_await send_logout(*ws);
-        ws->async_close(websocket::close_code::normal, asio::detached);
+        // Await the close so the handler never outlives the stream
+        beast::get_lowest_layer(*ws).expires_after(std::chrono::seconds(10));
+        boost::system::error_code close_ec;
+        co_await ws->async_close(websocket::close_code::normal,
+                                 asio::redirect_error(use_awaitable, close_ec));
     } catch (...) {}
 
     co_return result;
@@ -401,11 +445,38 @@ RithmicClient::run_connection_test(TickDB& db, int n_ticks) {
 
 void RithmicClient::dispatch_message(const std::string& payload) {
     rti::Base base;
-    base.ParseFromString(payload);
+    if (!base.ParseFromString(payload)) {
+        LOG("WARN: dropping malformed frame (%zu bytes, header unparseable)",
+            payload.size());
+        return;
+    }
+
+    const int tid = base.template_id();
+    ++tmpl_counts_[tid];
+    // Raw dump of the first few frames of any non-trade template for offline decoding
+    // (protoc --decode_raw): set RITHMIC_MD_DUMP_DIR to enable.
+    if (tid != 150 && tid != 18 && tid != 19) {
+        static const char* dump_dir = std::getenv("RITHMIC_MD_DUMP_DIR");
+        if (dump_dir && dumped_[tid] < 5) {
+            const std::string fn = std::string(dump_dir) + "/t" + std::to_string(tid) + "_" + std::to_string(dumped_[tid]) + ".bin";
+            if (FILE* f = std::fopen(fn.c_str(), "wb")) { std::fwrite(payload.data(), 1, payload.size(), f); std::fclose(f); ++dumped_[tid]; }
+        }
+    }
+    if (tid == 101) {                       // ResponseMarketDataUpdate — refusals were invisible before
+        rti::ResponseMarketDataUpdate r;
+        if (r.ParseFromString(payload)) {
+            std::string codes; for (const auto& c : r.rp_code()) { if (!codes.empty()) codes += ","; codes += c; }
+            LOG("ResponseMarketDataUpdate (101): rp_code=[%s]", codes.c_str());
+        }
+        return;
+    }
 
     if (base.template_id() == 150) {
         rti::LastTrade lt;
-        lt.ParseFromString(payload);
+        if (!lt.ParseFromString(payload)) {
+            LOG("WARN: dropping malformed LastTrade (template 150)");
+            return;
+        }
 
         if (lt.trade_price() <= 0 || lt.trade_size() <= 0) return;
 
@@ -427,10 +498,21 @@ void RithmicClient::dispatch_message(const std::string& payload) {
 
     } else if (base.template_id() == 151) {
         rti::BestBidOffer bbo;
-        bbo.ParseFromString(payload);
+        if (!bbo.ParseFromString(payload)) {
+            LOG("WARN: dropping malformed BestBidOffer (template 151)");
+            return;
+        }
 
-        // Accept one-sided updates (Rithmic sends bid-only or ask-only on partial fills)
-        if (bbo.bid_price() <= 0 && bbo.ask_price() <= 0) return;
+        // presence_bits marks which sides carry real values; absent sides
+        // arrive as protobuf-default 0. Deliver them as nullopt so the db
+        // layer writes NULL instead of a bogus 0.0 price. One-sided updates
+        // (bid-only or ask-only on partial fills) are accepted.
+        std::optional<double> bid_price, ask_price;
+        if ((bbo.presence_bits() & kPresenceBid) && bbo.bid_price() > 0)
+            bid_price = bbo.bid_price();
+        if ((bbo.presence_bits() & kPresenceAsk) && bbo.ask_price() > 0)
+            ask_price = bbo.ask_price();
+        if (!bid_price && !ask_price) return;
 
         int64_t ts_us = static_cast<int64_t>(bbo.ssboe()) * 1'000'000LL +
                         static_cast<int64_t>(bbo.usecs());
@@ -440,15 +522,24 @@ void RithmicClient::dispatch_message(const std::string& payload) {
 
         if (on_bbo_)
             on_bbo_(BBORow{ts_us,
-                           bbo.bid_price(), bbo.bid_size(), bbo.bid_orders(),
-                           bbo.ask_price(), bbo.ask_size(), bbo.ask_orders(),
+                           bid_price, bbo.bid_size(), bbo.bid_orders(),
+                           ask_price, bbo.ask_size(), bbo.ask_orders(),
                            std::move(sym), std::move(exch)});
 
     } else if (base.template_id() == 160) {
         rti::DepthByOrder dbo;
-        dbo.ParseFromString(payload);
+        if (!dbo.ParseFromString(payload)) {
+            LOG("WARN: dropping malformed DepthByOrder (template 160)");
+            return;
+        }
 
         if (dbo.depth_price() <= 0) return;
+
+        // prev_depth_price is only meaningful when prev_depth_price_flag is
+        // set; otherwise deliver nullopt so the db layer writes NULL.
+        std::optional<double> prev_price;
+        if (dbo.prev_depth_price_flag())
+            prev_price = dbo.prev_depth_price();
 
         int64_t ts_us  = static_cast<int64_t>(dbo.ssboe()) * 1'000'000LL +
                          static_cast<int64_t>(dbo.usecs());
@@ -459,36 +550,47 @@ void RithmicClient::dispatch_message(const std::string& payload) {
             on_depth_(DepthRow{ts_us, src_ns, dbo.sequence_number(),
                                static_cast<int8_t>(dbo.update_type()),
                                static_cast<int8_t>(dbo.transaction_type()),
-                               dbo.depth_price(), dbo.prev_depth_price(),
+                               dbo.depth_price(), prev_price,
                                dbo.depth_size(), dbo.exchange_order_id(),
                                dbo.symbol().empty()   ? cfg_.symbol   : dbo.symbol(),
                                dbo.exchange().empty()  ? cfg_.exchange : dbo.exchange()});
     } else if (base.template_id() == 18) {
-        // RequestHeartbeat from Rithmic — we must respond with ResponseHeartbeat (19)
+        // Inbound RequestHeartbeat (18) — Rithmic keepalive ping. The client
+        // replies with its own RequestHeartbeat (18); ResponseHeartbeat (19)
+        // is the SERVER's reply to OUR heartbeat, never sent by us.
         hb_response_pending_.store(true);
     }
-    // template_id 19 = ResponseHeartbeat (our own replies echoed back) — ignored
+    // template_id 19 = ResponseHeartbeat — server's ack of our RequestHeartbeat(18); ignored
     // template_id 101 = ResponseMarketDataUpdate — silently ignored
 }
 
-// ── receive_loop ───────────────────────────────────────────────────
+// ── receive_loop / link_watchdog ───────────────────────────────────
 //
-// Uses Beast's built-in tcp_stream timeout instead of parallel_group.
-// parallel_group cancels the in-progress async_read when the heartbeat
-// timer wins, which corrupts Beast's WebSocket frame parser and causes
-// "Operation canceled [system:125]" on the next read — disconnecting
-// every ~60 seconds and preventing BBO/depth data from ever arriving.
+// The read is NEVER cancelled locally. Cancelling a Beast websocket read
+// (parallel_group wait_for_one, or tcp_stream expires_after firing under
+// it) poisons the stream — the next op fails with "Operation canceled
+// [system:125] check_stop_now" — which used to sever the connection every
+// heartbeat interval whenever the market went quiet (e.g. overnight and
+// weekends), and the resulting rapid login loop tripped Rithmic's login
+// rate limit (rp_code 13) and killed the collector for good.
 //
-// With Beast timeout, the tcp_stream returns beast::error::timeout on
-// expiry without corrupting the frame parser, so we can safely send
-// the heartbeat and continue reading.
+// Instead, a sibling coroutine (link_watchdog) owns two duties on a 5s
+// cadence while receive_loop runs:
+//   1. Heartbeats — replies to server requests and proactive pings, which
+//      must flow even when zero reads complete (pure silence). Rithmic acks
+//      heartbeats, and those acks count as inbound activity.
+//   2. Silence kill — if NOTHING has arrived for 2.5× the negotiated
+//      heartbeat interval despite our pings, the connection is truly dead:
+//      the watchdog closes the socket, failing the read and triggering the
+//      outer reconnect loop (flagged via silence_killed_).
+
+static int64_t mono_now_s() {
+    return std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+}
 
 asio::awaitable<void> RithmicClient::receive_loop(WsStream& ws) {
-    auto last_hb = std::chrono::steady_clock::now();
-    int hb_secs = std::max(1, static_cast<int>(heartbeat_interval_));
-
-    // Set per-operation timeout on the underlying tcp_stream
-    beast::get_lowest_layer(ws).expires_after(std::chrono::seconds(hb_secs));
+    last_rx_mono_s_.store(mono_now_s());
 
     while (running_) {
         beast::flat_buffer buf;
@@ -496,31 +598,76 @@ asio::awaitable<void> RithmicClient::receive_loop(WsStream& ws) {
 
         co_await ws.async_read(buf, asio::redirect_error(use_awaitable, ec));
 
-        if (ec == beast::error::timeout) {
-            // Read timed out — send heartbeat and keep going
-            co_await send_heartbeat(ws);
-            last_hb = std::chrono::steady_clock::now();
-            beast::get_lowest_layer(ws).expires_after(std::chrono::seconds(hb_secs));
-            continue;
+        // Never throw out of here: the || operator is wait_for_one_success, so
+        // a thrown error would NOT complete the group — the watchdog would run
+        // to its silence limit first, delaying every routine disconnect by
+        // minutes and discarding the real error. Record + return instead;
+        // run() rethrows after the race completes.
+        if (ec) {
+            link_error_ = ec.message();
+            co_return;
         }
 
-        if (ec) throw beast::system_error(ec);
+        last_rx_mono_s_.store(mono_now_s());
 
-        // Reset timeout after each successful read
-        beast::get_lowest_layer(ws).expires_after(std::chrono::seconds(hb_secs));
+        try {
+            dispatch_message(strip_header(beast::buffers_to_string(buf.data())));
+        } catch (std::exception& e) {
+            link_error_ = std::string("frame dispatch: ") + e.what();
+            co_return;
+        }
 
-        dispatch_message(strip_header(beast::buffers_to_string(buf.data())));
+        // Heartbeat replies AND proactive heartbeats are sent by the sibling
+        // link_watchdog coroutine: heartbeat sends must keep flowing during
+        // total silence, when this loop is parked inside async_read. The
+        // watchdog is the only heartbeat writer while both run, so no
+        // concurrent async_write can race another (Beast full-duplex allows
+        // exactly one outstanding read + one outstanding write).
+    }
+}
 
-        // Respond to Rithmic's heartbeat requests (template 18)
-        if (hb_response_pending_.exchange(false))
-            co_await send_heartbeat(ws);
+asio::awaitable<void> RithmicClient::link_watchdog(WsStream& ws) {
+    auto ex = co_await asio::this_coro::executor;
+    asio::steady_timer t(ex);
+    const int64_t limit_s = std::max<int64_t>(
+        30, static_cast<int64_t>(heartbeat_interval_ * 2.5));
+    const double hb_every_s = heartbeat_interval_ * 0.9;
+    auto last_hb = std::chrono::steady_clock::now();
 
-        // Proactively send our own heartbeat if interval nearly elapsed
+    while (running_) {
+        t.expires_after(std::chrono::seconds(5));
+        boost::system::error_code ec;
+        co_await t.async_wait(asio::redirect_error(use_awaitable, ec));
+        if (ec) co_return;   // cancelled — sibling receive_loop finished
+
+        // Heartbeat duty: reply to server requests (template 18, flagged by
+        // dispatch_message) and proactively ping on schedule. Without this the
+        // client goes fully quiet during market silence and the server treats
+        // the line as dead — observed as zero inbound data for hours on a
+        // weekend, which then tripped the silence kill below on every session.
         auto now = std::chrono::steady_clock::now();
-        double elapsed = std::chrono::duration<double>(now - last_hb).count();
-        if (elapsed >= heartbeat_interval_ * 0.9) {
-            co_await send_heartbeat(ws);
+        double since_hb = std::chrono::duration<double>(now - last_hb).count();
+        if (hb_response_pending_.exchange(false) || since_hb >= hb_every_s) {
+            try {
+                co_await send_heartbeat(ws);
+            } catch (std::exception& e) {
+                // Write failed — the line is dead; close so the pending read
+                // fails too and the race completes with the real cause.
+                link_error_ = std::string("heartbeat write: ") + e.what();
+                boost::system::error_code cec;
+                beast::get_lowest_layer(ws).socket().close(cec);
+                co_return;
+            }
             last_hb = now;
+        }
+
+        int64_t silence = mono_now_s() - last_rx_mono_s_.load();
+        if (silence > limit_s) {
+            LOG("No inbound data for %llds (limit %llds) — connection dead, forcing reconnect",
+                static_cast<long long>(silence), static_cast<long long>(limit_s));
+            silence_killed_.store(true);
+            beast::get_lowest_layer(ws).socket().close(ec);
+            co_return;
         }
     }
 }
@@ -534,20 +681,26 @@ asio::awaitable<void> RithmicClient::run() {
     while (running_) {
         int  delay_s   = 0;
         bool had_error = false;
+        std::chrono::steady_clock::time_point connected_at{};
 
         try {
             // ── Step 1: system info probe ──────────────────────────
             {
                 auto ws = co_await connect_ws();
                 co_await get_system_info(*ws);
-                ws->async_close(websocket::close_code::normal,
-                                asio::detached);
+                // Await the close so its handler never outlives the stream
+                beast::get_lowest_layer(*ws).expires_after(
+                    std::chrono::seconds(10));
+                boost::system::error_code close_ec;
+                co_await ws->async_close(websocket::close_code::normal,
+                    asio::redirect_error(use_awaitable, close_ec));
             }
 
             // ── Step 2: real session ───────────────────────────────
             {
                 auto ws = co_await connect_ws();
                 co_await login(*ws);
+                connected_at = std::chrono::steady_clock::now();
                 co_await send_heartbeat(*ws);
 
                 std::string contract = cfg_.symbol;
@@ -556,21 +709,57 @@ asio::awaitable<void> RithmicClient::run() {
 
                 co_await subscribe(*ws, contract, cfg_.exchange);
                 co_await subscribe_depth(*ws, contract, cfg_.exchange);
-                co_await receive_loop(*ws);
+                // Intermarket reference feeds (e.g. ES for the MTF SMT
+                // module) — LAST_TRADE|BBO only, no depth.
+                for (const auto& extra : cfg_.extra_symbols) {
+                    LOG("Subscribing extra %s on %s", extra.symbol.c_str(), extra.exchange.c_str());
+                    co_await subscribe(*ws, extra.symbol, extra.exchange);
+                }
+                silence_killed_.store(false);
+                link_error_.clear();
+                co_await (receive_loop(*ws) || link_watchdog(*ws));
+                if (!link_error_.empty()) {
+                    std::string msg;
+                    std::swap(msg, link_error_);
+                    throw std::runtime_error(msg);
+                }
+                if (silence_killed_.load())
+                    throw std::runtime_error("no inbound data — connection dead");
 
                 // Clean shutdown
                 co_await unsubscribe(*ws, contract, cfg_.exchange);
+                for (const auto& extra : cfg_.extra_symbols)
+                    co_await unsubscribe(*ws, extra.symbol, extra.exchange);
                 co_await send_logout(*ws);
-                ws->async_close(websocket::close_code::normal, asio::detached);
+                beast::get_lowest_layer(*ws).expires_after(
+                    std::chrono::seconds(10));
+                boost::system::error_code close_ec;
+                co_await ws->async_close(websocket::close_code::normal,
+                    asio::redirect_error(use_awaitable, close_ec));
             }
 
             attempt = 0;
 
-        } catch (LoginError&) {
-            throw;   // authentication failure — do not retry
+        } catch (LoginError& e) {
+            // rp_code 13 = too many rapid logins / duplicate session —
+            // transient. Retry on a long, fixed cadence instead of dying;
+            // a collector that exits here collects nothing until someone
+            // restarts it. Genuine auth failures (bad credentials) stay
+            // terminal so misconfiguration surfaces immediately.
+            if (e.code != "13") throw;
+            LOG("Login transiently refused (rp_code %s) — retrying in 300s",
+                e.code.c_str());
+            delay_s   = 300;
+            had_error = true;
         } catch (std::exception& e) {
             // co_await is not allowed inside catch — record and act after
             if (!running_) break;
+            // A session that stayed up >= 60s was healthy — decay the
+            // backoff so a flap loop doesn't pin the delay at 300s.
+            if (connected_at != std::chrono::steady_clock::time_point{} &&
+                std::chrono::steady_clock::now() - connected_at >=
+                    std::chrono::seconds(60))
+                attempt = 0;
             delay_s = std::min(30 * (1 << std::min(attempt, 4)), 300);
             LOG("Disconnected: %s — reconnecting in %ds", e.what(), delay_s);
             ++attempt;
@@ -583,4 +772,10 @@ asio::awaitable<void> RithmicClient::run() {
             co_await t.async_wait(use_awaitable);
         }
     }
+}
+
+std::string RithmicClient::template_counts() const {
+    std::string out;
+    for (const auto& [t, n] : tmpl_counts_) { if (!out.empty()) out += " "; out += std::to_string(t) + ":" + std::to_string(n); }
+    return out;
 }

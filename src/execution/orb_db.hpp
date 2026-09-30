@@ -14,6 +14,7 @@
 #include "orb_strategy.hpp"
 #include "log.hpp"
 #include <libpq-fe.h>
+#include <cstdint>
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
@@ -23,8 +24,10 @@ class OrbDB {
 public:
     explicit OrbDB(const std::string& connstr,
                    const std::string& instrument    = "MNQ",
-                   const std::string& account_label = "legends")
-        : connstr_(connstr), instrument_(instrument), account_label_(account_label) {
+                   const std::string& account_label = "legends",
+                   const std::string& strategy      = "ORB")
+        : connstr_(connstr), instrument_(instrument), account_label_(account_label),
+          strategy_(strategy) {
         conn_ = PQconnectdb(connstr_.c_str());
         if (!conn_ || PQstatus(conn_) != CONNECTION_OK)
             throw std::runtime_error(std::string("OrbDB connect failed: ") +
@@ -33,7 +36,10 @@ public:
     }
 
     ~OrbDB() {
-        if (conn_) PQfinish(conn_);
+        if (conn_) {
+            if (instance_lock_held_) release_instance_lock();
+            PQfinish(conn_);
+        }
     }
 
     OrbDB(const OrbDB&)            = delete;
@@ -44,10 +50,96 @@ public:
 
     void reconnect() {
         PQreset(conn_);
-        if (PQstatus(conn_) != CONNECTION_OK)
+        if (PQstatus(conn_) != CONNECTION_OK) {
             LOG("[ORBDB] Reconnect failed: %s", PQerrorMessage(conn_));
-        else
-            LOG("[ORBDB] Reconnected to PostgreSQL");
+            return;
+        }
+        LOG("[ORBDB] Reconnected to PostgreSQL");
+        // Session-level advisory locks are dropped when the connection resets —
+        // re-acquire the instance lock so the single-instance guard survives.
+        if (instance_lock_held_) {
+            instance_lock_held_ = false;
+            if (!acquire_instance_lock(account_label_, strategy_))
+                LOG("[ORBDB] WARNING: instance lock lost on reconnect and could not be re-acquired");
+        }
+    }
+
+    // ── Single-instance guard (multi-executor safety) ─────────────────────────
+    // Acquires a PostgreSQL session-level advisory lock keyed on a stable hash of
+    // the ACCOUNT alone: one executor per account, whatever its engine or strategy
+    // tag. Two engines (e.g. ORB + trend) on one account would size, risk-check and
+    // reconcile against the same exchange position without knowing about each other.
+    // A second executor gets false and must refuse to trade. The lock is released on
+    // close()/destruction or automatically by the server if the connection dies.
+    bool acquire_instance_lock(const std::string& account_label,
+                               const std::string& strategy) {
+        if (!is_connected()) reconnect();
+        if (!is_connected()) return false;
+
+        int64_t key = instance_lock_key(account_label, strategy);
+        std::string ks = std::to_string(key);
+        const char* params[1] = { ks.c_str() };
+        PGresult* res = exec_params_query(
+            "SELECT pg_try_advisory_lock($1::bigint)", 1, params);
+        if (!res) return false;
+        bool acquired = (PQntuples(res) > 0 && PQgetvalue(res, 0, 0)[0] == 't');
+        PQclear(res);
+        if (acquired) {
+            instance_lock_held_ = true;
+            LOG("[ORBDB] Instance lock acquired: account=%s strategy=%s key=%lld",
+                account_label.c_str(), strategy.c_str(), (long long)key);
+        } else {
+            LOG("[ORBDB] Instance lock REFUSED: another executor holds account=%s strategy=%s",
+                account_label.c_str(), strategy.c_str());
+        }
+        return acquired;
+    }
+
+    void release_instance_lock() {
+        if (!instance_lock_held_ || !is_connected()) {
+            instance_lock_held_ = false;
+            return;
+        }
+        int64_t key = instance_lock_key(account_label_, strategy_);
+        std::string ks = std::to_string(key);
+        const char* params[1] = { ks.c_str() };
+        PGresult* res = exec_params_query(
+            "SELECT pg_advisory_unlock($1::bigint)", 1, params);
+        if (res) PQclear(res);
+        instance_lock_held_ = false;
+        LOG("[ORBDB] Instance lock released: account=%s strategy=%s",
+            account_label_.c_str(), strategy_.c_str());
+    }
+
+    bool instance_lock_held() const { return instance_lock_held_; }
+
+    // ── Checked exec for fire-and-forget writes (e.g. pending_stop_cancels) ────
+    // Unlike raw PQexec: verifies the connection (reconnecting once if dropped),
+    // checks the result status, and logs the server error. Returns false on
+    // failure instead of silently dropping the write. Never throws.
+    bool exec_logged(const std::string& sql) {
+        if (!is_connected()) {
+            reconnect();
+            if (!is_connected()) {
+                LOG("[ORBDB] exec_logged skipped — not connected. SQL: %.120s", sql.c_str());
+                return false;
+            }
+        }
+        PGresult* res = PQexec(conn_, sql.c_str());
+        if (!res) {
+            LOG("[ORBDB] exec_logged PQexec null: %s | SQL: %.120s",
+                PQerrorMessage(conn_), sql.c_str());
+            return false;
+        }
+        ExecStatusType st = PQresultStatus(res);
+        if (st != PGRES_COMMAND_OK && st != PGRES_TUPLES_OK) {
+            LOG("[ORBDB] exec_logged failed: %s | SQL: %.120s",
+                PQerrorMessage(conn_), sql.c_str());
+            PQclear(res);
+            return false;
+        }
+        PQclear(res);
+        return true;
     }
 
     // ── Write a completed trade ───────────────────────────────────────────────
@@ -92,7 +184,7 @@ public:
         snprintf(fill,   sizeof(fill),   "%.4f", pos.fill_price_actual);
         snprintf(besl,   sizeof(besl),   "%.4f", pos.be_sl_price);
 
-        const char* params[24] = {
+        const char* params[25] = {
             account_label_.c_str(),    // $1  account_label
             instrument_.c_str(),       // $2  instrument
             trade_date.c_str(),        // $3  trade_date
@@ -117,6 +209,8 @@ public:
             echase,                    // $22 entry_price_chase_ticks
             etslip,                    // $23 entry_true_slip_ticks
             besl,                      // $24 be_sl_price
+            strategy_.c_str(),         // $25 strategy — without it every row defaulted to 'ORB',
+                                       //     so a trend/test trade used up ORB's max_daily_trades
         };
 
         exec_params(
@@ -125,7 +219,7 @@ public:
             " entry_price, exit_price, sl_price, qty, pnl_points, pnl_usd, exit_reason,"
             " signal_to_submit_us, submit_to_fill_ms, entry_slippage_ticks, exit_slippage_ticks,"
             " mae_pts, mfe_pts, trigger_price, fill_price,"
-            " entry_price_chase_ticks, entry_true_slip_ticks, be_sl_price)"
+            " entry_price_chase_ticks, entry_true_slip_ticks, be_sl_price, strategy)"
             " VALUES"
             "($1, $2, $3::date, $4,"
             " to_timestamp($5::bigint / 1000000.0),"
@@ -135,8 +229,8 @@ public:
             " $14::bigint, $15::bigint, $16::int, $17::int,"
             " $18::double precision, $19::double precision,"
             " $20::double precision, $21::double precision,"
-            " $22::int, $23::int, $24::double precision)",
-            24, params);
+            " $22::int, $23::int, $24::double precision, $25)",
+            25, params);
 
         LOG("[ORBDB] Trade written: %s %.4f→%.4f pnl=%.2f mae=%.2f mfe=%.2f slip=%.2fpts",
             direction.c_str(), pos.entry_price, pos.exit_price, pos.pnl_usd,
@@ -409,25 +503,113 @@ public:
     }
 
     // ── Get total historical P&L (for seeding RiskManager on startup) ─────────
+    // Prior-day ATR14 (points) for the regime gate: newest session_stats row for
+    // `symbol` dated BEFORE `ymd` (the collector's feed symbol, e.g. NQ). 0.0 = none.
+    double session_atr14_before(const std::string& symbol, const std::string& ymd) {
+        const char* params[2] = {symbol.c_str(), ymd.c_str()};
+        PGresult* res = exec_params_query(
+            "SELECT atr14_pts FROM session_stats WHERE symbol=$1 AND session_date < $2::date"
+            " AND atr14_pts IS NOT NULL ORDER BY session_date DESC LIMIT 1", 2, params);
+        if (!res) return 0.0;
+        double atr = (PQntuples(res) > 0 && !PQgetisnull(res, 0, 0)) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
+        PQclear(res);
+        return atr;
+    }
+
+    // Scheduled-release day (calendar kind fomc / nfp) — news_break's nb_event_only.
+    bool calendar_event_day(const std::string& ymd) {
+        const char* params[1] = {ymd.c_str()};
+        PGresult* res = exec_params_query(
+            "SELECT count(*) FROM calendar WHERE day = $1::date AND kind IN ('fomc', 'nfp')", 1, params);
+        if (!res) return false;
+        const bool ev = PQntuples(res) > 0 && std::atoi(PQgetvalue(res, 0, 0)) > 0;
+        PQclear(res);
+        return ev;
+    }
+
+    // ── Account-wide realised P&L (all strategies, all instruments) ──────────
+    // Prop-firm limits are per ACCOUNT. Until 2026-09-30 this summed only the
+    // instance's own (label, instrument, strategy): the MNQ ORB instance seeded from its
+    // own +$367 of gross wins while the account had lost $325 on FIB and $598 on the
+    // 2026-09-23 liquidation, and a fresh NQ instance seeded from nothing at all.
+    // A "_dry" label seeds from the live label it rehearses for.
     double get_total_pnl() {
         if (!is_connected()) reconnect();
-
-        const char* params[3] = {
-            account_label_.c_str(),// $1
-            instrument_.c_str(),   // $2
-            strategy_.c_str()      // $3
-        };
-
+        const std::string base = base_label(account_label_);
+        const char* params[1] = { base.c_str() };
         PGresult* res = exec_params_query(
             "SELECT COALESCE(SUM(pnl_usd), 0.0) FROM live_trades"
-            " WHERE account_label=$1 AND instrument=$2 AND strategy=$3",
-            3, params);
+            " WHERE account_label=$1",
+            1, params);
 
         if (!res) return 0.0;
         double total = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
         PQclear(res);
-        LOG("[ORBDB] Historical total_pnl=%.2f", total);
+        LOG("[ORBDB] Historical total_pnl=%.2f (account-wide, label=%s)", total, base.c_str());
         return total;
+    }
+
+    static std::string base_label(const std::string& label) {
+        const std::string sfx = "_dry";
+        if (label.size() > sfx.size() &&
+            label.compare(label.size() - sfx.size(), sfx.size(), sfx) == 0)
+            return label.substr(0, label.size() - sfx.size());
+        return label;
+    }
+
+    // ── Broker high-water mark (prop-firm trailing drawdown anchor) ──────────
+    // Persisted per live label so a restart cannot forget a balance the account once
+    // reached. NaN when nothing is stored yet.
+    double get_account_hwm() {
+        if (!is_connected()) reconnect();
+        const std::string base = base_label(account_label_);
+        const char* params[1] = { base.c_str() };
+        PGresult* res = exec_params_query(
+            "SELECT high_water_mark FROM live_account_hwm WHERE account_label=$1", 1, params);
+        if (!res) return std::nan("");
+        double v = (PQntuples(res) > 0 && !PQgetisnull(res, 0, 0))
+                   ? std::atof(PQgetvalue(res, 0, 0)) : std::nan("");
+        PQclear(res);
+        return v;
+    }
+    void set_account_hwm(double hwm) {
+        const std::string base = base_label(account_label_);
+        char buf[32]; snprintf(buf, sizeof(buf), "%.2f", hwm);
+        const char* params[2] = { base.c_str(), buf };
+        exec_params(
+            "INSERT INTO live_account_hwm (account_label, high_water_mark, updated_at)"
+            " VALUES ($1, $2::double precision, NOW())"
+            " ON CONFLICT (account_label) DO UPDATE SET"
+            "   high_water_mark = GREATEST(live_account_hwm.high_water_mark, EXCLUDED.high_water_mark),"
+            "   updated_at = NOW()",
+            2, params);
+    }
+
+    // ── Get today's realized P&L for an account (for seeding RiskManager on restart) ──
+    // Sums ALL strategies/instruments on the account: prop-firm daily loss limits
+    // are per-account, not per-strategy. Call once at startup and feed into
+    // RiskManager::seed_daily_pnl() so a restarted process cannot re-spend the
+    // daily loss limit it already consumed before the restart.
+    double seed_daily_pnl(const std::string& account_label,
+                          const std::string& trade_date) {
+        if (!is_connected()) reconnect();
+
+        const char* params[2] = {
+            account_label.c_str(),  // $1
+            trade_date.c_str()      // $2
+        };
+
+        PGresult* res = exec_params_query(
+            "SELECT COALESCE(SUM(pnl_usd), 0.0) FROM live_trades"
+            " WHERE account_label=$1 AND trade_date=$2::date",
+            2, params);
+
+        if (!res) return 0.0;
+        double daily = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
+        PQclear(res);
+        LOG("[ORBDB] Today's daily_pnl=%.2f (account=%s date=%s)",
+            daily, account_label.c_str(), trade_date.c_str());
+        return daily;
     }
 
     // ── Get historical peak equity (high-water mark across all trades) ─────────
@@ -435,14 +617,11 @@ public:
     // max cumulative P&L at any point in trade history.  Used to seed
     // RiskManager.peak_equity_ so the trailing drawdown cap is correct after
     // a cycle restart (otherwise it resets to starting_balance each cycle).
+    // Account-wide (all strategies, all instruments on the live label) — see get_total_pnl.
     double get_peak_equity(double starting_balance) {
         if (!is_connected()) reconnect();
-
-        const char* params[3] = {
-            account_label_.c_str(),
-            instrument_.c_str(),
-            strategy_.c_str()
-        };
+        const std::string base = base_label(account_label_);
+        const char* params[1] = { base.c_str() };
 
         PGresult* res = exec_params_query(
             "SELECT COALESCE(MAX(cum_pnl), 0.0) FROM ("
@@ -451,15 +630,16 @@ public:
             "    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW"
             "  ) AS cum_pnl"
             "  FROM live_trades"
-            "  WHERE account_label=$1 AND instrument=$2 AND strategy=$3"
+            "  WHERE account_label=$1"
             ") sub",
-            3, params);
+            1, params);
 
         if (!res) return starting_balance;
         double max_cum_pnl = (PQntuples(res) > 0) ? std::atof(PQgetvalue(res, 0, 0)) : 0.0;
         PQclear(res);
         double peak = starting_balance + std::max(0.0, max_cum_pnl);
-        LOG("[ORBDB] Historical peak_equity=%.2f (max_cum_pnl=%.2f)", peak, max_cum_pnl);
+        LOG("[ORBDB] Historical peak_equity=%.2f (account-wide max_cum_pnl=%.2f, label=%s)",
+            peak, max_cum_pnl, base.c_str());
         return peak;
     }
 
@@ -542,15 +722,96 @@ public:
     // Push current price to any LISTEN live_tick_{account_label} subscribers (non-throwing)
     void notify_tick(double price) {
         if (!is_connected()) return;
+        // account_label is interpolated into the NOTIFY identifier (cannot be
+        // parameterized). It is charset-validated at config load; guard again
+        // here so a hand-constructed OrbDB cannot smuggle SQL into the channel name.
+        if (account_label_.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_") !=
+                std::string::npos) {
+            LOG("[ORBDB] notify_tick skipped — unsafe account_label '%s'",
+                account_label_.c_str());
+            return;
+        }
         char sql[128];
         snprintf(sql, sizeof(sql), "NOTIFY live_tick_%s, '%.2f'",
                  account_label_.c_str(), price);
         PGresult* res = PQexec(conn_, sql);
-        if (res) PQclear(res);
+        if (!res) {
+            LOG("[ORBDB] notify_tick PQexec null: %s", PQerrorMessage(conn_));
+            return;
+        }
+        if (PQresultStatus(res) != PGRES_COMMAND_OK)
+            LOG("[ORBDB] notify_tick failed: %s", PQerrorMessage(conn_));
+        PQclear(res);
+    }
+
+    // ── Order-event trail (2026-09-26) ───────────────────────────────────────────
+    // One row per order message, outbound or inbound: RequestNewOrder / RequestCancelOrder we
+    // sent, every ResponseNewOrder (gateway ack / reject), RithmicOrderNotification (tid=351)
+    // and ExchangeOrderNotification (tid=352) — raw fields, no interpretation. The 09-21 and
+    // 09-23 stop incidents were reconstructed from log files; this is the queryable record.
+    // NEVER throws: the executor's message loop must not die on a DB hiccup.
+    void write_order_event(const char* kind, const std::string& basket_id,
+                           const std::string& orig_basket_id, const std::string& user_tag,
+                           int notify_type, const std::string& status, const char* side,
+                           int qty, double price, double fill_price, int fill_qty,
+                           int total_fill, const std::string& rp_code, const std::string& detail) {
+        static const char* sql =
+            "INSERT INTO live_order_events (account_label, strategy, kind, basket_id, orig_basket_id,"
+            " user_tag, notify_type, status, side, qty, price, fill_price, fill_qty, total_fill,"
+            " rp_code, detail) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)";
+        char nt[16], q[16], px[32], fpx[32], fq[16], tf[16];
+        snprintf(nt,  sizeof(nt),  "%d", notify_type);
+        snprintf(q,   sizeof(q),   "%d", qty);
+        snprintf(px,  sizeof(px),  "%.4f", price);
+        snprintf(fpx, sizeof(fpx), "%.4f", fill_price);
+        snprintf(fq,  sizeof(fq),  "%d", fill_qty);
+        snprintf(tf,  sizeof(tf),  "%d", total_fill);
+        const char* params[16] = {
+            account_label_.c_str(), strategy_.c_str(), kind,
+            basket_id.empty() ? nullptr : basket_id.c_str(),
+            orig_basket_id.empty() ? nullptr : orig_basket_id.c_str(),
+            user_tag.empty() ? nullptr : user_tag.c_str(),
+            nt, status.empty() ? nullptr : status.c_str(), side,
+            q, px, fpx, fq, tf,
+            rp_code.empty() ? nullptr : rp_code.c_str(),
+            detail.empty() ? nullptr : detail.c_str() };
+        try { exec_params(sql, 16, params); }
+        catch (std::exception& e) {
+            static int64_t last_warn = 0;
+            const int64_t now = (int64_t)time(nullptr);
+            if (now - last_warn >= 60) {   // one line a minute, not one per message
+                LOG("[ORBDB] write_order_event failed (%s): %s", kind, e.what());
+                last_warn = now;
+            }
+        }
     }
 
 private:
     void ensure_schema() {
+        exec(R"(
+            CREATE TABLE IF NOT EXISTS live_order_events (
+                id              BIGSERIAL PRIMARY KEY,
+                ts              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                account_label   TEXT NOT NULL,
+                strategy        TEXT NOT NULL,
+                kind            TEXT NOT NULL,   -- new_order_sent | cancel_sent | gateway_ack | gateway_reject | rithmic_notify | exchange_notify
+                basket_id       TEXT,
+                orig_basket_id  TEXT,
+                user_tag        TEXT,            -- our client-side id
+                notify_type     INTEGER,
+                status          TEXT,
+                side            TEXT,
+                qty             INTEGER,
+                price           DOUBLE PRECISION,
+                fill_price      DOUBLE PRECISION,
+                fill_qty        INTEGER,
+                total_fill      INTEGER,
+                rp_code         TEXT,
+                detail          TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_live_order_events_acct_ts ON live_order_events(account_label, ts DESC);
+            CREATE INDEX IF NOT EXISTS idx_live_order_events_tag ON live_order_events(user_tag);
+        )");
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_trades (
                 id                      BIGSERIAL PRIMARY KEY,
@@ -617,6 +878,15 @@ private:
         exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS instrument      TEXT NOT NULL DEFAULT 'MNQ'");
         exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS strategy        TEXT NOT NULL DEFAULT 'ORB'");
         exec("ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS account_equity  DOUBLE PRECISION");
+
+        // Broker balance high-water mark per live label (prop-firm trailing drawdown anchor).
+        exec(R"(
+            CREATE TABLE IF NOT EXISTS live_account_hwm (
+                account_label   TEXT PRIMARY KEY,
+                high_water_mark DOUBLE PRECISION NOT NULL,
+                updated_at      TIMESTAMPTZ DEFAULT NOW()
+            )
+        )");
 
         exec(R"(
             CREATE TABLE IF NOT EXISTS live_position (
@@ -722,10 +992,26 @@ private:
         return res;
     }
 
+    // Stable 64-bit key for the (account_label, strategy) advisory lock.
+    // FNV-1a over a namespaced string — deterministic across processes and
+    // restarts, no dependence on PG-version-specific hashtext().
+    static int64_t instance_lock_key(const std::string& account_label,
+                                     const std::string& strategy) {
+        (void)strategy;   // account-wide on purpose — see acquire_instance_lock
+        const std::string s = "nq_executor:" + account_label;
+        uint64_t h = 1469598103934665603ULL;
+        for (unsigned char c : s) {
+            h ^= c;
+            h *= 1099511628211ULL;
+        }
+        return (int64_t)h;  // reinterpret as signed bigint
+    }
+
     std::string connstr_;
     std::string instrument_;
     std::string account_label_;
-    std::string strategy_ = "ORB";
+    std::string strategy_;
     PGconn*     conn_ = nullptr;
     double      last_written_equity_ = -1.0; // suppress duplicate equity log lines
+    bool        instance_lock_held_  = false;
 };

@@ -1,0 +1,9 @@
+[Unit]
+Description=Weekday pre-RTH readiness check at 09:00 New York time
+
+[Timer]
+OnCalendar=Mon..Fri 09:00 America/New_York
+Persistent=false
+
+[Install]
+WantedBy=timers.target

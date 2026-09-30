@@ -1,0 +1,2359 @@
+{
+ "_comment": "REGIME GATE RESEARCH GRID 2026-09-28 (founder: \"lets try it\"): the top enabled bases x five regime gates (paper_quote.hpp RegimeState), replayed under label rggrid over 09-21..09-28. Bases copied verbatim.",
+ "account_label": "tradeify",
+ "symbol": "MNQ",
+ "feed_symbol": "NQ",
+ "reference_symbol": "ES",
+ "exchange": "CME",
+ "point_value": 2.0,
+ "tick_size": 0.25,
+ "starting_balance": 25000.0,
+ "daily_loss_limit": 0,
+ "trailing_drawdown_cap": 0,
+ "consistency_cap_pct": 0.3,
+ "commission_rt": 1.0,
+ "slippage_ticks": 1,
+ "poll_ms": 100,
+ "feed_gap_reset_secs": 300,
+ "strategy_daily_loss_limit": -250.0,
+ "strategies": [
+  {
+   "id": "fib_pb_1m_deep",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "fib_pb_1m_deep",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "fib_pb_1m_deep",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "fib_pb_1m_deep",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "fib_pb_1m_deep",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "fib_pb_1m_deep",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__day_x15",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__am",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1555,
+    "overlay": "day_x15"
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__day_x15__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__day_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1555,
+    "overlay": "rg_trend",
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__day_x15__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__day_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1555,
+    "overlay": "rg_range",
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__day_x15__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__day_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1555,
+    "overlay": "rg_nochase",
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__day_x15__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__day_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1555,
+    "overlay": "rg_fade",
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__day_x15__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__day_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1555,
+    "overlay": "rg_expand",
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__am_x15",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__am",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1200,
+    "overlay": "am_x15"
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__am_x15__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__am_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1200,
+    "overlay": "rg_trend",
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__am_x15__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__am_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1200,
+    "overlay": "rg_range",
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__am_x15__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__am_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1200,
+    "overlay": "rg_nochase",
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__am_x15__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__am_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1200,
+    "overlay": "rg_fade",
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30
+   }
+  },
+  {
+   "id": "fib_pb_1m_deep__am_x15__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "fib_pullback",
+    "tf_min": 1,
+    "fib_swing_bars": 30,
+    "fib_lo": 0.5,
+    "fib_hi": 0.786,
+    "sl_points": 8,
+    "trail_be_offset": 1.0,
+    "base_id": "fib_pb_1m_deep__am_x15",
+    "trail_step": 15,
+    "trail_delay_secs": 0,
+    "trail_be_trigger": 8.0,
+    "max_daily_trades": 4,
+    "win_start": 1000,
+    "win_end": 1200,
+    "overlay": "rg_expand",
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15
+   }
+  },
+  {
+   "id": "orb_t1000_2nd_5",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 0,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14
+   }
+  },
+  {
+   "id": "orb_t1000_2nd_5__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 0,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t1000_2nd_5",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_t1000_2nd_5__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 0,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t1000_2nd_5",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_t1000_2nd_5__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 0,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_t1000_2nd_5",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_t1000_2nd_5__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 0,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t1000_2nd_5",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_t1000_2nd_5__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 0,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_t1000_2nd_5",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_t1030_2nd_5",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 30,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14
+   }
+  },
+  {
+   "id": "orb_t1030_2nd_5__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 30,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t1030_2nd_5",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_t1030_2nd_5__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 30,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t1030_2nd_5",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_t1030_2nd_5__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 30,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_t1030_2nd_5",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_t1030_2nd_5__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 30,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t1030_2nd_5",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_t1030_2nd_5__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 10,
+    "session_open_min": 30,
+    "orb_minutes": 5,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 14,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_t1030_2nd_5",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "mtf_flags_v5",
+   "engine": "mtf_scalper",
+   "enabled": true,
+   "params": {
+    "trigger_mode": "flag_any",
+    "warmup_bars": 250,
+    "qty_max": 3
+   }
+  },
+  {
+   "id": "mtf_flags_v5__rg_trend",
+   "engine": "mtf_scalper",
+   "enabled": true,
+   "params": {
+    "trigger_mode": "flag_any",
+    "warmup_bars": 250,
+    "qty_max": 3,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "mtf_flags_v5",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "mtf_flags_v5__rg_range",
+   "engine": "mtf_scalper",
+   "enabled": true,
+   "params": {
+    "trigger_mode": "flag_any",
+    "warmup_bars": 250,
+    "qty_max": 3,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "mtf_flags_v5",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "mtf_flags_v5__rg_nochase",
+   "engine": "mtf_scalper",
+   "enabled": true,
+   "params": {
+    "trigger_mode": "flag_any",
+    "warmup_bars": 250,
+    "qty_max": 3,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "mtf_flags_v5",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "mtf_flags_v5__rg_fade",
+   "engine": "mtf_scalper",
+   "enabled": true,
+   "params": {
+    "trigger_mode": "flag_any",
+    "warmup_bars": 250,
+    "qty_max": 3,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "mtf_flags_v5",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "mtf_flags_v5__rg_expand",
+   "engine": "mtf_scalper",
+   "enabled": true,
+   "params": {
+    "trigger_mode": "flag_any",
+    "warmup_bars": 250,
+    "qty_max": 3,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "mtf_flags_v5",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "mr_vwap_fade_5m",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "vwap_fade",
+    "tf_min": 5,
+    "mr_dev_atr": 2.0,
+    "sl_points": 12,
+    "trail_step": 8,
+    "trail_be_trigger": 6,
+    "max_daily_trades": 4
+   }
+  },
+  {
+   "id": "mr_vwap_fade_5m__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "vwap_fade",
+    "tf_min": 5,
+    "mr_dev_atr": 2.0,
+    "sl_points": 12,
+    "trail_step": 8,
+    "trail_be_trigger": 6,
+    "max_daily_trades": 4,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "mr_vwap_fade_5m",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "mr_vwap_fade_5m__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "vwap_fade",
+    "tf_min": 5,
+    "mr_dev_atr": 2.0,
+    "sl_points": 12,
+    "trail_step": 8,
+    "trail_be_trigger": 6,
+    "max_daily_trades": 4,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "mr_vwap_fade_5m",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "mr_vwap_fade_5m__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "vwap_fade",
+    "tf_min": 5,
+    "mr_dev_atr": 2.0,
+    "sl_points": 12,
+    "trail_step": 8,
+    "trail_be_trigger": 6,
+    "max_daily_trades": 4,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "mr_vwap_fade_5m",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "mr_vwap_fade_5m__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "vwap_fade",
+    "tf_min": 5,
+    "mr_dev_atr": 2.0,
+    "sl_points": 12,
+    "trail_step": 8,
+    "trail_be_trigger": 6,
+    "max_daily_trades": 4,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "mr_vwap_fade_5m",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "mr_vwap_fade_5m__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "vwap_fade",
+    "tf_min": 5,
+    "mr_dev_atr": 2.0,
+    "sl_points": 12,
+    "trail_step": 8,
+    "trail_be_trigger": 6,
+    "max_daily_trades": 4,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "mr_vwap_fade_5m",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "fail_bo_10_1m",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "failed_breakout",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "fb_bars": 3,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4
+   }
+  },
+  {
+   "id": "fail_bo_10_1m__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "failed_breakout",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "fb_bars": 3,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "fail_bo_10_1m",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "fail_bo_10_1m__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "failed_breakout",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "fb_bars": 3,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "fail_bo_10_1m",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "fail_bo_10_1m__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "failed_breakout",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "fb_bars": 3,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "fail_bo_10_1m",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "fail_bo_10_1m__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "failed_breakout",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "fb_bars": 3,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "fail_bo_10_1m",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "fail_bo_10_1m__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "failed_breakout",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "fb_bars": 3,
+    "sl_points": 8,
+    "trail_step": 6,
+    "max_daily_trades": 4,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "fail_bo_10_1m",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "keltner_ride_15_1m_chand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "keltner_ride",
+    "tf_min": 1,
+    "kc_mult": 1.5,
+    "exit_on_flip": false,
+    "chandelier_mult": 3.0,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 4
+   }
+  },
+  {
+   "id": "keltner_ride_15_1m_chand__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "keltner_ride",
+    "tf_min": 1,
+    "kc_mult": 1.5,
+    "exit_on_flip": false,
+    "chandelier_mult": 3.0,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 4,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "keltner_ride_15_1m_chand",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "keltner_ride_15_1m_chand__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "keltner_ride",
+    "tf_min": 1,
+    "kc_mult": 1.5,
+    "exit_on_flip": false,
+    "chandelier_mult": 3.0,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 4,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "keltner_ride_15_1m_chand",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "keltner_ride_15_1m_chand__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "keltner_ride",
+    "tf_min": 1,
+    "kc_mult": 1.5,
+    "exit_on_flip": false,
+    "chandelier_mult": 3.0,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 4,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "keltner_ride_15_1m_chand",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "keltner_ride_15_1m_chand__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "keltner_ride",
+    "tf_min": 1,
+    "kc_mult": 1.5,
+    "exit_on_flip": false,
+    "chandelier_mult": 3.0,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 4,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "keltner_ride_15_1m_chand",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "keltner_ride_15_1m_chand__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "keltner_ride",
+    "tf_min": 1,
+    "kc_mult": 1.5,
+    "exit_on_flip": false,
+    "chandelier_mult": 3.0,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 4,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "keltner_ride_15_1m_chand",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_3_15_5",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 5.0
+   }
+  },
+  {
+   "id": "orb_3_15_5__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 5.0,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_15_5",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_3_15_5__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 5.0,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_15_5",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_3_15_5__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 5.0,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_15_5",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_3_15_5__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 5.0,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_15_5",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_3_15_5__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 5.0,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_15_5",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "trend_ema_pb_9_21_1m",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ema_pullback",
+    "tf_min": 1,
+    "ema_fast": 9,
+    "ema_slow": 21,
+    "sl_points": 10,
+    "trail_step": 8
+   }
+  },
+  {
+   "id": "trend_ema_pb_9_21_1m__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ema_pullback",
+    "tf_min": 1,
+    "ema_fast": 9,
+    "ema_slow": 21,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "trend_ema_pb_9_21_1m",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "trend_ema_pb_9_21_1m__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ema_pullback",
+    "tf_min": 1,
+    "ema_fast": 9,
+    "ema_slow": 21,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "trend_ema_pb_9_21_1m",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "trend_ema_pb_9_21_1m__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ema_pullback",
+    "tf_min": 1,
+    "ema_fast": 9,
+    "ema_slow": 21,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "trend_ema_pb_9_21_1m",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "trend_ema_pb_9_21_1m__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ema_pullback",
+    "tf_min": 1,
+    "ema_fast": 9,
+    "ema_slow": 21,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "trend_ema_pb_9_21_1m",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "trend_ema_pb_9_21_1m__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ema_pullback",
+    "tf_min": 1,
+    "ema_fast": 9,
+    "ema_slow": 21,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "trend_ema_pb_9_21_1m",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_3_10_5",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 5.0
+   }
+  },
+  {
+   "id": "orb_3_10_5__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_10_5",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_3_10_5__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_10_5",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_3_10_5__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_10_5",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_3_10_5__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_10_5",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_3_10_5__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_10_5",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_3_15_10",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 10.0
+   }
+  },
+  {
+   "id": "orb_3_15_10__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 10.0,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_15_10",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_3_15_10__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 10.0,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_15_10",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_3_15_10__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 10.0,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_15_10",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_3_15_10__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 10.0,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_15_10",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_3_15_10__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 15.0,
+    "trail_step": 10.0,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_15_10",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_3_10_10",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 10.0
+   }
+  },
+  {
+   "id": "orb_3_10_10__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 10.0,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_10_10",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_3_10_10__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 10.0,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_10_10",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_3_10_10__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 10.0,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_10_10",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_3_10_10__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 10.0,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_10_10",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_3_10_10__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 10.0,
+    "trail_step": 10.0,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_10_10",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "trend_donchian_10_1m",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "donchian",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "sl_points": 10,
+    "trail_step": 8
+   }
+  },
+  {
+   "id": "trend_donchian_10_1m__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "donchian",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "trend_donchian_10_1m",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "trend_donchian_10_1m__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "donchian",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "trend_donchian_10_1m",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "trend_donchian_10_1m__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "donchian",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "trend_donchian_10_1m",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "trend_donchian_10_1m__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "donchian",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "trend_donchian_10_1m",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "trend_donchian_10_1m__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "donchian",
+    "tf_min": 1,
+    "donchian_n": 10,
+    "sl_points": 10,
+    "trail_step": 8,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "trend_donchian_10_1m",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "ichimoku_1m_fast",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ichimoku",
+    "tf_min": 1,
+    "ichi_tenkan": 5,
+    "ichi_kijun": 13,
+    "ichi_senkou": 26,
+    "exit_on_flip": true,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 3
+   }
+  },
+  {
+   "id": "ichimoku_1m_fast__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ichimoku",
+    "tf_min": 1,
+    "ichi_tenkan": 5,
+    "ichi_kijun": 13,
+    "ichi_senkou": 26,
+    "exit_on_flip": true,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "ichimoku_1m_fast",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "ichimoku_1m_fast__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ichimoku",
+    "tf_min": 1,
+    "ichi_tenkan": 5,
+    "ichi_kijun": 13,
+    "ichi_senkou": 26,
+    "exit_on_flip": true,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "ichimoku_1m_fast",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "ichimoku_1m_fast__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ichimoku",
+    "tf_min": 1,
+    "ichi_tenkan": 5,
+    "ichi_kijun": 13,
+    "ichi_senkou": 26,
+    "exit_on_flip": true,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "ichimoku_1m_fast",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "ichimoku_1m_fast__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ichimoku",
+    "tf_min": 1,
+    "ichi_tenkan": 5,
+    "ichi_kijun": 13,
+    "ichi_senkou": 26,
+    "exit_on_flip": true,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "ichimoku_1m_fast",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "ichimoku_1m_fast__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "ichimoku",
+    "tf_min": 1,
+    "ichi_tenkan": 5,
+    "ichi_kijun": 13,
+    "ichi_senkou": 26,
+    "exit_on_flip": true,
+    "sl_points": 10,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "ichimoku_1m_fast",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_5_trail_late",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "trail_delay_secs": 900
+   }
+  },
+  {
+   "id": "orb_5_trail_late__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "trail_delay_secs": 900,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_trail_late",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_5_trail_late__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "trail_delay_secs": 900,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_trail_late",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_5_trail_late__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "trail_delay_secs": 900,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_trail_late",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_5_trail_late__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "trail_delay_secs": 900,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_trail_late",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_5_trail_late__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "trail_delay_secs": 900,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_trail_late",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_t0700_pre_10",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 7,
+    "session_open_min": 0,
+    "orb_minutes": 10,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 9,
+    "eod_flatten_hour": 9,
+    "eod_flatten_min": 25
+   }
+  },
+  {
+   "id": "orb_t0700_pre_10__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 7,
+    "session_open_min": 0,
+    "orb_minutes": 10,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 9,
+    "eod_flatten_hour": 9,
+    "eod_flatten_min": 25,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t0700_pre_10",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_t0700_pre_10__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 7,
+    "session_open_min": 0,
+    "orb_minutes": 10,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 9,
+    "eod_flatten_hour": 9,
+    "eod_flatten_min": 25,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t0700_pre_10",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_t0700_pre_10__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 7,
+    "session_open_min": 0,
+    "orb_minutes": 10,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 9,
+    "eod_flatten_hour": 9,
+    "eod_flatten_min": 25,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_t0700_pre_10",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_t0700_pre_10__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 7,
+    "session_open_min": 0,
+    "orb_minutes": 10,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 9,
+    "eod_flatten_hour": 9,
+    "eod_flatten_min": 25,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_t0700_pre_10",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_t0700_pre_10__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "session_open_hour": 7,
+    "session_open_min": 0,
+    "orb_minutes": 10,
+    "sl_points": 15,
+    "trail_step": 10,
+    "last_entry_hour": 9,
+    "eod_flatten_hour": 9,
+    "eod_flatten_min": 25,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_t0700_pre_10",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_5_morning",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "last_entry_hour": 11
+   }
+  },
+  {
+   "id": "orb_5_morning__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "last_entry_hour": 11,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_morning",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_5_morning__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "last_entry_hour": 11,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_morning",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_5_morning__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "last_entry_hour": 11,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_morning",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_5_morning__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "last_entry_hour": 11,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_morning",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_5_morning__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "last_entry_hour": 11,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_morning",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_1_15_10",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 1,
+    "sl_points": 15,
+    "trail_step": 10
+   }
+  },
+  {
+   "id": "orb_1_15_10__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 1,
+    "sl_points": 15,
+    "trail_step": 10,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_1_15_10",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_1_15_10__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 1,
+    "sl_points": 15,
+    "trail_step": 10,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_1_15_10",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_1_15_10__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 1,
+    "sl_points": 15,
+    "trail_step": 10,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_1_15_10",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_1_15_10__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 1,
+    "sl_points": 15,
+    "trail_step": 10,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_1_15_10",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_1_15_10__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 1,
+    "sl_points": 15,
+    "trail_step": 10,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_1_15_10",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_3_20_15",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 20.0,
+    "trail_step": 15.0
+   }
+  },
+  {
+   "id": "orb_3_20_15__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_20_15",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_3_20_15__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_20_15",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_3_20_15__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_20_15",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_3_20_15__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_3_20_15",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_3_20_15__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 3,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_3_20_15",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_5_10_5",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 10.0,
+    "trail_step": 5.0
+   }
+  },
+  {
+   "id": "orb_5_10_5__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_10_5",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_5_10_5__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_10_5",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_5_10_5__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_10_5",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_5_10_5__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_10_5",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_5_10_5__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 10.0,
+    "trail_step": 5.0,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_10_5",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "mr_rsi2_5m",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "rsi2_pullback",
+    "tf_min": 5,
+    "ema_slow": 50,
+    "rsi_buy": 10,
+    "rsi_sell": 90,
+    "sl_points": 12,
+    "trail_step": 8,
+    "max_daily_trades": 3
+   }
+  },
+  {
+   "id": "mr_rsi2_5m__rg_trend",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "rsi2_pullback",
+    "tf_min": 5,
+    "ema_slow": 50,
+    "rsi_buy": 10,
+    "rsi_sell": 90,
+    "sl_points": 12,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "mr_rsi2_5m",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "mr_rsi2_5m__rg_range",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "rsi2_pullback",
+    "tf_min": 5,
+    "ema_slow": 50,
+    "rsi_buy": 10,
+    "rsi_sell": 90,
+    "sl_points": 12,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "mr_rsi2_5m",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "mr_rsi2_5m__rg_nochase",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "rsi2_pullback",
+    "tf_min": 5,
+    "ema_slow": 50,
+    "rsi_buy": 10,
+    "rsi_sell": 90,
+    "sl_points": 12,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "mr_rsi2_5m",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "mr_rsi2_5m__rg_fade",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "rsi2_pullback",
+    "tf_min": 5,
+    "ema_slow": 50,
+    "rsi_buy": 10,
+    "rsi_sell": 90,
+    "sl_points": 12,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "mr_rsi2_5m",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "mr_rsi2_5m__rg_expand",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "rsi2_pullback",
+    "tf_min": 5,
+    "ema_slow": 50,
+    "rsi_buy": 10,
+    "rsi_sell": 90,
+    "sl_points": 12,
+    "trail_step": 8,
+    "max_daily_trades": 3,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "mr_rsi2_5m",
+    "overlay": "rg_expand"
+   }
+  },
+  {
+   "id": "orb_5_20_15",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 20.0,
+    "trail_step": 15.0
+   }
+  },
+  {
+   "id": "orb_5_20_15__rg_trend",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_min_eff": 0.5,
+    "regime_with_move": 1,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_20_15",
+    "overlay": "rg_trend"
+   }
+  },
+  {
+   "id": "orb_5_20_15__rg_range",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_max_eff": 0.4,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_20_15",
+    "overlay": "rg_range"
+   }
+  },
+  {
+   "id": "orb_5_20_15__rg_nochase",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_max_move_atr": 0.5,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_20_15",
+    "overlay": "rg_nochase"
+   }
+  },
+  {
+   "id": "orb_5_20_15__rg_fade",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_with_move": -1,
+    "regime_min_move_atr": 0.35,
+    "regime_min_minutes": 30,
+    "base_id": "orb_5_20_15",
+    "overlay": "rg_fade"
+   }
+  },
+  {
+   "id": "orb_5_20_15__rg_expand",
+   "engine": "orb",
+   "enabled": true,
+   "params": {
+    "orb_minutes": 5,
+    "sl_points": 20.0,
+    "trail_step": 15.0,
+    "regime_min_range_atr": 0.35,
+    "regime_min_minutes": 15,
+    "base_id": "orb_5_20_15",
+    "overlay": "rg_expand"
+   }
+  }
+ ]
+}
