@@ -210,6 +210,14 @@ struct OrbConfig {
 
     // ── MD watchdog ───────────────────────────────────────────────
     int tick_timeout_s = 30; // reconnect MD if no tick received for this many seconds (0=disabled)
+    // pg feed: refuse a NEW entry when the tick that produced the signal is more than this many seconds
+    // behind the wall clock (0 = off). 2026-10-01: the collector fell 60-105 s behind at the open and a
+    // short was sent on a 30 s old price — the market was 20 pts past it and the limit could not fill.
+    double feed_max_lag_s = 5.0;
+    // Entry order = aggressive LIMIT this many ticks past the signal price (Legends rejects market
+    // orders). Was a hard-coded 4; founder 2026-10-01: "widen it to 4-8 ticks" — tradeify runs 8.
+    // The stop is placed from the FILL price, so a wider offset never enlarges the stop-out loss.
+    int entry_offset_ticks = 4;
 
     // ── Cycling ORB mode ──────────────────────────────────────────
     // When true the executor exits after max_daily_trades completes (position flat).
@@ -376,6 +384,8 @@ struct OrbConfig {
         c.session_open_hour = (int)json_dbl(text, "session_open_hour", c.session_open_hour);
         c.session_open_min  = (int)json_dbl(text, "session_open_min",  c.session_open_min);
         c.tick_timeout_s    = json_int(text, "tick_timeout_s",         c.tick_timeout_s);
+        c.feed_max_lag_s    = json_dbl(text, "feed_max_lag_s",         c.feed_max_lag_s);
+        c.entry_offset_ticks = json_int(text, "entry_offset_ticks",    c.entry_offset_ticks);
         c.cycle_start_epoch  = (int64_t)json_dbl(text, "cycle_start_epoch",  (double)c.cycle_start_epoch);
         c.cycle_timeout_mins = json_int(text, "cycle_timeout_mins", c.cycle_timeout_mins);
 
@@ -437,6 +447,12 @@ struct OrbConfig {
         need_positive("trail_step",            trail_step);
         need_positive("sl_points",             sl_points);
         need_positive("trailing_drawdown_cap", trailing_drawdown_cap);
+        if (entry_offset_ticks < 1 || entry_offset_ticks > 40)
+            throw std::runtime_error("FATAL: invalid config key 'entry_offset_ticks' — must be 1..40 (got " +
+                                     std::to_string(entry_offset_ticks) + ")");
+        if (feed_max_lag_s < 0.0)
+            throw std::runtime_error("FATAL: invalid config key 'feed_max_lag_s' — must be >= 0 (got " +
+                                     std::to_string(feed_max_lag_s) + ")");
 
         // account_label / strategy are interpolated into SQL identifiers and
         // raw SQL strings (NOTIFY live_tick_<account>, startup ORB query) —

@@ -32,6 +32,7 @@
   "commission_rt": 1.82,
   "_commission_note": "1.82 = MEASURED Tradeify MNQ fee per contract round trip (2026-09-28: $3.64 over 2 ct-RT; 2026-09-29: $81.90 over 45 ct-RT). The NQ fee is NOT known yet — replace from a Tradeify NQ statement before trusting live P&L to the cent.",
   "tick_timeout_s": 30,
+  "entry_offset_ticks": 8,
   "stop_cooldown_secs": 5,
   "cycle_mode": false,
   "cycle_start_epoch": 0

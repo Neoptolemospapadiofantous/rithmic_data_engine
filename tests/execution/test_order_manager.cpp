@@ -2248,6 +2248,22 @@ TEST(multi_lot_partial_fills_record_vwap_entry_and_exit) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// 2026-10-01: the entry limit sits entry_offset_ticks past the signal (was a hard-coded 4).
+TEST(entry_limit_uses_entry_offset_ticks) {
+    for (int ticks : {4, 8}) {
+        OrbConfig c = make_cfg(false); c.entry_offset_ticks = ticks;
+        RiskManager risk(c, 50000.0); LatencyLogger lat; OrderManager om(c, risk, lat);
+        double sent_px = 0.0; int sent_type = 0; bool sent_buy = true;
+        om.set_order_callback([&](const std::string&, const std::string&, const std::string&, int,
+                                  int type, bool is_buy, double px, const std::string&) {
+            sent_px = px; sent_type = type; sent_buy = is_buy; return true; });
+        om.set_cancel_callback([](const std::string&) {});
+        om.on_signal(OrbSignal::SELL, 30733.25, "orb_breakout_short");
+        ASSERT(sent_type == 1 && !sent_buy);                                   // LIMIT sell
+        ASSERT(std::abs(sent_px - (30733.25 - ticks * 0.25)) < 1e-9);         // 4 → 30732.25, 8 → 30731.25
+    }
+}
+
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -2333,6 +2349,7 @@ int main() {
     RUN(mtf_external_stop_noop_when_flat);
     RUN(mtf_external_stop_tier2_fires_after_breach_timeout);
     RUN(mtf_stops_snapped_to_tick_adverse);
+    RUN(entry_limit_uses_entry_offset_ticks);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

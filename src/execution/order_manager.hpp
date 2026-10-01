@@ -1501,10 +1501,10 @@ private:
             return;
         }
 
-        // Use aggressive limit instead of market: 4 ticks past signal price.
-        // Legends prop accounts reject market orders; limit with offset fills immediately.
+        // Aggressive limit instead of market: entry_offset_ticks past the signal price (config,
+        // default 4). Legends prop accounts reject market orders; a marketable limit fills at once.
         constexpr double TICK = 0.25;
-        constexpr int    OFFSET_TICKS = 4;
+        const int OFFSET_TICKS = cfg_.entry_offset_ticks;
         double limit_px = is_buy ? ref_price + OFFSET_TICKS * TICK
                                  : ref_price - OFFSET_TICKS * TICK;
         bool ok = order_cb_(basket, cfg_.symbol, cfg_.exchange,

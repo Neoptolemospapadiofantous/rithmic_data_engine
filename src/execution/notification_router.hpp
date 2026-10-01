@@ -97,6 +97,23 @@ inline UnwindPlan plan_unwind(int exchange_net, const Position& snap, int cfg_qt
     return p;
 }
 
+// Entry-order watchdog (2026-10-01): when the order manager cancels a timed-out entry it goes FLAT,
+// but the strategy set in_position when it emitted the signal and only clears it on a trade-end
+// notice. Without this release the strategy ignored every later breakout for the rest of the
+// session (2026-10-01: a 09:48 ET short limit missed by 1 tick, cancelled at 10 s, then no entry on
+// the 09:51 re-cross). The attempt still counts toward max_daily_trades, like any other unfilled signal.
+template <class Strategy>
+inline void release_strategy_after_entry_timeout(Strategy& strategy) {
+    strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD, "entry_timeout");
+}
+
+// Stale-feed entry gate (2026-10-01): seconds the tick behind a signal trails the wall clock, and
+// whether that is too old to trade on. max_lag_s <= 0 or no tick yet = gate off.
+inline double feed_lag_s(int64_t now_us, int64_t tick_us) { return (double)(now_us - tick_us) / 1e6; }
+inline bool feed_too_stale(int64_t now_us, int64_t tick_us, double max_lag_s) {
+    return max_lag_s > 0.0 && tick_us > 0 && feed_lag_s(now_us, tick_us) > max_lag_s;
+}
+
 // Rithmic sends balances / P&L as decimal strings; empty means absent.
 inline double parse_decimal(const std::string& s) {
     return s.empty() ? std::nan("") : std::strtod(s.c_str(), nullptr);

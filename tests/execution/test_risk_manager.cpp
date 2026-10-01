@@ -594,6 +594,24 @@ TEST(broker_room_recovers_and_ignores_nan) {
     ASSERT(rm.can_trade());
 }
 
+// 2026-10-01: entry_offset_ticks (default 4, 1..40) and feed_max_lag_s (default 5, >= 0) parse and validate.
+TEST(config_entry_offset_and_feed_lag) {
+    std::string path = write_temp_config("offset_lag", R"({ "account_label": "tradeify", "entry_offset_ticks": 8, "feed_max_lag_s": 3.5 })");
+    OrbConfig c = OrbConfig::from_file(path); std::remove(path.c_str());
+    ASSERT_EQ(c.entry_offset_ticks, 8);
+    ASSERT_NEAR(c.feed_max_lag_s, 3.5, 1e-9);
+    OrbConfig d; ASSERT_EQ(d.entry_offset_ticks, 4); ASSERT_NEAR(d.feed_max_lag_s, 5.0, 1e-9);
+    for (const char* bad : {R"({ "account_label": "tradeify", "entry_offset_ticks": 0 })",
+                            R"({ "account_label": "tradeify", "entry_offset_ticks": 41 })",
+                            R"({ "account_label": "tradeify", "feed_max_lag_s": -1 })"}) {
+        std::string p2 = write_temp_config("offset_lag_bad", bad);
+        bool threw = false;
+        try { OrbConfig::from_file(p2); } catch (const std::exception&) { threw = true; }
+        std::remove(p2.c_str());
+        ASSERT(threw);
+    }
+}
+
 int main() {
     RUN(no_halt_within_limits);
     RUN(halt_on_daily_loss_limit);
@@ -641,6 +659,7 @@ int main() {
     RUN(broker_room_blocks_entry_it_cannot_cover);
     RUN(broker_room_boundary);
     RUN(broker_room_recovers_and_ignores_nan);
+    RUN(config_entry_offset_and_feed_lag);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

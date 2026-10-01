@@ -32,6 +32,7 @@
 
 #include "../../src/execution/orb_strategy.hpp"
 #include "../../src/execution/orb_config.hpp"
+#include "../../src/execution/notification_router.hpp"
 
 // ─── Minimal test harness ─────────────────────────────────────────────────────
 static int tests_run = 0, tests_failed = 0;
@@ -524,6 +525,43 @@ TEST(minute_cutoff_blocks_at_1030_allows_1029) {
     ASSERT(signals[0].signal == OrbSignal::BUY);
 }
 
+// 2026-10-01 regression: an entry that times out unfilled must not freeze the strategy.
+// Live: 09:48 ET SHORT limit missed by 1 tick, cancelled after 10 s; the strategy still thought it
+// was in a trade and ignored the 09:51 re-cross below the range low.
+TEST(entry_timeout_releases_strategy_for_next_cross) {
+    OrbConfig cfg = make_cfg();
+    std::vector<CapturedSignal> signals;
+    OrbStrategy s = make_strategy(cfg, signals);
+    s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
+
+    s.on_tick(make_tick(10, 10, 0, 18945.0));      // SELL signal → entry order (never fills)
+    ASSERT_EQ(signals.size(), (size_t)1);
+    s.on_tick(make_tick(10, 10, 20, 18960.0));     // back inside
+    s.on_tick(make_tick(10, 10, 40, 18940.0));     // re-cross: blocked while the strategy thinks it is in a trade
+    ASSERT_EQ(signals.size(), (size_t)1);
+
+    notif::release_strategy_after_entry_timeout(s); // what the executor now does on the 10 s timeout
+    ASSERT(!s.session().in_position);
+    s.on_tick(make_tick(10, 11, 0, 18960.0));      // back inside
+    s.on_tick(make_tick(10, 11, 20, 18940.0));     // re-cross → a new SELL
+    ASSERT_EQ(signals.size(), (size_t)2);
+    ASSERT(signals[1].signal == OrbSignal::SELL);
+    ASSERT_EQ(s.session().trades_today, 2);        // the missed attempt still counts toward the daily cap
+}
+
+// 2026-10-01: the stale-feed entry gate — a signal from a tick more than feed_max_lag_s old is skipped.
+TEST(feed_too_stale_gate) {
+    const int64_t now = 1'790'862'503'000'000LL;
+    ASSERT(!notif::feed_too_stale(now, now - 150'000, 5.0));            // 0.15 s: normal
+    ASSERT(!notif::feed_too_stale(now, now - 5'000'000, 5.0));          // exactly the limit: allowed
+    ASSERT(notif::feed_too_stale(now, now - 5'000'001, 5.0));           // just over: skipped
+    ASSERT(notif::feed_too_stale(now, now - 28'000'000, 5.0));          // 2026-10-01 09:48: 28 s behind
+    ASSERT(!notif::feed_too_stale(now, now - 28'000'000, 0.0));         // gate off
+    ASSERT(!notif::feed_too_stale(now, 0, 5.0));                        // no tick yet
+    ASSERT_NEAR(notif::feed_lag_s(now, now - 2'500'000), 2.5, 1e-9);
+}
+
 int main() {
     RUN(orb_range_accumulates_during_window);
     RUN(no_signal_before_orb_set);
@@ -546,6 +584,8 @@ int main() {
     RUN(notify_trade_filled_clears_in_position);
     RUN(seeded_restart_first_tick_no_signal);
     RUN(notify_trade_filled_cooldown_applies_to_all_exits);
+    RUN(entry_timeout_releases_strategy_for_next_cross);
+    RUN(feed_too_stale_gate);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

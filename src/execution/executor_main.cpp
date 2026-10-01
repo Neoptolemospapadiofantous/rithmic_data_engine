@@ -663,6 +663,21 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     return;
                 }
             }
+            // Stale-feed entry gate: the tick behind this signal is too old to trade on (pg feed only —
+            // warm-up signals never get here). The silence watchdog cannot see this case: ticks keep
+            // arriving, they are just late.
+            if ((sig == OrbSignal::BUY || sig == OrbSignal::SELL) && orb_cfg.md_from_pg()) {
+                const int64_t now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+                if (notif::feed_too_stale(now_us, last_tick_us, orb_cfg.feed_max_lag_s)) {
+                    const double lag_s = notif::feed_lag_s(now_us, last_tick_us);
+                    LOG("[EXECUTOR] Signal SKIPPED — feed %.1fs behind (max %.1fs): px=%.2f is not the market "
+                        "(reason=%s)", lag_s, orb_cfg.feed_max_lag_s, price, reason.c_str());
+                    if constexpr (kOrb) strategy.notify_trade_filled(sig);   // reset in_position for re-entry
+                    else strategy_unsettled = "feed_lag";                    // settle_strategy() releases the engine
+                    return;
+                }
+            }
             if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) {
                 // Book entry gates — the same QuoteState::gate() the paper brokers apply, so a
                 // gated paper variant (__sg/__imb/__micro/__inv/__all) behaves the same live.
@@ -2717,7 +2732,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     // (or was never delivered) would otherwise leave this state stuck
                     // forever — cancel the entry and revert to FLAT after 10s.
                     if (order_mgr.pending_entry_timeout_check(10)) {
-                        LOG("[EXECUTOR] PENDING_ENTRY timeout — entry cancelled, state FLAT");
+                        LOG("[EXECUTOR] PENDING_ENTRY timeout — entry cancelled, state FLAT; strategy released for the next signal");
+                        notif::release_strategy_after_entry_timeout(strategy);
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected,
                                        orb_cfg.point_value, md_up());
