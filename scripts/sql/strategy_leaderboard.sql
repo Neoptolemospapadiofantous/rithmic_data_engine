@@ -30,6 +30,11 @@
 --   positive_halves   0/1/2: net > 0 in the first and/or second half of the period (split at the
 --                     midpoint in time) — the cheapest persistence check.
 --   scratch_rate      share of exits with reason 'breakeven' (49 % fleet-wide) — `wins` counts them.
+-- 2026-10-01: instrument (appended column) — the contract the trades were on (paper_trades.symbol / live_trades.instrument:
+--   MNQ, NQ, MES, …). Rows are now one per (source, strategy_id, instrument), so a strategy that traded two contracts
+--   (e.g. live ORB: MNQ until 2026-09-29, NQ after) shows separate stats per contract instead of a blend of $2 and
+--   $20-a-point trades. A paper strategy trades one symbol, so its row count is unchanged. Consumers that look a
+--   strategy up by id take the first row (rotate_handoff.sh: LIMIT 1).
 -- qualifies now ALSO requires profit_factor IS NOT NULL (a row with no losing trade has no PF and
 -- used to pass the PF guardrail) and restart_sessions = 0.
 --
@@ -88,7 +93,8 @@ CREATE OR REPLACE FUNCTION strategy_leaderboard(
     trade_set_id    text,
     trade_set_size  bigint,
     positive_halves integer,
-    scratch_rate    double precision
+    scratch_rate    double precision,
+    instrument      text                -- contract traded: MNQ / NQ / MES / … (2026-10-01)
 ) LANGUAGE sql STABLE AS $$
 WITH bounds AS (
     SELECT COALESCE(p_since::timestamptz, now() - make_interval(days => p_days)) AS t0,
@@ -98,7 +104,8 @@ WITH bounds AS (
            (extract(hour FROM p_slot_end)   * 100 + extract(minute FROM p_slot_end))::int   AS slot_e,
            CASE WHEN p_handoff_only THEN p_slot_end ELSE '16:00'::time END AS restart_edge
 ), pt AS (
-    SELECT 'paper'::text AS source, t.strategy_id, t.entry_time, t.pnl_usd, t.qty, t.direction, t.exit_reason
+    SELECT 'paper'::text AS source, t.strategy_id, t.entry_time, t.pnl_usd, t.qty, t.direction, t.exit_reason,
+           t.symbol AS instrument
     FROM paper_trades t, bounds b
     WHERE t.account_label = p_paper_label AND t.exit_time IS NOT NULL AND t.entry_time >= b.t0
       AND (NOT p_handoff_only OR (
@@ -106,7 +113,7 @@ WITH bounds AS (
             (t.entry_time AT TIME ZONE 'America/New_York')::time <  p_slot_end))
 ), lt AS (
     SELECT 'live'::text AS source, t.account_label || ':' || t.strategy AS strategy_id,
-           t.entry_time, t.pnl_usd, t.qty, t.direction, t.exit_reason
+           t.entry_time, t.pnl_usd, t.qty, t.direction, t.exit_reason, t.instrument AS instrument
     FROM live_trades t, bounds b
     WHERE t.exit_time IS NOT NULL AND t.entry_time >= b.t0
       AND t.account_label NOT LIKE '%\_dry%' AND t.account_label <> 'golden'
@@ -125,7 +132,7 @@ WITH bounds AS (
       AND (r.started_at AT TIME ZONE 'America/New_York')::time <  b.restart_edge
     GROUP BY 1
 ), st AS (
-    SELECT a.source, a.strategy_id,
+    SELECT a.source, a.strategy_id, a.instrument,
            count(*)                                                              AS trades,
            count(DISTINCT (a.entry_time AT TIME ZONE 'America/New_York')::date)  AS sessions,
            count(DISTINCT (a.entry_time AT TIME ZONE 'America/New_York')::date)
@@ -142,28 +149,28 @@ WITH bounds AS (
            COALESCE(sum(a.pnl_usd)  FILTER (WHERE a.pnl_usd > 0), 0)             AS gross_win,
            COALESCE(-sum(a.pnl_usd) FILTER (WHERE a.pnl_usd < 0), 0)             AS gross_loss,
            min(a.entry_time) AS first_trade, max(a.entry_time) AS last_trade
-    FROM agg a GROUP BY a.source, a.strategy_id
+    FROM agg a GROUP BY a.source, a.strategy_id, a.instrument
 ), daily AS (
-    SELECT a.source, a.strategy_id,
+    SELECT a.source, a.strategy_id, a.instrument,
            (a.entry_time AT TIME ZONE 'America/New_York')::date AS d,
            sum(a.pnl_usd) AS p
-    FROM agg a GROUP BY 1, 2, 3
+    FROM agg a GROUP BY 1, 2, 3, 4
 ), risk AS (
     -- Daily series over the period's calendar sessions (fleet_sessions.n), flat days = 0:
     -- mean = Σp/N, sample variance = (Σp² − N·mean²)/(N−1), downside = sqrt(Σmin(p,0)²/N).
-    SELECT d.source, d.strategy_id,
+    SELECT d.source, d.strategy_id, d.instrument,
            fs.n                                                        AS n_days,
            sum(d.p) / fs.n                                             AS mean_day,
            CASE WHEN fs.n >= 2 AND (sum(d.p * d.p) - fs.n * power(sum(d.p) / fs.n, 2)) > 0
                 THEN sqrt((sum(d.p * d.p) - fs.n * power(sum(d.p) / fs.n, 2)) / (fs.n - 1)) END AS sd_day,
            sqrt(sum(power(least(d.p, 0), 2)) / fs.n)                   AS downside_day
-    FROM daily d CROSS JOIN fleet_sessions fs GROUP BY 1, 2, fs.n
+    FROM daily d CROSS JOIN fleet_sessions fs GROUP BY 1, 2, 3, fs.n
 ), joined AS (
     SELECT st.*, r.n_days, r.mean_day, r.sd_day, r.downside_day,
            s.engine AS s_engine, s.params_json AS p, s.enabled AS s_enabled, b.slot_s, b.slot_e,
            count(*) OVER (PARTITION BY st.source, st.trade_set_id) AS trade_set_size
     FROM st
-    LEFT JOIN risk r ON r.source = st.source AND r.strategy_id = st.strategy_id
+    LEFT JOIN risk r ON r.source = st.source AND r.strategy_id = st.strategy_id AND r.instrument IS NOT DISTINCT FROM st.instrument
     LEFT JOIN paper_strategies s ON st.source = 'paper' AND s.strategy_id = st.strategy_id
     CROSS JOIN bounds b
 ), scored AS (
@@ -200,7 +207,8 @@ WITH bounds AS (
                 THEN j.mean_day / j.downside_day * sqrt(252.0) END           AS sortino,
            (j.trades < 30 OR j.sessions < 2) AS thin,
            j.first_trade, j.last_trade,
-           j.restart_sessions, j.trade_set_id, j.trade_set_size, j.positive_halves, j.scratch_rate
+           j.restart_sessions, j.trade_set_id, j.trade_set_size, j.positive_halves, j.scratch_rate,
+           j.instrument
     FROM joined j
 )
 SELECT s.source, s.strategy_id, s.engine, s.mode, s.base_id, s.overlay_tag, s.enabled, s.live_runnable,
@@ -211,7 +219,8 @@ SELECT s.source, s.strategy_id, s.engine, s.mode, s.base_id, s.overlay_tag, s.en
        s.trades, s.sessions, s.wins, s.net_pnl, s.gross_win, s.gross_loss,
        s.profit_factor, s.win_rate, s.avg_pnl, s.avg_qty, s.net_per_contract,
        s.sharpe, s.sortino, s.thin, s.first_trade, s.last_trade,
-       s.restart_sessions, s.trade_set_id, s.trade_set_size, s.positive_halves, s.scratch_rate
+       s.restart_sessions, s.trade_set_id, s.trade_set_size, s.positive_halves, s.scratch_rate,
+       s.instrument
 FROM scored s
 ORDER BY s.net_per_contract DESC NULLS LAST, s.trades DESC;
 $$;
