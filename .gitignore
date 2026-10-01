@@ -50,3 +50,5 @@ newstrategy
 
 # local paper-engine build dir
 build-paper/
+config/staging/
+build-exp/

@@ -254,6 +254,17 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   (`commission_rt` 1.82, `slippage_ticks` 3, stops fill at the crossing print); read `scratch_rate`
   next to `win_rate` (breakeven scratches count as wins) and `trade_set_size` before calling a variant
   distinct. Rows under `invalid_resume_*` / `invalid_warmup_*` labels are quarantined restart artefacts.
+  (7) **Fleet expansion is STAGED, not live (2026-10-01, founder: "expand our fleet" — all four ways)**:
+  `scripts/fleet_expand.sh` writes `config/staging/` only (gitignored, regenerate with `all` + `newmodes`):
+  winners (673 exit grids + gates around the strategies that held up forward AND in replay), newmodes (124:
+  the new trend modes `level_fade` / `vwap_reclaim` / `range_break`), markets (every NQ base mirrored to
+  ES/YM/RTY/GC/CL as MES/MYM/M2K/MGC/MCL, point knobs × the market's range ratio to NQ, floors 8/4/1 ticks,
+  ~1,610 each, labels es/ym/rty/gc/cl) and combos (12,031 cross-category filter pairs, label `nq_combo`).
+  Ids are registered in `paper_strategies` under account_label `staging`. `replay` (research labels
+  `exp_<name>`, refuses 09:25–16:05 ET weekdays — the live executor polls the same tick table) and
+  `activate {nq|markets|combo|all} --yes` (merge / own unit `paper-engine-local-<code>` per
+  `config/paper_fleet_<code>.json`, which the fleet audit and stack_status discover by that name). Activate
+  only after a reload has proven the current load (no "Writer queue full" in the collector log).
 
 **WARNING — Oracle failback:** before starting an executor on Oracle (failback or
 deploy), kill any locally running executors for the same account. There is currently
