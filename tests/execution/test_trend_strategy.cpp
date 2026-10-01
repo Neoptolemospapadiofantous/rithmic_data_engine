@@ -650,6 +650,85 @@ int main() {
               "release: host notify frees the engine, the attempt still counts toward max_daily_trades");
     }
 
+    // ── level_fade (2026-10-01): failed break of the prior-day high, fade it once ──
+    {
+        TrendConfig tc; tc.mode = "level_fade"; tc.tf_min = 1; tc.level = "prior_day"; tc.lf_max_poke_atr = 0.0;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        feed_path(s, {20000, 20020, 20050, 20010, 19980}, 9, 30);       // day 1 RTH: high ≈ 20050.25
+        s.on_tick(OrbTick{at(16, 1), 20000.0, 1, true});
+        s.reset_session();                                              // 18:00 rollover → prior day = 20050.25 / 19979.75
+        const int64_t day2 = 86400LL * 1'000'000LL;
+        auto tick2 = [&](int h, int m, int sec, double px) { s.on_tick(OrbTick{at(h, m, sec) + day2, px, 1, true}); };
+        for (int m = 0; m < 3; ++m) for (int k = 0; k < 6; ++k) tick2(9, 30 + m, k * 10, 20030.0 + (k % 2));   // warm the ATR inside the range
+        tick2(9, 33, 0, 20040.0); tick2(9, 33, 20, 20060.0); tick2(9, 33, 40, 20045.0);                         // pokes above, closes back inside
+        tick2(9, 34, 0, 20044.0);                                                                                // closes the 09:33 bar
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::SELL && out[0].why == "prior_day_high_fade", "level_fade: SELL the failed break of the prior-day high");
+        s.notify_trade_filled(OrbSignal::SELL, "test");
+        tick2(9, 35, 0, 20065.0); tick2(9, 35, 30, 20045.0); tick2(9, 36, 0, 20045.0);
+        CHECK(out.size() == 1, "level_fade: the high side fades once per session");
+
+        TrendConfig t2 = tc; t2.lf_max_poke_atr = 0.5;                  // a deep break is not a "poke"
+        TrendStrategy s2(t2, risk_cfg()); std::vector<Rec> o2;
+        s2.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { o2.push_back({g, p, w}); });
+        s2.reset_session();
+        feed_path(s2, {20000, 20020, 20050, 20010, 19980}, 9, 30);
+        s2.on_tick(OrbTick{at(16, 1), 20000.0, 1, true}); s2.reset_session();
+        auto t2k = [&](int h, int m, int sec, double px) { s2.on_tick(OrbTick{at(h, m, sec) + day2, px, 1, true}); };
+        for (int m = 0; m < 3; ++m) for (int k = 0; k < 6; ++k) t2k(9, 30 + m, k * 10, 20030.0 + (k % 2));
+        t2k(9, 33, 0, 20040.0); t2k(9, 33, 20, 20150.0); t2k(9, 33, 40, 20045.0); t2k(9, 34, 0, 20044.0);
+        CHECK(o2.empty(), "level_fade: a break deeper than lf_max_poke_atr x ATR is not faded");
+    }
+    // ── vwap_reclaim (2026-10-01): N closes below VWAP, then a close back above → long ──
+    {
+        TrendConfig tc; tc.mode = "vwap_reclaim"; tc.tf_min = 1; tc.vr_min_bars = 4;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        auto bar = [&](int h, int m, double px, int vol) {
+            for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(h, m, k * 15), px, vol, k % 2 == 0});
+        };
+        bar(9, 30, 20000.0, 5000);                                      // heavy volume pins VWAP near 20000
+        for (int m = 31; m <= 35; ++m) bar(9, m, 19990.0, 10);          // five closes below VWAP
+        bar(9, 36, 20010.0, 10);                                        // closes back above
+        bar(9, 37, 20010.0, 10);                                        // closes the 09:36 bar
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY && out[0].why == "vwap_reclaim_long", "vwap_reclaim: BUY the reclaim after a stretch below");
+
+        TrendStrategy s2(tc, risk_cfg()); int n2 = 0;
+        s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n2; }); s2.reset_session();
+        auto bar2 = [&](int h, int m, double px, int vol) { for (int k = 0; k < 4; ++k) s2.on_tick(OrbTick{at(h, m, k * 15), px, vol, k % 2 == 0}); };
+        bar2(9, 30, 20000.0, 5000);
+        for (int m = 31; m <= 32; ++m) bar2(9, m, 19990.0, 10);         // only two closes below
+        bar2(9, 33, 20010.0, 10); bar2(9, 34, 20010.0, 10);
+        CHECK(n2 == 0, "vwap_reclaim: silent when the stretch is shorter than vr_min_bars");
+    }
+    // ── range_break (2026-10-01): a 02:00-03:00 range, broken in the 03:00-05:00 window ──
+    {
+        TrendConfig tc; tc.mode = "range_break"; tc.tf_min = 1; tc.rb_from = 200; tc.rb_to = 300;
+        tc.win_start = 300; tc.win_end = 500; tc.session = "globex";
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        std::vector<double> rng; for (int i = 0; i < 60; ++i) rng.push_back(20000.0 + (i % 5) * 2.0);   // 20000..20008
+        feed_path(s, rng, 2, 0);
+        CHECK(out.empty(), "range_break: no entry while the range is forming");
+        feed_path(s, {20005, 20006, 20007, 20020, 20025}, 3, 0);       // 03:03 closes above 20008.25
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY && out[0].why == "range_break_long", "range_break: BUY the first close above the completed range");
+        s.notify_trade_filled(OrbSignal::BUY, "test");
+        feed_path(s, {20005, 20030}, 3, 5);
+        CHECK(out.size() == 1, "range_break: the long side fires once per day");
+        feed_path(s, {19990, 19980}, 3, 7);
+        CHECK(out.size() == 2 && out[1].sig == OrbSignal::SELL && out[1].why == "range_break_short", "range_break: the short side still fires");
+
+        TrendStrategy s2(tc, risk_cfg()); int n2 = 0;                   // break outside the entry window
+        s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n2; }); s2.reset_session();
+        feed_path(s2, rng, 2, 0);
+        feed_path(s2, std::vector<double>(120, 20004.0), 3, 0);         // quiet until 05:00
+        feed_path(s2, {20004, 20030, 20030}, 5, 0);
+        CHECK(n2 == 0, "range_break: no entry outside win_start..win_end");
+    }
+
     std::printf(g_fail ? "FAILED (%d)\n" : "ALL PASSED\n", g_fail);
     return g_fail ? 1 : 0;
 }

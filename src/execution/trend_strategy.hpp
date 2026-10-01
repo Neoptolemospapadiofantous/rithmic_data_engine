@@ -37,6 +37,14 @@
                       and retraces back through it → fade the exhaustion, target
                       k·ATR back toward the entry
 
+    Added 2026-10-01 (fleet expansion, founder: "new strategy types"):
+      level_fade      a bar that trades through the prior-day (or overnight) high/low
+                      and closes back inside fades the failed break
+      vwap_reclaim    after N tf closes on one side of the session VWAP, a close
+                      back across it enters in the reclaim direction
+      range_break     the high/low of any clock window (e.g. the Asia 20:00-02:00
+                      range), broken inside a later entry window (London, US open)
+
     Pure signal generator: no I/O beyond LOG. Mirrors OrbStrategy's host contract
     (set_signal_callback / on_tick / check_eod / reset_session / halt / notify).
     Prior-day levels come from bars the engine itself has seen, so modes that need
@@ -175,6 +183,19 @@ struct TrendConfig {
     // __inv overlay (imbalance_max) was the only book overlay with an edge (PF 2.19 vs 0.92 base,
     // 2026-09-25); this makes it a first-class trigger with its own hold/threshold variants.
     bool bi_invert = false;
+    // ── families added 2026-10-01 (fleet expansion) ──
+    // level_fade: a bar whose high (low) trades through the `level` high (low) by at most
+    // lf_max_poke_atr×ATR (0 = any depth) and closes back inside fades the failed break; one per side
+    // per session. level = overnight is only read once the overnight range is complete (09:30-17:00 ET).
+    double lf_max_poke_atr = 1.0;
+    // vwap_reclaim: ≥ vr_min_bars consecutive tf closes on one side of the session VWAP (anchor =
+    // `session`), then a close back across it enters in the reclaim direction; one per side per session.
+    int vr_min_bars = 10;
+    // range_break: the high/low of the rb_from..rb_to clock window (ET HHMM, may wrap midnight; built
+    // from 1-minute bars and kept until the 18:00 ET rollover, so an Asia range survives the 09:30
+    // session start). Once the window has closed, a tf close beyond high/low ± rb_buffer_atr×ATR inside
+    // win_start..win_end enters; one per side per day.
+    int rb_from = 2000, rb_to = 200; double rb_buffer_atr = 0.0;
     // generic gates / exits usable by ANY mode
     int htf_tf_min = 0; int htf_ema = 21;        // >0: longs only when the htf close is above its EMA (mirror for shorts)
     double chandelier_mult = 0.0;                // >0: flatten when close falls chandelier_mult×ATR from the best price since entry
@@ -240,6 +261,9 @@ struct TrendConfig {
         c.vb_vol_mult = jdbl(t, "vb_vol_mult", c.vb_vol_mult); c.vb_close_loc = jdbl(t, "vb_close_loc", c.vb_close_loc);
         c.vb_delta_min = jdbl(t, "vb_delta_min", c.vb_delta_min); c.vb_trend_agree = jbool(t, "vb_trend_agree", c.vb_trend_agree);
         c.bi_invert = jbool(t, "bi_invert", c.bi_invert);
+        c.lf_max_poke_atr = jdbl(t, "lf_max_poke_atr", c.lf_max_poke_atr);
+        c.vr_min_bars = jint(t, "vr_min_bars", c.vr_min_bars);
+        c.rb_from = jint(t, "rb_from", c.rb_from); c.rb_to = jint(t, "rb_to", c.rb_to); c.rb_buffer_atr = jdbl(t, "rb_buffer_atr", c.rb_buffer_atr);
         return c;
     }
 
@@ -306,6 +330,8 @@ public:
         imb_dir_ = 0; imb_since_ = 0;
         best_px_ = 0.0; thrust_entry_ref_ = 0.0; abs_dir_ = 0; abs_age_ = 0; abs_mid_ = 0.0;
         reset_2809_modes();
+        rb_hi_ = std::numeric_limits<double>::lowest(); rb_lo_ = std::numeric_limits<double>::max();
+        rb_built_ = rb_done_ = false; rb_used_long_ = rb_used_short_ = false;
         sess_.trades_today = 0; sess_.in_position = false; sess_.risk_halted = false; sess_.halt_reason.clear();
         if (keep_pos) { sess_.in_position = true; pos_dir_ = keep_dir; entry_ts_ = keep_ts; }
         LOG("[TREND %s] Session reset (tf=%dm window %04d-%04d anchor=%s)%s", tc_.mode.c_str(), tc_.tf_min,
@@ -458,6 +484,14 @@ private:
         if (sess_.in_position && tc_.time_stop_min > 0 && entry_ts_ > 0 &&
             (b.ts - entry_ts_) >= (int64_t)tc_.time_stop_min * 60'000'000LL)
             emit(OrbSignal::FLATTEN_EOD, b.c, "time_stop");
+        if (tc_.mode == "range_break") {                    // build the clock-window range from 1m bars
+            const int bh = (b.mod / 60) * 100 + b.mod % 60;
+            if (in_hhmm(bh, tc_.rb_from, tc_.rb_to)) { rb_hi_ = std::max(rb_hi_, b.h); rb_lo_ = std::min(rb_lo_, b.l); rb_built_ = true; }
+            else if (rb_built_ && !rb_done_) {
+                rb_done_ = true;
+                LOG("[TREND range_break] range %04d-%04d complete: %.2f-%.2f", tc_.rb_from, tc_.rb_to, rb_lo_, rb_hi_);
+            }
+        }
         // tf aggregation — a tf bar closes as soon as its LAST minute completes
         // (a 09:30–09:34 five-minute bar closes on the first 09:35 tick).
         const int key = b.mod / tc_.tf_min;
@@ -546,6 +580,9 @@ private:
         else if (tc_.mode == "hold")                mode_hold(b, hhmm);
         else if (tc_.mode == "atr_break")           mode_atr_break(b, hhmm);
         else if (tc_.mode == "vprofile")            mode_vprofile(b, hhmm);
+        else if (tc_.mode == "level_fade")          mode_level_fade(b, hhmm);
+        else if (tc_.mode == "vwap_reclaim")        mode_vwap_reclaim(b, hhmm);
+        else if (tc_.mode == "range_break")         mode_range_break(b, hhmm);
     }
 
     // ── modes ────────────────────────────────────────────────────────────────
@@ -613,6 +650,8 @@ private:
         ib_hi_ = std::numeric_limits<double>::lowest(); ib_lo_ = std::numeric_limits<double>::max(); ib_set_ = false; ib_dir_ = 0; ib_target_ = 0.0;
         hold_done_ = false;
         ab_used_long_ = ab_used_short_ = false; vp_used_long_ = vp_used_short_ = false; vp_dir_ = 0;
+        lf_used_long_ = lf_used_short_ = false;
+        vr_above_ = vr_below_ = 0; vr_used_long_ = vr_used_short_ = false;
     }
 
     // Session end: the day's histogram becomes the prior-session profile (POC, value area).
@@ -631,6 +670,45 @@ private:
         vp_poc_ = poc + 0.5; vp_vah_ = hi + 1.0; vp_val_ = (double)lo; vp_ready_ = true;
         LOG("[TREND %s] Volume profile: POC=%.1f VAH=%.1f VAL=%.1f (%.0f%% of %.0f)", tc_.mode.c_str(), vp_poc_, vp_vah_, vp_val_, 100.0 * inside / total, total);
         vp_cur_.clear(); vp_used_long_ = vp_used_short_ = false; vp_dir_ = 0;
+    }
+    // ── 2026-10-01 modes ────────────────────────────────────────────────────
+    static bool in_hhmm(int x, int from, int to) {
+        return from <= to ? (x >= from && x < to) : (x >= from || x < to);   // wraps midnight
+    }
+    // level_fade — a failed break of the prior-day / overnight high or low.
+    void mode_level_fade(const Bar& b, int hhmm) {
+        double hi, lo;
+        if (tc_.level == "overnight") {
+            if (hhmm < 930 || hhmm >= 1700) return;                    // the overnight range is still forming
+            hi = on_hi_; lo = on_lo_; if (hi <= lo) return;
+        } else { if (!have_prev_) return; hi = prev_hi_; lo = prev_lo_; }
+        const double max_poke = tc_.lf_max_poke_atr > 0 ? tc_.lf_max_poke_atr * atr_ : std::numeric_limits<double>::max();
+        if (!lf_used_short_ && b.h > hi && b.h - hi <= max_poke && b.c < hi && can_enter(hhmm, -1)) {
+            lf_used_short_ = true; emit(OrbSignal::SELL, b.c, tc_.level + "_high_fade");
+        } else if (!lf_used_long_ && b.l < lo && lo - b.l <= max_poke && b.c > lo && can_enter(hhmm, +1)) {
+            lf_used_long_ = true; emit(OrbSignal::BUY, b.c, tc_.level + "_low_fade");
+        }
+    }
+    // vwap_reclaim — a long stretch on one side of VWAP, then a close back across it.
+    void mode_vwap_reclaim(const Bar& b, int hhmm) {
+        if (!in_rth_ || vwap_v_ <= 0) return;
+        const double vw = vwap();
+        if (b.c > vw) {
+            if (!vr_used_long_ && vr_below_ >= tc_.vr_min_bars && can_enter(hhmm, +1)) { vr_used_long_ = true; emit(OrbSignal::BUY, b.c, "vwap_reclaim_long"); }
+            ++vr_above_; vr_below_ = 0;
+        } else if (b.c < vw) {
+            if (!vr_used_short_ && vr_above_ >= tc_.vr_min_bars && can_enter(hhmm, -1)) { vr_used_short_ = true; emit(OrbSignal::SELL, b.c, "vwap_reclaim_short"); }
+            ++vr_below_; vr_above_ = 0;
+        }
+    }
+    // range_break — a fresh close beyond a completed clock-window range.
+    void mode_range_break(const Bar& b, int hhmm) {
+        if (!rb_done_ || rb_hi_ <= rb_lo_) return;
+        const double buf = tc_.rb_buffer_atr * atr_;
+        const size_t n = tf_.size(); if (n < 2) return; const Bar& p = tf_[n - 2];
+        const double up = rb_hi_ + buf, dn = rb_lo_ - buf;
+        if (!rb_used_long_ && p.c <= up && b.c > up && can_enter(hhmm, +1)) { rb_used_long_ = true; emit(OrbSignal::BUY, b.c, "range_break_long"); }
+        else if (!rb_used_short_ && p.c >= dn && b.c < dn && can_enter(hhmm, -1)) { rb_used_short_ = true; emit(OrbSignal::SELL, b.c, "range_break_short"); }
     }
     // atr_break — expansion beyond the anchor by k × ATR.
     void mode_atr_break(const Bar& b, int hhmm) {
@@ -1138,6 +1216,10 @@ private:
     double ib_hi_ = 0, ib_lo_ = 0; bool ib_set_ = false; int ib_dir_ = 0; double ib_target_ = 0;
     bool hold_done_ = false; bool event_next_day_ = false;
     double day_atr_ = 0.0; bool ab_used_long_ = false, ab_used_short_ = false;
+    bool lf_used_long_ = false, lf_used_short_ = false;                              // level_fade
+    int vr_above_ = 0, vr_below_ = 0; bool vr_used_long_ = false, vr_used_short_ = false;   // vwap_reclaim
+    double rb_hi_ = std::numeric_limits<double>::lowest(), rb_lo_ = std::numeric_limits<double>::max();   // range_break
+    bool rb_built_ = false, rb_done_ = false, rb_used_long_ = false, rb_used_short_ = false;
     std::map<int, double> vp_cur_; double vp_poc_ = 0, vp_vah_ = 0, vp_val_ = 0; bool vp_ready_ = false; bool vp_used_long_ = false, vp_used_short_ = false; int vp_dir_ = 0;
     int squeeze_count_ = 0; int st_dir_ = 0; double st_up_ = 0, st_dn_ = 0; int reenter_dir_ = 0;
     std::deque<double> ref_closes_;
