@@ -18,6 +18,8 @@
 #include "../src/audit.hpp"
 #include "../src/config.hpp"
 #include "../src/db.hpp"
+#include "../src/collector.hpp"
+#include <deque>
 
 // ── helpers ────────────────────────────────────────────────────────
 
@@ -585,6 +587,33 @@ static void test_tick_dedup_tiebreaker() {
 
 // ── main ───────────────────────────────────────────────────────────
 
+// ── Collector writer coalescing (2026-10-01) — pure, no DB ─────────────────────
+// The open put the writer 60-105 s behind with one 5-row job per fsync+commit; the writer now drains
+// every queued job into one batch per stream, order kept within each stream, capped at max_rows.
+static void test_writer_drain_coalesces() {
+    std::deque<Collector::BatchJob> q;
+    auto tick = [](double px) { TickRow r{}; r.ts_micros = (int64_t)px; r.price = px; r.size = 1; return r; };
+    auto bbo  = [](int64_t ts) { BBORow r{}; r.ts_micros = ts; return r; };
+    q.push_back(Collector::BatchJob::make_ticks({tick(1), tick(2)}));
+    q.push_back(Collector::BatchJob::make_bbo({bbo(10)}));
+    q.push_back(Collector::BatchJob::make_ticks({tick(3), tick(4), tick(5)}));
+    q.push_back(Collector::BatchJob::make_bbo({bbo(11), bbo(12)}));
+    std::vector<TickRow> t; std::vector<BBORow> b; std::vector<DepthRow> d;
+    ASSERT(Collector::drain_jobs(q, 1000, t, b, d) == 4);
+    ASSERT(q.empty());
+    ASSERT(t.size() == 5 && b.size() == 3 && d.empty());
+    for (size_t i = 0; i < t.size(); ++i) ASSERT(t[i].price == (double)(i + 1));   // order kept per stream
+    ASSERT(b[0].ts_micros == 10 && b[2].ts_micros == 12);
+
+    // cap: stops before a job that would exceed max_rows, but always takes at least one
+    q.push_back(Collector::BatchJob::make_ticks({tick(1), tick(2), tick(3)}));
+    q.push_back(Collector::BatchJob::make_ticks({tick(4), tick(5), tick(6)}));
+    t.clear(); b.clear();
+    ASSERT(Collector::drain_jobs(q, 4, t, b, d) == 1 && t.size() == 3 && q.size() == 1);
+    t.clear();
+    ASSERT(Collector::drain_jobs(q, 1, t, b, d) == 1 && t.size() == 3 && q.empty());   // oversized job still written
+}
+
 int main() {
     // g_connstr was initialised at static-init time: it points at a fresh,
     // isolated rithmic_test schema — never at production tables.
@@ -605,6 +634,7 @@ int main() {
     RUN_TEST(tick_dedup_tiebreaker);
 
     std::printf("\n--- BBORow tests ---\n");
+    RUN_TEST(writer_drain_coalesces);
     RUN_TEST(write_bbo_basic);
     RUN_TEST(write_bbo_empty_batch);
     RUN_TEST(write_bbo_dedup);

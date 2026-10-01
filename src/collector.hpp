@@ -2,7 +2,9 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <algorithm>
 #include <deque>
+#include <iterator>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -41,7 +43,6 @@ public:
     void run();
     void stop();
 
-private:
     // A swapped-out stream batch handed to the writer thread.
     struct BatchJob {
         enum class Kind { Tick, Bbo, Depth };
@@ -59,7 +60,32 @@ private:
         static BatchJob make_depth(std::vector<DepthRow> v) {
             BatchJob j; j.kind = Kind::Depth; j.depth = std::move(v); return j;
         }
+        size_t rows() const { return ticks.size() + bbo.size() + depth.size(); }
     };
+
+    // Writer coalescing (2026-10-01): each queued job is a 5-row batch and every write costs a WAL
+    // fdatasync + a synchronous DB commit, so with 8 symbols the writer topped out at ~220 commits/s
+    // and fell 60-105 s behind at the 09:30 open — the live executor traded on minute-old prices.
+    // The writer now drains EVERY queued job (up to max_rows) into one batch per stream: one fsync and
+    // one commit for all of them. Light load: unchanged (one small job at a time). Heavy load: bigger
+    // batches instead of a growing queue. Order is preserved within each stream; streams are
+    // independent tables, so their relative order does not matter. Returns the jobs taken.
+    static size_t drain_jobs(std::deque<BatchJob>& q, size_t max_rows, std::vector<TickRow>& ticks,
+                             std::vector<BBORow>& bbo, std::vector<DepthRow>& depth) {
+        size_t taken = 0, rows = 0;
+        while (!q.empty() && (taken == 0 || rows + q.front().rows() <= max_rows)) {
+            BatchJob& j = q.front();
+            rows += j.rows();
+            std::move(j.ticks.begin(), j.ticks.end(), std::back_inserter(ticks));
+            std::move(j.bbo.begin(),   j.bbo.end(),   std::back_inserter(bbo));
+            std::move(j.depth.begin(), j.depth.end(), std::back_inserter(depth));
+            q.pop_front(); ++taken;
+        }
+        return taken;
+    }
+    static constexpr size_t WRITER_MAX_ROWS = 20000;   // per drained write — one UNNEST insert per stream
+
+private:
 
     // Producer side (io_context thread — read-only on the DB)
     void on_tick(TickRow row);

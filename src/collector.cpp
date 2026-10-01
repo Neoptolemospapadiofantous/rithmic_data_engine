@@ -347,25 +347,26 @@ void Collector::enqueue_remaining() {
 
 void Collector::writer_loop() {
     while (true) {
-        BatchJob job;
+        std::vector<TickRow> ticks; std::vector<BBORow> bbo; std::vector<DepthRow> depth;
         {
             std::unique_lock lock(queue_mu_);
             queue_cv_.wait(lock, [&] { return writer_stop_ || !queue_.empty(); });
             if (queue_.empty()) break;  // stop requested and queue drained
-            job = std::move(queue_.front());
-            queue_.pop_front();
+            // everything queued so far, one write per stream (see drain_jobs)
+            drain_jobs(queue_, WRITER_MAX_ROWS, ticks, bbo, depth);
         }
 
-        try {
-            switch (job.kind) {
-                case BatchJob::Kind::Tick:  write_tick_batch(std::move(job.ticks));  break;
-                case BatchJob::Kind::Bbo:   write_bbo_batch(std::move(job.bbo));     break;
-                case BatchJob::Kind::Depth: write_depth_batch(std::move(job.depth)); break;
+        // each stream is written on its own: a failure in one never loses the others
+        auto guarded = [&](const char* stream, auto&& fn) {
+            try { fn(); }
+            catch (std::exception& e) {
+                LOG("  Writer job failed (%s): %s", stream, e.what());
+                audit_->error("writer.job_error", std::string("stream=") + stream + " " + e.what());
             }
-        } catch (std::exception& e) {
-            LOG("  Writer job failed: %s", e.what());
-            audit_->error("writer.job_error", e.what());
-        }
+        };
+        if (!ticks.empty()) guarded("tick",  [&] { write_tick_batch(std::move(ticks)); });
+        if (!bbo.empty())   guarded("bbo",   [&] { write_bbo_batch(std::move(bbo)); });
+        if (!depth.empty()) guarded("depth", [&] { write_depth_batch(std::move(depth)); });
 
         // Periodic flushes piggyback on writer activity (previously in flush())
         auto now = std::chrono::steady_clock::now();
