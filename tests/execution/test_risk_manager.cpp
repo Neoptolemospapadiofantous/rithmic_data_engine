@@ -541,6 +541,59 @@ TEST(config_dry_run_forces_dry_label) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ─── Broker room guard (2026-10-01: account $321.76 above the Tradeify floor on 1 NQ) ───
+
+static OrbConfig make_nq_cfg() {
+    OrbConfig c = make_cfg(-500.0, 1000.0);
+    c.sl_points = 15.0; c.point_value = 20.0; c.qty = 1; c.commission_rt = 1.82;
+    return c;
+}
+
+// One full stop on 1 NQ = 15 x 20 + 1.82 fees.
+TEST(entry_risk_is_full_stop_plus_fees) {
+    RiskManager rm(make_nq_cfg(), 25000.0);
+    ASSERT_NEAR(rm.entry_risk_usd(), 301.82, 0.001);
+}
+
+// No broker balance yet (dry run / PnL plant not up) -> the guard stays out of the way.
+TEST(broker_room_unset_does_not_block) {
+    RiskManager rm(make_nq_cfg(), 25000.0);
+    ASSERT(std::isnan(rm.broker_room()));
+    ASSERT(rm.can_trade());
+}
+
+// The 2026-10-01 numbers: 321.76 covers one stop; after a loss (~12 left) the next entry is refused.
+TEST(broker_room_blocks_entry_it_cannot_cover) {
+    RiskManager rm(make_nq_cfg(), 25000.0);
+    rm.set_broker_room(321.76);
+    ASSERT(rm.can_trade());
+    rm.set_broker_room(12.0);
+    std::string why;
+    ASSERT(!rm.can_trade(why));
+    ASSERT(why.rfind("broker_room", 0) == 0);
+    ASSERT(!rm.halted());              // a gate, not a halt
+}
+
+// Exactly one stop of room is enough; a cent less is not.
+TEST(broker_room_boundary) {
+    RiskManager rm(make_nq_cfg(), 25000.0);
+    rm.set_broker_room(301.82);
+    ASSERT(rm.can_trade());
+    rm.set_broker_room(301.81);
+    ASSERT(!rm.can_trade());
+}
+
+// Not sticky: a win that rebuilds the room re-opens entries; NaN updates are ignored.
+TEST(broker_room_recovers_and_ignores_nan) {
+    RiskManager rm(make_nq_cfg(), 25000.0);
+    rm.set_broker_room(50.0);
+    ASSERT(!rm.can_trade());
+    rm.set_broker_room(std::nan(""));
+    ASSERT_NEAR(rm.broker_room(), 50.0, 0.001);
+    rm.set_broker_room(450.0);
+    ASSERT(rm.can_trade());
+}
+
 int main() {
     RUN(no_halt_within_limits);
     RUN(halt_on_daily_loss_limit);
@@ -583,6 +636,11 @@ int main() {
     RUN(config_validation_rejects_unsafe_account_label);
     RUN(config_valid_file_loads);
     RUN(config_dry_run_forces_dry_label);
+    RUN(entry_risk_is_full_stop_plus_fees);
+    RUN(broker_room_unset_does_not_block);
+    RUN(broker_room_blocks_entry_it_cannot_cover);
+    RUN(broker_room_boundary);
+    RUN(broker_room_recovers_and_ignores_nan);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

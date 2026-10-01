@@ -1631,10 +1631,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 }
             }
             const double room = notif::broker_drawdown_room(broker_bal, broker_hwm, orb_cfg.trailing_drawdown_cap);
+            risk.set_broker_room(room);   // gates the next entry: room must cover one full stop
             if (broker_bal != last_broker_hwm_logged_bal) {
                 last_broker_hwm_logged_bal = broker_bal;
                 LOG("[EXECUTOR] [BROKER-HWM] balance=%.2f hwm=%.2f room=%.2f before the %.0f trailing cap",
                     broker_bal, broker_hwm, room, orb_cfg.trailing_drawdown_cap);
+                if (room < risk.entry_risk_usd())
+                    LOG("[EXECUTOR] [BROKER-ROOM] room %.2f < one stop %.2f — new entries refused until the room recovers",
+                        room, risk.entry_risk_usd());
             }
             if (!broker_dd_halted &&
                 notif::broker_drawdown_breached(broker_bal, broker_hwm, orb_cfg.trailing_drawdown_cap)) {

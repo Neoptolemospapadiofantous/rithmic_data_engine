@@ -20,6 +20,8 @@
 #include "log.hpp"
 #include <atomic>
 #include <cmath>
+#include <cstdio>
+#include <limits>
 #include <mutex>
 #include <string>
 
@@ -158,8 +160,39 @@ public:
             reason = "trailing_drawdown_cap active";
             return false;
         }
+        // Broker room guard: the prop firm's trailing floor is measured on the BROKER balance
+        // (fees, liquidations and other instances included), and the executor's own halt only
+        // fires once that floor is reached — i.e. after the account has already failed. Refuse
+        // any entry whose full stop the remaining room cannot absorb. Not sticky: a win that
+        // rebuilds the room re-opens entries. Unset (NaN) until the PnL plant reports a balance.
+        if (std::isfinite(broker_room_) && broker_room_ < entry_risk_usd()) {
+            char buf[160];
+            std::snprintf(buf, sizeof buf, "broker_room %.2f < one stop %.2f (sl %.2f pts x $%.2f x %d + fees)",
+                          broker_room_, entry_risk_usd(), cfg_.sl_points, cfg_.point_value, cfg_.qty);
+            reason = buf;
+            return false;
+        }
         return true;
     }
+
+    // Dollars one stopped-out entry costs at the configured size: stop distance x $/pt x qty
+    // plus round-trip fees. Slippage is not included (the measured live exit slippage is ~1.5
+    // ticks), so a stop that slips can still overshoot the room by that much.
+    double entry_risk_usd() const {
+        return cfg_.sl_points * cfg_.point_value * cfg_.qty + cfg_.commission_rt * cfg_.qty;
+    }
+
+    // Latest broker room to the prop firm's trailing floor (balance − (HWM − cap)), from the
+    // PnL plant's account updates. Gates NEW entries via can_trade(); never halts by itself.
+    void set_broker_room(double room) {
+        std::lock_guard<std::mutex> lk(mu_);
+        if (!std::isfinite(room)) {
+            LOG("[RISK] Ignoring non-finite broker room");
+            return;
+        }
+        broker_room_ = room;
+    }
+    double broker_room() const { std::lock_guard<std::mutex> lk(mu_); return broker_room_; }
 
     bool can_trade() const {
         std::string ignored;
@@ -223,6 +256,7 @@ private:
     double       total_profit_;
     double       daily_pnl_;
     double       unrealized_pnl_ = 0.0;
+    double       broker_room_    = std::numeric_limits<double>::quiet_NaN();
     std::atomic<bool> halted_;
     std::string  halt_reason_;
 };
