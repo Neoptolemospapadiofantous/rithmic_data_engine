@@ -240,7 +240,7 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   mode wins in one hour and loses in another. Windowed siblings are `__open` (09:30–10:00),
   `__am` (10:00–12:00); `__pm` was tested and dropped. (3) Tape modes (`volume_burst`,
   `delta_divergence`) work on **1-minute bars only**; chandelier / time-stop knobs are inert on
-  1m scalps. (4) **SUPERSEDED 2026-09-29 — founder: "we want all to keep running for ever": every registered strategy runs (2,170 incl. the 09-28 research grids); nothing is retired again, judge by the Leaderboard periods and the Week · month · year tab.** Historical note: the 7-day forward test had retired (`enabled:false`, rows kept) `nr7`, `supertrend`,
+  1m scalps. (4) **SUPERSEDED 2026-09-29 — founder: "we want all to keep running for ever": every registered strategy runs (2,170 incl. the 09-28 research grids; 4,818 since 2026-10-01, when `scripts/fleet_add_variants.sh` gave every base the five `__rg_*` regime presets, `__rvol15` and `__tr25` — regime presets only on regular-hours bases); nothing is retired again, judge by the Leaderboard periods and the Week · month · year tab.** Historical note: the 7-day forward test had retired (`enabled:false`, rows kept) `nr7`, `supertrend`,
   `roc_momentum`, `trend_day`, every `globex_*` whole-day id and the book overlays `__micro __imb
   __all __sz __wait __bx __bbe` — 635 of 1,675 configured strategies run. `__inv` is the only
   overlay that beats its bases, and it does NOT combine with trend entries (it blocks them).
