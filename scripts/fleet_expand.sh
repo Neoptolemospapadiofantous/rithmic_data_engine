@@ -18,7 +18,8 @@
 #   register  insert the staged ids into paper_strategies (account_label 'staging', so the fleet audit's
 #             row count is unaffected) — replay trades of unregistered ids are dropped by the FK
 #   replay    replay every staged file over its feed's recorded sessions (full Globex days) under
-#             research labels exp_<name>; refuses during weekday regular hours (live feed shares the DB)
+#             research labels exp_<name>; refuses during weekday regular hours and pauses through the Asia
+#             session 23:55-02:35 ET (the live executor and the Asia dry run read the same tick table)
 #   activate {nq|markets|combo|<code>|all} --yes   put staged fleets into service: nq = merge + restart the NQ
 #             engine; markets / combo = config/paper_fleet_<code>.json + unit paper-engine-local-<code>
 #   merge     append paper_winners.json (+ paper_newmodes.json when present) to config/paper_fleet.json
@@ -211,6 +212,10 @@ in_rth_now() {   # weekday 09:25-16:05 ET
   local now dow; now=$(TZ=America/New_York date +%H%M); dow=$(TZ=America/New_York date +%u)
   (( dow <= 5 && 10#$now >= 925 && 10#$now < 1605 ))
 }
+in_asia_now() {  # 23:55-02:35 ET — the Asia dry-run executor (tradeify_mtfasia) reads the same tick table
+  local now; now=$(TZ=America/New_York date +%H%M)
+  (( 10#$now >= 2355 || 10#$now < 235 ))
+}
 cmd_replay() {
   local force=0; [[ "${2:-}" == "--force" ]] && force=1
   if (( !force )) && in_rth_now; then
@@ -237,6 +242,11 @@ cmd_replay() {
                  -c "select session_date from session_stats where symbol='$feed' and session_date < current_date order by 1"); do
       if (( !force )) && in_rth_now; then          # checked before EVERY day: a long run must not drift into RTH
         echo "$(date -Is) stopped at $label $d — regular hours began; rerun after 16:05 ET (finished days are kept)" | tee -a "$log"; return 1
+      fi
+      if (( !force )) && in_asia_now; then         # pause (not stop) through the Asia session, then carry on
+        echo "$(date -Is) pausing before $label $d — Asia session (23:55-02:35 ET) in progress" | tee -a "$log"
+        while in_asia_now; do sleep 60; done
+        echo "$(date -Is) resuming" | tee -a "$log"
       fi
       local from to; from="$(date -d "$d -1 day" +%F) 18:00"; to="$d 17:00"
       # idempotent: a rerun replaces this label's rows for the day instead of doubling them
