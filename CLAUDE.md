@@ -33,30 +33,38 @@ Agent prompts live in `scripts/fleet_agents.json`.
 
 ## StarNet strategy desk (since 2026-09-30)
 
-A StarNet crew (`~/starnet`, :8787, via `starnet-adapter` :8099 → claude-bridge, ALL on
-`claude-opus-5-5` — the adapter's `STARNET_PIN_MODEL` forces it, founder's call) researches
-this repo from a **read-only clone** and never touches live trading. It runs as a **closed loop
-every 2 hours, 24/7**, paced to fit the 5-hour Claude session limit (hourly, it spent the limit in ~90 min and then sat blocked). Times are Cyprus:
+A StarNet crew (`~/starnet`, :8787, user unit `starnet`, via `starnet-adapter` :8099 → claude-bridge) researches
+this repo from a **read-only clone** and never touches live trading. **Budgeted to the WEEKLY Claude limit**
+(2026-10-01, founder: mix models + slower — every 2 h at 50 calls/h on Opus had spent the whole week in ~21 h):
+routine agents on **Sonnet 5**, judgment on **Opus 5.5**, a cycle every **4 hours**, adapter caps 40 calls/h and
+250/day. Times are Cyprus:
 
-| When | Who | What |
+| When | Who (model) | What |
 |---|---|---|
-| even hours :00 | `rithmic-research-sync.timer` → `scripts/starnet/desk_cycle.sh` | `desk_replay.sh` replays every new `*-RESEARCHER*.md` proposal (new `desk_*` ids only, param keys checked against `config/paper_fleet.json`, ≤30 variants) over every recorded NQ session — **sessions before `HOLDOUT_FROM` (2026-09-28) under label `desk`, later ones (and every future session) under `desk_ho`** — then `sync_research_clone.sh` resets the clone to this checkout's committed HEAD and `export_research_data.sh` (read-only PG) writes `research_data/` (in-sample only; `desk_ho` never enters it) plus `fills_live.csv` / `fills_parity.csv` |
-| :02 (even h) | FILLS | `…-FILLS.md` — real live slippage per strategy/side and a `## Cost model` every ranking applies (runs only when live fills change) |
-| :05 | QUANT | `~/starnet-work/desk/<YYYY-MM-DD-HHMM>-QUANT.md` — per-contract ranking, raw and cost-adjusted |
-| :15 | PROPDESK | `…-PROPDESK.md` — bootstrap under the prop rules |
-| :27 | SKEPTIC | `…-SKEPTIC.md` — ROBUST / FRAGILE / NOISE |
-| :40 | SABLE (lead) | `…-STEER.md` — goal status, `## Stop`, `## Research next` per researcher |
-| :48 :51 :54 :57 (even h) | RESEARCHER (entries), EXITS, FLOWLAB (order flow), TIMELAB (time/regime) | `…-RESEARCHER[-EXITS|-FLOWLAB|-TIMELAB].md` — one ```json `{"variants":[…]}` block each; replayed at the next even-hour :00 → `…-REPLAY.md` (in-sample) + `~/starnet-work/holdout/…-HOLDOUT.md` |
-| 07:30 15:30 23:30 | SABLE (lead) | `…-BRIEF.md` — the ONLY reader of `~/starnet-work/holdout/`; recommends a desk variant only with holdout PASS (in-sample net > 0 AND ≥5 holdout trades with net > 0, PF ≥ 1); ends with BANDIT READINESS (READY at ≥20 forward sessions and ≥3 ROBUST candidates — no RL until then, founder 2026-09-30) |
-| on a new commit (checked every 2 h); SCANNER 09:10, TESTGAP 12:10, RISKGUARD 20:10 daily | REGRESSION, DOCSYNC; SCANNER, TESTGAP, RISKGUARD | `~/starnet-work/findings/<YYYY-MM-DD-HHMM>-<AGENT>.md` |
-| 21:30 daily | HERMES (imported from the Hermes Agent profile `~/.hermes/profiles/researcher`, persona only, runs on the same Claude bridge) | `~/starnet-work/findings/<stamp>-HERMES.md` — re-checks every new finding, then builds and tests up to 3 fixes in `~/starnet-work/hermes-scratch` and publishes them as verified unified diffs; verdicts appended to `findings/_triage.md`. Nothing is applied to this repo automatically: apply a HERMES diff in an attended Claude Code session, then `make hermes`. |
+| 00/04/08/12/16/20 :00 | `rithmic-research-sync.timer` → `scripts/starnet/desk_cycle.sh` | `desk_replay.sh` replays every new `*-RESEARCHER*.md` proposal (new `desk_*` ids only, param keys checked against `config/paper_fleet.json`, ≤30 variants) over every recorded NQ session — **before `HOLDOUT_FROM` (2026-09-28) under label `desk`, later sessions (and every future one) under `desk_ho`** — then syncs the clone to this checkout's committed HEAD and exports `research_data/` (read-only PG; `desk_ho` never enters it) plus `fills_live.csv` / `fills_parity.csv` |
+| :02 | FILLS (Sonnet) | `…-FILLS.md` — live slippage and the `## Cost model` every ranking applies |
+| :05 | QUANT (Sonnet) | `~/starnet-work/desk/<YYYY-MM-DD-HHMM>-QUANT.md` — per-contract ranking, raw and cost-adjusted |
+| :15 | PROPDESK (Sonnet) | `…-PROPDESK.md` — bootstrap under the prop rules |
+| :27 | SKEPTIC (Opus) | `…-SKEPTIC.md` — ROBUST / FRAGILE / NOISE |
+| :40 | SABLE steer (Opus) | `…-STEER.md` — goal status, `## Stop`, `## Research next` per researcher |
+| :48 :54 | two researchers per cycle (Sonnet): RESEARCHER + EXITS at 00/08/16, FLOWLAB + TIMELAB at 04/12/20 | `…-RESEARCHER[-EXITS|-FLOWLAB|-TIMELAB].md` — one ```json `{"variants":[…]}` block each; replayed at the next cycle → `…-REPLAY.md` (in-sample) + `~/starnet-work/holdout/…-HOLDOUT.md` |
+| 07:30 15:30 | BRIEF (Opus) | `…-BRIEF.md` — the ONLY reader of `~/starnet-work/holdout/`; recommends a desk variant only with holdout PASS (in-sample net > 0 AND ≥5 holdout trades with net > 0, PF ≥ 1); ends with BANDIT READINESS (READY at ≥20 forward sessions and ≥3 ROBUST candidates — no RL until then) |
+| daily (Sonnet): REGRESSION 08:10, DOCSYNC 08:55 (both skip without a new commit), SCANNER 09:10, TESTGAP 12:10, RISKGUARD 20:10 | code reviewers | `~/starnet-work/findings/<YYYY-MM-DD-HHMM>-<AGENT>.md` |
+| 21:30 daily | HERMES (Opus; imported from the Hermes Agent profile `~/.hermes/profiles/researcher`, persona only) | `findings/<stamp>-HERMES.md` — re-checks new findings, builds and tests up to 3 fixes in `~/starnet-work/hermes-scratch`, publishes verified diffs; verdicts appended to `findings/_triage.md`. Apply a diff in an attended session, then `make hermes`. |
+| Sun 10:00 | CURATOR (SABLE, Opus) | prunes/merges the learning memory, promotes repeated lessons to `memory/DESK.md` |
+
+**Weekly limit hit = pause, not retry:** disarm StarNet's scheduler (`POST /api/cron/arm {"enabled":false}`),
+`systemctl --user stop rithmic-research-sync.timer`, write the reason to `~/.local/share/rithmic-desk/PAUSED`
+(the watchdog then stays quiet), and let a one-shot timer re-arm after the reset (`starnet-desk-resume.timer`
+did this for 2026-10-04 10:05). StarNet disables a job after 5 consecutive failures — re-enable the ones it
+switched off when you resume.
 
 **Run only on change:** every chained job starts with its own cheap skip check in the prompt (is my input — research data hash, the upstream desk file, the clone commit, the live fills — newer than my last output?); if not, it writes nothing and replies `no new input` (~2 calls instead of a full run). **Do NOT gate with StarNet `contextFrom` or a pre-run `script`:** both taint the run and StarNet withdraws the agent's terminal ("untrusted-content-lockout") — even a silent script, because the shell tool reports empty output as the text "(no output)" (found and reverted 2026-09-30). **Learning memory:** every agent reads `~/starnet-work/memory/DESK.md` (the shared playbook — only SABLE edits it) and its own `memory/<AGENT>.md` first, and appends 1-3 evidence-cited lessons (`- YYYY-MM-DD [worked|failed|rule] <lesson> (evidence: <file> <numbers>)`) at the end of every real run; the BRIEF only reads (it is the one holdout reader). SABLE's CURATOR job (Sundays 10:00) merges, retires contradicted/stale lessons and promotes repeated ones to DESK.md, logging `memory/CURATION-<stamp>.md`. **Holdout:** the loop (QUANT, PROPDESK, SKEPTIC, STEER, researchers) is told never to read `~/starnet-work/holdout/`; only the BRIEF judges desk variants out-of-sample. The fleet's own forward results on held-out dates are still visible to the loop, so the only fully clean test is future sessions. Night Shift is off (autonomy initiative `propose`). **Ops:** StarNet runs as the user unit `starnet` (`deploy/starnet.service`; log `~/starnet/logs/sidecar.log`); `scripts/starnet/desk_watch.sh check` (cron :20 hourly) alerts once via grid-notify/Telegram when StarNet, the adapter or the scheduler is down, the desk goes stale, a run is tainted, the subscription limit or pace cap is hit, Night Shift re-enables, or a stale StarNet tab overwrites the roster/goal; `desk_watch.sh cleanup` (03:40) keeps 14 days. Reload any open StarNet tab after a restart — a stale tab can push an old roster/goal over the station's.
 
 The desk works toward ONE StarNet goal (set 2026-09-30): find a strategy that passes the Tradeify evaluation on 1 NQ and prove it on paper (≥20 forward trades / 3+ sessions, SKEPTIC ROBUST, PROPDESK >50% to +$3,000 before breaching −$500 daily / $1,000 trailing / 30% consistency, ≤5 trades/day). Night Shift is steered to it. Going live stays the founder's decision: the desk only proposes. The `desk` label is research
 only (the live paper fleet is `tradeify`); `desk_replay.sh` deletes and re-writes rows of that label
 for the ids it replays and nothing else. Uncommitted work in this checkout is invisible to the crew.
-Jobs live in StarNet (`/api/cron`) and fire only while its scheduler is ARMED (`GET /api/cron` → `enabled: true`, `health.lastTickAt` recent; arm with `POST /api/cron/arm {"enabled":true}`). The adapter caps StarNet at 50 calls per rolling hour and 700/day, 4 in flight, and backs off 15 min
+Jobs live in StarNet (`/api/cron`) and fire only while its scheduler is ARMED (`GET /api/cron` → `enabled: true`, `health.lastTickAt` recent; arm with `POST /api/cron/arm {"enabled":true}`). The adapter caps StarNet at 40 calls per rolling hour and 250/day, 4 in flight, and backs off 15 min
 after a subscription-limit error. Findings are not auto-applied — triage them in a session here.
 
 ## Stack

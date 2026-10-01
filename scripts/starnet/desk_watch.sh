@@ -42,6 +42,15 @@ if [[ "$MODE" == cleanup ]]; then
   exit 0
 fi
 
+# a deliberate pause (e.g. waiting out the weekly Claude limit) silences the loop checks; it is cleared by
+# whatever resumes the desk. The file's content is the reason, shown once.
+PAUSE="$HOME/.local/share/rithmic-desk/PAUSED"
+if [[ -f "$PAUSE" ]]; then
+  flag paused 1 "desk paused on purpose: $(cat "$PAUSE")"
+  exit 0
+fi
+flag paused 0 "desk paused"
+
 # starnet + its per-launch token (injected into the served page)
 page=$(curl -s -m 10 "$STARNET/" || true)
 tok=$(grep -oE '__STARNET_API_TOKEN__="[0-9a-f]+' <<<"$page" | cut -d'"' -f2)

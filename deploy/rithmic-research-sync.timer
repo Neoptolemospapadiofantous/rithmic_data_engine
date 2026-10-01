@@ -1,12 +1,14 @@
-# rithmic-research-sync.timer — every 2 hours, around the clock (2026-09-30: an hourly loop spent the 5-hour Claude
-# session limit in ~90 min; paced to fit it). Fires at even hours :00 (replay last cycle's RESEARCHER proposals, sync, export); the
-# StarNet jobs follow at :02 FILLS, :05 QUANT, :15 PROPDESK, :27 SKEPTIC, :40 STEER, :48-:57 the four researchers, whose proposals
-# the NEXT :00 replays. Persistent: a missed cycle is harmless late.
+# rithmic-research-sync.timer — every 4 hours (00/04/08/12/16/20 Cyprus). History: hourly (30 Sep) spent the
+# 5-hour Claude session limit in ~90 min; every 2 h at 50 calls/h spent the WEEKLY limit in ~21 h. Since
+# 2026-10-01 (founder: mix models + slower): routine agents on Sonnet, judgment (SKEPTIC, STEER, BRIEF, HERMES,
+# CURATOR) on Opus, two researchers per cycle alternating. Fires at :00 (replay last cycle's RESEARCHER
+# proposals, sync, export); the StarNet jobs follow at :02 FILLS, :05 QUANT, :15 PROPDESK, :27 SKEPTIC,
+# :40 STEER, :48/:54 the cycle's two researchers. Persistent: a missed cycle is harmless late.
 [Unit]
-Description=Every-2h StarNet desk cycle (replay + sync + export)
+Description=Every-4h StarNet desk cycle (replay + sync + export)
 
 [Timer]
-OnCalendar=*-*-* 00/2:00:00 Asia/Nicosia
+OnCalendar=*-*-* 00/4:00:00 Asia/Nicosia
 Persistent=true
 
 [Install]
