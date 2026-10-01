@@ -150,6 +150,41 @@ TEST(strategy_stop_ratchet_never_loosens_short) {
     ASSERT_NEAR(b->stop_price(), 103.5, 1e-9);
 }
 
+TEST(inverted_long_bracket_is_rejected) {
+    // 2026-09-30 18:00 ET: a stale long signal whose stop sat ABOVE the fill — never a trade
+    FakeStore fs;
+    auto b = make_broker(fs);
+    b->on_signal(OrbSignal::BUY, 30865.25, "fvg_retest_long");
+    b->on_tick(tick(et_ts(10, 5), 30708.50), 30842.50, 30899.11, 3);
+    ASSERT(!b->in_position());
+    ASSERT_EQ(fs.trades.size(), 0u);
+    ASSERT_EQ(b->rejected_entries(), 1);
+    b->on_tick(tick(et_ts(10, 6), 30707.75), 30842.50, 30899.11, 3);   // no late fill either
+    ASSERT(!b->in_position());
+}
+
+TEST(inverted_short_bracket_is_rejected) {
+    FakeStore fs;
+    auto b = make_broker(fs);
+    b->on_signal(OrbSignal::SELL, 100.0, "x");
+    b->on_tick(tick(et_ts(10, 5), 100.0), 99.0, NaN_, 1);   // short with its stop BELOW the fill
+    ASSERT(!b->in_position());
+    ASSERT_EQ(fs.trades.size(), 0u);
+    ASSERT_EQ(b->rejected_entries(), 1);
+}
+
+TEST(valid_bracket_still_enters_after_a_rejection) {
+    FakeStore fs;
+    auto b = make_broker(fs);
+    b->on_signal(OrbSignal::BUY, 100.0, "stale");
+    b->on_tick(tick(et_ts(10, 5), 100.0), 101.0, NaN_, 1);  // rejected
+    b->on_signal(OrbSignal::BUY, 100.0, "fresh");
+    b->on_tick(tick(et_ts(10, 6), 100.0), 95.0, NaN_, 1);   // normal bracket
+    ASSERT(b->in_position());
+    ASSERT_NEAR(b->stop_price(), 95.0, 1e-9);
+    ASSERT_EQ(b->rejected_entries(), 1);
+}
+
 TEST(stop_gap_through_fills_at_the_print) {
     FakeStore fs;
     auto b = make_broker(fs);

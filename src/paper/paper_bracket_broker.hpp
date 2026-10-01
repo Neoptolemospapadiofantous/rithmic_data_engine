@@ -149,7 +149,22 @@ public:
                 const bool   use_book  = cfg_.fill_model == "bbo" && qs_.fresh(t.ts_micros);
                 entry_bbo_    = book_fill;
                 spread_entry_ = qs_.fresh(t.ts_micros) ? qs_.q.spread_ticks(tick_size_) : -1.0;
-                enter(dir, use_book ? book_fill : slip_fill, t.ts_micros, strat_qty, strat_stop, strat_tp);
+                const double fill = use_book ? book_fill : slip_fill;
+                // A strategy stop already AT or BEYOND the fill (a long with its stop above the entry,
+                // a short with it below) is not a bracket — it can only stop out on the next print.
+                // Seen 2026-09-30 18:00 ET: at the day rollover mtf_loose_v5 emitted a stale
+                // fvg_retest_long priced at the noon level (30865) while the market was at 30708;
+                // the broker filled it with stop 30842 > entry and booked an instant −0.75 pt "trade"
+                // outside the 09:00–12:00 window. Refuse the entry instead of trading it.
+                const bool inverted = !std::isnan(strat_stop) && strat_stop > 0.0 &&
+                                      (dir > 0 ? strat_stop >= fill : strat_stop <= fill);
+                if (inverted) {
+                    LOG("[PAPER %s] entry REJECTED: %s stop %.2f is on the wrong side of the fill %.2f (stale signal)",
+                        strategy_id_.c_str(), dir > 0 ? "LONG" : "SHORT", strat_stop, fill);
+                    ++rejected_entries_;
+                } else {
+                    enter(dir, fill, t.ts_micros, strat_qty, strat_stop, strat_tp);
+                }
             }
             pending_dir_ = 0;
         }
@@ -251,6 +266,7 @@ public:
 
     // ── State access ─────────────────────────────────────────────────────────
     bool   in_position()  const { return pos_dir_ != 0; }
+    int    rejected_entries() const { return rejected_entries_; }
     int    direction()    const { return pos_dir_; }
     int    qty()          const { return qty_; }
     double entry_price()  const { return entry_price_; }
@@ -402,6 +418,7 @@ private:
     double  mae_ = 0.0;             // max adverse excursion (pts, ≤ 0)
 
     int         pending_dir_ = 0; // entry waiting for next tick
+    int         rejected_entries_ = 0;   // entries refused for an inverted (stale) bracket
     bool        warmup_ = false;  // entries suppressed (host replaying history)
     int         warmup_dropped_ = 0;
     int         pending_flip_ = 0; // reversal: exit current leg, enter opposite
