@@ -1,0 +1,11 @@
+# tcf-eval.timer — weekdays 16:45 New York: after slot2-eval (16:20) and night-eval (16:30), before the
+# 18:00 Globex reopen. Persistent=true; the script refuses inside RTH and the Asia session and catches up.
+[Unit]
+Description=Weekdays 16:45 New York: trend_confirm grid replay + stats
+
+[Timer]
+OnCalendar=Mon..Fri 16:45 America/New_York
+Persistent=true
+
+[Install]
+WantedBy=timers.target

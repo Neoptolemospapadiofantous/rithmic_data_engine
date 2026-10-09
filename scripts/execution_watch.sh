@@ -8,6 +8,10 @@
 set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"; cd "$REPO"
 ACC="${1:-tradeify}"; U="nq-executor-local@$ACC"; L="data/logs/nq_executor_${ACC}.log"; CFG="config/${ACC}_config.json"
+# During a hand-off (scripts/strategy_handoff.sh) the account belongs to <acc>_handoff — watch that one.
+if [[ $(systemctl --user is-active "$U" 2>/dev/null) != active && $(systemctl --user is-active "nq-executor-local@${ACC}_handoff" 2>/dev/null) == active ]]; then
+  U="nq-executor-local@${ACC}_handoff"; L="data/logs/nq_executor_${ACC}_handoff.log"; CFG="config/${ACC}_handoff_config.json"
+fi
 STATE="data/.execution_watch_${ACC}.state"
 set -a; . ./.env 2>/dev/null; set +a; export PGPASSWORD="${PG_PASSWORD:-}"
 PSQL=(psql -X -Atq -h "${PG_HOST:-127.0.0.1}" -U "${PG_USER:-rithmic_user}" -d "${PG_DB:-rithmic}")

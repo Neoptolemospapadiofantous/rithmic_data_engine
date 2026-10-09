@@ -1,0 +1,17 @@
+# night-eval.service — overnight (Asia + London) combination grid (LOCAL box, systemd USER unit;
+# fired by night-eval.timer, weekdays 16:30 New York). Runs scripts/night_eval.sh: replays the
+# finished overnight session for the ~950 nt_* variants in config/night_fleet.json under paper
+# label night, then rewrites data/night/report.md (stats by window x family x liquidity gate).
+# Paper research only. Refuses during RTH and the Asia session (it reads the live tick table).
+# Install: cp deploy/night-eval.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now night-eval.timer
+[Unit]
+Description=Nightly overnight (Asia + London) grid replay + stats (night)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/night_eval.sh
+Nice=15
+StandardOutput=journal
+StandardError=journal

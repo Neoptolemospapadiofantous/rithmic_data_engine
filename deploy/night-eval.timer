@@ -1,0 +1,12 @@
+# night-eval.timer — weekdays 16:30 New York: after the close and slot2-eval (16:20), before
+# the 18:00 Globex reopen. Persistent=true; the script refuses inside RTH and the Asia session
+# and catches up every unreplayed session on its next run.
+[Unit]
+Description=Weekdays 16:30 New York: overnight grid replay + stats
+
+[Timer]
+OnCalendar=Mon..Fri 16:30 America/New_York
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -263,6 +263,24 @@ TEST(broker_trailing_drawdown_on_reported_balances) {
     ASSERT_NEAR(notif::broker_hwm(25410.50, 25000.0, 25100.0), 25410.50, 0.001); // persisted mark wins
 }
 
+// 2026-10-02 / 10-05: the sampled broker balance missed the intraday peak Tradeify trails on.
+// Flat 24,331.00, trade 2 long from 31156.50, best recorded print 31198.25 (mfe 41.75 pt), NQ $20.
+// Tradeify's floor that night: 24,189.86 (mark 25,189.86); ours from samples: 24,143.12 (looser).
+TEST(open_equity_peak_is_at_least_as_strict_as_the_broker) {
+    const double peak = notif::open_equity_peak(24331.00, 41.75, 2.0, 20.0, 1);
+    ASSERT_NEAR(peak, 25206.00, 0.001);
+    ASSERT(peak - 1000.0 >= 24189.86);                                   // our floor >= Tradeify's
+    ASSERT(std::isnan(notif::open_equity_peak(std::nan(""), 41.75, 2.0, 20.0, 1)));   // no flat balance yet
+    ASSERT(std::isnan(notif::open_equity_peak(24331.0, 0.0, 2.0, 20.0, 1)));          // nothing favourable
+    ASSERT(std::isnan(notif::open_equity_peak(24331.0, 5.0, 2.0, 20.0, 0)));          // no position
+    ASSERT_NEAR(notif::open_equity_peak(24331.0, 10.0, 0.0, 2.0, 3), 24391.0, 0.001); // MNQ x3, no margin
+    ASSERT_NEAR(notif::open_equity_peak(24331.0, 10.0, -5.0, 20.0, 1), 24531.0, 0.001); // negative margin = 0
+    // the mark only ever rises: a lower estimate never lowers broker_hwm
+    ASSERT_NEAR(notif::broker_hwm(25206.0, 25000.0, 25100.0), 25206.0, 0.001);
+    // today's room against Tradeify's real mark: $90.38 < one NQ stop ($301.82) → refused
+    ASSERT_NEAR(notif::broker_drawdown_room(24280.24, 25189.86, 1000.0), 90.38, 0.001);
+}
+
 // 5. A fill for ANOTHER account on the same session is still ignored, and a
 //    duplicate delivery (tid=351 then tid=352) is not unwound twice.
 TEST(other_account_ignored_and_duplicate_not_unwound_twice) {
@@ -337,6 +355,7 @@ int main() {
     RUN(replay_reconciler_closes_a_hidden_long_after_grace);
     RUN(broker_day_pnl_guard_on_reported_values);
     RUN(broker_trailing_drawdown_on_reported_balances);
+    RUN(open_equity_peak_is_at_least_as_strict_as_the_broker);
     RUN(other_account_ignored_and_duplicate_not_unwound_twice);
     RUN(unowned_fill_in_trade_halts_and_defers_to_reconciler);
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";

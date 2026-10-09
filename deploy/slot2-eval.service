@@ -1,0 +1,17 @@
+# slot2-eval.service — nightly paper test of a SECOND strategy for the 10:30-12:00 ET slot after
+# the ORB (LOCAL box, systemd USER unit; fired by slot2-eval.timer, weekdays 16:20 New York).
+# Runs scripts/slot2_eval.sh: replays each newly completed NQ session for the candidates in
+# config/slot2_fleet.json under paper label slot2, then rewrites data/slot2/report.md. Paper only;
+# never touches a live config. Refuses during regular hours (it reads the live tick table).
+# Install: cp deploy/slot2-eval.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now slot2-eval.timer
+[Unit]
+Description=Nightly 10:30-12:00 second-strategy paper test (slot2)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/slot2_eval.sh
+Nice=15
+StandardOutput=journal
+StandardError=journal

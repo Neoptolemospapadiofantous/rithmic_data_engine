@@ -41,6 +41,51 @@ static void feed_path(TrendStrategy& s, const std::vector<double>& px_per_min, i
     }
 }
 
+// one 1-minute bar o -> h -> l -> c, `vol` contracts split into 8 ticks, the first buy_share of them aggressor-buys
+static void az_bar(TrendStrategy& s, int h, int m, double o, double hi, double lo, double c, int vol, double buy_share) {
+    const double path[4] = {o, hi, lo, c};
+    const int n = 8, per = vol / n, buys = (int)(n * buy_share + 0.5);
+    for (int k = 0; k < n; ++k) s.on_tick(OrbTick{at(h, m, k * 7), path[std::min(3, k * 4 / n)], per, k < buys});
+}
+static TrendConfig az_balance_cfg() {
+    TrendConfig tc; tc.mode = "absorption_zone"; tc.tf_min = 1; tc.az_daytype = false; tc.az_setups = "balance";
+    tc.az_ema200_bias = false; tc.az_require_slope = false; tc.az_from = 930; tc.az_to = 1600;
+    tc.win_start = 930; tc.win_end = 1555; return tc;
+}
+// 40 quiet bars around 20000 (VWAP ~20000), then the absorption bar and the trigger bar
+static int az_feed_balance(TrendStrategy& s, double abs_lo, double abs_c, int abs_vol, double trig_c) {
+    int hh = 9, mm = 30; auto next = [&]() { if (++mm == 60) { mm = 0; ++hh; } };
+    for (int i = 0; i < 40; ++i) { az_bar(s, hh, mm, 20000, 20010, 19990, i % 2 ? 20002 : 19998, 100, 0.5); next(); }
+    az_bar(s, hh, mm, 19992, 19993, abs_lo, abs_c, abs_vol, 0.2); next();          // heavy volume, net selling, held
+    az_bar(s, hh, mm, abs_c, trig_c + 1, abs_c - 1, trig_c, 150, 0.8); next();     // close back above the zone, buyers
+    s.on_tick(OrbTick{at(hh, mm, 0), trig_c, 1, true});                             // first tick of the next minute closes it
+    return hh * 60 + mm;
+}
+static TrendConfig tcf_cfg() {
+    TrendConfig tc; tc.mode = "trend_confirm"; tc.tf_min = 1; tc.tcf_ema_fast = 3; tc.tcf_ema_mid = 5; tc.tcf_ema_slow = 8;
+    tc.tcf_er_bars = 10; tc.tcf_er_min = 0.3; tc.tcf_flow_bars = 3; tc.tcf_pb_bars = 3; tc.tcf_stop_atr = 3; tc.tcf_trail_atr = 1.0;
+    tc.tcf_exit_ema = false; tc.tcf_bo_bars = 10; tc.tcf_vol_mult = 1.2; tc.win_start = 930; tc.win_end = 1555; return tc;
+}
+// 30-bar climb (2 pts/bar, buy share bs), two pullback bars, a 130-lot trigger bar closing above the prior high;
+// sign -1 mirrors every price around 20000 and every buy share. Returns the next free minute (since midnight).
+static int tcf_feed(TrendStrategy& s, int sign, double bs, double pb_bs, bool chop) {
+    int t = 9 * 60 + 30; double px = 20000;
+    auto B = [&](double o, double h, double l, double c, int v, double share) {
+        if (sign < 0) az_bar(s, t / 60, t % 60, 40000 - o, 40000 - l, 40000 - h, 40000 - c, v, 1.0 - share);
+        else          az_bar(s, t / 60, t % 60, o, h, l, c, v, share);
+        ++t;
+    };
+    for (int i = 0; i < 30; ++i) {
+        if (chop) { const double o = 20000 + (i % 2 ? 4 : -4); B(o, o + 3, o - 3, o + (i % 2 ? -3 : 3), 100, 0.5); }
+        else { B(px, px + 3, px - 1, px + 2, 100, bs); px += 2; }
+    }
+    const double top = px;
+    B(top, top + 1, top - 4, top - 2, 100, chop ? 0.5 : pb_bs);
+    B(top - 2, top - 1, top - 6, top - 4, 100, chop ? 0.5 : pb_bs);
+    B(top - 4, top + 2, top - 4, top + 1.5, 130, 0.8);                        // trigger: close above the prior high, buyers
+    s.on_tick(OrbTick{at(t / 60, t % 60, 0), sign > 0 ? top + 1.5 : 40000 - (top + 1.5), 1, sign > 0});   // closes it
+    return t;
+}
 int main() {
     std::printf("test_trend_strategy\n");
 
@@ -727,6 +772,169 @@ int main() {
         feed_path(s2, std::vector<double>(120, 20004.0), 3, 0);         // quiet until 05:00
         feed_path(s2, {20004, 20030, 20030}, 5, 0);
         CHECK(n2 == 0, "range_break: no entry outside win_start..win_end");
+    }
+
+
+    // ── absorption_zone (2026-10-07, founder spec) ──
+    {   // balance fade at VWAP - 2 SD: absorption then trigger → LONG; VWAP target exits it
+        TrendStrategy s(az_balance_cfg(), risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        int t = az_feed_balance(s, 19986, 19987, 300, 19989.5);
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY && out[0].why == "az_balance_fade",
+              "absorption_zone: balance fade fires LONG after absorption + trigger");
+        az_bar(s, t / 60, t % 60, 19990, 20001, 19990, 20000, 100, 0.6);                // rallies through VWAP
+        CHECK(out.size() == 2 && out[1].sig == OrbSignal::FLATTEN_EOD && out[1].why == "az_target1",
+              "absorption_zone: exits at target 1 (VWAP)");
+    }
+    {   // near-miss on volume: 110 < 1.2 x average → no setup
+        TrendStrategy s(az_balance_cfg(), risk_cfg()); int n = 0;
+        s.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n; }); s.reset_session();
+        az_feed_balance(s, 19986, 19987, 110, 19989.5);
+        CHECK(n == 0, "absorption_zone: volume near-miss does not fire");
+    }
+    {   // the absorption bar closes BELOW the zone (selling won) → no setup
+        TrendStrategy s(az_balance_cfg(), risk_cfg()); int n = 0;
+        s.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n; }); s.reset_session();
+        az_feed_balance(s, 19974, 19974.5, 300, 19989.5);
+        CHECK(n == 0, "absorption_zone: a close below the zone is not absorption");
+    }
+    {   // stop: entry then a drop through absorption low - 2 ticks
+        TrendStrategy s(az_balance_cfg(), risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        int t = az_feed_balance(s, 19986, 19987, 300, 19989.5);
+        az_bar(s, t / 60, t % 60, 19989, 19989, 19984, 19985, 100, 0.3);
+        CHECK(out.size() == 2 && out[1].why == "az_stop", "absorption_zone: structural stop exits");
+    }
+    {   // t2 exit style: target 1 moves the stop to entry; a return to entry exits at break-even
+        TrendConfig tc = az_balance_cfg(); tc.az_exit = "t2";
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        int t = az_feed_balance(s, 19986, 19987, 300, 19989.5);
+        az_bar(s, t / 60, t % 60, 19990, 20001, 19990, 20000, 100, 0.6); ++t;         // t1 reached, no exit
+        CHECK(out.size() == 1, "absorption_zone: t2 style holds through target 1");
+        az_bar(s, t / 60, t % 60, 20000, 20000, 19988, 19988, 100, 0.3);
+        CHECK(out.size() == 2 && out[1].why == "az_breakeven", "absorption_zone: t2 style exits at break-even after t1");
+    }
+    {   // day type: a steady one-way climb after the opening range → TREND up at +30 min
+        TrendConfig tc; tc.mode = "absorption_zone"; tc.tf_min = 1; tc.az_or_bars = 3; tc.win_start = 930; tc.win_end = 1555;
+        TrendStrategy s(tc, risk_cfg()); s.set_signal_callback([](OrbSignal, double, const std::string&) {}); s.reset_session();
+        for (int i = 0; i < 3; ++i) az_bar(s, 9, 30 + i, 20000, 20005, 19995, 20000, 100, 0.5);
+        for (int i = 0; i < 27; ++i) { const double o = 20006 + 3.0 * i; az_bar(s, 9, 33 + i, o, o + 4, o - 1, o + 3, 100, 0.75); }
+        s.on_tick(OrbTick{at(10, 0, 0), 20090, 1, true});                               // closes the bar ending at +30 min
+        CHECK(s.az_daytype() == 1 && s.az_daytype_dir() == 1, "absorption_zone: one-way climb classifies TREND up");
+    }
+    {   // day type: chop across the opening range and VWAP → BALANCE
+        TrendConfig tc; tc.mode = "absorption_zone"; tc.tf_min = 1; tc.az_or_bars = 3; tc.win_start = 930; tc.win_end = 1555;
+        TrendStrategy s(tc, risk_cfg()); s.set_signal_callback([](OrbSignal, double, const std::string&) {}); s.reset_session();
+        for (int i = 0; i < 3; ++i) az_bar(s, 9, 30 + i, 20000, 20005, 19995, 20000, 100, 0.5);
+        for (int i = 0; i < 27; ++i) {
+            const bool up = (i / 2) % 2 == 0;
+            az_bar(s, 9, 33 + i, 20000, up ? 20008 : 20002, up ? 19998 : 19992, up ? 20003 : 19997, 100, up ? 0.8 : 0.2);
+        }
+        s.on_tick(OrbTick{at(10, 0, 0), 20000, 1, true});                               // closes the bar ending at +30 min
+        CHECK(s.az_daytype() == 2, "absorption_zone: two-sided chop classifies BALANCE");
+    }
+
+
+    // ── trend_confirm (2026-10-07): trend/momentum entries only when every confirmation agrees ──
+    {   // clean uptrend + pullback to ema_fast + trigger → LONG at the trigger close
+        TrendStrategy s(tcf_cfg(), risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); tcf_feed(s, 1, 0.7, 0.55, false);
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY && out[0].why == "tcf_pullback_long" && std::fabs(out[0].px - 20061.5) < 1e-9,
+              "trend_confirm: uptrend pullback + trigger → LONG at the trigger close");
+        // the signal row must record what the DECISION saw (2026-10-08: the fill-time read of a fresh,
+        // empty forming bar reported vol_ok=false / vol_ratio 0 for an entry that passed at 1.44x)
+        const TrendStrategy::TcfStatus* snap = s.tcf_entry_snapshot();
+        CHECK(snap && snap->vol_ok && snap->vol_ratio > 0 && snap->er_ok && snap->flow_ok && snap->stage == "signal" && snap->bias == 1,
+              "trend_confirm: entry snapshot keeps the trigger bar's confirmations");
+    }
+    {   // flat chop: no EMA stack, low efficiency → nothing
+        TrendStrategy s(tcf_cfg(), risk_cfg()); int n = 0;
+        s.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n; }); s.reset_session();
+        tcf_feed(s, 1, 0.7, 0.55, true);
+        CHECK(n == 0, "trend_confirm: chop does not enter");
+    }
+    {   // uptrend in price but the aggressors are selling (buy share 0.3) → no long
+        TrendStrategy s(tcf_cfg(), risk_cfg()); int n = 0;
+        s.set_signal_callback([&](OrbSignal g, double, const std::string&) { if (g == OrbSignal::BUY) ++n; }); s.reset_session();
+        tcf_feed(s, 1, 0.3, 0.3, false);
+        CHECK(n == 0, "trend_confirm: selling flow blocks the long");
+    }
+    {   // breakout entry: a new 10-bar high with volume inside a confirmed uptrend
+        TrendConfig tc = tcf_cfg(); tc.tcf_entry = "breakout"; tc.tcf_vol_mult = 0.0;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); tcf_feed(s, 1, 0.7, 0.55, false);
+        CHECK(!out.empty() && out[0].sig == OrbSignal::BUY && out[0].why == "tcf_breakout_long", "trend_confirm: breakout entry fires LONG");
+    }
+    {   // structural stop: entry at 20061.50, then a drop through the pullback low - 0.25 ATR
+        TrendStrategy s(tcf_cfg(), risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); int t = tcf_feed(s, 1, 0.7, 0.55, false);
+        az_bar(s, t / 60, t % 60, 20061, 20061, 20040, 20041, 100, 0.2);
+        CHECK(out.size() == 2 && out[1].why == "tcf_stop", "trend_confirm: structural stop exits");
+    }
+    {   // trail: +1R and more, then a pullback of one ATR from the best price
+        TrendStrategy s(tcf_cfg(), risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); int t = tcf_feed(s, 1, 0.7, 0.55, false);
+        az_bar(s, t / 60, t % 60, 20062, 20085, 20062, 20084, 100, 0.8); ++t;         // +23 pts (> 1R)
+        az_bar(s, t / 60, t % 60, 20084, 20084, 20060, 20062, 100, 0.2);               // gives it back
+        CHECK(out.size() == 2 && out[1].why == "tcf_trail", "trend_confirm: trail exits after +1R");
+    }
+    {   // volatility confirmation: tf ATR in points must sit inside [tcf_min_atr, tcf_max_atr]
+        TrendConfig lo = tcf_cfg(); lo.tcf_min_atr = 50.0;                              // fixture ATR is ~4-5 pts
+        TrendStrategy s1(lo, risk_cfg()); int n1 = 0;
+        s1.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n1; }); s1.reset_session();
+        tcf_feed(s1, 1, 0.7, 0.55, false);
+        TrendConfig hi = tcf_cfg(); hi.tcf_max_atr = 1.0;
+        TrendStrategy s2(hi, risk_cfg()); int n2 = 0;
+        s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n2; }); s2.reset_session();
+        tcf_feed(s2, 1, 0.7, 0.55, false);
+        CHECK(n1 == 0 && n2 == 0, "trend_confirm: ATR below tcf_min_atr / above tcf_max_atr blocks the entry");
+    }
+    {   // mirror: downtrend + pullback up to ema_fast + trigger → SHORT
+        TrendStrategy s(tcf_cfg(), risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); tcf_feed(s, -1, 0.7, 0.55, false);
+        CHECK(out.size() == 1 && out[0].sig == OrbSignal::SELL && out[0].why == "tcf_pullback_short", "trend_confirm: downtrend fires SHORT");
+    }
+
+    // ── trend_confirm live status (manual-signal dashboard, 2026-10-07): stage progression ──
+    {
+        TrendConfig tc = tcf_cfg(); tc.tcf_ema_fast = 2; tc.tcf_pb_tol_atr = 0.0; tc.tcf_vol_mult = 0.0;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        int t = 9 * 60 + 30; double px = 20000;
+        auto B = [&](double o, double h, double l, double c, double share) { az_bar(s, t / 60, t % 60, o, h, l, c, 100, share); ++t; };
+        auto close_now = [&](double p) { s.on_tick(OrbTick{at(t / 60, t % 60, 0), p, 1, true}); };
+        for (int i = 0; i < 3; ++i) { B(px, px + 1, px, px + 1, 0.8); px += 6; }
+        close_now(px);
+        CHECK(s.tcf_status(at(t / 60, t % 60, 1)).stage == "no_trend", "tcf_status: too few bars → no_trend");
+        // narrow gap-up bars: price stays ABOVE EMA-fast (no touch) → trend
+        for (int i = 0; i < 22; ++i) { B(px, px + 1, px, px + 1, 0.8); px += 6; }
+        close_now(px);
+        auto st = s.tcf_status(at(t / 60, t % 60, 1));
+        CHECK(st.stage == "trend" && st.bias == 1 && st.ema_stack && st.er_ok && !st.touched, "tcf_status: clean climb, no touch → trend");
+        // pullback into EMA-fast on SELLING flow → pullback (waiting: flow not back yet)
+        const double top = px - 5;
+        B(top, top, top - 4, top - 3, 0.1);                                 // shallow dip into EMA-fast
+        B(top - 3, top - 2, top - 4, top - 3, 0.1);
+        close_now(top - 3);
+        st = s.tcf_status(at(t / 60, t % 60, 1));
+        CHECK(st.stage == "pullback" && st.touched && !st.flow_ok, "tcf_status: EMA touch with sellers → pullback");
+        // buyers return but no close above the prior high yet → trigger_ready (only the trigger close missing)
+        B(top - 3, top - 2.5, top - 3.5, top - 2.75, 0.95);
+        B(top - 2.75, top - 2.5, top - 3.25, top - 3, 0.95);                 // closes below the prior high: no trigger
+        close_now(top - 3);
+        st = s.tcf_status(at(t / 60, t % 60, 1));
+        CHECK(st.stage == "trigger_ready" && st.flow_ok && st.trigger_dist > 0, "tcf_status: flow back, trigger pending → trigger_ready");
+        CHECK(out.empty(), "tcf_status: no signal while a stage is incomplete");
     }
 
     std::printf(g_fail ? "FAILED (%d)\n" : "ALL PASSED\n", g_fail);

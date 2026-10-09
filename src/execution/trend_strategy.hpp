@@ -196,6 +196,60 @@ struct TrendConfig {
     // session start). Once the window has closed, a tf close beyond high/low ± rb_buffer_atr×ATR inside
     // win_start..win_end enters; one per side per day.
     int rb_from = 2000, rb_to = 200; double rb_buffer_atr = 0.0;
+    // absorption_zone (2026-10-07, founder spec "Absorption Strategy Spec for Claude Code"): on 5m bars,
+    // classify the day at +30 / +60 min after the RTH open (5 votes: open vs prior value, opening range,
+    // VWAP slope, cumulative delta, pullbacks) into Trend / Balance / Neutral. Trend: pullback into the
+    // VWAP/EMA-20 zone (exists when |vwap-ema20| <= az_zone_width x ATR) in the opening-range-break
+    // direction; Balance: fade at VWAP +/-2 SD toward VWAP; Neutral: no trades. Signal = a bar touching
+    // the zone with volume >= az_vol_mult x avg and net aggressor flow AGAINST the trade
+    // (delta <= -az_delta_thresh x volume, i.e. absorbed) that still closes in/above the zone, then within
+    // az_trigger_window bars a close beyond the zone with delta in the trade's favour. Stop = extreme of
+    // the absorption bars -/+ az_stop_ticks; targets from the spec (trend: VWAP+1SD / session high;
+    // balance: VWAP / opposite 1SD). 1 contract cannot scale out, so az_exit chooses: "t1" all out at
+    // target 1, "t2" stop to entry at t1 then out at t2, "trail" stop to entry at t1 then out on a 5m close
+    // through EMA 20 (balance trades treat trail as t2). Stops / targets are checked on every tick; the
+    // broker's own sl_points is only a catastrophe stop.
+    std::string az_setups = "both";          // trend | balance | both
+    bool   az_daytype = true;                // false: no classifier — trend setup by EMA bias, balance fade any day
+    int    az_or_bars = 3;
+    double az_zone_width = 0.5, az_tol = 0.25;          // x ATR
+    int    az_absorb_bars = 2;
+    double az_vol_mult = 1.2, az_delta_thresh = 0.15;
+    bool   az_require_div = false; int az_div_ticks = 4, az_swing_bars = 12;
+    int    az_trigger_window = 3, az_stop_ticks = 2;
+    double az_min_rr = 1.0;
+    std::string az_exit = "t1";              // t1 | t2 | trail
+    int    az_from = 945, az_to = 1100;      // ENTRY window (ET HHMM); win_start..win_end is the holding window
+    bool   az_ema200_bias = true; int az_ema_slow = 200;
+    bool   az_require_slope = true; double az_slope_trend = 0.3, az_slope_balance = 0.15;
+    bool   az_allow_reentry = true; double az_max_loss_R = -3.0;
+    int    az_min_levels = 0;                // static levels stacked within tol of the zone (0 = not required)
+    double az_surge_mult = 3.0;              // 60-min reclass: |cum delta| >= x x avg bar volume = "surging"
+    // trend_confirm (2026-10-07, founder: "a dedicated uptrend/downtrend trend/momentum strategy with
+    // confirmations of the regime, bid/ask line up, enough liquidity/volume, and it's trending").
+    // Enters only when EVERY confirmation agrees: EMA stack fast>mid>slow with mid rising (mirror down),
+    // Kaufman efficiency ratio >= tcf_er_min over tcf_er_bars, session-VWAP slope >= tcf_slope_min (x ATR
+    // over 6 bars) and close on the trend side of VWAP, rolling aggressor buy share >= tcf_flow_min over
+    // tcf_flow_bars (trigger bar delta with the trade), trigger volume >= tcf_vol_mult x avg, tf ATR in
+    // points within [tcf_min_atr, tcf_max_atr] (0 = off). Any session: the VWAP anchor follows `session`
+    // (rth / globex / window) and entries follow win_start..win_end, so London / Asia work as NY does. Entry:
+    // "pullback" = a recent bar touched ema_fast while the trend held, then a close beyond the prior bar's
+    // extreme; "breakout" = a close beyond the prior tcf_bo_bars extreme. Stop = pullback structure
+    // -/+ 0.25 ATR capped at tcf_stop_atr x ATR; after +1R trail best -/+ tcf_trail_atr x ATR; optional
+    // exit on a close through ema_mid and a fixed tcf_target_r target. Stops/targets are checked every
+    // tick by the strategy; the broker's sl_points is a catastrophe stop only. Book alignment and
+    // liquidity are NOT duplicated here: variants combine this mode with the existing host gates
+    // (imbalance_min, liq_vol_min / liq_impact_max, regime_min_eff, regime_with_move, rvol_min).
+    std::string tcf_entry = "pullback";      // pullback | breakout
+    int    tcf_ema_fast = 9, tcf_ema_mid = 21, tcf_ema_slow = 50;
+    int    tcf_er_bars = 10; double tcf_er_min = 0.35;
+    double tcf_slope_min = 0.2; bool tcf_vwap_side = true;
+    int    tcf_flow_bars = 5; double tcf_flow_min = 0.52;
+    double tcf_vol_mult = 1.0;
+    int    tcf_pb_bars = 5; double tcf_pb_tol_atr = 0.25;
+    int    tcf_bo_bars = 20;
+    double tcf_stop_atr = 1.5, tcf_trail_atr = 2.5; bool tcf_exit_ema = true; double tcf_target_r = 0.0;
+    double tcf_min_atr = 0.0, tcf_max_atr = 0.0;   // volatility confirmation: tf ATR in POINTS within [min, max] (0 = off)
     // generic gates / exits usable by ANY mode
     int htf_tf_min = 0; int htf_ema = 21;        // >0: longs only when the htf close is above its EMA (mirror for shorts)
     double chandelier_mult = 0.0;                // >0: flatten when close falls chandelier_mult×ATR from the best price since entry
@@ -264,6 +318,33 @@ struct TrendConfig {
         c.lf_max_poke_atr = jdbl(t, "lf_max_poke_atr", c.lf_max_poke_atr);
         c.vr_min_bars = jint(t, "vr_min_bars", c.vr_min_bars);
         c.rb_from = jint(t, "rb_from", c.rb_from); c.rb_to = jint(t, "rb_to", c.rb_to); c.rb_buffer_atr = jdbl(t, "rb_buffer_atr", c.rb_buffer_atr);
+        c.az_setups = jstr(t, "az_setups", c.az_setups); c.az_daytype = jbool(t, "az_daytype", c.az_daytype);
+        c.az_or_bars = jint(t, "az_or_bars", c.az_or_bars);
+        c.az_zone_width = jdbl(t, "az_zone_width", c.az_zone_width); c.az_tol = jdbl(t, "az_tol", c.az_tol);
+        c.az_absorb_bars = jint(t, "az_absorb_bars", c.az_absorb_bars);
+        c.az_vol_mult = jdbl(t, "az_vol_mult", c.az_vol_mult); c.az_delta_thresh = jdbl(t, "az_delta_thresh", c.az_delta_thresh);
+        c.az_require_div = jbool(t, "az_require_div", c.az_require_div);
+        c.az_div_ticks = jint(t, "az_div_ticks", c.az_div_ticks); c.az_swing_bars = jint(t, "az_swing_bars", c.az_swing_bars);
+        c.az_trigger_window = jint(t, "az_trigger_window", c.az_trigger_window); c.az_stop_ticks = jint(t, "az_stop_ticks", c.az_stop_ticks);
+        c.az_min_rr = jdbl(t, "az_min_rr", c.az_min_rr); c.az_exit = jstr(t, "az_exit", c.az_exit);
+        c.az_from = jint(t, "az_from", c.az_from); c.az_to = jint(t, "az_to", c.az_to);
+        c.az_ema200_bias = jbool(t, "az_ema200_bias", c.az_ema200_bias); c.az_ema_slow = jint(t, "az_ema_slow", c.az_ema_slow);
+        c.az_require_slope = jbool(t, "az_require_slope", c.az_require_slope);
+        c.az_slope_trend = jdbl(t, "az_slope_trend", c.az_slope_trend); c.az_slope_balance = jdbl(t, "az_slope_balance", c.az_slope_balance);
+        c.az_allow_reentry = jbool(t, "az_allow_reentry", c.az_allow_reentry); c.az_max_loss_R = jdbl(t, "az_max_loss_R", c.az_max_loss_R);
+        c.az_min_levels = jint(t, "az_min_levels", c.az_min_levels); c.az_surge_mult = jdbl(t, "az_surge_mult", c.az_surge_mult);
+        c.tcf_entry = jstr(t, "tcf_entry", c.tcf_entry);
+        c.tcf_ema_fast = jint(t, "tcf_ema_fast", c.tcf_ema_fast); c.tcf_ema_mid = jint(t, "tcf_ema_mid", c.tcf_ema_mid);
+        c.tcf_ema_slow = jint(t, "tcf_ema_slow", c.tcf_ema_slow);
+        c.tcf_er_bars = jint(t, "tcf_er_bars", c.tcf_er_bars); c.tcf_er_min = jdbl(t, "tcf_er_min", c.tcf_er_min);
+        c.tcf_slope_min = jdbl(t, "tcf_slope_min", c.tcf_slope_min); c.tcf_vwap_side = jbool(t, "tcf_vwap_side", c.tcf_vwap_side);
+        c.tcf_flow_bars = jint(t, "tcf_flow_bars", c.tcf_flow_bars); c.tcf_flow_min = jdbl(t, "tcf_flow_min", c.tcf_flow_min);
+        c.tcf_vol_mult = jdbl(t, "tcf_vol_mult", c.tcf_vol_mult);
+        c.tcf_pb_bars = jint(t, "tcf_pb_bars", c.tcf_pb_bars); c.tcf_pb_tol_atr = jdbl(t, "tcf_pb_tol_atr", c.tcf_pb_tol_atr);
+        c.tcf_bo_bars = jint(t, "tcf_bo_bars", c.tcf_bo_bars);
+        c.tcf_stop_atr = jdbl(t, "tcf_stop_atr", c.tcf_stop_atr); c.tcf_trail_atr = jdbl(t, "tcf_trail_atr", c.tcf_trail_atr);
+        c.tcf_exit_ema = jbool(t, "tcf_exit_ema", c.tcf_exit_ema); c.tcf_target_r = jdbl(t, "tcf_target_r", c.tcf_target_r);
+        c.tcf_min_atr = jdbl(t, "tcf_min_atr", c.tcf_min_atr); c.tcf_max_atr = jdbl(t, "tcf_max_atr", c.tcf_max_atr);
         return c;
     }
 
@@ -323,7 +404,7 @@ public:
         if (rth_seen_) { prev_hi_ = day_hi_; prev_lo_ = day_lo_; prev_close_ = rth_close_; have_prev_ = true; }
         day_hi_ = std::numeric_limits<double>::lowest(); day_lo_ = std::numeric_limits<double>::max();
         on_hi_ = std::numeric_limits<double>::lowest(); on_lo_ = std::numeric_limits<double>::max();
-        rth_seen_ = false; in_rth_ = false; vwap_pv_ = vwap_v_ = 0.0; vwap_hist_.clear();
+        rth_seen_ = false; in_rth_ = false; vwap_pv_ = vwap_v_ = vwap_pv2_ = 0.0; vwap_hist_.clear();
         drive_dir_ = 0; drive_done_ = false; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
         td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
@@ -346,10 +427,93 @@ public:
         sess_.in_position = true; pos_dir_ = (dir == OrbSignal::BUY) ? 1 : -1; entry_ts_ = entry_ts_us;
     }
     void notify_trade_filled(OrbSignal, const std::string& reason = "") {
+        if (tc_.mode == "absorption_zone") az_on_closed(reason);
+        if (tc_.mode == "trend_confirm") { tcf_dir_ = 0; tcf_exit_sent_ = false; tcf_trail_on_ = false; }
         sess_.in_position = false; pos_dir_ = 0; entry_ts_ = 0;
         LOG("[TREND %s] trade closed (%s) trades_today=%d", tc_.mode.c_str(), reason.c_str(), sess_.trades_today);
     }
     const TrendSession& session() const { return sess_; }
+    // trend_confirm live status for the manual-signal dashboard (src/paper/signal_publish.hpp).
+    // Strategy-side only: book imbalance, liquidity and the broker position are added by the host.
+    // stage: outside_window | no_trend | trend | pullback | trigger_ready | in_trade.
+    struct TcfStatus {
+        bool   ready = false;                 // enough bars for the EMA stack
+        std::string stage_flat = "no_trend";  // the stage ignoring the strategy's own position flag (host decides in_trade)
+        bool   breakout = false;              // tcf_entry == "breakout"
+        int    tf_min = 0; int win_start = 0, win_end = 0; std::string session;
+        bool   in_window = false; double price = 0; int bias = 0; std::string stage = "no_trend";
+        bool   ema_stack = false, ema_mid_rising = false;
+        double er = 0, er_min = 0; bool er_ok = false;
+        double slope = 0, slope_min = 0; bool slope_ok = false, vwap_side_ok = false;
+        double flow = 0.5, flow_min = 0; bool flow_ok = false;
+        double vol_ratio = 0, vol_mult = 0; bool vol_ok = false;   // the FORMING bar (the would-be trigger)
+        double delta = 0;                                            // forming bar delta
+        double atr = 0, atr_min = 0, atr_max = 0; bool atr_ok = false;
+        bool   touched = false; int bars_since_touch = -1, pb_bars = 0; double touch_px = 0;
+        double trigger_level = 0, trigger_dist = 0;                  // close beyond this on the next bar close
+        double ema_fast = 0, ema_mid = 0, ema_slow = 0, vwap = 0;
+        bool   in_position = false; int pos_dir = 0; double entry = 0, stop = 0, best = 0, risk = 0;
+        int64_t bars = 0;                                            // tf closes seen (changes on every close)
+    };
+    // The confirmations exactly as the ENTRY decision saw them (the trigger bar), saved at the signal.
+    // The publisher records these for the signal row; tcf_status() after the fill reads a NEW forming
+    // bar (volume 0 on the first tick) and misreported vol_ok=false (tcf5_asia, 2026-10-08).
+    const TcfStatus* tcf_entry_snapshot() const { return tcf_snap_ok_ ? &tcf_snap_ : nullptr; }
+    TcfStatus tcf_status(int64_t now_us) const {
+        TcfStatus st;
+        st.tf_min = tc_.tf_min; st.win_start = tc_.win_start; st.win_end = tc_.win_end; st.session = tc_.session;
+        st.price = last_px_; st.bars = tcf_n_; st.breakout = tc_.tcf_entry == "breakout";
+        st.er_min = tc_.tcf_er_min; st.slope_min = tc_.tcf_slope_min; st.flow_min = tc_.tcf_flow_min;
+        st.vol_mult = tc_.tcf_vol_mult; st.atr_min = tc_.tcf_min_atr; st.atr_max = tc_.tcf_max_atr; st.pb_bars = tc_.tcf_pb_bars;
+        st.ema_fast = tcf_ef_; st.ema_mid = tcf_em_; st.ema_slow = tcf_es_; st.vwap = in_rth_ ? vwap() : 0.0; st.atr = atr_;
+        { int h, m; to_et(now_us > 0 ? now_us : last_ts_, h, m); st.in_window = in_window(h * 100 + m); }
+        st.in_position = sess_.in_position && tcf_dir_ != 0;
+        if (st.in_position) { st.pos_dir = tcf_dir_; st.entry = tcf_entry_; st.stop = tcf_stop_; st.best = tcf_best_; st.risk = tcf_risk_; }
+        st.ready = tcf_n_ >= tc_.tcf_ema_mid + 3 && tcf_em_hist_.size() >= 4 && !tf_.empty() && !tcf_bars_.empty();
+        if (!st.ready) { st.stage_flat = st.in_window ? "no_trend" : "outside_window"; st.stage = st.in_position ? "in_trade" : st.stage_flat; return st; }
+        const double em3 = tcf_em_hist_.front();
+        const int stack = (tcf_ef_ > tcf_em_ && tcf_em_ > tcf_es_) ? 1 : (tcf_ef_ < tcf_em_ && tcf_em_ < tcf_es_) ? -1 : 0;
+        st.bias = stack != 0 ? stack : (tcf_em_ > em3 ? 1 : tcf_em_ < em3 ? -1 : 0);
+        st.ema_stack = stack != 0;
+        st.ema_mid_rising = st.bias > 0 ? tcf_em_ > em3 : st.bias < 0 ? tcf_em_ < em3 : false;
+        const int dir = st.bias != 0 ? st.bias : 1;
+        const Bar& last = tf_.back();
+        const TcfConf c = tcf_confirm(last, dir, st.vwap);
+        st.er = c.er; st.er_ok = c.er_ok; st.slope = c.slope; st.slope_ok = c.slope_ok; st.vwap_side_ok = c.vwap_side_ok;
+        st.flow = c.flow; st.flow_ok = c.flow_ok; st.atr_ok = c.atr_ok;
+        if (tf_cur_.mod >= 0) {                       // the forming bar = the would-be trigger bar
+            const double avg = avg_vol_prior(20);
+            st.vol_ratio = avg > 0 ? tf_cur_.v / avg : 0.0;
+            st.vol_ok = !(tc_.tcf_vol_mult > 0 && (avg <= 0 || st.vol_ratio < tc_.tcf_vol_mult));
+            st.delta = 2.0 * tf_cur_.bv - tf_cur_.v;
+        }
+        // pullback: a bar in the last pb_bars (incl. the last closed one) touched EMA-fast while trending
+        const size_t m = tcf_bars_.size(); const int P = std::max(1, tc_.tcf_pb_bars);
+        for (int k = 0; k < P && (size_t)k < m && (size_t)k < tf_.size(); ++k) {
+            const TcfBar& r = tcf_bars_[m - 1 - k];
+            if (r.dir == dir && (dir > 0 ? r.touch_long : r.touch_short)) {
+                st.touched = true; st.bars_since_touch = k; st.touch_px = dir > 0 ? tf_[tf_.size() - 1 - k].l : tf_[tf_.size() - 1 - k].h; break;
+            }
+        }
+        if (tc_.tcf_entry == "breakout") {
+            const int B = tc_.tcf_bo_bars; const size_t n = tf_.size();
+            double ext = dir > 0 ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::max();
+            for (size_t k = (n > (size_t)B ? n - B : 0); k < n; ++k) ext = dir > 0 ? std::max(ext, tf_[k].h) : std::min(ext, tf_[k].l);
+            st.trigger_level = ext;
+        } else st.trigger_level = dir > 0 ? last.h : last.l;
+        st.trigger_dist = (st.trigger_level - st.price) * dir;
+        const bool trend_ok = tcf_bars_.back().dir == dir && st.ema_stack && st.ema_mid_rising && st.er_ok && st.slope_ok && st.vwap_side_ok;
+        if (!st.in_window) st.stage_flat = "outside_window";
+        else if (!trend_ok) st.stage_flat = "no_trend";
+        else if (tc_.tcf_entry == "breakout") st.stage_flat = (st.flow_ok && st.atr_ok) ? "trigger_ready" : "trend";
+        else if (!st.touched) st.stage_flat = "trend";
+        else st.stage_flat = (st.flow_ok && st.atr_ok) ? "trigger_ready" : "pullback";
+        st.stage = st.in_position ? "in_trade" : st.stage_flat;
+        return st;
+    }
+    // absorption_zone day type: 0 unclassified, 1 Trend, 2 Balance, 3 Neutral; dir = Trend bias (+1/-1)
+    int az_daytype() const { return az_daytype_; }
+    int az_daytype_dir() const { return az_daytype_dir_; }
     double last_price() const { return last_px_; }
     double orb_high() const { return 0.0; }
     double orb_low()  const { return 0.0; }
@@ -406,16 +570,19 @@ public:
         const bool rth = in_session(mod);
         if (rth && !in_rth_) {            // session start: VWAP + day range + drive/gap state
             in_rth_ = true; rth_seen_ = true; cum_delta_ = 0.0; delta_hist_.clear(); td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0;
-            vwap_pv_ = vwap_v_ = 0.0; vwap_hist_.clear();
+            vwap_pv_ = vwap_v_ = vwap_pv2_ = 0.0; vwap_hist_.clear();
             day_hi_ = std::numeric_limits<double>::lowest(); day_lo_ = std::numeric_limits<double>::max();
             rth_open_ = t.price; rth_open_mod_ = mod;
             gap_ = have_prev_ ? (t.price - prev_close_) : 0.0;
             reset_2809_modes();
+            if (tc_.mode == "absorption_zone") az_reset_day();
+            if (tc_.mode == "trend_confirm") tcf_vw_hist_.clear();
         }
         if (!rth && in_rth_) { in_rth_ = false; finalize_profile(); }
         if (in_window((mod / 60) * 100 + mod % 60) != was_in_window_) { was_in_window_ = !was_in_window_; if (was_in_window_) eod_emitted_ = false; }
         if (rth) {
             vwap_pv_ += t.price * (double)t.size; vwap_v_ += (double)t.size; rth_close_ = t.price;
+            vwap_pv2_ += t.price * t.price * (double)t.size;
             day_hi_ = std::max(day_hi_, t.price); day_lo_ = std::min(day_lo_, t.price);
         } else if (mod >= 18 * 60 || mod < 9 * 60 + 30) {
             on_hi_ = std::max(on_hi_, t.price); on_lo_ = std::min(on_lo_, t.price);
@@ -429,6 +596,11 @@ public:
             if (t.is_buy) m1_.bv += (double)t.size;
         }
         if (rth) { cum_delta_ += t.is_buy ? (double)t.size : -(double)t.size; }
+        if (tc_.mode == "absorption_zone") {
+            az_anchor_tick(t, rth);
+            if (sess_.in_position && az_pos_dir_ != 0 && !az_exit_sent_) az_check_exit(t.price);
+        }
+        if (tc_.mode == "trend_confirm" && sess_.in_position && tcf_dir_ != 0 && !tcf_exit_sent_) tcf_check_exit(t.price);
     }
 
 private:
@@ -543,6 +715,7 @@ private:
         ema_rs_ = ema_rs_ <= 0 ? b.c : ema_rs_ + (2.0 / (tc_.ribbon_slow + 1)) * (b.c - ema_rs_);
         vol_hist_.push_back(b.v); if (vol_hist_.size() > 200) vol_hist_.pop_front();
         bar_delta_hist_.push_back(2.0 * b.bv - b.v); if (bar_delta_hist_.size() > 400) bar_delta_hist_.pop_front();
+        if (tc_.mode == "absorption_zone") { ++az_bar_idx_; az_cd_tf_.push_back(cum_delta_); while (az_cd_tf_.size() > tf_.size()) az_cd_tf_.pop_front(); }
         if (atr_ <= 0) return;
         // generic chandelier exit (any mode): best price since entry minus k×ATR
         if (sess_.in_position && tc_.chandelier_mult > 0) {
@@ -583,6 +756,8 @@ private:
         else if (tc_.mode == "level_fade")          mode_level_fade(b, hhmm);
         else if (tc_.mode == "vwap_reclaim")        mode_vwap_reclaim(b, hhmm);
         else if (tc_.mode == "range_break")         mode_range_break(b, hhmm);
+        else if (tc_.mode == "absorption_zone")     mode_az(b, hhmm);
+        else if (tc_.mode == "trend_confirm")       mode_tcf(b, hhmm);
     }
 
     // ── modes ────────────────────────────────────────────────────────────────
@@ -1195,6 +1370,429 @@ private:
             emit(OrbSignal::SELL, b.c, "volume_burst_short");
     }
 
+
+    // ══ absorption_zone (2026-10-07) ═════════════════════════════════════════════════════════════
+    static constexpr double kAzTick = 0.25;
+    struct AzArm { int idx = -1; int type = 0; double zl = 0, zh = 0, ext = 0, vol = 0; bool div = false; };
+    struct AzZone { int dir = 0; double zl = 0, zh = 0; int stops = 0; double vol = 0; };
+    // a level vote: +1 Trend, -1 Balance, 0 none
+    struct AzVotes { int v[5] = {0, 0, 0, 0, 0}; int trend() const { int n = 0; for (int x : v) n += x > 0; return n; }
+                     int balance() const { int n = 0; for (int x : v) n += x < 0; return n; } };
+    void az_reset_day() {
+        az_or_hi_ = std::numeric_limits<double>::lowest(); az_or_lo_ = std::numeric_limits<double>::max();
+        az_or_done_ = false; az_or_break_dir_ = 0; az_touch_vwap_since_break_ = false;
+        az_last_close_side_ = 0; az_vwap_crosses_ = 0; az_cd_peak_ = 0.0; az_cd_last_sign_ = 0; az_cd_flips_ = 0;
+        az_daytype_ = 0; az_daytype_dir_ = 0; az_c30_ = az_c60_ = false; az_votes_str_ = "-";
+        az_vw_tf_.clear(); az_arm_[0] = az_arm_[1] = AzArm{}; az_day_R_ = 0.0;
+        az_zones_.clear(); az_closes_.clear();
+        // anchored VWAPs: the session that just closed becomes "prior day"; restart the current-day anchors
+        az_pdh_pv_ = az_cur_hi_pv_; az_pdh_v_ = az_cur_hi_v_; az_pdl_pv_ = az_cur_lo_pv_; az_pdl_v_ = az_cur_lo_v_;
+        az_cur_hi_pv_ = az_cur_hi_v_ = az_cur_lo_pv_ = az_cur_lo_v_ = 0.0;
+        az_cur_hi_ = std::numeric_limits<double>::lowest(); az_cur_lo_ = std::numeric_limits<double>::max();
+    }
+    void az_anchor_tick(const OrbTick& t, bool rth) {
+        const double v = (double)t.size, pv = t.price * v;
+        // week anchor: resets when the CME week rolls (Sunday 18:00 ET = Monday 00:00 after a +6 h shift)
+        { time_t tt = (time_t)(t.ts_micros / 1'000'000LL); struct tm g; gmtime_r(&tt, &g);
+          const int64_t et = (int64_t)tt - us_et_offset(g) * 3600LL + 6 * 3600LL;
+          const int64_t days = et >= 0 ? et / 86400 : (et - 86399) / 86400;
+          const int64_t wk = (days + 3) / 7;
+          if (wk != az_week_) { az_week_ = wk; az_wk_pv_ = az_wk_v_ = 0.0; } }
+        az_wk_pv_ += pv; az_wk_v_ += v; az_pdh_pv_ += pv; az_pdh_v_ += v; az_pdl_pv_ += pv; az_pdl_v_ += v;
+        if (rth) {   // current-day high / low anchors restart whenever a new extreme prints
+            if (t.price > az_cur_hi_) { az_cur_hi_ = t.price; az_cur_hi_pv_ = az_cur_hi_v_ = 0.0; }
+            if (t.price < az_cur_lo_) { az_cur_lo_ = t.price; az_cur_lo_pv_ = az_cur_lo_v_ = 0.0; }
+        }
+        az_cur_hi_pv_ += pv; az_cur_hi_v_ += v; az_cur_lo_pv_ += pv; az_cur_lo_v_ += v;
+    }
+    double vwap_sd() const {
+        if (vwap_v_ <= 0) return 0.0;
+        const double m = vwap_pv_ / vwap_v_; return std::sqrt(std::max(0.0, vwap_pv2_ / vwap_v_ - m * m));
+    }
+    double az_slope() const {   // (vwap now - vwap 6 tf bars ago) / ATR
+        if (az_vw_tf_.size() < 7 || atr_ <= 0) return 0.0;
+        return (az_vw_tf_.back() - az_vw_tf_[az_vw_tf_.size() - 7]) / atr_;
+    }
+    // the five day-type votes, scored on the bar that just closed
+    AzVotes az_score(const Bar& b) const {
+        AzVotes r;
+        if (vp_ready_ && vp_vah_ > vp_val_) r.v[0] = (rth_open_ > vp_vah_ || rth_open_ < vp_val_) ? 1 : -1;
+        if (az_closes_.size() >= 2 && az_or_done_) {
+            const double c1 = az_closes_[az_closes_.size() - 1], c2 = az_closes_[az_closes_.size() - 2];
+            if ((c1 > az_or_hi_ && c2 > az_or_hi_) || (c1 < az_or_lo_ && c2 < az_or_lo_)) r.v[1] = 1;
+            else if (day_hi_ > az_or_hi_ && day_lo_ < az_or_lo_) r.v[1] = -1;
+        }
+        const double sl = std::fabs(az_slope());
+        if (az_vw_tf_.size() >= 7) r.v[2] = sl >= tc_.az_slope_trend ? 1 : (sl < tc_.az_slope_balance ? -1 : 0);
+        const int pdir = b.c > rth_open_ ? 1 : (b.c < rth_open_ ? -1 : 0);
+        const int cds = cum_delta_ > 0 ? 1 : (cum_delta_ < 0 ? -1 : 0);
+        if (pdir != 0 && cds == pdir && std::fabs(cum_delta_) >= 0.6 * az_cd_peak_) r.v[3] = 1;
+        else if (az_cd_flips_ >= 2) r.v[3] = -1;
+        if (az_or_break_dir_ != 0 && !az_touch_vwap_since_break_) r.v[4] = 1;
+        else if (az_vwap_crosses_ >= 2) r.v[4] = -1;
+        return r;
+    }
+    void az_classify(const Bar& b, bool at60) {
+        const AzVotes v = az_score(b);
+        const bool inside_or = b.c <= az_or_hi_ && b.c >= az_or_lo_;
+        int label = 3, dir = 0;                                         // 1 trend, 2 balance, 3 neutral
+        if (v.trend() >= 3 && az_or_break_dir_ != 0 && !inside_or) { label = 1; dir = az_or_break_dir_; }
+        else if (v.balance() >= 3) label = 2;
+        if (at60) {
+            const double avg = avg_vol_prior(20);
+            if (az_daytype_ == 1 && inside_or) { label = 2; dir = 0; }
+            else if (az_daytype_ == 2 && !inside_or && avg > 0 && std::fabs(cum_delta_) >= tc_.az_surge_mult * avg) {
+                label = 1; dir = b.c > az_or_hi_ ? 1 : -1;
+            }
+        }
+        az_daytype_ = label; az_daytype_dir_ = dir;
+        char buf[64]; std::snprintf(buf, sizeof buf, "%d,%d,%d,%d,%d", v.v[0], v.v[1], v.v[2], v.v[3], v.v[4]);
+        az_votes_str_ = buf;
+        LOG("[TREND absorption_zone] day type @%d min: %s%s votes(open,OR,slope,cumdelta,pullback)=[%s] T=%d B=%d slope=%.2f cd=%.0f",
+            at60 ? 60 : 30, label == 1 ? "TREND" : label == 2 ? "BALANCE" : "NEUTRAL",
+            label == 1 ? (dir > 0 ? " up" : " down") : "", buf, v.trend(), v.balance(), az_slope(), cum_delta_);
+    }
+    // day-type bookkeeping on every RTH tf close (before any setup logic)
+    void az_track(const Bar& b) {
+        const int m = mins_since_open(b); if (m < 0) return;
+        const double vw = vwap();
+        az_vw_tf_.push_back(vw); if (az_vw_tf_.size() > 200) az_vw_tf_.pop_front();
+        az_closes_.push_back(b.c); if (az_closes_.size() > 200) az_closes_.pop_front();
+        if (m < tc_.az_or_bars * tc_.tf_min) { az_or_hi_ = std::max(az_or_hi_, b.h); az_or_lo_ = std::min(az_or_lo_, b.l); }
+        else {
+            az_or_done_ = true;
+            if (az_or_break_dir_ == 0) {
+                if (b.c > az_or_hi_) az_or_break_dir_ = 1; else if (b.c < az_or_lo_) az_or_break_dir_ = -1;
+            } else if ((az_or_break_dir_ > 0 && b.l <= vw) || (az_or_break_dir_ < 0 && b.h >= vw)) az_touch_vwap_since_break_ = true;
+        }
+        const int side = b.c > vw ? 1 : (b.c < vw ? -1 : 0);
+        if (side != 0) { if (az_last_close_side_ != 0 && side != az_last_close_side_) ++az_vwap_crosses_; az_last_close_side_ = side; }
+        az_cd_peak_ = std::max(az_cd_peak_, std::fabs(cum_delta_));
+        const int cs = cum_delta_ > 0 ? 1 : (cum_delta_ < 0 ? -1 : 0);
+        if (cs != 0) { if (az_cd_last_sign_ != 0 && cs != az_cd_last_sign_) ++az_cd_flips_; az_cd_last_sign_ = cs; }
+        const int end = m + tc_.tf_min;                             // minutes since open at this bar's close
+        if (tc_.az_daytype) {
+            if (!az_c30_ && end >= 30) { az_c30_ = true; az_classify(b, false); }
+            if (!az_c60_ && end >= 60) { az_c60_ = true; az_classify(b, true); }
+        }
+    }
+    int az_levels_near(double lo, double hi, double tol) const {
+        int n = 0;
+        auto near = [&](double x) { return x > 0 && x >= lo - tol && x <= hi + tol; };
+        if (vp_ready_) { n += near(vp_poc_); n += near(vp_vah_); n += near(vp_val_); }
+        if (have_prev_) { n += near(prev_hi_); n += near(prev_lo_); }
+        if (on_hi_ > on_lo_) { n += near(on_hi_); n += near(on_lo_); }
+        if (az_pdh_v_ > 0) n += near(az_pdh_pv_ / az_pdh_v_);
+        if (az_pdl_v_ > 0) n += near(az_pdl_pv_ / az_pdl_v_);
+        if (az_wk_v_ > 0)  n += near(az_wk_pv_ / az_wk_v_);
+        return n;
+    }
+    void mode_az(const Bar& b, int hhmm) {
+        if (!in_rth_) return;
+        az_track(b);
+        const double vw = vwap(), sd = vwap_sd(), tol = tc_.az_tol * atr_;
+        az_ema200_ = az_ema200_ <= 0 ? b.c : az_ema200_ + (2.0 / (tc_.az_ema_slow + 1)) * (b.c - az_ema200_);
+        if (vw <= 0 || sd <= 0) return;
+        const size_t n = tf_.size();
+        // trailing exit (trend trades, az_exit=trail, after target 1)
+        if (sess_.in_position && az_pos_dir_ != 0 && !az_exit_sent_ && az_type_ == 1 && tc_.az_exit == "trail" && az_t1_hit_) {
+            if ((az_pos_dir_ > 0 && b.c < ema20_) || (az_pos_dir_ < 0 && b.c > ema20_)) { az_exit("az_trail_ema20", b.c); return; }
+        }
+        if (sess_.in_position) return;
+        const bool want_trend = tc_.az_setups != "balance", want_bal = tc_.az_setups != "trend";
+        // which setup runs today
+        int type = 0, bias = 0;                                     // type 1 trend-pullback, 2 balance-fade
+        if (tc_.az_daytype) {
+            if (az_daytype_ == 1 && want_trend) { type = 1; bias = az_daytype_dir_; }
+            else if (az_daytype_ == 2 && want_bal) type = 2;
+        }
+        const int avg_n = 20; const double avg = avg_vol_prior(avg_n);
+        if (avg <= 0) return;
+        const double delta = 2.0 * b.bv - b.v;
+        for (int dir : {1, -1}) {
+            AzArm& a = az_arm_[dir > 0 ? 0 : 1];
+            // candidate zones for this direction
+            int t = type, bdir = bias;
+            if (!tc_.az_daytype) { t = 0; }
+            auto zone_for = [&](int ty, double& zl, double& zh) -> bool {
+                if (ty == 1) {
+                    if (std::fabs(vw - ema20_) > tc_.az_zone_width * atr_) return false;
+                    zl = std::min(vw, ema20_) - tol; zh = std::max(vw, ema20_) + tol; return true;
+                }
+                const double band = dir > 0 ? vw - 2.0 * sd : vw + 2.0 * sd;
+                zl = band - tol; zh = band + tol; return true;
+            };
+            std::vector<int> types;
+            if (tc_.az_daytype) { if (t != 0) types.push_back(t); }
+            else { if (want_trend) types.push_back(1); if (want_bal) types.push_back(2); }
+            // 1) trigger an armed setup
+            if (a.idx >= 0) {
+                const int age = (int)az_bar_idx_ - a.idx;
+                const bool trig = dir > 0 ? (b.c > a.zh && delta > 0) : (b.c < a.zl && delta < 0);
+                if (age > tc_.az_trigger_window) a = AzArm{};
+                else if (trig) { az_try_enter(dir, a, b, hhmm, vw, sd); a = AzArm{}; continue; }
+            }
+            // 2) absorption on this bar
+            for (int ty : types) {
+                if (tc_.az_daytype && ty == 1 && bdir != dir) continue;          // trend day: OR-break side only
+                double zl, zh; if (!zone_for(ty, zl, zh)) continue;
+                const bool touch = dir > 0 ? (b.l <= zh && b.l >= zl - tol) : (b.h >= zl && b.h <= zh + tol);
+                if (!touch) continue;
+                const bool vol_ok = b.v >= tc_.az_vol_mult * avg;
+                const bool flow_ok = dir > 0 ? delta <= -tc_.az_delta_thresh * b.v : delta >= tc_.az_delta_thresh * b.v;
+                const bool held = dir > 0 ? b.c >= zl : b.c <= zh;
+                if (!(vol_ok && flow_ok && held)) continue;
+                // divergence vs the prior swing (bars before the absorption window)
+                bool div = false;
+                const int k0 = (int)n - 1 - tc_.az_absorb_bars, k1 = k0 - tc_.az_swing_bars;
+                if (k1 >= 0 && (int)az_cd_tf_.size() == (int)n) {
+                    int sw = k1; for (int k = k1; k < k0; ++k) if (dir > 0 ? tf_[k].l < tf_[sw].l : tf_[k].h > tf_[sw].h) sw = k;
+                    const double ext = dir > 0 ? b.l : b.h, swp = dir > 0 ? tf_[sw].l : tf_[sw].h;
+                    const double beyond = dir > 0 ? swp - ext : ext - swp;
+                    div = beyond > 0 && beyond < tc_.az_div_ticks * kAzTick &&
+                          (dir > 0 ? az_cd_tf_.back() > az_cd_tf_[sw] : az_cd_tf_.back() < az_cd_tf_[sw]);
+                }
+                const double ext = dir > 0 ? b.l : b.h;
+                if (a.idx >= 0 && a.type == ty) {                                // extend: absorption on consecutive bars
+                    a.ext = dir > 0 ? std::min(a.ext, ext) : std::max(a.ext, ext);
+                    a.idx = (int)az_bar_idx_; a.vol = std::max(a.vol, b.v); a.div = a.div || div;
+                } else {
+                    a = AzArm{}; a.idx = (int)az_bar_idx_; a.type = ty; a.zl = zl; a.zh = zh; a.ext = ext; a.vol = b.v; a.div = div;
+                }
+                LOG("[TREND absorption_zone] absorption %s %s zone=[%.2f,%.2f] vol=%.0f (avg %.0f) delta=%.0f div=%d",
+                    dir > 0 ? "LONG" : "SHORT", ty == 1 ? "trend-pullback" : "balance-fade", zl, zh, b.v, avg, delta, (int)div);
+                break;
+            }
+        }
+    }
+    void az_try_enter(int dir, const AzArm& a, const Bar& b, int hhmm, double vw, double sd) {
+        const char* side = dir > 0 ? "LONG" : "SHORT";
+        auto skip = [&](const char* why) {
+            LOG("[TREND absorption_zone] setup %s %s skipped: %s (zone=[%.2f,%.2f] daytype=%d votes=[%s])",
+                side, a.type == 1 ? "trend" : "balance", why, a.zl, a.zh, az_daytype_, az_votes_str_.c_str());
+        };
+        if (!in_hhmm(hhmm, tc_.az_from, tc_.az_to)) { skip("outside_entry_window"); return; }
+        if (!can_enter(hhmm, dir)) { skip("cannot_enter"); return; }
+        if (az_day_R_ <= tc_.az_max_loss_R) { skip("max_daily_loss_R"); return; }
+        if (tc_.az_ema200_bias && ((dir > 0 && b.c <= az_ema200_) || (dir < 0 && b.c >= az_ema200_))) { skip("ema200_bias"); return; }
+        if (a.type == 1 && tc_.az_require_slope) {
+            const double sl = az_slope(); if ((dir > 0 && sl <= 0) || (dir < 0 && sl >= 0)) { skip("vwap_slope"); return; }
+        }
+        if (tc_.az_require_div && !a.div) { skip("no_divergence"); return; }
+        const int lv = az_levels_near(a.zl, a.zh, tc_.az_tol * atr_);
+        if (lv < tc_.az_min_levels) { skip("levels"); return; }
+        // re-entry / dead zone (same zone = overlapping range, same direction)
+        for (auto& z : az_zones_) {
+            const bool same = z.dir == dir && !(a.zh < z.zl || a.zl > z.zh);
+            if (!same) continue;
+            if (z.stops >= 2) { skip("zone_dead"); return; }
+            if (z.stops == 1 && (!tc_.az_allow_reentry || a.vol <= z.vol)) { skip("reentry_not_allowed"); return; }
+        }
+        const double entry = b.c;
+        const double stop = dir > 0 ? a.ext - tc_.az_stop_ticks * kAzTick : a.ext + tc_.az_stop_ticks * kAzTick;
+        const double risk = (entry - stop) * dir;
+        if (risk <= 0) { skip("bad_stop"); return; }
+        double t1, t2;
+        if (a.type == 1) { t1 = dir > 0 ? vw + sd : vw - sd; t2 = dir > 0 ? day_hi_ : day_lo_; }
+        else             { t1 = vw;                           t2 = dir > 0 ? vw + sd : vw - sd; }
+        if ((t2 - t1) * dir <= 0) t2 = t1;
+        if ((t1 - entry) * dir < tc_.az_min_rr * risk) { skip("target_too_close"); return; }
+        az_pos_dir_ = dir; az_type_ = a.type; az_entry_ = entry; az_stop_ = stop; az_risk_ = risk;
+        az_t1_ = t1; az_t2_ = t2; az_t1_hit_ = false; az_exit_sent_ = false; az_zl_ = a.zl; az_zh_ = a.zh; az_vol_ = a.vol;
+        LOG("[TREND absorption_zone] ENTRY %s %s entry=%.2f stop=%.2f (1R=%.2f) t1=%.2f t2=%.2f exit=%s daytype=%d votes=[%s] levels=%d div=%d",
+            side, a.type == 1 ? "trend-pullback" : "balance-fade", entry, stop, risk, t1, t2, tc_.az_exit.c_str(),
+            az_daytype_, az_votes_str_.c_str(), lv, (int)a.div);
+        emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, a.type == 1 ? "az_trend_pullback" : "az_balance_fade");
+    }
+    void az_exit(const char* why, double px) {
+        az_exit_sent_ = true; az_exit_px_ = px; az_exit_why_ = why;
+        emit(OrbSignal::FLATTEN_EOD, px, why);
+    }
+    void az_check_exit(double px) {
+        const int d = az_pos_dir_;
+        if ((px - az_stop_) * d <= 0) { az_exit(az_t1_hit_ ? "az_breakeven" : "az_stop", px); return; }
+        const bool hit1 = (px - az_t1_) * d >= 0, hit2 = (px - az_t2_) * d >= 0;
+        if (tc_.az_exit == "t1" || (az_type_ == 2 && tc_.az_exit != "t2" && tc_.az_exit != "trail")) {
+            if (hit1) az_exit("az_target1", px);
+            return;
+        }
+        if (hit1 && !az_t1_hit_) {
+            az_t1_hit_ = true;
+            if ((az_entry_ - az_stop_) * d > 0) az_stop_ = az_entry_;   // stop to entry
+            LOG("[TREND absorption_zone] target 1 %.2f reached — stop to entry %.2f", az_t1_, az_stop_);
+        }
+        const bool use_t2 = tc_.az_exit == "t2" || az_type_ == 2;
+        if (use_t2 && az_t1_hit_ && hit2) az_exit("az_target2", px);
+    }
+    void az_on_closed(const std::string& reason) {
+        if (az_pos_dir_ == 0) return;
+        const bool executed = reason.rfind("not_executed", 0) != 0;
+        if (executed) {
+            const double px = az_exit_sent_ ? az_exit_px_ : last_px_;
+            const double r = az_risk_ > 0 ? (px - az_entry_) * az_pos_dir_ / az_risk_ : 0.0;
+            az_day_R_ += r;
+            const bool stopped = r < 0;
+            bool found = false;
+            for (auto& z : az_zones_) if (z.dir == az_pos_dir_ && !(az_zh_ < z.zl || az_zl_ > z.zh)) { found = true; if (stopped) ++z.stops; z.vol = std::max(z.vol, az_vol_); }
+            if (!found) az_zones_.push_back(AzZone{az_pos_dir_, az_zl_, az_zh_, stopped ? 1 : 0, az_vol_});
+            LOG("[TREND absorption_zone] closed (%s / %s) ~%.2f R (estimated at %.2f) — day %.2f R",
+                az_exit_sent_ ? az_exit_why_.c_str() : "host", reason.c_str(), r, px, az_day_R_);
+        }
+        az_pos_dir_ = 0; az_exit_sent_ = false; az_t1_hit_ = false;
+    }
+
+
+    // ══ trend_confirm (2026-10-07) ═══════════════════════════════════════════════════════════════
+    double tcf_er() const {   // Kaufman efficiency ratio over tcf_er_bars tf closes
+        const int N = tc_.tcf_er_bars; const size_t n = tf_.size();
+        if (N <= 0 || (int)n < N + 1) return 0.0;
+        double path = 0.0;
+        for (size_t k = n - N; k < n; ++k) path += std::fabs(tf_[k].c - tf_[k - 1].c);
+        return path > 0 ? std::fabs(tf_[n - 1].c - tf_[n - 1 - N].c) / path : 0.0;
+    }
+    double tcf_flow() const {   // aggressor buy share over the last tcf_flow_bars tf bars
+        const int K = tc_.tcf_flow_bars; const size_t n = tf_.size();
+        if (K <= 0 || (int)n < K) return 0.5;
+        double v = 0, bv = 0; for (size_t k = n - K; k < n; ++k) { v += tf_[k].v; bv += tf_[k].bv; }
+        return v > 0 ? bv / v : 0.5;
+    }
+    double tcf_slope() const {
+        if (tcf_vw_hist_.size() < 7 || atr_ <= 0) return 0.0;
+        return (tcf_vw_hist_.back() - tcf_vw_hist_[tcf_vw_hist_.size() - 7]) / atr_;
+    }
+    // Confirmation values for a trend_confirm entry in `dir` on bar `b` (session VWAP `vw`). ONE
+    // computation shared by mode_tcf (the decision) and tcf_status() (the live dashboard), so the page
+    // can never show a check passing that the strategy would fail.
+    struct TcfConf {
+        double er = 0, slope = 0, flow = 0.5, vol_ratio = 0, delta = 0, atr = 0;
+        bool er_ok = true, slope_ok = true, vwap_side_ok = true, flow_ok = true, delta_ok = true, vol_ok = true, atr_ok = true;
+    };
+    TcfConf tcf_confirm(const Bar& b, int dir, double vw) const {
+        TcfConf c;
+        c.er = tcf_er(); c.slope = tcf_slope(); c.flow = tcf_flow(); c.atr = atr_;
+        const double avg = avg_vol_prior(20);
+        c.vol_ratio = avg > 0 ? b.v / avg : 0.0;
+        c.delta = 2.0 * b.bv - b.v;
+        c.er_ok = !(tc_.tcf_er_min > 0 && c.er < tc_.tcf_er_min);
+        c.slope_ok = !(tc_.tcf_slope_min > 0 && (tcf_vw_hist_.size() < 7 || c.slope * dir < tc_.tcf_slope_min));
+        c.vwap_side_ok = !(tc_.tcf_vwap_side && vw > 0 && (b.c - vw) * dir <= 0);
+        c.flow_ok = !(tc_.tcf_flow_min > 0 && (dir > 0 ? c.flow < tc_.tcf_flow_min : c.flow > 1.0 - tc_.tcf_flow_min));
+        c.delta_ok = c.delta * dir > 0;
+        c.vol_ok = !(tc_.tcf_vol_mult > 0 && (avg <= 0 || c.vol_ratio < tc_.tcf_vol_mult));
+        c.atr_ok = !((tc_.tcf_min_atr > 0 && atr_ < tc_.tcf_min_atr) || (tc_.tcf_max_atr > 0 && atr_ > tc_.tcf_max_atr));
+        return c;
+    }
+    void mode_tcf(const Bar& b, int hhmm) {
+        const double kf = 2.0 / (tc_.tcf_ema_fast + 1), km = 2.0 / (tc_.tcf_ema_mid + 1), ks = 2.0 / (tc_.tcf_ema_slow + 1);
+        tcf_ef_ = tcf_ef_ <= 0 ? b.c : tcf_ef_ + kf * (b.c - tcf_ef_);
+        tcf_em_ = tcf_em_ <= 0 ? b.c : tcf_em_ + km * (b.c - tcf_em_);
+        tcf_es_ = tcf_es_ <= 0 ? b.c : tcf_es_ + ks * (b.c - tcf_es_);
+        tcf_em_hist_.push_back(tcf_em_); if (tcf_em_hist_.size() > 4) tcf_em_hist_.pop_front();
+        ++tcf_n_;
+        // VWAP of the anchor session (TrendConfig::session: rth / globex / window) — in_rth_ means
+        // "inside the anchor session" for every anchor, so this works in Asia, London or NY alike.
+        const double vw = in_rth_ ? vwap() : 0.0;
+        if (vw > 0) { tcf_vw_hist_.push_back(vw); if (tcf_vw_hist_.size() > 200) tcf_vw_hist_.pop_front(); }
+        // trend state on this bar
+        int tdir = 0;
+        if (tcf_n_ >= tc_.tcf_ema_mid + 3 && tcf_em_hist_.size() >= 4) {
+            const double em3 = tcf_em_hist_.front();
+            if (tcf_ef_ > tcf_em_ && tcf_em_ > tcf_es_ && tcf_em_ > em3) tdir = 1;
+            else if (tcf_ef_ < tcf_em_ && tcf_em_ < tcf_es_ && tcf_em_ < em3) tdir = -1;
+        }
+        const double tol = tc_.tcf_pb_tol_atr * atr_;
+        TcfBar rec; rec.dir = tdir;
+        rec.touch_long = b.l <= tcf_ef_ + tol; rec.touch_short = b.h >= tcf_ef_ - tol;
+        tcf_bars_.push_back(rec); if (tcf_bars_.size() > 64) tcf_bars_.pop_front();
+        // exits evaluated on the bar close: trail update, close through ema_mid
+        if (sess_.in_position && tcf_dir_ != 0 && !tcf_exit_sent_) {
+            const int d = tcf_dir_;
+            tcf_best_ = d > 0 ? std::max(tcf_best_, b.h) : std::min(tcf_best_, b.l);
+            if ((tcf_best_ - tcf_entry_) * d >= tcf_risk_) {
+                const double trail = tcf_best_ - d * tc_.tcf_trail_atr * atr_;
+                if ((trail - tcf_stop_) * d > 0) { tcf_stop_ = trail; tcf_trail_on_ = true; }
+            }
+            if (tc_.tcf_exit_ema && ((d > 0 && b.c < tcf_em_) || (d < 0 && b.c > tcf_em_))) { tcf_exit("tcf_ema_exit", b.c); return; }
+        }
+        if (sess_.in_position) return;
+        const size_t n = tf_.size(); if (n < 3) return;
+        const Bar& p = tf_[n - 2];
+        const double delta = 2.0 * b.bv - b.v;
+        for (int dir : {1, -1}) {
+            if (tdir != dir) continue;
+            // pattern: pullback or breakout
+            bool pattern = false; const char* why = nullptr;
+            if (tc_.tcf_entry == "breakout") {
+                const int B = tc_.tcf_bo_bars;
+                if ((int)n >= B + 1) {
+                    double ext = dir > 0 ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::max();
+                    for (size_t k = n - 1 - B; k < n - 1; ++k) ext = dir > 0 ? std::max(ext, tf_[k].h) : std::min(ext, tf_[k].l);
+                    pattern = dir > 0 ? b.c > ext : b.c < ext;
+                }
+                why = dir > 0 ? "tcf_breakout_long" : "tcf_breakout_short";
+            } else {
+                bool touched = false;
+                const int P = tc_.tcf_pb_bars; const size_t m = tcf_bars_.size();
+                for (size_t k = (m > (size_t)P + 1 ? m - 1 - P : 0); k + 1 < m; ++k)   // bars before the trigger
+                    if (tcf_bars_[k].dir == dir && (dir > 0 ? tcf_bars_[k].touch_long : tcf_bars_[k].touch_short)) touched = true;
+                pattern = touched && (dir > 0 ? b.c > p.h : b.c < p.l);
+                why = dir > 0 ? "tcf_pullback_long" : "tcf_pullback_short";
+            }
+            if (!pattern) continue;
+            // confirmations (shared with tcf_status — see tcf_confirm)
+            const TcfConf cf = tcf_confirm(b, dir, vw);
+            const double er = cf.er, sl = cf.slope, fl = cf.flow, vr = cf.vol_ratio;
+            std::string fail;
+            if (!cf.er_ok) fail += "er ";
+            if (!cf.slope_ok) fail += "vwap_slope ";
+            if (!cf.vwap_side_ok) fail += "vwap_side ";
+            if (!cf.flow_ok) fail += "flow ";
+            if (!cf.delta_ok) fail += "trigger_delta ";
+            if (!cf.vol_ok) fail += "volume ";
+            if (tc_.tcf_min_atr > 0 && atr_ < tc_.tcf_min_atr) fail += "atr_low ";
+            if (tc_.tcf_max_atr > 0 && atr_ > tc_.tcf_max_atr) fail += "atr_high ";
+            if (!can_enter(hhmm, dir)) fail += "cannot_enter ";
+            // stop: pullback structure -/+ 0.25 ATR, never farther than tcf_stop_atr x ATR
+            const int P = std::max(1, tc_.tcf_pb_bars);
+            double ext = dir > 0 ? std::numeric_limits<double>::max() : std::numeric_limits<double>::lowest();
+            for (size_t k = (n > (size_t)P ? n - P : 0); k < n; ++k) ext = dir > 0 ? std::min(ext, tf_[k].l) : std::max(ext, tf_[k].h);
+            double stop = ext - dir * 0.25 * atr_;
+            const double cap = b.c - dir * tc_.tcf_stop_atr * atr_;
+            if ((cap - stop) * dir > 0) stop = cap;
+            const double risk = (b.c - stop) * dir;
+            if (risk <= 0) fail += "bad_stop ";
+            if (!fail.empty()) {
+                LOG("[TREND trend_confirm] %s skipped: %s(er=%.2f slope=%.2f flow=%.2f vol=%.2fx delta=%.0f atr=%.2f)",
+                    why, fail.c_str(), er, sl, fl, vr, delta, atr_);
+                continue;
+            }
+            tcf_dir_ = dir; tcf_entry_ = b.c; tcf_stop_ = stop; tcf_risk_ = risk; tcf_best_ = b.c;
+            tcf_target_ = tc_.tcf_target_r > 0 ? b.c + dir * tc_.tcf_target_r * risk : 0.0;
+            tcf_trail_on_ = false; tcf_exit_sent_ = false;
+            tcf_snap_ = tcf_status(last_ts_);
+            tcf_snap_.er = cf.er; tcf_snap_.er_ok = cf.er_ok; tcf_snap_.slope = cf.slope; tcf_snap_.slope_ok = cf.slope_ok;
+            tcf_snap_.vwap_side_ok = cf.vwap_side_ok; tcf_snap_.flow = cf.flow; tcf_snap_.flow_ok = cf.flow_ok;
+            tcf_snap_.vol_ratio = cf.vol_ratio; tcf_snap_.vol_ok = cf.vol_ok; tcf_snap_.delta = delta; tcf_snap_.atr_ok = cf.atr_ok;
+            tcf_snap_.stage = tcf_snap_.stage_flat = "signal"; tcf_snap_.bias = dir;
+            tcf_snap_ok_ = true;
+            LOG("[TREND trend_confirm] ENTRY %s @%.2f stop=%.2f (1R=%.2f) target=%.2f er=%.2f slope=%.2f flow=%.2f vol=%.2fx delta=%.0f "
+                "atr=%.2f ema=%.2f/%.2f/%.2f vwap=%.2f", why, b.c, stop, risk, tcf_target_, er, sl, fl, vr, delta, atr_, tcf_ef_, tcf_em_, tcf_es_, vw);
+            emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, why);
+            return;
+        }
+    }
+    void tcf_exit(const char* why, double px) {
+        tcf_exit_sent_ = true;
+        LOG("[TREND trend_confirm] exit %s @%.2f (entry %.2f stop %.2f, ~%.2f R)", why, px, tcf_entry_, tcf_stop_,
+            tcf_risk_ > 0 ? (px - tcf_entry_) * tcf_dir_ / tcf_risk_ : 0.0);
+        emit(OrbSignal::FLATTEN_EOD, px, why);
+    }
+    void tcf_check_exit(double px) {
+        const int d = tcf_dir_;
+        if ((px - tcf_stop_) * d <= 0) { tcf_exit(tcf_trail_on_ ? "tcf_trail" : "tcf_stop", px); return; }
+        if (tcf_target_ > 0 && (px - tcf_target_) * d >= 0) tcf_exit("tcf_target", px);
+    }
+
     // ── state ────────────────────────────────────────────────────────────────
     TrendConfig tc_; OrbConfig risk_; SignalCallback cb_;
     TrendSession sess_;
@@ -1236,4 +1834,29 @@ private:
     double thrust_entry_ref_ = 0;                                                      // thrust_fade
     int abs_dir_ = 0, abs_age_ = 0; double abs_mid_ = 0.0;                              // absorption_reversal (armed fade)
     std::deque<double> bar_delta_hist_;                                                // per tf bar: 2·bv − v
+    // absorption_zone
+    double vwap_pv2_ = 0;                                                              // Σ p²·v for the VWAP SD bands
+    AzArm az_arm_[2];
+    std::vector<AzZone> az_zones_;
+    std::deque<double> az_vw_tf_, az_closes_, az_cd_tf_;
+    int64_t az_bar_idx_ = 0;
+    double az_or_hi_ = std::numeric_limits<double>::lowest(), az_or_lo_ = std::numeric_limits<double>::max();
+    bool az_or_done_ = false; int az_or_break_dir_ = 0; bool az_touch_vwap_since_break_ = false;
+    int az_last_close_side_ = 0, az_vwap_crosses_ = 0; double az_cd_peak_ = 0; int az_cd_last_sign_ = 0, az_cd_flips_ = 0;
+    int az_daytype_ = 0, az_daytype_dir_ = 0; bool az_c30_ = false, az_c60_ = false; std::string az_votes_str_ = "-";
+    double az_ema200_ = 0, az_day_R_ = 0;
+    int az_pos_dir_ = 0, az_type_ = 0; double az_entry_ = 0, az_stop_ = 0, az_risk_ = 0, az_t1_ = 0, az_t2_ = 0;
+    bool az_t1_hit_ = false, az_exit_sent_ = false; double az_exit_px_ = 0; std::string az_exit_why_;
+    double az_zl_ = 0, az_zh_ = 0, az_vol_ = 0;
+    int64_t az_week_ = -1; double az_wk_pv_ = 0, az_wk_v_ = 0, az_pdh_pv_ = 0, az_pdh_v_ = 0, az_pdl_pv_ = 0, az_pdl_v_ = 0;
+    double az_cur_hi_ = std::numeric_limits<double>::lowest(), az_cur_lo_ = std::numeric_limits<double>::max();
+    double az_cur_hi_pv_ = 0, az_cur_hi_v_ = 0, az_cur_lo_pv_ = 0, az_cur_lo_v_ = 0;
+    // trend_confirm
+    struct TcfBar { int dir = 0; bool touch_long = false, touch_short = false; };
+    TcfStatus tcf_snap_{}; bool tcf_snap_ok_ = false;   // entry-decision snapshot (tcf_entry_snapshot)
+    std::deque<TcfBar> tcf_bars_;
+    std::deque<double> tcf_em_hist_, tcf_vw_hist_;
+    double tcf_ef_ = 0, tcf_em_ = 0, tcf_es_ = 0; int64_t tcf_n_ = 0;
+    int tcf_dir_ = 0; double tcf_entry_ = 0, tcf_stop_ = 0, tcf_risk_ = 0, tcf_best_ = 0, tcf_target_ = 0;
+    bool tcf_trail_on_ = false, tcf_exit_sent_ = false;
 };

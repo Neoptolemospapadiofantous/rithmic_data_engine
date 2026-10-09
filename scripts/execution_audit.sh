@@ -31,6 +31,14 @@ echo "=== execution audit $ACC $DAY ($(date -Is))"
 t0=$(TZ=America/New_York date -d "$DAY 09:00" +%s); t1=$(TZ=America/New_York date -d "$DAY 16:05" +%s)
 DAYLOG="$OUTD/.${ACC}-${DAY}.log"
 awk -F'[][]' -v a="$t0" -v b="$t1" '$2+0 >= a && $2+0 <= b' "$L" 2>/dev/null > "$DAYLOG"
+# Live rota / hand-off (2026-10-08): other strategies trade the SAME account from the <acc>_handoff instance, overnight
+# windows included (the trading date starts 18:00 ET the evening before). Their fills count toward this account's
+# rows and broker P&L, so their log block is merged in time order; the risk checks below are per strategy.
+HL="data/logs/nq_executor_${ACC}_handoff.log"
+if [[ -f "$HL" ]]; then
+  th0=$(TZ=America/New_York date -d "$DAY -1 day 18:00" +%s)
+  { cat "$DAYLOG"; awk -F'[][]' -v a="$th0" -v b="$t1" '$2+0 >= a && $2+0 <= b' "$HL" 2>/dev/null; } | sort -s -t'[' -k2,2n > "$DAYLOG.m" && mv "$DAYLOG.m" "$DAYLOG"
+fi
 lines=$(wc -l < "$DAYLOG")
 (( lines > 0 )) || fail "no executor log lines between 09:00 and 16:05 ET on $DAY"
 # live segments only for the signal/fill/stop counts: a dry-run start (Session date … dry_run=TRUE) opens a
@@ -38,13 +46,21 @@ lines=$(wc -l < "$DAYLOG")
 LIVELOG="$OUTD/.${ACC}-${DAY}.live.log"
 awk 'BEGIN{live=1} /Session date: .*dry_run=TRUE/ {live=0} /Session date: .*dry_run=FALSE/ {live=1} live!=0 {print}' "$DAYLOG" > "$LIVELOG"
 
+# The startup lines (logins, subscription, route, contract) belong to the LAST start at or before the session
+# end — an executor that has run since an earlier day (no restart today) logged them then (2026-10-08: the ORB
+# had run since the 10-07 07:41 order test and every startup check here read FAIL).
+STARTLOG="$OUTD/.${ACC}-${DAY}.start.log"
+sl=$(awk -F'[][]' -v b="$t1" '/Instance lock acquired/ && $2+0 <= b {n=NR} END{print n+0}' "$L" 2>/dev/null)
+if (( sl > 0 )); then tail -n +"$sl" "$L" | head -n 400 > "$STARTLOG"; else : > "$STARTLOG"; fi
+cat "$STARTLOG" "$DAYLOG" > "$OUTD/.${ACC}-${DAY}.check.log"; CHECKLOG="$OUTD/.${ACC}-${DAY}.check.log"
+
 # ── 1. mode + broker sessions + route + contract
 if grep -aq 'dry_run=TRUE' "$DAYLOG"; then fail "executor ran in DRY RUN during the session (no orders reach Rithmic)"; else ok "live mode (dry_run=FALSE)"; fi
-grep -aq 'ORDER_PLANT login OK' "$DAYLOG" && ok "ORDER_PLANT login" || fail "no ORDER_PLANT login in the session block"
-grep -aq 'PNL_PLANT position subscription OK' "$DAYLOG" && ok "PNL_PLANT subscription" || fail "no PNL_PLANT subscription in the session block"
-if grep -aq "Rithmic Order Routing" "$DAYLOG"; then fail "trade route 'Rithmic Order Routing' seen — orders silently cancel on this account"; fi
-grep -aq "route='simulator'\|fallback 'simulator'" "$DAYLOG" && ok "route simulator" || warn "no route line seen"
-want_ct=$(j trade_contract); got_ct=$(grep -a 'Trading contract:' "$DAYLOG" | tail -1 | sed -E 's/.*Trading contract: *//')
+grep -aq 'ORDER_PLANT login OK' "$CHECKLOG" && ok "ORDER_PLANT login" || fail "no ORDER_PLANT login in the session block"
+grep -aq 'PNL_PLANT position subscription OK' "$CHECKLOG" && ok "PNL_PLANT subscription" || fail "no PNL_PLANT subscription in the session block"
+if grep -aq "Rithmic Order Routing" "$CHECKLOG"; then fail "trade route 'Rithmic Order Routing' seen — orders silently cancel on this account"; fi
+grep -aq "route='simulator'\|fallback 'simulator'" "$CHECKLOG" && ok "route simulator" || warn "no route line seen"
+want_ct=$(j trade_contract); got_ct=$(grep -a 'Trading contract:' "$CHECKLOG" | tail -1 | sed -E 's/.*Trading contract: *//')
 if [[ -n "$want_ct" && "$got_ct" == "$want_ct" ]]; then ok "contract $got_ct = config"; else fail "contract mismatch: log '$got_ct' vs config '$want_ct'"; fi
 if [[ -n "$want_ct" ]]; then
   exp=$("${PSQL[@]}" -c "select expiry_date||'|'||coalesce(roll_date::text,'') from contracts where contract='$want_ct'" 2>/dev/null)
@@ -71,7 +87,7 @@ rows=$("${PSQL[@]}" -c "select count(*) from live_trades where account_label='$A
 open_rows=$("${PSQL[@]}" -c "select count(*) from live_trades where account_label='$ACC' and trade_date='$DAY' and exit_time is null" 2>/dev/null); open_rows=${open_rows:-0}
 if (( rows == fill_x )); then ok "live_trades rows ($rows) = exit fills"; else fail "live_trades rows ($rows) != exit fills in log ($fill_x)"; fi
 (( open_rows == 0 )) && ok "no open live_trades row at audit time" || fail "$open_rows live_trades row(s) still open after the session"
-qty_cfg=$(j qty); bad_qty=$("${PSQL[@]}" -c "select count(*) from live_trades where account_label='$ACC' and trade_date='$DAY' and qty <> ${qty_cfg:-0}" 2>/dev/null)
+qty_cfg=$(j qty); bad_qty=$("${PSQL[@]}" -c "select count(*) from live_trades where account_label='$ACC' and trade_date='$DAY' and qty <> ${qty_cfg:-0}" 2>/dev/null)   # rota strategies trade 1 lot like the home config
 [[ "${bad_qty:-0}" == 0 ]] && ok "every row qty = config qty ($qty_cfg)" || fail "$bad_qty row(s) with qty != config $qty_cfg"
 net=$("${PSQL[@]}" -c "select coalesce(round(sum(pnl_usd)::numeric,2),0) from live_trades where account_label='$ACC' and trade_date='$DAY'" 2>/dev/null); net=${net:-0}
 cts=$("${PSQL[@]}" -c "select coalesce(sum(qty),0) from live_trades where account_label='$ACC' and trade_date='$DAY'" 2>/dev/null); cts=${cts:-0}
@@ -93,10 +109,17 @@ crit=$(grep -a 'CRITICAL' "$DAYLOG" | grep -av 'duplicate delivery' | wc -l)
 (( crit == 0 )) && ok "no CRITICAL lines" || fail "$crit CRITICAL line(s): $(grep -a 'CRITICAL' "$DAYLOG" | grep -av 'duplicate delivery' | head -2 | cut -c1-110 | tr '\n' ';')"
 
 # ── 5. risk + windows
-mdt=$(j max_daily_trades); (( rows <= ${mdt:-99} )) && ok "trades $rows <= max_daily_trades $mdt" || fail "trades $rows > max_daily_trades $mdt"
+# Limits are per strategy: the home instance's config governs its own tag; a hand-off/rota strategy is
+# capped at 3 trades/day by live_rota.sh and windowed by its own (since rewritten) config.
+tag=$(j strategy); tag=${tag:-ORB}
+home=$("${PSQL[@]}" -c "select count(*) from live_trades where account_label='$ACC' and trade_date='$DAY' and strategy='$tag'" 2>/dev/null); home=${home:-0}
+mdt=$(j max_daily_trades); (( home <= ${mdt:-99} )) && ok "$tag trades $home <= max_daily_trades $mdt" || fail "$tag trades $home > max_daily_trades $mdt"
+while IFS='|' read -r st n; do [[ -z "$st" ]] && continue
+  (( n <= 3 )) && ok "hand-off $st trades $n <= 3" || fail "hand-off $st trades $n > 3 (rota cap)"
+done < <("${PSQL[@]}" -c "select strategy, count(*) from live_trades where account_label='$ACC' and trade_date='$DAY' and strategy <> '$tag' group by 1" 2>/dev/null)
 leh=$(j last_entry_hour); lem=$(j last_entry_min); lem=${lem:-0}
-if [[ -n "$leh" ]]; then late=$("${PSQL[@]}" -c "select count(*) from live_trades where account_label='$ACC' and trade_date='$DAY' and (extract(hour from entry_time at time zone 'America/New_York')*60+extract(minute from entry_time at time zone 'America/New_York')) >= ${leh}*60+${lem}" 2>/dev/null)
-  [[ "${late:-0}" == 0 ]] && ok "no entry at/after the ${leh}:$(printf %02d "$lem") ET cutoff" || fail "${late} entry(ies) after the ${leh}:$(printf %02d "$lem") ET cutoff"; fi
+if [[ -n "$leh" ]]; then late=$("${PSQL[@]}" -c "select count(*) from live_trades where account_label='$ACC' and trade_date='$DAY' and strategy='$tag' and (extract(hour from entry_time at time zone 'America/New_York')*60+extract(minute from entry_time at time zone 'America/New_York')) >= ${leh}*60+${lem}" 2>/dev/null)
+  [[ "${late:-0}" == 0 ]] && ok "no entry at/after the ${leh}:$(printf %02d "$lem") ET cutoff" || fail "${late} $tag entry(ies) after the ${leh}:$(printf %02d "$lem") ET cutoff"; fi
 halts=$(grep -a 'Trading halted' "$DAYLOG" | sed -E 's/.*Trading halted: //' | grep -vE '^(shutdown|eod)' | sort | uniq -c | awk '{printf "%s×%s ", $2, $1}')
 [[ -z "$halts" ]] && ok "no risk/feed halts" || warn "halts: $halts"
 

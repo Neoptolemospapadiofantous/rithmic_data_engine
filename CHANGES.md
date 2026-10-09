@@ -17,8 +17,6 @@ windows size themselves from the room.
 
 ## 2026-10-09 — live rota: size each window from the drawdown room (1 NQ when it fits, else MNQ)
 
-## 2026-10-09 — live rota: size each window from the drawdown room (1 NQ when it fits, else MNQ)
-
 Founder: "check if we can do 1 NQ contract, if not do as many MNQ", with risk per trade = half the room.
 `scripts/live_rota.sh` reads the newest `[BROKER-HWM]` room from either live instance's log and sizes the
 window's strategy so one full stop (`sl_points` × $/pt × qty + `commission_rt`) fits in 0.5 × room: 1 NQ when it
@@ -45,6 +43,347 @@ instead of 05:03. London late's `0918` is not valid octal, so that wait loop wou
 account straight back after the switch. `strategy_handoff.sh` now converts all three times with `10#`.
 NY and Asia were unaffected: their times have no leading zero. After the fix the London early window was
 re-armed at 03:47 ET (`systemctl --user start live-rota@ldn_e`).
+
+## 2026-10-08 — manual signals on every session, with trail and exit alerts
+
+Founder: "go on all sessions and wait for a signal for me to execute 1 contract … the most WR strategies
+with the less drawdown … we will also trail and signal for me to exit."
+
+- **Publisher generalised** (`src/paper/signal_publish.hpp`, `paper_main.cpp`): any trend-engine mode with
+  `"publish_signals": true` publishes (was trend_confirm only; non-tcf states carry `"mode":"other"` and stage
+  `watching`). The manual stop = the broker's working stop (initial, break-even, trail ratchet), tightened by
+  trend_confirm's own trail. Telegram now sends, besides the entry (now "1 contract · 1R = $ NQ / $ MNQ"):
+  `🔒 MOVE STOP` when the stop tightens by ≥ max(2 pts, ¼R) (and `live_signals.stop` follows it —
+  `PaperDb::update_live_signal_stop`), `🟡 EXIT NOW — CLOSE` on a strategy / target / window exit, and
+  `⚪ STOPPED OUT` on a stop, break-even or trail exit. Test: `signal_publisher_trail_and_exit_alerts`.
+- **Signal set** (`config/paper_fleet.json`) — founder: "ORB, momentum / trend and a mean reverse strategy
+  whenever the regime and conditions match", lowest drawdown "so we can pass the accounts", tight trail.
+  Published as `sig_*` copies (the forward-test originals keep their settings and history):
+  `sig_orb_5_15_10` (copy of the live ORB: 5-min range, 15-pt stop, 10-pt trail, 3 trades, entries to 10:30 ET),
+  `sig_ny_trend_vwap_rgx` (`trend_vwap_5m__rg_expand` — only on expanding days: 23 trades / 8 sessions, 4 % losers,
+  +$1,328, worst day +$5), `sig_ny_rsi2_btp` (`mr_rsi2_15m__btp`: 21 / 11, 33 % won ≥2 pts, 0 losers) and
+  `sig_ny_keltner_btp` (`keltner_ride_20_15m__btp`: 17 / 10, 53 % won, 0 losers) — 09-21..10-07, backfill
+  replay before 09-29, forward after — plus `sig_tky_band_fade_5m` (Asia 20:00–22:00) and
+  `sig_ldn_donchian_55_5m` (London 07:00–09:15, `nt_ldl_trend_donchian_55_5m_s_g0`: 22 / 8, 0 losers). Regime
+  gating did NOT help mean reversion (range/fade-gated copies: 2–10 trades, one losing) and regime-gated ORB
+  copies only scratched, so neither is used. The tcf5_* set stopped publishing (max DD $2.6–7.4k at 1 NQ).
+  **The low-loss records are mostly break-even scratches (median trade ~36 s)** — the stop moves to entry +1
+  at +3 pts automatically, so the entry alert carries the BRACKET to set on the platform.
+- **ORB engine publishes** (`SignalPublisher::on_tick_orb`, test `signal_publisher_orb_engine`).
+- **Paper entry cutoff is minute-granular** (`last_entry_min` parsed by the fleet config; the paper broker's
+  window used the hour only and would have stopped the ORB copy at 10:00). No existing strategy set the key.
+  Test `entry_window_minute_cutoff`; parity test still passes.
+- **Tight trail, decided by replay** (`config/ttrail_fleet.json`, 66 variants, label `ttrail`): every sig_*
+  strategy × trail_step {2,3,4,6, current} × trail_delay_secs {0,300} + exact control. The evening deploy
+  applies per strategy the variant with the highest share of trades won by ≥2 pts among those with net > 0,
+  max drawdown ≤ the control's and ≥80 % of its trades (else keeps the current trail) and Telegrams the result.
+- **Signals are for 1 MNQ** (founder, 10:10 ET: "switch the signals to MNQ" — the account has ~$300 of drawdown
+  room, below one 18–20-pt NQ stop). Telegram entry / move-stop / exit texts take the instrument and $/pt from the
+  fleet config (`OrbConfig::symbol` / `point_value`, MNQ / $2): "🟢 LONG / BUY MNQ … 1R 18.00 pts = $36 on 1 MNQ".
+  Levels still come from the NQ feed (same index price). Tests assert the MNQ text.
+- **Running today** (founder: "run these live"): the six sig_* strategies publish from a separate paper engine
+  (`config/sig_live_fleet.json`, label `sig_live`, transient unit `paper-signals-live`, build-exp binary) — the
+  main fleet was not restarted mid-session. The evening deploy stops it right before the main engine restarts.
+- **Set revised 10:20 ET** (founder: "highest winning strategy with less drawdown … all sessions every day"):
+  the paper ORB copy stopped publishing — on 09-21..10-07 it made PF 0.81 / −$23 on MNQ while the LIVE ORB made
+  +173.9 pts with a worst trade of −2.25 (paper ORB does not reproduce live; investigate after the close).
+  Added `sig_ldn_early_ema_pb_1m` (London 02:00–05:00, copy of `nt_ldn_trend_ema_pb_9_21_1m_s_g1`: 13 trades /
+  5 sessions, PF 2.5, DD $25 on MNQ — thin). Coverage: Asia 20–22, London 02–05 and 07–09:15, NY RTH; no
+  research yet for 18–20, 22–02 and 05–07 ET.
+- **Live executor trade alerts** (`scripts/live_trade_alerts.sh`, user unit `live-trade-alerts`, enabled): the
+  executor sends only incident alerts, so a read-only watcher turns its order stream into the same Telegram
+  format — entry (fill on the `entry` order) with the account's BRACKET, each material `stop_loss` re-placement
+  (break-even, trail), and the exit from the completed `live_trades` row (the executor writes it only at the
+  close). Replayed today's three ORB trades in `--dry` mode before enabling. Starts at the newest rows.
+- **Missing-window research** (founder: "add research for the missing windows tonight"): `config/gap_fleet.json`
+  (1,700 `gw_*` variants, label `gap`) = the night grid's Tokyo template (224 trend/momentum/bounce bases, 44 mtf
+  scalpers, 72 session ORBs, × stop sets × liquidity gate) moved to ue 16:00–16:55, ae 18:00–20:00, al1
+  22:00–23:59, al2 00:00–02:00 and lm 05:00–07:00 ET (al split at midnight so no window wraps). `scripts/gap_eval.sh`
+  runs `scripts/night_eval.sh` with NIGHT_CFG/NIGHT_LABEL/NIGHT_OUT (new env overrides, defaults unchanged) and
+  Telegrams the lowest-drawdown strategy per window that clears ≥10 trades / ≥5 sessions / PF ≥1.5 / net >0 on
+  1 MNQ. Nothing is added to the signals automatically.
+- **Trade timeline** — founder: "fully show the entry, exit, full status of the trade alongside signals and
+  exit". `live_signals.events` (JSONB, added by the schema list): `entry`, `breakeven`, `trail` / `stop`
+  moves and `exit` (price, stop after the event, points, reason), appended by the publisher at the same
+  moments as the Telegram alerts (`PaperDb::append_live_signal_event`). The dashboard shows it as a
+  status strip (phase initial stop / break-even / trailing, now, open pts and $ NQ/MNQ, R, locked pts,
+  best) on the Signals banner, the strategy card and under the Chart badge, plus BE / trail markers on the
+  chart and a timeline column in the Signals history.
+- Takes effect at the 16:08 ET paper-engine restart (deploy also builds and runs `test_paper_broker`).
+  **Re-freeze golden** after it (`make golden` then `make golden-freeze`): two new ids add trades.
+
+## 2026-10-07 — trend_confirm research grid + generic research evaluator
+
+Founder: a dedicated up/down-trend momentum strategy with regime, bid/ask, liquidity and trend
+confirmations (mode `trend_confirm`, built separately in the trend engine). Research tooling:
+- `config/tcf_fleet.json`: 2,432 variants (label `tcf`). RTH 09:45–15:30 and post-ORB 10:30–15:30
+  (1,024 each): tf {3,5} × entry {pullback, breakout} × ER min {0.30, 0.45} × VWAP slope {0, 0.2} ×
+  delta flow {0, 0.55} × book imbalance_min {0, 0.6} × liquidity gate {off, ≥400/min & ≤25 pts/1k} ×
+  trail {2.0, 3.0 ATR} × EMA exit {on, off} × min ATR {0, 4 (tf3) / 6 (tf5)}; overnight (globex anchor,
+  128 each): London 02:00–09:15 gated (≥130/min & ≤70 pts/1k), the same London without the gate (to
+  measure it), Asia 20:00–02:00 gated. Founder's reference move: 2026-10-07 04:30–07:30 ET, NQ
+  31426 → 31249 — the report lists every trade any variant took in it.
+- `scripts/research_eval.sh <config> <label> [report] [--force]`: generalises night_eval.sh — registers
+  ids, replays each unreplayed session from the previous weekday 09:00 to d 16:05 under `<label>_tmp`
+  (indicator warm-up) and keeps only session d's entries, [prev weekday 18:00, d 16:05) — Asia evening
+  included, no duplicate warm-up rows, refuses in RTH / the Asia session,
+  holds a per-label lock, refuses if `build/paper_engine` lacks a mode the grid uses, logs collector
+  drops; report by every params key that varies, plus the top 25 consistent variants
+  (`data/research/<label>/report.md|json`).
+- `deploy/tcf-eval.{service,timer}` weekdays 16:45 ET (installed, enabled).
+
+---
+
+## 2026-10-07 — trend_confirm: a dedicated up/down-trend momentum mode with stacked confirmations
+
+Founder: "a good uptrend / downtrend dedicated strategy, trend / momentum, with confirmations of the
+regime, bid/ask line up, enough liquidity/volume and it's trending". New trend-engine mode
+`trend_confirm` (`trend_strategy.hpp`, keys `tcf_*`); paper research only, no live config touched.
+- **Trending:** own EMA stack fast > mid > slow (9/21/50) with mid rising vs 3 bars ago (mirror for
+  downtrends); Kaufman efficiency ratio ≥ `tcf_er_min` over `tcf_er_bars`; session-VWAP slope over 6
+  bars ≥ `tcf_slope_min` × ATR and the close on the trend side of VWAP.
+- **Order flow / volume:** rolling aggressor buy share ≥ `tcf_flow_min` over `tcf_flow_bars` (≤ 1 − x
+  for shorts), trigger-bar delta with the trade, trigger volume ≥ `tcf_vol_mult` × the 20-bar average.
+- **Volatility:** tf ATR in points within [`tcf_min_atr`, `tcf_max_atr`] (0 = off).
+- **Any session:** the VWAP anchor follows `session` (rth / globex / window) and entries follow
+  `win_start`..`win_end` — London / Asia windows work exactly as NY does.
+- **Entries:** `pullback` (a recent bar touched EMA-fast while the trend held, then a close beyond the
+  prior bar's extreme) or `breakout` (a close beyond the prior `tcf_bo_bars` extreme).
+- **Exits (strategy-managed, every tick):** stop = pullback structure ∓ 0.25 ATR capped at
+  `tcf_stop_atr` × ATR; after +1R a `tcf_trail_atr` × ATR trail; optional close through EMA-mid
+  (`tcf_exit_ema`) and fixed `tcf_target_r`. Reasons tcf_stop / tcf_trail / tcf_ema_exit / tcf_target.
+- **Book alignment and liquidity** are not duplicated in the mode: variants combine it with the
+  existing host gates (`imbalance_min`, `liq_vol_min` / `liq_impact_max`, `regime_min_eff`,
+  `regime_with_move`, `rvol_min`), which run identically on paper and live.
+- Every entry logs its confirmation values (ER, slope, flow, volume ratio, EMA stack, VWAP); a
+  pattern bar that fails a confirmation logs which ones.
+- Tests (`test_trend_strategy`, 8 new, suite 125 ok): uptrend pullback LONG at the trigger close;
+  chop does not enter; selling flow blocks the long; breakout LONG; structural stop; trail after
+  +1R; ATR outside [min, max] blocks; mirrored downtrend SHORT.
+- **Reference move check (founder):** today's London downtrend, NQ 31426 → 31249 between 04:30 and
+  07:30 ET. Scratch harness fed from `bars_1m` (1m bars with their aggressor-buy volume, no replay),
+  defaults with tf 5 / session globex / window 02:00–09:15: 03:55 ET SHORT 31406.00 stopped 03:59 at
+  31430.75 (−1R, −24.75 pts, a probe before the top); **05:10 ET SHORT 31386.25 held through the
+  05:45–06:15 / 06:45 / 07:15 pullbacks and trailed out 07:59 at 31282.25 (+104 pts, +4.2R)**. Net +79
+  pts. The pullback-short pattern itself fired on several earlier bars but was held back by ER / VWAP
+  slope until the trend was established.
+
+---
+
+## 2026-10-07 — trend_confirm live state + manual-trading signals (dashboard feed)
+
+Founder: "a dedicated live strategy page that handles this one and shows me the progress of a
+pullback and a signal for me to take; if the strategy doesn't fully complete, don't create a signal".
+Paper engine side (the page is in ~/Desktop/bot):
+- `TrendStrategy::tcf_status(now_us)` — public live status of a trend_confirm strategy: stage
+  (outside_window / no_trend / trend / pullback / trigger_ready / in_trade, plus `stage_flat` = the
+  stage ignoring the strategy's own position flag), bias, every confirmation value + ok flag, the
+  pullback (touched, bars since, touch price, trigger level/distance), EMAs/VWAP. The confirmation
+  maths moved into one helper `tcf_confirm()` used by BOTH the entry decision and the status, so the
+  page cannot show a check the strategy would fail (behaviour unchanged: 125 trend checks still pass).
+- `src/paper/signal_publish.hpp` (new): for fleet strategies with `"publish_signals": true`,
+  `live_signal_state` (one row per strategy, JSONB) is upserted at most every 5 s and at once on a
+  tf-bar close / entry / exit; host gates the strategy cannot see are added (liquidity via
+  RegimeState::liquidity, book imbalance via QuoteState) and a would-be trigger_ready that a host gate
+  would block is shown one step back. `live_signals` gets ONE row only when the paper broker ACTUALLY
+  OPENS the position (all confirmations + gates passed) — entry = broker fill, stop = strategy stop,
+  1R/2R targets — closed with the broker's exit price/reason; each new row sends one grid-notify line.
+  Replay/audit runs and warm-up publish nothing. PaperBroker gained last-exit accessors; PaperDb gained
+  `upsert_signal_state` / `insert_live_signal` / `close_live_signal` and the two tables in its schema.
+- Tests: `tcf_status` stage progression no_trend → trend → pullback → trigger_ready with no signal
+  (test_trend_strategy); `signal_publisher_only_on_actual_entry` (test_paper_broker): a book-gate block
+  writes state but NO signal row; a filled entry writes exactly one, closed on flatten.
+- Open (not changed): in the paper engine a trend signal BLOCKED by a host gate is not released back to
+  the strategy (the executor releases it since 2026-10-05) — the strategy may sit "in position" with
+  nothing filled until its own exit logic or the session reset. The publisher shows the broker's truth.
+
+---
+
+## 2026-10-08 — signals say LONG / SHORT first
+
+Founder: "need to know if it's long or short". Telegram now starts with "🟢 LONG / BUY NQ" or
+"🔴 SHORT / SELL NQ" (signal_publish.hpp; deployed to the paper fleet after the 16:05 close — a
+mid-London restart would flag every fleet session). Signals page: the banner leads with a large
+coloured "▲ LONG · BUY" / "▼ SHORT · SELL", the browser notification title is "🟢 LONG — BUY NQ" /
+"🔴 SHORT — SELL NQ"; chart markers read "LONG · ldn" / "SHORT · ldn" (dashboard, live now).
+First London signal (02:00 ET): tcf5_ldn / _ng / _bo SHORT 31324 → trail exit 31257.50 at 03:22,
++66.5 pts (+2.24R); tcf5_ldn_book refused by its book gate (imbalance).
+
+---
+
+## 2026-10-08 — signal rows record the entry decision's own confirmations
+
+First live trend_confirm signal (tcf5_asia, 00:00 ET, SHORT 31350.25 → stop 31379, −1.03R) was
+recorded with `vol_ok: false, vol_ratio 0.00` although the engine's ENTRY line shows vol 1.44x: the
+publisher read `tcf_status()` at the FILL, one tick into a fresh, empty forming bar. Now mode_tcf
+saves the decision's values at entry (`TrendStrategy::tcf_entry_snapshot()`, stage "signal") and the
+publisher writes those to `live_signals.checks`. Test `entry snapshot keeps the trigger bar's
+confirmations`. Row 1 corrected from the ENTRY log (`checks.corrected` notes it). Paper fleet
+rebuilt + restarted 00:42 ET (before London, before 03:00 so no restart-session flag), 0 collector
+drops. Record-only change: no entry/exit decision differs.
+
+---
+
+## 2026-10-07 — trend_confirm 5m in the paper fleet + live Signals page; refused trend signals released
+
+- **Paper fleet +9 `tcf5_*`** (founder: "add it to the paper fleet on 5m"): trend_confirm, 5m, pullback
+  defaults — London 02:00–09:15 (liquidity gate / no gate / breakout / book-gate twins), Asia
+  20:00–02:00 (liquidity gate), NY 09:45–15:30 (plain / liquidity / breakout), post-ORB 10:30–15:30.
+  `publish_signals: true` → the paper engine writes `live_signal_state` (≤ every 5 s + bar close /
+  entry / exit) and a `live_signals` row ONLY when the broker actually opens the trade (every gate
+  passed), with a fail-open grid-notify line. Fleet 4,829 → 4,838; restarted 16:35 ET, 0 collector drops.
+- **Bug fixed — a refused trend signal froze the strategy for the session** (paper engine; the live
+  executor got the same fix 10-05): the trend engine marks itself in position after its signal
+  callback, so a gate/cooldown refusal left it "in position" with nothing filled. paper_main now
+  releases it when the broker has no position and no pending entry. Golden 2026-09-22: +258 trades
+  from 170 gated trend variants (now taking their next setup), 0 removed, deterministic — re-frozen.
+  ORB paper variants are not covered by this release (live ORB has no host gates); parity follow-up.
+- **absorption_zone grid result (azq, 13 sessions): 0 trades.** Classifier fine (most days TREND);
+  only 2 distinct absorption events in 13 sessions, 0 triggers — the spec's AND of narrow zone touch
+  + volume + counter-flow + held close + 3-bar trigger is too strict for NQ 5m. Not loosened (founder's call).
+
+---
+
+## 2026-10-07 — absorption_zone: the founder's "Absorption Strategy Spec" as a trend-engine mode
+
+Founder: "build all scenarios" of the spec (written for a Python backtester; built in the C++ trend
+engine instead — same code on paper and live, replayable on recorded ticks, house no-Python rule).
+New mode `absorption_zone` (`trend_strategy.hpp`, all keys `az_*`, 5m bars):
+- **Day type** at +30 / +60 min: 5 votes — open vs prior value area, opening range (2 closes outside
+  vs both sides traded), VWAP slope (|Δ6 bars|/ATR ≥0.3 / <0.15), cumulative delta (with price, ≤40 %
+  retrace vs ≥2 sign flips), pullbacks (no VWAP touch since the OR break vs ≥2 VWAP crosses) → Trend
+  (≥3, with the OR-break direction, not back inside the OR) / Balance (≥3) / Neutral. 60-min
+  reclass: Trend back inside the OR → Balance; Balance breaking out with |cum delta| ≥ 3× avg bar
+  volume → Trend; then frozen. `az_daytype=false` skips the classifier.
+- **Setups:** Trend → absorption at the VWAP/EMA-20 zone (exists when |vwap−ema20| ≤
+  `az_zone_width`×ATR, ±0.25 ATR) in the OR-break direction; Balance → absorption at VWAP ±2 SD
+  (new volume-weighted SD bands), target VWAP. Absorption = zone touch + volume ≥ `az_vol_mult`×avg
+  + delta against the trade ≥ `az_delta_thresh`×volume + close held in/beyond the zone; trigger =
+  close beyond the zone with delta in favour within `az_trigger_window` bars. Optional divergence,
+  EMA-200 bias, VWAP-slope filter, stacked-level count (prior POC/VAH/VAL/H/L, overnight H/L, VWAPs
+  anchored at prior-day high/low and the week open), min R:R, one re-entry per zone if the new
+  absorption has more volume, zone dead after 2 stops, −3R daily stop.
+- **Exits** checked every tick by the strategy (stop = absorption extreme ∓ 2 ticks; targets per the
+  spec). One contract cannot scale out, so `az_exit` = t1 (all out at target 1) / t2 (stop to entry
+  at t1, out at t2) / trail (stop to entry at t1, out on a 5m close through EMA 20). The broker's
+  sl_points is a catastrophe stop only.
+- Tests (`test_trend_strategy`): balance fade fires and exits at VWAP; volume near-miss and a close
+  below the zone do not fire; structural stop; t2 break-even; Trend-up and Balance day-type fixtures.
+- **Grid** `config/azq_fleet.json`: 2,304 variants (setups × classifier on/off × exit × volume ×
+  delta × divergence × EMA-200 × slope × zone width × entry window), replay label `azq`;
+  `azq_bo_dty_trail_v12_d15_divn_ey_sy_z5_w1100` = the spec defaults. Paper research only.
+- Not built: news calendar buffer and NYSE TICK internals (no feeds — the spec's stubs pass), the
+  Excel journal column names (journal not supplied), true ⅓-scaling (needs ≥3 contracts).
+
+---
+
+## 2026-10-07 — live ORB switched to 1 MNQ (founder)
+
+10-06: the ORB signalled 3 times (09:36 SHORT first); each was refused by the broker-room guard
+(room $90.38 < one 1-NQ stop $301.82) and — the 10-05 fix working — released, so it could signal
+again. With $90 of room no 1-NQ trade can ever pass, so founder chose "Switch to 1 MNQ":
+`config/tradeify_config.json` symbol MNQ / trade_contract MNQZ6 / point_value 2 (qty 1, commission
+1.82 = the measured MNQ fee, entries ≤10:30, 3/day unchanged; signals still from NQ ticks). Backup
+`config/archived/live_history/tradeify_config.pre-mnq1-*.json`. `--check-config` OK; executor
+restarted 00:4x ET (flat): `Trading contract: MNQZ6`, `room=90.38`, no BROKER-ROOM refusal (one MNQ
+stop ≈ $31.82). pre_rth_check / execution_audit already handle MNQ (pv 2, contract prefix, room vs
+stop). Note: ~2 straight MNQ stop-outs would use the room up again.
+
+**Order test — PASS (09:01 ET, founder: "test that we can place a trade").** New
+`nq_executor --drill probe` + `scripts/order_probe.sh [account] [--force]`: stops the live unit
+(NO_DEPLOY held), confirms the exchange FLAT, sends 1 BUY LIMIT 100 pts below the last price,
+waits for the exchange to accept it (`open`), cancels, waits for `complete` with nothing filled,
+then always restarts the live unit. Refuses inside 09:25–10:35 ET and when not flat. Live result:
+MNQZ6 LIMIT 31156.00 (last 31256.00) on RTG25785042011 via `simulator` — working at the exchange
+195 ms after sending, cancelled, filled 0, balance unchanged $24,280.24. First attempt failed
+safely (drill mode halts the strategy, which then ignores ticks → no price): the probe now prices
+off the executor's own last tick.
+
+---
+
+## 2026-10-05 — no live trade today: trailing-drawdown room; guard now matches Tradeify; ORB release fixed
+
+Founder: "why did we not take any trades today" → "please fix anything that made it to not trigger"
+→ "add logs and debugging to check the flow is correct and won't break anything".
+
+- **Why no trade (correct behaviour, unchanged):** the ORB signalled LONG at 09:35:04 ET and risk
+  refused it — broker room $137 < one 1-NQ stop $301.82. Tradeify's own numbers (Growth 25k,
+  balance $24,280.24, trailing max drawdown **$24,189.86**) put the real room at **$90.38**: a
+  1-NQ trade that stops out fails the evaluation. Only a smaller contract (1 MNQ ≈ $32 per stop)
+  fits — founder's decision, live config untouched.
+- **Guard was LOOSER than Tradeify** (our mark 25,143.12 vs theirs 25,189.86, −$46.74): the
+  high-water mark only saw sampled tid=451 balances and missed the intraday peak of 10-02's trade 2.
+  New `notif::open_equity_peak()`: while a position is open, every tick raises the mark to
+  last FLAT balance + (best open move + `hwm_margin_pts`, default 2.0) × point value × qty (Tradeify's
+  mark implied ~1.3 pt beyond our highest recorded print; the collector had 30-s feed gaps then).
+  Persisted once flat. On 10-02 it gives a floor of 24,206 — stricter than Tradeify's, never looser.
+  Stored mark corrected to 25,189.86; startup now logs `halt when balance <= 24189.86`, `room=90.38`.
+  Test `open_equity_peak_is_at_least_as_strict_as_the_broker`.
+- **Bug fixed — a refused ORB signal blocked the rest of the day.** `OrbStrategy::check_breakout`
+  sets `in_position` AFTER the signal callback, so every "release" the executor did INSIDE the
+  callback (stale feed, book/regime gate, chase limit) was overwritten, and a risk rejection had no
+  release at all. All engines now queue the release and `settle_strategy()` applies it after the
+  callback (the trend engine already worked this way). Strategy logic untouched. Test
+  `release_inside_callback_is_overwritten_release_after_works`.
+- **Logs:** every entry signal leaves an `[ENTRY-FLOW]` trail (received → skipped/refused or order
+  placed → released); `[BROKER-HWM] open-position peak …` and `persisted open-position peak …`.
+- **Safety:** `nq_executor` used to START A LIVE EXECUTOR on `config/orb_config.json` for any
+  unknown argument (it happened once today with `--help`: an old Legends config, after the close,
+  killed within seconds — no orders, no rows, no session disturbed). Now `--help` prints usage, and
+  an unknown argument or a missing `--config` exits 2. Every launcher already passes `--config`.
+- Restarted after the close: `nq-executor-local@tradeify`, `@tradeify_mtfasia`. hermes-fast 16/16.
+
+---
+
+## 2026-10-04 — liquidity gate; overnight trend variants could never enter (fixed); Asia/London grid
+
+Founder: trade momentum / trend on Asia and London when the book is not thin; "create as many
+combinations as possible to check the stats".
+
+- **Liquidity gate** (`paper_quote.hpp` RegimeState, live + paper): `liq_vol_min` (mean contracts
+  per minute over the last `liq_bars` closed minutes, default 15) and `liq_impact_max` (points of
+  1-min range per 1,000 contracts — a thin book moves far on little volume). Fail-closed while
+  warming up. Off by default; no live config sets it. Test `liquidity_gate_reads_volume_and_impact`.
+- **Bug fixed — overnight trend variants never entered.** The paper broker's entry window comes
+  from `session_open_*` / `eod_flatten_*` / `last_entry_hour` (default 09:30–15:55); a trend
+  variant's own `win_start`/`win_end` never reached it, so the 300 fleet trend variants with
+  windows outside RTH took **0 overnight trades in 11 sessions**. `orb_config_for` now maps an
+  out-of-RTH trend window onto the broker window (explicit keys still win; RTH windows untouched,
+  golden unchanged). Test `trend_window_sets_broker_window_overnight_only`. Paper only — a live
+  overnight trend config must still set the session keys itself.
+- **Overnight grid** `config/night_fleet.json` (948 `nt_*` variants: 28 trend-engine bases, 11 mtf
+  scalpers, session ORBs × Tokyo 20:00–22:00 / London 02:00–05:00 / London-late 07:00–09:15 ×
+  stops × gate off/100-80/130-70/160-65). Replay-only research under label `night` via
+  `scripts/night_eval.sh` + `deploy/night-eval.{service,timer}` (weekdays 16:30 ET);
+  report `data/night/report.md`. First 9 sessions: the gate cuts losses in every window/family
+  (e.g. London momentum median −$603 → −$173..−$231) but no group is clearly positive; 1 of 948
+  combinations passes the consistency bar (`nt_ldl_mtf_htf30_v5_g0`, 39 trades, +$1,954, PF 1.55)
+  — at 948 tries that is a lead for the forward test, not a result. Bounce loses everywhere.
+- Hourly NQ liquidity (8 sessions): overnight 64–83 pts per 1k contracts vs 15–20 in US hours;
+  best overnight windows 20:00 Tokyo, 02:00–04:00 London open, 07:00–08:30. The BBO feed is
+  throttled (~3–4 quotes/s, size = order count) — spread/top size are relative only.
+
+---
+
+## 2026-10-04 — second-strategy paper test for 10:30–12:00 ET (slot 2); 11 candidates in the fleet
+
+Founder: keep the ORB as is; find the best bounce / trend / momentum strategy for the window
+after it where volume and volatility still give consistent trades. Paper only — no live config
+or strategy code changed.
+
+- Why 10:30–12:00: 15-min NQ range averages 75 pts there (ORB hour 106, after 14:00 ~47) on
+  ~60 % of the ORB hour's volume (bars_1m, 9 sessions 2026-09-22..10-02).
+- `config/slot2_fleet.json`: 11 windowed copies (`s2_*`) of the best live-runnable variant per
+  family on the forward test (trend: vwap_trend ×2, supertrend, fib_pullback; momentum:
+  opening_drive ×2, mtf flags/loose; bounce: rsi2, vwap_fade, failed_breakout).
+- `scripts/slot2_eval.sh` + `deploy/slot2-eval.{service,timer}` (weekdays 16:20 ET): replays
+  each new session under label `slot2`, rewrites `data/slot2/report.md`. Candidates were picked
+  on sessions ≤ 2026-10-02, so the verdict uses later sessions only. Pass criteria fixed up front.
+- Same 11 ids added to `config/paper_fleet.json` (4,818 → 4,829) for the live forward test.
+- Golden re-frozen: +14 trades on 2026-09-22, all from `s2_*` ids; 0 existing trades changed,
+  determinism identical.
+
+---
 
 ## 2026-09-30 — execution validation every day; feed drops fixed; ORB live on 1 NQ, 3 trades, first hour
 

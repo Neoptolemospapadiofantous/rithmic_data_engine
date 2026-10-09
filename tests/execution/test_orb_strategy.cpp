@@ -550,6 +550,40 @@ TEST(entry_timeout_releases_strategy_for_next_cross) {
     ASSERT_EQ(s.session().trades_today, 2);        // the missed attempt still counts toward the daily cap
 }
 
+// 2026-10-05: the ORB fired at 09:35 and risk rejected it (broker room $137 < one stop). The executor
+// used to "release" the ORB from INSIDE the signal callback — but check_breakout() sets in_position
+// AFTER the callback returns, so the release was overwritten and the ORB sat out the rest of the day
+// (same for the stale-feed / gate / chase skips). The executor now releases AFTER the callback
+// (settle_strategy). This test pins both halves of that fact.
+TEST(release_inside_callback_is_overwritten_release_after_works) {
+    OrbConfig cfg = make_cfg();
+    std::vector<CapturedSignal> signals;
+    OrbStrategy s(cfg);
+    bool release_inside = true;
+    s.set_signal_callback([&](OrbSignal sig, double price, const std::string& reason) {
+        signals.push_back({sig, price, reason});
+        if (release_inside) s.notify_trade_filled(sig);   // the OLD executor behaviour
+    });
+    s.reset_session();
+    s.seed_orb_range(19100.0, 18950.0);
+    anchor_after_seed(s);
+
+    s.on_tick(make_tick(10, 10, 0, 19105.0));      // BUY — "rejected" and released inside the callback
+    ASSERT_EQ(signals.size(), (size_t)1);
+    ASSERT(s.session().in_position);               // the in-callback release did NOT stick
+    s.on_tick(make_tick(10, 10, 20, 19090.0));     // back inside
+    s.on_tick(make_tick(10, 10, 40, 19106.0));     // re-cross: blocked — the old bug
+    ASSERT_EQ(signals.size(), (size_t)1);
+
+    release_inside = false;
+    s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:no_order");   // what settle_strategy() does now
+    ASSERT(!s.session().in_position);
+    s.on_tick(make_tick(10, 11, 0, 19090.0));      // back inside (after the 5 s cooldown)
+    s.on_tick(make_tick(10, 11, 20, 19106.0));     // re-cross → a new BUY
+    ASSERT_EQ(signals.size(), (size_t)2);
+    ASSERT_EQ(s.session().trades_today, 2);        // the rejected attempt still counts toward the cap
+}
+
 // 2026-10-01: the stale-feed entry gate — a signal from a tick more than feed_max_lag_s old is skipped.
 TEST(feed_too_stale_gate) {
     const int64_t now = 1'790'862'503'000'000LL;
@@ -585,6 +619,7 @@ int main() {
     RUN(seeded_restart_first_tick_no_signal);
     RUN(notify_trade_filled_cooldown_applies_to_all_exits);
     RUN(entry_timeout_releases_strategy_for_next_cross);
+    RUN(release_inside_callback_is_overwritten_release_after_works);
     RUN(feed_too_stale_gate);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";

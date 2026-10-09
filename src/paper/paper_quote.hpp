@@ -145,6 +145,10 @@ struct RegimeState {
     // Tick volume per closed minute (any hour), newest last — the relative-volume gate's tape.
     std::deque<double> vol_hist;
     double vol_cur = 0.0; int vol_cur_min = -1;
+    // High-low range per closed minute, aligned with vol_hist — the liquidity gate's impact
+    // measure (points moved per 1,000 contracts: a thin book moves far on little volume).
+    std::deque<double> rng_hist;
+    double rng_hi = 0.0, rng_lo = 0.0;
 
     void set_atr(const std::string& d, double atr) { if (d != date) reset(d); atr_pts = atr; }
     void reset(const std::string& d) { date = d; open = high = low = last = 0.0; open_us = 0; minutes = 0; last_us = 0; }
@@ -156,10 +160,16 @@ struct RegimeState {
         // NOT reset by the date roll — relative volume compares against the recent tape)
         const int key = et_hour * 60 + et_min;
         if (key != vol_cur_min) {
-            if (vol_cur_min >= 0) { vol_hist.push_back(vol_cur); if (vol_hist.size() > 120) vol_hist.pop_front(); }
+            if (vol_cur_min >= 0) {
+                vol_hist.push_back(vol_cur); if (vol_hist.size() > 120) vol_hist.pop_front();
+                rng_hist.push_back(rng_hi - rng_lo); if (rng_hist.size() > 120) rng_hist.pop_front();
+            }
             vol_cur = 0.0; vol_cur_min = key;
+            rng_hi = rng_lo = price;
         }
         vol_cur += size;
+        if (price > rng_hi) rng_hi = price;
+        if (price < rng_lo) rng_lo = price;
         const int hhmm = et_hour * 100 + et_min;
         if (hhmm < 930 || hhmm >= 1600) return;         // RTH only
         if (open_us == 0) { open = high = low = price; open_us = ts_us; }
@@ -209,8 +219,20 @@ struct RegimeState {
         const int q = (int)std::lround(c.vt_risk_usd / (r->atr_pts * c.point_value));
         return std::max(1, std::min(std::max(1, c.vt_qty_max), q));
     }
+    // Liquidity over the last `bars` CLOSED minutes: mean contracts per minute, and impact =
+    // points of minute range per 1,000 contracts. False while fewer than `bars` minutes exist.
+    bool liquidity(int bars, double& vol_per_min, double& pts_per_1k) const {
+        const int n = (int)vol_hist.size();
+        if (bars <= 0 || n < bars || (int)rng_hist.size() < bars) return false;
+        double v = 0.0, r = 0.0;
+        for (int i = n - bars; i < n; ++i) { v += vol_hist[i]; r += rng_hist[i]; }
+        vol_per_min = v / bars;
+        pts_per_1k  = v > 0.0 ? r / v * 1000.0 : 1e9;
+        return true;
+    }
     static bool any_gate(const OrbConfig& c) {
-        return c.regime_min_range_atr > 0.0 || c.regime_max_range_atr > 0.0 ||
+        return c.liq_vol_min > 0.0 || c.liq_impact_max > 0.0 ||
+               c.regime_min_range_atr > 0.0 || c.regime_max_range_atr > 0.0 ||
                c.regime_min_eff > 0.0 || c.regime_max_eff > 0.0 ||
                c.regime_min_move_atr > 0.0 || c.regime_max_move_atr > 0.0 || c.regime_with_move != 0 ||
                c.rvol_min > 0.0 || c.rvol_max > 0.0;
@@ -220,6 +242,14 @@ struct RegimeState {
     // ungated fallback would silently turn the variant into its base.
     std::string gate(const OrbConfig& c, int dir) const {
         if (!any_gate(c)) return "";
+        // liquidity (2026-10-04): enough volume AND a book deep enough that it is not just thin
+        // (any hour; built for the overnight sessions). Fail-closed while warming up.
+        if (c.liq_vol_min > 0.0 || c.liq_impact_max > 0.0) {
+            double vpm = 0.0, imp = 0.0;
+            if (!liquidity(c.liq_bars, vpm, imp)) return "liq_warmup";
+            if (c.liq_vol_min > 0.0 && vpm < c.liq_vol_min) return "liq_vol_low";
+            if (c.liq_impact_max > 0.0 && imp > c.liq_impact_max) return "liq_thin_book";
+        }
         // relative volume first: it needs no session open and no ATR (any hour of the tape)
         if (c.rvol_min > 0.0 || c.rvol_max > 0.0) {
             const double rv = rvol(c.rvol_bars);

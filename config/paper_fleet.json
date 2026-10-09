@@ -1,5 +1,5 @@
 {
-  "_comment": "2026-09-29 VOLUME / VOLATILITY FILTERS (founder: \"everything as filters to fully understand what works\"): generic gates rvol_min/rvol_max/rvol_bars (relative minute volume) and vt_risk_usd/vt_qty_max (volatility-targeted size) on OrbConfig — live and paper; trend modes atr_break (open/prev_close ± k×day ATR) and vprofile (prior-session POC / value area, break or fade to the POC). 90-variant matrix (label volgrid): rvol ≥2.5 +$33/ct but 3 trades vs 20; rvol ≥1.5 +$11/ct, net −$23; quiet tape (rvol ≤0.8) −$10/ct; vol-targeting = size only ($/ct unchanged); atr_break and vprofile negative/tiny on six sessions. All in the fleet. 2026-09-29 beta_on_1800 (+__htf): the Tradeify-compatible overnight hold — enter at the 18:00 ET Globex reopen, out 09:30; stays inside one session, so unlike beta_on (15:55 entry) it does not cross the 16:45 close. 2026-09-29 BETA EXPOSURE (founder: \"for now add the rest in leaderboard rotation\" — paper only): trend-engine mode `hold` (enter at a clock time, out at the window end, position survives the 18:00 reset; paper-broker windows may wrap midnight) — beta_on (15:55→09:30 long, the overnight premium), __htf (4h EMA-20 trend filter), _tom (turn of month), _prefomc (day before fomc/nfp), _short (control), beta_close (15:00→15:59 on up days), beta_day (09:30→15:55). Wide stop 150 / no trail; 1 MNQ. NOT live-runnable: Tradeify forbids holding through 17:00 CT and the live EOD logic does not wrap. 2026-09-29 FOUNDER: \"we want all to keep running for ever and get stats per week, month, year\" — EVERY registered strategy runs, nothing is pruned again (the 09-26 retirements re-enabled, the 466 research ids from the 09-28 grids added). The leaderboard and the Periodic view judge them by week / month / year. 2026-09-28 EXIT-SIDE REGIME (regime_exit_min_eff / trail_step_trend / trail_step_range / tp_r_range, both sides, parity-tested) + the CONTROL that explained it: on 8 bases the regime-switched exits beat the base 8/8 (+$199/variant), but a PLAIN trail_step 25 (label tr25) beat the base by more on 7 of 8 (orb_t1000_2nd_5 $198→$746, fib day $394→$703, ichimoku $289→$696). The gain is the wider trail, not the split. Eight __tr25 keepers forward-test; regime-exit ids stay registered but disabled. FOLLOW-UP: sweep trail 25/35/50 and put 25 to the founder for the live hand-off (its trail is 15). 2026-09-28 COMBINED GATES (book fade imbalance_max 0.45 + regime nochase/trend) on the fib/ORB-2nd bases: 1-2 trades each in six sessions, all losers (label combo) — the two gates block each other; NOT combined, rows kept disabled. 2026-09-28 FOUR NEW TREND MODES (orb_retest, gap_fade, news_break, ib_break; calendar event days via set_event_day): 28-variant grid (label newmodes) — gap_fade 2/2 winners (+$124, two gap days only), news_break 14:00 5/5 small (+$23), news_break 08:30 flat, ib_break negative (PF 0.35), orb_retest flat-to-negative (mostly BE scratches). Four keepers forward-test; the rest stay registered but disabled. 2026-09-28 TAKE-PROFIT (tp_points / tp_r, OrderManager + paper broker, parity-tested): 96-variant grid (label tpgrid) says a fixed target LOSES on average at every R (tp1 −$79/variant, tp1.5 −$62, tp2 −$48, tp3 −$25 vs base) — it caps the trailing runners that carry the fleet; only 3R on the classic ORB bases was neutral-to-positive. Five __tp* ORB keepers forward-test; fib/trend bases must NOT get a fixed target. 2026-09-28 REGIME GATE (paper_quote.hpp RegimeState — session shape since 09:30 vs prior-day ATR14; keys regime_min/max_range_atr, regime_min/max_eff, regime_min/max_move_atr, regime_with_move ±1, regime_min_minutes; off by default, same gate live). 144-variant replay (label rggrid, config/paper_regime_research.json): five gates on 24 bases — no gate raised net P&L on average over six sessions (they block 55-80 % of entries, mostly the 30-min warm-up), rg_nochase (max 0.5 ATR from the open) and rg_trend (eff ≥0.5 with the move) were the best per contract. Eight __rg_* keepers forward-test from tonight; the rest stay registered but disabled. 2026-09-28 FIB EXIT/WINDOW RESEARCH (founder: \"find more trades and optimize these trades\"): 162-variant replay grid over 09-21..09-28 (labels fibgrid/fibgrid2, config/paper_fib_research*.json) — trail_be_trigger 3 was the worst exit in every combination (11 of 18 live-twin trades scratched at +$0.50 with 6 pts MFE), trail_step 15 > 10 > 6, sl 8 > 12, deep zone 0.5-0.786 > 0.382 zones, swing 30 > 20/45, cap 8 adds trades not P&L, 12:00-13:00 is the weak hour. Keepers added as __am_x15 / __am_x15b / __day_x15 / __day_x15_m8 (forward test); __day_x15 is the live hand-off twin. 2026-09-26 evening (founder: do 1,3,4,6,7,10 + the rest): PRUNED (enabled:false, rows kept) nr7 / supertrend / roc_momentum / trend_day, every globex_* whole-day id and the book overlays __micro __imb __all __sz __wait __bx __bbe — none earned on the 7-day forward test; __pm set removed (backfill did not support it); __open siblings added for every 1-minute trend base (all 9 first ones were positive); __inv added on the new __am/__open winners. TIME-OF-DAY WINDOWS 2026-09-26 (63): __am entries 10:00-12:00 ET (the hand-off slot; mtf via session_window), __pm 13:30-15:55 (afternoon mean reversion), __open 09:30-10:00; __am_htf/__am_chand/__am_ts add the never-varied generic knobs (htf gate 15m, chandelier 2 ATR, 45-min time stop) to the four AM winners; volume_burst_*/delta_div_* grid deepens the two tape modes. Rationale: the 7-day leaderboard by slot showed the same modes winning in one hour and losing in another. BOOK OVERLAYS round 2 (bases with ≥2 live trades, 105): __inv inverted imbalance, __bx book-flip exit, __bbe BE on flip, __btp take-profit into pressure, __sz size on agreement, __wait fill timing. BOOK OVERLAYS: 716 sibling variants (<base>__sg spread gate 1.5x rolling, __imb bid-share 0.55, __micro microprice lead, __all) of 179 bases — never edit a base, compare via base_id/overlay; + 10 book_imbalance family. ACCOUNT ENVELOPE OFF (daily_loss_limit/trailing_drawdown_cap = 0): 197 strategies x 1 MNQ on one $25k envelope is not an account, and a $1k trailing cap halted the whole research fleet on 2026-09-22 after a +3.1k/-2.6k day. Risk unit = per-strategy strategy_daily_loss_limit. Paper fleet across ALL sessions (Asia 20:00–02:30, London 02:30–07:30, US pre-market, RTH, US evening, whole Globex day): 161 trend-engine variants (26 modes: trend, failed-breakout, Keltner, Ichimoku, ROC, delta, fib, ema ribbon, thrust fade, absorption reversal / delta divergence / volume burst (tape), mean-reversion VWAP/band/RSI2, htf gate, chandelier) + 57 ORB variants (09:30 range sweep + other session times/timeframes + entry/management rules) + 25 MTF scalpers (HTF choices, trigger modes, sessions, direction) on one tradeify paper account. Base params = config/tradeify_config.json; per-strategy params override named OrbConfig/MtfScalperConfig fields. Consumed by paper_engine (ticks from PostgreSQL, no Rithmic session). feed_symbol = what the collector writes (NQ front-month); symbol = traded label (MNQ). reference_symbol (ES) feeds the MTF SMT/intermarket module as 1m bars.",
+  "_comment": "2026-10-07 TREND_CONFIRM 5m (founder: \"add it to the paper fleet on 5m\" — the pullback-in-trend strategy that caught the 10-07 London downtrend in testing): 9 tcf5_* variants (London 02:00-09:15 with/without liquidity gate + breakout + book-gate twins, Asia 20:00-02:00, NY 09:45-15:30 plain/liquidity/breakout, post-ORB 10:30-15:30). publish_signals=true: the paper engine publishes their live state + accepted signals for the Signals page. 2026-10-04 SLOT-2 CANDIDATES (founder: keep the ORB as is, find the best bounce/trend/momentum strategy for 10:30-12:00 ET; then \"add all new strategies on the fleet\"): 11 s2_* windowed copies of the best live-runnable variant per family, forward-tested here AND replayed nightly under label slot2 by scripts/slot2_eval.sh (verdict from sessions after 2026-10-02 only). 2026-09-29 VOLUME / VOLATILITY FILTERS (founder: \"everything as filters to fully understand what works\"): generic gates rvol_min/rvol_max/rvol_bars (relative minute volume) and vt_risk_usd/vt_qty_max (volatility-targeted size) on OrbConfig — live and paper; trend modes atr_break (open/prev_close ± k×day ATR) and vprofile (prior-session POC / value area, break or fade to the POC). 90-variant matrix (label volgrid): rvol ≥2.5 +$33/ct but 3 trades vs 20; rvol ≥1.5 +$11/ct, net −$23; quiet tape (rvol ≤0.8) −$10/ct; vol-targeting = size only ($/ct unchanged); atr_break and vprofile negative/tiny on six sessions. All in the fleet. 2026-09-29 beta_on_1800 (+__htf): the Tradeify-compatible overnight hold — enter at the 18:00 ET Globex reopen, out 09:30; stays inside one session, so unlike beta_on (15:55 entry) it does not cross the 16:45 close. 2026-09-29 BETA EXPOSURE (founder: \"for now add the rest in leaderboard rotation\" — paper only): trend-engine mode `hold` (enter at a clock time, out at the window end, position survives the 18:00 reset; paper-broker windows may wrap midnight) — beta_on (15:55→09:30 long, the overnight premium), __htf (4h EMA-20 trend filter), _tom (turn of month), _prefomc (day before fomc/nfp), _short (control), beta_close (15:00→15:59 on up days), beta_day (09:30→15:55). Wide stop 150 / no trail; 1 MNQ. NOT live-runnable: Tradeify forbids holding through 17:00 CT and the live EOD logic does not wrap. 2026-09-29 FOUNDER: \"we want all to keep running for ever and get stats per week, month, year\" — EVERY registered strategy runs, nothing is pruned again (the 09-26 retirements re-enabled, the 466 research ids from the 09-28 grids added). The leaderboard and the Periodic view judge them by week / month / year. 2026-09-28 EXIT-SIDE REGIME (regime_exit_min_eff / trail_step_trend / trail_step_range / tp_r_range, both sides, parity-tested) + the CONTROL that explained it: on 8 bases the regime-switched exits beat the base 8/8 (+$199/variant), but a PLAIN trail_step 25 (label tr25) beat the base by more on 7 of 8 (orb_t1000_2nd_5 $198→$746, fib day $394→$703, ichimoku $289→$696). The gain is the wider trail, not the split. Eight __tr25 keepers forward-test; regime-exit ids stay registered but disabled. FOLLOW-UP: sweep trail 25/35/50 and put 25 to the founder for the live hand-off (its trail is 15). 2026-09-28 COMBINED GATES (book fade imbalance_max 0.45 + regime nochase/trend) on the fib/ORB-2nd bases: 1-2 trades each in six sessions, all losers (label combo) — the two gates block each other; NOT combined, rows kept disabled. 2026-09-28 FOUR NEW TREND MODES (orb_retest, gap_fade, news_break, ib_break; calendar event days via set_event_day): 28-variant grid (label newmodes) — gap_fade 2/2 winners (+$124, two gap days only), news_break 14:00 5/5 small (+$23), news_break 08:30 flat, ib_break negative (PF 0.35), orb_retest flat-to-negative (mostly BE scratches). Four keepers forward-test; the rest stay registered but disabled. 2026-09-28 TAKE-PROFIT (tp_points / tp_r, OrderManager + paper broker, parity-tested): 96-variant grid (label tpgrid) says a fixed target LOSES on average at every R (tp1 −$79/variant, tp1.5 −$62, tp2 −$48, tp3 −$25 vs base) — it caps the trailing runners that carry the fleet; only 3R on the classic ORB bases was neutral-to-positive. Five __tp* ORB keepers forward-test; fib/trend bases must NOT get a fixed target. 2026-09-28 REGIME GATE (paper_quote.hpp RegimeState — session shape since 09:30 vs prior-day ATR14; keys regime_min/max_range_atr, regime_min/max_eff, regime_min/max_move_atr, regime_with_move ±1, regime_min_minutes; off by default, same gate live). 144-variant replay (label rggrid, config/paper_regime_research.json): five gates on 24 bases — no gate raised net P&L on average over six sessions (they block 55-80 % of entries, mostly the 30-min warm-up), rg_nochase (max 0.5 ATR from the open) and rg_trend (eff ≥0.5 with the move) were the best per contract. Eight __rg_* keepers forward-test from tonight; the rest stay registered but disabled. 2026-09-28 FIB EXIT/WINDOW RESEARCH (founder: \"find more trades and optimize these trades\"): 162-variant replay grid over 09-21..09-28 (labels fibgrid/fibgrid2, config/paper_fib_research*.json) — trail_be_trigger 3 was the worst exit in every combination (11 of 18 live-twin trades scratched at +$0.50 with 6 pts MFE), trail_step 15 > 10 > 6, sl 8 > 12, deep zone 0.5-0.786 > 0.382 zones, swing 30 > 20/45, cap 8 adds trades not P&L, 12:00-13:00 is the weak hour. Keepers added as __am_x15 / __am_x15b / __day_x15 / __day_x15_m8 (forward test); __day_x15 is the live hand-off twin. 2026-09-26 evening (founder: do 1,3,4,6,7,10 + the rest): PRUNED (enabled:false, rows kept) nr7 / supertrend / roc_momentum / trend_day, every globex_* whole-day id and the book overlays __micro __imb __all __sz __wait __bx __bbe — none earned on the 7-day forward test; __pm set removed (backfill did not support it); __open siblings added for every 1-minute trend base (all 9 first ones were positive); __inv added on the new __am/__open winners. TIME-OF-DAY WINDOWS 2026-09-26 (63): __am entries 10:00-12:00 ET (the hand-off slot; mtf via session_window), __pm 13:30-15:55 (afternoon mean reversion), __open 09:30-10:00; __am_htf/__am_chand/__am_ts add the never-varied generic knobs (htf gate 15m, chandelier 2 ATR, 45-min time stop) to the four AM winners; volume_burst_*/delta_div_* grid deepens the two tape modes. Rationale: the 7-day leaderboard by slot showed the same modes winning in one hour and losing in another. BOOK OVERLAYS round 2 (bases with ≥2 live trades, 105): __inv inverted imbalance, __bx book-flip exit, __bbe BE on flip, __btp take-profit into pressure, __sz size on agreement, __wait fill timing. BOOK OVERLAYS: 716 sibling variants (<base>__sg spread gate 1.5x rolling, __imb bid-share 0.55, __micro microprice lead, __all) of 179 bases — never edit a base, compare via base_id/overlay; + 10 book_imbalance family. ACCOUNT ENVELOPE OFF (daily_loss_limit/trailing_drawdown_cap = 0): 197 strategies x 1 MNQ on one $25k envelope is not an account, and a $1k trailing cap halted the whole research fleet on 2026-09-22 after a +3.1k/-2.6k day. Risk unit = per-strategy strategy_daily_loss_limit. Paper fleet across ALL sessions (Asia 20:00–02:30, London 02:30–07:30, US pre-market, RTH, US evening, whole Globex day): 161 trend-engine variants (26 modes: trend, failed-breakout, Keltner, Ichimoku, ROC, delta, fib, ema ribbon, thrust fade, absorption reversal / delta divergence / volume burst (tape), mean-reversion VWAP/band/RSI2, htf gate, chandelier) + 57 ORB variants (09:30 range sweep + other session times/timeframes + entry/management rules) + 25 MTF scalpers (HTF choices, trigger modes, sessions, direction) on one tradeify paper account. Base params = config/tradeify_config.json; per-strategy params override named OrbConfig/MtfScalperConfig fields. Consumed by paper_engine (ticks from PostgreSQL, no Rithmic session). feed_symbol = what the collector writes (NQ front-month); symbol = traded label (MNQ). reference_symbol (ES) feeds the MTF SMT/intermarket module as 1m bars.",
   "account_label": "tradeify",
   "symbol": "MNQ",
   "feed_symbol": "NQ",
@@ -88558,6 +88558,532 @@
         "win_end": 1500,
         "base_id": "vprofile_fade_t30",
         "overlay": "tr25"
+      }
+    },
+    {
+      "id": "s2_mtf_flags_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "trigger_mode": "flag_any",
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "session_window": "1030-1200",
+        "base_id": "mtf_flags_v5",
+        "family": "momentum"
+      }
+    },
+    {
+      "id": "s2_mtf_loose_v5",
+      "engine": "mtf_scalper",
+      "enabled": true,
+      "params": {
+        "use_regime": false,
+        "use_atr_floor": false,
+        "warmup_bars": 250,
+        "qty_max": 3,
+        "session_window": "1030-1200",
+        "base_id": "mtf_loose_v5",
+        "family": "momentum"
+      }
+    },
+    {
+      "id": "s2_trend_vwap_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "vwap_trend",
+        "tf_min": 5,
+        "sl_points": 15,
+        "trail_step": 10,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "trend_vwap_5m",
+        "family": "trend"
+      }
+    },
+    {
+      "id": "s2_trend_drive_15",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "opening_drive",
+        "tf_min": 1,
+        "drive_minutes": 15,
+        "drive_entry_from": 1030,
+        "drive_entry_to": 1200,
+        "sl_points": 15,
+        "trail_step": 10,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "trend_drive_15",
+        "family": "momentum"
+      }
+    },
+    {
+      "id": "s2_trend_drive_30",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "opening_drive",
+        "tf_min": 1,
+        "drive_minutes": 30,
+        "drive_entry_from": 1030,
+        "drive_entry_to": 1200,
+        "sl_points": 15,
+        "trail_step": 10,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "trend_drive_30",
+        "family": "momentum"
+      }
+    },
+    {
+      "id": "s2_trend_supertrend_7_3_1m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "supertrend",
+        "tf_min": 1,
+        "st_len": 7,
+        "st_mult": 3.0,
+        "sl_points": 12,
+        "trail_step": 8,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "trend_supertrend_7_3_1m",
+        "family": "trend"
+      }
+    },
+    {
+      "id": "s2_fail_bo_10_1m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "failed_breakout",
+        "tf_min": 1,
+        "donchian_n": 10,
+        "fb_bars": 3,
+        "sl_points": 8,
+        "trail_step": 6,
+        "max_daily_trades": 4,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "fail_bo_10_1m",
+        "family": "bounce"
+      }
+    },
+    {
+      "id": "s2_fib_pb_1m_deep",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "fib_pullback",
+        "tf_min": 1,
+        "fib_swing_bars": 30,
+        "fib_lo": 0.5,
+        "fib_hi": 0.786,
+        "sl_points": 8,
+        "trail_step": 6,
+        "max_daily_trades": 4,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "fib_pb_1m_deep",
+        "family": "trend"
+      }
+    },
+    {
+      "id": "s2_mr_vwap_fade_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "vwap_fade",
+        "tf_min": 5,
+        "mr_dev_atr": 2.0,
+        "sl_points": 12,
+        "trail_step": 8,
+        "trail_be_trigger": 6,
+        "max_daily_trades": 4,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "mr_vwap_fade_5m",
+        "family": "bounce"
+      }
+    },
+    {
+      "id": "s2_mr_rsi2_15m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "rsi2_pullback",
+        "tf_min": 15,
+        "ema_slow": 30,
+        "rsi_buy": 15,
+        "rsi_sell": 85,
+        "sl_points": 18,
+        "trail_step": 10,
+        "max_daily_trades": 2,
+        "win_start": 1030,
+        "win_end": 1200,
+        "base_id": "mr_rsi2_15m",
+        "family": "bounce"
+      }
+    },
+    {
+      "id": "s2_trend_vwap_5m__sg",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "vwap_trend",
+        "tf_min": 5,
+        "sl_points": 15,
+        "trail_step": 10,
+        "spread_gate_rel": 1.5,
+        "base_id": "trend_vwap_5m__sg",
+        "overlay": "sg",
+        "win_start": 1030,
+        "win_end": 1200,
+        "family": "trend"
+      }
+    },
+    {
+      "id": "tcf5_ldn",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "pullback",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "globex",
+        "win_start": 200,
+        "win_end": 915,
+        "liq_vol_min": 130,
+        "liq_impact_max": 70,
+        "liq_bars": 15
+      }
+    },
+    {
+      "id": "tcf5_ldn_ng",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "pullback",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "globex",
+        "win_start": 200,
+        "win_end": 915
+      }
+    },
+    {
+      "id": "tcf5_ldn_bo",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "breakout",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "globex",
+        "win_start": 200,
+        "win_end": 915,
+        "liq_vol_min": 130,
+        "liq_impact_max": 70,
+        "liq_bars": 15
+      }
+    },
+    {
+      "id": "tcf5_ldn_book",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "pullback",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "globex",
+        "win_start": 200,
+        "win_end": 915,
+        "liq_vol_min": 130,
+        "liq_impact_max": 70,
+        "liq_bars": 15,
+        "imbalance_min": 0.6
+      }
+    },
+    {
+      "id": "tcf5_asia",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "pullback",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "globex",
+        "win_start": 2000,
+        "win_end": 200,
+        "liq_vol_min": 130,
+        "liq_impact_max": 70,
+        "liq_bars": 15
+      }
+    },
+    {
+      "id": "tcf5_rth",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "pullback",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "rth",
+        "win_start": 945,
+        "win_end": 1530
+      }
+    },
+    {
+      "id": "tcf5_rth_liq",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "pullback",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "rth",
+        "win_start": 945,
+        "win_end": 1530,
+        "liq_vol_min": 400,
+        "liq_impact_max": 25,
+        "liq_bars": 15
+      }
+    },
+    {
+      "id": "tcf5_rth_bo",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "breakout",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "rth",
+        "win_start": 945,
+        "win_end": 1530
+      }
+    },
+    {
+      "id": "tcf5_post",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "trend_confirm",
+        "tf_min": 5,
+        "tcf_entry": "pullback",
+        "sl_points": 60,
+        "trail_step": 30,
+        "trail_be_trigger": 999,
+        "trail_delay_secs": 99999,
+        "max_daily_trades": 3,
+        "qty": 1,
+        "session": "rth",
+        "win_start": 1030,
+        "win_end": 1530
+      }
+    },
+    {
+      "id": "sig_tky_band_fade_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "band_fade",
+        "tf_min": 5,
+        "bb_len": 20,
+        "bb_mult": 2.0,
+        "sl_points": 12,
+        "trail_step": 6,
+        "max_daily_trades": 4,
+        "win_start": 2000,
+        "win_end": 2200,
+        "session": "globex",
+        "base_id": "mr_band_fade_5m",
+        "family": "bounce",
+        "night_window": "tky",
+        "publish_signals": true,
+        "signal_source": "nt_tky_mr_band_fade_5m_s_g0",
+        "signal_role": "MEAN REVERSION — Asia Bollinger band fade",
+        "trail_delay_secs": 0
+      }
+    },
+    {
+      "id": "sig_ldn_donchian_55_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "donchian",
+        "tf_min": 5,
+        "donchian_n": 55,
+        "sl_points": 20,
+        "trail_step": 3,
+        "win_start": 700,
+        "win_end": 915,
+        "session": "globex",
+        "base_id": "trend_donchian_55_5m",
+        "family": "momentum",
+        "night_window": "ldl",
+        "publish_signals": true,
+        "signal_source": "nt_ldl_trend_donchian_55_5m_s_g0",
+        "signal_role": "MOMENTUM — London 55-bar breakout",
+        "trail_delay_secs": 300
+      }
+    },
+    {
+      "id": "sig_orb_5_15_10",
+      "engine": "orb",
+      "enabled": true,
+      "params": {
+        "orb_minutes": 5,
+        "sl_points": 15.0,
+        "trail_step": 10.0,
+        "signal_source": "orb_5_15_10",
+        "signal_role": "ORB — copy of the live ORB settings (5-min range, 15-pt stop, 10-pt trail, 3 trades, entries 09:35-10:30 ET)",
+        "max_daily_trades": 3,
+        "last_entry_hour": 10,
+        "last_entry_min": 30,
+        "trail_be_trigger": 3.0,
+        "trail_delay_secs": 300,
+        "trail_be_offset": 1.0,
+        "stop_cooldown_secs": 5
+      }
+    },
+    {
+      "id": "sig_ny_trend_vwap_rgx",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "vwap_trend",
+        "tf_min": 5,
+        "sl_points": 15,
+        "trail_step": 3,
+        "regime_min_range_atr": 0.35,
+        "regime_min_minutes": 15,
+        "base_id": "trend_vwap_5m",
+        "overlay": "rg_expand",
+        "publish_signals": true,
+        "signal_source": "trend_vwap_5m__rg_expand",
+        "signal_role": "MOMENTUM/TREND — VWAP trend, only on expanding days (regime gate)",
+        "trail_delay_secs": 300
+      }
+    },
+    {
+      "id": "sig_ny_rsi2_btp",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "rsi2_pullback",
+        "tf_min": 15,
+        "ema_slow": 30,
+        "rsi_buy": 15,
+        "rsi_sell": 85,
+        "sl_points": 18,
+        "trail_step": 2,
+        "max_daily_trades": 2,
+        "book_tp_imbalance": 0.75,
+        "base_id": "mr_rsi2_15m",
+        "overlay": "btp",
+        "publish_signals": true,
+        "signal_source": "mr_rsi2_15m__btp",
+        "signal_role": "MEAN REVERSION — 15m RSI-2 pullback, takes profit into book pressure",
+        "trail_delay_secs": 0
+      }
+    },
+    {
+      "id": "sig_ny_keltner_btp",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "keltner_ride",
+        "tf_min": 15,
+        "kc_mult": 2.0,
+        "exit_on_flip": true,
+        "sl_points": 20,
+        "trail_step": 6,
+        "max_daily_trades": 2,
+        "book_tp_imbalance": 0.75,
+        "base_id": "keltner_ride_20_15m",
+        "overlay": "btp",
+        "publish_signals": true,
+        "signal_source": "keltner_ride_20_15m__btp",
+        "signal_role": "MOMENTUM — 15m Keltner ride, takes profit into book pressure",
+        "trail_delay_secs": 0
+      }
+    },
+    {
+      "id": "sig_ldn_early_ema_pb_1m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "mode": "ema_pullback",
+        "tf_min": 1,
+        "ema_fast": 9,
+        "ema_slow": 21,
+        "sl_points": 10,
+        "trail_step": 8,
+        "win_start": 200,
+        "win_end": 500,
+        "session": "globex",
+        "base_id": "trend_ema_pb_9_21_1m",
+        "family": "trend",
+        "night_window": "ldn",
+        "liq_vol_min": 100,
+        "liq_impact_max": 80,
+        "liq_bars": 15,
+        "publish_signals": true,
+        "signal_source": "nt_ldn_trend_ema_pb_9_21_1m_s_g1",
+        "signal_role": "TREND · London early EMA 9/21 pullback (1m)",
+        "trail_delay_secs": 0
       }
     }
   ]

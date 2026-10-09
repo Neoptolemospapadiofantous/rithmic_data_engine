@@ -167,6 +167,7 @@ struct FleetConfig {
         c.max_entry_offset   = json_dbl(p, "max_entry_offset",   c.max_entry_offset);
         c.max_daily_trades   = json_int(p, "max_daily_trades",   c.max_daily_trades);
         c.last_entry_hour    = json_int(p, "last_entry_hour",    c.last_entry_hour);
+        c.last_entry_min     = json_int(p, "last_entry_min",     c.last_entry_min);
         c.eod_flatten_hour   = json_int(p, "eod_flatten_hour",   c.eod_flatten_hour);
         c.eod_flatten_min    = json_int(p, "eod_flatten_min",    c.eod_flatten_min);
         c.news_blackout_min  = json_int(p, "news_blackout_min",  c.news_blackout_min);
@@ -192,6 +193,9 @@ struct FleetConfig {
         c.rvol_min           = json_dbl(p, "rvol_min",           c.rvol_min);
         c.rvol_max           = json_dbl(p, "rvol_max",           c.rvol_max);
         c.rvol_bars          = json_int(p, "rvol_bars",          c.rvol_bars);
+        c.liq_vol_min        = json_dbl(p, "liq_vol_min",        c.liq_vol_min);
+        c.liq_impact_max     = json_dbl(p, "liq_impact_max",     c.liq_impact_max);
+        c.liq_bars           = json_int(p, "liq_bars",           c.liq_bars);
         c.vt_risk_usd        = json_dbl(p, "vt_risk_usd",        c.vt_risk_usd);
         c.vt_qty_max         = json_int(p, "vt_qty_max",         c.vt_qty_max);
         c.regime_exit_min_eff = json_dbl(p, "regime_exit_min_eff", c.regime_exit_min_eff);
@@ -210,6 +214,22 @@ struct FleetConfig {
         c.regime_min_minutes   = json_int(p, "regime_min_minutes",   c.regime_min_minutes);
         c.base_id            = json_str(p, "base_id",            c.base_id);
         c.overlay            = json_str(p, "overlay",            c.overlay);
+        // A trend variant whose own window (win_start..win_end) reaches outside 09:30-15:55 —
+        // Asia, London, overnight holds — also needs the BROKER's entry window there. Without
+        // this the broker kept its 09:30-15:55 default and blocked every overnight entry (found
+        // 2026-10-04: 300 overnight trend variants, 0 overnight trades in 11 sessions). Applied
+        // only outside RTH so the RTH variants' exits are untouched; explicit session_open_* /
+        // eod_flatten_* / last_entry_hour keys still win.
+        if (s.engine == "trend" && !extract_value(p, "win_start").empty()) {
+            const int ws = json_int(p, "win_start", 930), we = json_int(p, "win_end", 1555);
+            const bool outside_rth = ws < 930 || we > 1555 || we < ws;
+            if (outside_rth && extract_value(p, "session_open_hour").empty() &&
+                extract_value(p, "eod_flatten_hour").empty()) {
+                c.session_open_hour = ws / 100; c.session_open_min = ws % 100;
+                c.eod_flatten_hour  = we / 100; c.eod_flatten_min  = we % 100;
+                if (extract_value(p, "last_entry_hour").empty()) c.last_entry_hour = 24;
+            }
+        }
         return c;
     }
 

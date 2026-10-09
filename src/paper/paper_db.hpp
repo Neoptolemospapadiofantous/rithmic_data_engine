@@ -177,6 +177,13 @@ public:
     static std::string format_ts(int64_t ts_micros);  // → "YYYY-MM-DD HH:MM:SS.ffffff+00"
 
     void exec_silent(const std::string& sql);
+    // manual-signal dashboard (signal_publish.hpp); no-ops in replay/audit (trades_only) mode
+    void    upsert_signal_state(const std::string& strategy_id, int64_t ts_us, const std::string& json);
+    int64_t insert_live_signal(const std::string& strategy_id, int64_t ts_us, int dir, double entry, double stop,
+                               double risk, double t1, double t2, const std::string& checks_json);
+    void    close_live_signal(int64_t id, int64_t ts_us, double px, const std::string& reason);
+    void    update_live_signal_stop(int64_t id, double stop);   // the trail moved the manual stop
+    void    append_live_signal_event(int64_t id, const std::string& event_json);   // trade timeline
 
 private:
     PGconn* conn_ = nullptr;

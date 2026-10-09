@@ -319,8 +319,13 @@ public:
     // ── State access ─────────────────────────────────────────────────────────
     bool   in_position()  const { return pos_dir_ != 0; }
     int    direction()    const { return pos_dir_; }
+    bool   has_pending_entry() const { return pending_dir_ != 0; }   // accepted, fills on the next tick
     int    qty()          const { return qty_; }
     double entry_price()  const { return entry_price_; }
+    // Last exit (signal_publish.hpp closes the manual-signal row with it).
+    double last_exit_px() const { return last_exit_px_; }
+    int64_t last_exit_us() const { return last_exit_us_; }
+    const std::string& last_exit_reason() const { return last_exit_reason_; }
     int64_t entry_time_us() const { return entry_time_us_; }   // 0 when flat
     double stop_price()   const { return stop_price_; }
     double placed_stop()  const { return placed_stop_; }   // the working (exchange-equivalent) stop
@@ -399,6 +404,7 @@ private:
         tr.entry_price   = entry_price_;
         tr.exit_time_us  = ts_us;
         tr.exit_price    = fill;
+        last_exit_px_ = fill; last_exit_us_ = ts_us; last_exit_reason_ = reason;   // read by signal_publish.hpp
         tr.pnl_pts       = (fill - entry_price_) * pos_dir_;
         tr.commission    = cfg_.commission_rt * qty_;
         tr.pnl_usd       = tr.pnl_pts * cfg_.point_value * qty_ - tr.commission;
@@ -462,7 +468,8 @@ private:
         const bool inside = eod_min < open_min ? (now_min >= open_min || now_min < eod_min)
                                                : (now_min >= open_min && now_min < eod_min);
         if (!inside) return false;
-        return last_et_hour_ < cfg_.last_entry_hour;
+        // minute-granular like OrbStrategy (last_entry_min 0 = the old whole-hour rule)
+        return now_min < cfg_.last_entry_hour * 60 + cfg_.last_entry_min;
     }
 
     static void utc_to_et(int64_t ts_us, int& h, int& m) {
@@ -478,6 +485,7 @@ private:
 
     std::string strategy_id_;
     std::string account_label_;
+    double last_exit_px_ = 0.0; int64_t last_exit_us_ = 0; std::string last_exit_reason_;
     std::string symbol_;
     OrbConfig   cfg_;
     double      tick_size_;

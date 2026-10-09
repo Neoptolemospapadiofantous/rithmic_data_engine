@@ -19,6 +19,8 @@
 
 #include "../src/config.hpp"
 #include "../src/paper/paper_broker.hpp"
+#include "../src/paper/paper_config.hpp"
+#include "../src/paper/signal_publish.hpp"
 #include "../src/paper/paper_db.hpp"
 #include "../src/paper/paper_engine.hpp"
 
@@ -381,6 +383,20 @@ TEST(entry_window_gate) {
     ASSERT(!b.in_position());
 }
 
+// last_entry_min (2026-10-08): the paper broker cuts entries to the minute like OrbStrategy — the
+// sig_orb copy of the live ORB stops at 10:30 ET, not 10:00 or 11:00.
+TEST(entry_window_minute_cutoff) {
+    FakeStore store; OrbConfig cfg = make_cfg(); cfg.last_entry_hour = 10; cfg.last_entry_min = 30;
+    auto b = make_broker(store, cfg);
+    signal_buy(b, et_ts(10, 29), 20000.0);
+    b.on_tick(tick(et_ts(10, 29, 1), 20000.0));
+    ASSERT(b.in_position());
+    b.flatten("manual", et_ts(10, 29, 30), 20000.0);
+    signal_buy(b, et_ts(10, 31), 20000.0);
+    b.on_tick(tick(et_ts(10, 31, 1), 20000.0));
+    ASSERT(!b.in_position());
+}
+
 TEST(stop_cooldown_blocks_reentry) {
     FakeStore store;
     OrbConfig cfg = make_cfg();                     // cooldown 5s
@@ -521,6 +537,178 @@ TEST(rvol_gate_reads_the_tape) {
     c.rvol_min = 0.0; c.rvol_max = 2.0; ASSERT_STREQ(r.gate(c, +1), "rvol_high");
     c.rvol_bars = 20; ASSERT_STREQ(r.gate(c, +1), "rvol_warmup");      // not enough closed minutes yet
     OrbConfig off = make_cfg(); ASSERT_STREQ(r.gate(off, +1), "");     // no knob → no gate
+}
+
+// ── liquidity gate (2026-10-04, Asia/London): volume per minute + points per 1k contracts ──
+TEST(liquidity_gate_reads_volume_and_impact) {
+    paper::RegimeState r;
+    // 4 closed overnight minutes, each 200 contracts over a 10-point range (50 pts per 1k)
+    for (int m = 0; m < 4; ++m) {
+        r.on_tick("2026-09-18", 2, m, et_ts(2, m, 0),  20000.0, 100.0);
+        r.on_tick("2026-09-18", 2, m, et_ts(2, m, 30), 20010.0, 100.0);
+    }
+    r.on_tick("2026-09-18", 2, 4, et_ts(2, 4), 20005.0, 1.0);          // closes minute 02:03
+    double vpm = 0, imp = 0;
+    ASSERT(r.liquidity(4, vpm, imp));
+    ASSERT_NEAR(vpm, 200.0, 1e-9);
+    ASSERT_NEAR(imp, 50.0, 1e-9);
+    OrbConfig c = make_cfg(); c.liq_bars = 4;
+    c.liq_vol_min = 150.0; ASSERT_STREQ(r.gate(c, +1), "");             // enough volume
+    c.liq_vol_min = 250.0; ASSERT_STREQ(r.gate(c, +1), "liq_vol_low");
+    c.liq_vol_min = 0.0; c.liq_impact_max = 40.0; ASSERT_STREQ(r.gate(c, +1), "liq_thin_book");
+    c.liq_impact_max = 60.0; ASSERT_STREQ(r.gate(c, +1), "");           // deep enough
+    c.liq_bars = 10; ASSERT_STREQ(r.gate(c, +1), "liq_warmup");        // fail-closed on thin history
+    OrbConfig off = make_cfg(); ASSERT_STREQ(r.gate(off, +1), "");     // no knob → no gate
+}
+
+// Overnight trend windows reach the broker (2026-10-04): a trend variant's win_start..win_end
+// outside 09:30-15:55 becomes the broker's entry window; RTH windows keep the defaults.
+TEST(trend_window_sets_broker_window_overnight_only) {
+    paper::FleetConfig fc;
+    paper::FleetStrategy ldn{}; ldn.id = "t_ldn"; ldn.engine = "trend";
+    ldn.params_json = R"({"mode":"donchian","win_start":200,"win_end":500})";
+    OrbConfig c = fc.orb_config_for(ldn);
+    ASSERT_EQ(c.session_open_hour, 2); ASSERT_EQ(c.session_open_min, 0);
+    ASSERT_EQ(c.eod_flatten_hour, 5);  ASSERT_EQ(c.last_entry_hour, 24);
+
+    paper::FleetStrategy wrap = ldn; wrap.params_json = R"({"mode":"donchian","win_start":2000,"win_end":230})";
+    c = fc.orb_config_for(wrap);
+    ASSERT_EQ(c.session_open_hour, 20); ASSERT_EQ(c.eod_flatten_hour, 2); ASSERT_EQ(c.eod_flatten_min, 30);
+
+    paper::FleetStrategy rth = ldn; rth.params_json = R"({"mode":"donchian","win_start":1030,"win_end":1200})";
+    c = fc.orb_config_for(rth);
+    ASSERT_EQ(c.session_open_hour, 9); ASSERT_EQ(c.eod_flatten_hour, 15);   // untouched
+
+    paper::FleetStrategy expl = ldn;
+    expl.params_json = R"({"mode":"donchian","win_start":200,"win_end":500,"session_open_hour":1,"eod_flatten_hour":6})";
+    c = fc.orb_config_for(expl);
+    ASSERT_EQ(c.session_open_hour, 1); ASSERT_EQ(c.eod_flatten_hour, 6);    // explicit keys win
+
+    paper::FleetStrategy orb{}; orb.id = "o"; orb.engine = "orb";
+    orb.params_json = R"({"win_start":200,"win_end":500})";
+    c = fc.orb_config_for(orb);
+    ASSERT_EQ(c.session_open_hour, 9);                                      // trend engine only
+}
+
+// Manual-signal dashboard (2026-10-07): a live_signals row exists ONLY when the broker actually opens
+// the position — a gate that blocks the entry leaves no row; a passing entry leaves one, closed on exit.
+struct FakeSignalSink : paper::SignalSink {
+    int states = 0, inserts = 0, closes = 0, stop_updates = 0; double last_stop = 0;
+    std::string last_state, last_close_reason; std::vector<std::string> notes, events;
+    void add_event(int64_t, const std::string& j) override { events.push_back(j); }
+    void update_stop(int64_t, double st) override { ++stop_updates; last_stop = st; }
+    void notify(const std::string& t) override { notes.push_back(t); }
+    void upsert_state(const std::string&, int64_t, const std::string& j) override { ++states; last_state = j; }
+    int64_t insert_signal(const std::string&, int64_t, int, double, double, double, double, double, const std::string&) override { return ++inserts; }
+    void close_signal(int64_t, int64_t, double, const std::string& why) override { ++closes; last_close_reason = why; }
+};
+TEST(signal_publisher_only_on_actual_entry) {
+    TrendConfig tc; tc.mode = "trend_confirm";
+    {   // book gate blocks the BUY (bid share 0.10 < imbalance_min 0.7) → no signal row
+        FakeStore store; OrbConfig cfg = make_cfg(); cfg.imbalance_min = 0.7;
+        auto b = make_broker(store, cfg); TrendStrategy s(tc, cfg);
+        FakeSignalSink sink; paper::SignalPublisher pub("t_pub", &sink);
+        b.on_quote(paper::Quote{et_ts(10, 0), 19999.75, 20000.00, 1, 9});
+        signal_buy(b, et_ts(10, 0, 1), 20000.0);
+        b.on_tick(tick(et_ts(10, 0, 2), 20000.0));
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 0, 2));
+        ASSERT(!b.in_position());
+        ASSERT_EQ(sink.inserts, 0);
+        ASSERT(sink.states >= 1);                                       // state is still published
+        ASSERT(sink.last_state.find("\"book_ok\":false") != std::string::npos);
+        ASSERT(sink.last_state.find("\"position\":null") != std::string::npos);
+    }
+    {   // no gate → the entry fills → exactly one signal row; flatten → the row is closed
+        FakeStore store; OrbConfig cfg = make_cfg();
+        auto b = make_broker(store, cfg); TrendStrategy s(tc, cfg);
+        FakeSignalSink sink; paper::SignalPublisher pub("t_pub", &sink);
+        signal_buy(b, et_ts(10, 0, 1), 20000.0);
+        b.on_tick(tick(et_ts(10, 0, 2), 20000.0));
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 0, 2));
+        ASSERT(b.in_position());
+        ASSERT_EQ(sink.inserts, 1);
+        ASSERT(sink.last_state.find("\"stage\":\"in_trade\"") != std::string::npos);
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 0, 3));
+        ASSERT_EQ(sink.inserts, 1);                                     // no duplicate while open
+        b.flatten("manual", et_ts(10, 1), 20004.0);
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 1, 1));
+        ASSERT_EQ(sink.closes, 1);
+        ASSERT_STREQ(sink.last_close_reason, "manual");
+    }
+}
+
+// 2026-10-08: any trend mode can publish; the manual trader gets the entry, each material stop move
+// (break-even / trail) and the exit on Telegram, and the live_signals stop follows the trail.
+TEST(signal_publisher_trail_and_exit_alerts) {
+    TrendConfig tc; tc.mode = "vwap_fade";
+    {   // trail → MOVE STOP alert + DB stop update; stopped on the trail → "STOPPED OUT … trail"
+        FakeStore store; OrbConfig cfg = make_cfg(); cfg.trail_delay_secs = 60;
+        auto b = make_broker(store, cfg); TrendStrategy s(tc, cfg);
+        FakeSignalSink sink; paper::SignalPublisher pub("t_mr", &sink, 5'000'000LL, /*trend_confirm=*/false);
+        signal_buy(b, et_ts(10, 0), 20000.0);
+        b.on_tick(tick(et_ts(10, 0, 1), 20000.0));
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 0, 1));
+        ASSERT_EQ(sink.inserts, 1);
+        ASSERT_EQ((int)sink.notes.size(), 1);
+        ASSERT(sink.notes[0].find("LONG / BUY") != std::string::npos);
+        ASSERT(sink.notes[0].find("1 contract") != std::string::npos);
+        ASSERT(sink.notes[0].find("LONG / BUY MNQ") != std::string::npos);                 // instrument from the config
+        ASSERT(sink.notes[0].find("= $30 on 1 MNQ") != std::string::npos);                 // 15-pt stop × $2
+        ASSERT(sink.notes[0].find("BRACKET: stop 15.00 pts · auto-breakeven at +3.00 → entry +1.00 · trail 10.00 pts (trail starts after 1 min)") != std::string::npos);
+        ASSERT(sink.last_state.find("\"mode\":\"other\"") != std::string::npos);
+        b.on_tick(tick(et_ts(10, 1, 1), 20025.0));                     // BE then trail → working stop 20015
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 1, 1));
+        ASSERT_EQ(sink.stop_updates, 1);
+        ASSERT_NEAR(sink.last_stop, 20015.0, 1e-9);
+        ASSERT((int)sink.notes.size() == 2 && sink.notes[1].find("MOVE STOP — LONG MNQ") != std::string::npos);
+        ASSERT(sink.notes[1].find("20015.00") != std::string::npos);
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 1, 2));
+        ASSERT_EQ(sink.stop_updates, 1);                                // no repeat while the stop is unchanged
+        b.on_tick(tick(et_ts(10, 2), 20014.0));                        // through the trailed stop
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 2));
+        ASSERT_EQ(sink.closes, 1);
+        ASSERT((int)sink.notes.size() == 3 && sink.notes[2].find("STOPPED OUT") != std::string::npos);
+        ASSERT(sink.notes[2].find("trail") != std::string::npos);
+        // the timeline: entry → first lock above entry (break-even, here already the trailed 20015) → exit
+        ASSERT_EQ((int)sink.events.size(), 3);
+        ASSERT(sink.events[0].find("\"k\":\"entry\"") != std::string::npos);
+        ASSERT(sink.events[1].find("\"k\":\"breakeven\"") != std::string::npos && sink.events[1].find("\"stop\":20015.00") != std::string::npos);
+        ASSERT(sink.events[2].find("\"k\":\"exit\"") != std::string::npos && sink.events[2].find("\"note\":\"trail\"") != std::string::npos);
+    }
+    {   // a strategy exit (not a resting stop) → "EXIT NOW"
+        FakeStore store; OrbConfig cfg = make_cfg();
+        auto b = make_broker(store, cfg); TrendStrategy s(tc, cfg);
+        FakeSignalSink sink; paper::SignalPublisher pub("t_mr", &sink, 5'000'000LL, false);
+        signal_buy(b, et_ts(10, 0), 20000.0);
+        b.on_tick(tick(et_ts(10, 0, 1), 20000.0));
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 0, 1));
+        b.flatten("signal_flatten", et_ts(10, 0, 30), 20002.0);
+        pub.on_tick(b, s, cfg, nullptr, et_ts(10, 0, 31));
+        ASSERT((int)sink.notes.size() == 2 && sink.notes[1].find("EXIT NOW") != std::string::npos);
+        ASSERT(sink.notes[1].find("SELL to close") != std::string::npos);
+        ASSERT(sink.notes[1].find("on 1 MNQ") != std::string::npos);
+    }
+}
+
+// ORB engine publishes too (2026-10-08): window = session open → last entry time, same alerts.
+TEST(signal_publisher_orb_engine) {
+    FakeStore store; OrbConfig cfg = make_cfg(); cfg.last_entry_hour = 10; cfg.last_entry_min = 30;
+    auto b = make_broker(store, cfg);
+    FakeSignalSink sink; paper::SignalPublisher pub("t_orb", &sink, 5'000'000LL, false);
+    pub.on_tick_orb(b, cfg, nullptr, et_ts(9, 0), 20000.0);
+    ASSERT(sink.last_state.find("\"in_window\":false") != std::string::npos);   // before 09:30
+    pub.on_tick_orb(b, cfg, nullptr, et_ts(9, 40), 20000.0);
+    ASSERT(sink.last_state.find("\"in_window\":true") != std::string::npos);
+    ASSERT(sink.last_state.find("\"window\":\"0930-1030\"") != std::string::npos);
+    signal_buy(b, et_ts(9, 41), 20000.0);
+    b.on_tick(tick(et_ts(9, 41, 1), 20000.0));
+    pub.on_tick_orb(b, cfg, nullptr, et_ts(9, 41, 1), 20000.0);
+    ASSERT_EQ(sink.inserts, 1);
+    ASSERT(sink.notes.size() == 1 && sink.notes[0].find("t_orb · 1 contract") != std::string::npos);
+    b.flatten("eod", et_ts(9, 50), 20003.0);
+    pub.on_tick_orb(b, cfg, nullptr, et_ts(9, 50, 1), 20003.0);
+    ASSERT_EQ(sink.closes, 1);
+    ASSERT(sink.notes.size() == 2 && sink.notes[1].find("EXIT NOW") != std::string::npos);
 }
 
 TEST(volatility_targeted_size) {

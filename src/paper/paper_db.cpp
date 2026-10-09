@@ -99,6 +99,18 @@ static const char* kSchemaSQL[] = {
   strategies    INTEGER     NOT NULL DEFAULT 0,
   warmup_from   TIMESTAMPTZ,
   UNIQUE (started_at, account_label)))sql",
+    // trend_confirm manual-signal dashboard (2026-10-07, src/paper/signal_publish.hpp): live state per
+    // flagged strategy (publish_signals) and one row per ACTUAL paper entry (all gates passed).
+    R"sql(CREATE TABLE IF NOT EXISTS live_signal_state (
+              strategy_id TEXT PRIMARY KEY, updated_at TIMESTAMPTZ NOT NULL, state JSONB NOT NULL))sql",
+    R"sql(CREATE TABLE IF NOT EXISTS live_signals (
+              id BIGSERIAL PRIMARY KEY, strategy_id TEXT NOT NULL, ts TIMESTAMPTZ NOT NULL, dir INT NOT NULL,
+              entry DOUBLE PRECISION, stop DOUBLE PRECISION, risk_pts DOUBLE PRECISION,
+              target_1r DOUBLE PRECISION, target_2r DOUBLE PRECISION, checks JSONB,
+              status TEXT NOT NULL DEFAULT 'open', exit_ts TIMESTAMPTZ, exit_px DOUBLE PRECISION, exit_reason TEXT))sql",
+    R"sql(CREATE INDEX IF NOT EXISTS idx_live_signals_strat_ts ON live_signals (strategy_id, ts DESC))sql",
+    // the trade's timeline for the manual trader (2026-10-08): entry, break-even, trail moves, exit
+    R"sql(ALTER TABLE live_signals ADD COLUMN IF NOT EXISTS events JSONB NOT NULL DEFAULT '[]'::jsonb)sql",
 };
 
 PaperDb::PaperDb(const std::string& connstr) {
@@ -761,6 +773,80 @@ std::vector<PaperDb::TickRow> PaperDb::poll_ticks(const std::string& symbol,
         if (out[k - 1].ts_us != last) out.resize(k);
     }
     return out;
+}
+
+} // namespace paper
+
+
+namespace paper {
+// ── manual-signal dashboard (signal_publish.hpp) ─────────────────────────────────────────────────
+void PaperDb::upsert_signal_state(const std::string& strategy_id, int64_t ts_us, const std::string& json) {
+    if (trades_only_) return;
+    const std::string ts = format_ts(ts_us);
+    const char* params[3] = { strategy_id.c_str(), ts.c_str(), json.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(INSERT INTO live_signal_state (strategy_id, updated_at, state) VALUES ($1, $2::timestamptz, $3::jsonb)
+              ON CONFLICT (strategy_id) DO UPDATE SET updated_at = EXCLUDED.updated_at, state = EXCLUDED.state)sql",
+        3, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+        LOG("[PAPER-DB] WARN upsert_signal_state(%s): %s", strategy_id.c_str(), res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
+}
+
+int64_t PaperDb::insert_live_signal(const std::string& strategy_id, int64_t ts_us, int dir, double entry, double stop,
+                                    double risk, double t1, double t2, const std::string& checks_json) {
+    if (trades_only_) return 0;
+    const std::string ts = format_ts(ts_us), d = std::to_string(dir), e = std::to_string(entry), st = std::to_string(stop),
+                      r = std::to_string(risk), a = std::to_string(t1), b = std::to_string(t2);
+    const char* params[9] = { strategy_id.c_str(), ts.c_str(), d.c_str(), e.c_str(), st.c_str(), r.c_str(), a.c_str(), b.c_str(),
+                              checks_json.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(INSERT INTO live_signals (strategy_id, ts, dir, entry, stop, risk_pts, target_1r, target_2r, checks)
+              VALUES ($1, $2::timestamptz, $3::int, $4::float8, $5::float8, $6::float8, $7::float8, $8::float8, $9::jsonb)
+              RETURNING id)sql",
+        9, nullptr, params, nullptr, nullptr, 0);
+    int64_t id = 0;
+    if (res && PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) == 1) id = std::atoll(PQgetvalue(res, 0, 0));
+    else LOG("[PAPER-DB] WARN insert_live_signal(%s): %s", strategy_id.c_str(), res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
+    return id;
+}
+
+void PaperDb::close_live_signal(int64_t id, int64_t ts_us, double px, const std::string& reason) {
+    if (trades_only_ || id <= 0) return;
+    const std::string i = std::to_string(id), ts = format_ts(ts_us), p = std::to_string(px);
+    const char* params[4] = { i.c_str(), ts.c_str(), p.c_str(), reason.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(UPDATE live_signals SET status = 'closed', exit_ts = $2::timestamptz, exit_px = $3::float8, exit_reason = $4
+              WHERE id = $1::bigint)sql",
+        4, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+        LOG("[PAPER-DB] WARN close_live_signal(%lld): %s", (long long)id, res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
+}
+
+void PaperDb::append_live_signal_event(int64_t id, const std::string& event_json) {
+    if (trades_only_ || id <= 0) return;
+    const std::string i = std::to_string(id);
+    const char* params[2] = { i.c_str(), event_json.c_str() };
+    PGresult* res = PQexecParams(live(),
+        "UPDATE live_signals SET events = events || jsonb_build_array($2::jsonb) WHERE id = $1::bigint",
+        2, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+        LOG("[PAPER-DB] WARN append_live_signal_event(%lld): %s", (long long)id, res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
+}
+
+void PaperDb::update_live_signal_stop(int64_t id, double stop) {
+    if (trades_only_ || id <= 0) return;
+    const std::string i = std::to_string(id), p = std::to_string(stop);
+    const char* params[2] = { i.c_str(), p.c_str() };
+    PGresult* res = PQexecParams(live(),
+        "UPDATE live_signals SET stop = $2::float8 WHERE id = $1::bigint AND status = 'open'",
+        2, nullptr, params, nullptr, nullptr, 0);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
+        LOG("[PAPER-DB] WARN update_live_signal_stop(%lld): %s", (long long)id, res ? PQresultErrorMessage(res) : "null result");
+    if (res) PQclear(res);
 }
 
 } // namespace paper

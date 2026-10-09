@@ -111,6 +111,13 @@ static std::atomic<bool>  g_drill_sent{false};
 static std::atomic<bool>  g_drill_passed{false};
 static std::atomic<int64_t> g_drill_sent_ms{0};
 static std::atomic<int>   g_exit_code{0};
+// --drill probe (2026-10-05/07): prove the account + contract + route accept an order WITHOUT a fill —
+// 1 contract BUY LIMIT far below the market, wait for the exchange to accept it, cancel, confirm.
+static std::string        g_probe_tag;             // user_tag of the probe order
+static std::string        g_probe_basket;          // exchange basket id once accepted
+static std::atomic<bool>  g_probe_cancel_sent{false};
+static std::atomic<bool>  g_probe_flat{false};      // exchange confirmed FLAT at startup
+static constexpr double   kProbeOffsetPts = 100.0; // below the last price — cannot fill in seconds
 // Delay before the outer cycle loop reconnects. Normally 10s; a session that
 // ends on an ORDER_PLANT login refusal raises it so we do not hammer Rithmic
 // with a fresh login every 13s (rp_code=13 = "too many rapid logins /
@@ -591,6 +598,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // engine, book_imbalance / book_fade signals via strategy.on_quote().
     paper::QuoteState book;
     int64_t last_tick_us = 0;
+    double  last_tick_px = 0.0;   // last traded price seen by the executor (the strategy ignores ticks while halted)
     // Session-shape regime gate (paper_quote.hpp RegimeState) — declared here because the
     // signal handler below reads it; its ATR is seeded once the DB exists (seed_regime_atr).
     paper::RegimeState regime;
@@ -613,28 +621,37 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     }
     carried_pos = Position{};  // reset; will be populated again at session end
 
-    // Trend engine only (see the callback): set when a signal left the order manager FLAT.
+    // Set when an entry signal left the order manager FLAT (skipped by a gate, rejected by risk,
+    // …). The strategy marked itself "in position" when it emitted the signal — for ORB only AFTER
+    // the callback returns (orb_strategy.hpp check_breakout) — so the release must happen after
+    // the callback, here in settle_strategy(), for EVERY engine (ORB too since 2026-10-05: a
+    // release from inside the callback was overwritten and the ORB sat out the rest of the day).
     std::string strategy_unsettled;
     // Trend engine only: true while the pg feed replays warmup_minutes of history — the
     // strategy builds its bars, every signal it emits is dropped (never an order).
     bool warming_up = false;
     int  warmup_signals_dropped = 0;
     auto settle_strategy = [&]() {
-        if constexpr (!kOrb) {
-            if (strategy_unsettled.empty()) return;
-            if (order_mgr.position_snapshot().state == PosState::FLAT && strategy.session().in_position) {
-                LOG("[EXECUTOR] trend engine released — order manager stayed FLAT (%s)",
-                    strategy_unsettled.c_str());
-                strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:" + strategy_unsettled);
-            }
-            strategy_unsettled.clear();
+        if (strategy_unsettled.empty()) return;
+        if (order_mgr.position_snapshot().state == PosState::FLAT && strategy.session().in_position) {
+            LOG("[ENTRY-FLOW] %s engine released — no order was placed (%s); it may signal again after its cooldown",
+                kOrb ? "ORB" : "strategy", strategy_unsettled.c_str());
+            strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:" + strategy_unsettled);
+        } else {
+            LOG("[ENTRY-FLOW] release check (%s): order state=%d strategy in_position=%d — nothing to release",
+                strategy_unsettled.c_str(), (int)order_mgr.position_snapshot().state,
+                (int)strategy.session().in_position);
         }
+        strategy_unsettled.clear();
     };
 
     // Wire strategy → order_mgr
     strategy.set_signal_callback(
         [&](OrbSignal sig, double price, const std::string& reason) {
             if (warming_up) { ++warmup_signals_dropped; return; }   // history replay: no orders
+            if (sig == OrbSignal::BUY || sig == OrbSignal::SELL)
+                LOG("[ENTRY-FLOW] %s signal received px=%.2f reason=%s — checking chase / feed / gates / risk",
+                    sig == OrbSignal::BUY ? "BUY" : "SELL", price, reason.c_str());
             if (sig == OrbSignal::FLATTEN_EOD) {
                 Position eod_snap = order_mgr.position_snapshot();
                 const char* eod_ss;
@@ -659,7 +676,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     LOG("[EXECUTOR] Signal SKIPPED — chase %.2fpt > max_entry_offset=%.2fpt "
                         "(orb=%.2f px=%.2f reason=%s)",
                         offset, orb_cfg.max_entry_offset, orb_level, price, reason.c_str());
-                    strategy.notify_trade_filled(sig);  // reset in_position for re-entry
+                    strategy_unsettled = "chase";          // settle_strategy() releases the engine
                     return;
                 }
             }
@@ -673,8 +690,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     const double lag_s = notif::feed_lag_s(now_us, last_tick_us);
                     LOG("[EXECUTOR] Signal SKIPPED — feed %.1fs behind (max %.1fs): px=%.2f is not the market "
                         "(reason=%s)", lag_s, orb_cfg.feed_max_lag_s, price, reason.c_str());
-                    if constexpr (kOrb) strategy.notify_trade_filled(sig);   // reset in_position for re-entry
-                    else strategy_unsettled = "feed_lag";                    // settle_strategy() releases the engine
+                    strategy_unsettled = "feed_lag";       // settle_strategy() releases the engine
                     return;
                 }
             }
@@ -690,8 +706,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         blocked.c_str(), book.q.imbalance(), book.q.spread_ticks(NQ_TICK_SIZE),
                         (int)book.fresh(last_tick_us), regime.range_atr(), regime.eff(), regime.move_atr(),
                         regime.minutes, reason.c_str());
-                    if constexpr (kOrb) strategy.notify_trade_filled(sig);   // reset in_position for re-entry
-                    else strategy_unsettled = "book_gate:" + blocked;         // settle_strategy() releases the engine
+                    strategy_unsettled = "book_gate:" + blocked;   // settle_strategy() releases the engine
                     return;
                 }
             }
@@ -712,14 +727,23 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             } else {
                 order_mgr.on_signal(sig, price, reason, boundary);
             }
-            if constexpr (!kOrb) {
-                // The trend engine books its own position right AFTER this callback returns.
-                // If the order manager did not act (entry rejected by risk/halt/not-FLAT, or a
-                // managed exit while already flat) nothing will ever report the trade closed,
-                // and the engine would sit "in position" for the rest of the day. Record it
-                // here; settle_strategy() releases the engine once emit() has finished.
-                if (order_mgr.position_snapshot().state == PosState::FLAT)
-                    strategy_unsettled = reason.empty() ? "no_order" : reason;
+            // Every engine books its own position right AFTER this callback returns. If the
+            // order manager did not act (entry rejected by risk/halt/not-FLAT, or a managed exit
+            // while already flat) nothing will ever report the trade closed, and the engine would
+            // sit "in position" for the rest of the day. Record it here; settle_strategy()
+            // releases the engine once emit() has finished.
+            if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) {
+                const PosState st = order_mgr.position_snapshot().state;
+                if (st == PosState::FLAT) {
+                    strategy_unsettled = "no_order:" + (reason.empty() ? std::string("?") : reason);
+                    LOG("[ENTRY-FLOW] %s signal px=%.2f — order manager stayed FLAT (see the [OM] line above); release queued",
+                        sig == OrbSignal::BUY ? "BUY" : "SELL", price);
+                } else {
+                    LOG("[ENTRY-FLOW] %s signal px=%.2f — order placed, position state=%d",
+                        sig == OrbSignal::BUY ? "BUY" : "SELL", price, (int)st);
+                }
+            } else if (!kOrb && order_mgr.position_snapshot().state == PosState::FLAT) {
+                strategy_unsettled = reason.empty() ? "no_order" : reason;
             }
         }
     );
@@ -1427,9 +1451,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     // is persisted per live label (live_account_hwm) so a restart cannot forget it.
     bool   broker_dd_halted   = false;
     double last_broker_hwm_logged_bal = std::nan("");
+    // Last broker balance seen while the account was FLAT (no open P&L in it) — the base of the
+    // per-tick open-equity high-water estimate (notif::open_equity_peak).
+    double broker_flat_bal    = std::nan("");
     double broker_hwm         = notif::broker_hwm(
         (db && db->is_connected()) ? db->get_account_hwm() : std::nan(""),
         orb_cfg.starting_balance, std::nan(""));
+    double broker_hwm_persisted = broker_hwm;   // last value written to live_account_hwm
     LOG("[EXECUTOR] [BROKER-HWM] seed=%.2f (label=%s, cap=%.0f) — halt when balance <= %.2f",
         broker_hwm, OrbConfig::base_label(orb_cfg.account_label).c_str(),
         orb_cfg.trailing_drawdown_cap, broker_hwm - orb_cfg.trailing_drawdown_cap);
@@ -1635,13 +1663,25 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         // entries halt once balance <= HWM - trailing_drawdown_cap. The synthetic
         // gauge in RiskManager cannot see fees, liquidations or other instances.
         if (!std::isnan(broker_bal)) {
+            if (net == 0 && order_mgr.position_snapshot().state == PosState::FLAT) {
+                broker_flat_bal = broker_bal;
+                // a mark the open-position ticks raised is persisted once flat (not per tick)
+                if (db && db->is_connected() && !orb_cfg.dry_run && broker_hwm > broker_hwm_persisted + 0.005) {
+                    try {
+                        db->set_account_hwm(broker_hwm);
+                        LOG("[EXECUTOR] [BROKER-HWM] persisted open-position peak %.2f (was %.2f) now flat at %.2f",
+                            broker_hwm, broker_hwm_persisted, broker_bal);
+                        broker_hwm_persisted = broker_hwm;
+                    } catch (std::exception& e) { LOG("[EXECUTOR] set_account_hwm failed: %s", e.what()); }
+                }
+            }
             const double hwm_now = notif::broker_hwm(broker_hwm, orb_cfg.starting_balance, broker_bal);
             if (hwm_now > broker_hwm) {
                 broker_hwm = hwm_now;
                 LOG("[EXECUTOR] [BROKER-HWM] new high-water mark %.2f — halt level now %.2f",
                     broker_hwm, broker_hwm - orb_cfg.trailing_drawdown_cap);
                 if (db && db->is_connected() && !orb_cfg.dry_run) {
-                    try { db->set_account_hwm(broker_hwm); }
+                    try { db->set_account_hwm(broker_hwm); broker_hwm_persisted = broker_hwm; }
                     catch (std::exception& e) { LOG("[EXECUTOR] set_account_hwm failed: %s", e.what()); }
                 }
             }
@@ -1726,6 +1766,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     strategy.halt_trading("startup_ghost_unwind_failed");
             } else if (net == 0) {
                 LOG("[EXECUTOR] [STARTUP-RECON] net_qty=0 — exchange confirmed FLAT");
+            if (g_drill == "probe" && !g_probe_flat.exchange(true))
+                LOG("[DRILL] probe: exchange confirmed FLAT — the probe order goes out on the first market price");
             if (g_drill == "orphan" && !g_drill_sent.exchange(true)) {
                 // The untracked order: 1 contract, aggressive LIMIT off the last price,
                 // a user_tag the order manager has never seen. Exactly the shape of
@@ -1901,6 +1943,29 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                               notif.quantity(), notif.price(), notif.avg_fill_price(),
                                               0, notif.total_fill_size(), "",
                                               notif.is_snapshot() ? "snapshot" : "");
+                if (g_drill == "probe" && !g_probe_tag.empty() && notif.user_tag() == g_probe_tag) {
+                    const int nt = (int)notif.notify_type();
+                    if (!notif.basket_id().empty()) g_probe_basket = notif.basket_id();
+                    LOG("[DRILL] probe status: notify_type=%d '%s' basket=%s filled=%d",
+                        nt, notif.status().c_str(), notif.basket_id().c_str(), notif.total_fill_size());
+                    if (notif.total_fill_size() > 0) {
+                        LOG("[DRILL] probe FAIL: the probe FILLED (%d) — the net reconciler will unwind it; "
+                            "CHECK RTRADER", notif.total_fill_size());
+                        g_exit_code = 2;   // keep running: NET-RECON unwinds the untracked position
+                    } else if (nt == 13 && !g_probe_cancel_sent.exchange(true)) {   // "open" = working at the exchange
+                        const int64_t t = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::steady_clock::now().time_since_epoch()).count() - g_drill_sent_ms;
+                        LOG("[DRILL] probe ACCEPTED: working at the exchange %lld ms after sending (basket=%s) — cancelling",
+                            (long long)t, g_probe_basket.c_str());
+                        order_plant->send_cancel(g_probe_basket, orb_cfg.account_id);
+                    } else if (nt == 15 && g_probe_cancel_sent && !g_drill_passed.exchange(true)) {   // complete, unfilled
+                        LOG("[DRILL] PASS: probe order accepted by the exchange and cancelled, nothing filled "
+                            "(account=%s contract=%s route=%s) — exiting",
+                            orb_cfg.account_id.c_str(), trade_symbol.c_str(), order_plant->trade_route.c_str());
+                        g_running = false;
+                        ioc_ref.stop();
+                    }
+                }
 
                 // ── Startup order reconciliation ─────────────────────────────────
                 // is_snapshot=1 messages arrive after subscribing for order updates
@@ -2140,6 +2205,13 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                                               notif.user_tag(), notify_type, notif.status(), "",
                                               0, 0.0, notif.fill_price(), notif.fill_size(),
                                               notif.total_fill_size(), "", "");
+                if (g_drill == "probe" && !g_probe_tag.empty() && notif.user_tag() == g_probe_tag &&
+                    notify_type == 6 && !g_drill_passed.exchange(true)) {   // REJECT
+                    LOG("[DRILL] probe FAIL: the exchange REJECTED the probe order: '%s' — orders are NOT reaching the market",
+                        notif.status().c_str());
+                    g_exit_code = 2; g_running = false;
+                    ioc_ref.stop();
+                }
 
                 // ExchangeOrderNotification::NotifyType::FILL = 5
                 // Correlate fills via user_tag (our client-side tracking ID).
@@ -2424,7 +2496,56 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 co_await reconcile_net(last_exch_net, false, rnow_ms);
             }
 
-            if (g_drill_sent && !g_drill_passed) {
+            if (g_drill == "probe" && g_probe_flat && !g_drill_sent && last_tick_px > 0.0 &&
+                order_plant->connected && !g_drill_sent.exchange(true)) {
+                const int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
+                const double last_px = last_tick_px;   // drill mode halts the strategy, which then ignores ticks
+                {
+                    const double px = std::floor((last_px - kProbeOffsetPts) / 0.25) * 0.25;
+                    g_probe_tag = "DRILL-probe-" + std::to_string(now_ms);
+                    rti::RequestNewOrder req;
+                    req.set_template_id(312);
+                    req.set_fcm_id(fcm_id_r);
+                    req.set_ib_id(ib_id_r);
+                    req.set_account_id(orb_cfg.account_id);
+                    req.set_symbol(trade_symbol);
+                    req.set_exchange(orb_cfg.exchange);
+                    req.set_quantity(1);
+                    req.set_order_type(1);            // LIMIT
+                    req.set_price(px);
+                    req.set_transaction_type(1);      // BUY
+                    req.set_user_tag(g_probe_tag);
+                    req.set_duration(rti::RequestNewOrder::DAY);
+                    req.set_manual_or_auto_select(rti::RequestNewOrder::AUTO);
+                    req.set_trade_route(order_plant->trade_route);
+                    try {
+                        co_await op_write_q.write(proto_frame(req));
+                        g_drill_sent_ms = now_ms;
+                        LOG("[DRILL] probe order sent: BUY 1 %s LIMIT %.2f (last %.2f, %.0f pts below — cannot fill) "
+                            "account=%s route=%s tag=%s — expecting: exchange accepts (open) → cancel → cancelled → PASS",
+                            trade_symbol.c_str(), px, last_px, kProbeOffsetPts, orb_cfg.account_id.c_str(),
+                            order_plant->trade_route.c_str(), g_probe_tag.c_str());
+                        if (db) db->write_order_event("drill_probe_sent", "", "", g_probe_tag, 312, "", "BUY",
+                                                      1, px, 0.0, 0, 0, "", "probe");
+                    } catch (std::exception& e) {
+                        LOG("[DRILL] probe FAIL: could not send the probe order: %s", e.what());
+                        g_exit_code = 2; g_running = false;
+                    }
+                }
+            }
+            if (g_drill == "probe" && g_drill_sent && !g_drill_passed) {
+                int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
+                if (now_ms - g_drill_sent_ms > 60'000) {
+                    LOG("[DRILL] probe FAIL: no accept/cancel verdict 60 s after sending (cancel sent=%d basket=%s) — "
+                        "CHECK RTRADER FOR A WORKING ORDER", (int)g_probe_cancel_sent.load(), g_probe_basket.c_str());
+                    if (!g_probe_basket.empty()) order_plant->send_cancel(g_probe_basket, orb_cfg.account_id);
+                    g_drill_passed = true;
+                    g_exit_code = 2; g_running = false;
+                    ioc_ref.stop();
+                }
+            } else if (g_drill_sent && !g_drill_passed) {
                 int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::steady_clock::now().time_since_epoch()).count();
                 if (now_ms - g_drill_sent_ms > 90'000) {
@@ -2978,6 +3099,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     int  last_log_minute     = -1;
     auto process_tick = [&](const OrbTick& tick) {
                 last_tick_us = tick.ts_micros;   // book freshness is judged against the print, not wall time
+                last_tick_px = tick.price;
                 { int rh, rm; tick_et_hm(tick.ts_micros, rh, rm); regime.on_tick(today, rh, rm, tick.ts_micros, tick.price, (double)tick.size); }
                 // Book exits (book_exit_flip / book_tp_imbalance — the paper fleet's __bx/__btp
                 // overlays): the same QuoteState::book_exit() the paper brokers run, as a market
@@ -3024,6 +3146,26 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         flush_position(db.get(), today, order_mgr, strategy,
                                        orb_cfg.dry_run || order_plant->connected, orb_cfg.point_value,
                                        md_up());
+                    }
+                }
+                // Broker trailing drawdown, tick by tick while a position is open: the prop firm
+                // marks the intraday peak INCLUDING open profit; the sampled tid=451 balance can miss
+                // it (2026-10-02: our mark 25,143.12 vs Tradeify's 25,189.86). Raising the mark only
+                // ever tightens the guard.
+                {
+                    const Position ps = order_mgr.position_snapshot();
+                    if (ps.state == PosState::LONG || ps.state == PosState::SHORT) {
+                        const double peak = notif::open_equity_peak(broker_flat_bal, ps.mfe, orb_cfg.hwm_margin_pts,
+                                                                    orb_cfg.point_value, ps.qty);
+                        if (!std::isnan(peak) && peak > broker_hwm + 0.005) {
+                            broker_hwm = peak;
+                            if (!std::isnan(last_broker_bal))
+                                risk.set_broker_room(notif::broker_drawdown_room(last_broker_bal, broker_hwm,
+                                                                                 orb_cfg.trailing_drawdown_cap));
+                            LOG("[EXECUTOR] [BROKER-HWM] open-position peak %.2f (flat %.2f + (mfe %.2f + %.2f) x %.0f x %d) — halt level now %.2f",
+                                peak, broker_flat_bal, ps.mfe, orb_cfg.hwm_margin_pts, orb_cfg.point_value, ps.qty,
+                                broker_hwm - orb_cfg.trailing_drawdown_cap);
+                        }
                     }
                 }
 
@@ -3705,18 +3847,43 @@ int main(int argc, char* argv[]) {
     // to prove a generated hand-off config before installing it.
     bool check_only = false;
 
+    // 2026-10-05: an unknown argument (it was `--help`) used to fall through and START A LIVE
+    // EXECUTOR on the default config. Now: --help prints usage and exits; any unknown argument,
+    // or no --config at all, refuses to start. Every launcher (systemd units, run_continuous.sh,
+    // the dashboard's spawn) passes --config explicitly.
+    auto usage = [](FILE* f) {
+        std::fprintf(f,
+            "usage: nq_executor --config <config.json> [--dry-run] [--check-config] [--drill orphan]\n"
+            "  --config        REQUIRED: the account config to trade (config/<account>_config.json)\n"
+            "  --dry-run       force dry_run (no orders reach the broker)\n"
+            "  --check-config  load + validate the config and exit; connects nowhere\n"
+            "  --drill orphan  incident drill: untracked fill must be unwound (costs one round trip)\n"
+            "  --drill probe   order test: 1 BUY LIMIT 100 pts below market, accepted -> cancelled, no fill\n"
+            "  --help          this text\n");
+    };
+    bool have_config = false;
     for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--config") == 0 && i + 1 < argc)
-            config_path = argv[++i];
-        else if (std::strcmp(argv[i], "--dry-run") == 0)
+        if (std::strcmp(argv[i], "--config") == 0 && i + 1 < argc) {
+            config_path = argv[++i]; have_config = true;
+        } else if (std::strcmp(argv[i], "--dry-run") == 0)
             force_dry_run = true;
         else if (std::strcmp(argv[i], "--check-config") == 0)
             check_only = true;
         else if (std::strcmp(argv[i], "--drill") == 0 && i + 1 < argc)
             g_drill = argv[++i];
+        else if (std::strcmp(argv[i], "--help") == 0 || std::strcmp(argv[i], "-h") == 0) {
+            usage(stdout); return 0;
+        } else {
+            std::fprintf(stderr, "FATAL: unknown argument '%s' — refusing to start\n", argv[i]);
+            usage(stderr); return 2;
+        }
     }
-    if (!g_drill.empty() && g_drill != "orphan") {
-        std::fprintf(stderr, "FATAL: unknown --drill '%s' (known: orphan)\n", g_drill.c_str());
+    if (!have_config) {
+        std::fprintf(stderr, "FATAL: --config is required — refusing to start on an implicit default\n");
+        usage(stderr); return 2;
+    }
+    if (!g_drill.empty() && g_drill != "orphan" && g_drill != "probe") {
+        std::fprintf(stderr, "FATAL: unknown --drill '%s' (known: orphan, probe)\n", g_drill.c_str());
         return 1;
     }
 

@@ -141,5 +141,16 @@ inline bool broker_drawdown_breached(double balance, double hwm, double trailing
 inline double broker_drawdown_room(double balance, double hwm, double trailing_cap) {
     return balance - (hwm - trailing_cap);
 }
+// Peak account equity while a position is open, tick by tick (2026-10-05). Tradeify trails the
+// INTRADAY peak including open profit; the tid=451 balance is only sampled, so on 2026-10-02 our
+// mark (25,143.12) sat $46.74 under Tradeify's (25,189.86) and the guard believed it had room it
+// did not. Estimate = last FLAT balance + (best open move + margin) x point value x qty; the margin
+// covers a print the broker saw and we did not (Tradeify's mark implies ~1.3 pt beyond our highest
+// recorded tick that day). NaN when there is nothing to add.
+inline double open_equity_peak(double flat_balance, double mfe_pts, double margin_pts,
+                               double point_value, int qty) {
+    if (std::isnan(flat_balance) || qty <= 0 || point_value <= 0.0 || mfe_pts <= 0.0) return std::nan("");
+    return flat_balance + (mfe_pts + std::max(0.0, margin_pts)) * point_value * qty;
+}
 
 } // namespace notif

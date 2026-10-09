@@ -154,6 +154,21 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   executor in WebSocket MD mode (any other provider) while the collector runs — Rithmic
   force-logs-out one of them every ~35s.
 - **Live-executor rules since 2026-09-30 (audit fixes, CHANGES.md):** a `dry_run: true` config writes under a label ending in `_dry` (appended automatically — simulated fills never reach the live tables); risk seeds are ACCOUNT-WIDE on the live label; the broker balance from tid=451 drives a persisted high-water mark (`live_account_hwm`) and halts entries at HWM − `trailing_drawdown_cap` (log `[BROKER-HWM]`); the break-even stop move always reaches the exchange; multi-lot rows record VWAP; `commission_rt` is the measured fee (1.82 MNQ — NQ unknown, see `_commission_note`).
+- **SECOND-STRATEGY TEST, 10:30–12:00 ET (founder 2026-10-04: "keep the ORB as is", find the best bounce / trend / momentum strategy for the slot after it):** paper only. `config/slot2_fleet.json` holds 11 windowed copies (`s2_*`) of the best live-runnable variants per family; `slot2-eval.timer` (weekdays 16:20 ET) runs `scripts/slot2_eval.sh`, which replays each new session under label `slot2` and rewrites `data/slot2/report.md`. The candidates were SELECTED on sessions ≤ 2026-10-02, so only later sessions count: PASS = ≥20 trades on ≥8 days, PF ≥1.3, net >0, both halves positive, breakeven scratches ≤0.5, worst day ≥ −$500 (NQ $). First PASS sends one grid-notify alert. A pass earns a dry-run instance after the ORB — live stays the founder's call. Why this slot: 15-min range averages 75 pts (ORB hour 106, after 14:00 ~47).
+- **OVERNIGHT GRID (Asia + London, 2026-10-04):** `config/night_fleet.json` (948 `nt_*` variants) is replay-only research — `night-eval.timer` (weekdays 16:30 ET) runs `scripts/night_eval.sh` (label `night`, refuses in RTH and the Asia session) → `data/night/report.md`, stats by window × family × liquidity gate. The liquidity gate (`liq_vol_min` / `liq_impact_max` / `liq_bars`, RegimeState) works live and on paper. **A trend variant's window outside RTH now also sets the paper broker's entry window** (before 2026-10-04 every overnight trend variant was silently blocked); a LIVE overnight trend config must still set `session_open_*`/`eod_flatten_*`/`last_entry_hour` itself.
+- **MANUAL SIGNALS (2026-10-08):** the `sig_*` strategies in `config/paper_fleet.json` (`publish_signals: true`)
+  publish entry / move-stop / exit Telegram alerts for 1 MNQ with the BRACKET to set; `live-trade-alerts` (user
+  unit, `scripts/live_trade_alerts.sh`) sends the same format for the live executor's own trades. Pages:
+  /signals, /live (Manual signals strip), /chart?signals=<id>. Paper ORB ≠ live ORB — do not publish the paper copy.
+- **LIVE ROTA (2026-10-08, founder: "all sessions … based on regimes"):** systemd user timers `live-rota-{asia,ldn_e,ldn_l,ny}.timer`
+  (`~/.config/systemd/user/`, installed by hand — not in `deploy/`) run `scripts/live_rota.sh <window>` 2 min before each window. It reads
+  eff = |last − open| / range (NY: from 09:30; overnight: prior 120 min), picks the sig_* strategy for that regime or stands aside,
+  generates `config/tradeify_handoff_config.json` (1 MNQ), validates it with `--check-config` and runs `strategy_handoff.sh`
+  (NY hard 12:00 so an open ORB trade finishes). Picks (clean replay 09-21..10-08, tight trails): Asia band fade / London EMA pullback /
+  London Donchian only when trending; NY VWAP trend when middle, RSI-2 when trending, aside when choppy. Log `data/logs/live_rota.log`
+  (`--check` runs stay off it); /live shows the holder + per-window decision (`/api/signals/rota`). The execution audit merges the
+  `_handoff` log and checks limits per strategy. Off: `systemctl --user disable --now live-rota-{asia,ldn_e,ldn_l,ny}.timer`.
+- **ORDER TEST (2026-10-07):** `scripts/order_probe.sh tradeify` proves the live account can place an order with NO fill (1 BUY LIMIT 100 pts below market → accepted → cancelled), then restarts the live unit. Never run it inside 09:25–10:35 ET (it refuses). Do not invoke `build/nq_executor` by hand to explore flags.
 - **EXECUTION VALIDATION, EVERY DAY (founder 2026-09-30):** three timers guard the live path —
   `pre-rth-check.timer` 09:00 ET (config + broker readiness incl. contract/roll, commission, drawdown
   room), `execution-watch.timer` every 2 min in RTH (`scripts/execution_watch.sh`: unit, mode,
@@ -162,6 +177,7 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
   fills → live_trades → broker P&L reconciliation, stop integrity, limits, feed gaps; JSON in
   `data/execution_audit/`). Run the audit by hand for any past date. A red line from any of them
   before 09:30 ET means do not expect fills.
+- **LIVE ORB = 2 MNQ SINCE 2026-10-09 (founder; was 1 MNQ from 2026-10-07; rota windows are sized from the room, `scripts/live_rota.sh`):** the Tradeify Growth 25k has $90.38 of trailing-drawdown room (Tradeify floor $24,189.86, intraday trailing incl. open profit) — below one 1-NQ stop ($301.82), so every 1-NQ signal on 10-05/10-06 was refused by the broker-room guard. Signals still come from NQ ticks; NQ copy in `config/archived/live_history/tradeify_config.pre-mnq1-*.json`. Back to NQ only after a reset or once room > one NQ stop.
 - **LIVE SINCE 2026-09-30 10:47 ET: ORB only, 1 NQ (NQZ6), 3 trades/day, entries 09:35–10:30 ET
   (`last_entry_hour 10` + `last_entry_min 30`), commission_rt 1.82 (MNQ figure — replace from a
   Tradeify NQ statement).** The dry-run day 2026-09-30 was cleared on the founder's word.

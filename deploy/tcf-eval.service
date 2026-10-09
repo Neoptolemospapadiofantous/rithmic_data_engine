@@ -1,0 +1,16 @@
+# tcf-eval.service — nightly trend_confirm research grid (LOCAL box, systemd USER unit; fired by
+# tcf-eval.timer, weekdays 16:45 New York). Runs scripts/research_eval.sh config/tcf_fleet.json tcf:
+# replays each newly completed session for the ~2,100 tcf_* variants under paper label tcf and rewrites
+# data/research/tcf/report.md. Paper research only. Refuses during RTH and the Asia session.
+# Install: cp deploy/tcf-eval.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now tcf-eval.timer
+[Unit]
+Description=Nightly trend_confirm research grid replay + stats (tcf)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/research_eval.sh config/tcf_fleet.json tcf
+Nice=15
+StandardOutput=journal
+StandardError=journal

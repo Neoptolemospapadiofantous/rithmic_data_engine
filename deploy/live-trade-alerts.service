@@ -1,0 +1,18 @@
+# Telegram alerts for the LIVE executor's own trades (entry with bracket, break-even / trail stop moves,
+# exit) in the manual-signal format — read-only on live_order_events / live_trades (2026-10-08).
+# Install: cp deploy/live-trade-alerts.service ~/.config/systemd/user/ && systemctl --user daemon-reload
+#          && systemctl --user enable --now live-trade-alerts
+[Unit]
+Description=Telegram alerts for live executor trades (scripts/live_trade_alerts.sh)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/live_trade_alerts.sh
+Restart=always
+RestartSec=10
+Nice=10
+
+[Install]
+WantedBy=default.target

@@ -143,6 +143,15 @@ struct OrbConfig {
     // Relative-volume gate (2026-09-29): the last closed minute's tick volume vs the mean of the
     // previous rvol_bars closed minutes (paper_quote.hpp RegimeState). 0 = off.
     double      rvol_min          = 0.0;           // entries need rvol ≥ x (participation)
+    // Liquidity gate (2026-10-04, for Asia/London): over the last liq_bars closed minutes, mean
+    // contracts per minute ≥ liq_vol_min and points of range per 1,000 contracts ≤ liq_impact_max
+    // (a thin book moves far on little volume). paper_quote.hpp RegimeState. 0 = off.
+    double      liq_vol_min       = 0.0;
+    // Broker trailing drawdown: the open-position high-water estimate adds this many points to the
+    // best open move (notification_router.hpp open_equity_peak) — conservative by design.
+    double      hwm_margin_pts    = 2.0;
+    double      liq_impact_max    = 0.0;
+    int         liq_bars          = 15;
     double      rvol_max          = 0.0;           // …or rvol ≤ x (quiet tape)
     int         rvol_bars         = 20;
     // Volatility-targeted size (2026-09-29): contracts = vt_risk_usd / (prior-day ATR14 × point
@@ -306,6 +315,10 @@ struct OrbConfig {
         c.rvol_min             = json_dbl(text, "rvol_min",             c.rvol_min);
         c.rvol_max             = json_dbl(text, "rvol_max",             c.rvol_max);
         c.rvol_bars            = json_int(text, "rvol_bars",            c.rvol_bars);
+        c.liq_vol_min          = json_dbl(text, "liq_vol_min",          c.liq_vol_min);
+        c.liq_impact_max       = json_dbl(text, "liq_impact_max",       c.liq_impact_max);
+        c.liq_bars             = json_int(text, "liq_bars",             c.liq_bars);
+        c.hwm_margin_pts       = json_dbl(text, "hwm_margin_pts",       c.hwm_margin_pts);
         c.vt_risk_usd          = json_dbl(text, "vt_risk_usd",          c.vt_risk_usd);
         c.vt_qty_max           = json_int(text, "vt_qty_max",           c.vt_qty_max);
         c.regime_exit_min_eff  = json_dbl(text, "regime_exit_min_eff",  c.regime_exit_min_eff);
@@ -450,6 +463,9 @@ struct OrbConfig {
         if (entry_offset_ticks < 1 || entry_offset_ticks > 40)
             throw std::runtime_error("FATAL: invalid config key 'entry_offset_ticks' — must be 1..40 (got " +
                                      std::to_string(entry_offset_ticks) + ")");
+        if ((liq_vol_min > 0.0 || liq_impact_max > 0.0) && (liq_bars < 1 || liq_bars > 120))
+            throw std::runtime_error("FATAL: invalid config key 'liq_bars' — must be 1..120 (got " +
+                                     std::to_string(liq_bars) + ")");
         if (feed_max_lag_s < 0.0)
             throw std::runtime_error("FATAL: invalid config key 'feed_max_lag_s' — must be >= 0 (got " +
                                      std::to_string(feed_max_lag_s) + ")");

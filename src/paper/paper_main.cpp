@@ -18,6 +18,7 @@
 #include "paper_config.hpp"
 #include "paper_db.hpp"
 #include "paper_engine.hpp"
+#include "signal_publish.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -109,6 +110,7 @@ struct Runner {
     bool   mtf_restart_flatten = false;  // resumed MTF leg → close after wiring
 
     std::unique_ptr<TrendStrategy>  trend;   // engine "trend" — shares the plain PaperBroker with orb
+    std::unique_ptr<paper::SignalPublisher> pub;   // trend_confirm + publish_signals → live dashboard (signal_publish.hpp)
     // Start-up seeds + the halt applied at start (warm-up rollovers reset strategy sessions,
     // which lifts halts — end_warmup re-applies this one).
     double      seed_total = 0.0, seed_day = 0.0;
@@ -318,6 +320,15 @@ int main(int argc, char** argv) {
                 [brk](OrbSignal sig, double px, const std::string& reason) {
                     brk->on_signal(sig, px, reason);
                 });
+            // Manual-signal dashboard: live runs only (a replay writes trades, never live state/signals).
+            // Any trend-engine mode may publish (2026-10-08: manual signals on every session); only
+            // trend_confirm carries the setup checks / stages, the others publish "watching" + position.
+            if (paper::wants_publish(fs.params_json) && !g_replay && !db->trades_only()) {
+                static paper::PaperDbSignalSink sig_sink(nullptr);
+                sig_sink.db = db.get();
+                r->pub = std::make_unique<paper::SignalPublisher>(fs.id, &sig_sink, 5'000'000LL, tc.mode == "trend_confirm");
+                LOG("[PAPER] %s publishes live state + manual signals (live_signal_state / live_signals)", fs.id.c_str());
+            }
         } else {
             r->strategy = std::make_unique<OrbStrategy>(r->cfg);
             r->broker   = std::make_unique<paper::PaperBroker>(
@@ -328,6 +339,12 @@ int main(int argc, char** argv) {
                 [brk](OrbSignal sig, double px, const std::string& reason) {
                     brk->on_signal(sig, px, reason);
                 });
+            if (paper::wants_publish(fs.params_json) && !g_replay && !db->trades_only()) {   // ORB manual signals
+                static paper::PaperDbSignalSink orb_sig_sink(nullptr);
+                orb_sig_sink.db = db.get();
+                r->pub = std::make_unique<paper::SignalPublisher>(fs.id, &orb_sig_sink, 5'000'000LL, false);
+                LOG("[PAPER] %s publishes live state + manual signals (live_signal_state / live_signals)", fs.id.c_str());
+            }
         }
 
         // Manual disable (paper_strategies.enabled, set via the dashboard)
@@ -726,6 +743,17 @@ int main(int argc, char** argv) {
                     r->broker->on_tick(ot);     // broker first: signals fill on NEXT tick
                     if (r->strategy) r->strategy->on_tick(ot);
                     else             r->trend->on_tick(ot);
+                    // A trend signal the broker refused (book / liquidity / regime gate, cooldown, cap)
+                    // left the strategy "in position" with nothing filled — release it, or it sits out the
+                    // rest of the session (the live executor's settle_strategy fix of 2026-10-05; the
+                    // strategy marks itself in position only AFTER its signal callback returns).
+                    if (r->trend && !warming_up && r->trend->session().in_position &&
+                        r->broker->direction() == 0 && !r->broker->has_pending_entry())
+                        r->release_position("not_executed:entry_refused");
+                    if (r->pub && !warming_up) {
+                        if (r->trend) r->pub->on_tick(*r->broker, *r->trend, r->cfg, &regime, t.ts_us);
+                        else          r->pub->on_tick_orb(*r->broker, r->cfg, &regime, t.ts_us, t.price);
+                    }
                 } else {
                     // bracket broker first; bracket/qty come from the strategy's
                     // state as of the previous tick — signals fill on the next.
