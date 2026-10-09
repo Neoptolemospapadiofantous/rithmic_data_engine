@@ -7,6 +7,35 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-09 — live rota: size each window from the drawdown room (1 NQ when it fits, else MNQ)
+
+Founder: "check if we can do 1 NQ contract, if not do as many MNQ", with risk per trade = half the room.
+`scripts/live_rota.sh` reads the newest `[BROKER-HWM]` room from either live instance's log and sizes the
+window's strategy so one full stop (`sl_points` × $/pt × qty + `commission_rt`) fits in 0.5 × room: 1 NQ when it
+does, otherwise the most MNQ that fit (max 10, min 1); no room reading → 1 MNQ. The generated config gets
+`symbol`/`trade_contract`/`point_value`/`qty` accordingly and the Telegram hand-off line names the size. At the
+2026-10-09 room ($187.18) no NQ stop fits (London early 10 pts = $201.82); sizes: London early 4 MNQ, band fade
+3, VWAP / RSI-2 / breakout 2. The executor's own guard still refuses an entry whose stop exceeds the whole room.
+The ORB instance stays 1 MNQ (`config/tradeify_config.json`).
+
+## 2026-10-09 — live rota: 3 trades a day, matching the paper twins
+
+`scripts/live_rota.sh` fell back to `max_daily_trades` 2 when a `sig_*` strategy sets none, while the paper
+engine's default is 3, so the replays that picked each strategy assumed more trades than live allowed. The
+fallback is now 3 (still capped at 3); strategies that set their own value keep it (`sig_ny_keltner_btp` and
+`sig_ny_rsi2_btp` stay at 2). Found on 2026-10-09: London early missed a +16.5-pt paper long at 02:36 ET
+because a SHORT the liquidity gate blocked at 02:24 had used up one of its 2 trades. That counting bug (a
+refused signal still counts as a trade) is NOT fixed by this change. It is open.
+
+## 2026-10-09 — live rota: London windows handed back early (octal times)
+
+`scripts/live_rota.sh` passes zero-padded HHMM times to `strategy_handoff.sh`, and bash `(( ))` read them
+as octal. London early's hand-back time `0503` became 323, so the account went back to ORB at 03:23 ET
+instead of 05:03. London late's `0918` is not valid octal, so that wait loop would error out and hand the
+account straight back after the switch. `strategy_handoff.sh` now converts all three times with `10#`.
+NY and Asia were unaffected: their times have no leading zero. After the fix the London early window was
+re-armed at 03:47 ET (`systemctl --user start live-rota@ldn_e`).
+
 ## 2026-09-30 — execution validation every day; feed drops fixed; ORB live on 1 NQ, 3 trades, first hour
 
 Founder: "every day from now on we must validate and audit the execution process to be 100%

@@ -20,6 +20,9 @@ set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"; cd "$REPO"
 ACC="${1:?account}"; FROM="${2:?from instance}"; TO="${3:?to instance}"
 SWITCH_ET="${4:-1000}"; HARD_ET="${5:-1030}"; BACK_ET="${6:-1600}"
+# force base 10: live_rota passes zero-padded HHMM, and (( )) reads "0503" as octal 323 (handed back at
+# 03:23 on 2026-10-09) and rejects "0918" outright (the loop errors out → immediate hand-back)
+SWITCH_ET=$((10#$SWITCH_ET)); HARD_ET=$((10#$HARD_ET)); BACK_ET=$((10#$BACK_ET))
 DRY="${DRY:-0}"
 OUT="data/logs/strategy_handoff.log"; [[ "$DRY" == 1 ]] && OUT="data/logs/strategy_handoff_dry.log"
 set -a; . ./.env 2>/dev/null; set +a; export PGPASSWORD="${PG_PASSWORD:-}"
