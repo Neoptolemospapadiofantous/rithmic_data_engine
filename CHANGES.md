@@ -7,6 +7,16 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-09 — live ORB on 2 MNQ
+
+Founder: "2 MNQ for orb". `config/tradeify_config.json` qty 1 → 2 (one 15-pt stop = $63.64 against the
+$187.18 trailing-drawdown room); validated with `--check-config`, the ORB unit restarted flat at 06:06 ET
+(`[BROKER] exchange_net=0`, room 187.18, no `[BROKER-ROOM]` refusal). 1-MNQ copy in
+`config/archived/live_history/tradeify_config.pre-mnq2-20261009-0606.json`. ORB is a fixed size; only the rota
+windows size themselves from the room.
+
+## 2026-10-09 — live rota: size each window from the drawdown room (1 NQ when it fits, else MNQ)
+
 ## 2026-10-09 — live rota: size each window from the drawdown room (1 NQ when it fits, else MNQ)
 
 Founder: "check if we can do 1 NQ contract, if not do as many MNQ", with risk per trade = half the room.
