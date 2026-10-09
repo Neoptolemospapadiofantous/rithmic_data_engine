@@ -159,7 +159,7 @@ Local runs do not use systemd — `deploy/*.service` are **Oracle-only**.
 - **MANUAL SIGNALS (2026-10-08):** the `sig_*` strategies in `config/paper_fleet.json` (`publish_signals: true`)
   publish entry / move-stop / exit Telegram alerts for 1 MNQ with the BRACKET to set; `live-trade-alerts` (user
   unit, `scripts/live_trade_alerts.sh`) sends the same format for the live executor's own trades. Pages:
-  /signals, /live (Manual signals strip), /chart?signals=<id>. Paper ORB ≠ live ORB — do not publish the paper copy.
+  /signals, /chart?signals=<id> (the /live Manual signals strip was removed 2026-10-09). Paper ORB ≠ live ORB — do not publish the paper copy.
 - **LIVE ROTA (2026-10-08, founder: "all sessions … based on regimes"):** systemd user timers `live-rota-{asia,ldn_e,ldn_l,ny}.timer`
   (`~/.config/systemd/user/`, installed by hand — not in `deploy/`) run `scripts/live_rota.sh <window>` 2 min before each window. It reads
   eff = |last − open| / range (NY: from 09:30; overnight: prior 120 min), picks the sig_* strategy for that regime or stands aside,
