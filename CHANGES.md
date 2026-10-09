@@ -7,6 +7,24 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-09 — a refused entry no longer uses up max_daily_trades
+
+Every engine counted a trade when it emitted the signal, and nothing gave the trade back when the
+executor refused the entry before any order went out (book/liquidity/regime gate, chase, feed lag, risk).
+So London early's 02:24 ET gate-blocked SHORT used 1 of its 2 trades, and the +16.5-pt 02:36 ET long was
+refused at "2/2". NY RSI-2 at 11:45 and 12:00 ET (both `regime_eff_low`) was counted the same way.
+Now a `not_executed:` release gives the trade back:
+- `TrendStrategy::notify_trade_filled` and `MtfScalperStrategy::notify_trade_filled` do it themselves, only
+  while the engine still holds the leg, so a second release cannot undercount.
+- ORB (`orb_strategy.hpp`, no-touch) has its count re-seeded by the executor's `settle_strategy()`.
+
+A release that follows an EXIT signal while the order manager is flat is now tagged `released:exit:…`, not
+`not_executed:`. That keeps a trade that really happened from being given back. The paper engine's
+`not_executed:entry_refused` release now behaves the same way. That added one trade to the golden day
+(`sig_orb_5_15_10` LONG 09:35, +32.25 pts), which is re-frozen. Tests: `test_trend_strategy` "cap:" and
+"release:" blocks, and `test_mtf_scalper` `not_executed_release_gives_trade_back`. `make hermes` 18/18.
+The live unit was restarted flat at 16:28 ET.
+
 ## 2026-10-09 — live ORB on 2 MNQ
 
 Founder: "2 MNQ for orb". `config/tradeify_config.json` qty 1 → 2 (one 15-pt stop = $63.64 against the
@@ -33,7 +51,7 @@ engine's default is 3, so the replays that picked each strategy assumed more tra
 fallback is now 3 (still capped at 3); strategies that set their own value keep it (`sig_ny_keltner_btp` and
 `sig_ny_rsi2_btp` stay at 2). Found on 2026-10-09: London early missed a +16.5-pt paper long at 02:36 ET
 because a SHORT the liquidity gate blocked at 02:24 had used up one of its 2 trades. That counting bug (a
-refused signal still counts as a trade) is NOT fixed by this change. It is open.
+refused signal still counts as a trade) was fixed separately the same evening, in the next entry up.
 
 ## 2026-10-09 — live rota: London windows handed back early (octal times)
 

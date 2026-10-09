@@ -175,6 +175,9 @@ public:
         // test (the engine sat "in position" all session) + review.
         const int closed_dir = (dir == OrbSignal::BUY) ? +1 : (dir == OrbSignal::SELL) ? -1 : 0;
         if (closed_dir == 0) {
+            // An entry that never executed gives its trade back (open_position() counted it).
+            if (pos_dir_ != 0 && exit_reason.rfind("not_executed", 0) == 0 && trades_today_ > 0)
+                --trades_today_;
             clear_position();
             LOG("[MTF] Released (%s) — no trade accounted, streak=%d trades_today=%d/%d",
                 exit_reason.empty() ? "?" : exit_reason.c_str(), loss_streak_,

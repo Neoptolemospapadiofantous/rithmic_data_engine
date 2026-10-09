@@ -636,7 +636,22 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         if (order_mgr.position_snapshot().state == PosState::FLAT && strategy.session().in_position) {
             LOG("[ENTRY-FLOW] %s engine released — no order was placed (%s); it may signal again after its cooldown",
                 kOrb ? "ORB" : "strategy", strategy_unsettled.c_str());
-            strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:" + strategy_unsettled);
+            // An ENTRY that never reached the exchange gives its trade back to max_daily_trades
+            // (2026-10-09: a gate-refused 02:24 ET short used 1 of 2 and the 02:36 ET +16.5-pt long
+            // was refused at "2/2"). A release after an EXIT signal ("exit:…") is not an entry and
+            // must not give a real trade back. Trend and MTF give it back themselves on a
+            // "not_executed:" release; ORB's engine (orb_strategy.hpp, no-touch) does not, so the
+            // executor re-seeds its count.
+            const bool entry_refused = strategy_unsettled.rfind("exit:", 0) != 0;
+            const int before = strategy.session().trades_today;
+            strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD,
+                (entry_refused ? "not_executed:" : "released:") + strategy_unsettled);
+            if constexpr (kOrb) {
+                if (entry_refused && before > 0) {
+                    strategy.seed_trades_today(before - 1);
+                    LOG("[ENTRY-FLOW] refused entry not counted: trades_today %d -> %d", before, before - 1);
+                }
+            }
         } else {
             LOG("[ENTRY-FLOW] release check (%s): order state=%d strategy in_position=%d — nothing to release",
                 strategy_unsettled.c_str(), (int)order_mgr.position_snapshot().state,
@@ -743,7 +758,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         sig == OrbSignal::BUY ? "BUY" : "SELL", price, (int)st);
                 }
             } else if (!kOrb && order_mgr.position_snapshot().state == PosState::FLAT) {
-                strategy_unsettled = reason.empty() ? "no_order" : reason;
+                strategy_unsettled = "exit:" + (reason.empty() ? std::string("no_order") : reason);
             }
         }
     );

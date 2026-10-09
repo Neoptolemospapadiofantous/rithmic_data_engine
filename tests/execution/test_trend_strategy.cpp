@@ -691,8 +691,30 @@ int main() {
         feed_path(s, path, 9, 30);
         CHECK(s.session().in_position, "release: engine books the entry it emitted");
         s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:risk");
-        CHECK(!s.session().in_position && s.session().trades_today == 1,
-              "release: host notify frees the engine, the attempt still counts toward max_daily_trades");
+        CHECK(!s.session().in_position && s.session().trades_today == 0,
+              "release: host notify frees the engine and gives the unexecuted trade back (2026-10-09)");
+        s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:risk");
+        CHECK(s.session().trades_today == 0, "release: a second release while flat does not undercount");
+    }
+    // ── a gate-refused entry does not use up the cap (2026-10-09: refused 02:24 ET short → 02:36 long blocked at 2/2) ──
+    {
+        TrendConfig tc; tc.mode = "donchian"; tc.tf_min = 1; tc.donchian_n = 20;
+        OrbConfig rc = risk_cfg(); rc.max_daily_trades = 1;
+        TrendStrategy s(tc, rc); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session();
+        std::vector<double> path(26, 20000.0);
+        for (int i = 22; i < 26; ++i) path[i] = 20010.0;
+        feed_path(s, path, 9, 30);
+        CHECK(out.size() == 1 && s.session().trades_today == 1, "cap: first entry signal counts 1/1");
+        s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:book_gate:liq_vol_low");
+        CHECK(s.session().trades_today == 0, "cap: refused entry gives the trade back");
+        std::vector<double> p2(26, 20010.0);
+        for (int i = 22; i < 26; ++i) p2[i] = 20030.0;
+        feed_path(s, p2, 9, 56);
+        CHECK(out.size() == 2 && s.session().trades_today == 1, "cap: the next signal is allowed at the cap");
+        s.notify_trade_filled(OrbSignal::BUY, "exchange_stop");
+        CHECK(s.session().trades_today == 1, "cap: an executed trade still counts");
     }
 
     // ── level_fade (2026-10-01): failed break of the prior-day high, fade it once ──

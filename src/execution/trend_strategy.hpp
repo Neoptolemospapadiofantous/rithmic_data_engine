@@ -429,6 +429,13 @@ public:
     void notify_trade_filled(OrbSignal, const std::string& reason = "") {
         if (tc_.mode == "absorption_zone") az_on_closed(reason);
         if (tc_.mode == "trend_confirm") { tcf_dir_ = 0; tcf_exit_sent_ = false; tcf_trail_on_ = false; }
+        // A host release of an entry that never executed gives the trade back to max_daily_trades
+        // (emit() counted it on the signal). Only while the engine still holds the leg, so a
+        // stray second release cannot undercount.
+        if (sess_.in_position && reason.rfind("not_executed", 0) == 0 && sess_.trades_today > 0) {
+            --sess_.trades_today;
+            LOG("[TREND %s] entry not executed — not counted toward max_daily_trades", tc_.mode.c_str());
+        }
         sess_.in_position = false; pos_dir_ = 0; entry_ts_ = 0;
         LOG("[TREND %s] trade closed (%s) trades_today=%d", tc_.mode.c_str(), reason.c_str(), sess_.trades_today);
     }

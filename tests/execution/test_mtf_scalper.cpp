@@ -1383,6 +1383,21 @@ TEST(directionless_release_keeps_guardrail_accounting) {
     ASSERT(!s.in_position());
 }
 
+// An entry the host never executed gives its trade back to max_daily_trades (2026-10-09).
+TEST(not_executed_release_gives_trade_back) {
+    MtfScalperConfig cfg = base_cfg();
+    std::vector<CapturedSignal> sigs;
+    MtfScalperStrategy s = make_strategy(cfg, sigs);
+    feed_flag_long(s, 0, 600, 100.0);  flush(s, 0, 612, 110.5);
+    ASSERT(s.in_position());
+    const int n = s.trades_today();
+    ASSERT(n >= 1);
+    s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:book_gate:liq_vol_low");
+    ASSERT_EQ(s.trades_today(), n - 1);
+    s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:book_gate:liq_vol_low");
+    ASSERT_EQ(s.trades_today(), n - 1);   // already flat: no second give-back
+}
+
 TEST(last_price_tracks_ticks) {
     MtfScalperConfig cfg = base_cfg();
     std::vector<CapturedSignal> sigs;
@@ -1441,6 +1456,7 @@ int main() {
     RUN(directionless_notify_releases_position);
     RUN(allow_flips_false_blocks_reversal_entry);
     RUN(directionless_release_keeps_guardrail_accounting);
+    RUN(not_executed_release_gives_trade_back);
     RUN(last_price_tracks_ticks);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
