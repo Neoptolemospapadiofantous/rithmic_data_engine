@@ -7,6 +7,180 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-11 — history on all the data: night grid + winners on MBO, NQ back to 2010 from 1m bars
+
+Founder: "we need to trade on all the data we have", then "find the best strategies".
+
+- **Bar feed** `src/history/bar_feed.hpp`, `paper_engine --dbn-bars FILE…`: the years with only 1-minute
+  bars (NQ 2010-07 … 2023-02) become 4 synthetic prints per bar — open, low/high (low first when the bar
+  closed up), close; volume split over the prints, aggressor = print ≥ previous. An approximation: a stop
+  and a target inside one bar resolve by that path. Label `nq_bars`, never mixed with tick history.
+  `test_dbn` gains the path, sizes, window and roll-overlap cases (101 checks). Smoke week 2015-03:
+  33,287 trades, 3,474 strategies, 2 min.
+- **history_month.sh**: market `nqx` (night_fleet + staged winners/newmodes, 1,745 ids, merged into
+  `data/history/configs/nq_extra.json`, label nq_hist) and `nqbars` (binary `build-hist/`). `nq` and `nqx`
+  share a label, so each now deletes only its own ids before a replay (a redo of one never wipes the other).
+- **history_queue.sh**: jobs `nqx` × every NQ month and `nqbars` 2023-02 … 2010-07; 6 slots while CME is
+  closed (Fri 17:00 → Sun 18:00 ET, `--parallel-closed`), 2 otherwise. Fixed a race: a job just launched
+  had not spawned its engine yet, so two slots filled 5 s apart and 3 replays ran on `--parallel 2`.
+- **First ranking** (9 complete MBO months, 3,933 strategies ≥ 60 trades): 0 pass the robust gate
+  (≥75 % months positive, PF ≥ 1.3, both halves positive); 41 are net positive; ~85 % lose before costs.
+  Only 15-minute trend strategies are positive in both halves (`keltner_ride_20_15m__inv`,
+  `roc_20_15m__inv`, `trend_supertrend_10_2_15m*`, `trend_gap_go_20`). `beta_on*` tops the raw ranking
+  on 2025's overnight drift and loses all of 2026 — not an edge.
+- `TODO.md`: the research pipeline (speed → correctness → walk-forward scoring → more strategies).
+
+## 2026-10-10 — tick fan-out: every trade and quote to the dashboard in under a millisecond
+
+Founder: "has to be tick", then "100–400 ms is too slow", then "do the same for NQ". New shared header
+`src/tick_fanout.hpp` is a TCP server bound to 127.0.0.1 only. Each client gets one JSON line per trade
+(`k:"t"`), quote (`k:"q"`) and closed mbo_1m minute (`k:"m"`). Each line carries a counter `n`, so a
+consumer can see a dropped line.
+
+- **crypto_collector**: every aggTrade, every bookTicker (not the 100 ms DB throttle) and every mbo_1m
+  minute goes to port 8197 (`CRYPTO_FANOUT_PORT` or `--fanout-port`; 0 turns it off). The summary line
+  gains `fanout clients= lines= dropped=`.
+- **rithmic_engine (tick collector)**: every accepted trade and BBO goes to port 8198
+  (`RITHMIC_FANOUT_PORT`). The 60 s status line gains `fanout … clients= lines= dropped=`. The trade `seq`
+  copies db.cpp's rule (rank among identical (symbol, ts, price, size) rows).
+
+The feed never waits on the fan-out:
+- `publish()` does nothing when no client is connected.
+- Otherwise it `try_lock`s a queue that only the fan-out uses and wakes the fan-out thread through a
+  non-blocking pipe. If the lock is busy or the queue is full, the line is dropped and counted.
+- A client more than 8 MB behind is disconnected. Only that client loses anything.
+- The DB write path, batching and rows did not change.
+- The Rithmic fan-out thread never logs, so it shares no lock with the Logger either.
+
+The dashboard's `/ws/market` (bot `ui/routers/market_stream.py`) relays these lines to /live. It reads
+Postgres too: once a second to pick up anything the fan-out dropped, and every 100 ms when the fan-out
+is down. Tests: 7 new cases in `tests/crypto/test_crypto_collector.cpp`, covering line format, queue and
+buffer caps, Rithmic seq rank, in-order delivery over loopback, and a slow client being dropped while
+`publish` returns at once.
+
+Measured on BTCUSDT over 60 s:
+- Binance trade time to event time: ~150 ms. This happens inside Binance (aggTrade aggregates).
+- Event time to the collector receiving it: ~124 ms. This is network and Binance push.
+- Collector to fan-out client: 0.1 ms.
+- Fan-out to browser socket: 0.3 ms p50, 0.5 ms p95.
+- Trade count over the WS matched `ticks` exactly.
+
+The NQ path was checked with unit tests and a fake fan-out only. CME is closed until Sun 18:00 ET.
+
+## 2026-10-10 — NQ history from the owned Databento data: bars since 2010, MBO replays, order flow
+
+Founder: "add all the mbo NQ data we have into the chart and strategies page", then "adjust all strategies on
+the mbo data of 3 years and current data … for crypto we do the same". The data (Databento GLBX.MDP3, DBN v1
++ zstd) stays read-only in `/home/theone/Desktop/bot/data/raw`.
+
+- **Decoder.** `src/history/dbn.hpp` is a header-only, streaming DBN reader (v1–v3 metadata, MBO, trades,
+  OHLCV). Records are walked by their own length byte. `tests/history/test_dbn.cpp` uses synthetic v1/v2 buffers,
+  plain and zstd, and checks the first bar of a real file. Spot checks matched the `databento` Python package
+  record for record (MBO, trades, OHLCV, ES).
+- **Bars.** `dbn_tool bars` loaded `bars_1m` NQ 5,192,922 and ES 5,438,283 rows, both back to 2010-07, with
+  `ON CONFLICT DO NOTHING` (the collector's rows from 2026-09-19 win). Hours rebuilt from those bars equal the
+  `ohlcv-1h` file exactly. `buy_volume` and `ticks` are 0 where only OHLCV exists. `dbn_tool mbo-1m` fills them in
+  for MBO months. `session_stats` now covers 3,970 NQ and 3,993 ES sessions. Its baselines look back at most 30
+  days (ATR), 45 days (volume) and 10 days (prior close), so the first collector day after the 2026-03-20 …
+  09-18 gap starts fresh, as before. `PaperDb::session_atr14_before` has the same 10-day bound. Golden replay and
+  hermes are unchanged.
+- **MBO replay.** `paper_engine --dbn-mbo FILE…` reads MBO directly; nothing goes into `ticks`. Trades come from
+  `T` records, with the aggressor taken from the side field (B = buy, at the ask: 127k of 144k prints at the
+  touch, the rest sweeps through it, 3 on the wrong side). Top of book is rebuilt per instrument (add, cancel,
+  modify, clear; zero unknown order ids over a month). At most one quote goes out per trade or per idle second,
+  and only at event ends, so the quote rate is about one per trade (the raw top changes about 14 times per
+  trade). A book waits for its snapshot, and the continuous-contract roll switches books. Check on 2026-02-24
+  RTH: 400 one-minute bars rebuilt from the replay ticks against the OHLCV file, 396 identical and 4 off by one
+  1-lot print at a minute edge, total volume equal. Daily trade counts, volume, high and low for 2026-02 equal
+  the Databento trades file. `paper_engine --binance-agg FILE…` replays Binance aggTrades zips with the same row
+  semantics as `crypto_backfill.sh` (no quotes).
+- **Order flow.** `mbo_1m` (venue `GLBX`, symbol `NQ`, the crypto collector's table and columns) and `book_1m`
+  are filled per minute, about 60 s per month.
+- **Jobs.** `scripts/history_month.sh {nq|btc|eth} YYYY-MM` runs one idempotent month. NQ months use MBO
+  through 2026-03 and the collector's Postgres ticks from 2026-09, under label `nq_hist`; crypto uses
+  `crypto_hist`. `scripts/nq_history_replay.sh FROM TO` loops over months. `scripts/binance_history_download.sh`
+  downloads data and verifies each zip against Binance's CHECKSUM. It stops if free space would drop below 40 GB.
+  `scripts/history_queue.sh run` runs at most 2 replays and SIGSTOPs them in weekday RTH and in Asia. It writes
+  `data/history/queue_status.json`. `scripts/history_report.sh` writes `data/history/report.md`: ranking, every
+  year, overlay study and the walk-forward `adjust` proposal. Nothing changes a config.
+- **Crypto cost model (coordinator audit).** The fixed `commission_rt` ($8.28 BTC) and `slippage_ticks` (41)
+  were set at today's price, so 2020 history would have paid fees 3–16× too high. `PaperBroker` and
+  `PaperBracketBroker` gain optional relative costs, set from the fleet keys `commission_pct` (round trip, as a
+  fraction of notional, half per fill at its price) and `slippage_bps`. Both default to 0, which keeps
+  `commission_rt` / `slippage_ticks`; NQ and the golden replay are unchanged (test `relative_costs_pct_and_bps`).
+  `crypto_fleet.sh build` now emits `commission_pct` 0.001, `slippage_bps` (BTC 0.49, ETH 0.60), `knob_ref_price`
+  and `knob_ratio`. Ids and params are unchanged and re-registered. `crypto_fleet.sh month-config CODE YYYY-MM`
+  rescales the point knobs to a month's mean close, so history replays keep them constant in % of price. The
+  forward units `paper-engine-local-crypto-{btc,eth}` were restarted on the regenerated configs and the new
+  binary.
+- **Caveats.** Each month replays cold. NQ.c.0 stays on the expiring contract until the roll Sunday, so about a
+  week per quarter is thin (2023-03-16: 97k prints against about 440k on a normal day). There is no NQ data
+  2026-03-04 … 03-05 or 2026-03-20 … 09-18.
+
+## 2026-10-10 — every strategy replayed on crypto (BTC and ETH perpetuals)
+
+Founder: "test all strategies for crypto", with history plus MBO going forward. `scripts/crypto_backfill.sh`
+loads Binance USDⓈ-M daily aggTrades from data.binance.vision (free, no key) into `ticks` in the collector's
+row format, source `binance_hist`. It is idempotent per symbol and UTC day and refuses while CME is open,
+because a bulk COPY competes with the NQ collector's writer. Loaded: 2026-09-21..10-09, BTCUSDT and ETHUSDT,
+38 coin-days, about 0.4 GB each. `BARS_ONLY=1` loads 1-minute klines straight into `bars_1m` (about 60 KB a
+day). That was done for 08-25..09-20 so `session_stats` has an ATR14 from the first replayed day. Binance
+stopped publishing futures bookTicker files in 2024, so replayed days have no quotes and book-gated variants
+are judged on the forward feed only.
+
+`scripts/crypto_fleet.sh build` mirrors all 4,845 `config/paper_fleet.json` strategies to
+`config/paper_fleet_crypto_{btc,eth}.json` (ids `btc_*`/`eth_*`, label `crypto`). One contract is 0.1 coin.
+Point knobs are scaled by the coin's mean 09:30–16:00 ET range ratio to NQ over shared sessions (BTC 5.45,
+ETH 0.20) and snapped to the tick, as `fleet_expand.sh markets` does. Costs: 0.10 % of notional round trip
+(Binance taker) and NQ's 0.75-pt slippage scaled by the same ratio. `register` / `replay FROM TO` (label
+`crypto_hist`, refuses in weekday RTH and Asia) / `report` (writes `data/crypto/report.md`, gross and net).
+
+## 2026-10-10 — the live executor leaked one Postgres connection per broker reconnect
+
+Rithmic was down for the weekend, and `nq-executor-local@tradeify` retried the order plant about 110 times.
+Each session opened an audit-log connection, but only the normal end of a session closed it. A failed
+ORDER_PLANT connect leaves the session early (`co_return`), so every cycle leaked one. After 13 hours it held
+88 connections, Postgres refused new connections to every process on the box (`remaining connection slots are
+reserved`), and `make hermes` failed its database steps. An RAII guard in the session now closes it on every
+exit path. The unit was restarted flat on the fixed binary at 05:30 ET with the founder's OK: box-wide
+connections went from 99 to 8 and stay flat across reconnects. `make hermes` 18/18.
+
+## 2026-10-10 — crypto_collector: Binance futures ticks/bbo and Bitstamp market-by-order
+
+New standalone binary `crypto_collector` (`src/crypto/`), so crypto strategies can be tested on history and
+forward. It streams Binance USDⓈ-M futures BTCUSDT/ETHUSDT trades into `ticks` and top of book into `bbo`
+(exchange `BINANCE`, source `binance_fut`) in the NQ collector's row format: size in 0.001 lots, side `B`/`A`,
+`seq` = aggregate trade id % 2e9 so trades in one millisecond keep exchange order. The parent backfill
+(`binance_hist`) uses the same rules. Book quotes are thinned to the last one per symbol per 100 ms.
+Binance has split its websocket routes: `aggTrade` is only served on `/market`, `bookTicker` on `/public`.
+A single unrouted `/stream` URL gets quotes and no trades, so the collector opens two sockets.
+
+It also records Bitstamp's BTC/ETH market-by-order stream (`live_orders_*`). Every message, and every REST
+snapshot, is kept forever in `data/mbo/bitstamp/<pair>/<UTC date>.jsonl.zst`. An in-memory order book per
+pair writes one `mbo_1m` row a minute (`migrations/20261010_mbo_1m.sql` documents each column). Bitstamp has
+no sequence numbers, so resync is by time: after a REST snapshot, events at or before its microtimestamp are
+skipped, and the book is re-snapshotted every 30 minutes.
+
+The collector uses one Postgres connection with asynchronous commit and batched inserts. Its queue is bounded
+and drops its own rows, so it cannot hold up the NQ collector's writer. It reconnects to Postgres and to each
+websocket by itself. Unit file `deploy/crypto-collector-local.service` (not installed yet). Tests:
+`test_crypto_collector` (11 cases, in `make hermes`).
+
+## 2026-10-10 — paper ORB: a refused entry no longer locks the variant out for the day
+
+The 10-09 entry below said the paper engine's release "behaves the same way". That was true for trend runners
+only. When the paper broker refused an ORB signal (book / liquidity / regime gate, cooldown, cap), the ORB
+strategy stayed "in position" with nothing filled. Nothing released it, so that variant sat out the rest of
+the session. The release is now one helper, `paper::release_refused_entry()` (`paper_broker.hpp`), used for
+both engines. ORB gets its trade count re-seeded one lower, as the executor's `settle_strategy()` does live;
+trend gives the trade back itself. Test: `test_paper_broker` `orb_refused_entry_released_and_not_counted`
+(fails without the re-seed).
+
+`make hermes` never rebuilt `paper_engine`, so the 10-09 golden was frozen with the pre-fix binary. The golden
+replay was testing a stale engine. `scripts/hermes.sh` now builds `paper_engine` too. Re-frozen golden:
+4182 → 4555 trades, 0 removed: 132 ORB variants (today's fix) + 78 trend variants (the 10-09 trend fix,
+captured for the first time). `make hermes` 18/18.
+
 ## 2026-10-09 — a refused entry no longer uses up max_daily_trades
 
 Every engine counted a trade when it emitted the signal, and nothing gave the trade back when the
@@ -20,7 +194,7 @@ Now a `not_executed:` release gives the trade back:
 
 A release that follows an EXIT signal while the order manager is flat is now tagged `released:exit:…`, not
 `not_executed:`. That keeps a trade that really happened from being given back. The paper engine's
-`not_executed:entry_refused` release now behaves the same way. That added one trade to the golden day
+`not_executed:entry_refused` release now behaves the same way for trend runners (paper ORB: fixed 2026-10-10, above). That added one trade to the golden day
 (`sig_orb_5_15_10` LONG 09:35, +32.25 pts), which is re-frozen. Tests: `test_trend_strategy` "cap:" and
 "release:" blocks, and `test_mtf_scalper` `not_executed_release_gives_trade_back`. `make hermes` 18/18.
 The live unit was restarted flat at 16:28 ET.

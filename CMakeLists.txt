@@ -12,6 +12,7 @@ find_package(Protobuf REQUIRED)
 
 # PostgreSQL (libpq)
 find_package(PostgreSQL REQUIRED)
+find_library(ZSTD_LIBRARY NAMES zstd REQUIRED)   # dbn reader (paper_engine --dbn-mbo, dbn_tool) + crypto collector
 
 # ── Protobuf codegen ───────────────────────────────────────────────
 set(PROTO_FILE "${CMAKE_CURRENT_SOURCE_DIR}/proto/rithmic.proto")
@@ -234,6 +235,7 @@ target_include_directories(paper_engine PRIVATE
 )
 target_link_libraries(paper_engine PRIVATE
     ${PostgreSQL_LIBRARIES}
+    ${ZSTD_LIBRARY}
 )
 target_compile_features(paper_engine PRIVATE cxx_std_20)
 
@@ -277,6 +279,36 @@ target_link_libraries(test_bracket_broker PRIVATE
     ${PostgreSQL_LIBRARIES}
 )
 target_compile_features(test_bracket_broker PRIVATE cxx_std_20)
+
+# ── Crypto collector (Binance USDⓈ-M futures ticks/bbo + Bitstamp MBO) ──────────
+# Standalone: Boost.Beast websockets + libpq + zstd + nlohmann/json. No Rithmic, no protobuf.
+find_library(ZSTD_LIBRARY NAMES zstd REQUIRED)
+add_executable(crypto_collector src/crypto/crypto_collector_main.cpp)
+target_include_directories(crypto_collector PRIVATE src/ ${Boost_INCLUDE_DIRS} ${PostgreSQL_INCLUDE_DIRS})
+target_link_libraries(crypto_collector PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto
+    ${PostgreSQL_LIBRARIES} ${ZSTD_LIBRARY} pthread)
+target_compile_definitions(crypto_collector PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(crypto_collector PRIVATE cxx_std_20)
+
+add_executable(test_crypto_collector tests/crypto/test_crypto_collector.cpp)
+target_include_directories(test_crypto_collector PRIVATE src/)
+target_compile_features(test_crypto_collector PRIVATE cxx_std_20)
+target_link_libraries(test_crypto_collector PRIVATE pthread)
+add_test(NAME crypto_collector_tests COMMAND test_crypto_collector)
+
+# ── Databento history (DBN reader, MBO book, dbn_tool) ──────────────────────────
+# Header-only reader src/history/dbn.hpp + mbo_feed.hpp; dbn_tool loads bars / MBO minute stats into
+# Postgres; paper_engine --dbn-mbo replays MBO files directly (no ticks in Postgres).
+add_executable(dbn_tool src/history/dbn_tool_main.cpp)
+target_include_directories(dbn_tool PRIVATE src/ ${PostgreSQL_INCLUDE_DIRS})
+target_link_libraries(dbn_tool PRIVATE ${PostgreSQL_LIBRARIES} ${ZSTD_LIBRARY})
+target_compile_features(dbn_tool PRIVATE cxx_std_20)
+
+add_executable(test_dbn tests/history/test_dbn.cpp)
+target_include_directories(test_dbn PRIVATE src/)
+target_link_libraries(test_dbn PRIVATE ${ZSTD_LIBRARY})
+target_compile_features(test_dbn PRIVATE cxx_std_20)
+add_test(NAME dbn_tests COMMAND test_dbn)
 
 # ── Audit Daemon ───────────────────────────────────────────────────
 # Standalone C++20 binary — only libpq + nlohmann/json, no Boost/Protobuf.

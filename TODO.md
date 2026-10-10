@@ -1,3 +1,64 @@
+## Research pipeline 2026-10-11 (founder: "make sure all strategies are validated and correct with all the data we have … add as many strategies as we can … which ones are the best and when")
+Status legend: [ ] todo · [~] in progress · [x] done. Order matters: speed → correctness → scoring → more strategies.
+No change to `src/execution/orb_strategy.hpp`, `config/live_config.json` or the live executor. Every engine change is
+built in `build-hist/`, must keep the golden replay byte-identical, and is swapped in outside 09:25–16:05 ET.
+
+### Already running
+- [~] History queue (`scripts/history_queue.sh run --parallel 2 --parallel-closed 6`): `nq` main fleet × every MBO month
+      (label nq_hist), `nqx` night grid + staged winners/new modes (1,745 ids, nq_hist), `nqbars` NQ 2010-07…2023-02
+      from 1m bars (`--dbn-bars`, label nq_bars), crypto btc/eth 2020-01… (crypto_hist). 6 slots Fri 17:00 → Sun 18:00 ET.
+- [x] Bar feed `src/history/bar_feed.hpp` (4 synthetic prints/bar) + `--dbn-bars` + test_dbn (101 checks).
+- [x] Queue slot race fixed (a just-launched job counts before its engine spawns).
+
+### A. Speed (target 5–10× per replay)
+- [ ] A1. Profile `paper_engine` on one MBO day and one bar week (perf): per-tick vs bar-close vs DB time.
+- [ ] A2. Shared indicators per base strategy (overlay variants reuse the base's indicator state).
+- [ ] A3. Flat-strategy fast path: no per-tick work for a strategy with no position / pending order (bar close only).
+- [ ] A4. One process per month for all NQ sets (main + nqx) — decode each MBO file once.
+- [ ] A5. History mode writes trades only (no paper_signals), bulk COPY.
+- [ ] A6. 12 slots overnight + weekends (memory/DB checked), 2 in RTH-adjacent hours as today.
+- [ ] A7. Golden replay byte-identical after each of A2–A5; record speed-up per step in CHANGES.md.
+
+### B. Correctness — prove the numbers
+- [ ] B1. Bars vs ticks: replay 2023-03…2026-03 with `--dbn-bars` too; per-strategy deviation → only strategies within
+      tolerance count their 2010–2023 `nq_bars` results.
+- [ ] B2. Per-trade audit SQL after every month: fill inside the minute's high/low, P&L = (exit − entry) × pv − costs,
+      no overlapping positions per strategy, entry inside the strategy window, daily trade cap, no trade across a data gap.
+      A failed month is flagged and excluded from rankings.
+- [ ] B3. Look-ahead check: regime gates / ATR / ES reference bars use only data complete at entry time.
+- [ ] B4. Contract rolls: flag trades across an NQ.c.0 roll; check stop behaviour at the roll jump.
+- [ ] B5. Source parity: same days from Postgres vs files (crypto 2026-09 has both) → identical trades.
+- [ ] B6. Partial MBO file `2026-03-partial-update`: verify book quotes after its mid-session start.
+
+### C. Scoring — best, not luckiest
+- [ ] C1. Walk-forward: select 2010–2022, validate 2023–24, one final test 2025–26; rolling windows.
+- [ ] C2. Parameter plateaus: a strategy counts only if its parameter neighbours are positive too.
+- [ ] C3. Cost sensitivity: rank at 1 / 3 / 5 ticks slippage (live ORB measured 4.6).
+- [ ] C4. Multiple-testing correction (deflated Sharpe / reality check) for ~15k strategies.
+- [ ] C5. Prop overlay: worst day, trailing drawdown, trades/day under Tradeify rules.
+- [ ] C6. "When": tag every history trade (15-min slot, weekday, day_type, ATR regime, gap size, FOMC/NFP/roll week) →
+      best strategy per slot × regime, out-of-sample → feed `live_rota.sh` picks.
+- [ ] C7. Summary table `strategy_period_stats` (strategy × month × slot × regime), refreshed per finished month;
+      dashboard page reads it (today's 2M-row ad-hoc queries take minutes).
+
+### D. More strategies (after A–C)
+- [ ] D1. Combo grid (12,031) over all NQ data, filtered to combos whose parts hold up.
+- [ ] D2. Dense grids around the best family plateaus (e.g. 15m supertrend / keltner / roc `__inv`, gap_go).
+- [ ] D3. Trail sweep 25/35/50 on the top bases (carried from item 10 below).
+- [ ] D4. Crypto: 24-hour variants (today crypto mirrors only trade 07–16 ET, NQ's windows); fix the families not
+      rescaled for crypto (absorption_rev_*, news_break_*, fixed-mode MTF, gap_* without own minimum).
+- [ ] D5. Bitstamp MBO replay reader once ≥2 weeks are recorded.
+- [ ] D6. ES/other markets on 1m bars (ES 2010–2026 bars owned) for the ES mirror fleet.
+
+### E. Platform plan (design doc "Trading platform: design and plan") + open founder decisions
+- [ ] E1. Phase 0: websocket auth, DB connection pool, freezing report off the request path, disk alert, execution-audit alert.
+- [ ] E2. Dashboard backend memory leak (`dashboard-api-local` hit its 3 GB cap 2026-10-10; restarted).
+- [ ] E3. Founder: crypto history scope (2024+ / reduced set / everything — default newest-first).
+- [ ] E4. Founder: cold-data location + second drive (85 GB free; ~30M history trades ≈ 6–8 GB).
+- [ ] E5. Founder: 60-day hot retention, pages to remove/merge, retire 15 stale labels, trim the crypto forward fleet.
+- [ ] E6. NQ fan-out (:8198) live check at the Sunday 18:00 ET open.
+- [ ] E7. Commit the history/crypto work (both repos) when asked.
+
 ## Build queue 2026-09-28 (founder: "start getting data from more instruments" + "do all you said")
 Status legend: [ ] todo · [~] in progress · [x] done. Each item: tests + gate green, backfill replay where a strategy is involved.
 - [x] 16. Volume / volatility filters: rvol gate + vol-targeted size (generic, both sides), atr_break + vprofile modes, 90-variant matrix in the fleet (label volgrid). Verdicts on six sessions: rvol ≥1.5 helps per contract, quiet-tape gate hurts, sizing is size only, new modes flat/negative.

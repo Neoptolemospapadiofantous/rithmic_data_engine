@@ -3,6 +3,8 @@
 
 # Data directory (DB files, logs, live state, PID)
 data/
+# Raw crypto market-by-order archive (zstd, kept forever — never in git)
+data/mbo/
 
 # C++ build artifacts
 build/
@@ -52,3 +54,5 @@ newstrategy
 build-paper/
 config/staging/
 build-exp/
+# history replay build (bar feed etc., scripts/history_month.sh nqbars)
+build-hist/

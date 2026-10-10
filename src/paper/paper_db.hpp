@@ -174,6 +174,10 @@ public:
     int64_t warmup_start_us(const std::string& symbol, int bars, int64_t before_us);
     // Recorded ticks in (after_us, until_us] — the warm-up / gap re-feed reader (same row order as poll_ticks).
     std::vector<TickRow> poll_ticks_until(const std::string& symbol, int64_t after_us, int64_t until_us, int limit = 5000);
+    // 1-minute bars of `symbol` with minute in [from_us, to_us) — the reference feed of an MBO
+    // file replay (paper_engine --dbn-mbo), where no reference ticks exist in Postgres.
+    struct BarRow { int64_t minute_us; double high, low, close; };
+    std::vector<BarRow> load_bars_1m(const std::string& symbol, int64_t from_us, int64_t to_us);
     static std::string format_ts(int64_t ts_micros);  // → "YYYY-MM-DD HH:MM:SS.ffffff+00"
 
     void exec_silent(const std::string& sql);

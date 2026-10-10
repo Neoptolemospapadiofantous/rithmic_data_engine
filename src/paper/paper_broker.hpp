@@ -58,6 +58,9 @@ public:
 
     RiskManager& risk() { return risk_; }
 
+    // Relative costs (FleetConfig commission_pct / slippage_bps); 0 keeps commission_rt / slippage_ticks.
+    void set_relative_costs(double commission_pct, double slippage_bps) { commission_pct_ = commission_pct; slip_bps_ = slippage_bps; }
+
     // Fired after every trade close (host updates paper_daily / paper_account).
     std::function<void(const PaperTradeRow&)> on_trade_closed;
 
@@ -143,7 +146,7 @@ public:
               !qs_.fill_ready(pending_dir_, t.ts_micros, tick_size_))) {           // fill timing: wait for a better book
             int dir = pending_dir_;
             pending_dir_ = 0;
-            const double slip_fill = t.price + dir * slip_;
+            const double slip_fill = t.price + dir * slip_at(t.price);
             const double book_fill = qs_.market_fill(dir, t.ts_micros, slip_fill, t.price);   // never better than the print (stale-quote guard)
             const bool   use_book  = cfg_.fill_model == "bbo" && qs_.fresh(t.ts_micros);
             entry_bbo_    = book_fill;
@@ -155,7 +158,7 @@ public:
         if (!pending_exit_reason_.empty() && pos_dir_ != 0) {
             std::string reason = pending_exit_reason_;
             pending_exit_reason_.clear();
-            exit_position(t.price - pos_dir_ * slip_, t.ts_micros, reason);
+            exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, reason);
             return;
         }
 
@@ -171,13 +174,13 @@ public:
         const bool past_eod = eod_min < open_min ? (now_min >= eod_min && now_min < open_min)   // wraps midnight
                                                  : (now_min >= eod_min);
         if (past_eod) {
-            exit_position(t.price - pos_dir_ * slip_, t.ts_micros, "eod");
+            exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, "eod");
             return;
         }
 
         // 4. Risk halt while in position (daily-loss halt latched by RiskManager).
         if (risk_.halted()) {
-            exit_position(t.price - pos_dir_ * slip_, t.ts_micros, "daily_loss");
+            exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, "daily_loss");
             return;
         }
 
@@ -190,7 +193,7 @@ public:
             // Stop ± slippage — but never better than the print that crossed it: a tick that
             // gaps through the stop fills where it printed (2026-09-30 audit: 10.8 % of stop
             // exits had filled better than the crossing NQ print by more than a tick).
-            double fill = placed_stop_ - pos_dir_ * slip_;
+            double fill = placed_stop_ - pos_dir_ * slip_at(placed_stop_);
             fill = (pos_dir_ > 0) ? std::min(fill, t.price) : std::max(fill, t.price);
             exit_position(fill, t.ts_micros, stop_exit_reason());
             return;
@@ -213,7 +216,7 @@ public:
         {
             const double pnl_now = (t.price - entry_price_) * pos_dir_;
             const std::string why = qs_.book_exit(cfg_, pos_dir_, t.ts_micros, pnl_now);
-            if (!why.empty()) { exit_position(t.price - pos_dir_ * slip_, t.ts_micros, why); return; }
+            if (!why.empty()) { exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, why); return; }
             // Break-even on book flip: only while the trade is already beyond the BE level
             // (price − entry ≥ be_offset for a long). A stop can never be placed on the
             // wrong side of the market — that would fill at a price better than reality.
@@ -300,7 +303,7 @@ public:
         pending_exit_reason_.clear();
         if (pos_dir_ == 0) return;
         double px = price_hint > 0.0 ? price_hint : entry_price_;
-        exit_position(px - pos_dir_ * slip_, ts_us, reason);
+        exit_position(px - pos_dir_ * slip_at(px), ts_us, reason);
     }
 
     void reset_day() {
@@ -406,7 +409,9 @@ private:
         tr.exit_price    = fill;
         last_exit_px_ = fill; last_exit_us_ = ts_us; last_exit_reason_ = reason;   // read by signal_publish.hpp
         tr.pnl_pts       = (fill - entry_price_) * pos_dir_;
-        tr.commission    = cfg_.commission_rt * qty_;
+        tr.commission    = commission_pct_ > 0.0
+                               ? commission_pct_ * 0.5 * (entry_price_ + fill) * cfg_.point_value * qty_
+                               : cfg_.commission_rt * qty_;
         tr.pnl_usd       = tr.pnl_pts * cfg_.point_value * qty_ - tr.commission;
         tr.fill_model    = cfg_.fill_model;
         tr.entry_bbo     = entry_bbo_ > 0.0 ? entry_bbo_ : entry_price_;
@@ -490,6 +495,8 @@ private:
     OrbConfig   cfg_;
     double      tick_size_;
     double      slip_;
+    double      commission_pct_ = 0.0, slip_bps_ = 0.0;   // relative costs (set_relative_costs), 0 = fixed ones
+    double slip_at(double px) const { return slip_bps_ > 0.0 ? px * slip_bps_ * 1e-4 : slip_; }
     PaperStore* store_;   // not owned; may be null
     paper::QuoteState qs_;                       // top of book (paper_quote.hpp)
     const paper::RegimeState* regime_ = nullptr;  // session-shape gate, shared by the whole fleet (host-owned)
@@ -525,5 +532,20 @@ private:
     int     last_et_hour_ = 0;
     int     last_et_min_  = 0;
 };
+
+// A signal the broker refused (book / liquidity / regime gate, cooldown, cap) leaves the strategy
+// "in position" with nothing filled — it marks itself in position only AFTER its signal callback
+// returns. Release it, or it sits out the rest of the session (the live executor's settle_strategy
+// fix). TrendStrategy gives the trade back itself on a not_executed release; OrbStrategy does not,
+// so pass reseed_count=true and its count is seeded one lower, as the executor does. Returns true
+// when it released.
+template <class Strategy>
+inline bool release_refused_entry(Strategy& s, const PaperBroker& b, bool reseed_count) {
+    if (!s.session().in_position || b.direction() != 0 || b.has_pending_entry()) return false;
+    const int before = s.session().trades_today;
+    s.notify_trade_filled(OrbSignal::FLATTEN_EOD, "not_executed:entry_refused");
+    if (reseed_count && before > 0) s.seed_trades_today(before - 1);
+    return true;
+}
 
 } // namespace paper

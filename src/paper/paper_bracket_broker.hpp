@@ -57,6 +57,9 @@ public:
 
     RiskManager& risk() { return risk_; }
 
+    // Relative costs (FleetConfig commission_pct / slippage_bps); 0 keeps commission_rt / slippage_ticks.
+    void set_relative_costs(double commission_pct, double slippage_bps) { commission_pct_ = commission_pct; slip_bps_ = slippage_bps; }
+
     // Fired after every trade close (host updates paper_daily / paper_account
     // and forwards notify_trade_filled to the strategy).
     std::function<void(const PaperTradeRow&)> on_trade_closed;
@@ -132,7 +135,7 @@ public:
             const int nd = pending_flip_;
             pending_flip_ = 0;
             if (pos_dir_ != 0)
-                exit_position(t.price - pos_dir_ * slip_, t.ts_micros, "reversal");
+                exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, "reversal");
             if (!halted())
                 pending_dir_ = nd;
             return;
@@ -144,7 +147,7 @@ public:
               !qs_.fill_ready(pending_dir_, t.ts_micros, tick_size_))) {
             if (!halted()) {
                 const int    dir       = pending_dir_;
-                const double slip_fill = t.price + dir * slip_;
+                const double slip_fill = t.price + dir * slip_at(t.price);
                 const double book_fill = qs_.market_fill(dir, t.ts_micros, slip_fill, t.price);   // never better than the print (stale-quote guard)
                 const bool   use_book  = cfg_.fill_model == "bbo" && qs_.fresh(t.ts_micros);
                 entry_bbo_    = book_fill;
@@ -178,7 +181,7 @@ public:
         if ((pos_dir_ > 0 && t.price <= stop_price_) ||
             (pos_dir_ < 0 && t.price >= stop_price_)) {
             // stop ± slippage, never better than the print that crossed it (gap-through fills there)
-            double fill = stop_price_ - pos_dir_ * slip_;
+            double fill = stop_price_ - pos_dir_ * slip_at(stop_price_);
             fill = (pos_dir_ > 0) ? std::min(fill, t.price) : std::max(fill, t.price);
             exit_position(fill, t.ts_micros, "stop");
             return;
@@ -196,7 +199,7 @@ public:
         {
             const double pnl_now = (t.price - entry_price_) * pos_dir_;
             const std::string why = qs_.book_exit(cfg_, pos_dir_, t.ts_micros, pnl_now);
-            if (!why.empty()) { exit_position(t.price - pos_dir_ * slip_, t.ts_micros, why); return; }
+            if (!why.empty()) { exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, why); return; }
             if (cfg_.book_be_on_flip && qs_.flipped_against(pos_dir_, t.ts_micros) &&
                 (t.price - entry_price_) * pos_dir_ > cfg_.trail_be_offset) {        // never on the wrong side of the market
                 const double be = snap(entry_price_ + pos_dir_ * cfg_.trail_be_offset, pos_dir_);
@@ -208,13 +211,13 @@ public:
         if (!pending_exit_reason_.empty()) {
             std::string reason = pending_exit_reason_;
             pending_exit_reason_.clear();
-            exit_position(t.price - pos_dir_ * slip_, t.ts_micros, reason);
+            exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, reason);
             return;
         }
 
         // 6. Risk halt while in position (daily-loss latched by RiskManager).
         if (risk_.halted()) {
-            exit_position(t.price - pos_dir_ * slip_, t.ts_micros, "daily_loss");
+            exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, "daily_loss");
             return;
         }
 
@@ -222,7 +225,7 @@ public:
         int now_min = last_et_hour_ * 60 + last_et_min_;
         int eod_min = cfg_.eod_flatten_hour * 60 + cfg_.eod_flatten_min;
         if (now_min >= eod_min) {
-            exit_position(t.price - pos_dir_ * slip_, t.ts_micros, "eod");
+            exit_position(t.price - pos_dir_ * slip_at(t.price), t.ts_micros, "eod");
             return;
         }
 
@@ -254,7 +257,7 @@ public:
         pending_exit_reason_.clear();
         if (pos_dir_ == 0) return;
         double px = price_hint > 0.0 ? price_hint : entry_price_;
-        exit_position(px - pos_dir_ * slip_, ts_us, reason);
+        exit_position(px - pos_dir_ * slip_at(px), ts_us, reason);
     }
 
     void reset_day() {
@@ -340,7 +343,9 @@ private:
         tr.exit_time_us  = ts_us;
         tr.exit_price    = fill;
         tr.pnl_pts       = (fill - entry_price_) * pos_dir_;
-        tr.commission    = cfg_.commission_rt * qty_;
+        tr.commission    = commission_pct_ > 0.0
+                               ? commission_pct_ * 0.5 * (entry_price_ + fill) * cfg_.point_value * qty_
+                               : cfg_.commission_rt * qty_;
         tr.pnl_usd       = tr.pnl_pts * cfg_.point_value * qty_ - tr.commission;
         tr.fill_model    = cfg_.fill_model;
         tr.entry_bbo     = entry_bbo_ > 0.0 ? entry_bbo_ : entry_price_;
@@ -401,6 +406,8 @@ private:
     OrbConfig   cfg_;
     double      tick_size_;
     double      slip_;
+    double      commission_pct_ = 0.0, slip_bps_ = 0.0;   // relative costs (set_relative_costs), 0 = fixed ones
+    double slip_at(double px) const { return slip_bps_ > 0.0 ? px * slip_bps_ * 1e-4 : slip_; }
     PaperStore* store_;   // not owned; may be null
     paper::QuoteState qs_;                       // top of book (paper_quote.hpp)
     const paper::RegimeState* regime_ = nullptr;  // session-shape gate, shared by the whole fleet (host-owned)

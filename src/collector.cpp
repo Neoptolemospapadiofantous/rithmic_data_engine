@@ -182,6 +182,12 @@ Collector::Collector(const Config& cfg) : cfg_(cfg) {
     recover(bbo_wal_,   [this](const std::vector<BBORow>& v)   { return db_writer_->write_bbo(v); },   "bbo");
     recover(depth_wal_, [this](const std::vector<DepthRow>& v) { return db_writer_->write_depth(v); }, "depth");
 
+    if (int port = fanout::port_from_env("RITHMIC_FANOUT_PORT", 8198); port > 0) {
+        fanout_ = std::make_unique<fanout::Server>("rithmic", port);   // no log callback: never touches the Logger
+        fanout_->start();
+        LOG("Tick fan-out: 127.0.0.1:%d (every trade + BBO change as JSON lines; RITHMIC_FANOUT_PORT=0 disables)", port);
+    }
+
     client_ = std::make_unique<RithmicClient>(ioc_, cfg_);
     client_->set_on_tick([this](TickRow r)  { on_tick(std::move(r));  });
     client_->set_on_bbo([this](BBORow r)    { on_bbo(std::move(r));   });
@@ -214,6 +220,15 @@ void Collector::on_tick(TickRow row) {
 
     // Economic plausibility checks (stateful — price jumps, gaps, volume spikes)
     sentinel_->observe_tick(row.price, row.size, row.ts_micros);
+
+    if (fanout_ && fanout_->listening()) {          // non-blocking; drops its own line, never the row
+        fan_rank_ = fanout::next_rank(fan_last_sym_ == row.symbol && fan_last_ts_ == row.ts_micros &&
+                                      fan_last_px_ == row.price && fan_last_size_ == row.size, fan_rank_);
+        fan_last_sym_ = row.symbol; fan_last_ts_ = row.ts_micros; fan_last_px_ = row.price; fan_last_size_ = row.size;
+        fanout_->publish(fanout::trade_body(row.symbol, row.ts_micros, row.price, row.size, row.is_buy, fan_rank_,
+                                            0, std::chrono::duration_cast<std::chrono::microseconds>(
+                                                   std::chrono::system_clock::now().time_since_epoch()).count()));
+    }
 
     std::vector<TickRow> batch;
     {
@@ -252,6 +267,12 @@ void Collector::on_bbo(BBORow row) {
     // BBO sentinel checks (bid-ask inversion, wide spread) — both sides needed
     if (row.bid_price && row.ask_price)
         sentinel_->observe_bbo(*row.bid_price, *row.ask_price);
+
+    if (fanout_ && fanout_->listening())
+        fanout_->publish(fanout::quote_body(row.symbol, row.ts_micros, row.bid_price.value_or(NAN), row.bid_size,
+                                            row.ask_price.value_or(NAN), row.ask_size, 0,
+                                            std::chrono::duration_cast<std::chrono::microseconds>(
+                                                std::chrono::system_clock::now().time_since_epoch()).count()));
 
     std::vector<BBORow> batch;
     {
@@ -613,6 +634,13 @@ asio::awaitable<void> Collector::status_log_coro() {
                 s.latest.c_str(),
                 s.price ? std::to_string(*s.price).c_str() : "n/a");
             LOG("  frames by template: %s", client_->template_counts().c_str());
+            if (fanout_) {
+                const auto& fs = fanout_->stats();
+                LOG("  fanout 127.0.0.1:%d clients=%llu lines=%llu dropped=%llu clients_dropped=%llu",
+                    fanout_->bound_port(), (unsigned long long)fs.clients.load(),
+                    (unsigned long long)fs.published.load(), (unsigned long long)fs.dropped.load(),
+                    (unsigned long long)fs.clients_dropped.load());
+            }
         } catch (std::exception& e) {
             // 2026-09-26: a Postgres restart left db_ (this thread's read-only connection,
             // also used for sentinel alerts) dead; the old `catch (...) {}` hid it and the

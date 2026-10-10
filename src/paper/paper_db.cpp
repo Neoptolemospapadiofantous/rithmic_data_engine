@@ -218,7 +218,11 @@ double PaperDb::session_atr14_before(const std::string& symbol, const std::strin
     const char* params[2] = {symbol.c_str(), ymd.c_str()};
     try {
         const std::string v = exec_scalar(
+            // At most 10 calendar days back (longest holiday break ≈ 4): since 2026-10-10 session_stats
+            // also holds the Databento history (2010-07 … 2026-03), and a replay of the first collector
+            // day (2026-09-21/22) must not pick up a six-month-old March ATR — "prior-day ATR" or none.
             "SELECT atr14_pts FROM session_stats WHERE symbol = $1 AND session_date < $2::date "
+            "AND session_date >= $2::date - 10 "
             "AND atr14_pts IS NOT NULL ORDER BY session_date DESC LIMIT 1", params, 2, "session_atr14");
         return v.empty() ? 0.0 : std::atof(v.c_str());
     } catch (const std::exception& e) {
@@ -411,6 +415,29 @@ std::vector<PaperDb::TickRow> PaperDb::poll_ticks_until(const std::string& symbo
         while (k > 1 && out[k - 1].ts_us == last) --k;
         if (out[k - 1].ts_us != last) out.resize(k);
     }
+    return out;
+}
+
+std::vector<PaperDb::BarRow> PaperDb::load_bars_1m(const std::string& symbol, int64_t from_us, int64_t to_us) {
+    std::string f = format_ts(from_us), t = format_ts(to_us);
+    const char* params[3] = { symbol.c_str(), f.c_str(), t.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(SELECT (EXTRACT(EPOCH FROM minute)*1000000)::bigint, high, low, close
+              FROM bars_1m WHERE symbol = $1 AND minute >= $2::timestamptz AND minute < $3::timestamptz
+              ORDER BY minute)sql",
+        3, nullptr, params, nullptr, nullptr, 0);
+    std::vector<BarRow> out;
+    if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
+        LOG("[PAPER-DB] WARN load_bars_1m(%s): %s", symbol.c_str(), res ? PQresultErrorMessage(res) : "null result");
+        if (res) PQclear(res);
+        return out;
+    }
+    const int n = PQntuples(res);
+    out.reserve(n);
+    for (int i = 0; i < n; ++i)
+        out.push_back(BarRow{ std::atoll(PQgetvalue(res, i, 0)), std::atof(PQgetvalue(res, i, 1)),
+                              std::atof(PQgetvalue(res, i, 2)), std::atof(PQgetvalue(res, i, 3)) });
+    PQclear(res);
     return out;
 }
 

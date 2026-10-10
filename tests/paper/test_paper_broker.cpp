@@ -23,6 +23,7 @@
 #include "../src/paper/signal_publish.hpp"
 #include "../src/paper/paper_db.hpp"
 #include "../src/paper/paper_engine.hpp"
+#include "orb_strategy.hpp"
 
 static int g_passed  = 0;
 static int g_failed  = 0;
@@ -139,6 +140,25 @@ TEST(market_entry_slippage_and_commission) {
     ASSERT_NEAR(tr.pnl_pts, 9.5, 1e-9);
     ASSERT_NEAR(tr.commission, 1.0, 1e-9);          // commission_rt * qty
     ASSERT_NEAR(tr.pnl_usd, 9.5 * 2.0 - 1.0, 1e-9); // pts*point_value − comm
+}
+
+// Relative costs (crypto history, 2026-10-10): commission_pct of notional per round trip (half per fill at its
+// own price) and slippage in bps of the fill price replace commission_rt / slippage_ticks when set.
+TEST(relative_costs_pct_and_bps) {
+    FakeStore store;
+    auto b = make_broker(store);
+    b.set_relative_costs(0.001, 2.0);                // 0.10 % RT, 2 bps slip
+    signal_buy(b, et_ts(10, 0), 20000.0);
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));
+    ASSERT(b.in_position());
+    ASSERT_NEAR(b.entry_price(), 20004.0, 1e-9);    // 20000 + 2 bps
+    b.flatten("signal_flatten", et_ts(10, 1), 21000.0);
+    ASSERT_EQ(store.trades.size(), (size_t)1);
+    const auto& tr = store.trades[0];
+    ASSERT_NEAR(tr.exit_price, 21000.0 - 4.2, 1e-9);                 // 21000 − 2 bps
+    const double comm = 0.001 * 0.5 * (20004.0 + 20995.8) * 2.0;     // pct × mean notional × point_value × qty
+    ASSERT_NEAR(tr.commission, comm, 1e-9);
+    ASSERT_NEAR(tr.pnl_usd, (20995.8 - 20004.0) * 2.0 - comm, 1e-6);
 }
 
 TEST(stop_fill_adverse_slippage) {
@@ -891,6 +911,41 @@ TEST(regime_gate_blocks_paper_entry_like_the_book_gate) {
     b.on_tick(tick(et_ts(9, 52, 1), 20045.0));
     ASSERT(!b.in_position());
     ASSERT_EQ(store.trades.size(), (size_t)1);
+}
+
+
+// 2026-10-10: a paper ORB entry the broker refuses (here the regime gate) must not lock the
+// variant out for the day — the release gives it back its position AND its trade count, so with
+// max_daily_trades 1 the next breakout still trades. Before, only trend runners were released.
+TEST(orb_refused_entry_released_and_not_counted) {
+    FakeStore store;
+    OrbConfig cfg = make_cfg(); cfg.max_daily_trades = 1;
+    cfg.regime_with_move = 1; cfg.regime_min_minutes = 0;
+    auto b = make_broker(store, cfg);
+    auto r = regime_day(100.0, {{0, 20000.0}, {20, 20040.0}});   // session is UP → shorts refused
+    b.set_regime(&r);
+    OrbStrategy s(cfg);
+    s.set_signal_callback([&](OrbSignal sig, double px, const std::string& why) { b.on_signal(sig, px, why); });
+    int released = 0;
+    auto step = [&](int64_t ts, double px) {
+        b.on_tick(tick(ts, px)); s.on_tick(tick(ts, px));
+        if (paper::release_refused_entry(s, b, true)) ++released;
+    };
+    step(et_ts(9, 30), 20000.0); step(et_ts(9, 32), 20040.0); step(et_ts(9, 34), 19980.0);
+    step(et_ts(9, 36), 20010.0);                                  // range 19980–20040 set, inside
+    step(et_ts(9, 40), 19970.0);                                  // SHORT breakout → refused
+    ASSERT_EQ(released, 1);
+    ASSERT(!s.session().in_position);
+    ASSERT_EQ(s.session().trades_today, 0);
+    ASSERT(!b.in_position());
+    step(et_ts(9, 41), 20010.0);                                  // back inside, past the cooldown
+    step(et_ts(9, 42), 20050.0);                                  // LONG breakout → with the move
+    ASSERT(b.has_pending_entry());
+    ASSERT_EQ(s.session().trades_today, 1);
+    step(et_ts(9, 42, 1), 20051.0);                               // fills
+    ASSERT(b.in_position());
+    ASSERT_EQ(released, 1);                                       // a held trade is never released
+    ASSERT_EQ(s.session().trades_today, 1);
 }
 
 int main() {

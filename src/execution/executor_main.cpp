@@ -843,6 +843,14 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         pg_exec_silent("CREATE INDEX IF NOT EXISTS idx_audit_ts  ON audit_log(ts);");
         pg_exec_silent("CREATE INDEX IF NOT EXISTS idx_audit_sev ON audit_log(severity, ts DESC);");
     }
+    // Close the audit connection on EVERY exit from this session, not only the normal end below:
+    // a failed ORDER_PLANT / PNL_PLANT connect co_returns early, and each reconnect cycle used to
+    // leak one Postgres connection — 88 by the 2026-10-10 weekend outage, until the server refused
+    // new connections to every process on the box. Declared before audit_log so it closes after it.
+    struct AuditConnGuard {
+        PGconn*& c;
+        ~AuditConnGuard() { if (c) { PQfinish(c); c = nullptr; } }
+    } audit_conn_guard{audit_conn};
     AuditLog audit_log(audit_conn);
 
     // ── Order plant setup ─────────────────────────────────────────────────────

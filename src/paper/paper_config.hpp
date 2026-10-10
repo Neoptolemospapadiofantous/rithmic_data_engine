@@ -64,6 +64,12 @@ struct FleetConfig {
     double      consistency_cap_pct   = 0.30;
     double      commission_rt         = 1.0;
     int         slippage_ticks        = 1;
+    // Relative costs (2026-10-10, crypto history: a fixed $ commission and a fixed tick slippage set at
+    // today's price over-charge 2020's $5k BTC 3-16x). When > 0 they REPLACE commission_rt /
+    // slippage_ticks: commission_pct = round-trip fraction of notional (half on each fill, at its price),
+    // slippage_bps = adverse slip in basis points of the fill price. 0 = off (NQ and every existing fleet).
+    double      commission_pct        = 0.0;
+    double      slippage_bps          = 0.0;
     int         poll_ms               = 100;
     double      strategy_daily_loss_limit = -250.0;  // per-strategy halt
     int         feed_gap_reset_secs   = 300;         // tick hole longer than this → flat orb/trend strategies restart their session
@@ -95,6 +101,8 @@ struct FleetConfig {
         c.consistency_cap_pct   = json_dbl(text, "consistency_cap_pct",   c.consistency_cap_pct);
         c.commission_rt         = json_dbl(text, "commission_rt",         c.commission_rt);
         c.slippage_ticks        = json_int(text, "slippage_ticks",        c.slippage_ticks);
+        c.commission_pct        = json_dbl(text, "commission_pct",        c.commission_pct);
+        c.slippage_bps          = json_dbl(text, "slippage_bps",          c.slippage_bps);
         c.poll_ms               = json_int(text, "poll_ms",               c.poll_ms);
         c.feed_gap_reset_secs   = json_int(text, "feed_gap_reset_secs",   c.feed_gap_reset_secs);
         c.warmup_bars           = json_int(text, "warmup_bars",           c.warmup_bars);

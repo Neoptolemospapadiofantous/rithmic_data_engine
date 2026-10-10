@@ -11,6 +11,10 @@
 -- else range) with the body/range ratio as the second check; 'short' when the RTH had < 300
 -- one-minute bars (holiday, feed gap) so a partial day never reads as a quiet day.
 --
+-- Baselines only look back a bounded calendar span (ATR 30 days, volume 45, prior close 10): since
+-- 2026-10-10 the table also holds the Databento history (2010-07 … 2026-03) with a six-month hole
+-- before the collector's first day (2026-09-21), which must start fresh, not on March's ATR.
+--
 -- refresh_session_stats(p_days) recomputes the last p_days sessions (default 3) — cheap on
 -- bars_1m (390 rows a day) and idempotent; run it from the same timer as refresh_bars_1m().
 
@@ -72,9 +76,9 @@ BEGIN
     SELECT symbol, d, rth_high - rth_low, volume, rth_close FROM day
   ), enriched AS (
     SELECT d.*,
-           (SELECT avg(h.range_pts) FROM (SELECT range_pts FROM hist h WHERE h.symbol = d.symbol AND h.session_date < d.d ORDER BY h.session_date DESC LIMIT 14) h) AS atr14,
-           (SELECT avg(h.volume)    FROM (SELECT volume    FROM hist h WHERE h.symbol = d.symbol AND h.session_date < d.d ORDER BY h.session_date DESC LIMIT 20) h) AS vol20,
-           (SELECT h.rth_close FROM hist h WHERE h.symbol = d.symbol AND h.session_date < d.d ORDER BY h.session_date DESC LIMIT 1) AS prior_close
+           (SELECT avg(h.range_pts) FROM (SELECT range_pts FROM hist h WHERE h.symbol = d.symbol AND h.session_date < d.d AND h.session_date >= d.d - 30 ORDER BY h.session_date DESC LIMIT 14) h) AS atr14,
+           (SELECT avg(h.volume)    FROM (SELECT volume    FROM hist h WHERE h.symbol = d.symbol AND h.session_date < d.d AND h.session_date >= d.d - 45 ORDER BY h.session_date DESC LIMIT 20) h) AS vol20,
+           (SELECT h.rth_close FROM hist h WHERE h.symbol = d.symbol AND h.session_date < d.d AND h.session_date >= d.d - 10 ORDER BY h.session_date DESC LIMIT 1) AS prior_close
     FROM day d
   ), ins AS (
     INSERT INTO session_stats AS s (symbol, session_date, bars, rth_open, rth_high, rth_low, rth_close,

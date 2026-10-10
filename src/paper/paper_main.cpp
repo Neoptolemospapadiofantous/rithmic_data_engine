@@ -19,8 +19,12 @@
 #include "paper_db.hpp"
 #include "paper_engine.hpp"
 #include "signal_publish.hpp"
+#include "history/mbo_feed.hpp"
+#include "history/binance_feed.hpp"
+#include "history/bar_feed.hpp"
 
 #include <atomic>
+#include <deque>
 #include <chrono>
 #include <csignal>
 #include <cstdio>
@@ -180,6 +184,9 @@ struct Runner {
 int main(int argc, char** argv) {
     std::string config_path = "config/paper_fleet.json";
     std::string label_override, replay_from, replay_to;
+    std::vector<std::string> dbn_mbo_files;   // --dbn-mbo f1 f2 … : replay Databento MBO files instead of Postgres ticks
+    std::vector<std::string> agg_files;       // --binance-agg f1 f2 … : replay Binance aggTrades files (zip/csv.zst/csv)
+    std::vector<std::string> bar_files;       // --dbn-bars f1 f2 … : replay Databento OHLCV-1m files as 4 synthetic prints/bar
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--config") == 0 && i + 1 < argc)
             config_path = argv[++i];
@@ -189,10 +196,24 @@ int main(int argc, char** argv) {
             replay_from = argv[++i];
         else if (std::strcmp(argv[i], "--replay-to") == 0 && i + 1 < argc)
             replay_to = argv[++i];
+        else if (std::strcmp(argv[i], "--dbn-mbo") == 0) {
+            while (i + 1 < argc && std::strncmp(argv[i + 1], "--", 2) != 0) dbn_mbo_files.push_back(argv[++i]);
+        }
+        else if (std::strcmp(argv[i], "--dbn-bars") == 0) {
+            while (i + 1 < argc && std::strncmp(argv[i + 1], "--", 2) != 0) bar_files.push_back(argv[++i]);
+        }
+        else if (std::strcmp(argv[i], "--binance-agg") == 0) {
+            while (i + 1 < argc && std::strncmp(argv[i + 1], "--", 2) != 0) agg_files.push_back(argv[++i]);
+        }
         else if (std::strcmp(argv[i], "--help") == 0) {
             std::printf("usage: paper_engine [--config config/paper_fleet.json]\n"
                         "       paper_engine --replay-from \"YYYY-MM-DD HH:MM\" --replay-to \"YYYY-MM-DD HH:MM\" "
-                        "[--account-label audit]   (ET; replays recorded ticks, then exits)\n");
+                        "[--account-label audit]   (ET; replays recorded ticks, then exits)\n"
+                        "       … --dbn-mbo FILE.dbn.zst [FILE …]   replay Databento MBO files (trades + rebuilt top of\n"
+                        "         book) instead of Postgres ticks/bbo; the reference symbol comes from bars_1m\n"
+                        "       … --binance-agg FILE.zip [FILE …]   replay Binance USD-M aggTrades files (no quotes)\n"
+                        "       … --dbn-bars FILE.dbn.zst [FILE …]   replay Databento OHLCV-1m bars as 4 synthetic prints\n"
+                        "         per bar (O, L/H, H/L, C — years with no tick data; approximate, no quotes)\n");
             return 0;
         }
     }
@@ -204,6 +225,13 @@ int main(int argc, char** argv) {
         g_replay_clock = parse_et_us(replay_from);
         g_replay_to    = parse_et_us(replay_to);
         if (label_override.empty()) label_override = "audit";
+    }
+    const int n_feeds = !dbn_mbo_files.empty() + !agg_files.empty() + !bar_files.empty();
+    if (n_feeds > 0 && !g_replay) {
+        std::fprintf(stderr, "--dbn-mbo / --binance-agg / --dbn-bars need --replay-from and --replay-to\n"); return 2;
+    }
+    if (n_feeds > 1) {
+        std::fprintf(stderr, "--dbn-mbo, --binance-agg and --dbn-bars are exclusive\n"); return 2;
     }
 
     std::signal(SIGTERM, on_signal);
@@ -228,6 +256,9 @@ int main(int argc, char** argv) {
     // while the fleet trades the micro label (MNQ). Same price series.
     const std::string feed_symbol = fleet.feed_symbol.empty()
                                         ? fleet.symbol : fleet.feed_symbol;
+    if (fleet.commission_pct > 0.0 || fleet.slippage_bps > 0.0)
+        LOG("[PAPER] relative costs: commission %.4f%% of notional round trip, slippage %.2f bps (replace commission_rt / slippage_ticks)",
+            fleet.commission_pct * 100.0, fleet.slippage_bps);
     LOG("[PAPER] Feed symbol=%s (trading %s)%s", feed_symbol.c_str(),
         fleet.symbol.c_str(),
         fleet.reference_symbol.empty()
@@ -453,6 +484,10 @@ int main(int argc, char** argv) {
             r->bbroker->flatten("restart_flatten", now_us(), 0.0);
 
         if (r->broker) r->broker->set_regime(&regime); else if (r->bbroker) r->bbroker->set_regime(&regime);
+        if (fleet.commission_pct > 0.0 || fleet.slippage_bps > 0.0) {   // relative costs (crypto fleets)
+            if (r->broker) r->broker->set_relative_costs(fleet.commission_pct, fleet.slippage_bps);
+            else           r->bbroker->set_relative_costs(fleet.commission_pct, fleet.slippage_bps);
+        }
         if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next); r->trend->set_day_atr(regime.atr_pts); }
         runners.push_back(std::move(r));
     }
@@ -536,6 +571,38 @@ int main(int argc, char** argv) {
             paper::PaperDb::format_ts(g_replay_clock).c_str(),
             paper::PaperDb::format_ts(g_replay_to).c_str(), fleet.account_label.c_str());
 
+    // MBO file feed (--dbn-mbo): trades + reconstructed top of book from Databento files, in place
+    // of the Postgres ticks/bbo polls. The reference symbol's 1m bars come from bars_1m (loaded from
+    // the Databento OHLCV history by dbn_tool bars) since no reference ticks exist for those dates.
+    std::unique_ptr<hist::TickFeed> mbo_feed;   // file feed: MBO (--dbn-mbo) or aggTrades (--binance-agg)
+    std::vector<hist::Tick> mbo_ticks; std::deque<hist::Quote> mbo_quotes;
+    std::vector<paper::PaperDb::BarRow> ref_bars; size_t ref_bar_i = 0;
+    if (n_feeds > 0) {
+        if (!dbn_mbo_files.empty())
+            mbo_feed = std::make_unique<hist::MboFeed>(dbn_mbo_files, g_replay_clock, g_replay_to, fleet.tick_size);
+        else if (!agg_files.empty())
+            mbo_feed = std::make_unique<hist::AggTradesFeed>(agg_files, g_replay_clock, g_replay_to);
+        else
+            mbo_feed = std::make_unique<hist::OhlcvBarFeed>(bar_files, g_replay_clock, g_replay_to);
+        mbo_feed->set_log([](const std::string& m) { LOG("%s", m.c_str()); });
+        LOG("[PAPER] file feed: %zu file(s) — %s, not Postgres", dbn_mbo_files.size() + agg_files.size() + bar_files.size(),
+            !dbn_mbo_files.empty() ? "ticks/quotes from Databento MBO"
+            : !agg_files.empty() ? "Binance aggTrades ticks (no quotes)"
+                                 : "Databento 1m bars as 4 synthetic prints each (approximate, no quotes)");
+        if (!fleet.reference_symbol.empty()) {
+            ref_bars = db->load_bars_1m(fleet.reference_symbol, g_replay_clock - 60'000'000LL, g_replay_to);
+            LOG("[PAPER] MBO feed: %zu %s reference bars from bars_1m", ref_bars.size(), fleet.reference_symbol.c_str());
+        }
+    }
+    auto fetch_ticks = [&]() -> std::vector<paper::PaperDb::TickRow> {
+        if (!mbo_feed) return db->poll_ticks(feed_symbol, watermark, 5000);
+        mbo_ticks.clear();
+        mbo_feed->next_batch(mbo_ticks, mbo_quotes, 5000);
+        std::vector<paper::PaperDb::TickRow> out; out.reserve(mbo_ticks.size());
+        for (const auto& t : mbo_ticks) out.push_back(paper::PaperDb::TickRow{t.ts_us, t.price, t.size, t.is_buy});
+        return out;
+    };
+
     // Reference-feed 1m bar aggregator state (SMT/intermarket module)
     int64_t ref_watermark = watermark;
     long    ref_bar_min   = -1;
@@ -552,6 +619,11 @@ int main(int argc, char** argv) {
     std::deque<paper::Quote> qbuf; int64_t bbo_watermark = watermark; int64_t quotes_seen = 0;
     auto refill_quotes = [&]() {
         if (!qbuf.empty()) return;
+        if (mbo_feed) {
+            for (const auto& q : mbo_quotes) qbuf.push_back(paper::Quote{q.ts_us, q.bid, q.ask, q.bid_sz, q.ask_sz});
+            mbo_quotes.clear();
+            return;
+        }
         for (const auto& b : db->poll_bbo(feed_symbol, bbo_watermark, 5000)) {
             qbuf.push_back(paper::Quote{b.ts_us, b.bid, b.ask, b.bid_sz, b.ask_sz});
             bbo_watermark = b.ts_us;
@@ -561,7 +633,7 @@ int main(int argc, char** argv) {
     const int64_t feed_gap_reset_us = (int64_t)fleet.feed_gap_reset_secs * 1'000'000LL;
 
     while (!g_stop) {
-        auto ticks = db->poll_ticks(feed_symbol, watermark, 5000);
+        auto ticks = fetch_ticks();
         if (g_replay) {
             bool past_end = ticks.empty() || ticks.front().ts_us > g_replay_to;
             if (past_end) {
@@ -743,13 +815,12 @@ int main(int argc, char** argv) {
                     r->broker->on_tick(ot);     // broker first: signals fill on NEXT tick
                     if (r->strategy) r->strategy->on_tick(ot);
                     else             r->trend->on_tick(ot);
-                    // A trend signal the broker refused (book / liquidity / regime gate, cooldown, cap)
-                    // left the strategy "in position" with nothing filled — release it, or it sits out the
-                    // rest of the session (the live executor's settle_strategy fix of 2026-10-05; the
-                    // strategy marks itself in position only AFTER its signal callback returns).
-                    if (r->trend && !warming_up && r->trend->session().in_position &&
-                        r->broker->direction() == 0 && !r->broker->has_pending_entry())
-                        r->release_position("not_executed:entry_refused");
+                    // Refused entry → release the strategy (paper::release_refused_entry); ORB's count is
+                    // re-seeded one lower there, trend gives the trade back itself (2026-10-10).
+                    if (!warming_up) {
+                        if (r->strategy) paper::release_refused_entry(*r->strategy, *r->broker, true);
+                        else             paper::release_refused_entry(*r->trend, *r->broker, false);
+                    }
                     if (r->pub && !warming_up) {
                         if (r->trend) r->pub->on_tick(*r->broker, *r->trend, r->cfg, &regime, t.ts_us);
                         else          r->pub->on_tick_orb(*r->broker, r->cfg, &regime, t.ts_us, t.price);
@@ -773,7 +844,16 @@ int main(int argc, char** argv) {
         // Intermarket reference feed: aggregate reference ticks into 1m bars
         // and fan each completed bar out to MTF strategies that wired a
         // reference_symbol (SMT/correlation module, Pine spec §1.8).
-        if (!fleet.reference_symbol.empty()) {
+        if (mbo_feed) {
+            // bars_1m reference: a bar is complete once the replayed tape passes its minute.
+            while (ref_bar_i < ref_bars.size() && ref_bars[ref_bar_i].minute_us + 60'000'000LL <= watermark) {
+                const auto& b = ref_bars[ref_bar_i++];
+                for (auto& r : runners) {
+                    if (r->mtf && r->mtf->wants_reference_feed()) r->mtf->on_reference_bar(b.high, b.low, b.close);
+                    if (r->trend) r->trend->on_reference_bar(b.minute_us + 60'000'000LL, b.close);
+                }
+            }
+        } else if (!fleet.reference_symbol.empty()) {
             auto ref_ticks = db->poll_ticks(fleet.reference_symbol,
                                             ref_watermark, 5000);
             for (const auto& t : ref_ticks) {
@@ -886,6 +966,9 @@ int main(int argc, char** argv) {
         if (!g_replay && !warming_up) std::this_thread::sleep_for(std::chrono::milliseconds(fleet.poll_ms));
     }
 
+    if (mbo_feed) {
+        LOG("[PAPER] %s", mbo_feed->summary().c_str());
+    }
     // ── Graceful shutdown ────────────────────────────────────────────────────
     LOG("[PAPER] Shutdown signal — flushing paper state");
     for (auto& r : runners)

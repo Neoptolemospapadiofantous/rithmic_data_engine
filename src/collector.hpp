@@ -16,6 +16,7 @@
 #include "client.hpp"
 #include "config.hpp"
 #include "db.hpp"
+#include "tick_fanout.hpp"
 #include "validator.hpp"
 #include "wal.hpp"
 
@@ -155,4 +156,17 @@ private:
     std::atomic<int64_t> bbo_dropped_ts_{0};     // rows rejected: ts_micros <= 0
     std::atomic<int64_t> depth_dropped_ts_{0};
     std::atomic<bool>    running_{true};
+
+    // Tick fan-out (2026-10-10, founder: "do the same for NQ"): every accepted trade and BBO change is
+    // also published as a JSON line on 127.0.0.1:RITHMIC_FANOUT_PORT (default 8198; 0/off disables) for the
+    // dashboard's /ws/market. publish() never blocks (try_lock into a queue owned by the fan-out thread;
+    // shares no lock with the buffers, the writer queue or the Logger — the fan-out thread never logs, its
+    // counters go into the 60 s status line). The DB path above is unchanged.
+    std::unique_ptr<fanout::Server> fanout_;
+    // seq the DB writer will give a trade: rank among identical (symbol, ts, price, size) rows — the
+    // writer ranks per batch; consecutive identical trades share a batch (io thread only).
+    std::string fan_last_sym_;
+    int64_t     fan_last_ts_ = 0, fan_last_size_ = 0;
+    double      fan_last_px_ = 0;
+    int         fan_rank_ = 0;
 };
