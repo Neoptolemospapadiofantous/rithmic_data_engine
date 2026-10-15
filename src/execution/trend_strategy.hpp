@@ -96,6 +96,13 @@ struct TrendConfig {
     // drive_stop_atr > 0: this trade's stop distance = x × the drive ATR (take_stop_dist(); the take-profit becomes
     // tp_r × that distance) instead of the config's flat sl_points.
     int drive_score_min = 0; double drive_score_big = 0.35; bool drive_score_units = false; double drive_stop_atr = 0.0;
+    // Late strong open (research r1, 2026-10-15: +92 trades/yr on days the main decision did not fire, 0.10R net, all
+    // eras; weekly P&L uncorrelated with the main one). drive_late_count > 0: when the main decision gave no direction,
+    // re-check at drive_late_minutes, + drive_late_step, … (drive_late_count checks) after the open; the first check
+    // where |price − 09:30 open| ≥ drive_late_min_atr × ATR enters at market (drive_stop_atr / tp_r as the main one).
+    // drive_late_only: the main decision is only the skip test — never traded (late trades alone, for paper).
+    int drive_late_count = 0, drive_late_minutes = 60, drive_late_step = 30; double drive_late_min_atr = 0.3;
+    bool drive_late_only = false;
     // noise_momentum (Zarattini/Aziz/Barbon 2024 noise-area intraday momentum; ledger L1, BK1): every nm_check_min minutes
     // after the RTH open, bands = max/min(09:30 open, prior RTH close) × (1 ± σ(m)), σ(m) = mean |close(m)/open − 1| at
     // that minute of the session over the last nm_days sessions. Flat: close above the upper band → long, below the
@@ -352,6 +359,9 @@ struct TrendConfig {
         c.drive_day_atr = jbool(t, "drive_day_atr", c.drive_day_atr); c.drive_market = jbool(t, "drive_market", c.drive_market);
         c.drive_score_min = jint(t, "drive_score_min", c.drive_score_min); c.drive_score_big = jdbl(t, "drive_score_big", c.drive_score_big);
         c.drive_score_units = jbool(t, "drive_score_units", c.drive_score_units); c.drive_stop_atr = jdbl(t, "drive_stop_atr", c.drive_stop_atr);
+        c.drive_late_count = jint(t, "drive_late_count", c.drive_late_count); c.drive_late_minutes = jint(t, "drive_late_minutes", c.drive_late_minutes);
+        c.drive_late_step = jint(t, "drive_late_step", c.drive_late_step); c.drive_late_min_atr = jdbl(t, "drive_late_min_atr", c.drive_late_min_atr);
+        c.drive_late_only = jbool(t, "drive_late_only", c.drive_late_only);
         c.gap_min_pts = jdbl(t, "gap_min_pts", c.gap_min_pts); c.gap_wait_min = jint(t, "gap_wait_min", c.gap_wait_min);
         c.gap_fill_frac = jdbl(t, "gap_fill_frac", c.gap_fill_frac);
         c.ab_k = jdbl(t, "ab_k", c.ab_k); c.ab_anchor = jstr(t, "ab_anchor", c.ab_anchor); c.ab_day_atr = jbool(t, "ab_day_atr", c.ab_day_atr);
@@ -526,7 +536,7 @@ public:
         day_hi_ = std::numeric_limits<double>::lowest(); day_lo_ = std::numeric_limits<double>::max();
         on_hi_ = std::numeric_limits<double>::lowest(); on_lo_ = std::numeric_limits<double>::max(); on_open_ = 0.0;
         rth_seen_ = false; in_rth_ = false; vwap_pv_ = vwap_v_ = vwap_pv2_ = 0.0; vwap_hist_.clear();
-        drive_dir_ = 0; drive_done_ = false; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
+        drive_dir_ = 0; drive_done_ = false; late_armed_ = false; drive_late_i_ = 0; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
         td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
         imb_dir_ = 0; imb_since_ = 0;
@@ -965,6 +975,9 @@ private:
             const double a = tc_.drive_day_atr ? day_atr_ : atr_;          // no day ATR → no drive (fail closed)
             drive_dir_ = (a > 0.0 && std::fabs(mv) >= tc_.drive_min_atr * a) ? (mv > 0 ? 1 : -1) : 0;
             LOG("[TREND opening_drive] drive after %dm = %+.2f (atr %.2f) → dir %d", tc_.drive_minutes, mv, a, drive_dir_);
+            // Late re-checks run only on days the main move was too small (before any score filter); no ATR → none.
+            late_armed_ = tc_.drive_late_count > 0 && a > 0.0 && drive_dir_ == 0;
+            if (tc_.drive_late_only) drive_dir_ = 0;                       // main decision is the skip test only
             last_units_ = 0; stop_dist_ = 0.0;
             if (drive_dir_ != 0 && tc_.drive_score_min > 0) {
                 const int sc = drive_score(drive_dir_, mv, a);
@@ -977,6 +990,23 @@ private:
             if (tc_.drive_market && drive_dir_ != 0 && hhmm >= tc_.drive_entry_from && hhmm < tc_.drive_entry_to
                 && can_enter(hhmm, drive_dir_))
                 emit(drive_dir_ > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, drive_dir_ > 0 ? "drive_market_long" : "drive_market_short");
+            return;
+        }
+        if (late_armed_ && drive_late_i_ < tc_.drive_late_count
+            && mod >= rth_open_mod_ + tc_.drive_late_minutes + drive_late_i_ * tc_.drive_late_step) {
+            ++drive_late_i_;
+            const double a = tc_.drive_day_atr ? day_atr_ : atr_;
+            const double mv = b.c - rth_open_;
+            LOG("[TREND opening_drive] late check %d at %04d: move %+.2f (atr %.2f, need %.2f)",
+                drive_late_i_, hhmm, mv, a, tc_.drive_late_min_atr * a);
+            if (a > 0.0 && std::fabs(mv) >= tc_.drive_late_min_atr * a) {
+                late_armed_ = false;                                      // one late trade per day
+                const int d = mv > 0 ? 1 : -1;
+                last_units_ = 0;
+                stop_dist_ = tc_.drive_stop_atr > 0.0 ? tc_.drive_stop_atr * a : 0.0;
+                if (can_enter(hhmm, d))
+                    emit(d > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, d > 0 ? "drive_late_long" : "drive_late_short");
+            }
             return;
         }
         if (tc_.drive_market) return;                                     // market variant: one decision, no pullback entries
@@ -2208,7 +2238,7 @@ private:
     double on_hi_ = std::numeric_limits<double>::lowest(), on_lo_ = std::numeric_limits<double>::max();
     double prev_hi_ = 0, prev_lo_ = 0, prev_close_ = 0, prev2_lo_ = 0; bool have_prev2_ = false;
     double vwap_pv_ = 0, vwap_v_ = 0; std::vector<double> vwap_hist_;
-    int drive_dir_ = 0; bool drive_done_ = false; double gap_ = 0; bool gap_done_ = false; bool tod_done_ = false;
+    int drive_dir_ = 0; bool drive_done_ = false; bool late_armed_ = false; int drive_late_i_ = 0; double gap_ = 0; bool gap_done_ = false; bool tod_done_ = false;
     // 2026-09-28 modes
     double ort_hi_ = 0, ort_lo_ = 0; bool ort_set_ = false; int ort_arm_ = 0, ort_age_ = 0; bool ort_used_long_ = false, ort_used_short_ = false;
     bool gf_done_ = false; int gf_dir_ = 0;

@@ -7,6 +7,24 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-15 — late strong open + looser day-weakness in the paper fleet (research r1)
+
+### Added
+- `opening_drive` late re-checks (`trend_strategy.hpp`): `drive_late_count / drive_late_minutes / drive_late_step /
+  drive_late_min_atr` re-check |price − 09:30 open| ≥ x × ATR at 10:30 / 11:00 / 11:30 only on days the main decision gave
+  no direction (before any score filter), one late trade per day; `drive_late_only` makes the main decision a skip test.
+  Off by default (golden replay unchanged). 9 checks in `test_trend_strategy`.
+- Paper fleet (5 ids): `so_k25_2r` (strong open 09:50, k 0.25 day ATR, stop 0.25 ATR, 2R, hold to 15:55),
+  `so_k25_2r_late` (+ late checks at k 0.30), `so_late_k30_2r` (late trades only), `wkday_ibs30_vix20` and
+  `wkday_ibs50_vix20` (prior IBS ≤ 0.3 / 0.5 and VIX ≥ 20 → buy 09:30, sell 15:55).
+
+### Research
+- Late SO: +92 trades/yr on non-SO days, +0.10R net, all three eras, weekly P&L ρ ≈ 0 with the base; picked from ~18
+  time × threshold cells — paper forward test decides. Like the base SO it is net negative in 2010–18 at that era's cost
+  share. IBS ≤ 0.5: +10 trades/yr at the same edge. ES adds no independent trades (ρ 0.94); weakness with VIX < 20 = coin
+  flip; SO filters (EMA vs VWAP, VIX, prior day, volume, overnight range, ES confirm, weekday) — none added; closing-auction
+  proxies — nothing for NQ (ES month-end 15:50→16:00 = hypothesis only).
+
 ## 2026-10-14 — Order-flow ORB on NY 5m + Asia 15m in the paper fleet; a 13-hour DB lock pile-up cleared
 
 Founder: "any orb on any session 5m or 15m … possibly order flow confirmation", then "yes do both and re-run the payout math".

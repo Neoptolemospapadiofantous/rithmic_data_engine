@@ -169,6 +169,46 @@ int main() {
         auto plain = run(0, 19990.0, {19980, 20010, 19990, 20000, 20010}, u, sd);
         CHECK(plain.size() == 1 && plain[0].sig == OrbSignal::BUY && u == 0 && sd == 0.0, "E1 off: plain drive_market unchanged");
     }
+    // ── late strong open (2026-10-15): re-check later only on days the main decision gave no direction ──
+    {
+        TrendConfig tc; tc.mode = "opening_drive"; tc.tf_min = 1; tc.drive_minutes = 4; tc.drive_min_atr = 0.2;
+        tc.drive_day_atr = true; tc.drive_market = true; tc.drive_entry_from = 930; tc.drive_entry_to = 935;
+        tc.drive_stop_atr = 0.25;
+        tc.drive_late_count = 2; tc.drive_late_minutes = 8; tc.drive_late_step = 2; tc.drive_late_min_atr = 0.3;   // checks 09:38, 09:40 at ±30
+        auto run = [&](bool late_only, const std::vector<double>& path, double& sd) {
+            TrendConfig t = tc; t.drive_late_only = late_only;
+            TrendStrategy s(t, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            feed_path(s, path, 9, 30);
+            sd = s.take_stop_dist();
+            return out;
+        };
+        double sd = 0.0;
+        // quiet at 09:34 (+5 < 20), +25 at 09:38 (< 30), +35 at 09:40 → late BUY
+        const std::vector<double> late_up = {20000, 20002, 20003, 20004, 20005, 20010, 20015, 20020, 20025, 20030, 20035, 20036, 20037, 20038};
+        auto a = run(false, late_up, sd);
+        CHECK(a.size() == 1 && a[0].sig == OrbSignal::BUY && a[0].why == "drive_late_long", "late SO: BUY at the first late check past 0.3 ATR");
+        CHECK(std::fabs(sd - 25.0) < 1e-9, "late SO: stop distance = drive_stop_atr × day ATR");
+        auto dn = run(false, {20000, 19998, 19997, 19996, 19995, 19990, 19980, 19972, 19965, 19960, 19955, 19950}, sd);
+        CHECK(dn.size() == 1 && dn[0].sig == OrbSignal::SELL && dn[0].why == "drive_late_short", "late SO: SELL on a late down move (09:38 −35)");
+        // main decision fires (+30 at 09:34) → no late trade even though the move keeps going
+        auto main_day = run(false, {20000, 20010, 20020, 20025, 20030, 20040, 20050, 20060, 20070, 20080, 20090, 20100}, sd);
+        CHECK(main_day.size() == 1 && main_day[0].why == "drive_market_long", "late SO: main-decision days take only the main trade");
+        // late moves never reach 0.3 ATR → nothing
+        auto quiet = run(false, {20000, 20002, 20003, 20004, 20005, 20010, 20012, 20015, 20020, 20022, 20025, 20026, 20080}, sd);
+        CHECK(quiet.empty(), "late SO: no trade when no late check passes (moves after the last check ignored)");
+        // late_only: the main decision is a skip test — never traded
+        auto lo_main = run(true, {20000, 20010, 20020, 20025, 20030, 20040, 20050, 20060, 20070, 20080, 20090, 20100}, sd);
+        CHECK(lo_main.empty(), "late_only: main-decision day → no trade at all");
+        auto lo_late = run(true, late_up, sd);
+        CHECK(lo_late.size() == 1 && lo_late[0].why == "drive_late_long", "late_only: quiet main → late trade");
+        // off by default: the plain drive_market behaviour is unchanged on a quiet main day
+        TrendConfig off = tc; off.drive_late_count = 0; TrendStrategy s0(off, risk_cfg()); int n0 = 0;
+        s0.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n0; }); s0.reset_session(); s0.set_day_atr(100.0);
+        feed_path(s0, late_up, 9, 30);
+        CHECK(n0 == 0, "late SO off: quiet main day → no trade (unchanged)");
+    }
     // ── vprofile (2026-09-29): yesterday's value area, fade the touch toward the POC ──
     {
         TrendConfig tc; tc.mode = "vprofile"; tc.tf_min = 1; tc.vp_style = "fade"; tc.vp_tol_atr = 0.5; tc.vp_va_frac = 0.7;
