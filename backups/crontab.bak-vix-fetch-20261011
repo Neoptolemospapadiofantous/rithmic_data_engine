@@ -1,0 +1,173 @@
+# ============================================================================
+# User crontab — organized per project (2026-07-27). Every job sits under its
+# own project's header; keep it that way when adding jobs.
+# Grid projects first, then the non-grid projects that share this box.
+# ============================================================================
+
+# ─── FLOWSTACK GRID · ecosystem ops (grid-* toolkit, ~/.config/ecosystem) ────
+# grid-sentinel: WEEKLY review + gates + contract drift (Mon 03:17; was nightly until the
+# 2026-09-09 credits disable). RE-ENABLED 2026-09-13 weekly on haiku — founder: "once a week,
+# on a cheaper model". Monitor's staleness edge is GRID_SENTINEL_STALE_H=192 to match (below).
+17 3 * * 1 GRID_SENTINEL_MODEL=claude-haiku-4-5-20251001 /home/theone/.local/bin/grid-sentinel >> /home/theone/.config/ecosystem/sentinel.log 2>&1
+# whole-grid health monitor + Slack alerter (services/drift/memory/sentinel-freshness, logs every run)
+*/15 * * * * GRID_SENTINEL_STALE_H=192 /home/theone/.config/ecosystem/bin/grid-monitor >> /home/theone/.config/ecosystem/logs/grid-monitor.cron.log 2>&1
+# outreach optimizer monitor + Slack alerter (logs every run)
+*/30 * * * * /home/theone/.config/ecosystem/bin/grid-optimize-monitor >> /home/theone/.config/ecosystem/logs/optimize-monitor.cron.log 2>&1
+# grid-monitor --digest: once-daily Slack rollup (gates · north-star KPIs · open findings ·
+# job freshness · §5 ledger). 07:15 = after the nightly jobs (03:09-04:41) so it reports
+# their fresh results, and before the LinkedIn 07:48 digest.
+15 7 * * * /home/theone/.config/ecosystem/bin/grid-monitor --digest >> /home/theone/.config/ecosystem/logs/grid-digest.log 2>&1
+# grid-auto: nightly ledger rotation — archives §5 entries every programmatic reader has
+# covered, so SHARED.md (auto-imported into every session) stays small. Runs before the sentinel.
+9 3 * * * /home/theone/.local/bin/grid-auto ledger --lint --archive >> /home/theone/.config/ecosystem/logs/auto-ledger.log 2>&1
+# grid-auto: nightly contract-surface map validation (flags renamed files + unmapped §3 subsections)
+12 3 * * * /home/theone/.local/bin/grid-auto surfaces --check >> /home/theone/.config/ecosystem/logs/auto-surfaces.log 2>&1
+# grid-auto: weekly "document contracts" — headless review of each project's OWN §3 subsection
+# against real code; applies + commits only that subsection, never §5 or another project's.
+# DISABLED-2026-09-09 (credits): 41 4 * * 1 /home/theone/.local/bin/grid-auto document --all --apply >> /home/theone/.config/ecosystem/logs/auto-document.log 2>&1
+# grid-auto: change-driven gate sweep — catches edits the session hooks never see
+# (hand edits, git pull, a cron rewriting code). An unmoved tree costs one git hash.
+*/15 * * * * /home/theone/.local/bin/grid-auto gate --all --changed-only >> /home/theone/.config/ecosystem/logs/auto-gate.log 2>&1
+# grid-auto: is a §5 line owed for changes already COMMITTED? (the Stop hook only
+# sees uncommitted work, so committing before finishing used to skip the ledger)
+14 3 * * * /home/theone/.local/bin/grid-auto decide --committed >> /home/theone/.config/ecosystem/logs/auto-decide.log 2>&1
+# grid-janitor: nightly disk hygiene — 7d Claude -tmp transcripts + session-env dirs,
+# 14d linkedin screenshots, *.db.bak-* keep-latest-2 (rootfs was 91% on 2026-09-13).
+# Dry-run by design without --apply; manifest per run lands in janitor.log.
+20 3 * * * /home/theone/.local/bin/grid-janitor --apply >> /home/theone/.config/ecosystem/logs/janitor.log 2>&1
+
+# grid-auto logs --rotate: nightly log-rotation sweep — gzips aged lines from every
+# append-only grid log into per-day archives (14 kept per file), never the current day.
+16 3 * * * /home/theone/.local/bin/grid-auto logs --rotate >> /home/theone/.config/ecosystem/logs/auto-logs.log 2>&1
+
+# grid-kpi --record: nightly KPI history snapshot (sparklines/delta arrows in grid-live and
+# ecosystem-ui read kpi-history.jsonl). This was the sentinel's job; with the sentinel
+# DISABLED-2026-09-09, --record needs its own owner or history silently stops growing.
+40 0 * * * /home/theone/.local/bin/grid-kpi --record >> /home/theone/.config/ecosystem/logs/kpi-record.log 2>&1
+
+# ─── FLOWSTACK GRID · BI warehouse (ecosystem star schema → Power BI) ──────────
+# backfill ETL: Stripe + public-stats + leads.db + kpi.json → warehouse.db (idempotent daily snapshot)
+*/15 * * * * cd /home/theone/.config/ecosystem/bi && python3 etl.py --quiet >> etl.log 2>&1
+# push the star schema into the Power BI semantic model (My Workspace, delegated
+# auth; the refresh token rolls on each use, so this cadence keeps sign-in alive)
+5,20,35,50 * * * * cd /home/theone/.config/ecosystem/bi && python3 powerbi_model.py --push --quiet >> powerbi.log 2>&1
+
+# ─── FLOWSTACK GRID · flowstack-outreach ─────────────────────────────────────
+# live sequence (engine self-enforces UTC window Mon-Thu 08:30-17:30 + warm-up caps)
+#PAUSED-2026-09-30 founder (stop linkedin + emails for now), uncomment to resume: */30 * * * 1-5 cd /home/theone/flowstack-outreach && flock -n /tmp/outreach-run.lock bin/outreach run --live 2>&1 | bin/stamp >> data/cron.log
+# prepare: hourly off-peak top-up of a 2-send-day draft buffer (2026-09-14). A night the shared
+# Claude subscription is exhausted is retried the next hour; Sat is skipped (drafts would expire).
+#PAUSED-2026-09-30 founder (stop linkedin + emails for now), uncomment to resume: 5 0-7 * * 1-5 cd /home/theone/flowstack-outreach && flock -n /tmp/outreach-run.lock bin/outreach prepare 2>&1 | bin/stamp >> data/cron.log
+#PAUSED-2026-09-30 founder (stop linkedin + emails for now), uncomment to resume: 5 20,21,23 * * 0-4 cd /home/theone/flowstack-outreach && flock -n /tmp/outreach-run.lock bin/outreach prepare 2>&1 | bin/stamp >> data/cron.log
+# replies / STOP / bounce processing
+*/20 * * * * cd /home/theone/flowstack-outreach && bin/outreach replies 2>&1 | bin/stamp >> data/cron.log
+# SATURDAY 06:00, not Sunday 17:00 (changed 2026-08-12): the matrix went 30 -> 484 queries
+# and a query measures ~63s, so the crawl is ~8.5h before scoring. Sunday evening left about
+# 3h of slack before Monday's send window; Saturday morning leaves ~50h.
+# SHARES the send lock on purpose. leads.db is journal_mode=delete with a 5s busy timeout,
+# and sequence.py sends via Resend BEFORE it records the send — a lock error in that gap
+# would re-send the same step on the next tick. One lock means an overrunning hunt makes
+# each send tick skip (flock -n) and retry in 30 min instead of racing it. -w 3600 waits out
+# a send run rather than skipping the hunt for a whole week.
+# weekly hunt: refill + score the lead queue before Monday's batch
+# PAUSED 2026-09-10 (founder): the only scheduled caller of the PAID Google Places
+# API. Unexpected charges on the 2026-08-29 run; lead supply is not the constraint
+# (~8,800 emails still owed). Re-enable by uncommenting, and add a request cap first.
+#PAUSED-2026-09-30 founder (stop linkedin + emails for now), uncomment to resume: 30 5 1 * * cd /home/theone/flowstack-outreach && flock -n /tmp/outreach-run.lock bin/outreach osm 2>&1 | bin/stamp >> data/cron.log
+#0 6 * * 6 cd /home/theone/flowstack-outreach && flock -w 3600 /tmp/outreach-run.lock bin/outreach hunt >> data/cron.log 2>&1
+# nightly scoring: capped + off-peak so it can NEVER compete with sending or a human's
+# daytime usage (the 08-16..18 ad-hoc backfill starved live sends for two days).
+# 150/night on haiku; resumes by construction (score IS NULL), breaker stops a dead bridge.
+#PAUSED-2026-09-30 founder (stop linkedin + emails for now), uncomment to resume: 30 22 * * * cd /home/theone/flowstack-outreach && flock -n /tmp/outreach-run.lock bin/outreach score --limit 150 2>&1 | bin/stamp >> data/cron.log
+
+
+# ─── FLOWSTACK GRID · master-vm-system ───────────────────────────────────────
+# SIM keep-alive: pings only prepaid SIMs past their interval, restores the phone (sim_bank)
+23 4 * * * cd /home/theone/master-vm-system && ./simvenv/bin/python src/services/sim_bank.py keepalive >> logs/sim_keepalive.log 2>&1
+# grid KPI (Layer-1 backbone): hourly refresh of data/kpi.json — detection_free_rate; read-only, fails open to dormant
+17 * * * * cd /home/theone/master-vm-system/src && ../venv/bin/python -m services.kpi >> ../logs/kpi.log 2>&1
+
+# ─── trading bot (~/Desktop/bot — personal project, NOT part of the grid) ────
+13 */2 * * * cd /home/theone/Desktop/bot && source /home/theone/Desktop/bot/.venv/bin/activate && python scripts/audit_daemon.py --once >> data/logs/audit_daemon.log 2>&1
+37 * * * * cd /home/theone/Desktop/bot && source /home/theone/Desktop/bot/.venv/bin/activate && python scripts/health_monitor.py --once >> data/logs/health_monitor.log 2>&1
+51 */4 * * * cd /home/theone/Desktop/bot && source /home/theone/Desktop/bot/.venv/bin/activate && python scripts/staleness_monitor.py >> data/logs/staleness_monitor.log 2>&1
+23 */6 * * * cd /home/theone/Desktop/bot && source .venv/bin/activate && python -c "from python.rithmic.fill_validator import validate_recent; validate_recent()" >> data/logs/slippage_validation.log 2>&1
+0 3 * * * cd /home/theone/Desktop/bot && bash scripts/backup.sh >> data/logs/backup.log 2>&1
+0 */6 * * * source /home/theone/Desktop/bot/.venv/bin/activate && python scripts/coverage_gaps.py >> data/logs/coverage_gaps.log 2>&1
+0 8 * * 1 cd /home/theone/Desktop/bot && source .venv/bin/activate && python scripts/scheduled_retrain.py >> data/logs/retrain.log 2>&1
+0 23 * * 1-5 cd /home/theone/Desktop/bot && source .venv/bin/activate && python scripts/monitor_data_gaps.py >> data/logs/gap_monitor.log 2>&1
+0 22 * * 1-5 cd /home/theone/Desktop/bot && source .venv/bin/activate && python scripts/tca_check.py >> data/logs/tca.log 2>&1
+
+# ─── youtube-farm (~/youtube-farm — personal project, NOT part of the grid) ──
+# PAUSED-2026-09-13 (founder: pause everything yt) 53 5 * * * /home/theone/youtube-farm/bin/footage-daily.sh xqc-clips xqc >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 41 3 * * * /home/theone/youtube-farm/bin/cron-cycle.sh nightly >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) */10 * * * * /home/theone/youtube-farm/bin/cron-cycle.sh cross-engage >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) @reboot /home/theone/youtube-farm/bin/farm-tmux.sh >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# gadgets pre-signup warmup: one persona session every Vienna evening (18:37-19:07 local),
+# day-varying plan + watch history. REMOVE after the gadgets account is created.
+# PAUSED-2026-08-06 37 18 * * * cd /home/theone/youtube-farm && umask 077 && sleep $((RANDOM \% 1800)) && DISPLAY=:1 ./bin/farm warmup gadgets --minutes $((25 + RANDOM \% 20)) >> logs/warmup_gadgets.log 2>&1
+# stackwise pre-signup warmup: Paris evening (19:41-20:11 local). REMOVE after its TikTok/Rumble accounts exist.
+# PAUSED-2026-08-06 9 17 * * * cd /home/theone/youtube-farm && umask 077 && sleep $((RANDOM \% 1800)) && DISPLAY=:1 ./bin/farm warmup stackwise --minutes $((25 + RANDOM \% 20)) >> logs/warmup_stackwise.log 2>&1
+# daily adversarial-research scan (kimi headless, auto mode): checks last 48h of detection/
+# anti-abuse/proxy-enforcement news vs docs/research baselines; appends to undetectability-watch
+# Horizon only when material. Log: logs/research-scan.log. Remove with: crontab -e
+# PAUSED-2026-09-13 (founder: pause everything yt) 43 8 * * * cd /home/theone/youtube-farm && umask 077 && /home/theone/.kimi-code/bin/kimi -p "$(cat docs/research/DAILY_SCAN_PROMPT.md)" >> logs/research-scan.log 2>&1
+# gap-scan: find gaps (doctor+correlate) then VALIDATE them live (exit reputation probes,
+# warmup freshness). Fails loudly if a pending-signup channel exit is flagged.
+# PAUSED-2026-09-13 (founder: pause everything yt) 11 9 * * * cd /home/theone/youtube-farm && ./bin/gap-scan.sh >> logs/cron.log 2>&1
+# rumble-warmup (marketpulse follower fleet, Phase A): one ANONYMOUS Rumble session per
+# profile per day, ~2h apart, minutes nudged off the marks. manual-3/5/8/12/16 ONLY —
+# manual-17 IS the marketpulse channel account and is never in the fleet. Each skips
+# safely while its operator window is open. rumble-follow (Phase C) is NOT cronned —
+# manual trigger only, once the Rumble accounts exist.
+# PAUSED-2026-09-13 (founder: pause everything yt) 23 7 * * * cd /home/theone/youtube-farm && umask 077 && DISPLAY=:1 ./bin/farm rumble-warmup elizabeth.mar5837@gmail.com >> logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 41 9 * * * cd /home/theone/youtube-farm && umask 077 && DISPLAY=:1 ./bin/farm rumble-warmup betty.hall.girly.2000@gmail.com >> logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 57 11 * * * cd /home/theone/youtube-farm && umask 077 && DISPLAY=:1 ./bin/farm rumble-warmup elizabeth.allen.cutie@gmail.com >> logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 19 14 * * * cd /home/theone/youtube-farm && umask 077 && DISPLAY=:1 ./bin/farm rumble-warmup donaldcampbell.heroman@gmail.com >> logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 37 16 * * * cd /home/theone/youtube-farm && umask 077 && DISPLAY=:1 ./bin/farm rumble-warmup ashley.adams61632@gmail.com >> logs/cron.log 2>&1
+
+# ─── cyprus-studio (~/cyprus-studio — personal project, NOT part of the grid) ─
+# Drive sync + library intake (quiet-skips until rclone is configured)
+10 6 * * * /home/theone/uploading-channels/bin/studio daily --cron >> /home/theone/uploading-channels/data/logs/cron.log 2>&1
+#PAUSED-2026-09-30 founder (stop linkedin + emails for now), uncomment to resume: 35 12,16 * * * cd /home/theone/flowstack-outreach && bin/outreach watchdog 2>&1 | bin/stamp >> data/cron.log
+# trial + parking-profile jar aging: daily warmup per persona tz. trial is the signup test bed;
+# milan-a/b + sg-a/b are parked identities — remove a line when its slug retires or promotes.
+# PAUSED-2026-08-06 27 13 * * * cd /home/theone/youtube-farm && umask 077 && sleep $((RANDOM \% 1800)) && DISPLAY=:1 ./bin/farm warmup trial --minutes $((25 + RANDOM \% 20)) >> logs/warmup_trial.log 2>&1
+# PAUSED-2026-08-06 58 14 * * * cd /home/theone/youtube-farm && umask 077 && sleep $((RANDOM \% 1800)) && DISPLAY=:1 ./bin/farm warmup milan-a --minutes $((25 + RANDOM \% 20)) >> logs/warmup_milan-a.log 2>&1
+# PAUSED-2026-08-06 21 16 * * * cd /home/theone/youtube-farm && umask 077 && sleep $((RANDOM \% 1800)) && DISPLAY=:1 ./bin/farm warmup milan-b --minutes $((25 + RANDOM \% 20)) >> logs/warmup_milan-b.log 2>&1
+# PAUSED-2026-08-06 43 12 * * * cd /home/theone/youtube-farm && umask 077 && sleep $((RANDOM \% 1800)) && DISPLAY=:1 ./bin/farm warmup sg-a --minutes $((25 + RANDOM \% 20)) >> logs/warmup_sg-a.log 2>&1
+# PAUSED-2026-08-06 16 14 * * * cd /home/theone/youtube-farm && umask 077 && sleep $((RANDOM \% 1800)) && DISPLAY=:1 ./bin/farm warmup sg-b --minutes $((25 + RANDOM \% 20)) >> logs/warmup_sg-b.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) */2 * * * * /home/theone/youtube-farm/bin/fwd-keepalive.sh >> /home/theone/youtube-farm/logs/fwd-keepalive.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 11 6 * * * /home/theone/youtube-farm/bin/footage-daily.sh kaicenat-clips kaicenat >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 29 6 * * * /home/theone/youtube-farm/bin/footage-daily.sh jynxzi-clips jynxzi >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 47 6 * * * /home/theone/youtube-farm/bin/footage-daily.sh caseoh-clips caseoh_ >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# one-shot re-timing flips for 2026-08-12 (date-guarded; inert after today — the
+# synthetic-flag clear un-scheduled these, publishAt cannot be re-set once public)
+# REMOVED-2026-09-13 (non-flowstack): 07 16 12 8 * [ "$(date +\%F)" = "2026-08-12" ] && /home/theone/youtube-farm/bin/flip-public.sh xqc-clips 9OgEbVz2SBM >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# REMOVED-2026-09-13 (non-flowstack): 10 16 12 8 * [ "$(date +\%F)" = "2026-08-12" ] && /home/theone/youtube-farm/bin/flip-public.sh xqc-clips yyICD72wq5I >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# REMOVED-2026-09-13 (non-flowstack): 20 19 12 8 * [ "$(date +\%F)" = "2026-08-12" ] && /home/theone/youtube-farm/bin/flip-public.sh xqc-clips DHjcKUWJT7s >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# xqc-clips even grid (her 09:00-23:30 America/New_York day = +7h EEST): shorts 10:00/13:37/17:15 EDT, long-form 19:52 EDT
+# PAUSED-2026-09-13 (founder: pause everything yt) 24 21 * * * /home/theone/youtube-farm/bin/cron-cycle.sh post >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 14 0 * * * /home/theone/youtube-farm/bin/cron-cycle.sh post >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 4 3 * * * /home/theone/youtube-farm/bin/cron-cycle.sh post >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# PAUSED-2026-09-13 (founder: pause everything yt) 29 5 * * 1,4,6 /home/theone/youtube-farm/bin/cron-cycle.sh post-long >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# calib listener guard: first bind wins, so this is a no-op while one runs — restarts it after crashes/reboots
+# PAUSED-2026-09-13 (founder: pause everything yt) */15 * * * * cd /home/theone/youtube-farm && venv/bin/python bin/calib-listener.py account-open >> /home/theone/youtube-farm/logs/cron.log 2>&1
+# marketpulse (scheduler-managed, NOT in the burst slots): daily market recap, due placed inside its 16:30-19:30 PT upload window by farm schedule
+# PAUSED-2026-09-13 (founder: pause everything yt) */17 * * * * cd /home/theone/youtube-farm && bin/farm schedule tick --live >> logs/cron.log 2>&1
+5,20,35,50 * * * * /home/theone/.config/ecosystem/bin/grid-findings >> /home/theone/.config/ecosystem/logs/findings-mirror.log 2>&1
+13,43 * * * * /home/theone/.local/bin/grid-scheduler tick >> /home/theone/.config/ecosystem/logs/grid-scheduler.log 2>&1
+24 3 * * * /home/theone/.local/bin/grid-digest build >> /home/theone/.config/ecosystem/logs/grid-scoped-digest.log 2>&1
+
+# linkedin-promoter: alert if a scheduled posting arm has silently gone inactive
+# (both arms were found disarmed on 2026-09-27 with nothing reporting it). Alerts only,
+# never re-arms — see scripts/check_posting_armed.py. 08:15 is before the Mon 09:08 slot.
+#PAUSED-2026-09-30 founder (stop linkedin + emails for now), uncomment to resume: 15 8 * * * cd $HOME/linkedin-promoter && python3 scripts/check_posting_armed.py >> logs/posting_armed.log 2>&1
+
+# rithmic StarNet desk (2026-09-30): hourly health watchdog -> grid-notify (Telegram, edge-triggered), nightly cleanup (keeps 14 days)
+20 * * * * $HOME/Desktop/rithmic_engine/scripts/starnet/desk_watch.sh check >> $HOME/.local/share/rithmic-desk/watch.log 2>&1
+40 3 * * * $HOME/Desktop/rithmic_engine/scripts/starnet/desk_watch.sh cleanup >> $HOME/.local/share/rithmic-desk/watch.log 2>&1
+# youtube-clipper campaign watcher (2026-10-09): Vyro + Whop new campaigns → grid-notify. Remove this line to stop.
+*/4 * * * * cd /home/theone/youtube-clipper && flock -n /tmp/clipper-watch.lock bin/clipper watch run >> data/watch/cron.log 2>&1
+# youtube-clipper auto pipeline (2026-10-09): joined campaigns → sources → clips → accounts → YouTube API upload. Remove to stop.
+*/10 * * * * cd /home/theone/youtube-clipper && flock -n /tmp/clipper-auto.lock bin/clipper auto run >> data/watch/auto.log 2>&1

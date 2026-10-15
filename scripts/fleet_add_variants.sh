@@ -14,11 +14,19 @@
 #   rg_nochase skip extended sessions                             (move < 0.5 x ATR)
 #   rvol15     trade only on heavy relative volume                (minute volume >= 1.5x its 20-bar avg)
 #   tr25       wider trailing stop                                (trail_step 25; beat its base 7/8 in tr25)
+#   lv_room    skip entries with a KEY level (day/on/vp/npoc/wk/mo) closer than 0.05 x ATR ahead  (paper_levels.hpp)
+#   lv_conf    enter only within 0.025 x ATR of a KEY level
+#              (thresholds = the quartiles measured on NQ 2025-10…2026-02 1m bars: with ALL families a level sits
+#              0.03 x ATR away at the median, so the gates use the key levels; targets and stops use all of them)
+#   lv_tgt     exit at the next level >= 0.1 x ATR ahead
+#   lv_stop    stop just beyond the nearest level ≥ 0.01 x ATR behind the entry (+0.005 x ATR; never wider than sl_points)
+#   The lv_* overlays apply to orb + trend bases only (the mtf bracket broker has no level hook) and are
+#   PAPER ONLY: the live executor refuses lv_* keys, strategy_leaderboard() marks them not live_runnable.
 # The rg_* gates measure the session from the 09:30 ET open, so they are applied only to bases that
 # trade inside regular hours (an Asia / London base would never pass the gate). rvol15 applies to every
 # base; tr25 only to bases that have a trail_step.
 #
-# Usage: scripts/fleet_add_variants.sh [--dry-run] [fleet.json]
+# Usage: [ONLY=<overlay prefix>] scripts/fleet_add_variants.sh [--dry-run] [fleet.json]   (ONLY=lv_ adds only the level overlays)
 set -euo pipefail
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
 FLEET="${1:-$(cd "$(dirname "$0")/.." && pwd)/config/paper_fleet.json}"
@@ -30,11 +38,15 @@ OVERLAYS='{
   "rg_fade":    {"regime_min_move_atr": 0.35, "regime_min_minutes": 30, "regime_with_move": -1},
   "rg_nochase": {"regime_max_move_atr": 0.5, "regime_min_minutes": 15},
   "rvol15":     {"rvol_min": 1.5, "rvol_bars": 20},
-  "tr25":       {"trail_step": 25}
+  "tr25":       {"trail_step": 25},
+  "lv_room":    {"lv_room_atr": 0.05, "lv_set": "day,on,vp,npoc,wk,mo"},
+  "lv_conf":    {"lv_near_atr": 0.025, "lv_set": "day,on,vp,npoc,wk,mo"},
+  "lv_tgt":     {"lv_target": true, "lv_tgt_min_atr": 0.1},
+  "lv_stop":    {"lv_stop": true, "lv_stop_min_atr": 0.01, "lv_stop_buf_atr": 0.005}
 }'
 
 tmp=$(mktemp)
-jq --argjson ov "$OVERLAYS" '
+jq --argjson ov "$OVERLAYS" --arg only "${ONLY:-}" '
   # HHMM a base starts trading (ET); null when it cannot be told
   def start_hhmm:
     if .engine == "orb" then ((.params.session_open_hour // 9) * 100 + (.params.session_open_min // 30))
@@ -51,6 +63,8 @@ jq --argjson ov "$OVERLAYS" '
           (.key | startswith("rg_") | not) or ($b | rth)
         )
       | select(.key != "tr25" or ($b.params | has("trail_step")))
+      | select((.key | startswith("lv_") | not) or ($b.engine == "orb" or $b.engine == "trend"))
+      | select(.key | startswith($only))
       | {id: ($b.id + "__" + .key), engine: $b.engine, enabled: true,
          params: ($b.params + .value + {base_id: $b.id, overlay: .key})}
       | select(.id as $i | $have | index($i) | not)

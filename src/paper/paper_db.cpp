@@ -231,6 +231,16 @@ double PaperDb::session_atr14_before(const std::string& symbol, const std::strin
     }
 }
 
+bool PaperDb::calendar_fomc_day(const std::string& ymd) {
+    const char* params[1] = {ymd.c_str()};
+    try {
+        const std::string v = exec_scalar("SELECT count(*) FROM calendar WHERE day = $1::date AND kind = 'fomc'", params, 1, "calendar_fomc_day");
+        return !v.empty() && std::atoi(v.c_str()) > 0;
+    } catch (const std::exception& e) {
+        LOG("[PAPER-DB] calendar_fomc_day(%s) failed: %s", ymd.c_str(), e.what());
+        return false;
+    }
+}
 bool PaperDb::calendar_event_day(const std::string& ymd) {
     const char* params[1] = {ymd.c_str()};
     try {
@@ -876,4 +886,29 @@ void PaperDb::update_live_signal_stop(int64_t id, double stop) {
     if (res) PQclear(res);
 }
 
+} // namespace paper
+
+namespace paper {
+std::vector<PaperDb::OhlcvRow> PaperDb::load_ohlcv_1m(const std::string& symbol, int64_t from_us, int64_t to_us) {
+    std::string f = format_ts(from_us), t = format_ts(to_us);
+    const char* params[3] = { symbol.c_str(), f.c_str(), t.c_str() };
+    PGresult* res = PQexecParams(live(),
+        R"sql(SELECT (EXTRACT(EPOCH FROM minute)*1000000)::bigint, open, high, low, close, volume
+              FROM bars_1m WHERE symbol = $1 AND minute >= $2::timestamptz AND minute < $3::timestamptz
+              ORDER BY minute)sql",
+        3, nullptr, params, nullptr, nullptr, 0);
+    std::vector<OhlcvRow> out;
+    if (!res || PQresultStatus(res) != PGRES_TUPLES_OK) {
+        LOG("[PAPER-DB] WARN load_ohlcv_1m(%s): %s", symbol.c_str(), res ? PQresultErrorMessage(res) : "null result");
+        if (res) PQclear(res);
+        return out;
+    }
+    const int n = PQntuples(res);
+    out.reserve(n);
+    for (int i = 0; i < n; ++i)
+        out.push_back(OhlcvRow{ std::atoll(PQgetvalue(res, i, 0)), std::atof(PQgetvalue(res, i, 1)), std::atof(PQgetvalue(res, i, 2)),
+                                std::atof(PQgetvalue(res, i, 3)), std::atof(PQgetvalue(res, i, 4)), std::atof(PQgetvalue(res, i, 5)) });
+    PQclear(res);
+    return out;
+}
 } // namespace paper

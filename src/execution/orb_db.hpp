@@ -527,6 +527,32 @@ public:
         return ev;
     }
 
+    // CME equity close for a trading date from the calendar table: 0 = closed all day (holiday), the ET
+    // minute-of-day of an early close (close_ct is Central → +60), or -1 = a normal day / no row / no DB.
+    int calendar_close_et_min(const std::string& ymd) {
+        const char* params[1] = {ymd.c_str()};
+        PGresult* res = exec_params_query(
+            "SELECT kind, coalesce(to_char(close_ct, 'HH24:MI'), '') FROM calendar "
+            "WHERE day = $1::date AND kind IN ('holiday', 'early_close') ORDER BY kind DESC LIMIT 1", 1, params);
+        if (!res) return -1;
+        int out = -1;
+        if (PQntuples(res) > 0) {
+            out = market_close_et_min(PQgetvalue(res, 0, 0), PQgetvalue(res, 0, 1));
+        }
+        PQclear(res);
+        return out;
+    }
+
+    // FOMC decision day only (hold_pre_event_fomc_only).
+    bool calendar_fomc_day(const std::string& ymd) {
+        const char* params[1] = {ymd.c_str()};
+        PGresult* res = exec_params_query("SELECT count(*) FROM calendar WHERE day = $1::date AND kind = 'fomc'", 1, params);
+        if (!res) return false;
+        const bool ev = PQntuples(res) > 0 && std::atoi(PQgetvalue(res, 0, 0)) > 0;
+        PQclear(res);
+        return ev;
+    }
+
     // ── Account-wide realised P&L (all strategies, all instruments) ──────────
     // Prop-firm limits are per ACCOUNT. Until 2026-09-30 this summed only the
     // instance's own (label, instrument, strategy): the MNQ ORB instance seeded from its

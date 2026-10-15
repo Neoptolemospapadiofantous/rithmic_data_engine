@@ -5,7 +5,7 @@
 #
 # Markets: NQ (label nq_hist: Databento MBO 2023-03 … 2026-03 + the collector's own ticks from
 # 2026-09-19 — no data 2026-03-20 … 2026-09-18), BTC and ETH (label crypto_hist, ids btc_*/eth_*:
-# Binance aggTrades). All money is NET per contract (pnl_usd / qty, costs included as the fleet
+# Binance aggTrades). All money is NET per MNQ contract for NQ (the fleet trades MNQ, $2/pt) and per 0.1 coin for crypto (pnl_usd / qty, costs included as the fleet
 # configs set them), so the fleet's 1-lot and 3-lot variants compare.
 # Per market: replay coverage, the overall ranking (trades, PF, net, worst day, winning years / years
 # traded), the strategies that hold up in EVERY year, a per-year table for the top names, and the
@@ -17,13 +17,14 @@ MIN=30
 while [[ $# -gt 0 ]]; do case "$1" in --min-trades) MIN="$2"; shift;; *) echo "unknown arg $1"; exit 2;; esac; shift; done
 OUT="data/history/report.md"; mkdir -p data/history
 set -a; . ./.env 2>/dev/null; set +a; export PGPASSWORD="${PG_PASSWORD:-}"
+scripts/history_done_sync.sh >/dev/null || { echo "history_done_sync failed"; exit 1; }   # finished months only (hist_trades)
 Q() { psql -h "${PG_HOST:-localhost}" -U "${PG_USER:-rithmic_user}" -d "${PG_DB:-rithmic}" -Atq -F '|' -v ON_ERROR_STOP=1 -c "SET work_mem='512MB'; $1" | sed '/^SET$/d'; }
 md() { sed 's/|/ | /g; s/^/| /; s/$/ |/'; }
 
 section() {   # $1 title  $2 label  $3 id filter (SQL)
   local title="$1" label="$2" idf="$3"
   local base="SELECT strategy_id, (entry_time AT TIME ZONE 'America/New_York') AS et, pnl_usd / GREATEST(qty,1) AS p
-              FROM paper_trades WHERE account_label = '$label' $idf"
+              FROM hist_trades WHERE account_label = '$label' $idf"
   echo "## $title"; echo
   echo "Coverage (trades per month replayed):"; echo
   echo "| month | trades | strategies | net/ct \$ |"; echo "|---|---|---|---|"
@@ -44,7 +45,7 @@ section() {   # $1 title  $2 label  $3 id filter (SQL)
            round(w.worst_day::numeric,0), c.pos_yrs || '/' || c.yrs, round((100*o.win)::numeric,0)
     FROM o JOIN w USING (strategy_id) JOIN c USING (strategy_id)
     WHERE o.n >= $MIN"
-  echo "### Overall ranking (net per contract, ≥ $MIN trades; top 40)"; echo
+  echo "### Overall ranking (net per contract — MNQ for NQ, ≥ $MIN trades; top 40)"; echo
   echo "| strategy | trades | PF | net \$ | \$/trade | worst day \$ | winning years | win % |"; echo "|---|---|---|---|---|---|---|---|"
   Q "$agg ORDER BY o.net DESC LIMIT 40" | md; echo
   echo "### Holds up in every year (net > 0 in each of the $yrs year(s) with data, ≥ $MIN trades, PF ≥ 1.2)"; echo
@@ -81,7 +82,7 @@ section() {   # $1 title  $2 label  $3 id filter (SQL)
 
 {
   echo "# History replay report"; echo
-  echo "_Generated $(date -Is) by scripts/history_report.sh. Net per contract after the fleet's configured costs._"; echo
+  echo "_Generated $(date -Is) by scripts/history_report.sh. Net per contract after the fleet's configured costs — NQ figures are per **MNQ** (\$2/pt; ×10 gross for NQ). Only months whose replay job finished are counted._"; echo
   echo "Data: NQ = Databento GLBX MBO (NQ.c.0, 2023-03 … 2026-03-19) + the collector's own ticks (2026-09-19 …);"
   echo "**no NQ data 2026-03-20 … 2026-09-18** (not faked). Crypto = Binance USDⓈ-M aggTrades (2020-01 …), no quotes —"
   echo "book-gated variants are blocked there (no_quote). Crypto order-by-order (Bitstamp MBO) only exists from 2026-10-10."
@@ -128,3 +129,6 @@ Re-tune by WALK-FORWARD, never on the whole sample:
 EOF
 } > "$OUT.tmp" && mv "$OUT.tmp" "$OUT"
 echo "wrote $OUT ($(wc -l < "$OUT") lines)"
+
+# research ledger for the dashboard (Strategies → Research) — after every replayed month, like this report
+scripts/research_refresh.sh > /dev/null 2>&1 || echo "research_refresh failed (report itself is fine)" >&2

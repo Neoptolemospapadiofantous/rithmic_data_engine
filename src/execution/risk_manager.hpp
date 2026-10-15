@@ -124,7 +124,9 @@ public:
         // trading day — the cap is meaningless when daily_pnl_ resets every 20 minutes).
         // Also skipped when prior history is thin (<$500) to avoid test-trade false fires.
         double prior_profit = total_profit_ - daily_pnl_;
-        if (!cfg_.cycle_mode && prior_profit >= 500.0 && daily_pnl_ > 0.0) {
+        // consistency_cap_pct <= 0 = off (the paper fleet: per-strategy P&L is small and lumpy, the cap froze hold-mode
+        // strategies for the rest of a replay after one big day — found by the 2026-10-11 validation replay).
+        if (cfg_.consistency_cap_pct > 0.0 && !cfg_.cycle_mode && prior_profit >= 500.0 && daily_pnl_ > 0.0) {
             double daily_fraction = daily_pnl_ / prior_profit;
             if (daily_fraction > cfg_.consistency_cap_pct) {
                 halt("consistency_cap: today=" + std::to_string(daily_pnl_)

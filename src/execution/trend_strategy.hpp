@@ -15,7 +15,9 @@
                       touched VWAP and closed back above it
       opening_drive   direction of the first D minutes after 09:30 (net move ≥
                       k·ATR); enter on the first pullback bar in that direction
-                      inside an entry window
+                      inside an entry window (drive_day_atr: k × the prior-day
+                      ATR14 instead of the bar ATR; drive_market: enter at the
+                      close of the bar that decides the drive, no pullback)
       gap_go          open gap vs prior RTH close ≥ G pts; after W minutes, if the
                       gap is less than half filled, go with the gap
       pdhl_breakout   close through the prior-day (or overnight) high/low with
@@ -86,6 +88,20 @@ struct TrendConfig {
     int vwap_slope_bars = 5; double vwap_tol_atr = 0.3;
     // opening_drive
     int drive_minutes = 30; double drive_min_atr = 1.0; int drive_entry_from = 1000, drive_entry_to = 1130;
+    bool drive_day_atr = false, drive_market = false;   // 2026-10-13 strong-open test (prop research)
+    // E1 strong open (2026-10-14, validated 2010–26: PF 1.33, +0.05 ATR/trade net). drive_score_min > 0 needs that
+    // many of 4 confirmations in the drive direction: 09:30 open vs prior RTH close (gap), 09:30 open vs the 18:00
+    // overnight open, drive close in the outer quarter of the drive window's range, |move| > drive_score_big × ATR.
+    // drive_score_units: entry size = score − 1 units (last_units(); the executor caps with qty_max).
+    // drive_stop_atr > 0: this trade's stop distance = x × the drive ATR (take_stop_dist(); the take-profit becomes
+    // tp_r × that distance) instead of the config's flat sl_points.
+    int drive_score_min = 0; double drive_score_big = 0.35; bool drive_score_units = false; double drive_stop_atr = 0.0;
+    // noise_momentum (Zarattini/Aziz/Barbon 2024 noise-area intraday momentum; ledger L1, BK1): every nm_check_min minutes
+    // after the RTH open, bands = max/min(09:30 open, prior RTH close) × (1 ± σ(m)), σ(m) = mean |close(m)/open − 1| at
+    // that minute of the session over the last nm_days sessions. Flat: close above the upper band → long, below the
+    // lower → short. Long exits when a check closes below max(upper band, VWAP) (short: above min(lower, VWAP)).
+    // Needs nm_days completed sessions of 1m history before the first trade. tf_min must be 1.
+    int nm_days = 14, nm_check_min = 30;
     // gap_go
     double gap_min_pts = 20.0; int gap_wait_min = 15; double gap_fill_frac = 0.5;
     // pdhl_breakout
@@ -133,6 +149,58 @@ struct TrendConfig {
     // fomc/nfp — host calls set_event_next_day), hold_up_day (only when the session is up at entry).
     // The position survives the 18:00 ET session reset so the exit at win_end still fires.
     int hold_entry_hhmm = 1555; int hold_dir = 1; bool hold_tom = false, hold_pre_event = false, hold_up_day = false;
+    bool hold_pre_event_fomc_only = false;   // hold_pre_event counts only FOMC decision days (the pre-FOMC drift; NFP eves are neutral, 2026-10-11)
+    // Fear-day filters (2026-10-11 research R9/R10: buying after a big down / wide down day held on NQ + ES 2010–2026),
+    // all in prior-day ATR14 units (set_day_atr; no ATR or no prior RTH session → no entry): hold_prev_body_max
+    // (prior RTH close − open ≤ value, e.g. −1.0; 0 = off), hold_prev_range_min (prior RTH range ≥ value, e.g. 1.5;
+    // 0 = off), hold_prev_down (prior RTH close < open). hold_dip_atr > 0 turns the clock entry into a dip entry:
+    // the first bar from hold_entry_hhmm to hold_dip_until whose low reaches the RTH open − hold_dip_atr × ATR.
+    double hold_prev_body_max = 0.0, hold_prev_range_min = 0.0, hold_dip_atr = 0.0;
+    bool hold_prev_down = false; int hold_dip_until = 1200;
+    // hold_combo3 (2026-10-11, research ledger C1): one unit per daily signal that is on, entry when ≥ 1 —
+    // (a) weak close: prior IBS ≤ combo_ibs OR prior close < the low of the session before, AND VIX ≥ combo_vix_min;
+    // (b) big down day: prior body ≤ −1 ATR; (c) wide down day: prior range ≥ 1.5 ATR and closed down.
+    // Replaces the other hold entry filters; units go to last_units() (the executor caps them with qty_max).
+    bool hold_combo3 = false; double combo_ibs = 0.3, combo_vix_min = 20.0;
+    // combo_stack false: enter at the config qty whatever the signal count (payout_sim, ledger P5: a fixed 2 MNQ on any
+    // signal with a −$150 day stop is the best Select Daily 50K balance; 1–3 by count passes the evaluation half as often).
+    bool combo_stack = true;
+    // Daily-context entries + multi-day holds (2026-10-11 sweep: mean reversion after weakness held on NQ + ES
+    // 2010–2026 in every formulation; shorts, events and spreads did not). Entry filters on the PRIOR RTH session
+    // (the one that just closed at the 18:00 reset): hold_prev_ibs_max — close position in the day's range
+    // (close − low) / (high − low) ≤ x (0 = off); hold_down_streak — ≥ k consecutive lower RTH closes (0 = off);
+    // hold_rsi2_max — Wilder RSI(2) of RTH closes ≤ x (0 = off); hold_donchian — prior close beyond the highest
+    // (long) / lowest (short) of the n RTH closes before it (0 = off); hold_above_sma — prior close above (long) /
+    // below (short) the n-day SMA of RTH closes (0 = off). Exits: hold_days = sessions to hold (exit at the window
+    // end of the Nth session; 1 = the classic one-session hold), evaluated once per session at the first
+    // window-end minute together with hold_exit_ibs_min (exit when that session's RTH close sits ≥ x of its range,
+    // 0 = off) and hold_exit_up_close (exit once a session closes above the prior session's close). PAPER ONLY
+    // beyond one session: the live executor refuses hold_days > 1 (its EOD logic does not carry a position), and
+    // the paper broker's own EOD must be switched off for such variants (eod_flatten_hour 24).
+    double hold_prev_ibs_max = 0.0, hold_rsi2_max = 0.0, hold_exit_ibs_min = 0.0;
+    int hold_down_streak = 0, hold_donchian = 0, hold_above_sma = 0, hold_days = 1; bool hold_exit_up_close = false;
+    // hold_weak_any: the weakness filters above (IBS / streak / RSI(2) / fear body) combine with OR instead of AND —
+    // "any sign of weakness". VIX regime gates (host calls set_vix from src/paper/vix_regime.hpp; unknown = no entry):
+    // hold_vix_min (prior close ≥ x), hold_vix_rise_min (5-day change ≥ x, e.g. 0.10), hold_vix_pct_min (trailing
+    // 252-day percentile ≥ x, e.g. 0.66); hold_vix_any = the set VIX conditions combine with OR, else AND. 0 = off.
+    bool hold_weak_any = false, hold_vix_any = false; double hold_vix_min = 0.0, hold_vix_rise_min = 0.0, hold_vix_pct_min = 0.0;
+    // hold_trend_fade (2026-10-15 book research, ledger BK1): the prior RTH session was a trend day — range ≥ htd_range_min
+    // × day ATR, |close − open| ≥ htd_body_min × day ATR, close within htd_close_frac of the range's extreme in the body's
+    // direction — so enter AGAINST it at hold_entry_hhmm (hold_dir is ignored). 2010–26: ~9/yr, PF 2.2, 13/16 years.
+    bool hold_trend_fade = false; double htd_range_min = 1.8, htd_body_min = 1.0, htd_close_frac = 0.2;
+    // Generic VIX entry gate for EVERY mode (can_enter): same semantics as hold_vix_* (0 = off; vix_any = OR). Research
+    // 2026-10-11: the fear regime makes intraday breakouts "less losing", not winning — only gap_go turns mildly positive
+    // (PF 1.31, 8/14 years) — so gate, do not expect a rescue.
+    double vix_min = 0.0, vix_rise_min = 0.0, vix_pct_min = 0.0; bool vix_any = false;
+    // vix_chg1_max < 0: enter only when the prior VIX close fell at least that much on the day (e.g. -0.03 = VIX down
+    // ≥ 3 %). 2026-10-14: the order-flow ORB on those days PF 1.8-2.1 in both 2023-24 and 2025-26 (NY and Asia).
+    double vix_chg1_max = 0.0;
+    // Conviction stack (hold mode, 2026-10-11 — the payout-sim book): entry size in units = 1 + stack_wc_units when the
+    // prior close sits ≤ stack_wc_ibs of its range + stack_vix_units when the VIX fear gate (stack_vix_*, OR) is on
+    // + stack_both_units when both. All 0 = off → the executor uses its config qty. Read via last_units() right after
+    // an entry signal; the executor caps it with OrbConfig::qty_max.
+    int stack_wc_units = 0, stack_vix_units = 0, stack_both_units = 0;
+    double stack_wc_ibs = 0.3, stack_vix_min = 0.0, stack_vix_rise_min = 0.0, stack_vix_pct_min = 0.0;
     // atr_break (2026-09-29): close beyond anchor ± ab_k × ATR enters, one per side per session.
     // ab_anchor = open (session open) | prev_close; ab_day_atr = use the prior-day ATR14 the host
     // provides (set_day_atr) instead of the tf-bar ATR.
@@ -196,6 +264,16 @@ struct TrendConfig {
     // session start). Once the window has closed, a tf close beyond high/low ± rb_buffer_atr×ATR inside
     // win_start..win_end enters; one per side per day.
     int rb_from = 2000, rb_to = 200; double rb_buffer_atr = 0.0;
+    // Order-flow ORB (2026-10-14, research: 2023-26 NY 5m PF 1.27 / Asia 15m PF 1.24 vs 1.16 / 1.05 unfiltered):
+    // rb_of_filter +1 = take a break only when the window's net aggressor volume Σ(2·bv − v) / Σv agrees with
+    // its direction (−1 = only when it disagrees, for the control); no aggressor data in the window = no trade.
+    // rb_first_only = the first break of the day decides — a filtered-out first break ends the day.
+    // rb_stop_range = stop at the other side of the range (entry_stop_hint(); PAPER ONLY — the executor refuses it).
+    // rb_last_entry = no new break entry at/after this ET HHMM (0 = until win_end, which is also the flatten).
+    int rb_of_filter = 0, rb_last_entry = 0; bool rb_first_only = false, rb_stop_range = false;
+    // rb_min_range_atr > 0: trade only when the range is at least x × the prior session ATR14 (set_day_atr; unknown = no
+    // trade). 2026-10-14: wide NY 5m ranges (≥ the 2023-24 median, 0.21 × ATR14) PF 1.43 vs 1.02 for tight ones.
+    double rb_min_range_atr = 0.0;
     // absorption_zone (2026-10-07, founder spec "Absorption Strategy Spec for Claude Code"): on 5m bars,
     // classify the day at +30 / +60 min after the RTH open (5 votes: open vs prior value, opening range,
     // VWAP slope, cumulative delta, pullbacks) into Trend / Balance / Neutral. Trend: pullback into the
@@ -271,12 +349,39 @@ struct TrendConfig {
         c.vwap_slope_bars = jint(t, "vwap_slope_bars", c.vwap_slope_bars); c.vwap_tol_atr = jdbl(t, "vwap_tol_atr", c.vwap_tol_atr);
         c.drive_minutes = jint(t, "drive_minutes", c.drive_minutes); c.drive_min_atr = jdbl(t, "drive_min_atr", c.drive_min_atr);
         c.drive_entry_from = jint(t, "drive_entry_from", c.drive_entry_from); c.drive_entry_to = jint(t, "drive_entry_to", c.drive_entry_to);
+        c.drive_day_atr = jbool(t, "drive_day_atr", c.drive_day_atr); c.drive_market = jbool(t, "drive_market", c.drive_market);
+        c.drive_score_min = jint(t, "drive_score_min", c.drive_score_min); c.drive_score_big = jdbl(t, "drive_score_big", c.drive_score_big);
+        c.drive_score_units = jbool(t, "drive_score_units", c.drive_score_units); c.drive_stop_atr = jdbl(t, "drive_stop_atr", c.drive_stop_atr);
         c.gap_min_pts = jdbl(t, "gap_min_pts", c.gap_min_pts); c.gap_wait_min = jint(t, "gap_wait_min", c.gap_wait_min);
         c.gap_fill_frac = jdbl(t, "gap_fill_frac", c.gap_fill_frac);
         c.ab_k = jdbl(t, "ab_k", c.ab_k); c.ab_anchor = jstr(t, "ab_anchor", c.ab_anchor); c.ab_day_atr = jbool(t, "ab_day_atr", c.ab_day_atr);
         c.vp_style = jstr(t, "vp_style", c.vp_style); c.vp_va_frac = jdbl(t, "vp_va_frac", c.vp_va_frac); c.vp_tol_atr = jdbl(t, "vp_tol_atr", c.vp_tol_atr);
         c.hold_entry_hhmm = jint(t, "hold_entry_hhmm", c.hold_entry_hhmm); c.hold_dir = jint(t, "hold_dir", c.hold_dir);
         c.hold_tom = jbool(t, "hold_tom", c.hold_tom); c.hold_pre_event = jbool(t, "hold_pre_event", c.hold_pre_event); c.hold_up_day = jbool(t, "hold_up_day", c.hold_up_day);
+        c.hold_pre_event_fomc_only = jbool(t, "hold_pre_event_fomc_only", c.hold_pre_event_fomc_only);
+        c.hold_prev_body_max = jdbl(t, "hold_prev_body_max", c.hold_prev_body_max); c.hold_prev_range_min = jdbl(t, "hold_prev_range_min", c.hold_prev_range_min);
+        c.hold_prev_down = jbool(t, "hold_prev_down", c.hold_prev_down); c.hold_dip_atr = jdbl(t, "hold_dip_atr", c.hold_dip_atr);
+        c.hold_dip_until = jint(t, "hold_dip_until", c.hold_dip_until);
+        c.hold_combo3 = jbool(t, "hold_combo3", c.hold_combo3);
+        c.combo_ibs = jdbl(t, "combo_ibs", c.combo_ibs); c.combo_vix_min = jdbl(t, "combo_vix_min", c.combo_vix_min);
+        c.combo_stack = jbool(t, "combo_stack", c.combo_stack);
+        c.hold_prev_ibs_max = jdbl(t, "hold_prev_ibs_max", c.hold_prev_ibs_max); c.hold_rsi2_max = jdbl(t, "hold_rsi2_max", c.hold_rsi2_max);
+        c.hold_exit_ibs_min = jdbl(t, "hold_exit_ibs_min", c.hold_exit_ibs_min); c.hold_down_streak = jint(t, "hold_down_streak", c.hold_down_streak);
+        c.hold_donchian = jint(t, "hold_donchian", c.hold_donchian); c.hold_above_sma = jint(t, "hold_above_sma", c.hold_above_sma);
+        c.hold_days = jint(t, "hold_days", c.hold_days); c.hold_exit_up_close = jbool(t, "hold_exit_up_close", c.hold_exit_up_close);
+        c.hold_weak_any = jbool(t, "hold_weak_any", c.hold_weak_any); c.hold_vix_any = jbool(t, "hold_vix_any", c.hold_vix_any);
+        c.hold_trend_fade = jbool(t, "hold_trend_fade", c.hold_trend_fade); c.htd_range_min = jdbl(t, "htd_range_min", c.htd_range_min);
+        c.htd_body_min = jdbl(t, "htd_body_min", c.htd_body_min); c.htd_close_frac = jdbl(t, "htd_close_frac", c.htd_close_frac);
+        c.nm_days = jint(t, "nm_days", c.nm_days); c.nm_check_min = jint(t, "nm_check_min", c.nm_check_min);
+        c.hold_vix_min = jdbl(t, "hold_vix_min", c.hold_vix_min); c.hold_vix_rise_min = jdbl(t, "hold_vix_rise_min", c.hold_vix_rise_min);
+        c.hold_vix_pct_min = jdbl(t, "hold_vix_pct_min", c.hold_vix_pct_min);
+        c.vix_min = jdbl(t, "vix_min", c.vix_min); c.vix_rise_min = jdbl(t, "vix_rise_min", c.vix_rise_min);
+        c.vix_chg1_max = jdbl(t, "vix_chg1_max", c.vix_chg1_max);
+        c.vix_pct_min = jdbl(t, "vix_pct_min", c.vix_pct_min); c.vix_any = jbool(t, "vix_any", c.vix_any);
+        c.stack_wc_units = jint(t, "stack_wc_units", c.stack_wc_units); c.stack_vix_units = jint(t, "stack_vix_units", c.stack_vix_units);
+        c.stack_both_units = jint(t, "stack_both_units", c.stack_both_units); c.stack_wc_ibs = jdbl(t, "stack_wc_ibs", c.stack_wc_ibs);
+        c.stack_vix_min = jdbl(t, "stack_vix_min", c.stack_vix_min); c.stack_vix_rise_min = jdbl(t, "stack_vix_rise_min", c.stack_vix_rise_min);
+        c.stack_vix_pct_min = jdbl(t, "stack_vix_pct_min", c.stack_vix_pct_min);
         c.ort_minutes = jint(t, "ort_minutes", c.ort_minutes); c.ort_tol_atr = jdbl(t, "ort_tol_atr", c.ort_tol_atr); c.ort_max_bars = jint(t, "ort_max_bars", c.ort_max_bars);
         c.gf_min_pts = jdbl(t, "gf_min_pts", c.gf_min_pts); c.gf_wait_min = jint(t, "gf_wait_min", c.gf_wait_min); c.gf_fill_frac = jdbl(t, "gf_fill_frac", c.gf_fill_frac);
         c.nb_hhmm = jint(t, "nb_hhmm", c.nb_hhmm); c.nb_range_min = jint(t, "nb_range_min", c.nb_range_min); c.nb_window_min = jint(t, "nb_window_min", c.nb_window_min);
@@ -318,6 +423,9 @@ struct TrendConfig {
         c.lf_max_poke_atr = jdbl(t, "lf_max_poke_atr", c.lf_max_poke_atr);
         c.vr_min_bars = jint(t, "vr_min_bars", c.vr_min_bars);
         c.rb_from = jint(t, "rb_from", c.rb_from); c.rb_to = jint(t, "rb_to", c.rb_to); c.rb_buffer_atr = jdbl(t, "rb_buffer_atr", c.rb_buffer_atr);
+        c.rb_of_filter = jint(t, "rb_of_filter", c.rb_of_filter); c.rb_first_only = jbool(t, "rb_first_only", c.rb_first_only);
+        c.rb_stop_range = jbool(t, "rb_stop_range", c.rb_stop_range); c.rb_last_entry = jint(t, "rb_last_entry", c.rb_last_entry);
+        c.rb_min_range_atr = jdbl(t, "rb_min_range_atr", c.rb_min_range_atr);
         c.az_setups = jstr(t, "az_setups", c.az_setups); c.az_daytype = jbool(t, "az_daytype", c.az_daytype);
         c.az_or_bars = jint(t, "az_or_bars", c.az_or_bars);
         c.az_zone_width = jdbl(t, "az_zone_width", c.az_zone_width); c.az_tol = jdbl(t, "az_tol", c.az_tol);
@@ -390,8 +498,11 @@ public:
     // news_break when nb_event_only is set; paper_main / executor_main set it per trade date.
     void set_event_day(bool v) { event_day_ = v; }
     bool event_day() const { return event_day_; }
-    void set_event_next_day(bool v) { event_next_day_ = v; }   // hold_pre_event: tomorrow is fomc/nfp
+    void set_event_next_day(bool v, bool fomc = false) { event_next_day_ = v; fomc_next_day_ = fomc; }   // hold_pre_event: tomorrow is fomc/nfp (fomc: an FOMC decision day)
     void set_day_atr(double pts) { day_atr_ = pts; }            // prior-day ATR14 (session_stats), for atr_break
+    // VIX regime of the prior close (paper::VixRegime::before(trade date)); known=false = gated holds stay out
+    void set_vix(double level, double chg5, double pct, bool known = true, double chg1 = 0.0) { vix_level_ = level; vix_chg5_ = chg5; vix_pct_ = pct; vix_known_ = known; vix_chg1_ = chg1; }
+    int  last_units() const { return last_units_; }   // conviction stack of the last hold entry signal (0 = config qty)
     // prior-session volume profile (read by tests / dashboards)
     double vp_poc() const { return vp_poc_; } double vp_vah() const { return vp_vah_; } double vp_val() const { return vp_val_; } bool vp_ready() const { return vp_ready_; }
 
@@ -401,9 +512,19 @@ public:
         const bool keep_pos = tc_.mode == "hold" && sess_.in_position;
         const int keep_dir = pos_dir_; const int64_t keep_ts = entry_ts_;
         // 18:00 ET rollover: yesterday's RTH becomes "prior day"; overnight tracking restarts.
-        if (rth_seen_) { prev_hi_ = day_hi_; prev_lo_ = day_lo_; prev_close_ = rth_close_; have_prev_ = true; }
+        if (rth_seen_) {
+            if (have_prev_) { prev2_lo_ = prev_lo_; have_prev2_ = true; }
+            prev_hi_ = day_hi_; prev_lo_ = day_lo_; prev_close_ = rth_close_; prev_open_ = rth_open_; have_prev_ = true;
+            close_hist_.push_back(rth_close_); if (close_hist_.size() > 260) close_hist_.pop_front();   // RTH closes, newest last
+            if (tc_.mode == "noise_momentum" && nm_today_n_ > 0) {
+                nm_hist_.push_back(nm_today_); while ((int)nm_hist_.size() > tc_.nm_days) nm_hist_.pop_front();
+            }
+        }
+        if (tc_.mode == "noise_momentum") { nm_today_.assign(kNmMinutes, -1.0); nm_today_n_ = 0; }
+        hold_eod_checked_ = false;
+        if (keep_pos) ++hold_sessions_; else hold_sessions_ = 0;
         day_hi_ = std::numeric_limits<double>::lowest(); day_lo_ = std::numeric_limits<double>::max();
-        on_hi_ = std::numeric_limits<double>::lowest(); on_lo_ = std::numeric_limits<double>::max();
+        on_hi_ = std::numeric_limits<double>::lowest(); on_lo_ = std::numeric_limits<double>::max(); on_open_ = 0.0;
         rth_seen_ = false; in_rth_ = false; vwap_pv_ = vwap_v_ = vwap_pv2_ = 0.0; vwap_hist_.clear();
         drive_dir_ = 0; drive_done_ = false; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
@@ -412,7 +533,7 @@ public:
         best_px_ = 0.0; thrust_entry_ref_ = 0.0; abs_dir_ = 0; abs_age_ = 0; abs_mid_ = 0.0;
         reset_2809_modes();
         rb_hi_ = std::numeric_limits<double>::lowest(); rb_lo_ = std::numeric_limits<double>::max();
-        rb_built_ = rb_done_ = false; rb_used_long_ = rb_used_short_ = false;
+        rb_built_ = rb_done_ = false; rb_used_long_ = rb_used_short_ = false; rb_v_ = rb_bv_ = 0.0;
         sess_.trades_today = 0; sess_.in_position = false; sess_.risk_halted = false; sess_.halt_reason.clear();
         if (keep_pos) { sess_.in_position = true; pos_dir_ = keep_dir; entry_ts_ = keep_ts; }
         LOG("[TREND %s] Session reset (tf=%dm window %04d-%04d anchor=%s)%s", tc_.mode.c_str(), tc_.tf_min,
@@ -436,7 +557,7 @@ public:
             --sess_.trades_today;
             LOG("[TREND %s] entry not executed — not counted toward max_daily_trades", tc_.mode.c_str());
         }
-        sess_.in_position = false; pos_dir_ = 0; entry_ts_ = 0;
+        sess_.in_position = false; pos_dir_ = 0; entry_ts_ = 0; hold_sessions_ = 0;
         LOG("[TREND %s] trade closed (%s) trades_today=%d", tc_.mode.c_str(), reason.c_str(), sess_.trades_today);
     }
     const TrendSession& session() const { return sess_; }
@@ -522,6 +643,11 @@ public:
     int az_daytype() const { return az_daytype_; }
     int az_daytype_dir() const { return az_daytype_dir_; }
     double last_price() const { return last_px_; }
+    // Structural stop price of the entry signal just emitted (0 = none) — read by the paper host inside the
+    // signal callback; consumed (zeroed) by the read so a later entry never inherits it.
+    double take_stop_hint() { const double h = stop_hint_; stop_hint_ = 0.0; return h; }
+    // Per-trade stop DISTANCE of the last entry signal (drive_stop_atr); consumed once, 0 = the config's sl_points.
+    double take_stop_dist() { const double d = stop_dist_; stop_dist_ = 0.0; return d; }
     double orb_high() const { return 0.0; }
     double orb_low()  const { return 0.0; }
     bool   orb_set()  const { return false; }
@@ -563,9 +689,26 @@ public:
         const bool past_end = tc_.win_start <= tc_.win_end ? hhmm >= tc_.win_end
                                                            : (hhmm >= tc_.win_end && hhmm < tc_.win_start);
         if (past_end && sess_.in_position && !eod_emitted_) {
+            if (tc_.mode == "hold" && !hold_exit_now()) return;
             eod_emitted_ = true;
             emit(OrbSignal::FLATTEN_EOD, last_px_, "session_end");
         }
+    }
+    // hold mode, decided ONCE per session at the first window-end minute: exit when the Nth held session ends
+    // (hold_days), when the session closed strong (hold_exit_ibs_min) or above the prior close (hold_exit_up_close).
+    // A later minute of the same session re-reads the stored decision, so the after-hours tape cannot flip it.
+    bool hold_exit_now() {
+        if (hold_eod_checked_) return hold_eod_exit_;
+        hold_eod_checked_ = true; hold_eod_exit_ = false;
+        const int held = hold_sessions_ + 1;                 // sessions this position has been open, this one included
+        if (held >= std::max(1, tc_.hold_days)) { hold_eod_exit_ = true; return true; }
+        if (tc_.hold_exit_ibs_min > 0.0 && rth_seen_ && day_hi_ > day_lo_) {
+            const double ibs = (last_px_ - day_lo_) / (day_hi_ - day_lo_);
+            if (pos_dir_ > 0 ? ibs >= tc_.hold_exit_ibs_min : ibs <= 1.0 - tc_.hold_exit_ibs_min) { hold_eod_exit_ = true; return true; }
+        }
+        if (tc_.hold_exit_up_close && have_prev_ && (pos_dir_ > 0 ? last_px_ > prev_close_ : last_px_ < prev_close_)) { hold_eod_exit_ = true; return true; }
+        LOG("[TREND hold] session %d/%d held — keeping the position past the window end", held, tc_.hold_days);
+        return false;
     }
 
     // ── ticks → 1m bars → tf bars → decisions ────────────────────────────────
@@ -579,7 +722,7 @@ public:
             in_rth_ = true; rth_seen_ = true; cum_delta_ = 0.0; delta_hist_.clear(); td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0;
             vwap_pv_ = vwap_v_ = vwap_pv2_ = 0.0; vwap_hist_.clear();
             day_hi_ = std::numeric_limits<double>::lowest(); day_lo_ = std::numeric_limits<double>::max();
-            rth_open_ = t.price; rth_open_mod_ = mod;
+            rth_open_ = t.price; rth_open_mod_ = mod; rth_open_ts_ = t.ts_micros;
             gap_ = have_prev_ ? (t.price - prev_close_) : 0.0;
             reset_2809_modes();
             if (tc_.mode == "absorption_zone") az_reset_day();
@@ -593,6 +736,7 @@ public:
             day_hi_ = std::max(day_hi_, t.price); day_lo_ = std::min(day_lo_, t.price);
         } else if (mod >= 18 * 60 || mod < 9 * 60 + 30) {
             on_hi_ = std::max(on_hi_, t.price); on_lo_ = std::min(on_lo_, t.price);
+            if (on_open_ <= 0.0 && mod >= 18 * 60) on_open_ = t.price;   // first print of the 18:00 ET session
         }
         // 1m bar
         if (m1_.mod != mod) {
@@ -632,7 +776,7 @@ private:
     void emit(OrbSignal s, double px, const std::string& why) {
         if (cb_) cb_(s, px, why);
         if (s == OrbSignal::BUY || s == OrbSignal::SELL) {
-            sess_.in_position = true; ++sess_.trades_today; pos_dir_ = (s == OrbSignal::BUY) ? 1 : -1; entry_ts_ = last_ts_; best_px_ = px;
+            sess_.in_position = true; ++sess_.trades_today; pos_dir_ = (s == OrbSignal::BUY) ? 1 : -1; entry_ts_ = last_ts_; best_px_ = px; hold_sessions_ = 0;
             LOG("[TREND %s] %s signal @%.2f (%s) trades_today=%d", tc_.mode.c_str(), s == OrbSignal::BUY ? "LONG" : "SHORT", px, why.c_str(), sess_.trades_today);
         }
     }
@@ -640,6 +784,8 @@ private:
         if (sess_.in_position || sess_.risk_halted) return false;
         if (!in_window(hhmm)) return false;
         if (sess_.trades_today >= risk_.max_daily_trades) return false;
+        if (!vix_gate_ok(tc_.vix_min, tc_.vix_rise_min, tc_.vix_pct_min, tc_.vix_any, tc_.mode.c_str())) return false;   // generic VIX entry gate
+        if (tc_.vix_chg1_max < 0.0 && (!vix_known_ || vix_chg1_ > tc_.vix_chg1_max)) return false;                       // VIX fell enough yesterday
         if (dir > 0 && !tc_.allow_longs) return false;
         if (dir < 0 && !tc_.allow_shorts) return false;
         if (tc_.htf_tf_min > 0) {                 // higher-timeframe alignment gate
@@ -654,6 +800,10 @@ private:
     void on_m1_close(const Bar& b, int h, int m) {
         const int hhmm = h * 100 + m;
         m1_hist_.push_back(b); if (m1_hist_.size() > 600) m1_hist_.pop_front();
+        if (tc_.mode == "noise_momentum" && in_rth_ && rth_open_ > 0.0) {   // |close / 09:30 open − 1| per session minute
+            const int mi = b.mod - rth_open_mod_;
+            if (mi >= 0 && mi < kNmMinutes) { if ((int)nm_today_.size() != kNmMinutes) nm_today_.assign(kNmMinutes, -1.0); nm_today_[mi] = std::fabs(b.c / rth_open_ - 1.0); ++nm_today_n_; }
+        }
         if (in_rth_ && b.v > 0 && b.h >= b.l) {                     // volume profile of the session in progress
             const int lo = (int)std::floor(b.l), hi = (int)std::floor(b.h);
             const double per = b.v / (double)(hi - lo + 1);
@@ -665,10 +815,10 @@ private:
             emit(OrbSignal::FLATTEN_EOD, b.c, "time_stop");
         if (tc_.mode == "range_break") {                    // build the clock-window range from 1m bars
             const int bh = (b.mod / 60) * 100 + b.mod % 60;
-            if (in_hhmm(bh, tc_.rb_from, tc_.rb_to)) { rb_hi_ = std::max(rb_hi_, b.h); rb_lo_ = std::min(rb_lo_, b.l); rb_built_ = true; }
+            if (in_hhmm(bh, tc_.rb_from, tc_.rb_to)) { rb_hi_ = std::max(rb_hi_, b.h); rb_lo_ = std::min(rb_lo_, b.l); rb_built_ = true; rb_v_ += b.v; rb_bv_ += b.bv; }
             else if (rb_built_ && !rb_done_) {
                 rb_done_ = true;
-                LOG("[TREND range_break] range %04d-%04d complete: %.2f-%.2f", tc_.rb_from, tc_.rb_to, rb_lo_, rb_hi_);
+                LOG("[TREND range_break] range %04d-%04d complete: %.2f-%.2f net aggressor %+.3f", tc_.rb_from, tc_.rb_to, rb_lo_, rb_hi_, rb_of());
             }
         }
         // tf aggregation — a tf bar closes as soon as its LAST minute completes
@@ -763,6 +913,7 @@ private:
         else if (tc_.mode == "level_fade")          mode_level_fade(b, hhmm);
         else if (tc_.mode == "vwap_reclaim")        mode_vwap_reclaim(b, hhmm);
         else if (tc_.mode == "range_break")         mode_range_break(b, hhmm);
+        else if (tc_.mode == "noise_momentum")      mode_noise(b, hhmm);
         else if (tc_.mode == "absorption_zone")     mode_az(b, hhmm);
         else if (tc_.mode == "trend_confirm")       mode_tcf(b, hhmm);
     }
@@ -811,15 +962,47 @@ private:
         if (!drive_done_ && mod >= rth_open_mod_ + tc_.drive_minutes) {
             drive_done_ = true;
             const double mv = b.c - rth_open_;
-            drive_dir_ = std::fabs(mv) >= tc_.drive_min_atr * atr_ ? (mv > 0 ? 1 : -1) : 0;
-            LOG("[TREND opening_drive] drive after %dm = %+.2f (atr %.2f) → dir %d", tc_.drive_minutes, mv, atr_, drive_dir_);
+            const double a = tc_.drive_day_atr ? day_atr_ : atr_;          // no day ATR → no drive (fail closed)
+            drive_dir_ = (a > 0.0 && std::fabs(mv) >= tc_.drive_min_atr * a) ? (mv > 0 ? 1 : -1) : 0;
+            LOG("[TREND opening_drive] drive after %dm = %+.2f (atr %.2f) → dir %d", tc_.drive_minutes, mv, a, drive_dir_);
+            last_units_ = 0; stop_dist_ = 0.0;
+            if (drive_dir_ != 0 && tc_.drive_score_min > 0) {
+                const int sc = drive_score(drive_dir_, mv, a);
+                if (sc < tc_.drive_score_min) {
+                    LOG("[TREND opening_drive] score %d < %d — no trade today", sc, tc_.drive_score_min);
+                    drive_dir_ = 0;
+                } else if (tc_.drive_score_units) last_units_ = sc - 1;
+            }
+            if (drive_dir_ != 0 && tc_.drive_stop_atr > 0.0) stop_dist_ = tc_.drive_stop_atr * a;
+            if (tc_.drive_market && drive_dir_ != 0 && hhmm >= tc_.drive_entry_from && hhmm < tc_.drive_entry_to
+                && can_enter(hhmm, drive_dir_))
+                emit(drive_dir_ > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, drive_dir_ > 0 ? "drive_market_long" : "drive_market_short");
+            return;
         }
+        if (tc_.drive_market) return;                                     // market variant: one decision, no pullback entries
         if (drive_dir_ == 0 || hhmm < tc_.drive_entry_from || hhmm >= tc_.drive_entry_to) return;
         const size_t n = tf_.size(); if (n < 3) return;
         const Bar& p = tf_[n - 2];
         // pullback bar (against the drive) followed by a bar closing back with the drive
         if (drive_dir_ > 0 && p.c < p.o && b.c > p.h && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "drive_pullback_long");
         else if (drive_dir_ < 0 && p.c > p.o && b.c < p.l && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "drive_pullback_short");
+    }
+    // E1 confirmations (see TrendConfig::drive_score_min). Missing inputs (no prior close / no overnight open seen)
+    // score 0 for that point — the gate can only get stricter, never looser.
+    int drive_score(int dir, double mv, double a) const {
+        double hi = std::numeric_limits<double>::lowest(), lo = std::numeric_limits<double>::max(), last = 0.0; int n = 0;
+        for (const Bar& x : m1_hist_)
+            if (x.ts >= rth_open_ts_ && x.mod >= rth_open_mod_ && x.mod < rth_open_mod_ + tc_.drive_minutes) { hi = std::max(hi, x.h); lo = std::min(lo, x.l); last = x.c; ++n; }   // today only
+        int sc = 0;
+        const bool gap = have_prev_ && (rth_open_ - prev_close_) * dir > 0.0;
+        const bool ovn = on_open_ > 0.0 && (rth_open_ - on_open_) * dir > 0.0;
+        bool pos = false;
+        if (n > 0 && hi > lo) { const double q = (last - lo) / (hi - lo); pos = dir > 0 ? q >= 0.75 : q <= 0.25; }
+        const bool big = a > 0.0 && std::fabs(mv) > tc_.drive_score_big * a;
+        sc = (int)gap + (int)ovn + (int)pos + (int)big;
+        LOG("[TREND opening_drive] score %d (gap %d overnight %d close-pos %d size %d; open %.2f prior close %.2f 18:00 open %.2f)",
+            sc, (int)gap, (int)ovn, (int)pos, (int)big, rth_open_, prev_close_, on_open_);
+        return sc;
     }
     // ── 2026-09-28 modes ────────────────────────────────────────────────────
     static int mod_of(int hhmm) { return (hhmm / 100) * 60 + hhmm % 100; }
@@ -889,9 +1072,27 @@ private:
         const double buf = tc_.rb_buffer_atr * atr_;
         const size_t n = tf_.size(); if (n < 2) return; const Bar& p = tf_[n - 2];
         const double up = rb_hi_ + buf, dn = rb_lo_ - buf;
-        if (!rb_used_long_ && p.c <= up && b.c > up && can_enter(hhmm, +1)) { rb_used_long_ = true; emit(OrbSignal::BUY, b.c, "range_break_long"); }
-        else if (!rb_used_short_ && p.c >= dn && b.c < dn && can_enter(hhmm, -1)) { rb_used_short_ = true; emit(OrbSignal::SELL, b.c, "range_break_short"); }
+        const int d = (!rb_used_long_ && p.c <= up && b.c > up) ? +1 : (!rb_used_short_ && p.c >= dn && b.c < dn) ? -1 : 0;
+        if (d == 0 || !can_enter(hhmm, d)) return;
+        if (tc_.rb_last_entry > 0 && !in_hhmm(hhmm, tc_.win_start, tc_.rb_last_entry)) return;
+        if (tc_.rb_min_range_atr > 0.0 && (day_atr_ <= 0.0 || rb_hi_ - rb_lo_ < tc_.rb_min_range_atr * day_atr_)) {
+            rb_used_long_ = rb_used_short_ = true;                                  // narrow range: no trade today
+            LOG("[TREND range_break] range %.2f < %.2f x ATR14 %.2f — no trade today", rb_hi_ - rb_lo_, tc_.rb_min_range_atr, day_atr_);
+            return;
+        }
+        if (tc_.rb_first_only) rb_used_long_ = rb_used_short_ = true; else (d > 0 ? rb_used_long_ : rb_used_short_) = true;
+        if (tc_.rb_of_filter != 0) {
+            const double of = rb_of();
+            const int of_dir = of > 0 ? +1 : of < 0 ? -1 : 0;
+            if (rb_bv_ <= 0.0 || of_dir == 0 || of_dir * d != tc_.rb_of_filter) {
+                LOG("[TREND range_break] %s break skipped: net aggressor %+.3f (filter %+d)", d > 0 ? "long" : "short", of, tc_.rb_of_filter);
+                return;
+            }
+        }
+        stop_hint_ = tc_.rb_stop_range ? (d > 0 ? rb_lo_ - buf : rb_hi_ + buf) : 0.0;
+        emit(d > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, d > 0 ? "range_break_long" : "range_break_short");
     }
+    double rb_of() const { return rb_v_ > 0.0 ? (2.0 * rb_bv_ - rb_v_) / rb_v_ : 0.0; }
     // atr_break — expansion beyond the anchor by k × ATR.
     void mode_atr_break(const Bar& b, int hhmm) {
         if (!in_rth_) return;
@@ -925,16 +1126,210 @@ private:
         time_t tt = static_cast<time_t>(ts_us / 1'000'000LL); struct tm g; gmtime_r(&tt, &g);
         time_t et = tt - (time_t)us_et_offset(g) * 3600; struct tm e; gmtime_r(&et, &e); return e.tm_mday;
     }
+    // fear-day filters (TrendConfig::hold_prev_*): false when one is set and the prior day fails it or is unknown
+    bool hold_prev_ok() const {
+        const bool any = tc_.hold_prev_body_max != 0.0 || tc_.hold_prev_range_min > 0.0 || tc_.hold_prev_down || tc_.hold_dip_atr > 0.0;
+        if (!any) return true;
+        if (!have_prev_ || day_atr_ <= 0.0) return false;
+        if (tc_.hold_prev_body_max != 0.0 && (prev_close_ - prev_open_) / day_atr_ > tc_.hold_prev_body_max) return false;
+        if (tc_.hold_prev_range_min > 0.0 && (prev_hi_ - prev_lo_) / day_atr_ < tc_.hold_prev_range_min) return false;
+        if (tc_.hold_prev_down && !(prev_close_ < prev_open_)) return false;
+        return true;
+    }
+    // Daily-context filters on the RTH close history (close_hist_, newest last = the prior session).
+    // false when one is set and the history is too short or fails it.
+    bool vix_gate_ok(double vmin, double rise, double pct, bool any_of, const char* who, bool quiet = false) const {
+        const bool any = vmin > 0.0 || rise > 0.0 || pct > 0.0;
+        if (!any) return true;
+        if (!vix_known_) { if (!quiet) LOG("[TREND %s] VIX gate set but no VIX regime for this day — no entry", who); return false; }
+        int set = 0, ok = 0;
+        if (vmin > 0.0) { ++set; if (vix_level_ >= vmin) ++ok; }
+        if (rise > 0.0) { ++set; if (vix_chg5_ >= rise) ++ok; }
+        if (pct > 0.0)  { ++set; if (vix_pct_ >= pct) ++ok; }
+        const bool pass = any_of ? ok > 0 : ok == set;
+        if (!pass && !quiet) LOG("[TREND %s] VIX gate: level %.1f chg5 %+.2f pct %.2f — no entry", who, vix_level_, vix_chg5_, vix_pct_);
+        return pass;
+    }
+    // Conviction stack: units for THIS entry (0 = not configured → config qty). Decided from the same prior-session
+    // and VIX state the entry filters read; the executor caps it with qty_max.
+    int stack_units(int dir) const {
+        if (tc_.stack_wc_units == 0 && tc_.stack_vix_units == 0 && tc_.stack_both_units == 0) return 0;
+        bool wc = false;
+        if (have_prev_ && prev_hi_ > prev_lo_) {
+            const double ibs = (prev_close_ - prev_lo_) / (prev_hi_ - prev_lo_);
+            wc = dir > 0 ? ibs <= tc_.stack_wc_ibs : ibs >= 1.0 - tc_.stack_wc_ibs;
+        }
+        const bool vix_set = tc_.stack_vix_min > 0.0 || tc_.stack_vix_rise_min > 0.0 || tc_.stack_vix_pct_min > 0.0;
+        const bool vx = vix_set && vix_gate_ok(tc_.stack_vix_min, tc_.stack_vix_rise_min, tc_.stack_vix_pct_min, true, "stack", true);
+        const int u = 1 + (wc ? tc_.stack_wc_units : 0) + (vx ? tc_.stack_vix_units : 0) + ((wc && vx) ? tc_.stack_both_units : 0);
+        LOG("[TREND hold] conviction stack: %d unit(s) (weak close %s, VIX fear %s)", u, wc ? "yes" : "no", vx ? "yes" : "no");
+        return u;
+    }
+    // hold_combo3: number of the three daily signals that are on (0 = no entry); long only.
+    int combo3_units() const {
+        if (!have_prev_ || day_atr_ <= 0.0 || prev_hi_ <= prev_lo_) return 0;
+        const double ibs = (prev_close_ - prev_lo_) / (prev_hi_ - prev_lo_);
+        const bool weak = (ibs <= tc_.combo_ibs || (have_prev2_ && prev_close_ < prev2_lo_)) && vix_known_ && vix_level_ >= tc_.combo_vix_min;
+        const double body = (prev_close_ - prev_open_) / day_atr_, rng = (prev_hi_ - prev_lo_) / day_atr_;
+        const bool bigdown = body <= -1.0, widedown = rng >= 1.5 && prev_close_ < prev_open_;
+        const int u = (int)weak + (int)bigdown + (int)widedown;
+        LOG("[TREND hold] combo3: weak close %s (ibs %.2f, vix %.1f%s), big down %s (body %.2f ATR), wide down %s (range %.2f ATR) → %d unit(s)",
+            weak ? "yes" : "no", ibs, vix_level_, vix_known_ ? "" : " unknown", bigdown ? "yes" : "no", body, widedown ? "yes" : "no", rng, u);
+        return u;
+    }
+    bool hold_vix_ok() const { return vix_gate_ok(tc_.hold_vix_min, tc_.hold_vix_rise_min, tc_.hold_vix_pct_min, tc_.hold_vix_any, "hold"); }
+    // hold_weak_any: "any sign of weakness" — the fear-day filters (hold_prev_ok) OR the daily-context weakness filters,
+    // then the trend filters and the VIX gate (hold_daily_ok applies those with weak_ok counted under OR).
+    bool hold_any_weak_ok(int dir) const {
+        const bool fear_set = tc_.hold_prev_body_max != 0.0 || tc_.hold_prev_range_min > 0.0 || tc_.hold_prev_down;
+        const bool fear_ok = fear_set && hold_prev_ok();
+        if (fear_ok) return hold_trend_and_vix_ok(dir);
+        return hold_daily_ok(dir);
+    }
+    bool hold_trend_and_vix_ok(int dir) const {
+        const size_t n = close_hist_.size();
+        if (tc_.hold_donchian > 0) {
+            if (n < (size_t)tc_.hold_donchian + 1) return false;
+            double hi = std::numeric_limits<double>::lowest(), lo = std::numeric_limits<double>::max();
+            for (int k = 1; k <= tc_.hold_donchian; ++k) { hi = std::max(hi, close_hist_[n - 1 - k]); lo = std::min(lo, close_hist_[n - 1 - k]); }
+            if (dir > 0 ? !(prev_close_ > hi) : !(prev_close_ < lo)) return false;
+        }
+        if (tc_.hold_above_sma > 0) {
+            if (n < (size_t)tc_.hold_above_sma) return false;
+            double sum = 0.0; for (int k = 0; k < tc_.hold_above_sma; ++k) sum += close_hist_[n - 1 - k];
+            if (dir > 0 ? !(prev_close_ > sum / tc_.hold_above_sma) : !(prev_close_ < sum / tc_.hold_above_sma)) return false;
+        }
+        return hold_vix_ok();
+    }
+    // Weakness filters (IBS / streak / RSI(2); fear-body lives in hold_prev_ok) — AND by default, OR with hold_weak_any —
+    // then the trend filters (Donchian / SMA, always AND) and the VIX gate.
+    bool hold_daily_ok(int dir) const {
+        const bool any = tc_.hold_prev_ibs_max > 0.0 || tc_.hold_down_streak > 0 || tc_.hold_rsi2_max > 0.0 || tc_.hold_donchian > 0 || tc_.hold_above_sma > 0;
+        if (!any) return hold_vix_ok();
+        if (!have_prev_ || close_hist_.empty()) return false;
+        const size_t n = close_hist_.size();
+        int weak_set = 0, weak_ok = 0;
+        LOG("[TREND hold] prior day: hi=%.2f lo=%.2f close=%.2f ibs=%.3f closes=%zu atr=%.1f", prev_hi_, prev_lo_, prev_close_,
+            prev_hi_ > prev_lo_ ? (prev_close_ - prev_lo_) / (prev_hi_ - prev_lo_) : -1.0, n, day_atr_);   // diagnostics (validation 2026-10-11)
+        if (tc_.hold_prev_ibs_max > 0.0) {
+            ++weak_set;
+            if (prev_hi_ > prev_lo_) {
+                const double ibs = (prev_close_ - prev_lo_) / (prev_hi_ - prev_lo_);
+                if (dir > 0 ? ibs <= tc_.hold_prev_ibs_max : ibs >= 1.0 - tc_.hold_prev_ibs_max) ++weak_ok;
+            }
+        }
+        if (tc_.hold_down_streak > 0) {
+            ++weak_set;
+            if (n >= (size_t)tc_.hold_down_streak + 1) {
+                bool run = true;
+                for (int k = 0; k < tc_.hold_down_streak && run; ++k) {
+                    const double a = close_hist_[n - 1 - k], b = close_hist_[n - 2 - k];
+                    if (dir > 0 ? !(a < b) : !(a > b)) run = false;
+                }
+                if (run) ++weak_ok;
+            }
+        }
+        if (tc_.hold_rsi2_max > 0.0) {
+            ++weak_set;
+            if (n < 10) LOG("[TREND hold] rsi2 filter: %zu closes of history (needs 10) — not counted", n);   // alpha ½ converges in ~10 closes; a shorter history over-fires (replay check 2026-10-11)
+            else {
+                double up = 0.0, dn = 0.0; bool first = true;
+                for (size_t i = 1; i < n; ++i) {                      // Wilder RSI(2), EMA alpha 1/2 seeded on the first change
+                    const double d = close_hist_[i] - close_hist_[i - 1]; const double u = d > 0 ? d : 0.0, v = d < 0 ? -d : 0.0;
+                    if (first) { up = u; dn = v; first = false; } else { up += (u - up) * 0.5; dn += (v - dn) * 0.5; }
+                }
+                const double rsi = dn <= 0.0 ? 100.0 : 100.0 - 100.0 / (1.0 + up / dn);
+                if (dir > 0 ? rsi <= tc_.hold_rsi2_max : rsi >= 100.0 - tc_.hold_rsi2_max) ++weak_ok;
+                else LOG("[TREND hold] rsi2 filter: RSI(2)=%.1f over %zu closes — not weak", rsi, n);
+            }
+        }
+        if (weak_set > 0 && !(tc_.hold_weak_any ? weak_ok > 0 : weak_ok == weak_set)) return false;
+        if (tc_.hold_donchian > 0) {
+            if (n < (size_t)tc_.hold_donchian + 1) return false;
+            double hi = std::numeric_limits<double>::lowest(), lo = std::numeric_limits<double>::max();
+            for (int k = 1; k <= tc_.hold_donchian; ++k) { hi = std::max(hi, close_hist_[n - 1 - k]); lo = std::min(lo, close_hist_[n - 1 - k]); }
+            if (dir > 0 ? !(prev_close_ > hi) : !(prev_close_ < lo)) return false;
+        }
+        if (tc_.hold_above_sma > 0) {
+            if (n < (size_t)tc_.hold_above_sma) return false;
+            double sum = 0.0; for (int k = 0; k < tc_.hold_above_sma; ++k) sum += close_hist_[n - 1 - k];
+            const double sma = sum / tc_.hold_above_sma;
+            if (dir > 0 ? !(prev_close_ > sma) : !(prev_close_ < sma)) return false;
+        }
+        return hold_vix_ok();
+    }
+public:
+    // +1 / −1 when the prior RTH session was an up / down trend day (TrendConfig::hold_trend_fade), else 0
+    int prev_trend_day_dir() const {
+        if (!have_prev_ || day_atr_ <= 0.0 || prev_hi_ <= prev_lo_) return 0;
+        const double rng = prev_hi_ - prev_lo_, body = prev_close_ - prev_open_;
+        if (rng < tc_.htd_range_min * day_atr_ || std::fabs(body) < tc_.htd_body_min * day_atr_) return 0;
+        const double from_ext = body > 0 ? (prev_hi_ - prev_close_) / rng : (prev_close_ - prev_lo_) / rng;
+        return from_ext <= tc_.htd_close_frac ? (body > 0 ? 1 : -1) : 0;
+    }
+    // noise-band σ at session minute mi over the stored sessions; < 0 when history is short
+    double nm_sigma(int mi) const {
+        if ((int)nm_hist_.size() < tc_.nm_days || mi < 0 || mi >= kNmMinutes) return -1.0;
+        double sum = 0; int n = 0;
+        for (const auto& d : nm_hist_) if ((int)d.size() == kNmMinutes && d[mi] >= 0.0) { sum += d[mi]; ++n; }
+        return n * 2 >= tc_.nm_days ? sum / n : -1.0;
+    }
+    int nm_history_days() const { return (int)nm_hist_.size(); }
+private:
+    void mode_noise(const Bar& b, int hhmm) {
+        if (!in_rth_ || !have_prev_ || rth_open_ <= 0.0 || tc_.nm_check_min <= 0) return;
+        const int mi = b.mod - rth_open_mod_;                 // bar START minute; it closes at mi + 1
+        if (mi < 0 || (mi + 1) % tc_.nm_check_min != 0) return;
+        const double sg = nm_sigma(mi); if (sg <= 0.0) return;
+        const double ub = std::max(rth_open_, prev_close_) * (1.0 + sg), lb = std::min(rth_open_, prev_close_) * (1.0 - sg);
+        const double vw = vwap() > 0.0 ? vwap() : b.c;
+        if (sess_.in_position) {
+            if (pos_dir_ > 0 && b.c < std::max(ub, vw)) emit(OrbSignal::FLATTEN_EOD, b.c, "noise_exit_long");
+            else if (pos_dir_ < 0 && b.c > std::min(lb, vw)) emit(OrbSignal::FLATTEN_EOD, b.c, "noise_exit_short");
+            return;
+        }
+        if (b.c > ub && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "noise_long");
+        else if (b.c < lb && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "noise_short");
+    }
     void mode_hold(const Bar& b, int hhmm) {
         if (sess_.in_position || hold_done_) return;
+        if (tc_.hold_dip_atr > 0.0) {                        // dip entry: open − k × ATR, from the entry time to hold_dip_until
+            if (mod_of(hhmm) <= mod_of(tc_.hold_entry_hhmm) || mod_of(hhmm) > mod_of(tc_.hold_dip_until) || !in_rth_) return;
+            const int dir = tc_.hold_dir < 0 ? -1 : 1;
+            if (tc_.hold_weak_any ? !hold_any_weak_ok(dir) : (!hold_prev_ok() || !hold_daily_ok(dir))) { hold_done_ = true; return; }
+            const double lvl = rth_open_ - dir * tc_.hold_dip_atr * day_atr_;
+            if (dir > 0 ? b.l > lvl : b.h < lvl) return;
+            hold_done_ = true;
+            last_units_ = stack_units(dir);
+            if (can_enter(hhmm, dir)) emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "hold_dip_long" : "hold_dip_short");
+            return;
+        }
         // the first completed bar at/after the entry time (within 5 minutes of it)
         const int diff = mod_of(hhmm) - mod_of(tc_.hold_entry_hhmm);
         if (diff < 0 || diff > 5) return;
         hold_done_ = true;                                   // one attempt per session
+        if (tc_.hold_trend_fade) {
+            const int td = prev_trend_day_dir(); if (td == 0) return;
+            const int dir = -td; last_units_ = 0;
+            LOG("[TREND hold] prior session was a %s trend day — fading it", td > 0 ? "up" : "down");
+            if (can_enter(hhmm, dir)) emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "trend_fade_long" : "trend_fade_short");
+            return;
+        }
+        if (tc_.hold_combo3) {
+            const int u = combo3_units(); if (u == 0) return;
+            last_units_ = tc_.combo_stack ? u : 0;           // 0 = the config qty
+            if (can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "hold_combo3");
+            return;
+        }
+        if (!tc_.hold_weak_any) {
+            if (!hold_prev_ok()) return;
+            if (!hold_daily_ok(tc_.hold_dir < 0 ? -1 : 1)) return;
+        } else if (!hold_any_weak_ok(tc_.hold_dir < 0 ? -1 : 1)) return;
         if (tc_.hold_tom) { const int d = et_day_of_month(b.ts); if (!(d >= 28 || d <= 3)) return; }
-        if (tc_.hold_pre_event && !event_next_day_) return;
+        if (tc_.hold_pre_event && !(tc_.hold_pre_event_fomc_only ? fomc_next_day_ : event_next_day_)) return;
         if (tc_.hold_up_day && in_rth_ && !(last_px_ > rth_open_)) return;
         const int dir = tc_.hold_dir < 0 ? -1 : 1;
+        last_units_ = stack_units(dir);
         if (can_enter(hhmm, dir)) emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "hold_long" : "hold_short");
         else LOG("[TREND hold] entry skipped at %04d: in_position=%d halted=%d trades_today=%d/%d in_window=%d htf_gate=%d",
                  hhmm, (int)sess_.in_position, (int)sess_.risk_halted, sess_.trades_today, risk_.max_daily_trades,
@@ -1811,7 +2206,7 @@ private:
     double rth_open_ = 0, rth_close_ = 0; int rth_open_mod_ = 0;
     double day_hi_ = std::numeric_limits<double>::lowest(), day_lo_ = std::numeric_limits<double>::max();
     double on_hi_ = std::numeric_limits<double>::lowest(), on_lo_ = std::numeric_limits<double>::max();
-    double prev_hi_ = 0, prev_lo_ = 0, prev_close_ = 0;
+    double prev_hi_ = 0, prev_lo_ = 0, prev_close_ = 0, prev2_lo_ = 0; bool have_prev2_ = false;
     double vwap_pv_ = 0, vwap_v_ = 0; std::vector<double> vwap_hist_;
     int drive_dir_ = 0; bool drive_done_ = false; double gap_ = 0; bool gap_done_ = false; bool tod_done_ = false;
     // 2026-09-28 modes
@@ -1819,12 +2214,23 @@ private:
     bool gf_done_ = false; int gf_dir_ = 0;
     double nb_hi_ = 0, nb_lo_ = 0; bool nb_set_ = false, nb_done_ = false; bool event_day_ = false;
     double ib_hi_ = 0, ib_lo_ = 0; bool ib_set_ = false; int ib_dir_ = 0; double ib_target_ = 0;
-    bool hold_done_ = false; bool event_next_day_ = false;
+    bool hold_done_ = false; bool event_next_day_ = false, fomc_next_day_ = false; double prev_open_ = 0.0;
+    std::deque<double> close_hist_;                          // RTH closes, newest last (hold daily-context filters)
+    int hold_sessions_ = 0; bool hold_eod_checked_ = false, hold_eod_exit_ = false;   // multi-day hold bookkeeping
+    double vix_level_ = 0.0, vix_chg5_ = 0.0, vix_pct_ = 0.0, vix_chg1_ = 0.0; bool vix_known_ = false;   // set_vix (prior close's regime)
+    int last_units_ = 0;                                     // conviction stack of the last entry signal (0 = config qty)
     double day_atr_ = 0.0; bool ab_used_long_ = false, ab_used_short_ = false;
+    static constexpr int kNmMinutes = 390;                     // noise_momentum: RTH minutes 09:30–15:59
+    std::vector<double> nm_today_; int nm_today_n_ = 0; std::deque<std::vector<double>> nm_hist_;
     bool lf_used_long_ = false, lf_used_short_ = false;                              // level_fade
     int vr_above_ = 0, vr_below_ = 0; bool vr_used_long_ = false, vr_used_short_ = false;   // vwap_reclaim
     double rb_hi_ = std::numeric_limits<double>::lowest(), rb_lo_ = std::numeric_limits<double>::max();   // range_break
     bool rb_built_ = false, rb_done_ = false, rb_used_long_ = false, rb_used_short_ = false;
+    double rb_v_ = 0.0, rb_bv_ = 0.0;                            // window volume / aggressor-buy volume (rb_of_filter)
+    double stop_dist_ = 0.0;                                     // per-trade stop distance of the last entry signal (0 = none)
+    int64_t rth_open_ts_ = 0;                                     // first print of today's anchor session
+    double on_open_ = 0.0;                                       // first print at/after 18:00 ET of the current session
+    double stop_hint_ = 0.0;                                     // structural stop of the last entry signal (0 = none)
     std::map<int, double> vp_cur_; double vp_poc_ = 0, vp_vah_ = 0, vp_val_ = 0; bool vp_ready_ = false; bool vp_used_long_ = false, vp_used_short_ = false; int vp_dir_ = 0;
     int squeeze_count_ = 0; int st_dir_ = 0; double st_up_ = 0, st_dn_ = 0; int reenter_dir_ = 0;
     std::deque<double> ref_closes_;

@@ -182,6 +182,11 @@ WITH bounds AS (
            COALESCE(j.s_enabled, j.source = 'live') AS enabled,
            (j.source = 'paper'
             AND (j.p->>'base_id' IS NULL OR COALESCE(j.p->>'overlay', '') NOT IN ('sz', 'wait', 'bbe'))
+            AND COALESCE(j.p->>'overlay', '') NOT LIKE 'lv\_%'                 -- level overlays: paper only (2026-10-11)
+            AND COALESCE((j.p->>'rb_stop_range')::boolean, false) = false        -- range-side stop: paper only (2026-10-14)
+            AND COALESCE((j.p->>'hold_days')::int, 1) <= 1                       -- multi-session holds: paper only (2026-10-11)
+            AND COALESCE((j.p->>'hold_exit_ibs_min')::float, 0) = 0
+            AND COALESCE((j.p->>'hold_exit_up_close')::boolean, false) = false
             AND (
                (j.s_engine = 'trend'
                   AND COALESCE(j.p->>'mode', '') <> 'rs_continuation'

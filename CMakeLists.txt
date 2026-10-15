@@ -308,6 +308,25 @@ add_executable(test_dbn tests/history/test_dbn.cpp)
 target_include_directories(test_dbn PRIVATE src/)
 target_link_libraries(test_dbn PRIVATE ${ZSTD_LIBRARY})
 target_compile_features(test_dbn PRIVATE cxx_std_20)
+
+# ── Payout simulator (paper trade history × prop funded-account payout rules) ───
+# scripts/payout_sim.sh exports the trades; model in src/paper/payout_sim.hpp.
+add_executable(payout_sim src/paper/payout_sim_main.cpp)
+target_include_directories(payout_sim PRIVATE src/paper/)
+target_compile_features(payout_sim PRIVATE cxx_std_20)
+
+add_executable(test_payout_sim tests/paper/test_payout_sim.cpp)
+target_include_directories(test_payout_sim PRIVATE src/paper/)
+target_compile_features(test_payout_sim PRIVATE cxx_std_20)
+
+# Walk-forward parameter selection (scripts/walk_forward.sh; model in src/paper/walk_forward.hpp).
+add_executable(walk_forward src/paper/walk_forward_main.cpp)
+target_include_directories(walk_forward PRIVATE src/paper/)
+target_compile_features(walk_forward PRIVATE cxx_std_20)
+
+add_executable(test_walk_forward tests/paper/test_walk_forward.cpp)
+target_include_directories(test_walk_forward PRIVATE src/paper/)
+target_compile_features(test_walk_forward PRIVATE cxx_std_20)
 add_test(NAME dbn_tests COMMAND test_dbn)
 
 # ── Audit Daemon ───────────────────────────────────────────────────

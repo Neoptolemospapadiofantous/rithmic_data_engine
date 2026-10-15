@@ -13,6 +13,7 @@
 #include "mtf_scalper_strategy.hpp"
 #include "trend_strategy.hpp"
 #include "paper_quote.hpp"
+#include "vix_regime.hpp"
 #include "paper_broker.hpp"
 #include "paper_bracket_broker.hpp"
 #include "paper_config.hpp"
@@ -296,16 +297,39 @@ int main(int argc, char** argv) {
     // Session-shape regime gate (paper_quote.hpp): one state for the whole fleet — every
     // strategy sees the same tape — with the prior day's ATR14 from session_stats.
     paper::RegimeState regime;
+    // VIX regime for the hold-mode VIX gates (src/paper/vix_regime.hpp, data/regime/ from scripts/vix_fetch.sh).
+    // Fail-open: no file → gated variants never enter (they log why); the row is the last close BEFORE the trade date.
+    paper::VixRegime vix;
+    const bool vix_ok = vix.load("data/regime");
+    LOG("[PAPER] VIX regime: %s", vix_ok ? (std::to_string(vix.size()) + " closes loaded (data/regime)").c_str() : "none — hold_vix_* variants stay flat");
     bool event_day = db->calendar_event_day(cur_date);
     bool event_next = db->calendar_event_day(next_ymd(cur_date));
+    bool fomc_next = db->calendar_fomc_day(next_ymd(cur_date));
     regime.set_atr(cur_date, db->session_atr14_before(feed_symbol, cur_date));
     LOG("[PAPER] Regime gate: date=%s prior ATR14=%.1f pts%s", cur_date.c_str(), regime.atr_pts,
         regime.atr_pts > 0.0 ? "" : " (none — regime-gated variants stay flat until session_stats has a row)");
+    // Price levels (paper_levels.hpp, 2026-10-11): one LevelState for the fleet, seeded from the 45 days of
+    // bars_1m before the start, then fed every tick. Only lv_* variants read it.
+    paper::LevelState levels;
+    {
+        const int64_t start = g_replay ? g_replay_clock : now_us();
+        const auto seed = db->load_ohlcv_1m(feed_symbol, start - 45LL * 86400 * 1'000'000LL, start - (start % 60'000'000LL));
+        for (const auto& b : seed) levels.on_bar(b.minute_us, b.open, b.high, b.low, b.close, b.volume);
+        LOG("[PAPER] Levels: seeded from %zu %s bars_1m rows (prior day %s)", seed.size(), feed_symbol.c_str(),
+            levels.have_prior_day() ? "known" : "unknown — level variants trade like their base until one completes");
+    }
     LOG("[PAPER] Session trade_date=%s (day start %s)", session_date.c_str(),
         paper::PaperDb::format_ts(day_start_us).c_str());
 
     // ── Build strategy runners ───────────────────────────────────────────────
     std::vector<std::unique_ptr<Runner>> runners;
+    auto apply_vix = [&](const std::string& d) {
+        if (vix.reload_if_changed("data/regime")) LOG("[PAPER] VIX regime reloaded (%zu closes)", vix.size());
+        const paper::VixDay x = vix.before(d);
+        for (auto& r : runners) if (r->trend) r->trend->set_vix(x.level, x.chg5, x.pct, x.known, x.chg1);
+        if (x.known) LOG("[PAPER] VIX regime for %s: level %.2f chg1 %+.3f chg5 %+.2f pct %.2f", d.c_str(), x.level, x.chg1, x.chg5, x.pct);
+        else LOG("[PAPER] VIX regime for %s: UNKNOWN (no close within 5 days before it — run scripts/vix_fetch.sh) — VIX-gated variants stay out", d.c_str());
+    };
     double acct_total_pnl = 0.0, acct_day_pnl = 0.0;
 
     for (const auto& fs : fleet.strategies) {
@@ -347,8 +371,10 @@ int main(int argc, char** argv) {
                 fs.id, fleet.account_label, fleet.symbol, r->cfg,
                 fleet.tick_size, fleet.slippage_ticks, db.get());
             paper::PaperBroker* brk = r->broker.get();
+            TrendStrategy* ts = r->trend.get();
             r->trend->set_signal_callback(
-                [brk](OrbSignal sig, double px, const std::string& reason) {
+                [brk, ts](OrbSignal sig, double px, const std::string& reason) {
+                    if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) { brk->set_stop_hint(ts->take_stop_hint()); brk->set_stop_dist(ts->take_stop_dist()); }
                     brk->on_signal(sig, px, reason);
                 });
             // Manual-signal dashboard: live runs only (a replay writes trades, never live state/signals).
@@ -484,11 +510,12 @@ int main(int argc, char** argv) {
             r->bbroker->flatten("restart_flatten", now_us(), 0.0);
 
         if (r->broker) r->broker->set_regime(&regime); else if (r->bbroker) r->bbroker->set_regime(&regime);
+        if (r->broker) r->broker->set_levels(&levels);
         if (fleet.commission_pct > 0.0 || fleet.slippage_bps > 0.0) {   // relative costs (crypto fleets)
             if (r->broker) r->broker->set_relative_costs(fleet.commission_pct, fleet.slippage_bps);
             else           r->bbroker->set_relative_costs(fleet.commission_pct, fleet.slippage_bps);
         }
-        if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next); r->trend->set_day_atr(regime.atr_pts); }
+        if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
         runners.push_back(std::move(r));
     }
 
@@ -646,7 +673,8 @@ int main(int argc, char** argv) {
         // guard, which re-seeds trades_today from the runner's day count — on 2026-09-22 the
         // 18:00 reopen gap reset ran first and carried the previous evening's hold into the
         // new day, blocking the 18:00 entry) and again after each batch with the wall clock.
-        auto roll_day_if_needed = [&](int64_t at_us) {
+        apply_vix(cur_date);   // the start-up day's regime (runners exist now)
+    auto roll_day_if_needed = [&](int64_t at_us) {
         std::string d = paper::et_trade_date(at_us);
         if (d != cur_date) {
             LOG("[PAPER] Day rollover %s → %s — resetting sessions",
@@ -656,7 +684,9 @@ int main(int argc, char** argv) {
             LOG("[PAPER] Regime gate: date=%s prior ATR14=%.1f pts", cur_date.c_str(), regime.atr_pts);
             event_day = db->calendar_event_day(cur_date);
             event_next = db->calendar_event_day(next_ymd(cur_date));
-            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next); r->trend->set_day_atr(regime.atr_pts); }
+            fomc_next = db->calendar_fomc_day(next_ymd(cur_date));
+            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
+            apply_vix(cur_date);
             if (event_day) LOG("[PAPER] %s is a scheduled-release day (calendar) — news_break event-only variants armed", cur_date.c_str());
             for (auto& r : runners) {
                 if (r->broker) {
@@ -690,17 +720,18 @@ int main(int argc, char** argv) {
             if (d == warm_date) return;
             warm_date = d;
             regime.set_atr(d, db->session_atr14_before(feed_symbol, d));
-            const bool ed = db->calendar_event_day(d), en = db->calendar_event_day(next_ymd(d));
+            const bool ed = db->calendar_event_day(d), en = db->calendar_event_day(next_ymd(d)), fn = db->calendar_fomc_day(next_ymd(d));
             for (auto& r : runners) {
                 r->s_reset();
-                if (r->trend) { r->trend->set_event_day(ed); r->trend->set_event_next_day(en); r->trend->set_day_atr(regime.atr_pts); }
+                if (r->trend) { r->trend->set_event_day(ed); r->trend->set_event_next_day(en, fn); r->trend->set_day_atr(regime.atr_pts); }
             }
         };
         auto end_warmup = [&](int64_t at_us) {
             warming_up = false;
             if (warm_date != cur_date) warm_roll_to(cur_date);   // no ticks yet today: sessions start fresh
             regime.set_atr(cur_date, db->session_atr14_before(feed_symbol, cur_date));
-            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next); r->trend->set_day_atr(regime.atr_pts); }
+            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
+            apply_vix(cur_date);
             int dropped = 0, released = 0, rehalted = 0;
             for (auto& r : runners) {
                 dropped += r->warmup_dropped();
@@ -803,6 +834,7 @@ int main(int argc, char** argv) {
             {
                 int rh, rm; utc_us_to_et(t.ts_us, rh, rm);
                 regime.on_tick(warming_up ? warm_date : cur_date, rh, rm, t.ts_us, t.price, (double)t.size);
+                levels.on_tick(t.ts_us, t.price, (double)t.size);
             }
             for (auto& r : runners) {
                 // Warm-up + resumed position: a replayed tick older than the position's entry

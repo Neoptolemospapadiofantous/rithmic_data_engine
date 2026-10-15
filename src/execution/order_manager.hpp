@@ -52,6 +52,7 @@ struct Position {
     double mfe            = 0.0;     // max favourable excursion in points
     double mae            = 0.0;     // max adverse excursion in points
     int    qty            = 1;
+    double r_dist         = 0.0;     // per-trade stop distance given at signal time (0 = cfg sl_points); TP = tp_r × it
 
     // Trailing state
     bool   be_triggered    = false;  // SL already moved to entry+offset (no delay)
@@ -418,7 +419,14 @@ public:
         pos_.state         = PosState::PENDING_ENTRY;
         pos_.direction     = sig;
         pos_.basket_id_entry = basket;
-        pos_.qty           = paper::RegimeState::qty_for(cfg_, regime_);   // volatility-targeted when vt_risk_usd is set
+        {   // size: the strategy's conviction units when it asked for them (set_entry_units), else config / vol-targeted;
+            // always capped by qty_max (2026-10-11). Consumed once — the next entry starts from the config again.
+            int q = entry_units_ > 0 ? entry_units_ : paper::RegimeState::qty_for(cfg_, regime_);
+            if (cfg_.qty_max > 0) q = std::min(q, cfg_.qty_max);
+            if (q < 1) q = 1;
+            if (entry_units_ > 0) LOG("[OM] entry size %d unit(s) from the strategy%s", q, (cfg_.qty_max > 0 && entry_units_ > cfg_.qty_max) ? " (capped by qty_max)" : "");
+            pos_.qty = q; entry_units_ = 0;
+        }
         pos_.trigger_price = price;   // ORB breakout level at time of order submission
         pos_.fill_time     = std::chrono::steady_clock::now(); // placeholder until fill
         pending_entry_sl_dist_ = desired_sl_dist;
@@ -508,6 +516,7 @@ public:
             double sl = (pending_entry_sl_dist_ > 0.0)
                 ? compute_sl_dist(fill_price, pos_.direction, pending_entry_sl_dist_)
                 : compute_sl(fill_price, pos_.direction);
+            pos_.r_dist = pending_entry_sl_dist_;
             pending_entry_sl_dist_ = 0.0;
             pos_.sl_price = sl;
 
@@ -816,6 +825,7 @@ public:
 
     // Exit-side regime source (host-owned RegimeState; null = plain knobs).
     void set_regime(const paper::RegimeState* r) { regime_ = r; }
+    void set_entry_units(int u) { entry_units_ = u; }   // conviction stack for the NEXT entry (0 = config / vol-targeted qty)
     const paper::RegimeState* regime_ = nullptr;
 
     bool check_trail_and_stop(double current_price) {
@@ -903,7 +913,10 @@ public:
         // Fixed take-profit (tp_points / tp_r, 2026-09-28): on the touch, flatten at market
         // through the same exit path as the software stop (cancels the exchange stop first).
         // The paper broker fills at the target itself — parity is "same tick, same reason".
-        if (const double tp = paper::RegimeState::take_profit_for(cfg_, regime_); tp > 0.0) {
+        // A per-trade stop distance (trend drive_stop_atr) scales the R-multiple target with it.
+        const double tp = (pos_.r_dist > 0.0 && cfg_.tp_r > 0.0 && cfg_.tp_points <= 0.0)
+            ? cfg_.tp_r * pos_.r_dist : paper::RegimeState::take_profit_for(cfg_, regime_);
+        if (tp > 0.0) {
             const double target = is_long ? pos_.entry_price + tp : pos_.entry_price - tp;
             if ((is_long && current_price >= target) || (!is_long && current_price <= target)) {
                 LOG("[OM] Take-profit hit (%s): price=%.2f target=%.2f entry=%.2f",
@@ -1356,6 +1369,7 @@ public:
 
 private:
     OrbConfig      cfg_;
+    int            entry_units_ = 0;
     RiskManager&   risk_;
     LatencyLogger& lat_;
     OrderSendCallback   order_cb_;

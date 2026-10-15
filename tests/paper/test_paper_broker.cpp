@@ -799,6 +799,29 @@ TEST(take_profit_fills_at_target) {
     ASSERT_NEAR(store.trades[0].pnl_pts, 10.0, 1e-9);
 }
 
+// E1 (drive_stop_atr, 2026-10-14): set_stop_dist gives this trade its own stop distance and the tp_r target
+// scales with it; the next entry is back on sl_points.
+TEST(stop_dist_sets_stop_and_scales_tp_r) {
+    FakeStore store;
+    OrbConfig cfg = make_cfg(); cfg.tp_r = 3.0;                 // sl_points 15 → old target would be 45
+    auto b = make_broker(store, cfg);
+    b.on_tick(tick(et_ts(10, 0), 20000.0));
+    b.set_stop_dist(20.0);
+    b.on_signal(OrbSignal::BUY, 20000.0, "drive_market_long");
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));                  // entry @ 20000.25
+    ASSERT_NEAR(b.stop_price(), 19980.25, 1e-9);               // fill − 20
+    b.on_tick(tick(et_ts(10, 0, 5), 20050.0));                  // +49.75: past 45, short of 60 → still in
+    ASSERT(b.in_position());
+    b.on_tick(tick(et_ts(10, 0, 9), 20060.50));                 // through entry + 60 → fills AT 20060.25
+    ASSERT(!b.in_position());
+    ASSERT_STREQ(store.trades[0].exit_reason, "take_profit");
+    ASSERT_NEAR(store.trades[0].exit_price, 20060.25, 1e-9);
+    b.on_tick(tick(et_ts(10, 1, 0), 20000.0));
+    b.on_signal(OrbSignal::BUY, 20000.0, "next");               // no distance given → sl_points again
+    b.on_tick(tick(et_ts(10, 1, 1), 20000.0));
+    ASSERT_NEAR(b.stop_price(), 20000.25 - 15.0, 1e-9);
+}
+
 TEST(take_profit_r_multiple_and_off_by_default) {
     OrbConfig c = make_cfg();
     ASSERT_NEAR(c.take_profit_pts(), 0.0, 1e-9);            // off: nothing changes for the fleet
@@ -946,6 +969,123 @@ TEST(orb_refused_entry_released_and_not_counted) {
     ASSERT(b.in_position());
     ASSERT_EQ(released, 1);                                       // a held trade is never released
     ASSERT_EQ(s.session().trades_today, 1);
+}
+
+// ── price levels (paper_levels.hpp, 2026-10-11) ──────────────────────────────
+// UTC µs of an ET wall time on a September 2026 day (EDT).
+static int64_t et_day(int mday, int h, int m) {
+    struct tm t{}; t.tm_year = 2026 - 1900; t.tm_mon = 8; t.tm_mday = mday; t.tm_hour = h; t.tm_min = m;
+    return ((int64_t)timegm(&t) + 4LL * 3600) * 1'000'000;
+}
+// One RTH session (09:30–15:59) whose bars step lo..lo+9 (low), high = low + 1, volume heavy at step 5,
+// then a 16:00 bar that closes the session. Returns nothing; pdh = lo + 10, pdl = lo, pdc = lo + 9.5.
+static void lv_session(paper::LevelState& L, int mday, double lo, double scale = 1.0) {
+    for (int i = 0; i < 390; ++i) {
+        const int mins = 9 * 60 + 30 + i;
+        const double l = lo + (i % 10) * scale, h = l + scale, c = l + 0.5 * scale;
+        L.on_bar(et_day(mday, mins / 60, mins % 60), l, h, l, c, (i % 10 == 5) ? 100.0 : 1.0);
+    }
+    L.on_bar(et_day(mday, 16, 0), lo + 9.5 * scale, lo + 9.5 * scale, lo + 9.5 * scale, lo + 9.5 * scale, 1.0);
+}
+
+TEST(levels_prior_day_profile_and_overnight) {
+    paper::LevelState L;
+    lv_session(L, 14, 100.0);                                       // Mon 2026-09-14
+    ASSERT(L.have_prior_day());
+    ASSERT_NEAR(L.pdh(), 110.0, 1e-9); ASSERT_NEAR(L.pdl(), 100.0, 1e-9); ASSERT_NEAR(L.pdc(), 109.5, 1e-9);
+    ASSERT(L.poc() >= 105.0 && L.poc() <= 106.0);                    // volume sat on the 105–106 bars
+    ASSERT(L.val() <= L.poc() && L.poc() <= L.vah());
+    ASSERT_NEAR(L.atr(), 10.0, 1e-9);                                // fallback ATR = the one session's range
+    L.on_bar(et_day(14, 18, 0), 108, 112, 107, 111, 5);             // overnight of Tue's globex day
+    L.on_bar(et_day(15, 3, 0), 100, 101, 95, 96, 5);
+    ASSERT_NEAR(L.onh(), 112.0, 1e-9); ASSERT_NEAR(L.onl(), 95.0, 1e-9);
+    L.on_bar(et_day(14, 16, 30), 1, 999, 1, 2, 5);                  // out of order: ignored
+    ASSERT_NEAR(L.onh(), 112.0, 1e-9);
+}
+
+TEST(levels_opening_range_and_session_roll) {
+    paper::LevelState L;
+    lv_session(L, 14, 100.0);
+    for (int i = 0; i < 5; ++i) L.on_bar(et_day(15, 9, 30 + i), 120 + i, 121 + i, 119 + i, 120 + i, 1);
+    ASSERT(L.or_ready(0)); ASSERT(!L.or_ready(1));
+    ASSERT_NEAR(L.or_hi(0), 125.0, 1e-9); ASSERT_NEAR(L.or_lo(0), 119.0, 1e-9);
+    ASSERT_NEAR(L.rth_open(), 120.0, 1e-9);
+    ASSERT_NEAR(L.pdh(), 110.0, 1e-9);                               // Monday stays the prior day during Tuesday
+}
+
+TEST(levels_week_roll_and_naked_poc) {
+    paper::LevelState L;
+    for (int d = 14; d <= 18; ++d) lv_session(L, d, 100.0 + d);     // Mon–Fri, lows 114..118
+    ASSERT_NEAR(L.pwh(), 0.0, 1e-9);                                 // no completed week yet
+    L.on_bar(et_day(21, 9, 30), 200, 201, 199, 200, 1);             // next Monday opens
+    ASSERT_NEAR(L.pwh(), 128.0, 1e-9); ASSERT_NEAR(L.pwl(), 114.0, 1e-9);
+    // Friday's POC (≈123.5) is naked until a bar trades through it; Monday's 199–201 bar did not
+    bool has = false; for (double p : L.npocs()) has = has || (p > 123.0 && p < 124.0);
+    ASSERT(has);
+    L.on_bar(et_day(21, 9, 31), 200, 200, 120, 121, 1);
+    has = false; for (double p : L.npocs()) has = has || (p > 123.0 && p < 124.0);
+    ASSERT(!has);
+}
+
+TEST(levels_round_step_and_tick_folding) {
+    ASSERT_NEAR(paper::LevelState::round_step(20000.0), 50.0, 1e-9);
+    ASSERT_NEAR(paper::LevelState::round_step(100000.0), 500.0, 1e-9);
+    ASSERT_NEAR(paper::LevelState::round_step(2500.0), 5.0, 1e-9);
+    ASSERT_EQ(paper::parse_level_set("day,round"), paper::LV_DAY | paper::LV_ROUND);
+    ASSERT_EQ(paper::parse_level_set("all"), (int)paper::LV_ALL);
+    paper::LevelState L;                                             // ticks: a minute folds when the next starts
+    lv_session(L, 14, 100.0);
+    L.on_tick(et_day(15, 9, 30) + 1'000'000, 150.0, 1); L.on_tick(et_day(15, 9, 30) + 2'000'000, 152.0, 1);
+    L.on_tick(et_day(15, 9, 31) + 1'000'000, 151.0, 1);
+    ASSERT_NEAR(L.rth_open(), 150.0, 1e-9);
+}
+
+TEST(levels_entry_gates) {
+    paper::LevelState L;
+    lv_session(L, 14, 20000.0, 3.0);                                 // pdh 20030, pdl 20000
+    OrbConfig c = make_cfg(); c.lv_mask = paper::LV_DAY;
+    c.lv_room_atr = 0.1;                                             // ATR 100 → need 10 pts of room
+    ASSERT_STREQ(L.gate(c, +1, 20025.0, 100.0), std::string("lv_room"));   // pdh 5 above a long
+    ASSERT_STREQ(L.gate(c, -1, 20025.0, 100.0), std::string(""));          // short: pdc 20028.5 is behind
+    ASSERT_STREQ(L.gate(c, +1, 20025.0, 0.0), std::string(""));            // no ATR → pass (variant = base)
+    c.lv_room_atr = 0.0; c.lv_near_atr = 0.02;                       // within 2 pts of a level
+    ASSERT_STREQ(L.gate(c, +1, 20015.0, 100.0), std::string("lv_far"));
+    ASSERT_STREQ(L.gate(c, +1, 20001.0, 100.0), std::string(""));
+}
+
+TEST(levels_broker_stop_and_target) {
+    paper::LevelState L;
+    lv_session(L, 17, 19990.0, 4.0);                                 // Thu: pdl 19990, pdh 20030, pdc 20028
+    L.on_bar(et_day(18, 9, 30), 20000, 20001, 19999, 20000, 1);      // Fri: today's open 20000
+    paper::RegimeState reg; reg.atr_pts = 100.0;
+    FakeStore store; OrbConfig cfg = make_cfg();
+    cfg.lv_mask = paper::LV_DAY; cfg.lv_stop = true; cfg.lv_target = true;
+    paper::PaperBroker b("t_lv", "testacct", "MNQ", cfg, 0.25, 1, &store);
+    b.set_regime(&reg); b.set_levels(&L);
+    const int64_t t0 = et_day(18, 9, 40);
+    b.on_tick(tick(t0, 20000.0)); b.on_signal(OrbSignal::BUY, 20000.0, "test");
+    b.on_tick(tick(t0 + 1'000'000, 20000.0));                        // fills 20000.25
+    ASSERT(b.in_position());
+    ASSERT_NEAR(b.stop_price(), 19988.0, 1e-9);                      // pdl 19990 − 2 pts buffer (tighter than −15)
+    ASSERT_NEAR(b.level_target(), 20028.0, 1e-9);                    // pdc 20028 is the first level ≥ 10 pts ahead
+    b.on_tick(tick(t0 + 2'000'000, 20028.0));
+    ASSERT(!b.in_position());
+    ASSERT_EQ((int)store.trades.size(), 1);
+    ASSERT_STREQ(store.trades[0].exit_reason, std::string("level_target"));
+    ASSERT_NEAR(store.trades[0].exit_price, 20028.0, 1e-9);
+}
+
+TEST(levels_stop_never_widens) {
+    paper::LevelState L;
+    lv_session(L, 17, 19970.0, 6.0);                                 // pdl 19970: 30 pts behind a 20000 long
+    paper::RegimeState reg; reg.atr_pts = 100.0;
+    FakeStore store; OrbConfig cfg = make_cfg(); cfg.lv_mask = paper::LV_DAY; cfg.lv_stop = true;
+    paper::PaperBroker b("t_lv2", "testacct", "MNQ", cfg, 0.25, 1, &store);
+    b.set_regime(&reg); b.set_levels(&L);
+    const int64_t t0 = et_day(18, 9, 40);
+    b.on_tick(tick(t0, 20000.0)); b.on_signal(OrbSignal::BUY, 20000.0, "test");
+    b.on_tick(tick(t0 + 1'000'000, 20000.0));
+    ASSERT_NEAR(b.stop_price(), 19985.25, 1e-9);                     // sl_points 15 kept
 }
 
 int main() {

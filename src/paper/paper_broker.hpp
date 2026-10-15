@@ -31,6 +31,7 @@
 #include "orb_strategy.hpp"
 #include "paper_db.hpp"
 #include "paper_quote.hpp"
+#include "paper_levels.hpp"
 #include "risk_manager.hpp"
 #include "log.hpp"
 
@@ -59,6 +60,12 @@ public:
     RiskManager& risk() { return risk_; }
 
     // Relative costs (FleetConfig commission_pct / slippage_bps); 0 keeps commission_rt / slippage_ticks.
+    // Structural stop for the NEXT entry (TrendStrategy::take_stop_hint); 0 = sl_points as configured.
+    void set_stop_hint(double px) { stop_hint_ = px; }
+    // Per-trade stop DISTANCE for the NEXT entry (TrendStrategy::take_stop_dist, drive_stop_atr); 0 = sl_points.
+    // Mirrors OrderManager's desired_sl_dist: stop at fill ∓ distance, R-multiple target = tp_r × distance.
+    void set_stop_dist(double d) { stop_dist_ = d; }
+
     void set_relative_costs(double commission_pct, double slippage_bps) { commission_pct_ = commission_pct; slip_bps_ = slippage_bps; }
 
     // Fired after every trade close (host updates paper_daily / paper_account).
@@ -80,7 +87,7 @@ public:
         // order, no paper_signals row). Exits above still manage a resumed position.
         if (warmup_) { ++warmup_dropped_; return; }
         if (pos_dir_ != 0 || pending_dir_ != 0) return;         // only when flat
-        if (halted()) return;
+        if (halted()) { LOG("[PAPER %s] Entry blocked: broker halted (%s)", strategy_id_.c_str(), risk_.halt_reason().c_str()); return; }
         std::string why;
         if (!risk_.can_trade(why)) {
             LOG("[PAPER %s] Entry blocked by risk: %s", strategy_id_.c_str(), why.c_str());
@@ -91,7 +98,7 @@ public:
                 strategy_id_.c_str(), entries_today_, cfg_.max_daily_trades);
             return;
         }
-        if (last_tick_us_ > 0 && last_tick_us_ < cooldown_until_us_) return;  // cooldown
+        if (last_tick_us_ > 0 && last_tick_us_ < cooldown_until_us_) { LOG("[PAPER %s] Entry blocked: cooldown %.0fs left", strategy_id_.c_str(), (cooldown_until_us_ - last_tick_us_) / 1e6); return; }
         if (!in_entry_window()) {
             LOG("[PAPER %s] Entry blocked: outside entry window", strategy_id_.c_str());
             return;
@@ -99,6 +106,7 @@ public:
         const int dir = (sig == OrbSignal::BUY) ? 1 : -1;
         std::string blocked = qs_.gate(cfg_, dir, last_tick_us_, tick_size_);
         if (blocked.empty() && regime_) blocked = regime_->gate(cfg_, dir);   // regime gate, same slot
+        if (blocked.empty() && levels_) blocked = levels_->gate(cfg_, dir, last_price_, atr());   // level gates (lv_room / lv_near)
         log_signal(dir, reason, blocked);
         if (!blocked.empty()) {
             LOG("[PAPER %s] %s signal (%s) blocked by gate: %s", strategy_id_.c_str(),
@@ -114,6 +122,8 @@ public:
     void on_quote(const paper::Quote& q) { qs_.on_quote(q, tick_size_); }
     const paper::QuoteState& quotes() const { return qs_; }
     void set_regime(const paper::RegimeState* r) { regime_ = r; }
+    void set_levels(const paper::LevelState* l) { levels_ = l; }
+    double level_target() const { return lv_target_px_; }
 
     void log_signal(int dir, const std::string& reason, const std::string& blocked) {
         if (!store_) return;
@@ -201,7 +211,9 @@ public:
         // 5b. Fixed take-profit (tp_points / tp_r): a resting limit at the target — fills AT
         //     the target on the touch, no slippage (the live side flattens at market instead,
         //     so paper is at most one tick optimistic here; see OrderManager::check_trail_and_stop).
-        if (const double tp = paper::RegimeState::take_profit_for(cfg_, regime_); tp > 0.0) {
+        const double tp = (r_dist_ > 0.0 && cfg_.tp_r > 0.0 && cfg_.tp_points <= 0.0)
+            ? cfg_.tp_r * r_dist_ : paper::RegimeState::take_profit_for(cfg_, regime_);
+        if (tp > 0.0) {
             const double target = entry_price_ + pos_dir_ * tp;
             const bool hit = (pos_dir_ > 0) ? (t.price >= target) : (t.price <= target);
             if (hit) {
@@ -209,6 +221,13 @@ public:
                 exit_position(target, t.ts_micros, "take_profit");
                 return;
             }
+        }
+
+        // 5c. Level target (lv_target, paper_levels.hpp): a resting limit at the level found at entry —
+        //     fills AT the level on the touch, like the fixed take-profit above.
+        if (lv_target_px_ > 0.0) {
+            const bool hit = (pos_dir_ > 0) ? (t.price >= lv_target_px_) : (t.price <= lv_target_px_);
+            if (hit) { exit_position(lv_target_px_, t.ts_micros, "level_target"); return; }
         }
 
         // 5b. Book-driven management (paper_quote.hpp): flip exit / take-profit into
@@ -360,7 +379,14 @@ private:
                          + ((cfg_.book_size_agree > 0 && qs_.fresh(ts_us) && qs_.agrees(dir)) ? cfg_.book_size_agree : 0);
         entry_price_   = fill;
         entry_time_us_ = ts_us;
-        stop_price_    = snap(fill - dir * cfg_.sl_points, dir);
+        r_dist_        = stop_dist_; stop_dist_ = 0.0;
+        stop_price_    = snap(fill - dir * (r_dist_ > 0.0 ? r_dist_ : cfg_.sl_points), dir);
+        apply_level_exits(dir, fill);
+        if (stop_hint_ > 0.0) {                    // strategy's structural stop (range_break rb_stop_range): only tightens sl_points
+            const double dist = dir * (fill - stop_hint_);
+            if (dist >= 4.0 * tick_size_ && dist < cfg_.sl_points) stop_price_ = snap(stop_hint_, dir);
+            stop_hint_ = 0.0;
+        }
         placed_stop_   = stop_price_;
         mfe_           = 0.0;
         mae_           = 0.0;
@@ -500,6 +526,34 @@ private:
     PaperStore* store_;   // not owned; may be null
     paper::QuoteState qs_;                       // top of book (paper_quote.hpp)
     const paper::RegimeState* regime_ = nullptr;  // session-shape gate, shared by the whole fleet (host-owned)
+    const paper::LevelState*  levels_ = nullptr;  // price levels, shared by the whole fleet (host-owned, paper_levels.hpp)
+    double lv_target_px_ = 0.0;
+    double stop_dist_ = 0.0, r_dist_ = 0.0;        // per-trade stop distance: next entry / open position (set_stop_dist)
+    double stop_hint_ = 0.0;                      // structural stop for the next entry (set_stop_hint)                   // level target of the open position (0 = none)
+    double atr() const {                          // session_stats ATR14, else the level engine's own session ranges
+        if (regime_ && regime_->atr_pts > 0.0) return regime_->atr_pts;
+        return levels_ ? levels_->atr() : 0.0;
+    }
+    // lv_stop / lv_target at entry (paper_levels.hpp). Without an ATR or a level both stay off, so the
+    // variant manages the trade exactly like its base. The level stop only ever TIGHTENS sl_points.
+    void apply_level_exits(int dir, double fill) {
+        lv_target_px_ = 0.0;
+        const double a = atr();
+        if (!levels_ || a <= 0.0 || (!cfg_.lv_stop && !cfg_.lv_target)) return;
+        const int mask = cfg_.lv_mask ? cfg_.lv_mask : paper::LV_ALL;
+        if (cfg_.lv_stop) {
+            const double L = levels_->level_behind(mask, fill, dir, cfg_.lv_stop_min_atr * a);
+            if (L > 0.0) {
+                const double s = L - dir * cfg_.lv_stop_buf_atr * a;
+                const double dist = dir * (fill - s);
+                if (dist >= 4.0 * tick_size_ && dist < cfg_.sl_points) { stop_price_ = snap(s, dir); placed_stop_ = stop_price_; }
+            }
+        }
+        if (cfg_.lv_target) {
+            const double T = levels_->level_ahead(mask, fill, dir, cfg_.lv_tgt_min_atr * a);
+            if (T > 0.0) lv_target_px_ = T;
+        }
+    }
     double      entry_bbo_ = 0.0, spread_entry_ = -1.0;   // shadow fill of the open leg
     double      last_price_ = 0.0;               // last tick price (signal log)
     // The stop that would be WORKING at the exchange. The live executor moves its resting

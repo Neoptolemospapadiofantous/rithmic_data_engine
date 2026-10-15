@@ -56,3 +56,4 @@ config/staging/
 build-exp/
 # history replay build (bar feed etc., scripts/history_month.sh nqbars)
 build-hist/
+build-prof/

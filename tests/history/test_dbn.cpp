@@ -242,6 +242,23 @@ static void test_bar_feed() {
     auto dn = hist::bar_to_ticks(0, 100.0, 101.0, 95.0, 96.0, 2, 0.0);               // close < open: O, H, L, C
     CHECK(dn[1].price == 101.0 && dn[2].price == 95.0 && dn[0].size == 1 && dn[3].size == 1);
 
+    // The walked path: every tick between O → L → H → C, sizes summing to the volume, never stepping back in time.
+    {
+        std::vector<hist::Tick> p;
+        hist::bar_path(60'000'000, 100.0, 105.0, 98.0, 104.0, 100, 99.0, 1.0, 40, p);
+        CHECK(p.size() == 11);                                             // 1 + 2 + 7 + 1
+        bool unit = true, mono = true; int64_t vol = 0;
+        for (size_t i = 1; i < p.size(); ++i) { unit = unit && std::fabs(p[i].price - p[i - 1].price) == 1.0; mono = mono && p[i].ts_us >= p[i - 1].ts_us; }
+        for (auto& x : p) vol += x.size;
+        CHECK(unit && mono && vol == 100);
+        CHECK(p.front().price == 100.0 && p[2].price == 98.0 && p[9].price == 105.0 && p.back().price == 104.0);
+        CHECK(p[2].ts_us == 80'000'000 && p[9].ts_us == 100'000'000 && p.back().ts_us == 119'900'000);   // key points keep their times
+        std::vector<hist::Tick> capped;
+        hist::bar_path(60'000'000, 100.0, 105.0, 98.0, 104.0, 100, 99.0, 1.0, 3, capped);   // the 7-tick leg → steps of 3
+        bool gap3 = true; for (size_t i = 1; i < capped.size(); ++i) gap3 = gap3 && std::fabs(capped[i].price - capped[i - 1].price) <= 3.0;
+        CHECK(gap3 && capped.size() == 7);                                 // 1 + 2 + 3 (101, 104, 105) + 1
+    }
+
     std::vector<std::vector<uint8_t>> recs = {
         dbn::record_bytes(bar(60ULL * 1000000000ULL, 100, 101, 99, 100.5, 8)),
         dbn::record_bytes(bar(60ULL * 1000000000ULL, 500, 500, 500, 500, 8)),        // same minute (roll overlap): dropped
@@ -255,7 +272,7 @@ static void test_bar_feed() {
     std::vector<hist::Tick> ticks; std::deque<hist::Quote> q;
     while (feed.next_batch(ticks, q, 3)) {}
     std::remove(path.c_str());
-    CHECK(ticks.size() == 8);
+    CHECK(ticks.size() == 30);   // walked at 0.25: (1+4+8+2) + (1+2+8+4)
     bool mono = true; for (size_t i = 1; i < ticks.size(); ++i) mono = mono && ticks[i].ts_us >= ticks[i - 1].ts_us;
     CHECK(mono);
     CHECK(!ticks.empty() && ticks.front().price == 100.0 && ticks.back().price == 101.0);

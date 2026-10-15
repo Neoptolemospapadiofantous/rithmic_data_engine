@@ -28,6 +28,7 @@
     }
     ═══════════════════════════════════════════════════════════════════════════ */
 #include "orb_config.hpp"
+#include "paper_levels.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -161,7 +162,7 @@ struct FleetConfig {
         // envelope in the engine; keep the per-strategy RiskManager focused on
         // the daily-loss gate only.
         c.trailing_drawdown_cap = 1e9;
-        c.consistency_cap_pct   = 1.0;
+        c.consistency_cap_pct   = 0.0;   // off (2026-10-11): a per-strategy cap halted hold strategies for the rest of a replay after one big day
         c.dry_run = true;
 
         const std::string& p = s.params_json;
@@ -210,6 +211,16 @@ struct FleetConfig {
         c.trail_step_trend   = json_dbl(p, "trail_step_trend",   c.trail_step_trend);
         c.trail_step_range   = json_dbl(p, "trail_step_range",   c.trail_step_range);
         c.tp_r_range         = json_dbl(p, "tp_r_range",         c.tp_r_range);
+        // levels (paper_levels.hpp, paper only)
+        c.lv_set             = json_str(p, "lv_set",             c.lv_set);
+        c.lv_mask            = paper::parse_level_set(c.lv_set);
+        c.lv_room_atr        = json_dbl(p, "lv_room_atr",        c.lv_room_atr);
+        c.lv_near_atr        = json_dbl(p, "lv_near_atr",        c.lv_near_atr);
+        c.lv_target          = json_bool(p, "lv_target",         c.lv_target);
+        c.lv_tgt_min_atr     = json_dbl(p, "lv_tgt_min_atr",     c.lv_tgt_min_atr);
+        c.lv_stop            = json_bool(p, "lv_stop",           c.lv_stop);
+        c.lv_stop_min_atr    = json_dbl(p, "lv_stop_min_atr",    c.lv_stop_min_atr);
+        c.lv_stop_buf_atr    = json_dbl(p, "lv_stop_buf_atr",    c.lv_stop_buf_atr);
         c.tp_r               = json_dbl(p, "tp_r",               c.tp_r);
         // regime gate (paper_quote.hpp RegimeState)
         c.regime_min_range_atr = json_dbl(p, "regime_min_range_atr", c.regime_min_range_atr);

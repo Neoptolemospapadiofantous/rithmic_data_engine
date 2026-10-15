@@ -2264,6 +2264,36 @@ TEST(entry_limit_uses_entry_offset_ticks) {
     }
 }
 
+// ─── Conviction stack: the strategy asks for N units, qty_max caps them, consumed once (2026-10-11) ─────────────
+TEST(entry_units_from_strategy_capped_by_qty_max) {
+    OrbConfig c = make_cfg(true); c.qty = 1; c.qty_max = 3;
+    Fixture f(c);
+    f.om.set_entry_units(4);
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "hold_long");
+    ASSERT(f.om.position_snapshot().qty == 3);            // 4 asked, capped at 3
+    sim_entry_fill(f, 19000.0); sim_exit_fill(f, 19010.0);
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "hold_long");  // no units set this time → config qty
+    ASSERT(f.om.position_snapshot().qty == 1);
+    sim_entry_fill(f, 19000.0); sim_exit_fill(f, 19010.0);
+    OrbConfig c2 = make_cfg(true); c2.qty = 1; c2.qty_max = 0;
+    Fixture g(c2); g.om.set_entry_units(2); g.om.on_signal(OrbSignal::BUY, 19000.0, "hold_long");
+    ASSERT(g.om.position_snapshot().qty == 2);            // no cap → 2
+}
+
+// E1 (trend drive_stop_atr, 2026-10-14): a per-trade stop distance also scales the tp_r target —
+// target = entry ± tp_r × that distance, not tp_r × cfg sl_points.
+TEST(per_trade_stop_dist_scales_tp_r_target) {
+    OrbConfig c = make_cfg(true); c.sl_points = 10.0; c.tp_r = 3.0; c.trail_be_trigger = 1e6; c.trail_step = 1e6;
+    Fixture f(c);
+    f.om.on_signal(OrbSignal::BUY, 19000.0, "drive_market_long", 0.0, /*desired_sl_dist=*/20.0);
+    sim_entry_fill(f, 19000.0);
+    ASSERT_NEAR(f.om.position_snapshot().sl_price, 18980.0, 0.001);          // fill − 20, not − sl_points
+    f.om.check_trail_and_stop(19045.0);                                     // past 3 × sl_points (30), short of 3 × 20
+    ASSERT(f.om.position_snapshot().state == PosState::LONG);
+    f.om.check_trail_and_stop(19060.25);                                    // 3 × 20 = 60 → take-profit exit
+    ASSERT(f.om.position_snapshot().state != PosState::LONG);
+}
+
 int main() {
     RUN(initial_state_is_flat);
     RUN(buy_signal_when_flat_triggers_send);
@@ -2350,6 +2380,8 @@ int main() {
     RUN(mtf_external_stop_tier2_fires_after_breach_timeout);
     RUN(mtf_stops_snapped_to_tick_adverse);
     RUN(entry_limit_uses_entry_offset_ticks);
+    RUN(entry_units_from_strategy_capped_by_qty_max);
+    RUN(per_trade_stop_dist_scales_tp_r_target);
 
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed > 0 ? 1 : 0;

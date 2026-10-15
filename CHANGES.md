@@ -7,6 +7,451 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-14 — Order-flow ORB on NY 5m + Asia 15m in the paper fleet; a 13-hour DB lock pile-up cleared
+
+Founder: "any orb on any session 5m or 15m … possibly order flow confirmation", then "yes do both and re-run the payout math".
+- **Fix: `session_stats.atr14_pts` ran 8 % low (founder: "yes fix it", after a validation agent found it).** The ATR /
+  volume / prior-close baselines in `refresh_session_stats()` counted any stored row as a session, including a 1-bar
+  stray print on Sunday 2026-09-27 (range 0) and the collector's 13-bar partial first day — NQ atr14 for 10-14 read 265.8
+  instead of 289.7. Both the paper engine and the executor read it (`session_atr14_before`, e.g. `rb_min_range_atr` on
+  `ofo_ny5_wide`). Baselines now take only rows with ≥ 60 RTH bars (half days, ~210, still count);
+  `refresh_session_stats(25)` recomputed the collector era (172 rows); the minute timer re-applies the file cleanly.
+  The Databento history had three more such rows (NQ+ES 2018-06-15 1 bar, 2020-06-30 41 bars, ES 2023-06-16 1 bar);
+  atr14 / vol_vs_20d / range_vs_atr / gap of the sessions in the 30 days after each were recomputed with the same rule.
+- **Research (scratchpad `sessions2.py` / `of_focus.py`, 726 configs, Asia/London/NY × 5m/15m × break/fade/retest ×
+  regimes):** nothing passes all eras 2011–2026 without order flow. With it (2023-03+, the only years with aggressor
+  volume): first 1m close beyond the range, taken only when the range window's net aggressor volume Σ(2·bv−v)/Σv agrees
+  with the break, stop at the other side, hold to the session end — **NY 5m PF 1.27, +11.4 pts, 130/yr; Asia 15m PF 1.24,
+  +3.6 pts, 118/yr**; disagreeing breaks PF 0.97 / 0.79. London loses in every variant. The filter was chosen on these
+  same years (in-sample); a random-direction control passed 0 times.
+- **TrendConfig `range_break` gains `rb_of_filter` (+1 agree / −1 disagree / 0 off), `rb_first_only`, `rb_stop_range`
+  and `rb_last_entry`.** `rb_stop_range` hands the range's other side to the paper broker (`TrendStrategy::take_stop_hint()`
+  → `PaperBroker::set_stop_hint()`, only tightens `sl_points`) — **paper only**: the executor refuses a config carrying it
+  and the leaderboard marks it not live_runnable.
+- **Fleet:** `ofo_ny5`, `ofo_asia15` + controls `_dis` (order flow disagrees) and `_all` (no filter), family `of_orb`,
+  registered under `tradeify`. Replay 2026-09-21..10-13 (label `ofo_check`): the C++ trades match the research rule
+  11/11 (NY) and 13/13 (Asia) on entry minute and direction; P&L differs by the paper slippage. Paper engine restarted
+  06:22 ET, warm-up clean, no collector queue drops. Tests: test_trend_strategy (+6), hermes 22/0/0.
+- **Payout math (scratchpad `pay_of.py`, 2023-03..2026-10 only):** best use is the order-flow ORB in the EVAL (book 2 +
+  OF 2 MNQ: pass median 29 days vs 44 for the book alone) and the book alone once FUNDED (1 MNQ) — 5 sequential $80
+  accounts: net +$7.8k / 12 months, profit in 86 % of starts, first payout by month 3 in 27 % (book alone 17 %), months
+  paid 5.1/12. Adding the ORB to the funded account LOWERS the result (wide stops vs the $2K trail). Month 1 stays ~1 %.
+- **VIX-fall doubling (same day, founder: "yes add them"):** 162 regimes × 8,935 fleet strategies (8.3 M trades 2023+,
+  pick 2023-24 / judge 2025-26, shuffled-label baseline) — no regime makes the fleet profitable (median PF 0.42 → ≤ 0.57,
+  winners no more frequent than chance). On the order-flow ORB, only "prior VIX close fell ≥ 3 %" held in both periods on
+  both sessions (NY PF 1.79 / 2.11, Asia 2.07 / 1.64; ~29 % of sessions). New TrendConfig `vix_chg1_max` (VixDay `chg1`,
+  passed by paper + executor `set_vix`); fleet `ofo_ny5_vfall` / `ofo_asia15_vfall` = a second copy on those days, i.e.
+  2× size together with the base id. Replay 09-21..10-13 picks the expected 7/7 days. Payout sim (eval book 2 + ORB 2,
+  ORB 2× after VIX falls; funded book 1): 5 sequential accounts — profit in 96 % of starts, first payout by month 3 in
+  34 % (27 % without), months paid 5.6/12; buying 1/month → a payout in 56 % of months 3-14, avg $1,730/mo. Month 1 still ~0 %.
+- **Fixed — stale VIX regime (found by the validation review, same day):** `VixRegime` was loaded once at startup and
+  `before()` returned the last row however old, so from day 2 a long-running paper_engine/executor gated on a stale VIX
+  (all `hold_vix_*` / `vix_chg1_max` variants). Now `reload_if_changed()` runs at every `apply_vix` (paper + executor)
+  and a close more than 5 calendar days old → unknown (gated variants stay out). The `vix_fetch.sh` cron ran at 16:45
+  BOX time (Cyprus = 09:45 ET), before the close it needed: moved to `30 0,2 * * 2-6` (00:30 / 02:30 Cyprus = 17:30 /
+  19:30 ET, after CBOE publishes; crontab backup in the session scratchpad). Tests: VixRegime chg1 / weekend / stale.
+- **Independent validation (5 agents, same day) — corrections:** NY order-flow ORB reproduces (PF 1.27) but the CI
+  is [0.99, 1.62], the OF filter itself is not significant (permutation p 0.12) and the top 5 days are 66 % of the
+  profit → fragile. Asia order-flow ORB: the research dates dropped 32 losing trades (quarterly-expiry Fridays,
+  holidays); on every weekday it is PF 1.17, 1.06 at 4 pts cost, < 1 without its top 5 days → treat as an artefact.
+  VIX-fall doubling: NY consistent (p 0.047 uncorrected, not after multiple testing), Asia not shown. Book: no
+  look-ahead; strategy 2 (midday) 93 % of its 2023-26 profit is 2025 → fragile; strategy 3 is lumpy (one day = +2,121
+  pts); strategy 1 robust but modest. Payout sims reproduce exactly but ignore the 90/10 split, the $250 minimum and
+  2025's weight: realistic first payout month 3-6, 30-55 % of months paid buying 1/month, $500-1,700/month.
+- **Wide-range copy (`rb_min_range_atr`, same day):** research round 3 (honest protocol): flow fade/absorption outside the
+  opening range — no edge (best 2023-24 config PF 1.13 → 0.84 in 2025-26); ORB + 10:00 move "PF 2.51" was look-ahead
+  (decided at 10:00 it is 1.17-1.32); ORB on weakness days — no regime beats random day sets except "VIX fell ≥3 %"
+  (PF 1.90, p 0.038 / 0.074); wide 09:30-09:35 ranges (≥ 0.21 × prior ATR14, the 2023-24 median) PF 1.43 (1.38 / 1.49) vs
+  1.02 tight. New TrendConfig `rb_min_range_atr` (unknown ATR = no trade), fleet id `ofo_ny5_wide`; tests +3, hermes 22/0/0.
+  **Out-of-sample 2010-2022 (plain ORB, no order flow exists then):** the NQ 5m ORB itself loses before 2019 (PF 0.67 /
+  0.89 / 1.02 / 1.15 for 2010-14 / 15-18 / 19-22 / 23-26); "VIX fell ≥3 %" adds nothing before 2019 (0.61, 0.84; random
+  p 0.76 / 0.61) and helps only 2019+ (1.21 p 0.08, 1.53 p 0.03); wide range adds nothing. These are recent-era effects.
+  GC / CL have order flow only since 2026-09-28 (11 sessions) — not testable yet.
+- **Incident found while testing:** the dashboard backend (`python -m ui.app`) left a `SELECT` stuck in ClientWrite for
+  13.5 h (it stopped reading its socket); a research replay's `ALTER TABLE paper_trades` queued behind it, and every
+  paper-fleet `INSERT INTO paper_trades` plus the 02:40 `pg_dump` queued behind the ALTER (~12 h of blocked trade writes).
+  Cleared with `pg_terminate_backend` on the stuck read; the queued writes and the backup then completed. Root cause
+  (backend reads not bounded) is still open — see the "Dashboard backend wedges" note.
+
+## 2026-10-12 — Select Daily 50K config for the combo book; executor skips CME holidays / early closes
+
+Founder: buying a Tradeify Select Daily 50K, "we just need to make sure it works".
+- **Engine = research:** combo3 replayed through the C++ engine on NQ 1m bars 2010-07..2026-03 (label `combo_verify`,
+  id `combo3_verify`): 709 trades vs 706 research days, avg $40.5 PF 1.55 vs $38.8 PF 1.49, median same-day diff $2;
+  the day mismatches are mostly month-start days (the replay starts each month cold).
+- **Fixed — holiday sessions:** 18 replay entries were CME holidays / early closes (Labor Day, Thanksgiving, Christmas
+  Eve, July 4, MLK, Presidents', Juneteenth, Memorial Day); the 15:55 exit found the market shut and the position rode to
+  the 18:00 reopen. `OrbDB::calendar_close_et_min()` + `market_close_et_min()` / `market_closes_before_flatten()`
+  (orb_config.hpp): a trend engine whose flatten time is at/after that day's close takes no entries (holiday or early
+  close from the `calendar` table, re-applied after every rollover and after the warm-up). Calendar rows cover
+  2026-11-26 … 2027-09 — extend them yearly.
+- **New `combo_stack` (TrendConfig, default true):** false = combo3 enters at the config qty whatever the signal count.
+- **`config/tradeify_select50_config.json`** (dry_run, account_id placeholder): any combo3 signal → 2 MNQ at 09:30,
+  sell 15:55, stop 36 pts/contract (= payout_sim's −$150 day stop incl. costs), $2K trail, −$1K DLL, consistency cap OFF
+  (the 0.3 cap would freeze the book after its first big day). Sim (P5): eval pass 51 %, 12 % blown/60d, ~2.8
+  payouts/month. Unit `nq-executor-local@tradeify_select50` runs it dry. Tests: test_trend_strategy (+10), hermes 20/0/0.
+
+## 2026-10-12 — payout_sim: firm rules re-read from the firms' own pages, + Lucid Flex and MFF Rapid EOD
+
+`src/paper/payout_sim.hpp` plans(): Apex split into `apex_eod_50k` / `apex_intraday_50k` ($2K trail, not $2.5K;
+payouts need 5 days ≥ $250/$200 and a $52,600 balance), `topstep_50k` payout share 1.0 → 0.45 (≤ 50 % of the balance,
+90/10), new `lucid_flex_50k` and `mff_rapid_eod_50k`. Unstated terms are marked ASSUMED in the comments. Result
+(ledger P5): on the C1 combo book the daily-payout plans (MFF Rapid, Tradeify Select Daily) pay best; 5-day-cycle
+plans pay slowly on ~30 signal days a year. `test_payout_sim` 28/28.
+
+## 2026-10-12 — executor warm-up now rolls sessions, so a restarted hold engine knows the prior day
+
+**Fixed:** the pg-feed warm-up replayed ticks into the strategy, but the session rollover is
+driven by the wall clock (`today_date_str()`), so no `reset_session()` happened during the replay.
+Hold mode only learns `prev_*` / `prev2_lo_` in `reset_session()`, so a restarted `tradeify_day`
+/ `tradeify_combo*` had no prior day until it had run live through a whole session and an 18:00 ET
+rollover (two of them for combo3). Every restart, Monday start or crash cost the next signal
+silently. Now the warm-up rolls the session whenever a replayed tick's trading date changes
+(`src/execution/executor_main.cpp`, pg_feed_loop). The three dry configs warm up 6000 min (back to
+Thursday's open from a Monday restart). Verified live: three replayed rollovers, the reset line no
+longer says "no prior day yet", and combo3 found Thursday 10-08's wide down day (range 578 pts vs
+1.5 × ATR 445) as Friday's signal in the replay. `make hermes-fast` 20/0/0.
+
+## 2026-10-12 — the combination book (ledger C1) runs dry on NQ and ES
+
+Founder: "there must be a strategy or a combination of strategies that make money", then "run everything in the
+matrix", then "yes" to forward-testing the result.
+
+### Added
+- `hold_combo3` (TrendConfig, hold mode, long only, default off): one unit per daily signal that is on at the prior
+  close — weak close (IBS ≤ `combo_ibs` or close below the session-before low) with VIX ≥ `combo_vix_min`; big down
+  day (body ≤ −1 ATR); wide down day (range ≥ 1.5 ATR, closed down). Entry at `hold_entry_hhmm` when ≥ 1; the count
+  goes to `last_units()` and the executor caps it with `qty_max`. New `prev2_lo_` (the session before the prior one).
+  5 tests in `test_trend_strategy`.
+- `config/tradeify_combo_config.json` (MNQ, NQ ticks) and `config/tradeify_combo_es_config.json` (MES, ES ticks):
+  `dry_run: true`, 09:30 → 15:55, 1–3 units, no stop; units `nq-executor-local@tradeify_combo{,_es}` enabled,
+  labels `tradeify_combo_dry` / `tradeify_combo_es_dry`.
+
+### Research (ledger C1, M1–M4)
+- C1: the three signals, chosen on 2010–18 only and scored on 2019–26 (NQ + ES stacked, 1 micro per signal, cap 3):
+  451 days, $158/day, PF 1.70, 8/8 years, max DD −$6.3k. Payout sim (test 2020–26): Select Flex 50K at 3 MNQ EV
+  ≈ $2,200/account, eval pass 45 %, ~59 % blown within 60 days — it pays across several accounts, not one.
+- M1–M4 (93 daily variants: 4 market phases, effort vs result, cause & effect, waves): 2 held out of sample, both
+  repeat what C1 already trades; adding them by train-only selection lowered the 2019–26 result (PF 1.72 → 1.60).
+
+## 2026-10-11 (late night) — validation pass: stale replay binary, consistency-cap freeze, broker refusal logs
+
+Founder: "validate everything". S1 (day-session weakness long) reproduced from raw `bars_1m` in SQL and by a paper_engine MBO
+replay of the fleet ids over Mar–Apr 2025 (ledger S14): prior-day values identical, trades match day for day, P&L within fills.
+Two defects surfaced: (1) `build-hist/paper_engine` was built before today's hold filters and silently ignored
+`hold_prev_ibs_max`/`hold_weak_any` (traded every day) — rebuilt; the 2,088 `nq_bars` rows it had written for the hold ids
+(2021-06…11) were deleted and re-replayed with the current binary (529 rows). (2) The per-strategy `RiskManager` consistency
+cap (paper fleet: 100 %, halt persists until a manual clear) froze a paper strategy for the rest of a replay after one day that
+out-earned all its prior profit — a hold-mode profile. `consistency_cap_pct <= 0` now means OFF (`risk_manager.hpp`), the
+paper fleet sets 0 (`paper_config.hpp`; the live executors keep their 30 % Tradeify cap), `PaperBroker` logs the two formerly
+silent entry refusals (halt reason, cooldown), and `TrendStrategy::hold_daily_ok` logs the prior-day hi/lo/close/IBS/ATR it
+decided on. Test `consistency_cap_zero_is_off` (test_risk_manager 44/44). All four paper fleets restarted on the fixed
+binary with CME closed. Three new intraday ideas measured and closed (S11 NQ/ES pairs, S12 FOMC-day, S13 gap fade).
+Hermes 22/22.
+
+## 2026-10-11 (night) — intraday-only search closed; research ledger S1–S10
+
+Founder: prop firms forbid overnight holds, so the weakness × VIX book is research-only. Measured every intraday door with the
+data on the box (`docs/intraday_search_2026-10-11.md`, `scripts/sql/research_tests_2026-10-11c.sql`): the day-session leg of
+the weakness edge survives (buy 09:30 after a weak close when VIX ≥ 20, sell 15:55: $53/MNQ, PF 1.60, 14/16 years, 33/yr) and
+nothing else does — timing/dip/stop mechanics, 5,853 fleet strategies on the regime days, at-open conditions, the last hour,
+a weekly-consistency search over 9,295 strategies, crypto hour/session sweeps and a walk-forward order-flow model are all at
+or below cost out of sample. Payout cadence of every intraday sleeve on Select Daily 50K: 1–6% of weeks. No code change;
+**Correction (P3):** the conviction-stack payout numbers of the evening (P1: 53% of 2-week windows, 28%/yr blown) are invalid —
+the export carried one row per unit and `payout_sim` tested each unit's MAE separately; as one position the stack breaches a
+$2,000 trail ~12×/yr. Venue sim (P2: FTMO Swing / Phidias Premium) finds no venue where the book pays weekly (FTMO 100k at
+minimum size ≈ $700/month). `tradeify_book` keeps running dry for the record; the intraday sleeve runs dry as `nq-executor-local@tradeify_day`
+(`config/tradeify_day_config.json` + `.env.tradeify_day`, label `tradeify_day_dry`, tag `WEAK_DAY`, 1 MNQ +1 at VIX ≥ 25, qty_max 2).
+
+## 2026-10-11 — conviction sizing in the executor (the payout-sim book, dry-run)
+
+The weakness×VIX book was simulated as a 1–4 unit stack and the executor could only size from `qty`. Now the strategy asks:
+`TrendConfig` gains `stack_wc_units / stack_vix_units / stack_both_units` (+ `stack_wc_ibs` 0.3, `stack_vix_min / stack_vix_rise_min /
+stack_vix_pct_min`, OR-gated). In `hold` mode `TrendStrategy::stack_units(dir)` runs right before each entry emit (dip and clock paths):
+`1 + wc + vix + both`, logged `[TREND hold] conviction stack: N unit(s) (weak close …, VIX fear …)`, read back via `last_units()` (0 =
+not configured). `executor_main` passes it to `OrderManager::set_entry_units()` before `on_signal`; the OM takes it over
+`RegimeState::qty_for()`, caps with the new `OrbConfig::qty_max` (0 = off), floors at 1 and consumes it once. The two "fill qty exceeds
+expected position size" warnings compare against `max(cfg.qty, position.qty)` so a 4-lot fill on a 4-unit entry is not flagged as
+unowned. Tests: `test_order_manager` (`entry_units_from_strategy_capped_by_qty_max`), `test_trend_strategy` (4 / 2 / 2 / 1 / off).
+`config/tradeify_book_config.json` now runs the stack (base = any weakness, `qty 1`, `qty_max 4`, strategy tag `WEAK_STACK`), still
+`dry_run: true` on `nq-executor-local@tradeify_book`. Hermes 22/22. Paper fleets are untouched — PaperBroker sizes from the fleet's
+`qty`, so the stack is live/dry-executor only (the per-unit P&L of the paper twins is what payout_sim stacked).
+
+## 2026-10-11 — "do all" (second batch): firms, crypto, exits, earnings nights
+
+- **Firm comparison in `payout_sim`** (MFF Rapid 50K from its own checkout page; Apex / Topstep from third-party summaries —
+  approximations): for the 4-unit book, 250-day accounts, test 2020–26 — Tradeify Select Daily 53 % of 2-week windows,
+  1.8 payouts/month, blown 28 %/yr; MFF Rapid 43 %, 1.5/month, blown 53 % (real-time trail, no DLL, daily payouts above a
+  $2,100 buffer, min $500); Apex eval the easiest (95 % pass in a median 31 days, $2,500 trail) but payouts need 5
+  qualifying days → 19 % of windows; Topstep 100 % blown ($1K DLL + 5 winning days); Growth worse than all. **Tradeify Select
+  Daily stays the plan**; Apex is the cheapest eval to pass if an account is only needed as a pass. (Lucid: site blocked,
+  third-party only: Flex = no DLL, no funded consistency, 5-day cycles.)
+- **Conditional exits**: hold-to-close beats every early take / cut / target / trail on the gated book (research_tests X1).
+- **Earnings nights**: +$38 vs +$48 per MNQ — mild, keep trading them (X2).
+- **Crypto**: BTC "weak & own-fear" PF 1.46 but fading, TSMOM long bull-era only, ETH weaker, shorts negative — a crypto-prop
+  sleeve at most (X3).
+- **Multi-account model**: with 92 % pass / 28 %/yr blown / ~$1.6K per account-month, N funded accounts scale income linearly
+  and make resets a budgeted cost; cadence per account does not change (same days pay).
+- Not done (needs live fills): 18:00 entry execution study; not possible (paid data): options positioning / auction imbalance.
+
+## 2026-10-11 — the switch (founder: "we wanna switch strategies to the ones that will work" → stop ORB now)
+
+- **Live ORB stopped** (`nq-executor-local@tradeify`, +$337 / 30 trades since 09-21; the Growth 25K has ~$90 of room and
+  cannot take any strategy). **MTF-Asia dry run disabled** (−$489 / 37). **Live-rota timers disabled** (`live-rota-*.timer`;
+  the `sig_*` strategies have no proven edge). The account is idle — Tradeify wants ≥ 1 trade per week to stay active.
+- **The book runs as its own dry-run executor instance**: `config/tradeify_book_config.json` (+ `.env.tradeify_book`, pg
+  feed), unit `nq-executor-local@tradeify_book`, label `tradeify_book_dry`: any-weakness + VIX gate, buy 18:00, sell 15:55,
+  1 MNQ, no orders. Proves the live path (VIX file, calendar, hold filters, EOD) for 20 sessions next to the paper fleet.
+  The rsi2 unit arms after 10 RTH closes; the others after 1–2 sessions.
+- Still to build before a funded account: conviction sizing in the executor (strategy-requested quantity, so the 4-unit
+  stack runs as one instance), and Tradeify's answer on 18:00 entries (parked). Target account: a NEW 50K Select
+  (Select Daily); never the 25K.
+
+## 2026-10-11 — VIX regime: the conditioner that changes the size of the edge (founder: "do what we can for now")
+
+### Research (free data: CBOE VIX/VIX3M/VIX9D/VVIX histories, yfinance ETF closes, FOMC dates from federalreserve.gov)
+- **Buying weakness at the daily horizon is worth ≈ 0 when VIX < 15 and 3–8× its average when VIX ≥ 20, rose > 10 % in
+  5 days, or sits in the top tercile of its year** — monotonic, in every year 2010–2026, NQ and ES (per MNQ, one-session
+  18:00 → 15:55 hold: `ibs<0.3` VIX<15 → +$0.4, 20–30 → +$32, >30 → +$81; `rsi2<20 & VIX≥20` 221 trades, +$105, PF 2.09,
+  14/16 years, ES PF 1.87; `ANY weakness & (VIX≥18 | rose>10% | pct≥0.66)` 681 trades, +$45, PF 1.51, t 3.4, worst year
+  −$257). Backwardation (VIX/VIX3M > 1) and SPY in a drawdown (< 60-day high, below its 20-day mean) say the same thing;
+  the unconditional beta hold is NEGATIVE in deep backwardation. Pre-FOMC drift (enter the evening before the decision,
+  exit 15:55 on the day): +$41/MNQ, PF 1.55, 12/17 years, 8/year — small; the session AFTER the decision is −$42.
+- **Payout simulator, conviction-sized book** (`anyweak` + `anyweak_vixany` + `wc30` + `wc30_vixany` stacked = 1–4 MNQ
+  by signal strength and regime), Select Daily 50K, members chosen on 2010–19 and scored on 2020–26, 250-day accounts:
+  eval pass 92 % / fail 8 % (median 58 days), **1.8 payouts/month, 53 % of 2-week windows paid, $1,590/month**, blown 28 %
+  per year (7 % before the first payout). Flex: 23 % of windows. This is the first construction that meets the founder's
+  payout goal in more than half the windows.
+
+### Width test (founder: "there has to be") — 15 futures + 18 ETFs, daily, 2009–2026
+- The weakness-long edge is an **equity-index phenomenon only** (NQ, QQQ, IWM, SPY, ES; YM/RTY marginal); commodities,
+  rates, FX and grains are negative on it; strength-shorts, time-series momentum and own-volatility gates show nothing after
+  costs. A first run produced t 7–9 "short edges" on bonds/grains/silver — a sign bug (cost ADDED on shorts) caught by the
+  unconditional-baseline check, plus roll-gap drift in unadjusted continuous futures (ZN −3.4 ATR/yr of close→open gaps).
+  So there is no second uncorrelated daily book in price action; the only diversification is NQ + ES (correlated).
+  Ledger: `research_tests` M1.
+
+### Stack-size curve (founder: "ignore [the Tradeify email] for now" → sizing), Select Daily, 250-day accounts, test 2020–26
+- 50K: 1 unit (any weakness, 1 MNQ) eval pass 41 % / fail 59 %, blown 89 %/yr; +gate unit 79 % / 21 %, blown 56 %; +weak-close
+  unit 90 % / 10 %, blown 32 %, 1.6 payouts/month, 47 % of 2-week windows; **4 units 92 % / 8 %, blown 28 %, 1.8/month, 53 %,
+  $1,590/month**. Bigger conviction stacks are SAFER here: the eval is a race between +$3,000 and the −$2,000 trail, and the
+  extra units fire only on the strongest days, so edge per day outruns the drawdown. 25K accounts do not work for this book
+  (the $1,000 trail is too tight even at 1 MNQ: blown 57–100 %). Day-only fallback (2 units on VIX ≥ 20 days, 09:30 → 15:55):
+  eval 47 % / 22 %, 1.2 payouts/month, 40 % of windows, blown 36 %, $430/month.
+
+### VIX × intraday (founder: "can we combine vix with an intraday strategy")
+- Split by the prior close's VIX: the intraday families go from losing to *less* losing (fleet 2024–26: ORB PF 0.36 → 0.81,
+  trend 0.33 → 0.56, mtf ≤ 0.54, lv_conf flat); the 16-year ATR-ORB and a 16-year Keltner(20, 2 ATR) breakout have no
+  positive VIX bucket. **Gap-and-go** is the one rule that turns mildly positive under the fear gate (bars 2013–26: +6.8
+  pts/trade, PF 1.31, 8/14 years; off the gate PF 0.85); the tick replay's `trend_gap_go_20` is PF 3.2 on VIX ≥ 20 days,
+  6/6 years 2021–26. The best intraday use of the regime is the **day-only weakness hold** (09:30 → 15:55 after a weak close,
+  VIX ≥ 20): +$50–70/MNQ, PF 1.5–1.8, 11–13/16 years — about two-thirds of the overnight-session form, the fallback if
+  Tradeify refuses 18:00 entries. Tick-replay "VIX ≥ 20 winners" like `keltner_ride_20_15m` (PF 2.15, 2021–26) do not
+  survive the 16-year bar test: 2022 artefacts.
+- Engine: a **generic VIX entry gate for every mode** (`vix_min / vix_rise_min / vix_pct_min / vix_any`, checked in
+  `can_enter`; `hold_vix_*` keeps the hold-mode semantics via the same `vix_gate_ok`). Fleet (NQ): `trend_gap_go_{20,20__tr25,40}__{vix20,vixany}`,
+  day-only holds `anyweak_day__{vix20,vixany}`, `rsi2_20_day__vix20`, `wc_ibs30_day__vix20` (+ the four `es_` day holds).
+  Test: `vix_min on donchian`.
+
+### Added
+- `scripts/vix_fetch.sh` (CBOE VIX + VIX3M histories → `data/regime/`, fail-open; cron 16:45 ET weekdays — the crontab is
+  not version-controlled, this line is its record; backup `backups/crontab.bak-vix-fetch-20261011`) and
+  `src/paper/vix_regime.hpp` (`VixRegime::load/before`: level, VIX3M, 5-day change, trailing-252 percentile; the row for a
+  trading day is the last close strictly before it).
+- `hold` mode gates: `hold_vix_min`, `hold_vix_rise_min`, `hold_vix_pct_min`, `hold_vix_any` (OR), and `hold_weak_any`
+  (the IBS / streak / RSI(2) / fear-body filters combine with OR = "any sign of weakness"); `TrendStrategy::set_vix`.
+  paper_main and nq_executor load the regime at start and every rollover (unknown → gated holds stay out, logged).
+  `set_event_next_day` is now also fed in the executor. 7 new checks in `test_trend_strategy`.
+- **Calendar**: 137 historical FOMC decision dates (2010–2026) loaded into the `calendar` table, so `hold_pre_event` and
+  `news_break` event-only variants see them in replays.
+- **Fleet** (NQ + ES): `anyweak_h1`, `anyweak_h1__vixany`, `anyweak_h1__vix20`, `wc_ibs30_h1__vixany`,
+  `wc_ibs30_h1__notcalm`, `rsi2_20_h1__vix20`, `rsi2_20_h1__vixany`, `fear18_h1__vixrise`, `fomc_drift_h1` — all
+  one-session holds (Tradeify-legal pending the 18:00-entry confirmation). Engine replay 09-18..10-09 reproduces the
+  research's days (`anyweak` 09-25/10-01/10-05/10-07/10-09, `wc30_notcalm` 10-01/10-05/10-07, every VIX-gated variant out
+  in a 14–16 VIX regime). It also showed `hold_pre_event` counting NFP eves (10-01 entry before the 10-02 NFP) — new
+  `hold_pre_event_fomc_only` (+ `calendar_fomc_day` in both DB classes, `set_event_next_day(any, fomc)`) keeps
+  `fomc_drift_h1` on FOMC decision days only, as researched.
+
+## 2026-10-11 — "do all": cadence research for the payout goal (founder: "is there anything we can explore … do all")
+
+### Simulator (`payout_sim`, 28 checks)
+- **Steady-state cadence**: `gap_med / gap_le10_pct / gap_le20_pct / payouts_per_month_after_first` and `win10_{1,2,3}acct_pct`
+  — the share of non-overlapping 10-trading-day windows (from the first payout) holding at least one payout, for one
+  account and for 2 / 3 accounts started 10 days apart on the same strategy.
+- **Contract-aware portfolios**: members × size never exceeds the plan's contract limit (every member can be in a
+  position at once).
+- **Two-stage evaluation** (`run_eval(…, boost, boost_until)`): 2× size until half the target, 1× after;
+  `eval2x_*` columns.
+
+### Findings (lv_conf family, Select Daily 50K, test = later segments of 2022–2026)
+- **Cadence ceiling ≈ one payout in every other 2-week window**: `win10` 47–51 % for every candidate that earns
+  ≥ $150/month with ≤ 10 % blown (`trend_ema_pb_9_21_5m__lv_conf` 1 NQ 50 %, `trend_ema_pb_20_50_5m__lv_conf` 1 NQ 47 %
+  at 1.5 payouts/month). **Staggered accounts do not raise it** (2 and 3 accounts: identical) — the same strategy pays
+  on the same profitable days, so the gaps are market gaps, not account gaps. Different strategies per account would be
+  needed, and they share the same market days too.
+- **Two-stage eval**: helps `ema_pb_20_50` (pass 37 % → 56 % within 120 days, 0 % fail, median 71 days), hurts
+  `ema_pb_9_21` (26 % → 10 %). Sizing the whole eval to 3–4 NQ fails 34–53 % — never.
+- **Passive entries kill lv_conf**: limit at signal − 1 tick fills 78–85 % of the time, but the unfilled 15–20 % carry more
+  than all the profit (market PF 1.43 → passive PF 0.35, −$15k vs +$12k on 4,222 trades). These are momentum entries;
+  they must be taken at market. Research item closed.
+
+### Fleet
+- `__lv_conf` variants added to every ORB/trend base of the ES fleet (+24, `config/paper_fleet_es.json`, engine
+  restarted) and of the overnight grid (+816, `config/night_fleet.json`, 1,764 ids — replay-only via `night-eval.timer`;
+  roughly doubles its nightly replay).
+
+## 2026-10-11 — Tradeify's real rules, the Select Daily plan and an evaluation model in the payout simulator (founder: "we wanna pass with the current tradeify rules")
+
+### Rules read from help.tradeify.co (in a real browser — the help centre 403s plain fetches)
+- **All positions must be flat by 16:45 ET every day; no holding overnight.** A trading day runs 18:00 → 17:00 ET, so the
+  one-session holds (18:00 → 15:55) sit inside a trading day — to be confirmed with Tradeify support before going live —
+  while **every multi-session variant (`*_h2`, `*_h3`, `*_xs`, `ds*_xup`, `fear18_*`, `dc20_h5`) is illegal on Tradeify: paper
+  research only.** Trailing drawdown recalculates at EOD but is **enforced live against net liquidation** (an open
+  position's MAE can breach it). Select evaluation: $1,500 / $3,000 target, $1,000 / $2,000 EOD trailing, no daily loss,
+  **40 % consistency, minimum 3 days**, 1 mini on 25K, 4 on 50K, no time limit. Funded Select Flex: 5 winning days
+  (≥ $100 / $150), 50 % of profit capped $1,250 / $2,500 (post 2026-09-01), no DLL. **Select Daily: payouts any day once
+  the balance is above a buffer ($1,100 / $2,100), 2× the cycle's profit capped $600 / $1,250, minimum $250, DLL
+  $500 / $1,000 — no winning-day count.** Every payout after the first needs a positive cycle (all plans).
+- `src/paper/payout_sim.hpp`: `Plan` gains `buffer / payout_mult / min_payout` (Select Daily), `max_minis` (the plan's
+  contract limit, 10 micros = 1 mini) and the evaluation parameters; new `run_eval()` (target, consistency, min days,
+  live breach at the MAE); plans updated to the official numbers, `select_daily_25k/50k` added. `payout_sim_main`:
+  sizes 10 MNQ / 2 NQ, sizes over the contract limit skipped, eval pass / fail / median days in the CSV and report.
+  `test_payout_sim`: 26 checks.
+
+### What the simulator says (chosen on the past, scored on the future)
+- **A payout every two weeks is not reachable with anything in the fleet** under Flex or Growth (5 winning days per
+  cycle: ≤ 4 % within 10 days) nor under Select Daily (best ≈ 6 % within 10 days, 9 % within 20).
+- **Safest path**: the `__lv_conf` family (an entry that coincides with a price level — keltner, donchian, ema-pullback,
+  ORB-10, ONH/ONL bases; PF 1.4–2.2 over 5 replayed years) on **Select Daily 50K at 1–2 NQ**: eval pass 25–37 % within
+  120 trading days with 0 % failed (no time limit, so the rest is "not yet"), then $300–600 / month alive, 0 % blown.
+  **Steady state after the first payout** (new `gap_*` / `payouts_per_month_after_first` columns): 1.0–1.5 payouts a
+  month, median gap 1–6 trading days, 75–93 % of gaps ≤ 10 days — payouts cluster after good stretches, so "about every
+  2–3 weeks on average". The front end is the slow part (eval + buffer ≈ 3–4 months). Its 2025-only window reads 3–4×
+  better — that is the strong year, not the base rate. Its 2024 level months are not replayed yet (`data/history/priority.txt`
+  now puts `nqx 2024-05 … 2025-12` first).
+- **Faster, riskier**: the legal one-session hold portfolio (`wc_ibs30_h1 + wc_ibs30_h1_sl15 + wc_ibs20_h1`) at 1 MNQ on
+  Select Daily 50K: eval pass 77 % / fail 20 % (median 88 days), then 17 % paid within 20 days, $840 / month, 10 % blown
+  before the first payout; at 3 MNQ 47 % paid within 20 days but 41 % blown first.
+- Growth: every hold variant ≤ 0 EV; `lv_conf` 8 % paid within 20 days. Flex: ≤ 6 % within 20 days for everything.
+
+## 2026-10-11 — daily-context holds: the sweep that survived, wired into the fleet (founder: "try all and add to fleet")
+
+### Research (`scratch` SQL/pandas on `bars_1m` + `session_stats`, NQ and ES 2010-07..2026-10, entry at the 18:00 reopen
+after the signal session, exit at a 15:55 close, cost 2.41 pts/MNQ, one position at a time)
+- Seven families, ~70 variants: weak close (IBS), RSI(2), down-day streaks, fear days, post-FOMC/NFP drift and fade,
+  NQ/ES 5-day spread reversion, daily Donchian/SMA trend following, unconditional beta. Bar to survive: t ≥ 2.5, PF ≥ 1.2,
+  both halves (≤2018 / ≥2019) positive in ATR units, ES t > 1. **21 survive, all long mean reversion after weakness plus one
+  trend variant**; every short, every event rule and the spread fail. Strongest: `ibs<0.1 exit-on-strength` 304 trades,
+  PF 3.12, 15/17 years, +$47.9k at 1 MNQ, worst year −$406; `ibs<0.1 hold3` PF 2.05 (ES 2.22); `ibs<0.2 exit-on-strength`
+  501 trades PF 2.03 worst year −$226; `down_streak≥2 exit-up-close` PF 1.71; `fear hold2/3` PF 1.9; `rsi2<20 hold1`
+  PF 1.61; `donchian20 hold5` PF 1.72. The full table is in the session scratchpad (`sweep.csv`) and summarised in TODO N11.
+- Intraday, the same day: 69-indicator walk-forward LightGBM on 15m bars 2013–2026 (IC +0.02..0.04 OOS, 3–4× below
+  cost; passive limit fills recover almost nothing — PF 1.02 → 1.03), day-type prediction at 09:45 (range IC 0.51 every
+  year, ORB follow-through IC 0.17 every year) that no breakout or trend family converts into profit (ATR-scaled ORB loses
+  on predicted high-range days, PF 0.8–0.9; the mid-range quintile is a +1–8 pts tilt, 9/14 years), EMA-pullback-in-trend
+  structure at ~0 gross on 5m. The intraday search is closed on evidence; the edge in this data is daily.
+
+### Added
+- **`hold` mode daily-context filters + multi-session exits** (`src/execution/trend_strategy.hpp`, all off by default):
+  `hold_prev_ibs_max` (prior RTH close position in its range), `hold_down_streak` (k lower RTH closes), `hold_rsi2_max`
+  (Wilder RSI(2) of RTH closes), `hold_donchian` (prior close beyond the n closes before it), `hold_above_sma` (n-day SMA
+  of RTH closes); `hold_days` (sessions to hold, 1 = unchanged), `hold_exit_ibs_min` (exit at the window end of a session
+  that closed ≥ x of its range), `hold_exit_up_close` (exit once a session closes above the prior close). The exit is decided
+  ONCE per session at the first window-end minute; the engine keeps a 260-deep RTH close history and counts sessions held
+  across the 18:00 reset. 16 new checks in `test_trend_strategy`.
+- **Paper only beyond one session**: `nq_executor` refuses a `hold` config with `hold_days > 1` or `hold_exit_*`
+  (`--check-config` fails), and `strategy_leaderboard()` marks such ids not `live_runnable`. Multi-session variants switch
+  the paper broker's own EOD off (`eod_flatten_hour 24`) — the strategy owns the exit.
+- **18 NQ + 18 ES paper strategies** (`wc_ibs{10,20,30}_{h1,h3,xs}`, `wc_ibs10_h2`, `ds{2,3}_xup`, `fear18_{h2,h3,xs}`,
+  `rsi2_20_h1`, `rsi2_20_sma50_xr`, `dc20_h5`, ES twins `es_*`), labels `tradeify` / `es`. Golden re-frozen (0 added: they
+  enter at 18:00, outside the golden window). Engine replay over 2026-09-18..10-09 (label `wc_check`, log only — the ids
+  were registered afterwards) reproduces the research's signal days exactly: IBS<0.1 → 10-01; IBS<0.2 → 10-01, 10-07;
+  IBS<0.3 → 10-01, 10-05, 10-07; streak≥2 → 09-25, 10-09; no fear day; and the exits behave (h2 out after 2 sessions, h3
+  after 3, `_xs` out the same session it closes ≥ 0.6 of its range, `ds2_xup` out on the first up close).
+  One deviation found and fixed: `hold_rsi2_max` fired on 09-29 from a 5-close history — the filter now needs 10 RTH
+  closes (α ½ has converged by then). Warm-up note: the close history only starts when the engine starts, so `rsi2_*`
+  needs 10 sessions, `dc20_h5` 21 and `rsi2_20_sma50_xr` 50 before they can fire; the one-session filters fire from day 2.
+
+## 2026-10-11 — fear-day hold filters + forward test of the one edge that survived
+
+### Added
+- **`hold` mode fear-day filters** (`src/execution/trend_strategy.hpp`, all off by default, in prior-day ATR14 units):
+  `hold_prev_body_max` (prior RTH close − open ≤ value), `hold_prev_range_min`, `hold_prev_down`, and a dip entry
+  `hold_dip_atr` / `hold_dip_until` (first bar from the entry time to the cutoff whose low reaches open − k × ATR).
+  The engine now keeps the prior RTH open (`prev_open_`). Tests: 6 new checks in `test_trend_strategy`.
+- **14 paper strategies** forward-testing it: `fear_bigdown_{open,dip25,dip50,open__sl1atr}` and
+  `fear_bigrangedn_{open,dip25,dip50}` in `config/paper_fleet.json` (label `tradeify`), the same with `es_` in
+  `config/paper_fleet_es.json` (label `es`). Research basis: `research_tests` R9/R10 — buying after a ≥ 1 ATR down
+  day (or a ≥ 1.5 ATR wide down day) held on NQ and ES in both 2010–18 and 2019–26. About 15–20 signals a year.
+  Engine replay over 2026-09-18..10-09 (label `fear_bf`) matches the research's signal days.
+
+### Research (no code): what did not hold
+- Weekly volume profile value-area edges with/without absorption (YouTube order-flow method), late-day reversals,
+  intraday "drop from the high" buys, the confluence trend pullback (EMA/VWAP stack, impulse, pullback, trigger),
+  and a walk-forward logistic / gradient-boosting model over 14 daily features — all logged in `research_tests`
+  (R8, R10–R12) with numbers.
+
+## 2026-10-11 — payout simulator, and three corrections to the history research
+
+### Added
+- payout_sim: daily risk rules (`payout::Rules`), train/test split (rules chosen on the first 60% of days), EV per account
+  with a reset cost, greedy portfolios; regime `trend_b` (close vs 50-session average, `session_trend`) in `hist_trades_regime`.
+- `build/walk_forward` + `scripts/walk_forward.sh` (`src/paper/walk_forward.hpp`, `tests/paper/test_walk_forward.cpp`): walk-forward parameter
+  selection per strategy family × session window (asia, london, ny_open, ny_mid, ny_pm) with 3 / 6 / 12-month training,
+  against blind and hindsight. Output `data/walk_forward/`.
+- `build/payout_sim` + `scripts/payout_sim.sh` (`src/paper/payout_sim.hpp`, `tests/paper/test_payout_sim.cpp`, 13 checks): every
+  history strategy, alone and per regime known at the open, through Tradeify Select Flex / Growth 25K / 50K rules at 1/2/3/5 MNQ
+  and 1/2 NQ — payout within 10 / 20 trading days, blown before a payout, $ per month. Breaches tested at each trade's MAE;
+  Growth trails intraday incl. open profit (MFE first, the conservative order); soft daily loss cuts the day. Output `data/payout/`.
+- `scripts/sql/history_done.sql` + `scripts/history_done_sync.sh`: table `history_done` (mirror of the queue's done markers),
+  views `hist_trades` (finished months only) and `hist_trades_regime` (+ prop trading day and the regime known at entry).
+- `data/history/priority.txt`: `history_queue.sh` reads it first every loop (reorder without a restart). Now: 3 bars-vs-ticks
+  checks, then NQ 1m bars 2023-02 → 2010-07 interleaved with `nqx` (level variants) on the finished MBO months.
+
+### Fixed
+- **Bar replay filled stops a bar's range past the stop**: `--dbn-bars` turned each 1m bar into 4 prints (O, L/H, H/L, C), so a
+  stop between two of them filled at the next one. First bars-vs-ticks check (NQ 2026-01): bar stops −20.4 pts vs −11.2 on
+  ticks, breakevens −6.2 vs +0.2, only 56 of 4,479 strategies matched. `hist::bar_path` now walks every 0.25 between the four
+  points (≤ 40 prints per leg). `scripts/bars_vs_ticks.sh` + table `history_bar_reliability` decide which strategies' 2010–2023
+  bar results walk_forward.sh / payout_sim.sh may use.
+- **Half-replayed months were counted as complete** (`history_report.sh` read `paper_trades`): 5 running months entered the
+  rankings. It now reads `hist_trades`. `beta_day` fell from +$6,316 to +$1,761.
+- **Units: the paper fleet trades MNQ** (`point_value` 2). Every "per contract" history figure is per MNQ; the report says so,
+  and the simulator's NQ sizes are 10× gross (its first version labelled MNQ results as NQ).
+- **Regime look-ahead**: a 03:20 London trade was tagged with that day's 09:30 gap. `hist_trades_regime` uses the latest
+  session whose open (gap) / close (day type) is before the entry; `tcf5_ldn · gap_big` disappears with it.
+
+## 2026-10-11 — price levels in the paper fleet: 1,728 level variants
+
+Founder: "lets implement levels into our strategies" — every level family, every use ("try them all").
+
+- **`src/paper/paper_levels.hpp` LevelState**: one per paper_engine (host-owned like RegimeState), built from
+  1-minute bars — seeded from the 45 days of `bars_1m` before the start, then fed every tick (a minute folds in
+  when the next starts; a re-fed minute counts once). Families: prior RTH high/low/close + today's open (`day`),
+  overnight high/low (`on`), opening range 5/15/30 (`or`), RTH VWAP ±1/2σ + prior closing VWAP (`vwap`), prior
+  day POC/VAH/VAL (`vp`), naked POCs (`npoc`), prior week/month high/low (`wk`, `mo`), round numbers scaled to
+  price (`round`: NQ 50, BTC 500). The RTH session closes into "prior day" at 16:00 ET, so overnight
+  strategies see today's session as the prior day.
+- **PaperBroker uses** (OrbConfig `lv_*`, distances × ATR — session_stats ATR14, else the mean RTH range the
+  LevelState has seen, so the first days after a data gap still have one): `lv_room_atr` gate (next level
+  ahead too close → `lv_room`), `lv_near_atr` gate (no level close → `lv_far`), `lv_target` (resting limit at
+  the next level ≥ `lv_tgt_min_atr`·ATR ahead → exit `level_target`), `lv_stop` (stop beyond the nearest level
+  behind, + buffer; only ever TIGHTENS `sl_points`). `lv_set` picks the families.
+- **Calibration** (scratch tool over NQ 2025-10…2026-02 1m bars): with all families a level sits 0.031 ATR
+  ahead at the median, so the gates use the key levels (day,on,vp,npoc,wk,mo): room p25 0.051, nearest p25
+  0.026 ATR. Overlays (`scripts/fleet_add_variants.sh`, `ONLY=lv_`): `__lv_room` (0.05, key), `__lv_conf`
+  (0.025, key), `__lv_tgt` (0.1, all), `__lv_stop` (min 0.01 + buf 0.005, all) on the 61 ORB + 371 trend
+  bases. Golden day: lv_room skips ~30 % of entries, lv_conf ~75 %, lv_stop changes 48/901 trades.
+- **Paper only**: `nq_executor` refuses a config with lv_* keys; `strategy_leaderboard()` marks `lv_*`
+  overlays not live_runnable. History: the lv variants ride with `nqx` over every NQ month (the `nq` job
+  replays the main fleet minus them, per-month config files so concurrent jobs never share one).
+- Golden re-frozen: 0 removed rows, +2,993 rows, all `__lv_*`. Tests: 7 new (test_paper_broker 49/49).
+  `make hermes` 20/20. Not yet: MTF (bracket broker) bases, the crypto mirrors, a live implementation.
+- **A1 profiling** (gprof, `build-prof/`): replays are CPU-bound (262 s CPU / 270 s wall, ~0 system time —
+  not Postgres). MBO day: 96 % per-tick (TrendStrategy::on_tick 41 %, PaperBroker::on_tick 25 %, dispatch
+  20 %, ORB 10 %); ~half of all CPU sits in libc — every broker and trend strategy converts each tick to ET
+  with `gmtime_r` (~185 M calls a bar-week) and compares mode/session strings per tick. → A2/A3.
+
 ## 2026-10-11 — history on all the data: night grid + winners on MBO, NQ back to 2010 from 1m bars
 
 Founder: "we need to trade on all the data we have", then "find the best strategies".

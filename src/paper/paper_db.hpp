@@ -161,6 +161,7 @@ public:
     double session_atr14_before(const std::string& symbol, const std::string& ymd);
     // Scheduled-release day (calendar kind fomc / nfp) for the news_break mode's nb_event_only.
     bool calendar_event_day(const std::string& ymd);
+    bool calendar_fomc_day(const std::string& ymd);     // kind = 'fomc' only (hold_pre_event_fomc_only)
     std::vector<TickRow> poll_ticks(const std::string& symbol, int64_t after_us,
                                     int limit = 5000);
 
@@ -178,6 +179,9 @@ public:
     // file replay (paper_engine --dbn-mbo), where no reference ticks exist in Postgres.
     struct BarRow { int64_t minute_us; double high, low, close; };
     std::vector<BarRow> load_bars_1m(const std::string& symbol, int64_t from_us, int64_t to_us);
+    // Full 1m bars (open + volume too) — seeds the fleet's price levels (paper_levels.hpp).
+    struct OhlcvRow { int64_t minute_us; double open, high, low, close, volume; };
+    std::vector<OhlcvRow> load_ohlcv_1m(const std::string& symbol, int64_t from_us, int64_t to_us);
     static std::string format_ts(int64_t ts_micros);  // → "YYYY-MM-DD HH:MM:SS.ffffff+00"
 
     void exec_silent(const std::string& sql);

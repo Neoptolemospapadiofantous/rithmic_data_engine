@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include <cstdio>
 #include <string>
 
 namespace fs = std::filesystem;
@@ -158,6 +159,7 @@ struct OrbConfig {
     // value), clamped to [1, vt_qty_max]; 0 = fixed `qty`. Same formula live and paper.
     double      vt_risk_usd       = 0.0;
     int         vt_qty_max        = 5;
+    int         qty_max           = 0;             // hard cap on any dynamic entry size (conviction stack, vol targeting); 0 = off
     // Exit-side regime (2026-09-28): once the session's efficiency reads ≥ regime_exit_min_eff
     // the trade is managed as a TREND trade (trail_step_trend, no target); below it as a RANGE
     // trade (trail_step_range, tp_r_range × sl_points). 0 = use trail_step / take_profit_pts().
@@ -165,6 +167,17 @@ struct OrbConfig {
     double      trail_step_trend    = 0.0;
     double      trail_step_range    = 0.0;
     double      tp_r_range          = 0.0;
+    // Levels (2026-10-11, PAPER ONLY — paper/paper_levels.hpp LevelState, applied by PaperBroker; the live
+    // executor refuses a config carrying lv_* keys). Distances are fractions of the prior-day ATR14; 0 / false = off.
+    std::string lv_set          = "all";   // level families: "all" or "day,on,or,vwap,vp,npoc,wk,mo,round"
+    int         lv_mask         = 0;       // parsed lv_set (0 = all) — set by the paper config loader
+    double      lv_room_atr     = 0.0;     // gate: next level ahead must be ≥ x·ATR away
+    double      lv_near_atr     = 0.0;     // gate: enter only within x·ATR of a level
+    bool        lv_target       = false;   // exit at the next level ahead (≥ lv_tgt_min_atr·ATR away)
+    double      lv_tgt_min_atr  = 0.1;
+    bool        lv_stop         = false;   // initial stop beyond the nearest level behind (never wider than sl_points)
+    double      lv_stop_min_atr = 0.03;
+    double      lv_stop_buf_atr = 0.02;
     // Regime gate (paper/paper_quote.hpp RegimeState) — session shape since the 09:30 open vs
     // the prior day's ATR14. All off by default. Same keys live and paper (2026-09-28).
     double      regime_min_range_atr = 0.0;        // day must have expanded ≥ x ATR so far
@@ -321,6 +334,7 @@ struct OrbConfig {
         c.hwm_margin_pts       = json_dbl(text, "hwm_margin_pts",       c.hwm_margin_pts);
         c.vt_risk_usd          = json_dbl(text, "vt_risk_usd",          c.vt_risk_usd);
         c.vt_qty_max           = json_int(text, "vt_qty_max",           c.vt_qty_max);
+        c.qty_max              = json_int(text, "qty_max",              c.qty_max);
         c.regime_exit_min_eff  = json_dbl(text, "regime_exit_min_eff",  c.regime_exit_min_eff);
         c.trail_step_trend     = json_dbl(text, "trail_step_trend",     c.trail_step_trend);
         c.trail_step_range     = json_dbl(text, "trail_step_range",     c.trail_step_range);
@@ -628,3 +642,18 @@ private:
         return s.substr(b, s.find_last_not_of(ws) - b + 1);
     }
 };
+
+// CME equity session from one calendar-table row (kind 'holiday' / 'early_close', close_ct "HH:MM" Central):
+// 0 = closed all day, else the ET minute-of-day of the early close (CT + 60); no row / other kind = -1.
+// An early close with no time recorded counts as closed — never hold into an unknown close.
+inline int market_close_et_min(const std::string& kind, const std::string& close_ct) {
+    if (kind == "holiday") return 0;
+    if (kind != "early_close") return -1;
+    int h = 0, m = 0;
+    return std::sscanf(close_ct.c_str(), "%d:%d", &h, &m) == 2 ? (h + 1) * 60 + m : 0;
+}
+// A strategy that flattens at flatten_min (ET minute-of-day) must not open a position on a day the market closes
+// at or before that time — its exit would find the market shut.
+inline bool market_closes_before_flatten(int close_et_min, int flatten_min) {
+    return close_et_min >= 0 && close_et_min <= flatten_min;
+}

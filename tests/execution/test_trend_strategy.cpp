@@ -4,9 +4,11 @@
 
     Build: part of the CMake test set (test_trend_strategy); run by scripts/hermes.sh.
 */
+#include "../../src/paper/vix_regime.hpp"
 #include <cassert>
 #include <cmath>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -106,6 +108,67 @@ int main() {
         feed_path(s2, path, 9, 30);
         CHECK(n2 == 0, "atr_break: silent without a day ATR (fail-closed)");
     }
+    // ── opening_drive + drive_day_atr + drive_market (2026-10-13): decide at 09:30 + D on k × day ATR, enter at market ──
+    {
+        TrendConfig tc; tc.mode = "opening_drive"; tc.tf_min = 1; tc.drive_minutes = 4; tc.drive_min_atr = 0.2;
+        tc.drive_day_atr = true; tc.drive_market = true; tc.drive_entry_from = 930; tc.drive_entry_to = 1000;
+        auto run = [&](const std::vector<double>& path, double day_atr, bool set_atr) {
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); if (set_atr) s.set_day_atr(day_atr);
+            feed_path(s, path, 9, 30);
+            return out;
+        };
+        // threshold 0.2 × 100 = 20 pts; bar 09:34 decides (closes ~20030 vs open ~20000)
+        auto up = run({20000, 20010, 20020, 20025, 20030, 20000, 19990, 20040, 20050}, 100.0, true);
+        CHECK(up.size() == 1 && up[0].sig == OrbSignal::BUY && up[0].why == "drive_market_long", "drive_market: BUY once at the decision bar");
+        auto dn = run({20000, 19990, 19980, 19975, 19970, 20000, 20010}, 100.0, true);
+        CHECK(dn.size() == 1 && dn[0].sig == OrbSignal::SELL, "drive_market: SELL on a strong down open");
+        auto quiet = run({20000, 20005, 20010, 20008, 20010, 20040, 20060}, 100.0, true);
+        CHECK(quiet.empty(), "drive_market: no trade when the drive is under k × day ATR (later moves ignored)");
+        auto noatr = run({20000, 20010, 20020, 20025, 20030, 20040}, 0.0, false);
+        CHECK(noatr.empty(), "drive_market: silent without a day ATR (fail-closed)");
+    }
+    // ── E1 strong open (2026-10-14): drive_score_min / drive_score_units / drive_stop_atr ──
+    {
+        TrendConfig tc; tc.mode = "opening_drive"; tc.tf_min = 1; tc.drive_minutes = 4; tc.drive_min_atr = 0.15;
+        tc.drive_day_atr = true; tc.drive_market = true; tc.drive_entry_from = 930; tc.drive_entry_to = 1000;
+        tc.drive_score_big = 0.35; tc.drive_score_units = true; tc.drive_stop_atr = 0.35;
+        const int64_t DAY = 86'400'000'000LL;
+        // prior RTH day closing at 20000, 18:00 overnight open `on`, then today's drive path (one price per minute)
+        auto run = [&](int score_min, double on, const std::vector<double>& path, int& units, double& sd) {
+            tc.drive_score_min = score_min;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(9, 30 + k) - DAY, 20000.0, 1, true});   // yesterday's RTH
+            s.on_tick(OrbTick{at(15, 59) - DAY, 20000.0, 1, true});
+            s.reset_session();                                                                      // 18:00 rollover
+            s.on_tick(OrbTick{at(18, 0) - DAY, on, 1, true});
+            s.on_tick(OrbTick{at(18, 1) - DAY, on, 1, true});
+            s.set_day_atr(100.0);
+            feed_path(s, path, 9, 30);
+            units = s.last_units(); sd = s.take_stop_dist();
+            return out;
+        };
+        int u = 0; double sd = 0.0;
+        // down drive −39.5 (> .35 × 100): gap down, open < 18:00 open 19990, closes at the low → score 4
+        auto a4 = run(2, 19990.0, {19980, 19960, 19950, 19940, 19930, 19920}, u, sd);
+        CHECK(a4.size() == 1 && a4[0].sig == OrbSignal::SELL, "E1: score-4 down drive → SELL");
+        CHECK(u == 3, "E1: score 4 → 3 units");
+        CHECK(std::fabs(sd - 35.0) < 1e-9, "E1: stop distance = .35 × day ATR");
+        // same drive but the 18:00 open was below today's open → overnight point missing → score 3
+        auto a3 = run(2, 19970.0, {19980, 19960, 19950, 19940, 19930}, u, sd);
+        CHECK(a3.size() == 1 && u == 2, "E1: score 3 → 2 units");
+        auto none = run(4, 19970.0, {19980, 19960, 19950, 19940, 19930}, u, sd);
+        CHECK(none.empty(), "E1: score 3 < min 4 → no trade");
+        // up drive +20 (> .15 ATR, < .35): gap down, open < 18:00 open, closes mid-range → score 0 → no trade
+        auto weak = run(2, 19990.0, {19980, 20010, 19990, 20000, 20010}, u, sd);
+        CHECK(weak.empty(), "E1: weak up drive against gap/overnight → no trade");
+        // default (drive_score_min 0) still trades the plain drive and asks for no units / stop distance
+        tc.drive_score_units = false; tc.drive_stop_atr = 0.0;
+        auto plain = run(0, 19990.0, {19980, 20010, 19990, 20000, 20010}, u, sd);
+        CHECK(plain.size() == 1 && plain[0].sig == OrbSignal::BUY && u == 0 && sd == 0.0, "E1 off: plain drive_market unchanged");
+    }
     // ── vprofile (2026-09-29): yesterday's value area, fade the touch toward the POC ──
     {
         TrendConfig tc; tc.mode = "vprofile"; tc.tf_min = 1; tc.vp_style = "fade"; tc.vp_tol_atr = 0.5; tc.vp_va_frac = 0.7;
@@ -160,6 +223,348 @@ int main() {
         s3.reset_session(); s3.set_event_next_day(true);
         feed_path(s3, std::vector<double>(5, 20000.0), 15, 53);
         CHECK(n3 == 1, "hold_pre_event: enters the day before an event");
+    }
+    // ── hold_trend_fade + noise_momentum (2026-10-15, book research BK1) ──
+    {
+        constexpr int64_t DAY = 86400LL * 1'000'000LL;
+        auto day_path = [](TrendStrategy& s, int64_t off, double open, double close) {   // 09:30–16:00, open → close
+            for (int m = 0; m <= 390; ++m) {
+                const int tm = 9 * 60 + 30 + m; const double p = open + (close - open) * m / 390.0;
+                for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(tm / 60, tm % 60, k * 15) + off, p, 1, k % 2 == 0});
+            }
+        };
+        auto path_at = [](TrendStrategy& s, int64_t off, const std::vector<double>& per_min) {    // from 09:30, one price per minute
+            for (size_t m = 0; m < per_min.size(); ++m) {
+                const int tm = 9 * 60 + 30 + (int)m;
+                for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(tm / 60, tm % 60, k * 15) + off, per_min[m], 1, k % 2 == 0});
+            }
+        };
+        TrendConfig tc; tc.mode = "hold"; tc.tf_min = 1; tc.hold_entry_hhmm = 930; tc.win_start = 930; tc.win_end = 1555;
+        tc.hold_trend_fade = true;
+        auto fade_run = [&](double open, double close) {
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            day_path(s, 0, open, close); s.check_eod(15, 55); s.reset_session(); out.clear();
+            path_at(s, DAY, std::vector<double>(6, close));
+            return out;
+        };
+        auto up = fade_run(20000.0, 20200.0);                  // range 2 ATR, body 2 ATR, closes at the high
+        CHECK(up.size() == 1 && up[0].sig == OrbSignal::SELL && up[0].why == "trend_fade_short", "hold_trend_fade: sells the open after an up trend day");
+        auto dn = fade_run(20000.0, 19800.0);
+        CHECK(dn.size() == 1 && dn[0].sig == OrbSignal::BUY && dn[0].why == "trend_fade_long", "hold_trend_fade: buys the open after a down trend day");
+        auto small = fade_run(20000.0, 20120.0);               // 1.2 ATR range < 1.8
+        CHECK(small.empty(), "hold_trend_fade: a 1.2 ATR day is not a trend day");
+        TrendStrategy cold(tc, risk_cfg()); int nc = 0;
+        cold.set_signal_callback([&](OrbSignal, double, const std::string&) { ++nc; });
+        cold.reset_session(); cold.set_day_atr(100.0); path_at(cold, 0, std::vector<double>(6, 20000.0));
+        CHECK(nc == 0 && cold.prev_trend_day_dir() == 0, "hold_trend_fade: no prior session → no entry");
+
+        TrendConfig nm; nm.mode = "noise_momentum"; nm.tf_min = 1; nm.nm_days = 3; nm.nm_check_min = 30;
+        nm.win_start = 930; nm.win_end = 1555;
+        TrendStrategy s(nm, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); s.set_day_atr(100.0);
+        std::vector<double> burst(31, 20010.0); for (int m = 5; m < 31; ++m) burst[m] = 20100.0;   // +90 by 09:35, held
+        int64_t off = 0;
+        for (int d = 0; d < 3; ++d, off += DAY) {               // quiet days: |close/open − 1| ≤ 0.0005
+            day_path(s, off, 20000.0, 20010.0); s.check_eod(15, 55); s.reset_session(); out.clear();
+        }
+        {   // only two sessions of history → the same burst stays silent
+            TrendStrategy y(nm, risk_cfg()); int ny = 0;
+            y.set_signal_callback([&](OrbSignal, double, const std::string&) { ++ny; });
+            y.reset_session(); y.set_day_atr(100.0);
+            for (int d = 0; d < 2; ++d) { day_path(y, d * DAY, 20000.0, 20010.0); y.check_eod(15, 55); y.reset_session(); }
+            path_at(y, 2 * DAY, burst);
+            CHECK(ny == 0 && y.nm_history_days() == 2, "noise_momentum: silent while history < nm_days");
+        }
+        CHECK(s.nm_history_days() == 3, "noise_momentum: three sessions of history stored");
+        CHECK(s.nm_sigma(29) > 0.0 && s.nm_sigma(29) < 0.001, "noise_momentum: sigma at 10:00 is the quiet days' move");
+        std::vector<double> today = burst;                     // 10:00 check closes at 20100 > upper band ≈ 20011
+        for (int m = 31; m < 61; ++m) today.push_back(19950.0); // back under the open → the 10:30 check exits
+        today.push_back(19950.0);
+        path_at(s, off, today);
+        CHECK(!out.empty() && out[0].sig == OrbSignal::BUY && out[0].why == "noise_long", "noise_momentum: long when the 10:00 close is above the upper band");
+        CHECK(out.size() >= 2 && out[1].sig == OrbSignal::FLATTEN_EOD && out[1].why == "noise_exit_long", "noise_momentum: exits at the 10:30 check below max(band, VWAP)");
+    }
+    // ── hold fear-day filters + dip entry (2026-10-11): prior RTH body / range in prior-day ATR units ──
+    {
+        constexpr int64_t DAY = 86400LL * 1'000'000LL;
+        auto day_path = [](TrendStrategy& s, int64_t off, double open, double close) {   // 09:30–16:00, open → close
+            for (int m = 0; m <= 390; ++m) {
+                const int tm = 9 * 60 + 30 + m; const double p = open + (close - open) * m / 390.0;
+                for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(tm / 60, tm % 60, k * 15) + off, p, 1, k % 2 == 0});
+            }
+        };
+        TrendConfig tc; tc.mode = "hold"; tc.tf_min = 1; tc.hold_entry_hhmm = 930; tc.win_start = 930; tc.win_end = 1555;
+        tc.hold_prev_body_max = -1.0;
+        TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+        s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+        s.reset_session(); s.set_day_atr(100.0);
+        feed_path(s, std::vector<double>(6, 20000.0), 9, 30);
+        CHECK(out.empty(), "hold_prev_body_max: no prior day yet → no entry");
+        s.check_eod(15, 55); s.reset_session(); out.clear();
+        day_path(s, 0, 20000.0, 19950.0); s.check_eod(15, 55); s.reset_session(); out.clear();          // −0.5 ATR day
+        feed_path(s, std::vector<double>(6, 19950.0), 9, 30);
+        CHECK(out.empty(), "hold_prev_body_max: a −0.5 ATR prior day is not a fear day");
+        s.check_eod(15, 55); s.reset_session(); out.clear();
+        TrendStrategy s2(tc, risk_cfg()); std::vector<Rec> o2;
+        s2.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { o2.push_back({g, p, w}); });
+        s2.reset_session(); s2.set_day_atr(100.0);
+        day_path(s2, 0, 20000.0, 19880.0); s2.check_eod(15, 55); s2.reset_session(); o2.clear();       // −1.2 ATR day
+        feed_path(s2, std::vector<double>(6, 19880.0), 9, 30);
+        CHECK(o2.size() == 1 && o2[0].sig == OrbSignal::BUY && o2[0].why == "hold_long", "hold_prev_body_max: buys the open after a −1.2 ATR day");
+        // range filter: a 1.2 ATR down day fails range ≥ 1.5
+        TrendConfig tr = tc; tr.hold_prev_body_max = 0.0; tr.hold_prev_range_min = 1.5; tr.hold_prev_down = true;
+        TrendStrategy s3(tr, risk_cfg()); int n3 = 0;
+        s3.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n3; });
+        s3.reset_session(); s3.set_day_atr(100.0);
+        day_path(s3, 0, 20000.0, 19880.0); s3.check_eod(15, 55); s3.reset_session();
+        feed_path(s3, std::vector<double>(6, 19880.0), 9, 30);
+        CHECK(n3 == 0, "hold_prev_range_min: range 1.2 ATR < 1.5 → no entry");
+        // dip entry: after a fear day, waits for open − 0.5 ATR, then buys once
+        TrendConfig td = tc; td.hold_dip_atr = 0.5; td.hold_dip_until = 1200;
+        TrendStrategy s4(td, risk_cfg()); std::vector<Rec> o4;
+        s4.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { o4.push_back({g, p, w}); });
+        s4.reset_session(); s4.set_day_atr(100.0);
+        day_path(s4, 0, 20000.0, 19880.0); s4.check_eod(15, 55); s4.reset_session(); o4.clear();
+        feed_path(s4, {19880, 19870, 19860, 19850, 19845}, 9, 30);           // −35 from the open: not yet
+        CHECK(o4.empty(), "hold_dip_atr: no entry before the dip level");
+        feed_path(s4, {19828, 19820, 19825, 19815}, 9, 35);                  // −52 → buy on that bar's close
+        CHECK(o4.size() == 1 && o4[0].sig == OrbSignal::BUY && o4[0].why == "hold_dip_long", "hold_dip_atr: buys once at open − 0.5 ATR");
+        // hold_combo3: one unit per daily signal on (weak close & VIX ≥ 20, body ≤ −1 ATR, range ≥ 1.5 ATR & down)
+        auto combo = [&](double open, double close, double vix, bool vix_known, std::vector<Rec>& o, bool stack = true) {
+            TrendConfig c3; c3.mode = "hold"; c3.tf_min = 1; c3.hold_entry_hhmm = 930; c3.win_start = 930; c3.win_end = 1555;
+            c3.hold_combo3 = true; c3.combo_stack = stack;
+            auto s = std::make_unique<TrendStrategy>(c3, risk_cfg());
+            s->set_signal_callback([&](OrbSignal g, double p, const std::string& w) { o.push_back({g, p, w}); });
+            s->reset_session(); s->set_day_atr(100.0);
+            day_path(*s, 0, open, close); s->check_eod(15, 55); s->reset_session(); o.clear();   // linear day: IBS 0 when down
+            s->set_vix(vix, 0.0, 0.0, vix_known);
+            feed_path(*s, std::vector<double>(6, close), 9, 30);
+            return s->last_units();
+        };
+        { std::vector<Rec> o; const int u = combo(20000.0, 19880.0, 0.0, false, o);
+          CHECK(o.size() == 1 && o[0].why == "hold_combo3" && u == 1, "hold_combo3: −1.2 ATR day, no VIX → 1 unit (big down)"); }
+        { std::vector<Rec> o; const int u = combo(20000.0, 19880.0, 25.0, true, o);
+          CHECK(o.size() == 1 && u == 2, "hold_combo3: −1.2 ATR day closing on its low, VIX 25 → 2 units"); }
+        { std::vector<Rec> o; combo(20000.0, 19950.0, 15.0, true, o);
+          CHECK(o.empty(), "hold_combo3: −0.5 ATR day, VIX 15 → no signal, no entry"); }
+        { std::vector<Rec> o; const int u = combo(20000.0, 19880.0, 25.0, true, o, false);
+          CHECK(o.size() == 1 && u == 0, "hold_combo3 combo_stack=false: 2 signals → entry at the config qty (units 0)"); }
+        { std::vector<Rec> o; combo(20000.0, 19950.0, 15.0, true, o, false);
+          CHECK(o.empty(), "hold_combo3 combo_stack=false: no signal → still no entry"); }
+        // CME holiday / early close (calendar): a 15:55 flatten must not open on a day the market shuts earlier
+        CHECK(market_close_et_min("holiday", "") == 0, "calendar: holiday → closed all day");
+        CHECK(market_close_et_min("early_close", "12:15") == 13 * 60 + 15, "calendar: early close 12:15 CT → 13:15 ET");
+        CHECK(market_close_et_min("early_close", "") == 0, "calendar: early close without a time → treated as closed");
+        CHECK(market_close_et_min("fomc", "") == -1, "calendar: other kinds → normal day");
+        CHECK(market_closes_before_flatten(13 * 60 + 15, 15 * 60 + 55), "calendar: 13:15 close blocks a 15:55 flatten");
+        CHECK(market_closes_before_flatten(0, 15 * 60 + 55), "calendar: holiday blocks entries");
+        CHECK(!market_closes_before_flatten(13 * 60 + 15, 10 * 60 + 30), "calendar: 13:15 close does not block a 10:30 flatten");
+        CHECK(!market_closes_before_flatten(-1, 15 * 60 + 55), "calendar: normal day does not block");
+        { std::vector<Rec> o; const int u = combo(20000.0, 19950.0, 22.0, true, o);
+          CHECK(o.size() == 1 && u == 1, "hold_combo3: weak close with VIX 22 → 1 unit"); }
+        { std::vector<Rec> o; combo(20000.0, 20050.0, 30.0, true, o);
+          CHECK(o.empty(), "hold_combo3: up day closing on its high → no entry even with VIX 30"); }
+        (void)DAY;
+    }
+    // ── hold daily-context filters + multi-day exits (2026-10-11 sweep): IBS, streak, RSI(2), Donchian, hold_days ──
+    {
+        constexpr int64_t DAY = 86400LL * 1'000'000LL;
+        // one RTH session open → close with the given high/low touched mid-day, then the 15:55 check + the 18:00 reset
+        auto session = [](TrendStrategy& s, int64_t off, double open, double hi, double lo, double close) {
+            auto tick = [&](int tm, double p) { for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(tm / 60, tm % 60, k * 15) + off, p, 1, k % 2 == 0}); };
+            for (int m = 0; m <= 390; ++m) {
+                const int tm = 9 * 60 + 30 + m;
+                double p = open + (close - open) * m / 390.0;
+                if (m == 100) p = hi; else if (m == 200) p = lo;
+                tick(tm, p);
+            }
+        };
+        auto make = [](TrendConfig tc, std::vector<Rec>& out) {
+            auto s = std::make_unique<TrendStrategy>(tc, risk_cfg());
+            s->set_signal_callback([&out](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s->reset_session(); s->set_day_atr(100.0); return s;
+        };
+        TrendConfig base; base.mode = "hold"; base.tf_min = 1; base.hold_entry_hhmm = 930; base.win_start = 930; base.win_end = 1555;
+        // 1. hold_prev_ibs_max: a close in the bottom 20 % of the range enters; a mid-range close does not
+        {
+            TrendConfig tc = base; tc.hold_prev_ibs_max = 0.2; std::vector<Rec> out; auto s = make(tc, out);
+            session(*s, 0, 20000, 20100, 19900, 19920); s->check_eod(15, 55); s->reset_session(); out.clear();   // ibs 0.10
+            feed_path(*s, std::vector<double>(6, 19920.0), 9, 30);
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_prev_ibs_max: buys after a close at 10 % of the range");
+            s->check_eod(15, 55); s->reset_session(); out.clear();
+            session(*s, DAY, 19920, 20100, 19900, 20000); s->check_eod(15, 55); s->reset_session(); out.clear(); // ibs 0.50
+            feed_path(*s, std::vector<double>(6, 20000.0), 9, 30);
+            CHECK(out.empty(), "hold_prev_ibs_max: a mid-range close does not enter");
+        }
+        // 2. hold_down_streak: two lower closes in a row enter; an up close breaks the streak
+        {
+            TrendConfig tc = base; tc.hold_down_streak = 2; std::vector<Rec> out; auto s = make(tc, out);
+            session(*s, 0, 20000, 20050, 19950, 20000); s->check_eod(15, 55); s->reset_session();
+            session(*s, DAY, 20000, 20050, 19900, 19950); s->check_eod(15, 55); s->reset_session(); out.clear();   // 1 lower close
+            feed_path(*s, std::vector<double>(6, 19950.0), 9, 30);
+            CHECK(out.empty(), "hold_down_streak: one lower close is not a streak of two");
+            std::vector<Rec> o2; auto s2 = make(tc, o2);                                                       // a fresh instance: 2 lower closes
+            session(*s2, 0, 20000, 20050, 19950, 20000); s2->check_eod(15, 55); s2->reset_session();
+            session(*s2, DAY, 20000, 20050, 19900, 19950); s2->check_eod(15, 55); s2->reset_session();
+            session(*s2, 2 * DAY, 19950, 20000, 19850, 19900); s2->check_eod(15, 55); s2->reset_session(); o2.clear();
+            feed_path(*s2, std::vector<double>(6, 19900.0), 9, 30);
+            CHECK(o2.size() == 1 && o2[0].sig == OrbSignal::BUY, "hold_down_streak: buys after two consecutive lower closes");
+        }
+        // 3. hold_rsi2_max: three down closes → RSI(2) = 0 → entry; an up close lifts it above 20
+        {
+            TrendConfig tc = base; tc.hold_rsi2_max = 20.0; std::vector<Rec> out; auto s = make(tc, out);
+            double c = 20000; for (int d = 0; d < 6; ++d) { session(*s, d * DAY, c, c + 20, c - 60, c - 50); s->check_eod(15, 55); s->reset_session(); c -= 50; }
+            out.clear(); feed_path(*s, std::vector<double>(6, c), 9, 30);
+            CHECK(out.empty(), "hold_rsi2_max: fewer than 10 closes of history never enters");
+            s->check_eod(15, 55); s->reset_session();                                            // (that session counts as a close too)
+            for (int d = 7; d < 10; ++d) { session(*s, d * DAY, c, c + 20, c - 60, c - 50); s->check_eod(15, 55); s->reset_session(); c -= 50; }
+            out.clear(); feed_path(*s, std::vector<double>(6, c), 9, 30);                        // the 10th close is in: RSI(2) = 0
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_rsi2_max: buys when RSI(2) of the closes is 0");
+            s->check_eod(15, 55); s->notify_trade_filled(OrbSignal::FLATTEN_EOD, "session_end"); s->reset_session();
+            session(*s, 11 * DAY, c, c + 120, c - 10, c + 100); s->check_eod(15, 55); s->reset_session(); out.clear();   // big up close
+            feed_path(*s, std::vector<double>(6, c + 100), 9, 30);
+            CHECK(out.empty(), "hold_rsi2_max: an up close lifts RSI(2) above the cap");
+        }
+        // 4. hold_donchian: a close above the highest of the previous 3 closes enters
+        {
+            TrendConfig tc = base; tc.hold_donchian = 3; std::vector<Rec> out; auto s = make(tc, out);
+            const double cl[4] = {20000, 20050, 20020, 20100};
+            for (int d = 0; d < 3; ++d) { session(*s, d * DAY, cl[d], cl[d] + 30, cl[d] - 30, cl[d]); s->check_eod(15, 55); s->reset_session(); }
+            out.clear(); feed_path(*s, std::vector<double>(6, 20020.0), 9, 30);
+            CHECK(out.empty(), "hold_donchian: 20020 is not above the prior 3 closes");
+            s->check_eod(15, 55); s->reset_session();
+            session(*s, 3 * DAY, 20020, 20120, 20000, cl[3]); s->check_eod(15, 55); s->reset_session(); out.clear();
+            feed_path(*s, std::vector<double>(6, cl[3]), 9, 30);
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_donchian: buys after a close above the prior 3 closes");
+        }
+        // 5. hold_days = 2: the first window end keeps the position, the second flattens it
+        {
+            TrendConfig tc = base; tc.hold_days = 2; std::vector<Rec> out; auto s = make(tc, out);
+            feed_path(*s, std::vector<double>(6, 20000.0), 9, 30);
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_days: enters at the clock time");
+            out.clear(); s->check_eod(15, 55); s->check_eod(16, 30);
+            CHECK(out.empty(), "hold_days=2: no FLATTEN_EOD at the first window end");
+            s->reset_session();
+            CHECK(s->session().in_position, "hold_days=2: the position survives the session reset");
+            session(*s, DAY, 20000, 20050, 19950, 20010); s->check_eod(15, 55);
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::FLATTEN_EOD, "hold_days=2: FLATTEN_EOD at the second window end");
+        }
+        // 6. hold_exit_ibs_min: a strong close ends the hold early; a weak one runs to hold_days
+        {
+            TrendConfig tc = base; tc.hold_days = 5; tc.hold_exit_ibs_min = 0.6; std::vector<Rec> out; auto s = make(tc, out);
+            session(*s, 0, 20000, 20100, 19900, 19920); s->check_eod(15, 55);                  // entry at 09:30, weak close (ibs 0.10)
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_exit_ibs_min: weak session keeps the hold");
+            s->reset_session(); out.clear();
+            session(*s, DAY, 19920, 20100, 19900, 20080); s->check_eod(15, 55);                // ibs 0.90
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::FLATTEN_EOD, "hold_exit_ibs_min: a strong close flattens at that window end");
+        }
+        // 7. hold_exit_up_close: a close above the prior session's close ends the hold
+        {
+            TrendConfig tc = base; tc.hold_days = 5; tc.hold_exit_up_close = true; std::vector<Rec> out; auto s = make(tc, out);
+            session(*s, 0, 20000, 20050, 19950, 20000); s->check_eod(15, 55); s->reset_session(); out.clear();   // prior close 20000
+            session(*s, DAY, 20000, 20020, 19900, 19950); s->check_eod(15, 55);                 // entry 09:30; close 19950 < 20000 → keep
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_exit_up_close: a lower close keeps the hold");
+            s->reset_session(); out.clear();
+            session(*s, 2 * DAY, 19950, 20100, 19940, 20060); s->check_eod(15, 55);            // 20060 > 19950 → exit
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::FLATTEN_EOD, "hold_exit_up_close: an up close flattens");
+        }
+        (void)DAY;
+    }
+    // ── hold VIX gates + hold_weak_any (2026-10-11): regime from set_vix, weakness filters under OR ──
+    {
+        constexpr int64_t DAY = 86400LL * 1'000'000LL;
+        auto session = [](TrendStrategy& s, int64_t off, double open, double hi, double lo, double close) {
+            auto tick = [&](int tm, double p) { for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(tm / 60, tm % 60, k * 15) + off, p, 1, k % 2 == 0}); };
+            for (int m = 0; m <= 390; ++m) { const int tm = 9 * 60 + 30 + m; double p = open + (close - open) * m / 390.0; if (m == 100) p = hi; else if (m == 200) p = lo; tick(tm, p); }
+        };
+        auto make = [](TrendConfig tc, std::vector<Rec>& out) {
+            auto s = std::make_unique<TrendStrategy>(tc, risk_cfg());
+            s->set_signal_callback([&out](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s->reset_session(); s->set_day_atr(100.0); return s;
+        };
+        TrendConfig base; base.mode = "hold"; base.tf_min = 1; base.hold_entry_hhmm = 930; base.win_start = 930; base.win_end = 1555;
+        // 1. VIX gate: no regime → no entry; VIX 15 → no entry; VIX 25 → entry
+        {
+            TrendConfig tc = base; tc.hold_vix_min = 20.0; std::vector<Rec> out; auto s = make(tc, out);
+            feed_path(*s, std::vector<double>(6, 20000.0), 9, 30);
+            CHECK(out.empty(), "hold_vix_min: unknown regime never enters");
+            s->check_eod(15, 55); s->reset_session(); s->set_vix(15.0, 0.0, 0.3); out.clear();
+            session(*s, DAY, 20000, 20050, 19950, 20000); s->check_eod(15, 55); s->reset_session(); out.clear();
+            s->set_vix(15.0, 0.0, 0.3); feed_path(*s, std::vector<double>(6, 20000.0), 9, 30);
+            CHECK(out.empty(), "hold_vix_min 20: VIX 15 blocks the entry");
+            s->check_eod(15, 55); s->reset_session(); out.clear(); s->set_vix(25.0, 0.0, 0.8);
+            feed_path(*s, std::vector<double>(6, 20000.0), 9, 30);
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_vix_min 20: VIX 25 enters");
+        }
+        // 2. hold_vix_any: level 15 fails, but a +12 % rise passes under OR; under AND it does not
+        {
+            TrendConfig tc = base; tc.hold_vix_min = 20.0; tc.hold_vix_rise_min = 0.10; tc.hold_vix_any = true; std::vector<Rec> out; auto s = make(tc, out);
+            s->set_vix(15.0, 0.12, 0.3); feed_path(*s, std::vector<double>(6, 20000.0), 9, 30);
+            CHECK(out.size() == 1, "hold_vix_any: a rising VIX passes even below the level");
+            TrendConfig ta = tc; ta.hold_vix_any = false; std::vector<Rec> o2; auto s2 = make(ta, o2);
+            s2->set_vix(15.0, 0.12, 0.3); feed_path(*s2, std::vector<double>(6, 20000.0), 9, 30);
+            CHECK(o2.empty(), "VIX gates under AND: level 15 blocks");
+        }
+        // 3. hold_weak_any: IBS fails (mid-range close) but RSI(2) is 0 after ten lower closes → enters; under AND it does not
+        {
+            TrendConfig tc = base; tc.hold_prev_ibs_max = 0.2; tc.hold_rsi2_max = 20.0; tc.hold_weak_any = true; std::vector<Rec> out; auto s = make(tc, out);
+            double c = 20000; for (int d = 0; d < 10; ++d) { session(*s, d * DAY, c, c + 60, c - 100, c - 50); s->check_eod(15, 55); s->reset_session(); c -= 50; }   // closes at 31 % of the range (not weak by IBS), each lower
+            out.clear(); feed_path(*s, std::vector<double>(6, c), 9, 30);
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_weak_any: RSI(2)=0 enters although IBS is mid-range");
+            TrendConfig ta = tc; ta.hold_weak_any = false; std::vector<Rec> o2; auto s2 = make(ta, o2);
+            c = 20000; for (int d = 0; d < 10; ++d) { session(*s2, d * DAY, c, c + 60, c - 100, c - 50); s2->check_eod(15, 55); s2->reset_session(); c -= 50; }
+            o2.clear(); feed_path(*s2, std::vector<double>(6, c), 9, 30);
+            CHECK(o2.empty(), "weakness filters under AND: the mid-range IBS blocks");
+        }
+        // 4. hold_weak_any with the fear-body filter: a −1.2 ATR day enters even with IBS mid-range
+        {
+            TrendConfig tc = base; tc.hold_prev_ibs_max = 0.2; tc.hold_prev_body_max = -1.0; tc.hold_weak_any = true; std::vector<Rec> out; auto s = make(tc, out);
+            session(*s, 0, 20000, 20010, 19800, 19880); s->check_eod(15, 55); s->reset_session(); out.clear();   // body −1.2 ATR, ibs 0.38
+            feed_path(*s, std::vector<double>(6, 19880.0), 9, 30);
+            CHECK(out.size() == 1 && out[0].sig == OrbSignal::BUY, "hold_weak_any: a fear day enters through the OR");
+        }
+        (void)DAY;
+    }
+    // ── generic VIX entry gate (2026-10-11): any mode, through can_enter ──
+    {
+        TrendConfig tc; tc.mode = "donchian"; tc.tf_min = 1; tc.donchian_n = 20; tc.vix_min = 20.0;
+        TrendStrategy s(tc, risk_cfg()); int n = 0;
+        s.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n; });
+        s.reset_session();
+        std::vector<double> path(26, 20000.0); for (int i = 22; i < 26; ++i) path[i] = 20010.0;   // the donchian test's own breakout path
+        feed_path(s, path, 9, 30);
+        CHECK(n == 0, "vix_min on donchian: no regime → the breakout is not taken");
+        TrendStrategy s2(tc, risk_cfg()); int n2 = 0;
+        s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n2; });
+        s2.reset_session(); s2.set_vix(24.0, 0.05, 0.7); feed_path(s2, path, 9, 30);
+        CHECK(n2 >= 1, "vix_min on donchian: VIX 24 lets the breakout through");
+    }
+    // ── conviction stack (2026-10-11): units from the prior close and the VIX fear state ──
+    {
+        auto session = [](TrendStrategy& s, int64_t off, double open, double hi, double lo, double close) {
+            auto tick = [&](int tm, double p) { for (int k = 0; k < 4; ++k) s.on_tick(OrbTick{at(tm / 60, tm % 60, k * 15) + off, p, 1, k % 2 == 0}); };
+            for (int m = 0; m <= 390; ++m) { const int tm = 9 * 60 + 30 + m; double p = open + (close - open) * m / 390.0; if (m == 100) p = hi; else if (m == 200) p = lo; tick(tm, p); }
+        };
+        TrendConfig tc; tc.mode = "hold"; tc.tf_min = 1; tc.hold_entry_hhmm = 930; tc.win_start = 930; tc.win_end = 1555;
+        tc.hold_prev_ibs_max = 0.5; tc.stack_wc_units = 1; tc.stack_vix_units = 1; tc.stack_both_units = 1; tc.stack_wc_ibs = 0.3; tc.stack_vix_min = 18.0;
+        auto run = [&](double close_ibs_lo, double vix) {
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0); s.set_vix(vix, 0.0, 0.5);
+            session(s, 0, 20000, 20100, 19900, close_ibs_lo); s.check_eod(15, 55); s.reset_session(); s.set_vix(vix, 0.0, 0.5); out.clear();
+            feed_path(s, std::vector<double>(6, close_ibs_lo), 9, 30);
+            return out.empty() ? -1 : s.last_units();
+        };
+        CHECK(run(19920.0, 25.0) == 4, "stack: weak close (ibs 0.10) + VIX 25 → 4 units");
+        CHECK(run(19920.0, 14.0) == 2, "stack: weak close, calm VIX → 2 units");
+        CHECK(run(19980.0, 25.0) == 2, "stack: mid close (ibs 0.40) + VIX 25 → 2 units");
+        CHECK(run(19980.0, 14.0) == 1, "stack: mid close, calm → 1 unit");
+        TrendConfig t0 = tc; t0.stack_wc_units = t0.stack_vix_units = t0.stack_both_units = 0;
+        TrendStrategy s0(t0, risk_cfg()); s0.reset_session();
+        CHECK(s0.last_units() == 0, "stack off → 0 (executor uses its config qty)");
     }
     // ── orb_retest (2026-09-28): break, then the pullback to the edge, enter on resumption ──
     {
@@ -794,6 +1199,70 @@ int main() {
         feed_path(s2, std::vector<double>(120, 20004.0), 3, 0);         // quiet until 05:00
         feed_path(s2, {20004, 20030, 20030}, 5, 0);
         CHECK(n2 == 0, "range_break: no entry outside win_start..win_end");
+    }
+    // ── order-flow ORB (2026-10-14): NY 09:30-09:35 range, rb_of_filter +1, first break only, range-side stop ──
+    {
+        TrendConfig tc; tc.mode = "range_break"; tc.tf_min = 1; tc.rb_from = 930; tc.rb_to = 935;
+        tc.win_start = 935; tc.win_end = 1555; tc.rb_last_entry = 1525; tc.rb_of_filter = 1; tc.rb_first_only = true; tc.rb_stop_range = true;
+        // minutes of 6 ticks each; buys = how many of the 6 are aggressor buys
+        auto run = [&](int window_buys, const std::vector<double>& after, std::vector<Rec>& out, double& hint) {
+            TrendStrategy s(tc, risk_cfg());
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); if (g == OrbSignal::BUY || g == OrbSignal::SELL) hint = s.take_stop_hint(); });
+            s.reset_session();
+            for (int m = 30; m < 35; ++m)                                  // range 19995..20005
+                for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(9, m, k * 10), 20000.0 + (k % 2 ? 5.0 : -5.0), 1, k < window_buys});
+            for (size_t i = 0; i < after.size(); ++i)
+                for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(9, 35 + (int)i, k * 10), after[i], 1, k % 2 == 0});
+        };
+        std::vector<Rec> o1; double h1 = 0; run(5, {20001, 20012, 20013, 20014}, o1, h1);   // buyers, break up
+        CHECK(o1.size() == 1 && o1[0].sig == OrbSignal::BUY, "of_orb: buyers in the range + break up = BUY");
+        CHECK(h1 == 19995.0, "of_orb: stop hint = the other side of the range");
+        std::vector<Rec> o2; double h2 = 0; run(1, {20001, 20012, 20013, 19980, 19970, 19960}, o2, h2);  // sellers, break up then down
+        CHECK(o2.empty(), "of_orb: sellers + break up = no trade, and the first break ends the day");
+        std::vector<Rec> o3; double h3 = 0; run(1, {20001, 19985, 19980, 19979}, o3, h3);   // sellers, break down
+        CHECK(o3.size() == 1 && o3[0].sig == OrbSignal::SELL && h3 == 20005.0, "of_orb: sellers + break down = SELL, stop at the range high");
+        std::vector<Rec> o4; double h4 = 0; run(3, {20001, 20012, 20013}, o4, h4);          // balanced flow
+        CHECK(o4.empty(), "of_orb: zero net aggressor = no trade");
+        tc.rb_last_entry = 936;                                            // cutoff before the 09:36 break
+        std::vector<Rec> o5; double h5 = 0; run(5, {20001, 20012, 20013, 20014}, o5, h5);
+        CHECK(o5.empty(), "of_orb: no break entry at/after rb_last_entry");
+        tc.rb_last_entry = 1525; tc.vix_chg1_max = -0.03;                // VIX-fall copy (2x size on those days)
+        auto run_v = [&](bool known, double chg1) {
+            TrendStrategy s(tc, risk_cfg()); int n = 0;
+            s.set_signal_callback([&](OrbSignal g, double, const std::string&) { if (g == OrbSignal::BUY) ++n; });
+            s.reset_session(); s.set_vix(18.0, 0.0, 0.5, known, chg1);
+            for (int m = 30; m < 35; ++m) for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(9, m, k * 10), 20000.0 + (k % 2 ? 5.0 : -5.0), 1, k < 5});
+            std::vector<double> after = {20001, 20012, 20013, 20014};
+            for (size_t i = 0; i < after.size(); ++i) for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(9, 35 + (int)i, k * 10), after[i], 1, k % 2 == 0});
+            return n;
+        };
+        CHECK(run_v(true, -0.05) == 1, "vix_chg1_max: enters after VIX fell 5%");
+        CHECK(run_v(true, -0.01) == 0, "vix_chg1_max: no entry after VIX fell only 1%");
+        CHECK(run_v(false, -0.05) == 0, "vix_chg1_max: no entry without a VIX regime");
+        tc.vix_chg1_max = 0.0; tc.rb_min_range_atr = 0.21;                // wide-range copy: range 10 pts
+        auto run_w = [&](double day_atr) {
+            TrendStrategy s(tc, risk_cfg()); int n = 0;
+            s.set_signal_callback([&](OrbSignal g, double, const std::string&) { if (g == OrbSignal::BUY) ++n; });
+            s.reset_session(); s.set_day_atr(day_atr);
+            for (int m = 30; m < 35; ++m) for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(9, m, k * 10), 20000.0 + (k % 2 ? 5.0 : -5.0), 1, k < 5});
+            std::vector<double> after = {20001, 20012, 20013, 20014};
+            for (size_t i = 0; i < after.size(); ++i) for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(9, 35 + (int)i, k * 10), after[i], 1, k % 2 == 0});
+            return n;
+        };
+        CHECK(run_w(40.0) == 1, "rb_min_range_atr: 10-pt range >= .21 x 40 ATR -> trade");
+        CHECK(run_w(60.0) == 0, "rb_min_range_atr: 10-pt range < .21 x 60 ATR -> no trade");
+        CHECK(run_w(0.0) == 0, "rb_min_range_atr: unknown ATR -> no trade");
+        tc.rb_min_range_atr = 0.0;
+        {   // VixRegime: chg1 maths, weekend lookup, staleness
+            char dir[] = "/tmp/vixtestXXXXXX"; CHECK(mkdtemp(dir) != nullptr, "vix regime: temp dir");
+            FILE* f = std::fopen((std::string(dir) + "/VIX_History.csv").c_str(), "w");
+            std::fputs("DATE,OPEN,HIGH,LOW,CLOSE\n10/08/2026,1,1,1,20.0\n10/09/2026,1,1,1,19.0\n", f); std::fclose(f);
+            paper::VixRegime v; CHECK(v.reload_if_changed(dir), "vix regime: loads");
+            auto mon = v.before("2026-10-12");
+            CHECK(mon.known && std::fabs(mon.chg1 + 0.05) < 1e-9 && mon.level == 19.0, "vix regime: Monday reads Friday's close, chg1 = -5%");
+            CHECK(!v.before("2026-10-16").known, "vix regime: a close 7 days old is stale -> unknown");
+            CHECK(!v.reload_if_changed(dir), "vix regime: unchanged file is not reloaded");
+        }
     }
 
 

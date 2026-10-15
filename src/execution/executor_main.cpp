@@ -35,10 +35,20 @@
 #include "trend_strategy.hpp"
 #include "mtf_scalper_strategy.hpp"
 #include "../paper/paper_quote.hpp"   // top-of-book state + entry gates shared with the paper fleet
+#include "../paper/vix_regime.hpp"   // VIX regime for hold-mode VIX gates (data/regime/)
+
+// "YYYY-MM-DD" + 1 calendar day (for hold_pre_event: is tomorrow a calendar event day?)
+static std::string next_ymd_str(const std::string& ymd) {
+    std::tm tm{}; if (std::sscanf(ymd.c_str(), "%d-%d-%d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday) != 3) return ymd;
+    tm.tm_year -= 1900; tm.tm_mon -= 1; tm.tm_hour = 12;
+    time_t t = timegm(&tm) + 86400; std::tm g; gmtime_r(&t, &g);
+    char buf[16]; std::snprintf(buf, sizeof buf, "%04d-%02d-%02d", g.tm_year + 1900, g.tm_mon + 1, g.tm_mday); return buf;
+}
 #include <deque>
 #include <type_traits>
 #include <climits>
 #include <fstream>
+#include <iterator>
 #include <sstream>
 #include "order_manager.hpp"
 #include "notification_router.hpp"
@@ -740,7 +750,18 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     ? strategy.current_bracket().r_unit : 0.0;
                 order_mgr.on_signal(sig, price, reason, boundary, sl_dist);
             } else {
-                order_mgr.on_signal(sig, price, reason, boundary);
+                if constexpr (kTrend) {
+                    if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) {
+                        const int u = strategy.last_units();      // conviction stack (0 = config qty); OM caps with qty_max
+                        order_mgr.set_entry_units(u);
+                        if (u > 0) LOG("[ENTRY-FLOW] conviction stack asks for %d unit(s)", u);
+                    }
+                }
+                // Trend: a per-trade stop distance (drive_stop_atr) when the strategy gave one, else 0 = sl_points.
+                double sd = 0.0;
+                if constexpr (kTrend) { if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) sd = strategy.take_stop_dist(); }
+                if (sd > 0.0) LOG("[ENTRY-FLOW] per-trade stop distance %.2f pts", sd);
+                order_mgr.on_signal(sig, price, reason, boundary, sd);
             }
             // Every engine books its own position right AFTER this callback returns. If the
             // order manager did not act (entry rejected by risk/halt/not-FLAT, or a managed exit
@@ -2083,11 +2104,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                             notif.basket_id().c_str(), notif.user_tag().c_str(), fill_px);
                     // qty=7 (or any qty > cfg_.qty) on a fill we didn't send means Rithmic
                     // is delivering order notifications for another account on this session.
-                    if (notif.total_fill_size() > orb_cfg.qty) {
+                    const int expected_qty = std::max(orb_cfg.qty, order_mgr.position_snapshot().qty);   // conviction stack sizes above cfg
+                    if (notif.total_fill_size() > expected_qty) {
                         LOG("[EXECUTOR] WARNING: fill qty=%d exceeds expected position size=%d "
                             "— possible multi-account notification basket=%s px=%.2f "
                             "acct=%s user_tag=%s",
-                            notif.total_fill_size(), orb_cfg.qty,
+                            notif.total_fill_size(), expected_qty,
                             notif.basket_id().c_str(), fill_px,
                             notif.account_id().c_str(), notif.user_tag().c_str());
                     }
@@ -2248,11 +2270,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     const int cum_fill_352 = notif.total_fill_size() > 0 ? notif.total_fill_size()
                                                                          : notif.fill_size();
                     order_mgr.map_server_basket(client_id, notif.basket_id());
-                    if (notif.fill_size() > orb_cfg.qty) {
+                    const int expected_qty_352 = std::max(orb_cfg.qty, order_mgr.position_snapshot().qty);
+                    if (notif.fill_size() > expected_qty_352) {
                         LOG("[EXECUTOR] WARNING: fill qty=%d exceeds expected position size=%d "
                             "— possible multi-account notification basket=%s px=%.2f "
                             "user_tag=%s",
-                            notif.fill_size(), orb_cfg.qty,
+                            notif.fill_size(), expected_qty_352,
                             notif.basket_id().c_str(), notif.fill_price(),
                             notif.user_tag().c_str());
                     }
@@ -2442,10 +2465,38 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
             "to confirm FLAT before placing the untracked order", g_drill.c_str());
     }
     seed_regime_atr(today);
+    // VIX regime for hold-mode VIX gates (data/regime/, scripts/vix_fetch.sh); unknown = gated holds stay out.
+    paper::VixRegime vix; const bool vix_ok = vix.load("data/regime");
+    auto apply_vix = [&](const std::string& d) {
+        if constexpr (kTrend) {
+            if (vix.reload_if_changed("data/regime")) LOG("[EXECUTOR] VIX regime reloaded (%zu closes)", vix.size());
+            const paper::VixDay x = vix.before(d); strategy.set_vix(x.level, x.chg5, x.pct, x.known, x.chg1);
+            LOG("[EXECUTOR] VIX regime for %s: %s", d.c_str(), x.known ? ("level " + std::to_string(x.level)).c_str() : "unknown (no data/regime file, or no close within 5 days)");
+        }
+    };
+    if (!vix_ok) LOG("[EXECUTOR] no VIX regime files in data/regime — hold_vix_* gates stay closed");
+    // CME holiday / early close (calendar table): a trend engine whose flatten time is at or after the close takes
+    // no entries that trading day — its 15:55 exit would find the market shut and carry the position overnight
+    // (2026-10-12: the combo3 replay held 18 holiday-session entries to the 18:00 reopen).
+    auto apply_market_hours = [&](const std::string& d) {
+        if constexpr (kTrend) {
+            const int close_min = (db && db->is_connected()) ? db->calendar_close_et_min(d) : -1;
+            const int flatten_min = orb_cfg.eod_flatten_hour * 60 + orb_cfg.eod_flatten_min;
+            if (market_closes_before_flatten(close_min, flatten_min)) {
+                strategy.halt_trading(close_min == 0 ? "CME holiday (calendar)" : "CME early close before the flatten time (calendar)");
+                LOG("[EXECUTOR] %s: market %s — no entries today", d.c_str(),
+                    close_min == 0 ? "closed (holiday)" : ("closes " + std::to_string(close_min / 60) + ":" +
+                    (close_min % 60 < 10 ? "0" : "") + std::to_string(close_min % 60) + " ET").c_str());
+            }
+        }
+    };
+    apply_market_hours(today);
     if constexpr (kTrend) {
         const bool ev = db && db->is_connected() && db->calendar_event_day(today);
         strategy.set_event_day(ev);
+        strategy.set_event_next_day(db && db->is_connected() && db->calendar_event_day(next_ymd_str(today)), db && db->is_connected() && db->calendar_fomc_day(next_ymd_str(today)));
         strategy.set_day_atr(regime.atr_pts);
+        apply_vix(today);
         if (ev) LOG("[EXECUTOR] %s is a scheduled-release day (calendar)", today.c_str());
     }
     LOG("[EXECUTOR] Session date: %s  dry_run=%s",
@@ -2669,7 +2720,12 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 risk.reset_daily();
                 pos_write_counter = 0;
                 seed_regime_atr(today);
-                if constexpr (kTrend) { strategy.set_event_day(db && db->is_connected() && db->calendar_event_day(today)); strategy.set_day_atr(regime.atr_pts); }
+                if constexpr (kTrend) {
+                    strategy.set_event_day(db && db->is_connected() && db->calendar_event_day(today));
+                    strategy.set_event_next_day(db && db->is_connected() && db->calendar_event_day(next_ymd_str(today)), db && db->is_connected() && db->calendar_fomc_day(next_ymd_str(today)));
+                    strategy.set_day_atr(regime.atr_pts); apply_vix(today);
+                }
+                apply_market_hours(today);   // after reset_session(), which clears any halt
                 LOG("[EXECUTOR] New trading day: %s", today.c_str());
             }
 
@@ -3275,6 +3331,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
         };
         int64_t watermark_us = now_us() - 1'000'000LL;
         int64_t warmup_until_us = 0;
+        std::string warmup_td;   // trading date of the last replayed tick (warm-up rollovers)
         if constexpr (!kOrb) {
             if (orb_cfg.warmup_minutes > 0) {
                 warmup_until_us = watermark_us;
@@ -3293,6 +3350,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                     strategy.notify_trade_filled(OrbSignal::FLATTEN_EOD, "warmup_replay");
                 int done = (db && db->is_connected()) ? db->count_today_trades(today, orb_cfg.cycle_start_epoch) : 0;
                 strategy.seed_trades_today(done);
+                if (!warmup_td.empty()) apply_market_hours(today);   // a replayed rollover's reset_session() cleared it
                 LOG("[PG-FEED] warm-up complete — %d replayed signal(s) ignored; live from now, "
                     "trades_today=%d", warmup_signals_dropped, done);
             }
@@ -3383,7 +3441,15 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                         OrbTick tick{ts_us, px, sz, buy};
                         feed_quotes_until(ts_us);
                         if (warming_up) {
-                            if (ts_us < warmup_until_us) { strategy.on_tick(tick); continue; }
+                            if (ts_us < warmup_until_us) {
+                                // The live rollover is wall-clock driven, so a replay spanning
+                                // 18:00 ET must roll the session itself — otherwise the prior
+                                // sessions never become "prior day" (hold mode saw none).
+                                std::string td = trading_date_str((time_t)(ts_us / 1'000'000LL));
+                                if (!warmup_td.empty() && td != warmup_td) strategy.reset_session();
+                                warmup_td = td;
+                                strategy.on_tick(tick); continue;
+                            }
                             end_warmup();
                         }
                         process_tick(tick);
@@ -3921,6 +3987,17 @@ int main(int argc, char* argv[]) {
         std::fprintf(stderr, "FATAL: Cannot load config: %s\n", e.what());
         return 1;
     }
+    // Level overlays (lv_room_atr / lv_near_atr / lv_target / lv_stop — paper/paper_levels.hpp) exist only
+    // in the paper broker (2026-10-11). A live config carrying them would trade WITHOUT them, so refuse it.
+    {
+        std::ifstream cf(config_path);
+        const std::string text((std::istreambuf_iterator<char>(cf)), std::istreambuf_iterator<char>());
+        for (const char* k : {"\"lv_room_atr\"", "\"lv_near_atr\"", "\"lv_target\"", "\"lv_stop\"", "\"rb_stop_range\""})
+            if (text.find(k) != std::string::npos) {
+                std::fprintf(stderr, "FATAL: config carries %s — level overlays / the range-side stop are paper-only (not implemented live)\n", k);
+                return 2;
+            }
+    }
     if (force_dry_run) orb_cfg.dry_run = true;
     // Dry-run rows never land in the live history: the label must end in "_dry".
     if (orb_cfg.apply_dry_run_label() || orb_cfg.dry_label_forced)
@@ -4048,6 +4125,13 @@ int main(int argc, char* argv[]) {
         if (tcfg.mode == "book_imbalance" && !orb_cfg.md_from_pg()) {
             std::fprintf(stderr, "FATAL: trend mode 'book_imbalance' needs the collector's bbo stream — "
                                  "set RITHMIC_MD_PROVIDER=pg\n");
+            return 1;
+        }
+        // Multi-session holds are paper only: the live EOD flatten does not carry a position across
+        // sessions and the broker's day accounting assumes it (2026-10-11 daily-context hold variants).
+        if (tcfg.mode == "hold" && (tcfg.hold_days > 1 || tcfg.hold_exit_ibs_min > 0.0 || tcfg.hold_exit_up_close)) {
+            std::fprintf(stderr, "FATAL: trend mode 'hold' with hold_days > 1 / hold_exit_* is paper only — "
+                                 "the live executor flattens every session\n");
             return 1;
         }
         LOG("[EXECUTOR] engine=trend mode=%s tf=%dm window=%04d-%04d strategy_tag=%s",

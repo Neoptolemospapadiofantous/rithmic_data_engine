@@ -50,7 +50,10 @@ busy_window() {   # same windows as crypto_fleet.sh / fleet_expand.sh
 }
 
 mbo_months() { ls /home/theone/Desktop/bot/data/raw/mbo/*.dbn.zst | xargs -n1 basename | cut -c1-7 | sort -u; }
-jobs_list() {
+jobs_list() {   # priority file first (data/history/priority.txt, read every loop — reorder without a restart), no duplicates
+  { [[ -f "$H/priority.txt" ]] && grep -Ev "^\s*(#|$)" "$H/priority.txt"; base_jobs; } | awk "!seen[\$0]++"
+}
+base_jobs() {
   local f; for f in $(mbo_months); do echo "flow $f"; done   # NQ order flow per minute (dbn_tool mbo-1m, ~1 min each)
   echo "nq 2026-10"; echo "nq 2026-09"
   # crypto bars as soon as the download is complete, then one month per coin early (measures the crypto
@@ -62,7 +65,15 @@ jobs_list() {
   m="2026-03"; while [[ "$m" > "2023-02" ]]; do echo "nqx $m"; m=$(date -u -d "$m-01 -1 month" +%Y-%m); done
   # nqbars = NQ 2023-02 … 2010-07 from 1-minute bars only (4 synthetic prints/bar, label nq_bars), newest first
   m="2023-02"; while [[ "$m" > "2010-06" ]]; do echo "nqbars $m"; m=$(date -u -d "$m-01 -1 month" +%Y-%m); done
+  # 2026-10-11 founder "que all": bars-vs-ticks check on the MBO months, ES (ticks + bars), crypto level variants
+  # for the month replayed before they existed — then the rest of crypto — then the 12,031 combos (largest, last)
+  m="2026-03"; while [[ "$m" > "2023-02" ]]; do echo "nqbcheck $m"; m=$(date -u -d "$m-01 -1 month" +%Y-%m); done
+  echo "es 2026-10"; echo "es 2026-09"
+  m="2026-03"; while [[ "$m" > "2010-06" ]]; do echo "esbars $m"; m=$(date -u -d "$m-01 -1 month" +%Y-%m); done
+  echo "btclv 2026-09"; echo "ethlv 2026-09"
   m=$(date -u +%Y-%m); while [[ "$m" > "2019-12" ]]; do [[ "$m" == 2026-09 ]] || { echo "btc $m"; echo "eth $m"; }; m=$(date -u -d "$m-01 -1 month" +%Y-%m); done
+  echo "nqcombo 2026-10"; echo "nqcombo 2026-09"
+  m="2026-03"; while [[ "$m" > "2023-02" ]]; do echo "nqcombo $m"; m=$(date -u -d "$m-01 -1 month" +%Y-%m); done
 }
 job_state() {   # done | nodata | pending
   local mk="$1" m="$2"
@@ -102,14 +113,23 @@ write_status() {
   local avg_nq avg_nqx avg_nqb avg_btc avg_eth
   avg_nq=$(cat "$H"/done/nq/*.done data/history_replay/nq_hist/*.done 2>/dev/null | jq -s '[.[] | select(.source != "pg") | .secs] | if length>0 then add/length else 7200 end')
   avg_btc=$(cat "$H"/done/btc/*.done 2>/dev/null | jq -s '[.[].secs] | if length>0 then add/length else 36000 end')
-  avg_nqb=$(cat "$H"/done/nqbars/*.done 2>/dev/null | jq -s '[.[].secs] | if length>0 then add/length else 540 end')
+  avg_nqb=$(cat "$H"/done/nqbars/*.done 2>/dev/null | jq -s '[.[].secs] | if length>0 then add/length else 930 end')   # ~8,300 strategies × a bar month
   avg_nqx=$(cat "$H"/done/nqx/*.done 2>/dev/null | jq -s --argjson d "$avg_nq" '[.[] | select(.source != "pg") | .secs] | if length>0 then add/length else ($d * 0.36) end')
   avg_eth=$(cat "$H"/done/eth/*.done 2>/dev/null | jq -s '[.[].secs] | if length>0 then add/length else 36000 end')
-  local pn=0 px=0 pq=0 pb=0 pe=0
+  local pn=0 px=0 pq=0 pb=0 pe=0 po=""
   while read -r mk m; do
     [[ "$(job_state "$mk" "$m")" == pending ]] || continue
-    case "$mk" in nq) ((pn++));; nqx) ((px++));; nqbars) ((pq++));; btc) ((pb++));; eth) ((pe++));; esac
+    case "$mk" in nq) ((pn++));; nqx) ((px++));; nqbars) ((pq++));; btc) ((pb++));; eth) ((pe++));;
+                   nqbcheck|es|esbars|nqcombo|btclv|ethlv) po+="$mk ";; esac
   done < <(jobs_list)
+  # the other job types: measured mean when a month is done, else a size-scaled guess (strategies × feed)
+  local osecs=0 oc="" mk2 n2 d2 a2
+  for mk2 in nqbcheck es esbars nqcombo btclv ethlv; do
+    n2=$(grep -ow "$mk2" <<< "$po" | wc -l); (( n2 )) || continue; oc+="\"$mk2\":$n2,"
+    case $mk2 in nqbcheck) d2=$avg_nqb;; es) d2=1200;; esbars) d2=180;; nqcombo) d2=$(jq -n "$avg_nq * 2.48");; btclv) d2=$(jq -n "$avg_btc * 0.26");; ethlv) d2=$(jq -n "$avg_eth * 0.26");; esac
+    a2=$(cat "$H"/done/$mk2/*.done 2>/dev/null | jq -s --argjson d "$d2" '[.[].secs] | if length>0 then add/length else $d end')
+    osecs=$(jq -n "$osecs + $n2 * $a2 | floor")
+  done
   # crypto: cost ∝ ticks (≈ 1,000 ticks/s for the 4,845-strategy fleet, measured on NQ MBO and the Postgres crypto
   # replay; replaced by the measured rate once crypto months are done). Ticks per month: crypto_month_ticks.txt
   # (from the agg-bars pass). Pending crypto months without a count use avg_btc/avg_eth.
@@ -117,12 +137,12 @@ write_status() {
   local csecs=0 ct
   if [[ -f "$H/crypto_month_ticks.txt" ]]; then
     csecs=$(while read -r mk m; do [[ ( "$mk" == btc || "$mk" == eth ) && "$(job_state "$mk" "$m")" == pending ]] && echo "$mk $m"; done < <(jobs_list) \
-            | awk -v r="$rate" 'NR==FNR { t[$1" "$2]=$3; next } { s += ($0 in t) ? t[$0] / r : 36000 } END { printf "%d", s }' "$H/crypto_month_ticks.txt" -)
+            | awk -v r="$rate" 'NR==FNR { t[$1" "$2]=$3; next } { s += ($0 in t) ? t[$0] / r : 36000 } END { printf "%d", s * 6573 / 4845 }' "$H/crypto_month_ticks.txt" -)
     pb=0; pe=0
   fi
-  local eta; eta=$(jq -n "($pn * $avg_nq + $px * $avg_nqx + $pq * $avg_nqb + $pb * $avg_btc + $pe * $avg_eth + $csecs) / $PAR | floor")
+  local eta; eta=$(jq -n "($pn * $avg_nq + $px * $avg_nqx + $pq * $avg_nqb + $pb * $avg_btc + $pe * $avg_eth + $csecs + $osecs) / $PAR | floor")
   local paused; paused=$(busy_window || true)
-  printf '{"updated":"%s","parallel":%s,"paused_for":"%s","total":%d,"done":%d,"nodata":%d,"pending":%d,"pending_by_market":{"nq":'"$pn"',"nqx":'"$px"',"nqbars":'"$pq"',"btc":'"$pb"',"eth":'"$pe"'},"avg_secs":{"nq_mbo":%s,"btc":%s,"eth":%s},"crypto_ticks_per_sec":'"$rate"',"crypto_pending_secs":'"$csecs"',"eta_hours":%s,"eta_finish":"%s","running":[%s],"jobs":[%s]}\n' \
+  printf '{"updated":"%s","parallel":%s,"paused_for":"%s","total":%d,"done":%d,"nodata":%d,"pending":%d,"pending_by_market":{"nq":'"$pn"',"nqx":'"$px"',"nqbars":'"$pq"',"other":{'"${oc%,}"'},"other_secs":'"$osecs"',"btc":'"$pb"',"eth":'"$pe"'},"avg_secs":{"nq_mbo":%s,"btc":%s,"eth":%s},"crypto_ticks_per_sec":'"$rate"',"crypto_pending_secs":'"$csecs"',"eta_hours":%s,"eta_finish":"%s","running":[%s],"jobs":[%s]}\n' \
     "$(date -Is)" "$PAR" "$paused" "$total" "$done" "$nodata" "$pending" "$avg_nq" "$avg_btc" "$avg_eth" \
     "$(jq -n "$eta/3600*10|floor/10")" "$(date -Is -d "@$(( now + eta ))")" "$running_json" "${rows%,}" > "$STATUS.tmp" && mv "$STATUS.tmp" "$STATUS"
 }
@@ -198,7 +218,8 @@ run_queue() {
         [[ -f "$H/done/failed_${mk}_$m" ]] && continue
         local busy=0; for p in "${!running[@]}"; do [[ "${running[$p]}" == "$mk $m" ]] && busy=1; done; (( busy )) && continue
         [[ -f "$PIDS/${mk}_$m.pid" ]] && continue                 # run started outside the queue (history_month.sh by hand)
-        case "$mk" in nq|nqx) lbl=nq_hist;; nqbars) lbl=nq_bars;; btc|eth) lbl=crypto_hist;; *) lbl="";; esac
+        case "$mk" in nq|nqx) lbl=nq_hist;; nqcombo) lbl=nq_combo_hist;; nqbars) lbl=nq_bars;; nqbcheck) lbl=nq_barcheck;;
+                      es) lbl=es_hist;; esbars) lbl=es_bars;; btc|eth|btclv|ethlv) lbl=crypto_hist;; *) lbl="";; esac
         [[ -n "$lbl" ]] && [[ -n "$(procs_matching paper_engine "account-label $lbl --replay-from .* --replay-to $m-")" ]] && continue   # same month replaying elsewhere
         if [[ "$mk" == flow ]]; then
           flow_job "$m" > /dev/null 2>&1 9>&- &

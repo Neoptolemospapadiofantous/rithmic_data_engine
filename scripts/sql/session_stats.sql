@@ -71,9 +71,12 @@ BEGIN
            sum(buy_volume)                                     AS buy_volume
     FROM b GROUP BY symbol, d
   ), hist AS (   -- prior sessions already stored, for ATR / volume baselines and the gap
-    SELECT symbol, session_date, range_pts, volume, rth_close FROM session_stats
+    -- bars >= 60: a stray print on a closed day (2026-09-27 Sunday, 1 bar, range 0) or the
+    -- collector's partial first day (13 bars) is not a session — it pulled atr14 8 % low for 14
+    -- sessions. Half days (~210 bars) still count.
+    SELECT symbol, session_date, range_pts, volume, rth_close FROM session_stats WHERE bars >= 60
     UNION
-    SELECT symbol, d, rth_high - rth_low, volume, rth_close FROM day
+    SELECT symbol, d, rth_high - rth_low, volume, rth_close FROM day WHERE bars >= 60
   ), enriched AS (
     SELECT d.*,
            (SELECT avg(h.range_pts) FROM (SELECT range_pts FROM hist h WHERE h.symbol = d.symbol AND h.session_date < d.d AND h.session_date >= d.d - 30 ORDER BY h.session_date DESC LIMIT 14) h) AS atr14,

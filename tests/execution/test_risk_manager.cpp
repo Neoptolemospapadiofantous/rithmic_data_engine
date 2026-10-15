@@ -200,6 +200,15 @@ TEST(no_consistency_cap_on_first_day) {
     ASSERT(!rm.halted());
 }
 
+// 14b. consistency_cap_pct <= 0 = OFF (paper fleet, 2026-10-11): a day bigger than all prior profit does not halt
+TEST(consistency_cap_zero_is_off) {
+    OrbConfig cfg = make_cfg(-999999.0, 9999999.0, 0.0);
+    RiskManager rm(cfg, 50000.0);
+    rm.seed_total_profit(1000.0);
+    rm.on_trade_pnl(5000.0);   // 500% of prior profit — would halt under any positive cap
+    ASSERT(!rm.halted());
+}
+
 // 15. set_equity updates equity and peak but does NOT trigger halt
 TEST(set_equity_updates_peak_no_halt) {
     OrbConfig cfg = make_cfg(-999999.0, 2500.0);
@@ -627,6 +636,7 @@ int main() {
     RUN(halt_on_consistency_cap);
     RUN(no_halt_under_consistency_cap);
     RUN(no_consistency_cap_on_first_day);
+    RUN(consistency_cap_zero_is_off);
     RUN(set_equity_updates_peak_no_halt);
     RUN(cumulative_loss_breaches_daily_limit);
     // Finding 1: restart seeding
