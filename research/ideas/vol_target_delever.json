@@ -1,0 +1,5 @@
+{"id":"vol_target_delever","name":"Vol-target de-leveraging the day after a fear spike (short)",
+ "why":"Volatility-targeting funds and risk-parity books cut equity exposure after realised and implied vol jump; they execute the sale over the next session(s), so the day after a big down day with VIX up tends to see continued supply.",
+ "params":{"x":[0.5,0.75,1.0],"vc":[0.05,0.1,0.15],"stopk":[0.3,0.5,0]},
+ "checks":[{"at":"09:35","when":"!rollwin && pret <= -x && vixc1 >= vc","dir":"-1"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":40}

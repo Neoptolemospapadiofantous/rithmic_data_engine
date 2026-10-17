@@ -1,0 +1,23 @@
+{
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.997,
+ "control_seeds": 400,
+ "id": "pat_pin_casc",
+ "name": "pattern: pin (cascade direction)",
+ "why": "Pin bar: a long rejection wick shows price tried and failed to go that way inside one bar. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_patterns_and_conditions.md).",
+ "scan": {
+  "tf": 15,
+  "from": "10:00",
+  "to": "15:00",
+  "when": "(px - open > 0.25*atr && (hi(15,1) > lo(15,1) && min(op(15,1), cl(15,1)) - lo(15,1) >= 0.6*(hi(15,1) - lo(15,1)) && cl(15,1) >= hi(15,1) - (hi(15,1) - lo(15,1))/3)) || (open - px > 0.25*atr && (hi(15,1) > lo(15,1) && hi(15,1) - max(op(15,1), cl(15,1)) >= 0.6*(hi(15,1) - lo(15,1)) && cl(15,1) <= lo(15,1) + (hi(15,1) - lo(15,1))/3))",
+  "dir": "(px - open > 0.25*atr && (hi(15,1) > lo(15,1) && min(op(15,1), cl(15,1)) - lo(15,1) >= 0.6*(hi(15,1) - lo(15,1)) && cl(15,1) >= hi(15,1) - (hi(15,1) - lo(15,1))/3)) - (open - px > 0.25*atr && (hi(15,1) > lo(15,1) && hi(15,1) - max(op(15,1), cl(15,1)) >= 0.6*(hi(15,1) - lo(15,1)) && cl(15,1) <= lo(15,1) + (hi(15,1) - lo(15,1))/3))"
+ }
+}

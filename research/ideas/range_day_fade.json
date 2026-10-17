@@ -1,0 +1,5 @@
+{"id":"range_day_fade","name":"Range day: fade a break of yesterday's extreme back into the range",
+ "why":"On quiet days (small prior range, small range so far) no large participant needs to push through yesterday's extreme; breaks are probes for stops, and responsive traders take them back into the range.",
+ "params":{"r":[0.8,1.0],"q":[0.5,0.7],"stopk":[0.15,0.25]},
+ "scan":{"tf":5,"from":"10:30","to":"14:30","when":"prng < r*atr && (hod - lod) < q*atr && (px > ph || px < pl)","dir":"(px < pl) - (px > ph)"},
+ "stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

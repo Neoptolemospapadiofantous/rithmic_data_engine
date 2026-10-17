@@ -1,0 +1,5 @@
+{"id":"month_end_rebalance","name":"Month-end pension rebalance against the month's move",
+ "why":"Balanced funds and pensions rebalance back to target weights at month end: after a strong equity month they sell equities, after a weak month they buy, mostly in the last 1-2 sessions.",
+ "params":{"m":[0.02,0.04,0.06],"last":[0,1],"stopk":[0.3,0]},
+ "checks":[{"at":"09:30","when":"tdleft <= last && abs(mtd) >= m","dir":"-sign(mtd)"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":40}

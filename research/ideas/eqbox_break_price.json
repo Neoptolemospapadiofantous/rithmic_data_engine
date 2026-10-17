@@ -1,0 +1,21 @@
+{
+ "id": "eqbox_break_price",
+ "name": "Break & hold (follow) at equal highs / lows of the last 2 hours — price only (reference)",
+ "why": "A first 5-minute close beyond equal highs / lows of the last 2 hours with aggressive flow behind it is real demand running the stops parked there; the triggered stops add fuel in the same direction. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes_all.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:00",
+  "to": "12:00",
+  "when": "((cl(5,1) > lag(5, eqhi(5,24,0.03)) && lag(5, cl(5,1)) <= lag(5, eqhi(5,24,0.03))) || (cl(5,1) < lag(5, eqlo(5,24,0.03)) && lag(5, cl(5,1)) >= lag(5, eqlo(5,24,0.03))))",
+  "dir": "(cl(5,1) > lag(5, eqhi(5,24,0.03)) && lag(5, cl(5,1)) <= lag(5, eqhi(5,24,0.03))) - (cl(5,1) < lag(5, eqlo(5,24,0.03)) && lag(5, cl(5,1)) >= lag(5, eqlo(5,24,0.03)))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

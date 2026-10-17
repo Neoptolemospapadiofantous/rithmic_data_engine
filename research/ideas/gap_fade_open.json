@@ -1,0 +1,5 @@
+{"id":"gap_fade_open","name":"Gap fade at the open toward the prior close",
+ "why":"Overnight gaps are made in thin markets; at the cash open the deeper book and arbitrageurs close part of the gap.",
+ "params":{"g":[0.15,0.3,0.5],"stopk":[0.2,0.35,0.5],"rr":[1,2]},
+ "checks":[{"at":"09:30","when":"!rollwin && abs(gap) >= g && abs(gap) <= 1.5","dir":"-sign(gap)"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":60}

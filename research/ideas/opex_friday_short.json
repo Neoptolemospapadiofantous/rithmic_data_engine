@@ -1,0 +1,6 @@
+{"id":"opex_friday_short","name":"Monthly options-expiry Friday: short the cash session",
+ "why":"On the 3rd Friday dealers' expiring hedges come off and the open interest that pinned price disappears; the map shows the OPEX Friday RTH -17.6 bp vs +3.6 bp on an average session, negative in all three eras and 12 of 17 years. Small sample (~12 a year). Pre-registered; holdout 2025-01 on judged once.",
+ "symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0,0.5]},
+ "checks":[{"at":"09:30","when":"opex && !rollwin","dir":"-1"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":30}

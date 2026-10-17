@@ -1,0 +1,5 @@
+{"id":"compression_breakout","name":"Narrow prior day → follow the open drive",
+ "why":"After a narrow range day positioning is light and option dealers are long gamma at tight strikes; when price leaves the range, hedging flips and stop orders cluster outside the narrow range, so moves extend.",
+ "params":{"r":[0.6,0.8],"k":[0.1,0.2],"stopk":[0.2,0.3],"rr":[2,3]},
+ "checks":[{"at":"09:50","when":"prng < r*atr && abs(px-open) > k*atr","dir":"sign(px-open)"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":60}

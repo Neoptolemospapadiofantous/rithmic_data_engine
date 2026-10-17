@@ -41,7 +41,7 @@ if cmake --build "$BUILD" -j"$(nproc)" --target \
     rithmic_engine nq_executor audit_daemon paper_engine \
     test_orb_strategy test_trend_strategy test_risk_manager test_validator test_order_manager test_lifecycle test_incident_replay test_trade_end_invariant test_db \
     test_paper_broker test_parity_paper_vs_live test_mtf_scalper test_bracket_broker \
-    crypto_collector test_crypto_collector dbn_tool test_dbn payout_sim test_payout_sim walk_forward test_walk_forward \
+    crypto_collector test_crypto_collector dbn_tool test_dbn payout_sim test_payout_sim walk_forward test_walk_forward edge_lab test_edge_lab \
     > "$LOG_DIR/build.log" 2>&1; then
   record PASS build "cmake --build succeeded"
 else
@@ -50,7 +50,7 @@ fi
 
 # ── 2. Unit tests (no DB, no network) ─────────────────────────────────────────
 log "=== UNIT TESTS ==="
-for bin in test_orb_strategy test_trend_strategy test_risk_manager test_validator test_order_manager test_lifecycle test_incident_replay test_trade_end_invariant test_paper_broker test_parity_paper_vs_live test_mtf_scalper test_bracket_broker test_crypto_collector test_dbn test_payout_sim test_walk_forward; do
+for bin in test_orb_strategy test_trend_strategy test_risk_manager test_validator test_order_manager test_lifecycle test_incident_replay test_trade_end_invariant test_paper_broker test_parity_paper_vs_live test_mtf_scalper test_bracket_broker test_crypto_collector test_dbn test_payout_sim test_walk_forward test_edge_lab; do
   target="$BUILD/$bin"
   if [[ ! -x "$target" ]]; then
     record FAIL "$bin" "binary not found at $target"

@@ -1,0 +1,4 @@
+{"id":"wk_fib38","name":"Weak day (long) set, then a 38% retracement that turns","why":"After a weak close dip buyers absorb the forced selling and the session bounces (weak-day long, no VIX). Buy (sell) a 38.2% give-back of the move from the open once it turns. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"09:35","to":"14:00","when":"!rollwin && (pibs <= 0.3 || rsi2 <= 20) && ((1 > 0 && (hod - px) >= 0.382 * (hod - open) && px > open && cl(5,1) > op(5,1)) || (1 < 0 && (px - lod) >= 0.382 * (open - lod) && px < open && cl(5,1) < op(5,1)))","dir":"1"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

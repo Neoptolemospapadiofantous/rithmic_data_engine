@@ -1,0 +1,6 @@
+{"id":"news_fade","name":"CPI or NFP day: fade the 08:30 reaction at the cash open",
+ "why":"As cpi_fade, adding the jobs report (corr -0.10, weaker) for twice the trades. Pre-registered; holdout 2025-01 on judged once.",
+ "symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"k":[0,0.1],"stopk":[0,0.5]},
+ "checks":[{"at":"09:30","when":"(cpi || nfp) && abs(px - at(8,29)) > k * atr","dir":"-sign(px - at(8,29))"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":60}

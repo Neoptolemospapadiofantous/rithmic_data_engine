@@ -1,0 +1,5 @@
+{"id":"pre_holiday","name":"Pre-holiday long (session before an exchange holiday)",
+ "why":"Short sellers and market makers cover before a long closed period (no one wants short gamma over a holiday) and retail flows are positive; documented pre-holiday effect.",
+ "params":{"stopk":[0.3,0.5,0]},
+ "checks":[{"at":"09:30","when":"prehol","dir":"1"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":40}

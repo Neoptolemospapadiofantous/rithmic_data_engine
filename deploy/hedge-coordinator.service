@@ -1,0 +1,56 @@
+# systemd unit — cross-account hedge coordinator (singleton).
+#
+# Reads hedge_pairs bindings (dashboard Hedges page) and trades each hedge
+# account to the mirror of its anchor account's net exposure.
+#
+# WARNING: a hedge account must be DEDICATED to hedging — never run
+# nq_executor-24x7@<label> on an account that is a hedge_label in hedge_pairs.
+#
+# Usage:
+#   sudo systemctl start  hedge-coordinator
+#   sudo systemctl stop   hedge-coordinator     ← does NOT flatten open hedge positions
+#   journalctl -u hedge-coordinator -f
+#
+# Install:
+#   sudo cp deploy/hedge-coordinator.service /etc/systemd/system/hedge-coordinator.service
+#   sudo systemctl daemon-reload
+
+[Unit]
+Description=Hedge coordinator — mirrors anchor account exposure into hedge accounts
+After=network-online.target postgresql-16.service
+Wants=network-online.target
+Requires=postgresql-16.service
+
+[Service]
+Type=simple
+
+User=opc
+Group=opc
+WorkingDirectory=/home/opc/rithmic_engine
+
+EnvironmentFile=/home/opc/rithmic_engine/.env
+
+ExecStartPre=/bin/bash -c \
+    '[ ! -f /home/opc/rithmic_engine/NO_DEPLOY ] || \
+     { echo "NO_DEPLOY lockfile present — refusing to start hedge coordinator"; exit 1; }'
+
+ExecStart=/home/opc/rithmic_engine/build/hedge_coordinator --config-dir /home/opc/rithmic_engine/config
+
+# Restart on crash; Rithmic duplicate-session refusals (rp_code=13) are handled
+# in-process with a long retry cadence.
+Restart=on-failure
+RestartSec=30s
+
+TimeoutStopSec=15s
+KillMode=control-group
+KillSignal=SIGTERM
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hedge_coordinator
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

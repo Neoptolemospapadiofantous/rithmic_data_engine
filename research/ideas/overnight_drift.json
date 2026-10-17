@@ -1,0 +1,5 @@
+{"id":"overnight_drift","name":"Overnight drift: buy 18:00, sell 09:25",
+ "why":"Equity index returns accrue mostly outside cash hours: market makers and dealers who carry inventory while the cash market is closed demand a premium, and overnight sellers are thin. Strongest after weak closes / high VIX when that premium is largest.",
+ "params":{"x":[1.01,0.5,0.3],"v":[0,20],"stopk":[0,0.5]},
+ "checks":[{"at":"18:00","when":"pibs <= x && vix >= v","dir":"1"}],
+ "stop":"stopk*atr","target":"0","flat":"09:25","min_trades":100}

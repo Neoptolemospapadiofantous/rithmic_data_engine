@@ -1,0 +1,16 @@
+# daily-plan.timer — build the day's plan on weekdays (New York time) every minute 09:00–13:59 (20 s after the minute, so the
+# minute that just closed is already in bars_1m) and once at 14:01. The live "allowed to trade now?" section and the sprint panel
+# (scripts/daily_plan_live.jq) follow the session; scripts/plan_alerts.sh sends the Telegram alerts. Every minute because the
+# execution test (research/preregistered/2026-10-17_manual_execution.md) showed one minute late erases the sprint's edge.
+# Read-only on Postgres; writes data/plan/.
+[Unit]
+Description=Weekday New York daily trading plan + sprint alerts, refreshed every minute 09:00–14:01
+
+[Timer]
+OnCalendar=Mon..Fri 09..13:*:20 America/New_York
+OnCalendar=Mon..Fri 14:01 America/New_York
+AccuracySec=1s
+Persistent=false
+
+[Install]
+WantedBy=timers.target

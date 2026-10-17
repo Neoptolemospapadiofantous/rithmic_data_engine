@@ -1,0 +1,4 @@
+{"id":"dir_vwap_pb","name":"Direction set at 10:00, then a VWAP pullback","why":"Trend traders add on a pullback to VWAP; with the direction already set, the pullback should be a better price than chasing. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_first.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"10:05","to":"14:00","when":"!rollwin && abs(at(10,0) - open) > 0.25 * atr && ((sign(at(10,0) - open) > 0 && lo(5,1) <= vwap && cl(5,1) > vwap) || (sign(at(10,0) - open) < 0 && hi(5,1) >= vwap && cl(5,1) < vwap))","dir":"sign(at(10,0) - open)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

@@ -1,0 +1,23 @@
+{
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.997,
+ "control_seeds": 400,
+ "id": "pat_engulf_mtf",
+ "name": "pattern: engulf_mtf",
+ "why": "Engulfing in the direction of the 60-minute trend: the short-term reversal is only taken when it rejoins the bigger flow. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_patterns_and_conditions.md).",
+ "scan": {
+  "tf": 15,
+  "from": "10:00",
+  "to": "15:00",
+  "when": "(cl(60,1) > ema(60,20) && cl(15,2) < op(15,2) && cl(15,1) > op(15,1) && cl(15,1) >= op(15,2) && op(15,1) <= cl(15,2)) || (cl(60,1) < ema(60,20) && cl(15,2) > op(15,2) && cl(15,1) < op(15,1) && cl(15,1) <= op(15,2) && op(15,1) >= cl(15,2))",
+  "dir": "(cl(60,1) > ema(60,20) && cl(15,2) < op(15,2) && cl(15,1) > op(15,1) && cl(15,1) >= op(15,2) && op(15,1) <= cl(15,2)) - (cl(60,1) < ema(60,20) && cl(15,2) > op(15,2) && cl(15,1) < op(15,1) && cl(15,1) <= op(15,2) && op(15,1) >= cl(15,2))"
+ }
+}

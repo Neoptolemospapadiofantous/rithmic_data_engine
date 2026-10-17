@@ -1,0 +1,4 @@
+{"id":"null_bar5_1030","expect":"fail","name":"Noise: last 5-minute bar's direction at 10:30, faded","why":"VALIDATION — a coin flip; must be rejected","symbol":"NQ","confirm":"ES",
+ "params":{"stopk":[0.2,0.3],"rr":[1,2]},
+ "checks":[{"at":"10:30","when":"!rollwin && cl(5,1) != op(5,1)","dir":"-sign(cl(5,1) - op(5,1))"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

@@ -1,0 +1,23 @@
+{
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.997,
+ "control_seeds": 400,
+ "id": "pat_3bar",
+ "name": "pattern: 3bar",
+ "why": "Three-bar reversal: a swing low/high forms and the next bar closes back beyond its high/low. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_patterns_and_conditions.md).",
+ "scan": {
+  "tf": 15,
+  "from": "10:00",
+  "to": "15:00",
+  "when": "(lo(15,2) < lo(15,3) && lo(15,2) < lo(15,1) && cl(15,1) > hi(15,2)) || (hi(15,2) > hi(15,3) && hi(15,2) > hi(15,1) && cl(15,1) < lo(15,2))",
+  "dir": "(lo(15,2) < lo(15,3) && lo(15,2) < lo(15,1) && cl(15,1) > hi(15,2)) - (hi(15,2) > hi(15,3) && hi(15,2) > hi(15,1) && cl(15,1) < lo(15,2))"
+ }
+}

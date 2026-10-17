@@ -1,0 +1,23 @@
+{
+ "id": "half_hour_last",
+ "name": "First half-hour (incl. overnight) predicts the last half-hour",
+ "why": "Gao-Han-Li-Zhou intraday momentum: the first 30 min return from the prior close predicts the last 30 min, driven by late-informed traders and leveraged-ETF / dealer gamma rebalancing into the close.",
+ "params": {
+  "stopk": [
+   0.1,
+   0.2,
+   0
+  ]
+ },
+ "checks": [
+  {
+   "at": "15:30",
+   "when": "!rollwin && at(10,0) != pc",
+   "dir": "sign(at(10,0) - pc)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0",
+ "flat": "15:59",
+ "min_trades": 200
+}

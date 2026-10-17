@@ -1,0 +1,5 @@
+{"id":"range_absorption","name":"Absorption at the 15-minute range edge: aggressors fail to break it, trade against them",
+ "why":"Heavy aggressive selling into the opening-range low that cannot close below it means a large resting buyer is absorbing it; once the sellers are spent, price leaves the level the other way. Pre-registered 2026-10-16 (test 4).",
+ "params":{"a":[0.1,0.2],"stopk":[0.15,0.25],"rr":[2]},
+ "scan":{"tf":5,"from":"09:45","to":"11:30","when":"flow && ((lo(5,1) <= rlo(15) + 0.05*atr && dsum(5,1) <= -a*vsum(5,1) && cl(5,1) > rlo(15)) || (hi(5,1) >= rhi(15) - 0.05*atr && dsum(5,1) >= a*vsum(5,1) && cl(5,1) < rhi(15)))","dir":"(lo(5,1) <= rlo(15) + 0.05*atr && dsum(5,1) <= -a*vsum(5,1) && cl(5,1) > rlo(15)) - (hi(5,1) >= rhi(15) - 0.05*atr && dsum(5,1) >= a*vsum(5,1) && cl(5,1) < rhi(15))"},
+ "stop":"stopk*atr","target":"rr","flat":"15:55","from":"2023-03-01","to":"2026-03-19","train_months":6,"min_trades":60,"control_pct":0.99}

@@ -1,0 +1,187 @@
+{
+  "_comment": "2026-10-16 — the working fleet: every strategy that passed edge_lab (core), the variants it is compared with, and the forward-test candidates, each with a rule written BEFORE its forward data exists. Scored by scripts/working_fleet.sh from paper_trades (forward = label 'tradeify' / 'es', entries on or after forward_from). Paper only — going live is the founder's call. Costs: pnl_pts are per contract; the score subtracts cost_pts (NQ 1.0, ES 0.35 — the real round trip edge_lab uses).",
+  "forward_from": "2026-10-19",
+  "rules": {
+    "core": "KEEP while the forward average after cost stays above zero. After >= 60 forward trades, DROP if the average after cost is below zero (the edge it was sized on is gone).",
+    "variant": "Compared with its core id on the same days. After >= 60 forward trades on both, PROMOTE the variant over the core id if its average after cost is higher by >= 1 pt and its max drawdown is not larger; otherwise keep the core id.",
+    "candidate": "After >= 40 forward trades: PASS to an edge_lab re-test with the new data if the average after cost > 0 AND profit factor >= 1.1; otherwise RETIRE. Never live on the forward test alone."
+  },
+  "strategies": [
+    {
+      "id": "so_cascade_2r",
+      "fleet": "nq",
+      "tier": "core",
+      "name": "Strong-open cascade (NQ)",
+      "rule": "09:50: |px - 09:30 open| > 0.25 ATR -> follow; else 10:30 / 11:00 / 11:30 at 0.3 ATR, 12:00 any move; one trade a day; stop 0.25 ATR, target 2R, flat 15:55",
+      "evidence": "edge_lab PASS: +4.80 pts/trade net 2010-26 walk-forward, PF 1.22, 141/yr, 11/16 years, 62 % of months since 2019; edge mostly since 2019 Frozen-setting holdout (2026-10-16): chosen on 2010-18 → +6.89 on 2019-22; chosen on 2010-22 → +10.03 on 2023-26 (t ≈ 2.4).",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "so_cascade_2r_vwap",
+      "fleet": "nq",
+      "tier": "variant",
+      "core": "so_cascade_2r",
+      "name": "Cascade + VWAP thesis exit",
+      "rule": "as so_cascade_2r, plus exit when a completed 5-minute bar closes back through the RTH VWAP",
+      "evidence": "edge_lab exits PASS: +5.58 vs +4.80, max drawdown 911 vs 1,244 pts, random-timing twin beaten 100 %; does NOT carry to ES",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "so_cascade_2r_vwap_stall",
+      "fleet": "nq",
+      "tier": "variant",
+      "core": "so_cascade_2r",
+      "name": "Cascade + VWAP + 60-minute stall exit",
+      "rule": "as so_cascade_2r_vwap, plus exit if the trade has not gone 0.5R in favour 60 minutes after entry",
+      "evidence": "edge_lab exits PASS: +5.82, PF 1.41; best of 8 rules tested (multiple-testing caveat)",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "so_cascade_3r_s30",
+      "fleet": "nq",
+      "tier": "variant",
+      "core": "so_cascade_2r",
+      "name": "Cascade, stop 0.3 ATR / 3R",
+      "rule": "as so_cascade_2r with stop 0.3 ATR and target 3R",
+      "evidence": "in edge_lab's cascade grid; no separate verdict",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "anyweak_day__vix20",
+      "fleet": "nq",
+      "tier": "core",
+      "name": "Weak-day long (NQ)",
+      "rule": "yesterday weak (closed in its bottom 30 %, or RSI(2) <= 20, or 2nd down day) AND prior VIX close >= 20 -> buy 09:30, sell 15:55, no stop",
+      "evidence": "edge_lab PASS (weak_day_long): +13.2 pts/trade, PF 1.36, 50/yr, 10/16 years; lumpy (2020 ~45 % of profit); monthly corr 0.02 with the cascade. Exits and the meta model do not improve it (2026-10-16 pre-registered) -> keep as is, small size only Frozen-setting holdout: +21.2 on 2019-22, +67.2 on 2023-26 (t ≈ 1.8-1.9).",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "es_cascade_2r",
+      "fleet": "es",
+      "tier": "core",
+      "name": "Strong-open cascade (ES, as MES)",
+      "rule": "the NQ cascade rules on ES",
+      "evidence": "edge_lab PASS (es_cascade): +1.10 ES pts/trade, PF 1.20, all eras positive; monthly corr 0.57 with the NQ cascade; MES ~$1.9k/yr per account at 6 MES Frozen-setting holdout: +1.27 on 2019-22, +1.15 on 2023-26 (t 1.2-1.6).",
+      "cost_pts": 0.35
+    },
+    {
+      "id": "es_cascade_k25_3r",
+      "fleet": "es",
+      "tier": "variant",
+      "core": "es_cascade_2r",
+      "name": "ES cascade, k 0.25 / 3R",
+      "rule": "ES cascade with 0.25 ATR at every check, stop 0.25 ATR, target 3R",
+      "evidence": "edge_lab's in-sample best ES setting",
+      "cost_pts": 0.35
+    },
+    {
+      "id": "so_cascade_2r_gapagree",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Cascade only when the gap agrees",
+      "rule": "as so_cascade_2r, but trade only when the overnight gap (09:30 open - prior RTH close) points the trade's way by >= 0.1 day ATR",
+      "evidence": "pre-registered 2026-10-16 (new_angles): PASS +8.59 pts/trade (897 trades); frozen holdout chosen on 2010-18 -> +16.35 on 2019-22 (t 2.85), chosen on 2010-22 -> +14.32 on 2023-26 (t 2.01); removed trades still positive (+3.35) so it is a sizing candidate, not a filter on the core. CONFIRMED on ES 2026-10-16 (es_cascade_gap_agree PASS +1.97 vs +1.10, all eras positive). Doubling size on these days does NOT speed up the first payout (Flex 16.0 → 17.8 weeks, more failed evals)",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "so_cascade_2r_notext",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Cascade unless yesterday closed at its extreme",
+      "rule": "as so_cascade_2r, but skip a long when yesterday closed in the top 30 % of its range (short: bottom 30 %)",
+      "evidence": "found 2026-10-16 as the complement of a pre-registered test (opposite direction to the prediction): +7.49; holdouts +9.60 (2019-22, t 2.8), +14.68 (2023-26, t 2.6). Not predicted -> forward test only",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "so_cascade_2r_gapagree_vwap",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Gap-agree cascade + VWAP thesis exit",
+      "rule": "as so_cascade_2r_gapagree, plus exit when a completed 5-minute bar closes back through the RTH VWAP",
+      "evidence": "edge_lab exits PASS on cascade_gap_agree's trades (2026-10-16, pre-registered): +10.05 vs +8.59 pts/trade, PF 1.72, max drawdown 508 vs 1,152 pts",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "es_cascade_2r_gapagree",
+      "fleet": "es",
+      "tier": "candidate",
+      "name": "ES cascade only when the gap agrees",
+      "rule": "es_cascade_2r with drive_gap_agree 0.1",
+      "evidence": "edge_lab PASS (es_cascade_gap_agree, pre-registered 2026-10-16): +1.97 ES pts/trade vs +1.10 for the ES cascade, PF 1.42, eras +0.51 / +4.36 / +1.94",
+      "cost_pts": 0.35
+    },
+    {
+      "id": "so_cascade_2r_lim1",
+      "fleet": "nq",
+      "tier": "variant",
+      "core": "so_cascade_2r",
+      "name": "Cascade with a 1-tick limit entry",
+      "rule": "as so_cascade_2r, but the entry rests 1 tick better than the last trade at the signal; filled only when a later tick trades through it, cancelled after 60 s (a miss = no trade). Pre-registered rule (2026-10-16 round 3): after >= 40 signals adopt if the net per signal (misses count 0) beats so_cascade_2r on the same days",
+      "evidence": "untestable on bars (queue position); paper only",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "lf_asia_sweep",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Asia-range sweep + order flow (fade)",
+      "rule": "5-minute bar 03:00-11:25 trades through the Asia (20:00-03:00) high with aggressor delta >= +0.05 x volume and closes back inside -> short (mirror at the low); stop 0.25 ATR, 2R, flat 15:55",
+      "evidence": "edge_lab near-miss (pre-registered, failed 99.75 %): walk-forward +10.4, whole-period best variant +5.6 pts/trade (t 1.3), positive 2023-26; price-only version loses over 16 years",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "lf_round_break",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "100-point band break + order flow (follow)",
+      "rule": "first 5-minute close (09:30-11:55) beyond the 100-point band around the 09:30 open, previous close inside, delta in the break's direction >= 0.05 x volume; stop 0.25 ATR, 2R, flat 15:55",
+      "evidence": "edge_lab near-miss (pre-registered, failed 99.75 %): walk-forward +12.4, whole-period best variant +5.4 pts/trade (t 1.4)",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "monday_long",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Monday RTH long (NQ)",
+      "rule": "every Monday: buy 09:30, sell 15:55, no stop (paper takes roll weeks too; edge_lab excluded roll windows for data reasons only)",
+      "evidence": "2026-10-17 behaviour map of NQ 1m 2010-26: Monday RTH +12.3 bp vs +3.6 bp an average session (t 3.4, all eras positive, 13/17 years). edge_lab PASS on 2010-07..2024-12 (pre-registered, 2 variants): +9.37 pts/trade walk-forward, PF 1.34, random-day control 96 % (bar 95), era 2010-18 flat (-0.29), 2019-22 +14.6, 2023-26 +29.6, ES confirms. Holdout 2025-01..2026-10 judged once: 48 trades +66.3 pts/trade, PF 2.26, t 2.15 — NOT blind (the map that suggested it covered 2025). Mostly long beta concentrated on one day; monthly corr -0.03 with the cascade. Flex sim: adding 2 MNQ on Mondays shortens the funded phase 6.8 -> 5.2-6.0 wks but the median first payout stays ~16 wks",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "gap_or_retest",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Gap side, then the opening-range retest (NQ)",
+      "rule": "|gap| ≥ 0.1 ATR sets the side; first 5-minute bar starting 09:45–13:55 that touches the 15-minute opening-range edge on that side and closes beyond it → enter; stop 0.35 ATR, 2R, flat 15:55; one trade a day",
+      "evidence": "edge_lab PASS 2026-10-17 (pre-registered direction_sources): +9.03 pts/trade 2010-24, PF 1.43, eras +0.4/+16.1/+16.9 (post-2019 effect); exits study: plain stop/target as good as any thesis exit. Holdout 2025+ judged once: +7.15 on 135 trades (PF 1.13, t 0.6). Monthly corr 0.33 with so_cascade — partly the same gap-agree effect. Plain gap entry fails; the retest confirmation is the value.",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "so_cascade_2r_vwap_stall__flow",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Cascade + VWAP/stall, order flow agreeing",
+      "rule": "so_cascade_2r_vwap_stall with entries only when the RTH cumulative aggressor delta points the trade’s way; checks 09:50 / 10:30 / 11:00 / 11:30",
+      "evidence": "edge_lab test D 2026-10-17 (2023-03 → 2026-03, the only aggressor-data years): +18.50 pts/trade (398) vs +14.99 for the same days without the condition (438). One era only.",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "gap_or_retest__flow",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Gap retest, order flow agreeing",
+      "rule": "gap_or_retest with the RTH cumulative aggressor delta agreeing",
+      "evidence": "edge_lab test D 2026-10-17: +14.18 (215) vs +13.57 (252) on the same 2023–26 days. One era, small difference.",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "box_go_on_gap",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "Break → box → go, overnight high/low, gap side",
+      "rule": "|gap| ≥ 0.1 ATR sets the side; a 5-min bar breaks the overnight high (low); the next stays beyond it with ≤ 0.75 × the break bar’s range; the next closes beyond that box → enter; stop the other side of the box, 2R, flat 15:55",
+      "evidence": "edge_lab bb_on_gap PASS 2026-10-17 (founder idea, pre-registered): +7.31 pts/trade, 127 trades 2010-24 (~8/yr), PF 1.53, eras +1.8/+14.0/+7.2; holdout 2025+ +8.02 on 22 trades. 1 of 6 versions passed — candidate.",
+      "cost_pts": 1.0
+    }
+  ]
+}

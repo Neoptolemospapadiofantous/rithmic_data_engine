@@ -1,0 +1,4 @@
+{"id":"gap_fib38","name":"Gap direction set, then a 38% retracement that turns","why":"The overnight gap is repositioning that tends to continue into the cash session (gap-agree cascade). Buy (sell) a 38.2% give-back of the move from the open once it turns. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"09:35","to":"14:00","when":"!rollwin && abs(gap) >= 0.1 && ((sign(gap) > 0 && (hod - px) >= 0.382 * (hod - open) && px > open && cl(5,1) > op(5,1)) || (sign(gap) < 0 && (px - lod) >= 0.382 * (open - lod) && px < open && cl(5,1) < op(5,1)))","dir":"sign(gap)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

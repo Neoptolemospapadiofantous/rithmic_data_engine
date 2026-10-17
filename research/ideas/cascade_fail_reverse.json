@@ -1,0 +1,23 @@
+{
+ "id": "cascade_fail_reverse",
+ "name": "Failed 09:50 cascade signal → trade the other way",
+ "why": "Traders who chased the open move are trapped when it fails; their stops and exits drive price the other way, on exactly the days the cascade loses. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_owned_data_ideas.md).",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 1,
+  "from": "09:51",
+  "to": "12:00",
+  "when": "abs(at(9,50) - open) > 0.25*atr && ((at(9,50) > open && lo_since(9,50) <= at(9,50) - 0.25*atr && hi_since(9,50) < at(9,50) + 0.5*atr) || (at(9,50) < open && hi_since(9,50) >= at(9,50) + 0.25*atr && lo_since(9,50) > at(9,50) - 0.5*atr))",
+  "dir": "-sign(at(9,50) - open)"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.995,
+ "control_seeds": 400
+}

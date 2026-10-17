@@ -1,0 +1,23 @@
+{
+ "id": "last_hour_all",
+ "name": "Last hour follows the day's direction, every day",
+ "why": "Leveraged/inverse ETF rebalancing and short-gamma dealer hedging both trade in the direction of the day's move into the close, every day, in size proportional to the move.",
+ "params": {
+  "stopk": [
+   0.1,
+   0.2,
+   0.3,
+   0
+  ]
+ },
+ "checks": [
+  {
+   "at": "15:00",
+   "when": "px != open",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0",
+ "flat": "15:55"
+}

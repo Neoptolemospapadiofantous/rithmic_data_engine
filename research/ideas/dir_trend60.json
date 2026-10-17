@@ -1,0 +1,4 @@
+{"id":"dir_trend60","name":"Direction set at 10:00, then a close beyond the last hour's range","why":"Supertrend / Donchian-style continuation on the morning's side. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_first.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"10:05","to":"14:00","when":"!rollwin && abs(at(10,0) - open) > 0.25 * atr && ((sign(at(10,0) - open) > 0 && cl(5,1) > lag(5, hh(5,12))) || (sign(at(10,0) - open) < 0 && cl(5,1) < lag(5, ll(5,12))))","dir":"sign(at(10,0) - open)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

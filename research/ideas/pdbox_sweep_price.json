@@ -1,0 +1,21 @@
+{
+ "id": "pdbox_sweep_price",
+ "name": "Sweep & reclaim (fade) at yesterday's high / low — price only (reference)",
+ "why": "Stops cluster just beyond yesterday's high / low; aggressors who push through it and cannot hold beyond it (the bar closes back inside) are trapped, and their exits plus the resting liquidity that absorbed them drive price back across the box. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:35",
+  "to": "12:00",
+  "when": "!rollwin && ((hi(5,1) > ph && cl(5,1) < ph) || (lo(5,1) < pl && cl(5,1) > pl))",
+  "dir": "(lo(5,1) < pl && cl(5,1) > pl) - (hi(5,1) > ph && cl(5,1) < ph)"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

@@ -1,0 +1,6 @@
+{"id":"cpi_fade","name":"CPI day: fade the 08:30 reaction at the cash open",
+ "why":"The 08:30 print lands on the thin overnight book: algos and stops run the price, and when the cash market opens real money reprices the number. 2026-10-17 map (real BLS dates): the 08:29->08:45 move vs the RTH open->close is corr -0.33 on CPI days 2010-20 and -0.23 since 2021, +0.03 on days without news. Pre-registered; holdout 2025-01 on judged once.",
+ "symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"k":[0,0.1],"stopk":[0,0.5]},
+ "checks":[{"at":"09:30","when":"cpi && abs(px - at(8,29)) > k * atr","dir":"-sign(px - at(8,29))"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":60}

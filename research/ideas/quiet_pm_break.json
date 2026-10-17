@@ -1,0 +1,30 @@
+{
+ "id": "quiet_pm_break",
+ "name": "Quiet morning → afternoon break of the morning range",
+ "why": "On days with no morning move the large orders (pension rebalancing, market-on-close programs) have not executed yet; when they start in the afternoon, the break of the morning range is that flow, and it runs into the close.",
+ "params": {
+  "q": [
+   0.2,
+   0.3
+  ],
+  "stopk": [
+   0.15,
+   0.25
+  ],
+  "rr": [
+   0,
+   2
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "13:00",
+  "to": "15:00",
+  "when": "abs(at(11,30) - open) <= q*atr && (cl(5,1) > lag(5, hi_since(9,30)) || cl(5,1) < lag(5, lo_since(9,30)))",
+  "dir": "(cl(5,1) > lag(5, hi_since(9,30))) - (cl(5,1) < lag(5, lo_since(9,30)))"
+ },
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55",
+ "min_trades": 100
+}

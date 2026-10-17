@@ -1,0 +1,5 @@
+{"id":"overnight_asia","name":"Asia drift: buy 18:00, sell 03:00",
+ "why":"Same overnight carry premium as overnight_drift, but only the Asia session, before European desks and the US data window start trading against it.",
+ "params":{"x":[1.01,0.5,0.3],"v":[0,20],"stopk":[0,0.5]},
+ "checks":[{"at":"18:00","when":"pibs <= x && vix >= v","dir":"1"}],
+ "stop":"stopk*atr","target":"0","flat":"03:00","min_trades":100}

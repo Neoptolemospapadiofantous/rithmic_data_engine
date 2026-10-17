@@ -1,0 +1,5 @@
+{"id":"data_drift","name":"08:30 data reaction continues to the cash open",
+ "why":"Economic releases at 08:30 force macro funds and CTAs to reposition while cash equities are closed, so futures carry the whole adjustment; repositioning takes longer than 15 minutes and continues into the 09:30 open.",
+ "params":{"k":[0.1,0.15,0.2],"stopk":[0.15,0.25],"rr":[0,2]},
+ "checks":[{"at":"08:45","when":"abs(px - at(8,30)) > k*atr","dir":"sign(px - at(8,30))"}],
+ "stop":"stopk*atr","target":"rr","flat":"09:25","min_trades":100}

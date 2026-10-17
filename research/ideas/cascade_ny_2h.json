@@ -1,0 +1,48 @@
+{
+ "id": "cascade_ny_2h",
+ "name": "NY cascade, exit at 11:30 (first 2 hours only)",
+ "why": "Same institutional open flow as strong_open; on days the open is quiet the flow often starts later in the morning (European close, delayed program orders), so re-checking at 10:30-11:30 catches it. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_cascade_all_sessions.md).",
+ "params": {
+  "k1": [
+   0.2,
+   0.25,
+   0.3
+  ],
+  "k2": [
+   0.25,
+   0.3,
+   0.35
+  ],
+  "stopk": [
+   0.2,
+   0.25,
+   0.35
+  ],
+  "rr": [
+   2,
+   3
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "abs(px-open) > k1*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "10:30",
+   "when": "abs(px-open) > k2*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:00",
+   "when": "abs(px-open) > k2*atr",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "11:30",
+ "control_pct": 0.993,
+ "control_seeds": 400
+}

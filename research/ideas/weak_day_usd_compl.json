@@ -1,0 +1,24 @@
+{
+ "params": {
+  "x": [
+   0.3,
+   0.5
+  ]
+ },
+ "stop": "0",
+ "target": "0",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "id": "weak_day_usd_compl",
+ "name": "(complement) weak-day without a dollar jump",
+ "why": "Complement of weak_day_usd (adoption rule). Pre-registered 2026-10-16 (research/preregistered/2026-10-16_free_macro_filters.md).",
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "pibs <= x && vix >= 20 && usdc < 0.3",
+   "dir": "1"
+  }
+ ]
+}

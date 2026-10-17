@@ -1,0 +1,31 @@
+{
+ "id": "mobox_sweep_of",
+ "name": "Sweep & reclaim (fade) at last month's high / low with order flow",
+ "why": "Stops cluster just beyond last month's high / low; aggressors who push through it and cannot hold beyond it (the 5-minute bar closes back inside) are trapped, and their exits plus the liquidity that absorbed them drive price back across the box. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes_all.md).",
+ "params": {
+  "a": [
+   0.05,
+   0.15
+  ],
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:35",
+  "to": "12:00",
+  "when": "flow && !rollwin && ((hi(5,1) > pmh && cl(5,1) < pmh && dsum(5,1) >= a*vsum(5,1)) || (lo(5,1) < pml && cl(5,1) > pml && dsum(5,1) <= -a*vsum(5,1)))",
+  "dir": "(lo(5,1) < pml && cl(5,1) > pml && dsum(5,1) <= -a*vsum(5,1)) - (hi(5,1) > pmh && cl(5,1) < pmh && dsum(5,1) >= a*vsum(5,1))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "from": "2023-03-01",
+ "to": "2026-03-19",
+ "train_months": 6,
+ "min_trades": 60,
+ "control_pct": 0.9975,
+ "control_seeds": 400
+}

@@ -29,7 +29,12 @@ age=$(psql -h "${PG_HOST:-localhost}" -U "${PG_USER:-rithmic_user}" -d "${PG_DB:
       "SELECT COALESCE(EXTRACT(EPOCH FROM now()-max(ts_event)),1e9)::int FROM ticks WHERE symbol='NQ' AND ts_event > now()-interval '1 day'" 2>/dev/null || echo 1000000000)
 open=false; market_open && open=true
 failing=false; reason=""
+# A fresh start needs time (schema statements, Rithmic login, WAL replay) before the first tick
+# lands — restarting it inside that window loops for ever (2026-10-16: a 6.2M-row BBO WAL replay
+# was killed every 2 min for 15 min). Give it START_GRACE_S after the unit last became active.
+up_s=$(( $(date +%s) - $(date -d "$(systemctl --user show -p ActiveEnterTimestamp --value "$UNIT" 2>/dev/null)" +%s 2>/dev/null || echo 0) ))
 if [[ "$active" != "active" ]]; then failing=true; reason="unit $active"
+elif [[ "$up_s" -lt "${START_GRACE_S:-300}" ]]; then reason="started ${up_s}s ago — grace"
 elif [[ "$open" == true && "$age" -gt "$STALE_S" ]]; then failing=true; reason="newest NQ tick ${age}s old while the market is open"; fi
 action="none"
 if [[ "$failing" == true ]]; then

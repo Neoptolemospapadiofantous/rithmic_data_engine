@@ -1,0 +1,5 @@
+{"id":"turn_of_month","name":"Turn of the month: long the last/first trading days, open → 15:55",
+ "why":"Pension contributions, payroll investing and month-end rebalancing put new cash into equities around the turn of the month.",
+ "params":{"a":[-1,0,1],"b":[0,1,2,3]},
+ "checks":[{"at":"09:30","when":"tdleft <= a || tdom <= b","dir":"1"}],
+ "stop":"0","target":"0","flat":"15:55","min_trades":60}

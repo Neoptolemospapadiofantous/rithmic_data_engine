@@ -1,0 +1,5 @@
+{"id":"vwap_fade","name":"VWAP band fade (5m, ±b SD) back toward VWAP",
+ "why":"Execution algos benchmark to VWAP; far from it they slow down or reverse their child orders, so stretched prices mean-revert toward VWAP.",
+ "params":{"b":[1.5,2,2.5,3],"stopk":[0.1,0.2],"rr":[1,2]},
+ "scan":{"tf":5,"from":"10:00","to":"15:00","when":"vsd > 0 && abs(px - vwap) > b*vsd","dir":"-sign(px - vwap)"},
+ "max_trades":2,"stop":"stopk*atr","target":"rr","flat":"15:55"}

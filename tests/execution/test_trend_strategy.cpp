@@ -169,6 +169,157 @@ int main() {
         auto plain = run(0, 19990.0, {19980, 20010, 19990, 20000, 20010}, u, sd);
         CHECK(plain.size() == 1 && plain[0].sig == OrbSignal::BUY && u == 0 && sd == 0.0, "E1 off: plain drive_market unchanged");
     }
+    // ── thesis exits on the drive (2026-10-16): drive_exit_vwap / drive_exit_stall_min ──
+    {
+        TrendConfig tc; tc.mode = "opening_drive"; tc.tf_min = 1; tc.drive_minutes = 4; tc.drive_min_atr = 0.2;
+        tc.drive_day_atr = true; tc.drive_market = true; tc.drive_entry_from = 930; tc.drive_entry_to = 1000;
+        tc.drive_stop_atr = 0.35;
+        auto run = [&](TrendConfig t, const std::vector<double>& path) {
+            TrendStrategy s(t, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            feed_path(s, path, 9, 30);
+            return out;
+        };
+        // BUY at the 09:34 close (~20030, entry minute 09:35); the first 5-minute close checked is 09:39's
+        const std::vector<double> drop = {20000, 20010, 20020, 20025, 20030, 20040, 20040, 20040, 20040, 19980, 19970};
+        TrendConfig v = tc; v.drive_exit_vwap = true;
+        auto a = run(v, drop);
+        CHECK(a.size() == 2 && a[0].sig == OrbSignal::BUY && a[1].sig == OrbSignal::FLATTEN_EOD && a[1].why == "drive_vwap_exit"
+              && std::fabs(a[1].px - 19980.25) < 1e-9, "drive_exit_vwap: the 09:39 5-minute close below VWAP closes the long");
+        // a dip below VWAP inside the bucket (09:36) is not a 5-minute close → no exit while 09:39 closes above
+        auto b = run(v, {20000, 20010, 20020, 20025, 20030, 20040, 19990, 20045, 20050, 20055, 20060});
+        CHECK(b.size() == 1 && b[0].sig == OrbSignal::BUY, "drive_exit_vwap: only completed 5-minute closes count");
+        auto off = run(tc, drop);
+        CHECK(off.size() == 1, "thesis exits off by default: no exit signal");
+        // stall: 10 min after the entry the best excursion must reach 0.5 × the 35-pt stop (17.5 pts)
+        TrendConfig st = tc; st.drive_exit_stall_min = 10; st.drive_exit_stall_r = 0.5;
+        std::vector<double> flat = {20000, 20010, 20020, 20025, 20030};
+        for (int k = 0; k < 14; ++k) flat.push_back(20035);
+        auto c = run(st, flat);
+        CHECK(c.size() == 2 && c[1].why == "drive_stall_exit" && std::fabs(c[1].px - 20035.25) < 1e-9, "drive_exit_stall_min: no progress after 10 min → exit");
+        std::vector<double> go = {20000, 20010, 20020, 20025, 20030};
+        for (int k = 0; k < 14; ++k) go.push_back(20035 + 3 * k);
+        auto d = run(st, go);
+        CHECK(d.size() == 1, "drive_exit_stall_min: a trade that went 0.5R in favour is kept");
+    }
+    // ── asia_sweep / round_break (2026-10-16): liquidity sweep / break with order flow on 5-minute bars ──
+    {
+        const int64_t DAY = 86'400'000'000LL;
+        // one 1-minute bar at h:m (day_off = −1 → the evening before), 8 ticks o → hi → lo → c, buy_share aggressor buys
+        auto bar1 = [&](TrendStrategy& s, int day_off, int h, int m, double o, double hi, double lo, double c, double buy_share) {
+            const double path[4] = {o, hi, lo, c};
+            const int buys = (int)(8 * buy_share + 0.5);
+            for (int k = 0; k < 8; ++k) s.on_tick(OrbTick{at(h, m, k * 7) + day_off * DAY, path[std::min(3, k / 2)], 10, k < buys});
+        };
+        auto run_asia = [&](double sweep_buy_share, double flat_buy_share, double sweep_hi, double sweep_c, double& sd) {
+            TrendConfig tc; tc.mode = "asia_sweep"; tc.tf_min = 5; tc.win_start = 300; tc.win_end = 1200;
+            tc.lf_delta_min = 0.05; tc.lf_stop_atr = 0.25;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            for (int mm = 18 * 60; mm < 24 * 60; ++mm) {                          // evening: Asia high 20010 at 21:00
+                const double hi = mm == 21 * 60 ? 20010 : 20000.5;
+                bar1(s, -1, mm / 60, mm % 60, 20000, hi, 19999.5, 20000, flat_buy_share);
+            }
+            for (int mm = 0; mm < 3 * 60; ++mm) {                                 // after midnight: Asia low 19990 at 01:00
+                const double lo = mm == 60 ? 19990 : 19999.5;
+                bar1(s, 0, mm / 60, mm % 60, 20000, 20000.5, lo, 20000, flat_buy_share);
+            }
+            for (int mm = 0; mm < 5; ++mm)                                        // 03:00–03:04: the sweep bar
+                bar1(s, 0, 3, mm, 20000, mm == 2 ? sweep_hi : 20000.5, 19999.5, mm == 4 ? sweep_c : 20000, sweep_buy_share);
+            bar1(s, 0, 3, 5, 20000, 20000.5, 19999.5, 20000, flat_buy_share);     // closes the 5-minute bar
+            bar1(s, 0, 3, 6, 20000, 20000.5, 19999.5, 20000, flat_buy_share);
+            sd = s.take_stop_dist();
+            return out;
+        };
+        double sd = 0;
+        auto trapped = run_asia(0.8, 0.5, 20015, 20005, sd);
+        CHECK(trapped.size() == 1 && trapped[0].sig == OrbSignal::SELL && trapped[0].why == "asia_sweep_short" && std::fabs(sd - 25.0) < 1e-9,
+              "asia_sweep: buyers push above the Asia high and the bar closes back inside → SHORT, stop 0.25 × day ATR");
+        auto sellers = run_asia(0.2, 0.5, 20015, 20005, sd);
+        CHECK(sellers.empty(), "asia_sweep: the same poke with SELLING aggression is not a trapped-buyer sweep → no trade");
+        auto held = run_asia(0.8, 0.5, 20015, 20012, sd);
+        CHECK(held.empty(), "asia_sweep: a bar that closes above the Asia high (break, not sweep) → no trade");
+        auto noflow = run_asia(0.0, 0.0, 20015, 20005, sd);
+        CHECK(noflow.empty(), "asia_sweep: no aggressor data that day → no trade (fail closed)");
+
+        // round_break: open 20030 → band 20000–20100; 5-minute closes 20090, then 20110 with buying → LONG
+        auto run_round = [&](double buy_share, double c2) {
+            TrendConfig tc; tc.mode = "round_break"; tc.tf_min = 5; tc.win_start = 930; tc.win_end = 1205;
+            tc.lf_delta_min = 0.05; tc.lf_stop_atr = 0.25;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            for (int mm = 9 * 60 + 20; mm < 9 * 60 + 30; ++mm) bar1(s, 0, mm / 60, mm % 60, 20030, 20031, 20029, 20030, 0.5);
+            for (int mm = 0; mm < 5; ++mm) bar1(s, 0, 9, 30 + mm, 20030, 20091, 20029, mm == 4 ? 20090 : 20060, 0.5);
+            for (int mm = 0; mm < 5; ++mm) bar1(s, 0, 9, 35 + mm, 20090, c2 + 1, 20089, mm == 4 ? c2 : 20095, buy_share);
+            bar1(s, 0, 9, 40, c2, c2 + 1, c2 - 1, c2, 0.5);
+            bar1(s, 0, 9, 41, c2, c2 + 1, c2 - 1, c2, 0.5);
+            return out;
+        };
+        auto up = run_round(0.8, 20110);
+        CHECK(up.size() == 1 && up[0].sig == OrbSignal::BUY && up[0].why == "round_break_long", "round_break: first close above the 100-pt band with buying → LONG");
+        CHECK(run_round(0.2, 20110).empty(), "round_break: the same close with SELLING aggression → no trade");
+        CHECK(run_round(0.8, 20095).empty(), "round_break: a close still inside the band → no trade");
+
+        // gap_or_retest (2026-10-17): yesterday closed 20000; today opens 20030 (gap +0.3 ATR at ATR 100 → long side);
+        // opening range 09:30–09:44 = 20025–20040; the 09:45 bar dips to 20038 and closes 20045 → LONG, stop 0.35 × ATR
+        auto run_gr = [&](double open, double bar_lo, double bar_c, double& sd, bool flow_agree = false, double rth_buy = 0.5) {
+            TrendConfig tc; tc.mode = "gap_or_retest"; tc.tf_min = 5; tc.win_start = 930; tc.win_end = 1555;
+            tc.lf_stop_atr = 0.35; tc.gr_flow_agree = flow_agree;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session();
+            for (int mm = 9 * 60 + 30; mm < 16 * 60; ++mm) bar1(s, -1, mm / 60, mm % 60, 20000, 20001, 19999, 20000, 0.5);
+            s.reset_session(); s.set_day_atr(100.0);                              // 18:00: yesterday's close is 20000
+            for (int mm = 0; mm < 15; ++mm)                                       // opening range 09:30–09:44
+                bar1(s, 0, 9, 30 + mm, open, mm == 7 ? open + 10 : open + 1, mm == 3 ? open - 5 : open - 1, open, rth_buy);
+            for (int mm = 0; mm < 5; ++mm)                                        // the 09:45 bar
+                bar1(s, 0, 9, 45 + mm, open + 11, open + 16, mm == 2 ? bar_lo : open + 11, mm == 4 ? bar_c : open + 12, 0.5);
+            bar1(s, 0, 9, 50, bar_c, bar_c + 1, bar_c - 1, bar_c, 0.5);
+            bar1(s, 0, 9, 51, bar_c, bar_c + 1, bar_c - 1, bar_c, 0.5);
+            sd = s.take_stop_dist();
+            return out;
+        };
+        auto gl = run_gr(20030, 20038, 20045, sd);
+        CHECK(gl.size() == 1 && gl[0].sig == OrbSignal::BUY && gl[0].why == "gap_or_retest_long" && std::fabs(sd - 35.0) < 1e-9,
+              "gap_or_retest: gap up, the 09:45 bar touches the opening-range high and closes above → LONG, stop 0.35 × ATR");
+        CHECK(run_gr(20005, 20013, 20020, sd).empty(), "gap_or_retest: a gap of 0.05 ATR (< 0.1) sets no side → no trade");
+        CHECK(run_gr(20030, 20042, 20045, sd).empty(), "gap_or_retest: a bar that never touches the opening-range high → no trade");
+        CHECK(run_gr(19970, 19978, 19985, sd).empty(), "gap_or_retest: a gap DOWN never takes the long retest");
+        // gr_flow_agree (2026-10-17): the same long needs buyers ahead in the RTH cumulative delta
+        CHECK(run_gr(20030, 20038, 20045, sd, true, 0.2).empty(), "gap_or_retest + flow: sellers ahead (RTH delta < 0) → no long");
+        auto gf = run_gr(20030, 20038, 20045, sd, true, 0.8);
+        CHECK(gf.size() == 1 && gf[0].sig == OrbSignal::BUY, "gap_or_retest + flow: buyers ahead (RTH delta > 0) → LONG");
+
+        // box_go (2026-10-17): overnight high 20050, yesterday's close 20000, open 20040 (gap +0.4 ATR at ATR 100 → long side)
+        //   09:30 bar breaks the overnight high (o 20040 c 20060, range 24); 09:35 box stays above it (20052–20065, range 13 ≤ 0.75 × 24);
+        //   09:40 bar closes 20068 above the box → LONG, stop = 20068 − 20052 + 0.25 = 16.25
+        auto run_bg = [&](double open, double box_lo, double go_c, double& sd) {
+            TrendConfig tc; tc.mode = "box_go"; tc.tf_min = 5; tc.win_start = 930; tc.win_end = 1555;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session();
+            for (int mm = 9 * 60 + 30; mm < 16 * 60; ++mm) bar1(s, -1, mm / 60, mm % 60, 20000, 20001, 19999, 20000, 0.5);
+            s.reset_session(); s.set_day_atr(100.0);
+            for (int mm = 8 * 60; mm < 9 * 60 + 30; ++mm)                        // overnight: high 20050 at 08:30
+                bar1(s, 0, mm / 60, mm % 60, open, mm == 8 * 60 + 30 ? 20050 : open + 1, open - 1, open, 0.5);
+            for (int mm = 0; mm < 5; ++mm) bar1(s, 0, 9, 30 + mm, mm ? 20050 : open, 20062, 20038, mm == 4 ? 20060 : 20055, 0.5);   // break bar
+            for (int mm = 0; mm < 5; ++mm) bar1(s, 0, 9, 35 + mm, 20060, 20065, mm == 2 ? box_lo : 20058, 20060, 0.5);               // box bar
+            for (int mm = 0; mm < 5; ++mm) bar1(s, 0, 9, 40 + mm, 20060, go_c + 1, 20059, mm == 4 ? go_c : 20062, 0.5);              // go bar
+            bar1(s, 0, 9, 45, go_c, go_c + 1, go_c - 1, go_c, 0.5);
+            bar1(s, 0, 9, 46, go_c, go_c + 1, go_c - 1, go_c, 0.5);
+            sd = s.take_stop_dist();
+            return out;
+        };
+        auto bg = run_bg(20040, 20052, 20068, sd);
+        CHECK(bg.size() == 1 && bg[0].sig == OrbSignal::BUY && bg[0].why == "box_go_long" && std::fabs(sd - 16.25) < 1e-9,
+              "box_go: break of the overnight high, a small box that holds, a close above the box → LONG, stop below the box");
+        CHECK(run_bg(20040, 20048, 20068, sd).empty(), "box_go: a box that dips back below the overnight high → no trade");
+        CHECK(run_bg(20040, 20052, 20063, sd).empty(), "box_go: the go bar does not close above the box → no trade");
+        CHECK(run_bg(19990, 20052, 20068, sd).empty(), "box_go: a gap DOWN never takes the long break");
+    }
     // ── late strong open (2026-10-15): re-check later only on days the main decision gave no direction ──
     {
         TrendConfig tc; tc.mode = "opening_drive"; tc.tf_min = 1; tc.drive_minutes = 4; tc.drive_min_atr = 0.2;
@@ -198,6 +349,23 @@ int main() {
         // late moves never reach 0.3 ATR → nothing
         auto quiet = run(false, {20000, 20002, 20003, 20004, 20005, 20010, 20012, 20015, 20020, 20022, 20025, 20026, 20080}, sd);
         CHECK(quiet.empty(), "late SO: no trade when no late check passes (moves after the last check ignored)");
+        // drive_flow_agree (2026-10-17): the late BUY needs buyers ahead in the RTH cumulative delta
+        {
+            TrendConfig t = tc; t.drive_flow_agree = true;
+            auto run_flow = [&](bool buyers) {
+                TrendStrategy s(t, risk_cfg()); std::vector<Rec> out;
+                s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+                s.reset_session(); s.set_day_atr(100.0);
+                for (size_t i = 0; i < late_up.size(); ++i) {
+                    const int total = 9 * 60 + 30 + (int)i;
+                    for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(total / 60, total % 60, k * 10), late_up[i] + (k % 2 ? 0.25 : -0.25), 1, buyers ? k < 5 : k < 1});
+                }
+                return out;
+            };
+            auto fb = run_flow(true);
+            CHECK(fb.size() == 1 && fb[0].sig == OrbSignal::BUY, "cascade + flow: buyers ahead → the late BUY is taken");
+            CHECK(run_flow(false).empty(), "cascade + flow: sellers ahead while price rises → no BUY");
+        }
         // late_only: the main decision is a skip test — never traded
         auto lo_main = run(true, {20000, 20010, 20020, 20025, 20030, 20040, 20050, 20060, 20070, 20080, 20090, 20100}, sd);
         CHECK(lo_main.empty(), "late_only: main-decision day → no trade at all");
@@ -208,6 +376,70 @@ int main() {
         s0.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n0; }); s0.reset_session(); s0.set_day_atr(100.0);
         feed_path(s0, late_up, 9, 30);
         CHECK(n0 == 0, "late SO off: quiet main day → no trade (unchanged)");
+        // every-day cascade: drive_late_last_min_atr 0 → the LAST late check follows any move; earlier checks keep 0.3
+        auto cascade = [&](const std::vector<double>& path, std::vector<Rec>& out) {
+            TrendConfig t = tc; t.drive_late_last_min_atr = 0.0;
+            TrendStrategy s(t, risk_cfg());
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            feed_path(s, path, 9, 30);
+            return s.take_stop_dist();
+        };
+        const std::vector<double> quiet_up = {20000, 20002, 20003, 20004, 20005, 20010, 20012, 20015, 20020, 20022, 20025, 20026};
+        std::vector<Rec> c1; const double csd = cascade(quiet_up, c1);
+        CHECK(c1.size() == 1 && c1[0].sig == OrbSignal::BUY && c1[0].why == "drive_late_long" && std::fabs(c1[0].px - 20022.25) < 1e-9,
+              "cascade: last check (09:40, +22.5 < 0.3 ATR) follows any move; the 09:38 check (+15.5) still needs 0.3 ATR");
+        CHECK(std::fabs(csd - 25.0) < 1e-9, "cascade: last-check trade keeps drive_stop_atr × day ATR");
+        std::vector<Rec> c2; cascade({20000, 19999, 19998, 19997, 19996, 19994, 19992, 19990, 19988, 19987, 19986, 19985}, c2);
+        CHECK(c2.size() == 1 && c2[0].sig == OrbSignal::SELL, "cascade: small down move at the last check → SELL");
+        std::vector<Rec> c3; cascade({20000, 20001, 19999, 20002, 20001, 20003, 20001, 20002, 20001, 19999.5, 20000, 20004}, c3);   // 09:40 check: close 19999.75 = open
+        CHECK(c3.empty(), "cascade: price exactly at the open at the last check → no trade");
+        std::vector<Rec> c4; cascade({20000, 20010, 20020, 20025, 20030, 20040, 20050, 20060, 20070, 20080, 20090, 20100}, c4);
+        CHECK(c4.size() == 1 && c4[0].why == "drive_market_long", "cascade: main-decision days still take only the main trade");
+        // cascade context filters (2026-10-16, paper only): drive_gap_agree / drive_prev_extreme. Day 1 sets the prior
+        // RTH day, day 2 runs the cascade; checks at 09:34 (main), 09:38, 09:40 (last, any move).
+        auto ctx_run = [&](double gap_agree, double prev_ext, const std::vector<double>& day1, const std::vector<double>& day2) {
+            TrendConfig t = tc; t.drive_late_last_min_atr = 0.0; t.drive_gap_agree = gap_agree; t.drive_prev_extreme = prev_ext;
+            TrendStrategy s(t, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            if (!day1.empty()) { feed_path(s, day1, 9, 30); s.reset_session(); }
+            const int64_t day = 86400LL * 1'000'000LL;
+            for (size_t i = 0; i < day2.size(); ++i) {
+                const int tot = 9 * 60 + 30 + (int)i;
+                for (int k = 0; k < 6; ++k) s.on_tick(OrbTick{at(tot / 60, tot % 60, k * 10) + day, day2[i] + (k % 2 ? 0.25 : -0.25), 1, k % 2 == 0});
+            }
+            return out;
+        };
+        const std::vector<double> d2_up = {20000, 20010, 20020, 20025, 20030, 20040, 20050, 20060, 20070, 20080, 20090, 20100};
+        const std::vector<double> d1_low_close = {19950, 20050, 19980};     // prior close 19980.25 → day 2 gaps up ≈ +19.5
+        const std::vector<double> d1_high_close = {19950, 19980, 20050};    // prior close at its high (IBS 1.0) → gaps down
+        auto g1 = ctx_run(0.1, 0.0, d1_low_close, d2_up);
+        CHECK(g1.size() == 1 && g1[0].why == "drive_market_long", "gap_agree: gap up ≥ 0.1 ATR + up drive → main BUY");
+        CHECK(ctx_run(0.1, 0.0, d1_high_close, d2_up).empty(), "gap_agree: gap down against an up drive → no main and no late trade");
+        CHECK(ctx_run(0.1, 0.0, {}, d2_up).empty(), "gap_agree: no prior day → no trade (fails closed)");
+        CHECK(ctx_run(0.0, 0.0, d1_high_close, d2_up).size() == 1, "gap_agree off: the same day trades (unchanged)");
+        // late checks stay armed: 09:38 long (+40) is against the gap, the 09:40 last check (down) agrees → SELL
+        auto g2 = ctx_run(0.1, 0.0, d1_high_close, {20000, 20002, 20003, 20004, 20005, 20010, 20015, 20040, 20030, 19980, 19975, 19970});
+        CHECK(g2.size() == 1 && g2[0].sig == OrbSignal::SELL && g2[0].why == "drive_late_short",
+              "gap_agree: a blocked late check keeps the later checks armed");
+        CHECK(ctx_run(0.0, 0.7, d1_high_close, d2_up).empty(), "prev_extreme: yesterday closed at its high → no long");
+        auto p1 = ctx_run(0.0, 0.7, d1_high_close, {20000, 19999, 19998, 19997, 19996, 19994, 19992, 19990, 19988, 19987, 19986, 19985});
+        CHECK(p1.size() == 1 && p1[0].sig == OrbSignal::SELL, "prev_extreme: a short after a high close still trades");
+        CHECK(ctx_run(0.0, 0.7, d1_low_close, d2_up).size() == 1, "prev_extreme: a long after a low close (IBS 0.3) trades");
+        // skip_fomc_day (2026-10-16): no entry on an FOMC decision day; other event days and normal days trade
+        auto fomc_run = [&](bool skip, bool event, bool fomc) {
+            TrendConfig t = tc; t.drive_late_last_min_atr = 0.0; t.skip_fomc_day = skip;
+            TrendStrategy s(t, risk_cfg()); int n = 0;
+            s.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n; });
+            s.reset_session(); s.set_day_atr(100.0); s.set_event_day(event, fomc);
+            feed_path(s, quiet_up, 9, 30);
+            return n;
+        };
+        CHECK(fomc_run(true, true, true) == 0, "skip_fomc_day: FOMC decision day → no entry");
+        CHECK(fomc_run(true, true, false) == 1, "skip_fomc_day: a non-FOMC event day still trades");
+        CHECK(fomc_run(true, false, false) == 1, "skip_fomc_day: a normal day trades");
+        CHECK(fomc_run(false, true, true) == 1, "skip_fomc_day off: FOMC day trades (default unchanged)");
     }
     // ── vprofile (2026-09-29): yesterday's value area, fade the touch toward the POC ──
     {
@@ -256,6 +488,12 @@ int main() {
         s2.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n2; }); s2.reset_session();
         feed_path(s2, std::vector<double>(5, 20000.0), 15, 53);          // 2025-04-30 in the test clock: day 30 → allowed
         CHECK(n2 == 1, "hold_tom: enters on the 30th");
+        for (int dw : {3, 1}) {                                            // 2025-04-30 is a Wednesday (3)
+            TrendConfig tw = tc; tw.hold_dow = dw; TrendStrategy sw(tw, risk_cfg()); int nw = 0;
+            sw.set_signal_callback([&](OrbSignal, double, const std::string&) { ++nw; }); sw.reset_session();
+            feed_path(sw, std::vector<double>(5, 20000.0), 15, 53);
+            CHECK(nw == (dw == 3 ? 1 : 0), dw == 3 ? "hold_dow 3: enters on a Wednesday" : "hold_dow 1: silent on a Wednesday");
+        }
         TrendConfig pe = tc; pe.hold_pre_event = true; TrendStrategy s3(pe, risk_cfg()); int n3 = 0;
         s3.set_signal_callback([&](OrbSignal, double, const std::string&) { ++n3; }); s3.reset_session(); s3.set_event_next_day(false);
         feed_path(s3, std::vector<double>(5, 20000.0), 15, 53);

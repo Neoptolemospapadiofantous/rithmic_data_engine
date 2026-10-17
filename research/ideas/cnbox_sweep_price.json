@@ -1,0 +1,21 @@
+{
+ "id": "cnbox_sweep_price",
+ "name": "Sweep & reclaim (fade) at the last hour's tight range — price only (reference)",
+ "why": "Stops cluster just beyond the last hour's tight range; aggressors who push through it and cannot hold beyond it (the 5-minute bar closes back inside) are trapped, and their exits plus the liquidity that absorbed them drive price back across the box. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes_all.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:30",
+  "to": "12:00",
+  "when": "lag(5, hh(5,12) - ll(5,12)) < 0.25*atr && ((hi(5,1) > lag(5, hh(5,12)) && cl(5,1) < lag(5, hh(5,12))) || (lo(5,1) < lag(5, ll(5,12)) && cl(5,1) > lag(5, ll(5,12))))",
+  "dir": "(lo(5,1) < lag(5, ll(5,12)) && cl(5,1) > lag(5, ll(5,12))) - (hi(5,1) > lag(5, hh(5,12)) && cl(5,1) < lag(5, hh(5,12)))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

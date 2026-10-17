@@ -1,0 +1,39 @@
+{
+  "id": "orb__tape_trend",
+  "name": "Opening-range breakout (first 5/15/30 min), one trade — trending tape only (acr 1–5 min)",
+  "why": "The opening range is where overnight and open-auction orders settle; a break of it means one side's resting orders are exhausted and stops beyond the range add fuel. Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "params": {
+    "m": [
+      5,
+      15,
+      30
+    ],
+    "stopk": [
+      0.1,
+      0.2,
+      0.3
+    ],
+    "rr": [
+      1,
+      2,
+      3
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "scan": {
+    "tf": 1,
+    "from": "09:35",
+    "to": "11:00",
+    "when": "(px > rhi(m) || px < rlo(m)) && acr(rt, 30) > 0",
+    "dir": "(px > rhi(m)) - (px < rlo(m))"
+  },
+  "stop": "stopk*atr",
+  "target": "rr",
+  "flat": "15:55"
+}

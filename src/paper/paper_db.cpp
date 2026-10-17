@@ -218,12 +218,18 @@ double PaperDb::session_atr14_before(const std::string& symbol, const std::strin
     const char* params[2] = {symbol.c_str(), ymd.c_str()};
     try {
         const std::string v = exec_scalar(
-            // At most 10 calendar days back (longest holiday break ≈ 4): since 2026-10-10 session_stats
-            // also holds the Databento history (2010-07 … 2026-03), and a replay of the first collector
-            // day (2026-09-21/22) must not pick up a six-month-old March ATR — "prior-day ATR" or none.
-            "SELECT atr14_pts FROM session_stats WHERE symbol = $1 AND session_date < $2::date "
-            "AND session_date >= $2::date - 10 "
-            "AND atr14_pts IS NOT NULL ORDER BY session_date DESC LIMIT 1", params, 2, "session_atr14");
+            // The mean RTH range of the 14 sessions BEFORE today, yesterday included — the same ATR edge_lab and
+            // every research result use. (Until 2026-10-16 this returned yesterday's stored atr14_pts, which is the
+            // mean of the 14 sessions before YESTERDAY: one day stale, so paper/live stops differed from research.)
+            // Only when the latest session is at most 10 calendar days back (longest holiday break ≈ 4): since
+            // 2026-10-10 session_stats also holds the Databento history (2010-07 … 2026-03), and a replay of the first
+            // collector day (2026-09-21/22) must not pick up a six-month-old March ATR — "prior-day ATR" or none.
+            // Sessions with < 60 bars are not sessions (same rule as scripts/sql/session_stats.sql).
+            "SELECT avg(range_pts) FROM (SELECT range_pts FROM session_stats WHERE symbol = $1 "
+            "AND session_date < $2::date AND session_date >= $2::date - 30 AND bars >= 60 "
+            "ORDER BY session_date DESC LIMIT 14) r "
+            "WHERE EXISTS (SELECT 1 FROM session_stats WHERE symbol = $1 AND session_date < $2::date "
+            "AND session_date >= $2::date - 10 AND bars >= 60)", params, 2, "session_atr14");
         return v.empty() ? 0.0 : std::atof(v.c_str());
     } catch (const std::exception& e) {
         LOG("[PAPER-DB] session_atr14_before(%s, %s) failed: %s", symbol.c_str(), ymd.c_str(), e.what());

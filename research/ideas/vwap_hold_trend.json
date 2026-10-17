@@ -1,0 +1,27 @@
+{
+ "id": "vwap_hold_trend",
+ "name": "Trend day: pullback to VWAP holds → enter with the trend",
+ "why": "On a trend day the programs benchmarked to VWAP keep buying (selling) at it, so a dip to VWAP that closes back on the trend side is that support holding. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_vwap_ema.md).",
+ "params": {
+  "m": [
+   0.25,
+   0.5
+  ],
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:00",
+  "to": "14:30",
+  "when": "abs(px - open) > m*atr && ((px > open && lo(5,1) <= vwap && cl(5,1) > vwap) || (px < open && hi(5,1) >= vwap && cl(5,1) < vwap))",
+  "dir": "(px > open && lo(5,1) <= vwap && cl(5,1) > vwap) - (px < open && hi(5,1) >= vwap && cl(5,1) < vwap)"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

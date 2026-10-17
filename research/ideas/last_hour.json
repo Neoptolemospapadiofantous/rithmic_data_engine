@@ -1,0 +1,5 @@
+{"id":"last_hour","name":"Last-hour momentum: 15:00 direction of the day, hold to 15:55",
+ "why":"Leveraged/inverse ETFs must rebalance in the direction of the day's move into the close, and gamma-short dealers hedge the same way; both scale with the size of the move.",
+ "params":{"k":[0.0,0.25,0.5,0.75],"stopk":[0.15,0.3,0]},
+ "checks":[{"at":"15:00","when":"abs(px-open) > k*atr","dir":"sign(px-open)"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55"}

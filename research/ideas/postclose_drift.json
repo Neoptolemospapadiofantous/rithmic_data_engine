@@ -1,0 +1,5 @@
+{"id":"postclose_drift","name":"After-close reaction (earnings) continues until 16:44",
+ "why":"Megacap tech reports after the 16:00 cash close; with cash shares closed, funds reposition through NQ futures, and the first 15 minutes of reaction are not the whole repositioning — it continues until the futures pause (flat 16:44, Tradeify's 16:45 rule).",
+ "params":{"k":[0.08,0.12,0.18],"stopk":[0.1,0.15]},
+ "checks":[{"at":"16:15","when":"abs(px - at(16,0)) > k*atr","dir":"sign(px - at(16,0))"}],
+ "stop":"stopk*atr","target":"0","flat":"16:44","min_trades":100}

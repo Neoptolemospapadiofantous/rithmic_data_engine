@@ -1,0 +1,21 @@
+{
+ "id": "pdbox_break_price",
+ "name": "Break & hold (follow) at yesterday's high / low — price only (reference)",
+ "why": "A first close beyond yesterday's high / low with aggressive flow behind it is real demand running the stops parked there; the triggered stops add fuel in the same direction. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:35",
+  "to": "12:00",
+  "when": "!rollwin && ((cl(5,1) > ph && lag(5, cl(5,1)) <= ph) || (cl(5,1) < pl && lag(5, cl(5,1)) >= pl))",
+  "dir": "(cl(5,1) > ph && lag(5, cl(5,1)) <= ph) - (cl(5,1) < pl && lag(5, cl(5,1)) >= pl)"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

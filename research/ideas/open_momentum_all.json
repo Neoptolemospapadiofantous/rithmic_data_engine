@@ -1,0 +1,28 @@
+{
+ "id": "open_momentum_all",
+ "name": "Open momentum, every day: follow the direction from the open",
+ "why": "Intraday time-series momentum (Gao, Han, Li & Zhou 2018): the early move reflects informed order flow and overnight news that institutions finish executing during the day; no filter, so it trades every day.",
+ "params": {
+  "stopk": [
+   0.2,
+   0.3,
+   0.5,
+   0
+  ],
+  "rr": [
+   0,
+   2,
+   3
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:00",
+   "when": "px != open",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55"
+}

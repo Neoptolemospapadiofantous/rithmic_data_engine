@@ -1,0 +1,5 @@
+{"id":"fomc_predrift","name":"Pre-FOMC drift: long FOMC day 09:30 → 13:55",
+ "why":"Lucca & Moench (2015): equities rise into scheduled FOMC announcements as dealers and hedgers reduce short hedges ahead of the event; the drift stops at the 14:00 release.",
+ "params":{"stopk":[0.3,0.5,0]},
+ "checks":[{"at":"09:30","when":"fomc","dir":"1"}],
+ "stop":"stopk*atr","target":"0","flat":"13:55","min_trades":40}

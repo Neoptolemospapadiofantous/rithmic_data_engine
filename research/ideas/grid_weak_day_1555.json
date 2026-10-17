@@ -1,0 +1,46 @@
+{
+ "id": "grid_weak_day_1555",
+ "name": "Weak-day mega grid, exit 15:55",
+ "why": "A weak close forces de-risking (vol-targeting funds, margin, stops); dealers and dip buyers absorb it and the next session mean-reverts, most in fearful (high VIX) regimes where forced selling overshoots. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_mega_grid.md).",
+ "params": {
+  "x": [
+   0.2,
+   0.3,
+   0.5
+  ],
+  "v": [
+   0,
+   15,
+   20,
+   25
+  ],
+  "stopk": [
+   0,
+   0.25,
+   0.5,
+   1.0
+  ],
+  "rr": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "be": [
+   0,
+   1
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "pibs <= x && vix >= v",
+   "dir": "1"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55",
+ "min_trades": 60,
+ "be_r": "be"
+}

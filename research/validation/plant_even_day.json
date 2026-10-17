@@ -1,0 +1,2 @@
+{"id":"plant_even_day","expect":"pass","synthetic":true,"name":"Planted edge: buy 10:00 on even trading days (synthetic data)","why":"VALIDATION — on the synthetic market (tests/research/synth_market.cpp) price drifts up a known amount 10:00 -> 15:55 on even trading days; a working pipeline must find it and pass every gate","symbol":"NQ","confirm":"ES",
+ "params":{"stopk":[0,1]},"checks":[{"at":"10:00","when":"tdom - 2 * floor(tdom / 2) == 0","dir":"1"}],"stop":"stopk*atr","target":"0","flat":"15:55","min_trades":100}

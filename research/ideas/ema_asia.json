@@ -1,0 +1,4 @@
+{"id":"ema_asia","name":"Asia: EMA pullback, no regime gate (twin)","why":"Twin of rg_ema_asia on every day. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_regime_switch.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.1,0.15]},
+ "scan":{"tf":5,"from":"20:00","to":"02:00","when":"!rollwin && ((ema(5,9) > ema(5,21) && lo(5,1) <= ema(5,9) && cl(5,1) > ema(5,9)) || (ema(5,9) < ema(5,21) && hi(5,1) >= ema(5,9) && cl(5,1) < ema(5,9)))","dir":"sign(ema(5,9) - ema(5,21))"},
+ "max_trades":1,"stop":"stopk*atr","target":"1.5","flat":"02:30","min_trades":100}

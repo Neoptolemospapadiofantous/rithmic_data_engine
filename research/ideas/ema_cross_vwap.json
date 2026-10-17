@@ -1,0 +1,27 @@
+{
+ "id": "ema_cross_vwap",
+ "name": "5-minute EMA9/21 cross in the day's direction (with VWAP and the open)",
+ "why": "A short-term EMA cross only matters when the day's flow agrees — price above VWAP and the open means the session's buyers are in control and the cross is their continuation, not noise. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_vwap_ema.md).",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ],
+  "rr": [
+   2,
+   3
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:00",
+  "to": "15:00",
+  "when": "(ema(5,9) > ema(5,21) && lag(5, ema(5,9) <= ema(5,21)) && px > vwap && px > open) || (ema(5,9) < ema(5,21) && lag(5, ema(5,9) >= ema(5,21)) && px < vwap && px < open)",
+  "dir": "(ema(5,9) > ema(5,21) && lag(5, ema(5,9) <= ema(5,21)) && px > vwap && px > open) - (ema(5,9) < ema(5,21) && lag(5, ema(5,9) >= ema(5,21)) && px < vwap && px < open)"
+ },
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55",
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

@@ -1,0 +1,39 @@
+{
+  "id": "vwap_fade__tape_rev",
+  "name": "VWAP band fade (5m, ±b SD) back toward VWAP — mean-reverting tape only (acr 1–5 min)",
+  "why": "Execution algos benchmark to VWAP; far from it they slow down or reverse their child orders, so stretched prices mean-revert toward VWAP. Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "params": {
+    "b": [
+      1.5,
+      2,
+      2.5,
+      3
+    ],
+    "stopk": [
+      0.1,
+      0.2
+    ],
+    "rr": [
+      1,
+      2
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "15:00",
+    "when": "(vsd > 0 && abs(px - vwap) > b*vsd) && acr(rt, 30) < 0",
+    "dir": "-sign(px - vwap)"
+  },
+  "max_trades": 2,
+  "stop": "stopk*atr",
+  "target": "rr",
+  "flat": "15:55"
+}

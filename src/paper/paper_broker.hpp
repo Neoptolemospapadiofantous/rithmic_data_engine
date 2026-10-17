@@ -114,6 +114,7 @@ public:
             return;
         }
         pending_dir_ = dir; pending_since_us_ = last_tick_us_;
+        pending_limit_ = cfg_.entry_limit_ticks > 0 ? last_price_ - dir * cfg_.entry_limit_ticks * tick_size_ : 0.0;
         LOG("[PAPER %s] %s signal (%s) — pending entry at next tick",
             strategy_id_.c_str(), pending_dir_ > 0 ? "BUY" : "SELL", reason.c_str());
     }
@@ -150,8 +151,21 @@ public:
         // entered at 09:43 (exit before entry, −$21.5 each). Track the tape, decide nothing.
         if (pos_dir_ != 0 && entry_time_us_ > 0 && t.ts_micros < entry_time_us_) return;
 
+        // 1a. Limit entry (entry_limit_ticks): fill at the limit once a tick trades through it; cancel on timeout.
+        if (pending_dir_ != 0 && pos_dir_ == 0 && pending_limit_ > 0.0) {
+            const int dir = pending_dir_;
+            if (dir * (pending_limit_ - t.price) >= tick_size_ - 1e-9) {
+                pending_dir_ = 0; entry_bbo_ = pending_limit_; spread_entry_ = qs_.fresh(t.ts_micros) ? qs_.q.spread_ticks(tick_size_) : -1.0;
+                ++limit_fills_;
+                enter(dir, pending_limit_, t.ts_micros);
+            } else if (t.ts_micros - pending_since_us_ >= (int64_t)cfg_.entry_limit_secs * 1'000'000) {
+                LOG("[PAPER %s] limit entry %s %.2f not filled in %ds — cancelled (limit_miss)", strategy_id_.c_str(),
+                    dir > 0 ? "BUY" : "SELL", pending_limit_, cfg_.entry_limit_secs);
+                pending_dir_ = 0; ++limit_misses_;
+            }
+        }
         // 1. Pending entry fills at first tick after the signal (adverse slip).
-        if (pending_dir_ != 0 && pos_dir_ == 0 &&
+        if (pending_dir_ != 0 && pos_dir_ == 0 && pending_limit_ <= 0.0 &&
             !(cfg_.fill_wait_secs > 0 && t.ts_micros - pending_since_us_ < (int64_t)cfg_.fill_wait_secs * 1'000'000 &&
               !qs_.fill_ready(pending_dir_, t.ts_micros, tick_size_))) {           // fill timing: wait for a better book
             int dir = pending_dir_;
@@ -342,6 +356,8 @@ public:
     bool   in_position()  const { return pos_dir_ != 0; }
     int    direction()    const { return pos_dir_; }
     bool   has_pending_entry() const { return pending_dir_ != 0; }   // accepted, fills on the next tick
+    int    limit_fills() const { return limit_fills_; }
+    int    limit_misses() const { return limit_misses_; }
     int    qty()          const { return qty_; }
     double entry_price()  const { return entry_price_; }
     // Last exit (signal_publish.hpp closes the manual-signal row with it).
@@ -576,6 +592,8 @@ private:
     bool    sl_dirty_ = false;
 
     int     pending_dir_ = 0;     // entry waiting for next tick
+    double  pending_limit_ = 0.0; // limit price of the pending entry (entry_limit_ticks), 0 = market
+    int     limit_fills_ = 0, limit_misses_ = 0;
     bool    warmup_ = false;      // entries suppressed (host replaying history)
     int     warmup_dropped_ = 0;
     std::string pending_exit_reason_;

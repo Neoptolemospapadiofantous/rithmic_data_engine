@@ -101,8 +101,45 @@ struct TrendConfig {
     // re-check at drive_late_minutes, + drive_late_step, … (drive_late_count checks) after the open; the first check
     // where |price − 09:30 open| ≥ drive_late_min_atr × ATR enters at market (drive_stop_atr / tp_r as the main one).
     // drive_late_only: the main decision is only the skip test — never traded (late trades alone, for paper).
+    // drive_late_last_min_atr ≥ 0 replaces drive_late_min_atr on the LAST late check (0 = follow any move — the
+    // "every day" cascade: 09:50 k.25 → 10:30/11:00/11:30 k.3 → 12:00 any; research 2026-10-15, PF 1.16, 249 tr/yr);
+    // < 0 = same threshold as the other late checks.
     int drive_late_count = 0, drive_late_minutes = 60, drive_late_step = 30; double drive_late_min_atr = 0.3;
+    double drive_late_last_min_atr = -1.0;
     bool drive_late_only = false;
+    // Thesis exits (2026-10-16, edge_lab exits on the cascade, research/README.md): drive_exit_vwap — a completed
+    // 5-minute bar (from the entry's bucket on) closing back through the RTH VWAP closes the trade; drive_exit_stall_min
+    // > 0 — that many minutes after the entry, a trade whose best excursion is < drive_exit_stall_r × its stop distance
+    // is closed. The broker's stop and target stay. Walk-forward on the cascade 2010–26: +5.6 vs +4.8 pts/trade,
+    // drawdown −27 %, beats a path-blind random-time exit in 100 % of 200 seeds.
+    bool drive_exit_vwap = false; int drive_exit_stall_min = 0; double drive_exit_stall_r = 0.5;
+    // Context conditions on the drive entries (2026-10-16 forward tests, research/preregistered/2026-10-16_new_angles.md;
+    // paper only): drive_gap_agree > 0 — enter only when the overnight gap (09:30 open − prior RTH close) points the same
+    // way by ≥ that many day ATRs; drive_prev_extreme > 0 — skip an entry when yesterday closed at its extreme in the
+    // trade's direction (IBS ≥ x for a long, ≤ 1 − x for a short). A main-decision entry that fails them leaves the late
+    // re-checks armed, as edge_lab's specs do (the condition applies to every check).
+    double drive_gap_agree = 0.0, drive_prev_extreme = 0.0;
+    // Liquidity sweeps / breaks with order flow (2026-10-16 forward tests of edge_lab's two closest near-misses,
+    // research/preregistered/2026-10-16_liquidity_boxes_all.md). Run on 5-minute bars (tf_min 5); one trade a day;
+    // stop lf_stop_atr × the prior-day ATR (the broker's tp_r × that is the target). No aggressor data that day → no trade.
+    //   asia_sweep:  a 5-minute bar starting 03:00–11:25 trades through the Asia range (20:00–03:00) high with aggressor
+    //                delta ≥ +lf_delta_min × its volume and closes back inside → SHORT (mirror at the low → LONG)
+    //   round_break: the first 5-minute close (bars starting 09:30–11:55) beyond the round_step band around the 09:30
+    //                open (previous 5-minute close inside) with delta in the break's direction ≥ lf_delta_min × volume
+    double lf_delta_min = 0.05, lf_stop_atr = 0.25, round_step = 100.0;
+    // gap_or_retest (2026-10-17, research/preregistered/2026-10-17_direction_sources.md, edge_lab gap_or_retest: PASS +9.0 pts/trade
+    // 2010-24, holdout 2025+ +7.2): the overnight gap sets the side when |gap| ≥ gr_gap_min_atr × day ATR; then the first
+    // 5-minute bar (starting 09:45–13:55) that touches the 15-minute opening range edge on that side and closes beyond it enters
+    // (long: low ≤ OR high, close > OR high; short mirrored). tf_min 5, one trade a day, stop lf_stop_atr × day ATR, target tp_r.
+    double gr_gap_min_atr = 0.1;
+    // Order-flow agreement (2026-10-17, research/preregistered/2026-10-17_tests_c_d_e.md, test D: cascade +18.5 vs +15.0 pts/trade on the
+    // same 2023–26 days): an entry is taken only when the RTH cumulative aggressor delta points the trade's way (no data → no trade).
+    bool drive_flow_agree = false, gr_flow_agree = false;
+    // box_go (2026-10-17, research/preregistered/2026-10-17_break_box.md, edge_lab bb_on_gap: PASS +7.3 pts/trade, holdout +8.0 on 22):
+    // the gap sets the side (|gap| ≥ bg_gap_min_atr × day ATR); a 5-minute bar breaks the overnight high (low) — opens at/inside it,
+    // closes beyond —; the next bar stays entirely beyond it with a range ≤ bg_box_ratio × the break bar's (the box); the bar after
+    // closes beyond the box → enter. Stop: the other side of the box + 1 tick (≥ 0.05 ATR); target tp_r; one trade a day; tf_min 5.
+    double bg_gap_min_atr = 0.1, bg_box_ratio = 0.75;
     // noise_momentum (Zarattini/Aziz/Barbon 2024 noise-area intraday momentum; ledger L1, BK1): every nm_check_min minutes
     // after the RTH open, bands = max/min(09:30 open, prior RTH close) × (1 ± σ(m)), σ(m) = mean |close(m)/open − 1| at
     // that minute of the session over the last nm_days sessions. Flat: close above the upper band → long, below the
@@ -157,6 +194,9 @@ struct TrendConfig {
     // The position survives the 18:00 ET session reset so the exit at win_end still fires.
     int hold_entry_hhmm = 1555; int hold_dir = 1; bool hold_tom = false, hold_pre_event = false, hold_up_day = false;
     bool hold_pre_event_fomc_only = false;   // hold_pre_event counts only FOMC decision days (the pre-FOMC drift; NFP eves are neutral, 2026-10-11)
+    // hold_dow (2026-10-17 behaviour map, research/ideas/monday_long.json): enter only on that ET weekday of the entry bar,
+    // 1 = Monday … 5 = Friday (0 = any day). monday_long = hold 09:30 → 15:55, hold_dow 1.
+    int hold_dow = 0;
     // Fear-day filters (2026-10-11 research R9/R10: buying after a big down / wide down day held on NQ + ES 2010–2026),
     // all in prior-day ATR14 units (set_day_atr; no ATR or no prior RTH session → no entry): hold_prev_body_max
     // (prior RTH close − open ≤ value, e.g. −1.0; 0 = off), hold_prev_range_min (prior RTH range ≥ value, e.g. 1.5;
@@ -202,6 +242,9 @@ struct TrendConfig {
     // vix_chg1_max < 0: enter only when the prior VIX close fell at least that much on the day (e.g. -0.03 = VIX down
     // ≥ 3 %). 2026-10-14: the order-flow ORB on those days PF 1.8-2.1 in both 2023-24 and 2025-26 (NY and Asia).
     double vix_chg1_max = 0.0;
+    // skip_fomc_day: no entries on an FOMC decision day (host passes it via set_event_day's fomc flag, from the
+    // calendar table). 2026-10-15: the every-day cascade on decision days PF 0.54 at real cost, t -3.8 (2010-26).
+    bool skip_fomc_day = false;
     // Conviction stack (hold mode, 2026-10-11 — the payout-sim book): entry size in units = 1 + stack_wc_units when the
     // prior close sits ≤ stack_wc_ibs of its range + stack_vix_units when the VIX fear gate (stack_vix_*, OR) is on
     // + stack_both_units when both. All 0 = off → the executor uses its config qty. Read via last_units() right after
@@ -362,6 +405,17 @@ struct TrendConfig {
         c.drive_late_count = jint(t, "drive_late_count", c.drive_late_count); c.drive_late_minutes = jint(t, "drive_late_minutes", c.drive_late_minutes);
         c.drive_late_step = jint(t, "drive_late_step", c.drive_late_step); c.drive_late_min_atr = jdbl(t, "drive_late_min_atr", c.drive_late_min_atr);
         c.drive_late_only = jbool(t, "drive_late_only", c.drive_late_only);
+        c.drive_late_last_min_atr = jdbl(t, "drive_late_last_min_atr", c.drive_late_last_min_atr);
+        c.gr_gap_min_atr = jdbl(t, "gr_gap_min_atr", c.gr_gap_min_atr);
+        c.drive_flow_agree = jbool(t, "drive_flow_agree", c.drive_flow_agree); c.gr_flow_agree = jbool(t, "gr_flow_agree", c.gr_flow_agree);
+        c.bg_gap_min_atr = jdbl(t, "bg_gap_min_atr", c.bg_gap_min_atr); c.bg_box_ratio = jdbl(t, "bg_box_ratio", c.bg_box_ratio);
+        c.lf_delta_min = jdbl(t, "lf_delta_min", c.lf_delta_min); c.lf_stop_atr = jdbl(t, "lf_stop_atr", c.lf_stop_atr);
+        c.round_step = jdbl(t, "round_step", c.round_step);
+        c.drive_gap_agree = jdbl(t, "drive_gap_agree", c.drive_gap_agree);
+        c.drive_prev_extreme = jdbl(t, "drive_prev_extreme", c.drive_prev_extreme);
+        c.drive_exit_vwap = jbool(t, "drive_exit_vwap", c.drive_exit_vwap);
+        c.drive_exit_stall_min = jint(t, "drive_exit_stall_min", c.drive_exit_stall_min);
+        c.drive_exit_stall_r = jdbl(t, "drive_exit_stall_r", c.drive_exit_stall_r);
         c.gap_min_pts = jdbl(t, "gap_min_pts", c.gap_min_pts); c.gap_wait_min = jint(t, "gap_wait_min", c.gap_wait_min);
         c.gap_fill_frac = jdbl(t, "gap_fill_frac", c.gap_fill_frac);
         c.ab_k = jdbl(t, "ab_k", c.ab_k); c.ab_anchor = jstr(t, "ab_anchor", c.ab_anchor); c.ab_day_atr = jbool(t, "ab_day_atr", c.ab_day_atr);
@@ -369,6 +423,7 @@ struct TrendConfig {
         c.hold_entry_hhmm = jint(t, "hold_entry_hhmm", c.hold_entry_hhmm); c.hold_dir = jint(t, "hold_dir", c.hold_dir);
         c.hold_tom = jbool(t, "hold_tom", c.hold_tom); c.hold_pre_event = jbool(t, "hold_pre_event", c.hold_pre_event); c.hold_up_day = jbool(t, "hold_up_day", c.hold_up_day);
         c.hold_pre_event_fomc_only = jbool(t, "hold_pre_event_fomc_only", c.hold_pre_event_fomc_only);
+        c.hold_dow = jint(t, "hold_dow", c.hold_dow);
         c.hold_prev_body_max = jdbl(t, "hold_prev_body_max", c.hold_prev_body_max); c.hold_prev_range_min = jdbl(t, "hold_prev_range_min", c.hold_prev_range_min);
         c.hold_prev_down = jbool(t, "hold_prev_down", c.hold_prev_down); c.hold_dip_atr = jdbl(t, "hold_dip_atr", c.hold_dip_atr);
         c.hold_dip_until = jint(t, "hold_dip_until", c.hold_dip_until);
@@ -387,6 +442,7 @@ struct TrendConfig {
         c.hold_vix_pct_min = jdbl(t, "hold_vix_pct_min", c.hold_vix_pct_min);
         c.vix_min = jdbl(t, "vix_min", c.vix_min); c.vix_rise_min = jdbl(t, "vix_rise_min", c.vix_rise_min);
         c.vix_chg1_max = jdbl(t, "vix_chg1_max", c.vix_chg1_max);
+        c.skip_fomc_day = jbool(t, "skip_fomc_day", c.skip_fomc_day);
         c.vix_pct_min = jdbl(t, "vix_pct_min", c.vix_pct_min); c.vix_any = jbool(t, "vix_any", c.vix_any);
         c.stack_wc_units = jint(t, "stack_wc_units", c.stack_wc_units); c.stack_vix_units = jint(t, "stack_vix_units", c.stack_vix_units);
         c.stack_both_units = jint(t, "stack_both_units", c.stack_both_units); c.stack_wc_ibs = jdbl(t, "stack_wc_ibs", c.stack_wc_ibs);
@@ -506,7 +562,8 @@ public:
     // ── host contract (mirrors OrbStrategy) ──────────────────────────────────
     // Host: is the current trade date a scheduled-release day (calendar: fomc / nfp)? Read by
     // news_break when nb_event_only is set; paper_main / executor_main set it per trade date.
-    void set_event_day(bool v) { event_day_ = v; }
+    void set_event_day(bool v, bool fomc = false) { event_day_ = v; fomc_day_ = fomc; }   // fomc: today is an FOMC decision day
+    bool fomc_day() const { return fomc_day_; }
     bool event_day() const { return event_day_; }
     void set_event_next_day(bool v, bool fomc = false) { event_next_day_ = v; fomc_next_day_ = fomc; }   // hold_pre_event: tomorrow is fomc/nfp (fomc: an FOMC decision day)
     void set_day_atr(double pts) { day_atr_ = pts; }            // prior-day ATR14 (session_stats), for atr_break
@@ -536,6 +593,10 @@ public:
         day_hi_ = std::numeric_limits<double>::lowest(); day_lo_ = std::numeric_limits<double>::max();
         on_hi_ = std::numeric_limits<double>::lowest(); on_lo_ = std::numeric_limits<double>::max(); on_open_ = 0.0;
         rth_seen_ = false; in_rth_ = false; vwap_pv_ = vwap_v_ = vwap_pv2_ = 0.0; vwap_hist_.clear();
+        drive_x_entry_mod_ = -1; drive_x_risk_ = 0; drive_x_stall_done_ = false;
+        lf_hi_ = lf_lo_ = lf_prev_c_ = 0; lf_n_ = 0; lf_flow_seen_ = false;
+        gr_hi_ = gr_lo_ = 0; gr_n_ = 0; gr_done_ = false;
+        bg_n_ = 0; bg_done_ = false;
         drive_dir_ = 0; drive_done_ = false; late_armed_ = false; drive_late_i_ = 0; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
         td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
@@ -796,6 +857,7 @@ private:
         if (sess_.trades_today >= risk_.max_daily_trades) return false;
         if (!vix_gate_ok(tc_.vix_min, tc_.vix_rise_min, tc_.vix_pct_min, tc_.vix_any, tc_.mode.c_str())) return false;   // generic VIX entry gate
         if (tc_.vix_chg1_max < 0.0 && (!vix_known_ || vix_chg1_ > tc_.vix_chg1_max)) return false;                       // VIX fell enough yesterday
+        if (tc_.skip_fomc_day && fomc_day_) return false;                                                               // FOMC decision day
         if (dir > 0 && !tc_.allow_longs) return false;
         if (dir < 0 && !tc_.allow_shorts) return false;
         if (tc_.htf_tf_min > 0) {                 // higher-timeframe alignment gate
@@ -904,6 +966,10 @@ private:
         else if (tc_.mode == "ema_pullback") mode_ema_pullback(b, hhmm);
         else if (tc_.mode == "vwap_trend")   mode_vwap(b, hhmm);
         else if (tc_.mode == "opening_drive") mode_drive(b, hhmm);
+        else if (tc_.mode == "asia_sweep")   mode_asia_sweep(b, hhmm);
+        else if (tc_.mode == "round_break")  mode_round_break(b, hhmm);
+        else if (tc_.mode == "gap_or_retest") mode_gap_or_retest(b, hhmm);
+        else if (tc_.mode == "box_go")       mode_box_go(b, hhmm);
         else if (tc_.mode == "pdhl_breakout") mode_pdhl(b, hhmm);
         else if (tc_.mode == "squeeze")      mode_squeeze(b, hhmm);
         else if (tc_.mode == "supertrend")   mode_supertrend(b, hhmm);
@@ -968,6 +1034,7 @@ private:
     }
     void mode_drive(const Bar& b, int hhmm) {
         if (!in_rth_) return;
+        if (sess_.in_position && pos_dir_ != 0 && drive_exit_check(b)) return;
         const int mod = (hhmm / 100) * 60 + hhmm % 100;
         if (!drive_done_ && mod >= rth_open_mod_ + tc_.drive_minutes) {
             drive_done_ = true;
@@ -986,10 +1053,17 @@ private:
                     drive_dir_ = 0;
                 } else if (tc_.drive_score_units) last_units_ = sc - 1;
             }
+            if (drive_dir_ != 0 && !drive_context_ok(drive_dir_)) {
+                LOG("[TREND opening_drive] context condition fails for dir %d — no main entry, late checks armed", drive_dir_);
+                drive_dir_ = 0;
+                late_armed_ = tc_.drive_late_count > 0 && a > 0.0;
+            }
             if (drive_dir_ != 0 && tc_.drive_stop_atr > 0.0) stop_dist_ = tc_.drive_stop_atr * a;
             if (tc_.drive_market && drive_dir_ != 0 && hhmm >= tc_.drive_entry_from && hhmm < tc_.drive_entry_to
-                && can_enter(hhmm, drive_dir_))
+                && can_enter(hhmm, drive_dir_)) {
+                drive_arm_exit(b);
                 emit(drive_dir_ > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, drive_dir_ > 0 ? "drive_market_long" : "drive_market_short");
+            }
             return;
         }
         if (late_armed_ && drive_late_i_ < tc_.drive_late_count
@@ -997,15 +1071,23 @@ private:
             ++drive_late_i_;
             const double a = tc_.drive_day_atr ? day_atr_ : atr_;
             const double mv = b.c - rth_open_;
+            const double k = (drive_late_i_ == tc_.drive_late_count && tc_.drive_late_last_min_atr >= 0.0)
+                                 ? tc_.drive_late_last_min_atr : tc_.drive_late_min_atr;
             LOG("[TREND opening_drive] late check %d at %04d: move %+.2f (atr %.2f, need %.2f)",
-                drive_late_i_, hhmm, mv, a, tc_.drive_late_min_atr * a);
-            if (a > 0.0 && std::fabs(mv) >= tc_.drive_late_min_atr * a) {
-                late_armed_ = false;                                      // one late trade per day
+                drive_late_i_, hhmm, mv, a, k * a);
+            if (a > 0.0 && mv != 0.0 && std::fabs(mv) >= k * a) {
                 const int d = mv > 0 ? 1 : -1;
+                if (!drive_context_ok(d)) {                               // stays armed: every check carries the condition
+                    LOG("[TREND opening_drive] late check %d: context condition fails for dir %d", drive_late_i_, d);
+                    return;
+                }
+                late_armed_ = false;                                      // one late trade per day
                 last_units_ = 0;
                 stop_dist_ = tc_.drive_stop_atr > 0.0 ? tc_.drive_stop_atr * a : 0.0;
-                if (can_enter(hhmm, d))
+                if (can_enter(hhmm, d)) {
+                    drive_arm_exit(b);
                     emit(d > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, d > 0 ? "drive_late_long" : "drive_late_short");
+                }
             }
             return;
         }
@@ -1016,6 +1098,118 @@ private:
         // pullback bar (against the drive) followed by a bar closing back with the drive
         if (drive_dir_ > 0 && p.c < p.o && b.c > p.h && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "drive_pullback_long");
         else if (drive_dir_ < 0 && p.c > p.o && b.c < p.l && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "drive_pullback_short");
+    }
+    // TrendConfig::lf_* — Asia-range sweep with trapped aggressors (fade).
+    void mode_asia_sweep(const Bar& b, int hhmm) {
+        if (b.v > 0 && b.bv > 0) lf_flow_seen_ = true;
+        const bool asia = b.mod >= 20 * 60 || b.mod < 3 * 60;              // bar starts inside 20:00–03:00
+        if (asia) {
+            lf_hi_ = lf_n_ ? std::max(lf_hi_, b.h) : b.h; lf_lo_ = lf_n_ ? std::min(lf_lo_, b.l) : b.l; ++lf_n_;
+            return;
+        }
+        if (b.mod < 3 * 60 || b.mod > 11 * 60 + 25 || lf_n_ == 0 || !lf_flow_seen_ || b.v <= 0 || day_atr_ <= 0.0) return;
+        const double d = 2.0 * b.bv - b.v, a = tc_.lf_delta_min * b.v;
+        int dir = 0;
+        if (b.h > lf_hi_ && b.c < lf_hi_ && d >= a) dir = -1;               // buyers trapped above the Asia high
+        else if (b.l < lf_lo_ && b.c > lf_lo_ && d <= -a) dir = +1;         // sellers trapped below the Asia low
+        if (dir == 0 || !can_enter(hhmm, dir)) return;
+        stop_dist_ = tc_.lf_stop_atr * day_atr_;
+        LOG("[TREND asia_sweep] Asia %.2f-%.2f, bar %.2f-%.2f close %.2f delta %+.0f/%.0f → %s", lf_lo_, lf_hi_, b.l, b.h, b.c, d, b.v, dir > 0 ? "LONG" : "SHORT");
+        emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "asia_sweep_long" : "asia_sweep_short");
+    }
+    // TrendConfig::lf_* — break of the round_step band around the 09:30 open with order flow (follow).
+    void mode_round_break(const Bar& b, int hhmm) {
+        if (b.v > 0 && b.bv > 0) lf_flow_seen_ = true;
+        const double prev_c = lf_prev_c_; lf_prev_c_ = b.c;
+        if (!in_rth_ || rth_open_ <= 0.0 || b.mod < 9 * 60 + 30 || b.mod > 11 * 60 + 55) return;
+        if (!lf_flow_seen_ || b.v <= 0 || day_atr_ <= 0.0 || tc_.round_step <= 0.0 || prev_c <= 0.0) return;
+        const double lo = std::floor(rth_open_ / tc_.round_step) * tc_.round_step, hi = lo + tc_.round_step;
+        const double d = 2.0 * b.bv - b.v, a = tc_.lf_delta_min * b.v;
+        int dir = 0;
+        if (b.c > hi && prev_c <= hi && d >= a) dir = +1;
+        else if (b.c < lo && prev_c >= lo && d <= -a) dir = -1;
+        if (dir == 0 || !can_enter(hhmm, dir)) return;
+        stop_dist_ = tc_.lf_stop_atr * day_atr_;
+        LOG("[TREND round_break] band %.0f-%.0f (open %.2f), close %.2f prev %.2f delta %+.0f/%.0f → %s", lo, hi, rth_open_, b.c, prev_c, d, b.v, dir > 0 ? "LONG" : "SHORT");
+        emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "round_break_long" : "round_break_short");
+    }
+    void mode_box_go(const Bar& b, int hhmm) {
+        if (!in_rth_ || b.mod < 9 * 60 + 30) return;
+        // bars of this session only: the break bar must start at or after 09:30
+        const Bar b3 = bg_hist_[0], b2 = bg_hist_[1];
+        const int have = bg_n_;
+        bg_hist_[0] = bg_hist_[1]; bg_hist_[1] = b; bg_n_ = std::min(2, bg_n_ + 1);
+        if (bg_done_ || have < 2 || b.mod < 9 * 60 + 40 || b.mod > 13 * 60 + 55) return;
+        if (!have_prev_ || day_atr_ <= 0.0 || on_hi_ <= on_lo_) return;
+        const int dir = gap_ >= tc_.bg_gap_min_atr * day_atr_ ? 1 : gap_ <= -tc_.bg_gap_min_atr * day_atr_ ? -1 : 0;
+        if (dir == 0) { bg_done_ = true; return; }                       // no gap side today
+        const double H = on_hi_, L = on_lo_, brk = b3.h - b3.l, box = b2.h - b2.l;
+        const bool up = b3.c > H && b3.o <= H && b2.l > H && box <= tc_.bg_box_ratio * brk && b.c > b2.h;
+        const bool dn = b3.c < L && b3.o >= L && b2.h < L && box <= tc_.bg_box_ratio * brk && b.c < b2.l;
+        if (!((dir > 0 && up) || (dir < 0 && dn)) || !can_enter(hhmm, dir)) return;
+        bg_done_ = true;
+        stop_dist_ = std::max(0.05 * day_atr_, dir > 0 ? b.c - b2.l + 0.25 : b2.h - b.c + 0.25);
+        LOG("[TREND box_go] gap %+.2f ATR · overnight %s %.2f · break %02d:%02d c %.2f · box %.2f-%.2f · go c %.2f → %s, stop %.2f",
+            gap_ / day_atr_, dir > 0 ? "high" : "low", dir > 0 ? H : L, b3.mod / 60, b3.mod % 60, b3.c, b2.l, b2.h, b.c, dir > 0 ? "LONG" : "SHORT", stop_dist_);
+        emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "box_go_long" : "box_go_short");
+    }
+    void mode_gap_or_retest(const Bar& b, int hhmm) {
+        if (!in_rth_ || rth_open_ <= 0.0 || b.mod < 9 * 60 + 30) return;
+        if (b.mod < 9 * 60 + 45) {                                        // the 15-minute opening range: bars starting 09:30–09:40
+            gr_hi_ = gr_n_ ? std::max(gr_hi_, b.h) : b.h; gr_lo_ = gr_n_ ? std::min(gr_lo_, b.l) : b.l; ++gr_n_; return;
+        }
+        if (gr_done_ || gr_n_ < 3 || b.mod > 13 * 60 + 55 || !have_prev_ || day_atr_ <= 0.0) return;
+        const int dir = gap_ >= tc_.gr_gap_min_atr * day_atr_ ? 1 : gap_ <= -tc_.gr_gap_min_atr * day_atr_ ? -1 : 0;
+        if (dir == 0) { gr_done_ = true; return; }                       // no gap side today
+        const bool hit = dir > 0 ? (b.l <= gr_hi_ && b.c > gr_hi_) : (b.h >= gr_lo_ && b.c < gr_lo_);
+        if (!hit) return;
+        if (tc_.gr_flow_agree && !(dir * cum_delta_ > 0.0)) return;   // order flow against the trade: keep scanning
+        if (!can_enter(hhmm, dir)) return;
+        gr_done_ = true;
+        stop_dist_ = tc_.lf_stop_atr * day_atr_;
+        LOG("[TREND gap_or_retest] gap %+.2f (%.2f ATR), OR %.2f-%.2f, bar %02d:%02d l %.2f h %.2f c %.2f → %s", gap_, gap_ / day_atr_, gr_lo_, gr_hi_,
+            b.mod / 60, b.mod % 60, b.l, b.h, b.c, dir > 0 ? "LONG" : "SHORT");
+        emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "gap_or_retest_long" : "gap_or_retest_short");
+    }
+    // TrendConfig::drive_gap_agree / drive_prev_extreme. No prior day / no day ATR → the gap condition fails (closed).
+    bool drive_context_ok(int dir) const {
+        if (tc_.drive_gap_agree > 0.0 && (!have_prev_ || day_atr_ <= 0.0 || dir * gap_ < tc_.drive_gap_agree * day_atr_)) return false;
+        if (tc_.drive_flow_agree && !(dir * cum_delta_ > 0.0)) return false;
+        if (tc_.drive_prev_extreme > 0.0 && have_prev_ && prev_hi_ > prev_lo_) {
+            const double ibs = (prev_close_ - prev_lo_) / (prev_hi_ - prev_lo_);
+            if (dir > 0 ? ibs >= tc_.drive_prev_extreme : ibs <= 1.0 - tc_.drive_prev_extreme) return false;
+        }
+        return true;
+    }
+    // Thesis-exit bookkeeping for the entry about to be emitted at bar b's close (fills ≈ the next minute's open).
+    void drive_arm_exit(const Bar& b) {
+        drive_x_entry_mod_ = b.mod + 1; drive_x_px_ = b.c; drive_x_best_ = b.c; drive_x_risk_ = stop_dist_; drive_x_stall_done_ = false;
+    }
+    // TrendConfig::drive_exit_vwap / drive_exit_stall_min. Called on every 1-minute close while in a drive trade.
+    // A position seeded after a restart has no entry record (drive_x_entry_mod_ < 0): only the VWAP exit applies.
+    bool drive_exit_check(const Bar& b) {
+        if (!tc_.drive_exit_vwap && tc_.drive_exit_stall_min <= 0) return false;
+        const bool armed = drive_x_entry_mod_ >= 0 && b.mod >= drive_x_entry_mod_;
+        if (armed) drive_x_best_ = pos_dir_ > 0 ? std::max(drive_x_best_, b.h) : std::min(drive_x_best_, b.l);
+        if (tc_.drive_exit_vwap && (b.mod + 1) % 5 == 0 && (drive_x_entry_mod_ < 0 || b.mod / 5 >= drive_x_entry_mod_ / 5)) {
+            const double vw = vwap();
+            if (vw > 0 && pos_dir_ * (b.c - vw) < 0) {
+                LOG("[TREND opening_drive] 5m close %.2f back through VWAP %.2f — thesis exit", b.c, vw);
+                emit(OrbSignal::FLATTEN_EOD, b.c, "drive_vwap_exit");
+                return true;
+            }
+        }
+        if (tc_.drive_exit_stall_min > 0 && armed && !drive_x_stall_done_ && drive_x_risk_ > 0
+            && b.mod + 1 >= drive_x_entry_mod_ + tc_.drive_exit_stall_min) {
+            drive_x_stall_done_ = true;
+            const double fav = pos_dir_ * (drive_x_best_ - drive_x_px_);
+            if (fav < tc_.drive_exit_stall_r * drive_x_risk_) {
+                LOG("[TREND opening_drive] best %+.2f < %.2f × stop %.2f after %d min — stall exit", fav, tc_.drive_exit_stall_r, drive_x_risk_, tc_.drive_exit_stall_min);
+                emit(OrbSignal::FLATTEN_EOD, b.c, "drive_stall_exit");
+                return true;
+            }
+        }
+        return false;
     }
     // E1 confirmations (see TrendConfig::drive_score_min). Missing inputs (no prior close / no overnight open seen)
     // score 0 for that point — the gate can only get stricter, never looser.
@@ -1155,6 +1349,10 @@ private:
     static int et_day_of_month(int64_t ts_us) {
         time_t tt = static_cast<time_t>(ts_us / 1'000'000LL); struct tm g; gmtime_r(&tt, &g);
         time_t et = tt - (time_t)us_et_offset(g) * 3600; struct tm e; gmtime_r(&et, &e); return e.tm_mday;
+    }
+    static int et_weekday(int64_t ts_us) {   // 0 = Sunday … 6 = Saturday
+        time_t tt = static_cast<time_t>(ts_us / 1'000'000LL); struct tm g; gmtime_r(&tt, &g);
+        time_t et = tt - (time_t)us_et_offset(g) * 3600; struct tm e; gmtime_r(&et, &e); return e.tm_wday;
     }
     // fear-day filters (TrendConfig::hold_prev_*): false when one is set and the prior day fails it or is unknown
     bool hold_prev_ok() const {
@@ -1356,6 +1554,7 @@ private:
             if (!hold_daily_ok(tc_.hold_dir < 0 ? -1 : 1)) return;
         } else if (!hold_any_weak_ok(tc_.hold_dir < 0 ? -1 : 1)) return;
         if (tc_.hold_tom) { const int d = et_day_of_month(b.ts); if (!(d >= 28 || d <= 3)) return; }
+        if (tc_.hold_dow > 0 && et_weekday(b.ts) != tc_.hold_dow) return;
         if (tc_.hold_pre_event && !(tc_.hold_pre_event_fomc_only ? fomc_next_day_ : event_next_day_)) return;
         if (tc_.hold_up_day && in_rth_ && !(last_px_ > rth_open_)) return;
         const int dir = tc_.hold_dir < 0 ? -1 : 1;
@@ -2238,11 +2437,15 @@ private:
     double on_hi_ = std::numeric_limits<double>::lowest(), on_lo_ = std::numeric_limits<double>::max();
     double prev_hi_ = 0, prev_lo_ = 0, prev_close_ = 0, prev2_lo_ = 0; bool have_prev2_ = false;
     double vwap_pv_ = 0, vwap_v_ = 0; std::vector<double> vwap_hist_;
+    double lf_hi_ = 0, lf_lo_ = 0, lf_prev_c_ = 0; int lf_n_ = 0; bool lf_flow_seen_ = false;   // asia_sweep / round_break
+    double gr_hi_ = 0, gr_lo_ = 0; int gr_n_ = 0; bool gr_done_ = false;                          // gap_or_retest
+    Bar bg_hist_[2]; int bg_n_ = 0; bool bg_done_ = false;                                       // box_go: the two 5-minute bars before
+    int drive_x_entry_mod_ = -1; double drive_x_px_ = 0, drive_x_best_ = 0, drive_x_risk_ = 0; bool drive_x_stall_done_ = false;   // thesis exits
     int drive_dir_ = 0; bool drive_done_ = false; bool late_armed_ = false; int drive_late_i_ = 0; double gap_ = 0; bool gap_done_ = false; bool tod_done_ = false;
     // 2026-09-28 modes
     double ort_hi_ = 0, ort_lo_ = 0; bool ort_set_ = false; int ort_arm_ = 0, ort_age_ = 0; bool ort_used_long_ = false, ort_used_short_ = false;
     bool gf_done_ = false; int gf_dir_ = 0;
-    double nb_hi_ = 0, nb_lo_ = 0; bool nb_set_ = false, nb_done_ = false; bool event_day_ = false;
+    double nb_hi_ = 0, nb_lo_ = 0; bool nb_set_ = false, nb_done_ = false; bool event_day_ = false, fomc_day_ = false;
     double ib_hi_ = 0, ib_lo_ = 0; bool ib_set_ = false; int ib_dir_ = 0; double ib_target_ = 0;
     bool hold_done_ = false; bool event_next_day_ = false, fomc_next_day_ = false; double prev_open_ = 0.0;
     std::deque<double> close_hist_;                          // RTH closes, newest last (hold daily-context filters)

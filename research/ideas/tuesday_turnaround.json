@@ -1,0 +1,5 @@
+{"id":"tuesday_turnaround","name":"Turnaround Tuesday: long after a down Monday",
+ "why":"Weekend news gets sold on Monday by de-risking accounts; by Tuesday the forced selling is done and dip buyers / short covering lift the market.",
+ "params":{"x":[0,0.3,0.6],"stopk":[0.3,0.5,0]},
+ "checks":[{"at":"09:30","when":"dow == 2 && !rollwin && pret <= -x","dir":"1"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":40}

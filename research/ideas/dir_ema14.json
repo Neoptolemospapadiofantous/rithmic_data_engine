@@ -1,0 +1,26 @@
+{
+  "id": "dir_ema14",
+  "name": "Direction set at 10:00, then an EMA(14) pullback",
+  "why": "Founder setting (EMA 14). Trend traders add on a pullback to their moving average in the morning's direction. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_first.md). T2, pre-registered 2026-10-17 (research/preregistered/2026-10-17_day_engine_plan.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "stopk": [
+      0.25,
+      0.35
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:05",
+    "to": "14:00",
+    "when": "!rollwin && abs(at(10,0) - open) > 0.25 * atr && ((sign(at(10,0) - open) > 0 && lo(5,1) <= ema(5,14) && cl(5,1) > ema(5,14)) || (sign(at(10,0) - open) < 0 && hi(5,1) >= ema(5,14) && cl(5,1) < ema(5,14)))",
+    "dir": "sign(at(10,0) - open)"
+  },
+  "max_trades": 1,
+  "stop": "stopk*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100
+}

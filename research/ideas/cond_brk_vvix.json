@@ -1,0 +1,23 @@
+{
+ "id": "cond_brk_vvix",
+ "name": "Break & hold (follow) at the 15-minute opening range — price only (reference)",
+ "why": "A first close beyond the 15-minute opening range with aggressive flow behind it is real demand running the stops parked there; the triggered stops add fuel in the same direction. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes.md). Reference run without the delta condition, 2010-26. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_patterns_and_conditions.md, part C).",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:50",
+  "to": "12:00",
+  "when": "vvix >= 100 && (((cl(5,1) > rhi(15) && lag(5, cl(5,1)) <= rhi(15)) || (cl(5,1) < rlo(15) && lag(5, cl(5,1)) >= rlo(15))))",
+  "dir": "(cl(5,1) > rhi(15) && lag(5, cl(5,1)) <= rhi(15)) - (cl(5,1) < rlo(15) && lag(5, cl(5,1)) >= rlo(15))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.998,
+ "control_seeds": 400
+}

@@ -1,0 +1,4 @@
+{"id":"leak_dwin_future","expect":"noedge","name":"Look-ahead trap: 10:00-15:00 order flow used at 10:00","why":"VALIDATION — dwin of a window not yet over must be unknown","symbol":"NQ","confirm":"ES",
+ "params":{"stopk":[0.2,0.3],"rr":[1,2]},
+ "checks":[{"at":"10:00","when":"flow","dir":"sign(dwin(10,0,15,0))"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

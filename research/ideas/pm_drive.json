@@ -1,0 +1,37 @@
+{
+ "id": "pm_drive",
+ "name": "Afternoon drive: follow the move from 12:00 at 13:00 / 13:30 / 14:00",
+ "why": "Afternoon pension / market-on-close programs start after lunch and run into the close; once the afternoon has a direction it carries. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_new_angles.md).",
+ "params": {
+  "k": [
+   0.15,
+   0.2
+  ],
+  "stopk": [
+   0.15,
+   0.2
+  ]
+ },
+ "checks": [
+  {
+   "at": "13:00",
+   "when": "abs(px - at(12,0)) > k*atr",
+   "dir": "sign(px - at(12,0))"
+  },
+  {
+   "at": "13:30",
+   "when": "abs(px - at(12,0)) > k*atr",
+   "dir": "sign(px - at(12,0))"
+  },
+  {
+   "at": "14:00",
+   "when": "abs(px - at(12,0)) > k*atr",
+   "dir": "sign(px - at(12,0))"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.992,
+ "control_seeds": 400
+}

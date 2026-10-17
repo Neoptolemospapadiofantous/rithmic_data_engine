@@ -54,6 +54,7 @@ newstrategy
 build-paper/
 config/staging/
 build-exp/
+build-hedge/
 # history replay build (bar feed etc., scripts/history_month.sh nqbars)
 build-hist/
 build-prof/

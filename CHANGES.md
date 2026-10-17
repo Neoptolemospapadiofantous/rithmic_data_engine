@@ -7,6 +7,447 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-17 — daily plan for hand trading, payout sprint, regime + EMA research, dry gap-retest unit
+- Daily plan (`scripts/daily_plan.sh` + `scripts/daily_plan_live.jq`, dashboard /plan): "Right now" panel (which setup triggered,
+  order flow, allowed / not allowed), EMA permission box (2-min EMA-9 / EMA-21, day direction, VWAP + open side, ≤ 13:55),
+  "Payout sprint" block (`live.sprint`: the day's first signal, 0.5R target, the plan's own outcome). `daily-plan.timer` now
+  runs every minute 09:00–13:59 ET (+14:01). New `scripts/plan_alerts.sh`: Telegram (grid-notify) morning brief, a warning one
+  minute before each cascade check, gap retest armed, TRADE NOW with MNQ / stop / target — one per day per key.
+- Research (all pre-registered under `research/preregistered/2026-10-17_*`): regime optimisation (9,408 rules, all sessions —
+  FAIL; only "trending by 10:30 in the gap direction" carries, i.e. the cascade); fleet entries vs exits (exits lose the move;
+  signals add nothing over the day's direction); re-entries (only after a winner); EMA permission, stops (125), entries × trails
+  (96), opening regime, EMA sweep (2,880 incl. trend + momentum filters) — the EMA pullback is ≈ breakeven out of sample;
+  live ORB rules −1.2 pts/trade; mtf_london_v5__sg negative everywhere; one-week payout sprint (Tradeify Lightning best:
+  payout ≤ 7 / 20 trading days ≈ 6.7 % / 25 % on 25K) and manual execution (1 min late or 5 pts worse kills the sprint edge).
+- Paper cascade: the 12:00 follow-any-move check removed from every `so_cascade_*` id (`drive_late_count` 4 → 3,
+  `drive_late_last_min_atr` 0 → 0.3) and from the dry `tradeify_cascade` executor — it lost money (2026-10-17 tests).
+  The ids keep their names; their rows before 2026-10-17 include the 12:00 trades.
+- New dry executor `tradeify_gor` (gap retest, `config/tradeify_gor_config.json`, label `tradeify_gor_dry`, enabled).
+- `nq-executor-local@tradeify` (the live ORB) DISABLED as well as stopped (founder 2026-10-17 "do all").
+- Ops: the held BBO WAL (`data/backups/ticks.wal.bbo.pending-20261016`, 6.2 M rows) was replayed in the weekend close; every
+  row was already present (merged, nothing new) — NQ / ES quotes and `book_1m` are complete 10-12 → 10-16.
+
+## 2026-10-16 (later) — round 3: gap edge is not one setting; limit-entry paper twin; account mix and worst case
+- `research/preregistered/2026-10-16_round3.md`. Gap-agree beats the plain cascade at every gap threshold 0.05–0.3 ATR
+  (+7.5 … +9.1 vs +4.8). Overnight-range-break filter and the weak-day gap splits fail.
+- `OrbConfig::entry_limit_ticks` / `entry_limit_secs` (PaperBroker only): a limit entry N ticks better than the last
+  trade, filled at the limit only when a later tick trades through it, cancelled after the timeout (no trade). The
+  executor refuses the key. Paper twin `so_cascade_2r_lim1` (working fleet variant). Tests in `test_paper_broker`.
+- Account mix: a second account on the same trades doubles cash, not frequency; Flex + Daily gives the most paid months
+  (4.5/yr). At 8 MNQ the cascade's worst day (−$2,882) exceeds the $2,000 trailing drawdown — the fast evaluation
+  fails often by design (~5.7 evals a year per Flex chain).
+
+## 2026-10-16 (later) — gap-agree confirmed on ES; VWAP exit on top; options expiry and 2× sizing do nothing
+- `research/preregistered/2026-10-16_confirm_gap.md`. `es_cascade_gap_agree` PASSES (+1.97 vs +1.10 ES pts/trade, all
+  eras positive): the gap filter holds on a second market. The VWAP thesis exit on gap-agree trades passes (+10.05 vs
+  +8.59, drawdown halved). Options-expiry fade and skipping opex days fail. Doubling size on gap-agree days does not
+  bring the first Flex 50K payout forward (16.0 → 17.8 weeks, more failed evals); trading only those days is slower
+  still (~30 weeks).
+- Paper candidates `so_cascade_2r_gapagree_vwap` (NQ) and `es_cascade_2r_gapagree` (ES fleet); deployed by the same
+  after-close job.
+
+## 2026-10-16 (later) — six new angles (pre-registered): two cascade context filters go to paper
+- `research/preregistered/2026-10-16_new_angles.md`, controls at 99.2 %. ES agreement, relative volume, the afternoon
+  drive, the 14:00 exhaustion fade and "yesterday closed at its extreme" all FAIL.
+- **Gap agrees** PASSES: +8.59 pts/trade vs the cascade's +4.80; frozen holdouts +16.35 (2019–22) and +14.32 (2023–26),
+  both above the plain cascade. The trades it removes still make money, so it is a candidate, not a change to the core.
+- **Yesterday NOT at its extreme** (the complement of a failed test, opposite of the prediction) passes at +7.49,
+  holdouts +9.60 / +14.68 — forward test only.
+- `TrendConfig::drive_gap_agree` (gap ≥ x · day ATR in the trade's direction; no prior day → no trade) and
+  `drive_prev_extreme` (skip a long when yesterday's IBS ≥ x, a short when ≤ 1 − x). Both apply to the main decision and
+  every late check; a blocked check leaves the later checks armed. Paper only. Tests in `test_trend_strategy`.
+- Paper ids `so_cascade_2r_gapagree` (0.1) and `so_cascade_2r_notext` (0.7); working-fleet candidates; deployed and
+  backfilled by the 2026-10-16 after-close job.
+
+## 2026-10-16 (later) — the cascade on big-tech earnings mornings (pre-registered): no edge; CPI untestable
+
+`research/preregistered/2026-10-16_earnings_mornings.md`. 456 earnings releases (SEC EDGAR 8-K item 2.02: NVDA, AAPL,
+MSFT, AMZN, GOOGL, META, AVGO, 2010 on) → 344 reaction sessions in `data/edge_lab/cache/events.csv`; edge_lab day fact
+`earn` (`load_events`). Cascade on those mornings +7.04 pts/trade on 217 trades but random direction beaten only 74 %
+(t 1.2), years swing −706 … +874 pts → no sizing candidate. CPI release dates could not be fetched (BLS / ALFRED refuse
+scripted access). Every idea testable on owned or free data is now tested.
+
+## 2026-10-16 (later) — cascade refinements (pre-registered): none beats the plain cascade
+
+`research/preregistered/2026-10-16_cascade_refinements.md`. edge_lab's managed exits gain **add a unit** (`add_r`: buy one
+more at that R in favour, both stops to the entry, the added unit pays its own cost) and a **trailing stop** (`trail_r`:
+after +1R the stop follows the best price by that many R); tests (548 checks). Results vs the base +4.80 pts/trade:
+re-entry (≤ 2 trades/day) +3.62, adding at +1R +4.62, trailing after +1R +2.56, first check at 09:45 / 09:55 / 10:00
++3.57 / +4.42 / +3.98 (the edge is not tied to one minute; 09:50 stays best), 2 units on VIX < 20 days better only in
+2023–26. The fleet keeps the plain cascade.
+
+## 2026-10-16 (later) — the cascade in the first 2 hours of every session (pre-registered): New York only
+
+`research/preregistered/2026-10-16_cascade_all_sessions.md` (founder: "test the cascade on all sessions first 2
+hours"). Same rule at the Globex (18:00), Tokyo (20:00) and London (03:00) opens, exit at the end of the 2 hours or held
+to the next session, and the NY cascade cut at 11:30. Only `cascade_asia_2h` passes the gates (+4.3 pts/trade, 18/yr)
+and it is not validated (whole-period best variant +0.4, random entry times did better, frozen holdout negative /
+insignificant). Tokyo and London fail; the NY cascade cut at 11:30 makes +2.2 vs +4.8 held to 15:55. Fleet unchanged.
+Also from the session analysis of the 2021–26 replays (no code): of ~4,700 fleet strategies in the NY first 2 hours and
+~550 in London / Asia, none is significant in both 2021–23 and 2024–26; the best both-period positives are index beta
+(`beta_day*`), faded trend rules (`trend_gap_go_20`, `globex_keltner_20_60m`) or noise.
+
+## 2026-10-16 (later) — chart / candle patterns and the condition matrix (pre-registered): nothing validated
+
+`research/preregistered/2026-10-16_patterns_and_conditions.md`. 18 pattern tests (engulfing, pin bar, inside / outside
+bar, 3-bar reversal, double bottom/top, structure break, flag, MTF engulfing — standalone and in the cascade's direction,
+controls 99.7 %): two pass the gates (`pat_3bar` +2.5, `pat_double_casc` +3.2) but neither had an edge in its development
+years (frozen holdout); the rest fail. Condition matrix (breakout / reversal / trend / pullback × none, VIX ≥ 20, VIX < 20,
+VIX/VIX3M ≥ 1, VVIX ≥ 100, 50-day trend, no FOMC; controls 99.8 % + both holdouts positive): no combination validated —
+at this strict bar the plain cascade's random-day control (96 %) fails too, while its frozen holdouts stay positive (t
+2.1–2.5). Unvalidated but notable: the cascade on VIX < 20 days and on VVIX ≥ 100 days.
+
+## 2026-10-16 (later) — pipeline and data validation; two look-ahead holes and a stale ATR fixed
+
+`research/validation/2026-10-16_pipeline_validation.md`. Data integrity clean (NQ/ES: every full day has its 09:30 bar
+across DST, ~0.1 missing RTH minutes/day, no duplicates or bad bars, no roll jumps). **Look-ahead:** `lag()` now refuses a
+negative lag; the pair price `xs` and the meta model's ES input use the latest bar that has started, never the next one
+(tests added; re-runs unchanged). **Null markets:** 20 passing / near-miss ideas on two synthetic NQ histories with every
+real structure destroyed → 0 of 40 pass (the cascade nets ≈ −cost there). **Parity** edge_lab vs paper engine on
+the recorded sessions: same days, directions and entry times — and one real mismatch: **`PaperDb::session_atr14_before`
+(paper engine + executor regime ATR) returned yesterday's stored ATR14, one day stale vs research**; now the mean of the 14
+sessions before today (verified equal to edge_lab's ATR). Changes the stop size of every ATR-sized paper/dry strategy
+from tonight's deploy; the golden snapshot is re-frozen with its diff kept for review.
+
+## 2026-10-16 (later) — the prop plan against reality: Monte Carlo and measured live costs
+**Fastest payouts:** Select **Flex** 50K with **6–8 MNQ in the evaluation and 2 MNQ funded** — median first payout
+≈ 16 weeks at the corrected 1.5 pts/MNQ (real 2019–26 sequence: 82 trading days, paid within a year from every start),
+~1 in 3 within 3 months, ~3 evals bought (Daily 50K ≈ 23–25 weeks; 25K accounts are not faster).
+
+`research/2026-10-16_prop_plan_reality.md`. **Corrected the same day:** a first reading took `entry_slippage_ticks`
+(UNSIGNED |fill − signal|) as a cost and reported 2.4 pts per MNQ. New `scripts/execution_costs.sh` computes SIGNED costs
+from the stored prices: MNQ entries ≈ 1 tick better than the signal (median 0), stop exits ≈ 3 ticks worse, commission 0.91
+→ ≈ **1.3 pts per MNQ round trip** (the research's 1.5 is conservative); `latency_logger.hpp`'s comment now says the
+field is unsigned. The order path was not changed: entries are not where execution loses money. Original reading:
+Live trades (45, 09-21 … 10-09): entries "slip 4.6 ticks" (unsigned), submit → fill median 1.2 s.
+At that cost the cascade nets +4.38 pts/trade (random-day control 94 %) and the weak-day long +14.0 (passes). Monte
+Carlo of year 1 (10,000 years from real 2019–26 months, Select Daily 50K, monthly withdrawal): cascade + VWAP/stall at
+4 MNQ — first eval passes 45 %, any payout 73 %, first payout ~day 101, 3.1 months paid, $2,871 mean (worst 10 %: $0),
+4.7 evals bought; at 2 MNQ 64 % / 58 % / $1,540 / 2.0 evals. Year 1 is far weaker than the continuous replay.
+
+## 2026-10-16 (later) — free macro / options data as day filters (pre-registered): none adopted
+
+`scripts/edge_lab.sh macro` downloads free FRED (10-/2-year yields, broad dollar) and CBOE (VVIX, SKEW) daily files and
+merges them (curl + awk) into `data/edge_lab/cache/macro.csv`; edge_lab day facts `vvix skew y10 y2 y10c usdc` (last
+observation dated before the day; test added, 543 checks). `research/preregistered/2026-10-16_free_macro_filters.md`:
+cascade on VVIX ≥ 100 days +9.35 pts/trade vs +2.51 on the rest (fails controls; noted as a sizing hypothesis),
+cascade after big yield moves +5.56 vs +4.91, weak-day after falling yields +29.8 (passes) vs +27.5 on the rest, weak-day
+after a dollar jump +16.3 vs +22.4. Adoption needed the removed trades to lose money — none did.
+
+## 2026-10-16 (later) — mega grid of entries / stops / targets / exits (pre-registered): no fleet change
+
+Founder: "test as many variants as possible" (`research/preregistered/2026-10-16_mega_grid.md`). edge_lab gains
+**break-even** (`be_r`: stop to entry once price has gone that many R in favour) and **partial exits** (`partial_r`:
+half out at that R, the rest's stop to entry) — `simulate_managed`, 5 tests (539 checks) — and writes every variant's
+in-sample result to `reports/<id>.variants.csv`. Cascade 2,800 variants (thresholds × stop 0.15–0.5 ATR × target
+none/1–5R × break-even × partial): walk-forward +4.08 (worse than the 54-variant grid's +4.80); frozen-holdout pick beats
+the current setting in 2019–22 but not in 2023–26 → kept. **All 2,800 variants positive in both holdouts.** Weak-day
+3 × 384 (IBS × VIX × stop × target × break-even × exit 12:00/14:00/15:55): only 15:55 survives; its pick (VIX ≥ 25 only)
+is better per trade but makes less in total — the fleet's existing +1 MNQ at VIX ≥ 25 already captures it.
+
+## 2026-10-16 (later) — VWAP / EMA re-test and a frozen-setting holdout of every winner
+
+- **VWAP / EMA, untested versions only** (`research/preregistered/2026-10-16_vwap_ema.md`, 5 tests at 99 %): VWAP
+  hold on trend days −0.2, VWAP reclaim −0.5, EMA pullback with the 60-minute trend +2.1 (controls), cascade with a
+  60-minute EMA filter +3.7 (worse than plain, not adopted). `ema_cross_vwap` (5-minute EMA9/21 cross in the day's
+  direction, price beyond VWAP and the open) PASSES the gates at +6.79 — but the walk-forward stood aside in 109 of 184
+  months, its whole-period best variant is +1.81 (t 1.6), and the frozen holdout shows no edge before 2019. Not in the
+  fleet.
+- **Frozen-setting holdout** (`research/preregistered/2026-10-16_frozen_holdout.md`; founder: "find winning runs and
+  test that in data it has never seen before"): each winner's setting chosen on 2010–18 (or 2010–22) only, tested once
+  on 2019–22 (or 2023–26). The cascade holds best (+6.9 / +10.0, t ≈ 2.4); weak-day +21 / +67 (t ≈ 1.8–1.9); strong
+  open +6.0 / +13.0; ES cascade +1.3 / +1.2. Added to `config/working_fleet.json` evidence. Truly unseen data is only the
+  forward paper test.
+
+## 2026-10-16 (later) — owned-data ideas, pre-registered: nothing passes
+
+Founder: "test all. I cant have more expenses" (`research/preregistered/2026-10-16_owned_data_ideas.md`, 9 tests,
+controls at 99.5 % of 400 seeds). FAIL: trend-follower MA-cross trigger (18:00 +7.4 pts/trade but direction 75 %, loses
+2010–18; 09:30 −1.1), failed-cascade reverse (+5.5, negative 2023–26), NQ–ES divergence (−2.4), Bitcoin weekend → NQ
+Monday (09:30 +8.1 on 86 trades, negative 2023–26; Sunday 18:00 −3.1), the cascade on BTC / ETH at 10 bp cost (−2.9 /
+−3.1 bp), and volatility-regime sizing in the payout sim (26 % of months paid vs 60 % for a fixed 4 MNQ). Not tested
+(no free data): other markets, earnings days, CPI / auction days.
+- **VIX term structure** (`research/preregistered/2026-10-16_vix_term_structure.md`; founder: "more mechanical"):
+  edge_lab day fact `vts` = VIX / VIX3M (prior close, owned CBOE files). Cascade in backwardation −1.75 pts/trade (144),
+  in contango +5.13 (fails random-day control 97 %), weak-day with the term-structure gate +25.6 on 222 trades (fails
+  direction 94 %, 2024 −912). No filter adopted.
+- edge_lab: day facts `sma100`, `sma200`, `xma` (net 50/100/200-day cross of yesterday's close); spec key `pair` with
+  `xs` (the pair's move from its open in its own ATR, same minute) and `xr` (the pair's return since this market's prior
+  RTH close); markets without a micro on our prop firm skip the prop gate (reported n/a); `scripts/edge_lab.sh export
+  <X>LOG` = <X>USDT on a log scale (1 pt = 1 bp). Tests 534 checks.
+
+## 2026-10-16 (later) — the working fleet: one list, written rules, two forward-test candidates
+
+Founder: "run test and lets come up with our fleet of working strategies".
+- **`config/working_fleet.json`** — every strategy that passed edge_lab (core: `so_cascade_2r`, `anyweak_day__vix20`,
+  `es_cascade_2r`), the variants compared with them (`so_cascade_2r_vwap`, `_vwap_stall`, `so_cascade_3r_s30`,
+  `es_cascade_k25_3r`) and two forward-test candidates, each with its rule, evidence and a keep / drop / promote /
+  retire rule written before forward data exists (forward from 2026-10-19). **`scripts/working_fleet.sh`** scores it
+  from `paper_trades` (`backfill` argument = the recorded-session replays, for orientation only).
+- **New trend modes (paper only)** `asia_sweep` (fade a 5-minute sweep of the 20:00–03:00 range whose aggressors are
+  trapped) and `round_break` (first 5-minute close beyond the 100-point band around the 09:30 open with flow behind it);
+  keys `lf_delta_min`, `lf_stop_atr`, `round_step`; fail closed without aggressor data; 7 tests in
+  `test_trend_strategy`. Paper ids `lf_asia_sweep`, `lf_round_break` at edge_lab's best fixed setting (a 0.05, stop
+  0.25 ATR, 2R) — near-misses of the pre-registered box tests, forward-tested, never live on that alone. Deployed and
+  backfilled from 2026-09-17 18:00 by tonight's after-close job.
+- **Weak-day long, pre-registered fixes** (`research/preregistered/2026-10-16_weak_day_fixes.md`): exits and the meta
+  model both FAIL — every thesis exit throws the full-day recovery away (+1.4…+2.3 vs +13.2). Kept as is, small size.
+  edge_lab: no-stop ideas now use 0.25 × ATR as R in the meta model and the stall exit.
+
+## 2026-10-16 (later) — search for strategies uncorrelated with the cascade; edge_lab months + correlation; prop uses the right micro
+
+Founder: "find 2 more uncorrelated strategies" (target: ≥ 60 % positive months, low monthly correlation with
+`so_cascade`, so a book of accounts pays most months).
+- edge_lab reports now carry **Months**: share of positive months (all, since 2019), longest run without one, and the
+  monthly correlation + "this or it positive" share against `corr_with` (default `so_cascade`, `weak_day_long`;
+  `reports/<id>.monthly.csv`). Information, not a gate.
+- **Bug fixed:** the prop gate valued every market as MNQ ($2/pt, 1.5 pts). It now trades the symbol's micro (MNQ $2 /
+  1.5 pts, MES $5 / 0.6 pts; other symbols refused). Only ES ideas changed.
+- 9 new ideas (all with a why): `es_cascade` **PASS** (+1.10 ES pts/trade, PF 1.20, 7/7 robust, all eras positive; MES
+  break-even fee $1,495 at 2 MES, $1.9k/yr at 6 MES) — but monthly correlation with the NQ cascade 0.57, so half a new
+  strategy. Dead: `overnight_drift` (dir 94 %; being long in cash hours makes more, +5.6 vs +3.1 — it is index beta, not an
+  overnight premium), `overnight_asia`, `data_drift`, `quiet_pm_break`, `on_overshoot_fade`, `range_day_fade`,
+  `highvix_vwap_fade` (−5.3), `weekend_gap_fade` (96 trades, controls), `postclose_drift`.
+- **Paper (ES fleet, label `es`, MES $5/pt):** `es_cascade_2r` (mirror of NQ `so_cascade_2r`, all knobs ATR-relative) and
+  `es_cascade_k25_3r` (edge_lab's in-sample best on ES: k 0.25, stop 0.25 ATR, 3R). Registered and backfilled
+  (2026-09-18 … 10-16, label `backfill`) by the same after-close job as the NQ VWAP ids.
+- **ORB 5 / ORB 15** (founder: "check for orb 5 and orb 15"; `orb5`, `orb15`: first 1-minute close beyond the range,
+  stop = other side of the range or k × ATR, 1.5–3R, optional narrow-range filter, 36 variants each): both FAIL at
+  controls — ORB 5 +1.52 pts/trade (random direction beaten in 84 %), ORB 15 +2.48 (88 %); both lose in 2010–18
+  (−1.25 / −1.84) and win since 2019; positive in 42 % / 56 % of months since 2019; monthly corr 0.6 with the cascade (the
+  same open flow, a worse trigger). The narrow-range filter and the range stop add nothing.
+- **ORB 5 / 15 with order flow** (`orb5_of`, `orb15_of`: break taken only when RTH aggressor delta since the open
+  agrees by ≥ f × volume; 2023-03 on, 6-month training): ORB 5 +5.49 pts/trade (433 trades), ORB 15 +4.09 — both FAIL at
+  controls (random time / random day beaten in only 44–70 %; ORB 5 beats random direction 96 %). Same window without the
+  flow condition: ORB 5 −0.95, ORB 15 +2.51, so the flow filter lifts ORB 5 by ~6 pts/trade — but 2024 carries every
+  version (ORB 5 flow: 2023 −175, 2024 +1,939, 2025 −512, 2026 +1,125 pts) and the history is 2.5 years. The paper ids
+  `ofo_ny5*` (since 10-14) agree it is not settled: recorded-session replay flow-agree 11 trades +$369 vs no filter 17
+  +$779 vs flow-disagree 6 +$409. Monthly corr 0.55 with the cascade. Not an edge yet; the paper ids keep running.
+- **ORB + order flow, round 2 — pre-registered** (`research/preregistered/2026-10-16_orb_order_flow.md`, founder: "test
+  all. remember we dont want to overfit"): 8 tests written before any run, controls at 99 % for the family, ≤ 8 variants,
+  development data to 2026-03-19, collector sessions after as a holdout. **Nothing passes** (table in the file): range-
+  window flow, far-side liquidity pulled (positive every year 2023–26 but controls 58–96 %, and no live depth feed),
+  absorption at the range edge (−2.3), a flow-flip exit (helps ORB on ~20 trades, nothing on the cascade), flow/book
+  inputs to the meta model (no gain). New edge_lab pieces: `bk(field, n)` (order-book minutes from `mbo_1m`, exported as
+  `NQ.book.csv`), `dwin` / `vwin` (aggressor delta / volume in a fixed window), exit rule `flow`, spec key `to`,
+  `meta --book`; 9 new tests (523 checks).
+- **Liquidity boxes × order-flow entries — pre-registered** (`research/preregistered/2026-10-16_liquidity_boxes.md`;
+  founder: "a box between liquidities or orb or levels … entries with orderflow"): 15-minute range, overnight
+  high/low, yesterday's high/low × sweep-and-reclaim fade / break-and-hold follow, flow 2023–26 at 99 % controls, plus
+  price-only references 2010–26. All 12 fail (flow: −6.1 … +3.6 pts/trade; price-only sweeps lose on 16 years).
+- **Every other liquidity box × order flow — pre-registered** (`research/preregistered/2026-10-16_liquidity_boxes_all.md`,
+  founder: "test everything"): equal highs/lows, Asia and London ranges, yesterday's value area, naked POC, VWAP ± 2 sd,
+  last week, last month, 100-point bands, consolidation × sweep / break, flow 2023–26 at 99.75 % (20 tests), plus
+  price-only references 2010–26. **Nothing passes.** Closest: 100-point-band break with flow (+12.4, direction control
+  99 % < 99.75) and Asia-range sweep with flow (+10.4, 96 %), but their whole-period best variants make only ~+5.5
+  (t ≈ 1.3). New edge_lab pieces: `whi`/`wlo`, `eqhi`/`eqlo`, `floor`/`ceil`, day facts `ppoc pvah pval pwh pwl pmh pml
+  npoca npocb` (RTH volume profile, last week/month, naked POCs); tests (530 checks).
+- **Bug fixed: `hh(tf, n)` / `ll(tf, n)` always returned NaN** (the loop in `Market::series` never ran). Only today's
+  `cnbox` specs used them (re-run); the StarNet desk's copy of edge_lab was told to re-copy and re-run its hh/ll ideas.
+- The VWAP thesis exit does **not** carry to ES (every exit rule fails on `es_cascade`) — a caution on the NQ result; its
+  paper ids decide.
+- Book sim (Select Daily 50K, 2019–26, one withdrawal a month): NQ cascade 4 MNQ alone 60 % of months paid; + weak-day
+  1 MNQ 70 %; + ES cascade 20 MES 78 % ($12k/yr, 8.6 evals/yr — the ES account burns most of them). Sign-only, cascade +
+  weak-day + ES cascade have a positive month 91 % of the time.
+- Trap recorded in research/README.md: `px` is the decision bar's open, so `px > hi_since(…)` is never true — use a
+  completed bar (`cl(5,1) > lag(5, hi_since(9,30))`).
+
+## 2026-10-16 (09:00 ET) — edge_lab meta (take/skip) and thesis exits on the cascade
+
+Founder: copy what profitable discretionary traders do, programmatically — option 1 (skip the bad signals) and 2 (exit
+when the reason for the trade is gone). New `src/research/meta.hpp`, `edge_lab meta|exits SPEC`, `scripts/edge_lab.sh
+meta|exits`, gates in `research/README.md`, tests in `test_edge_lab` (514 checks: planted rule learned, no future
+labels reach a year's model, base exit = the edge_lab path, VWAP exit leaves a reversing trade early).
+
+Results on `so_cascade` (NQ, 1.0 pt real cost, walk-forward trades):
+- **Thesis exit — PASS.** Close when a 5-minute bar closes back through VWAP (hard stop kept): +5.58 vs +4.80
+  pts/trade, PF 1.36 vs 1.22, max drawdown 911 vs 1,244 pts, beats the path-blind random-timing twin in 100 % of 200
+  seeds (twin +8,150 vs +12,951 pts). With the 60-minute stall rule: +5.82, PF 1.41. 2010–18 is slightly worse
+  (+0.77 vs +1.04); the gain is 2019–26. Prop (Select Daily 50K, 4 MNQ): 32–40 evals over 14 years instead of 72,
+  $2.7–3.2k paid/yr per account vs $2.4k. Walk-forward over all 8 rules (the honest multiple-testing number): +5.25
+  vs +5.00/trade. Open-cross, stall alone, open runner, 15-minute trail: fail.
+- **Meta-label — PASS, but borderline.** Trees take 59 % of signals: +8.30 vs +5.70 pts/trade (2014–26), random skip
+  beaten in 96.2 % of seeds, shuffled labels in exactly 95 %, ridge cross-check barely better (+5.84). Prediction
+  quintiles are not monotonic (Q4 +10.7, Q5 +4.6). Sensitivity (not tuning): 7 of 8 model settings improve
+  (+5.4…+9.6 vs +6.35 on 2015+), 5 bins makes it worse. Leans on overnight range, trend vs SMA50, overnight position,
+  yesterday's IBS. Treat as a candidate for forward paper, not an edge.
+- **Paper fleet:** TrendConfig `drive_exit_vwap` (a completed 5-minute close back through the RTH VWAP closes the
+  drive trade) and `drive_exit_stall_min` / `drive_exit_stall_r` (no ≥ r × stop in favour after N minutes → close);
+  both off by default, 5 tests in `test_trend_strategy`. Ids `so_cascade_2r_vwap` and `so_cascade_2r_vwap_stall`
+  (60 min, 0.5 R) beside `so_cascade_2r`. Deployed after the close by a one-shot user timer (build/ paper_engine →
+  restart paper-engine-local → backfill the two ids 2026-09-18 … 10-16 under `backfill` → golden re-freeze only if
+  nothing but the new ids changed → make hermes; log `data/logs/cascade_vwap_deploy.log`).
+- **Monthly payouts (sim, Select Daily 50K, 2019–26):** withdrawing the maximum as soon as allowed leaves the balance
+  at the +$2,100 line, so a losing week stops the next months; ONE withdrawal per calendar month pays in 49–60 % of
+  months (cascade + VWAP/stall, 2–4 MNQ, 0.4–0.8 evals/yr, $5–7.7k/yr) vs 18–31 %. More copies of the same strategy add
+  nothing (same months); the weak-day long on a second account adds a little (61 %). Ceiling: the cascade is positive
+  in 67 % of months; cascade or weak-day positive in 85 % (monthly corr −0.05).
+- **Control bug caught before trusting it:** the first random-timing twin re-timed only the trades the exit rule had
+  closed — trades selected on their future (they later went back through VWAP) — and "beat" every rule by 2×. The
+  twin is now a path-blind time exit over all trades with the rule's exit rate and holding times. The exit fill now
+  also counts in the trade's MAE (prop breach test).
+
+## 2026-10-16 (morning) — edge_lab: one pipeline every strategy idea goes through; the dead list re-tested at real cost
+
+### Added
+- **`edge_lab`** (`src/research/{bars,expr,edge_lab}.hpp`, `edge_lab_main.cpp`, `scripts/edge_lab.sh`, `research/README.md`,
+  tests `test_edge_lab`, in hermes). An idea is one JSON file in `research/ideas/` (rule language over 1-minute NQ/ES bars
+  2010-07 → now, a mandatory "why"). Gates: screen at the REAL cost (NQ 1.0 / ES 0.35 pt) → walk-forward (12-month
+  trailing pick) → controls (200 seeds: random direction, random time with the rule's own direction, random day in the
+  same month) → robustness (≥ 5/7 incl. eras, cost × 1.5, entry 1 bar late, ES, plateau; latest era must be positive) →
+  prop fit (MNQ 1.5 pt through `select_daily_50k` eval → funded → re-buy). Report per idea in `data/edge_lab/reports/`,
+  results in Postgres `research_ideas` / `research_runs` (`migrations/20261016_research_ideas.sql`). ~0.5 s per idea.
+- Day facts `mtd` (month-to-date) and `prehol` (holiday follows) for calendar-flow ideas.
+
+### Research (29 ideas, all in `research/ideas/`, `scripts/edge_lab.sh list`)
+- **PASS (3):** `weak_day_long` (weak close → buy the open, hold to 15:55; +13.2 pts/trade net OOS, PF 1.36, beats
+  random day 100 %, all eras +), `so_cascade` (+4.8, PF 1.22, 11/16 yrs), `strong_open` (+4.2, PF 1.17; a subset of the
+  cascade). All three are tradeable only at today's real cost; 2010–18 is ≈ +1 pt/trade.
+- **Skipping FOMC days does NOT help the cascade** here (+4.64 vs +4.80 pts/trade; day control 93 % vs 96 %) — the
+  2026-10-15 "ADOPT" came from a 2.41-pt in-sample run. Keep `skip_fomc_day` off until forward data says otherwise.
+- Last-hour momentum passes everything except the latest era (2023–26 negative) → FAIL. Near misses: month-end
+  rebalancing (direction control 86 %), narrow-range breakout (93 %, 13/16 yrs).
+- Dead at real cost: EMA cross / 60m-pullback, VWAP fade / follow, ORB, Asia / London open drives, gap fade / failed gap,
+  midday trend, late SO alone, turn of month, Monday fade, pre-FOMC drift, pre-holiday, Friday de-risk, Tuesday
+  turnaround, overnight-trend open, half-hour→last-half-hour. Vol-target de-lever short loses −15.9 pts/trade = the
+  weak-day long from the other side.
+- Control design notes (found while building): a random-time control that keeps the real trade's direction leaks the
+  future (it beat the cascade 2:1); a random-day control drawn from the whole year scores the walk-forward's month
+  choice. Both fixed; tests pin them.
+
+---
+
+## 2026-10-16 (night) — FOMC skip for the trend engine, the cascade as a dry-run 50K instance, flow-trade research
+
+### Added
+- `skip_fomc_day` (TrendConfig, off by default): no entries on an FOMC decision day. Hosts now pass today's FOMC
+  flag as the second argument of `set_event_day(event, fomc)` from the `calendar` table (kind `fomc`, 137 rows
+  2010-01 … 2026-12) — paper_main (start, day rollover, warm-up roll) and the executor (start, daily reset).
+  Evidence: the every-day cascade on decision days PF 0.54 at real cost, t −3.8 (2010–26). 4 tests in
+  `test_trend_strategy` (FOMC day blocks, other event days and normal days trade, off = unchanged).
+- Paper ids `so_cascade_2r_nofomc`, `so_cascade_3r_s30_nofomc` (fleet 6,635). No backfill: 2026-09-18 … 10-15
+  holds no FOMC day, so they equal their bases there; the next decision days are 2026-10-28 and 12-09.
+- `config/tradeify_cascade_config.json` → `nq-executor-local@tradeify_cascade` (dry_run, label
+  `tradeify_cascade_dry`, tag CASCADE): the cascade with the FOMC skip, sized as a Select 50K evaluation (4 MNQ,
+  −$1,000 daily, $2,000 trail). Founder: "trade what works". Real-cost evidence: positive only since 2019.
+
+### Research (scratchpad `rF_flows/`, no repo code)
+- Five new flow hypotheses with priors written first (turn of month, mid-month payroll, leveraged-ETF last hour,
+  week after quarterly expiry, VIX-expiry Wednesday), NQ + ES 2010–26, random-date controls: none positive in all
+  eras after costs, none beats its control on both markets. Quarterly-expiry Fridays are untestable (NQ.c.0 ends
+  09:29 on those days). Nothing to adopt.
+
+### Fixed
+- **NQ quotes had not reached Postgres since 2026-10-12 21:59 (Cyprus).** One collector BBO batch held two rows with
+  the same (symbol, exchange, ts_event); `ON CONFLICT DO UPDATE` rejects such a statement whole ("cannot affect row a
+  second time"), and the BBO WAL re-sent that batch plus everything after it on every flush — 6.2 M rows / 348 MB held,
+  `bbo` / `book_1m` frozen (order-book gates, book overlays and the chart ran on no quotes). `TickDB::write_bbo` now
+  merges same-key rows in the batch first (present side wins, absent side keeps — the ON CONFLICT rule); test
+  `write_bbo_same_key_in_batch`. Found by the cost agent (book_1m had no NQ rows after 10-12).
+- `scripts/collector_watchdog.sh`: `START_GRACE_S` (300 s) after the unit last became active. The collector's start
+  (`SELECT COUNT(*) FROM ticks` over 123 M rows, schema statements, WAL replay) takes > 2 min on a cold cache, and the
+  2-minute watchdog restarted it in a loop — 01:24–01:40 ET 10-16 lost ~17 min of Asia ticks.
+- The held quotes are kept at `data/backups/ticks.wal.bbo.pending-20261016` (6.2 M rows, 10-12 → 10-16) — NOT yet
+  loaded: the collector replays a WAL as one statement at start-up, which blocks live ticks for minutes. Load it in
+  the weekend close (put it back as `ticks.wal.bbo`, restart the collector).
+
+### Ops
+- 2026-10-16 00:50 ET: a dashboard `SELECT 'live' …` sat in ClientWrite for 8 h holding `paper_trades`; the paper
+  engine's `ALTER TABLE … ADD COLUMN IF NOT EXISTS` queued behind it and every paper-trade INSERT, the 02:40
+  pg_dump and both restarts queued behind that (same pattern as 2026-10-14). Terminated with
+  `pg_terminate_backend`.
+
+## 2026-10-16 — every strategy family swept with walk-forward selection; the box theory fails; a three-strategy fear book
+
+### Research (bar-level re-implementations of the fleet's families on NQ 1m 2010-07 … 2026-10, 2.41 pts/trade, $ per MNQ;
+### `sweep.py` / `refine.py` in the session scratchpad — not fleet replays, so the live engines can differ in detail)
+- **Box theory (founder: "ORB is set — top we sell, bottom we buy"): no.** 36 variants (5/15/30-min box, stop ¼–1 box, target
+  middle / far side / hold, ± trail), limit fills at the edge: best PF 0.87, 3/17 years positive, gross edge ≈ 0 before costs
+  (+0.04 box per trade). The mirror (ORB breakout, 600 variants) is PF 1.00 at best — the opening range alone carries no edge
+  in either direction; the live ORB's results come from its other rules, not the box.
+- **Walk-forward over 24 families × session windows (3,933 variants):** each year trade the variant that was best over all prior
+  years. Only four cells earn anything out of sample — `weak_day` (prior close weak + VIX ≥ 20 → buy the open, 9–10/13 wf years
+  positive), `so_cascade`, `supertrend` 60m RTH and `range_break` with order flow (2023+ only). Donchian, Keltner, EMA pullback,
+  VWAP trend/fade, Bollinger fade, RSI-2, IB break, prior-day levels, failed breakouts, NR7, EMA ribbon, thrust fade, ORB retest,
+  fib pullback, volume burst, delta divergence: negative after costs in EVERY window (NY open / 10–12 / PM / Asia / London), no
+  parameter choice would have helped (hindsight > 0, blind and walk-forward < 0).
+- **Refinement (1,840 variants):** weak_day is robust across ibs 0.25–0.4 × VIX 20–25 (PF 1.5–2.2, $1.2–1.3k/yr); entering at
+  09:45 beats 09:30 by ~$15/trade; VIX ≥ 28 is PF 3.3 but trades only 8 of 17 years. **The mirror does not work** (strong close →
+  short: PF 0.5–0.8 in 2023–26) — it is buy-the-fear, not mean reversion. A VIX rise ≥ 8 % the day before is an alternative
+  trigger (PF 1.9, 13 tr/yr). Strong open: one check at 09:50, k 0.25–0.3 × ATR, hold to close, PF 1.2–1.3; **taking it only when
+  it agrees with the weak-day bias (no shorts on fear days) lifts PF to 1.44, 8/8 wf years positive.** Supertrend(14, 3–4) on
+  60/120m bars in RTH, exit on the flip, NO stop: PF 1.2–1.3, $470–740/yr, 10/17 years (any stop hurts it). Gap fade ≥ 0.75 ATR:
+  PF 1.2, era-unstable. Order-flow ORB (`ofo_ny5`): PF 1.30 in-sample 2023–26, 2023 negative — unchanged from 10-14.
+- **Trend-day pullback study (`study.py`, same scratchpad): 19 trend-day definitions (move ≥ 0.2/0.3/0.4 ATR at 09:50/10:30/
+  11:00; efficiency ≥ 0.6/0.75; range ≥ 0.5/0.7 ATR; one side of VWAP) × 8 pullback definitions (0.1/0.2/0.3 ATR off the running
+  extreme, 38/50/62 % of the leg, VWAP touch, 5m EMA20 touch) + market-at-detection × limit/resume × stop 0.25/0.125 ATR × 2R/hold/
+  back-to-extreme × 1/3 trades = 3,876 variants, plus the same grid twice with the trend-day DIRECTION randomised per day.**
+  Verdict: dead. Best real cell by walk-forward +0.35 R/trade (move 0.4 @09:50, 0.1-ATR limit, hold; 163 trades) against a best
+  randomised cell of +0.27 R (same cell shape, 287 trades) — the grid's maximum is inside what no information produces. Every top
+  real cell has NEGATIVE neighbours (mean of its 12 sub-variants −0.06 to −0.10 R) and is negative in 2010–18. Per regime (2019–26)
+  the mean over all pullback variants is ≈ 0 or below while the mean of market-at-detection variants is +0.15 R for `move 0.3
+  @09:50`; the pullback "best" beats the market "best" only because it has 8× more cells to pick from. In-sample 2019–26 the real
+  grid is shifted right of the control (mean −0.03 vs −0.07 R, 31 % vs 20 % of variants positive): the 09:50 direction carries
+  information, pullback mechanics mostly destroy it. Later detection (10:30/11:00, efficiency, range, VWAP-side) is weaker than
+  09:50 in every form. Visual summary published as the "NQ Strategy Evidence" artifact.
+- **Regime scan (`regimes.py` / `regimes2.py`): 24 pre-09:50 features — opening / first-5-min / overnight / prior-day volume,
+  prior-day range, gap, overnight range and move, VIX level and change, realised vol 5/20, ATR14/ATR50, SMA20/50 position,
+  09:30–35 range, prior-day efficiency and IBS, ES agreement, opening aggressor share, open outside prior range, weekday,
+  turn of month — each cut in thirds and scored by the 09:50 momentum trade's R on signal days (2019–26), against a 300-shuffle
+  permutation ceiling.** Two beat it: prior-day efficiency LOW (a balance day yesterday: +0.66 / +0.43 R in 2019–22 / 2023–26 vs
+  +0.05 / +0.23 after a trend day; same best bucket in all three eras; p = 0.017) and the first 3 trading days of the month
+  (+0.55 / +0.59 vs +0.20 / +0.07; p = 0.047) — about one of 24 would pass by chance, so the efficiency finding is a candidate
+  for a paper variant, not a rule. Volume in every form, VIX level, realised vol, ES, weekday: p ≥ 0.28. Low opening volume halves
+  the number of signal days (14 % vs 44 %) and does not improve them beyond noise. No regime makes small-move days worth
+  following (every-day follow ≤ +0.17 R in its best bucket, +0.04 overall).
+- **General settings + significance (`robust.py`, `zscores.py`):** each setting scored by the mean PF of its one-step
+  neighbours, cells pooled over sub-variants. Weak day: the whole ibs 0.2–0.4 × VIX 20–28 region is PF 1.4–2.6 (100 % of 184
+  variants PF > 1); general setting **ibs ≤ 0.3, VIX ≥ 20, buy 09:45, sell 15:55** (t 2.5 all years, 2.4 in 2019–26, yearly t 2.1,
+  year-bootstrap P(≤0) 0.0 %, PF 1.56, 13/16 yrs). Strong open: k 0.3–0.5 × stop 0.2–0.3 all PF > 1.2 at 09:50; the PF peak
+  (k 0.5) has 162 trades in 16 years, too thin; general setting **k 0.3, stop 0.3 ATR, hold to 15:55, no shorts on fear days**
+  (t 3.5 in 2019–26, yearly t 2.4, bootstrap 0.2 %, PF 1.44, 10/17 yrs; over all years t 1.5 because 2010–18 is −1.3 at today's
+  cost). Supertrend: 60m×4 / 120m×3 no stop, t 2.3 / 1.9 per trade but yearly t 1.2 / 1.5 (money in a few years, bootstrap 9 / 4 %).
+  Turn of month t 1.9 recent, bootstrap 3 %. Cascade (t −2.9 all, 2010–18 −6.5) and gap fade (t 0.7) do not clear. All are
+  post-selection survivors of thousands of variants: only the weak day and the 2019–26 strong open stay convincing after a
+  selection haircut.
+- **The book (weak_day + SO-agree + supertrend60):** $44k/MNQ over 16 years, 10/17 years positive — but $42k of it is 2020–26,
+  yearly P&L correlations 0.4–0.7, and 2010–17 is flat to negative for all three. They are one bet on volatility regimes, not
+  three independent edges; size them as one.
+
+### Ops
+- The 10-14 Postgres lock pile-up recurred 2026-10-15 ~23:50 Cyprus: a dashboard live-trade export stuck in ClientWrite, the
+  paper_engine `ALTER TABLE paper_trades ADD COLUMN mae_pts` queued behind it, every later paper_trades INSERT / SELECT blocked
+  (fleet not recording for 35+ min at the time of writing). Fix is `pg_terminate_backend(<ClientWrite pid>)`; the session could
+  not run it (sandbox). The paper_engine should not issue DDL at startup while a reader can hold the table — move the migration
+  to `migrations/`.
+
+## 2026-10-15 (afternoon) — every-day momentum cascade on paper; direction, VWAP-band, prop-sizing and RL research
+
+### Added
+- `drive_late_last_min_atr` (`trend_strategy.hpp`, default −1 = off): replaces `drive_late_min_atr` on the LAST late
+  check; 0 = follow any non-zero move. Paper id `so_cascade_2r` = `so_k25_2r_late` + a 4th check at 12:00 that follows
+  the day's move → one trade on ~99% of days; `so_cascade_3r_s30` = the same with stop 0.3 ATR and 3R. 5 checks in `test_trend_strategy`. Off by default (golden unchanged).
+
+### Research (2010-07 … 2026-10 NQ 1m, today's cost/ATR; scripts in the session scratchpad)
+- **Cost caveat:** all figures below charge today's cost as a share of ATR in every year. At the real 2.41 pt per
+  trade the cascade is PF 1.07 over 2010–26, negative in 2010–18 (cost was 6 % of ATR then vs 1 % now), +$8–10/MNQ per
+  trade in 2019–26 — the edge only beats real costs since ~2019.
+- Cascade (09:50 k.25 → 10:30/11:00/11:30 k.3 → 12:00 any): 249 tr/yr, PF 1.16, +0.022 ATR (~$13/MNQ), all eras,
+  13/17 years; without the 12:00 step 169/yr PF 1.22, 15/17. The strong-open threshold was partly chosen in-sample.
+- Prop sizing: 25k ($1k DD) fits 1–2 MNQ (one NQ stop = $1,450); 1 NQ with 15–50 pt stops: targets give PF < 1, hold-to-
+  close has PF 1.2 but 11–33 % wins → 60–90 evals/yr. 50k Select Daily at 4 MNQ ≈ 11 payouts / $7.6k per account-year,
+  break-even eval fee ~$500. Copies multiply money, not timing (a payout in ~1 month of 3); mixing strategies with a
+  direction lock spreads timing slightly but cuts money ~⅔. Without a lock ~30 % of days would have opposite positions
+  across accounts (Tradeify FTA §6.7).
+- Direction signals (2023–26 order flow): VWAP side, VWAP ±SD bands, aggressor delta, book imbalance, 50-day trend and
+  votes — 42 tests, none beyond chance. VWAP SD-band fade over 2010–26 on 1m (72 cells) and 5m (120 cells): 2/72 and
+  0/120 positive in all eras; exits at VWAP always lose.
+- Cascade robustness: survives +3 pt extra slippage per trade (PF 1.08), gone at +5; 3R / hold-to-close and a 0.3 ATR
+  stop are a bit better (PF 1.16–1.19, 16/17 yrs at stop 0.3); thresholds chosen on 2010–18 hold on 2019–26 (all 45
+  cells positive out of sample, chosen cell +0.027 ATR); ES same rules PF 1.06 (≈0 in 2010–18); weak when VIX < 15.
+- RL: tabular Q-learning for daily size on a 50k (train 2010–18, test 2019–26): +$2.5k/yr vs fixed 4 MNQ +$7.3k; the
+  learned policy is noise — fixed sizing stays.
+
 ## 2026-10-15 — late strong open + looser day-weakness in the paper fleet (research r1)
 
 ### Added

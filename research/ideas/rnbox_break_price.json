@@ -1,0 +1,21 @@
+{
+ "id": "rnbox_break_price",
+ "name": "Break & hold (follow) at the 100-point band around the open — price only (reference)",
+ "why": "A first 5-minute close beyond the 100-point band around the open with aggressive flow behind it is real demand running the stops parked there; the triggered stops add fuel in the same direction. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes_all.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:35",
+  "to": "12:00",
+  "when": "((cl(5,1) > (floor(open/100)*100 + 100) && lag(5, cl(5,1)) <= (floor(open/100)*100 + 100)) || (cl(5,1) < (floor(open/100)*100) && lag(5, cl(5,1)) >= (floor(open/100)*100)))",
+  "dir": "(cl(5,1) > (floor(open/100)*100 + 100) && lag(5, cl(5,1)) <= (floor(open/100)*100 + 100)) - (cl(5,1) < (floor(open/100)*100) && lag(5, cl(5,1)) >= (floor(open/100)*100))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

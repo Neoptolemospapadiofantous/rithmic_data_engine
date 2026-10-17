@@ -1,0 +1,5 @@
+{"id":"weekend_gap_fade","name":"Fade the Sunday-open weekend gap into the Asia session",
+ "why":"The Sunday 18:00 open prices two days of news in a market with almost no liquidity; the first prints overshoot as stops and weekend hedges hit an empty book, and Asian liquidity providers fade them.",
+ "params":{"g":[0.15,0.25,0.4],"stopk":[0.3,0.5]},
+ "checks":[{"at":"18:15","when":"dow == 1 && !rollwin && abs(at(18,0) - pc) > g*atr","dir":"-sign(at(18,0) - pc)"}],
+ "stop":"stopk*atr","target":"0","flat":"03:00","min_trades":60}

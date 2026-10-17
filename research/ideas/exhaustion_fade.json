@@ -1,0 +1,28 @@
+{
+ "id": "exhaustion_fade",
+ "name": "Exhaustion fade: an extreme day's move faded from 14:00 to the close",
+ "why": "On extreme days late chasers and dealers' hedging rebalance into the close against the day's move. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_new_angles.md).",
+ "params": {
+  "m": [
+   1.0,
+   1.3
+  ],
+  "stopk": [
+   0.2,
+   0.3
+  ]
+ },
+ "checks": [
+  {
+   "at": "14:00",
+   "when": "abs(px - open) > m*atr",
+   "dir": "-sign(px - open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "1.5",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.992,
+ "control_seeds": 400
+}

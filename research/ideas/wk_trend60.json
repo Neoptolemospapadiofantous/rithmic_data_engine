@@ -1,0 +1,4 @@
+{"id":"wk_trend60","name":"Weak day (long) set, then a close beyond the last hour's range","why":"After a weak close dip buyers absorb the forced selling and the session bounces (weak-day long, no VIX). Donchian / Supertrend-style continuation in that direction. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"09:35","to":"14:00","when":"!rollwin && (pibs <= 0.3 || rsi2 <= 20) && ((1 > 0 && cl(5,1) > lag(5, hh(5,12))) || (1 < 0 && cl(5,1) < lag(5, ll(5,12))))","dir":"1"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

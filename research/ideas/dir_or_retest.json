@@ -1,0 +1,4 @@
+{"id":"dir_or_retest","name":"Direction set at 10:00, then a retest of the opening range","why":"The broken 15-minute opening range edge becomes support (resistance) on the retest. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_first.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"10:05","to":"14:00","when":"!rollwin && abs(at(10,0) - open) > 0.25 * atr && ((sign(at(10,0) - open) > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (sign(at(10,0) - open) < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15)))","dir":"sign(at(10,0) - open)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

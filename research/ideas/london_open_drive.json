@@ -1,0 +1,5 @@
+{"id":"london_open_drive","name":"London open drive: 03:20 move from the 03:00 open",
+ "why":"European cash open is the first deep liquidity of the day; European asset managers hedge US exposure in futures at their open.",
+ "params":{"k":[0.05,0.1,0.15],"stopk":[0.05,0.1,0.2],"rr":[1,2]},
+ "checks":[{"at":"03:20","when":"abs(px - at(3,0)) > k*atr","dir":"sign(px - at(3,0))"}],
+ "stop":"stopk*atr","target":"rr","flat":"08:25"}

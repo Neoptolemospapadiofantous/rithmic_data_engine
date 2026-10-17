@@ -1088,6 +1088,45 @@ TEST(levels_stop_never_widens) {
     ASSERT_NEAR(b.stop_price(), 19985.25, 1e-9);                     // sl_points 15 kept
 }
 
+// ── limit entries (entry_limit_ticks, 2026-10-16, paper only) ───────────────
+TEST(limit_entry_fills_only_when_traded_through) {
+    FakeStore store; OrbConfig c = make_cfg(); c.entry_limit_ticks = 1; c.entry_limit_secs = 60;
+    auto b = make_broker(store, c);
+    signal_buy(b, et_ts(10, 0), 20000.0);           // limit 19999.75
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));      // market tick: a market order would fill here
+    ASSERT(!b.in_position());
+    b.on_tick(tick(et_ts(10, 0, 5), 19999.75));     // touches the limit only — queue unknown, no fill
+    ASSERT(!b.in_position());
+    b.on_tick(tick(et_ts(10, 0, 9), 19999.50));     // trades through by a tick → filled AT the limit, no slippage
+    ASSERT(b.in_position());
+    ASSERT_NEAR(b.entry_price(), 19999.75, 1e-9);
+    ASSERT_NEAR(b.stop_price(), 19984.75, 1e-9);
+    ASSERT_EQ(b.limit_fills(), 1);
+}
+TEST(limit_entry_cancelled_after_timeout) {
+    FakeStore store; OrbConfig c = make_cfg(); c.entry_limit_ticks = 1; c.entry_limit_secs = 60;
+    auto b = make_broker(store, c);
+    signal_buy(b, et_ts(10, 0), 20000.0);
+    b.on_tick(tick(et_ts(10, 0, 30), 20002.0));     // runs away
+    ASSERT(!b.in_position() && b.has_pending_entry());
+    b.on_tick(tick(et_ts(10, 1, 1), 20003.0));      // 61 s → cancelled
+    ASSERT(!b.has_pending_entry());
+    b.on_tick(tick(et_ts(10, 1, 5), 19990.0));      // a later dip does not fill a cancelled order
+    ASSERT(!b.in_position());
+    ASSERT_EQ(b.limit_misses(), 1);
+    ASSERT_EQ(b.entries_today(), 0);                // a miss is not a trade
+}
+TEST(limit_entry_sell_side) {
+    FakeStore store; OrbConfig c = make_cfg(); c.entry_limit_ticks = 2;
+    auto b = make_broker(store, c);
+    b.on_tick(tick(et_ts(10, 0), 20000.0)); b.on_signal(OrbSignal::SELL, 20000.0, "t");   // limit 20000.50
+    b.on_tick(tick(et_ts(10, 0, 2), 20000.50));
+    ASSERT(!b.in_position());
+    b.on_tick(tick(et_ts(10, 0, 4), 20000.75));
+    ASSERT(b.in_position());
+    ASSERT_NEAR(b.entry_price(), 20000.50, 1e-9);
+}
+
 int main() {
     std::printf("paper_broker tests:\n");
     // tests self-register via static initializers

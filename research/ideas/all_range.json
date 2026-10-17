@@ -1,0 +1,4 @@
+{"id":"all_range","name":"All days: fade a failed poke outside the first-hour range (twin)","why":"Twin of nd_range on every day. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_no_direction_mr.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.15,0.25],"rr":[1,1.5]},
+ "scan":{"tf":5,"from":"10:35","to":"15:00","when":"!rollwin && ((hi(5,1) > rhi(60) && cl(5,1) < rhi(60)) || (lo(5,1) < rlo(60) && cl(5,1) > rlo(60)))","dir":"(lo(5,1) < rlo(60) && cl(5,1) > rlo(60)) - (hi(5,1) > rhi(60) && cl(5,1) < rhi(60))"},
+ "max_trades":1,"stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

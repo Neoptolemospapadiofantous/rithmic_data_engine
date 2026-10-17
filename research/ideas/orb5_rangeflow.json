@@ -1,0 +1,5 @@
+{"id":"orb5_rangeflow","name":"ORB 5, taken only when aggressor flow INSIDE the opening range agrees with the break",
+ "why":"Who was aggressive while the opening range formed is who absorbed the open auction's orders; a break in their direction is the range's own demand completing, a break against them is a stop run the range's buyers (sellers) take back. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_orb_order_flow.md, test 2).",
+ "params":{"f":[0,0.05],"stopk":[0.15,0.25],"rr":[2,3]},
+ "scan":{"tf":1,"from":"09:35","to":"11:30","when":"flow && (cl(1,1) > rhi(5) || cl(1,1) < rlo(5)) && ((cl(1,1) > rhi(5)) - (cl(1,1) < rlo(5))) * dwin(9,30,9,35) > f * vwin(9,30,9,35)","dir":"(cl(1,1) > rhi(5)) - (cl(1,1) < rlo(5))"},
+ "stop":"stopk*atr","target":"rr","flat":"15:55","from":"2023-03-01","to":"2026-03-19","train_months":6,"min_trades":60,"control_pct":0.99}

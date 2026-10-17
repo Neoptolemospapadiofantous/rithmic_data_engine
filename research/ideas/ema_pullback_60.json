@@ -1,0 +1,7 @@
+{"id":"ema_pullback_60","name":"60m EMA50 trend + 5m EMA9 pullback, NY 10:00-15:30",
+ "why":"Larger-timeframe trend followers buy dips to short averages in an uptrend (sell rips in a downtrend); the pullback is where their orders rest.",
+ "params":{"stopk":[0.1,0.2],"rr":[1,2,3]},
+ "scan":{"tf":5,"from":"10:00","to":"15:30",
+   "when":"(cl(60,1) > ema(60,50) && lo(5,1) <= ema(5,9) && cl(5,1) > ema(5,9)) || (cl(60,1) < ema(60,50) && hi(5,1) >= ema(5,9) && cl(5,1) < ema(5,9))",
+   "dir":"sign(cl(60,1) - ema(60,50))"},
+ "max_trades":3,"stop":"stopk*atr","target":"rr","flat":"15:55"}

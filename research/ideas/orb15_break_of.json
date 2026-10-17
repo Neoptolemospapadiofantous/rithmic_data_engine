@@ -1,0 +1,30 @@
+{
+ "id": "orb15_break_of",
+ "name": "Break & hold (follow) at the 15-minute opening range with order flow",
+ "why": "A first close beyond the 15-minute opening range with aggressive flow behind it is real demand running the stops parked there; the triggered stops add fuel in the same direction. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes.md).",
+ "params": {
+  "a": [
+   0.05,
+   0.15
+  ],
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:50",
+  "to": "12:00",
+  "when": "flow && ((cl(5,1) > rhi(15) && lag(5, cl(5,1)) <= rhi(15) && dsum(5,1) >= a*vsum(5,1)) || (cl(5,1) < rlo(15) && lag(5, cl(5,1)) >= rlo(15) && dsum(5,1) <= -a*vsum(5,1)))",
+  "dir": "(cl(5,1) > rhi(15) && lag(5, cl(5,1)) <= rhi(15) && dsum(5,1) >= a*vsum(5,1)) - (cl(5,1) < rlo(15) && lag(5, cl(5,1)) >= rlo(15) && dsum(5,1) <= -a*vsum(5,1))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "from": "2023-03-01",
+ "to": "2026-03-19",
+ "train_months": 6,
+ "min_trades": 60,
+ "control_pct": 0.99
+}

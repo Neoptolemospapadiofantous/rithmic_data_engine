@@ -1,0 +1,31 @@
+{
+  "id": "es_weak_day",
+  "name": "ES: weak-day long",
+  "why": "A weak close forces de-risking (vol-targeting funds, margin, stops); dealers and dip buyers absorb it and the next session mean-reverts, most in fearful (high VIX) regimes where forced selling overshoots. ES version, pre-registered 2026-10-17 (research/preregistered/2026-10-17_more_trades.md).",
+  "params": {
+    "x": [
+      0.2,
+      0.3,
+      0.5
+    ],
+    "v": [
+      0,
+      15,
+      20,
+      25
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:30",
+      "when": "pibs <= x && vix >= v",
+      "dir": "1"
+    }
+  ],
+  "stop": "0",
+  "target": "0",
+  "flat": "15:55",
+  "min_trades": 60,
+  "symbol": "ES",
+  "confirm": "NQ"
+}

@@ -1,0 +1,4 @@
+{"id":"dir_fib38","name":"Direction set at 10:00, then a 38% retracement that turns","why":"Trend traders buy a 38.2% retracement of the morning move once it turns back. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_first.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"10:05","to":"14:00","when":"!rollwin && abs(at(10,0) - open) > 0.25 * atr && ((sign(at(10,0) - open) > 0 && (hod - px) >= 0.382 * (hod - open) && px > open && cl(5,1) > op(5,1)) || (sign(at(10,0) - open) < 0 && (px - lod) >= 0.382 * (open - lod) && px < open && cl(5,1) < op(5,1)))","dir":"sign(at(10,0) - open)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

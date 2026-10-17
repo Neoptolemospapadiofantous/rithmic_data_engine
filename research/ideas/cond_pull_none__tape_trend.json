@@ -1,0 +1,34 @@
+{
+  "id": "cond_pull_none__tape_trend",
+  "name": "EMA pullback with the 60-minute trend — trending tape only (acr 1–5 min)",
+  "why": "Trend-followers add on pullbacks to their own moving averages when the higher timeframe agrees; the 5-minute EMA20 touch in a 60-minute uptrend is their re-entry. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_vwap_ema.md). Pre-registered 2026-10-16 (research/preregistered/2026-10-16_patterns_and_conditions.md, part C). Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "params": {
+    "stopk": [
+      0.15,
+      0.25
+    ],
+    "rr": [
+      2,
+      3
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "15:00",
+    "when": "((ema(5,20) > ema(5,50) && cl(60,1) > ema(60,20) && lo(5,1) <= ema(5,20) && cl(5,1) > ema(5,20)) || (ema(5,20) < ema(5,50) && cl(60,1) < ema(60,20) && hi(5,1) >= ema(5,20) && cl(5,1) < ema(5,20))) && acr(rt, 30) > 0",
+    "dir": "(ema(5,20) > ema(5,50) && cl(60,1) > ema(60,20) && lo(5,1) <= ema(5,20) && cl(5,1) > ema(5,20)) - (ema(5,20) < ema(5,50) && cl(60,1) < ema(60,20) && hi(5,1) >= ema(5,20) && cl(5,1) < ema(5,20))"
+  },
+  "stop": "stopk*atr",
+  "target": "rr",
+  "flat": "15:55",
+  "control_pct": 0.998,
+  "control_seeds": 400
+}

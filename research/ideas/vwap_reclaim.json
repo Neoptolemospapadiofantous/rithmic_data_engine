@@ -1,0 +1,27 @@
+{
+ "id": "vwap_reclaim",
+ "name": "VWAP reclaim: below VWAP for 30 minutes, then a 5-minute close back above",
+ "why": "A reclaim of VWAP after the market traded below it means the session's sellers have been absorbed at a discount to the day's average price; VWAP-benchmarked buyers now chase. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_vwap_ema.md).",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ],
+  "rr": [
+   1.5,
+   2
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:00",
+  "to": "15:00",
+  "when": "(lag(30, px < vwap) && lag(5, cl(5,1)) < lag(5, vwap) && cl(5,1) > vwap) || (lag(30, px > vwap) && lag(5, cl(5,1)) > lag(5, vwap) && cl(5,1) < vwap)",
+  "dir": "(lag(30, px < vwap) && lag(5, cl(5,1)) < lag(5, vwap) && cl(5,1) > vwap) - (lag(30, px > vwap) && lag(5, cl(5,1)) > lag(5, vwap) && cl(5,1) < vwap)"
+ },
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55",
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

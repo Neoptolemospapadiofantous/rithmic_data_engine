@@ -1,0 +1,4 @@
+{"id":"all_vwap","name":"All days: fade a close far from VWAP (twin)","why":"Twin of nd_vwap on every day. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_no_direction_mr.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"b":[1.5,2],"stopk":[0.15,0.25],"rr":[1]},
+ "scan":{"tf":5,"from":"10:35","to":"15:00","when":"!rollwin && vsd > 0 && abs(cl(5,1) - vwap) > b * vsd","dir":"-sign(cl(5,1) - vwap)"},
+ "max_trades":1,"stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

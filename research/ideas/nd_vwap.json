@@ -1,0 +1,4 @@
+{"id":"nd_vwap","name":"No-direction day: fade a close far from VWAP","why":"On a balancing day price oscillates around VWAP; a stretch beyond b standard deviations snaps back. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_no_direction_mr.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"b":[1.5,2],"stopk":[0.15,0.25],"rr":[1]},
+ "scan":{"tf":5,"from":"10:35","to":"15:00","when":"!rollwin && abs(at(9,50) - open) <= 0.25 * atr && abs(at(10,30) - open) <= 0.3 * atr && !(vix >= 20 && (pibs <= 0.3 || rsi2 <= 20)) && vsd > 0 && abs(cl(5,1) - vwap) > b * vsd","dir":"-sign(cl(5,1) - vwap)"},
+ "max_trades":1,"stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

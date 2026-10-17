@@ -1,0 +1,23 @@
+{
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "control_pct": 0.997,
+ "control_seeds": 400,
+ "id": "pat_flag_casc",
+ "name": "pattern: flag (cascade direction)",
+ "why": "Flag after a strong first hour: the first hour's buyers rest in a tight range, then resume. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_patterns_and_conditions.md).",
+ "scan": {
+  "tf": 15,
+  "from": "11:00",
+  "to": "14:30",
+  "when": "(px - open > 0.25*atr && (at(10,30) - open > 0.5*atr && lag(15, hh(15,3) - ll(15,3)) < 0.25*atr && cl(15,1) > lag(15, hh(15,3)))) || (open - px > 0.25*atr && (open - at(10,30) > 0.5*atr && lag(15, hh(15,3) - ll(15,3)) < 0.25*atr && cl(15,1) < lag(15, ll(15,3))))",
+  "dir": "(px - open > 0.25*atr && (at(10,30) - open > 0.5*atr && lag(15, hh(15,3) - ll(15,3)) < 0.25*atr && cl(15,1) > lag(15, hh(15,3)))) - (open - px > 0.25*atr && (open - at(10,30) > 0.5*atr && lag(15, hh(15,3) - ll(15,3)) < 0.25*atr && cl(15,1) < lag(15, ll(15,3))))"
+ }
+}

@@ -1,0 +1,4 @@
+{"id":"null_parity_0945","expect":"fail","name":"Noise: odd / even point price at 09:45","why":"VALIDATION — a coin flip; a working pipeline must reject it","symbol":"NQ","confirm":"ES",
+ "params":{"stopk":[0.2,0.3],"rr":[1,2]},
+ "checks":[{"at":"09:45","when":"!rollwin","dir":"2 * (floor(px) - 2 * floor(px / 2)) - 1"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

@@ -1,0 +1,36 @@
+{
+  "id": "weak_day_long__tape_rev",
+  "name": "Weak close → buy the next open, hold to 15:55 — mean-reverting tape only (acr 1–5 min)",
+  "why": "A weak close forces de-risking (vol-targeting funds, margin, stops); dealers and dip buyers absorb it and the next session mean-reverts, most in fearful (high VIX) regimes where forced selling overshoots. Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "params": {
+    "x": [
+      0.2,
+      0.3,
+      0.5
+    ],
+    "v": [
+      0,
+      15,
+      20,
+      25
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:30",
+      "when": "(pibs <= x && vix >= v) && acr(rt, 30) < 0",
+      "dir": "1"
+    }
+  ],
+  "stop": "0",
+  "target": "0",
+  "flat": "15:55",
+  "min_trades": 60
+}

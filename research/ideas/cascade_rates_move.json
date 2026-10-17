@@ -1,0 +1,53 @@
+{
+ "id": "cascade_rates_move",
+ "name": "Cascade only after a ≥ 7 bp 10-year yield move",
+ "why": "A macro repricing day leaves rebalancing for the next session, so the open's direction is real flow. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_free_macro_filters.md).",
+ "params": {
+  "k1": [
+   0.2,
+   0.25,
+   0.3
+  ],
+  "k2": [
+   0.25,
+   0.3,
+   0.35
+  ],
+  "stopk": [
+   0.2,
+   0.25,
+   0.35
+  ],
+  "rr": [
+   2,
+   3
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "abs(y10c) >= 7 && (abs(px-open) > k1*atr)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "10:30",
+   "when": "abs(y10c) >= 7 && (abs(px-open) > k2*atr)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:00",
+   "when": "abs(y10c) >= 7 && (abs(px-open) > k2*atr)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:30",
+   "when": "abs(y10c) >= 7 && (abs(px-open) > k2*atr)",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55",
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

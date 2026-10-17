@@ -1,0 +1,2 @@
+{"id":"drift_long","expect":"fail_controls","name":"Drift: buy every day 09:30, sell 15:55","why":"VALIDATION — pure market drift; it makes money only because NQ rose, so it must fail the random-day control","symbol":"NQ","confirm":"ES",
+ "params":{"stopk":[0,0.5]},"checks":[{"at":"09:30","when":"!rollwin","dir":"1"}],"stop":"stopk*atr","target":"0","flat":"15:55","min_trades":100}

@@ -305,6 +305,7 @@ int main(int argc, char** argv) {
     bool event_day = db->calendar_event_day(cur_date);
     bool event_next = db->calendar_event_day(next_ymd(cur_date));
     bool fomc_next = db->calendar_fomc_day(next_ymd(cur_date));
+    bool fomc_today = db->calendar_fomc_day(cur_date);
     regime.set_atr(cur_date, db->session_atr14_before(feed_symbol, cur_date));
     LOG("[PAPER] Regime gate: date=%s prior ATR14=%.1f pts%s", cur_date.c_str(), regime.atr_pts,
         regime.atr_pts > 0.0 ? "" : " (none — regime-gated variants stay flat until session_stats has a row)");
@@ -515,7 +516,7 @@ int main(int argc, char** argv) {
             if (r->broker) r->broker->set_relative_costs(fleet.commission_pct, fleet.slippage_bps);
             else           r->bbroker->set_relative_costs(fleet.commission_pct, fleet.slippage_bps);
         }
-        if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
+        if (r->trend) { r->trend->set_event_day(event_day, fomc_today); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
         runners.push_back(std::move(r));
     }
 
@@ -685,7 +686,8 @@ int main(int argc, char** argv) {
             event_day = db->calendar_event_day(cur_date);
             event_next = db->calendar_event_day(next_ymd(cur_date));
             fomc_next = db->calendar_fomc_day(next_ymd(cur_date));
-            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
+            fomc_today = db->calendar_fomc_day(cur_date);
+            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day, fomc_today); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
             apply_vix(cur_date);
             if (event_day) LOG("[PAPER] %s is a scheduled-release day (calendar) — news_break event-only variants armed", cur_date.c_str());
             for (auto& r : runners) {
@@ -720,17 +722,17 @@ int main(int argc, char** argv) {
             if (d == warm_date) return;
             warm_date = d;
             regime.set_atr(d, db->session_atr14_before(feed_symbol, d));
-            const bool ed = db->calendar_event_day(d), en = db->calendar_event_day(next_ymd(d)), fn = db->calendar_fomc_day(next_ymd(d));
+            const bool ed = db->calendar_event_day(d), fd = db->calendar_fomc_day(d), en = db->calendar_event_day(next_ymd(d)), fn = db->calendar_fomc_day(next_ymd(d));
             for (auto& r : runners) {
                 r->s_reset();
-                if (r->trend) { r->trend->set_event_day(ed); r->trend->set_event_next_day(en, fn); r->trend->set_day_atr(regime.atr_pts); }
+                if (r->trend) { r->trend->set_event_day(ed, fd); r->trend->set_event_next_day(en, fn); r->trend->set_day_atr(regime.atr_pts); }
             }
         };
         auto end_warmup = [&](int64_t at_us) {
             warming_up = false;
             if (warm_date != cur_date) warm_roll_to(cur_date);   // no ticks yet today: sessions start fresh
             regime.set_atr(cur_date, db->session_atr14_before(feed_symbol, cur_date));
-            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
+            for (auto& r : runners) if (r->trend) { r->trend->set_event_day(event_day, fomc_today); r->trend->set_event_next_day(event_next, fomc_next); r->trend->set_day_atr(regime.atr_pts); }
             apply_vix(cur_date);
             int dropped = 0, released = 0, rehalted = 0;
             for (auto& r : runners) {

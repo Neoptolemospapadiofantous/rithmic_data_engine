@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 
 // ── helpers ────────────────────────────────────────────────────────
 
@@ -612,8 +613,29 @@ bool TickDB::bbo_unique_ok() {
     return ok;
 }
 
-int TickDB::write_bbo(const std::vector<BBORow>& rows) {
-    if (rows.empty()) return 0;
+int TickDB::write_bbo(const std::vector<BBORow>& in) {
+    if (in.empty()) return 0;
+
+    // Two updates at the same (symbol, exchange, ts_event) inside ONE statement make
+    // ON CONFLICT DO UPDATE fail the whole batch ("cannot affect row a second time"),
+    // and the WAL then retries that batch plus everything after it for ever (2026-10-12
+    // → 10-16: every BBO write failed, 348 MB held). Merge them here with the same rule
+    // the ON CONFLICT clause applies: a present side overwrites, an absent one keeps.
+    std::vector<BBORow> rows;
+    rows.reserve(in.size());
+    {
+        std::unordered_map<std::string, std::size_t> at;
+        at.reserve(in.size() * 2);
+        for (const auto& r : in) {
+            std::string key = r.symbol;
+            key += '\x1f'; key += r.exchange; key += '\x1f'; key += std::to_string(r.ts_micros);
+            auto [it, fresh] = at.emplace(std::move(key), rows.size());
+            if (fresh) { rows.push_back(r); continue; }
+            BBORow& m = rows[it->second];
+            if (r.bid_price) { m.bid_price = r.bid_price; m.bid_size = r.bid_size; m.bid_orders = r.bid_orders; }
+            if (r.ask_price) { m.ask_price = r.ask_price; m.ask_size = r.ask_size; m.ask_orders = r.ask_orders; }
+        }
+    }
 
     const std::size_t N = rows.size();
     std::string ts_arr, sym_arr, exch_arr;

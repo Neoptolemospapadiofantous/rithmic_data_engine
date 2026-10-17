@@ -1,0 +1,4 @@
+{"id":"nd_range","name":"No-direction day: fade a failed poke outside the first-hour range","why":"On a balancing day the first-hour range holds; a poke outside it that closes back in is trapped breakout traders. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_no_direction_mr.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.15,0.25],"rr":[1,1.5]},
+ "scan":{"tf":5,"from":"10:35","to":"15:00","when":"!rollwin && abs(at(9,50) - open) <= 0.25 * atr && abs(at(10,30) - open) <= 0.3 * atr && !(vix >= 20 && (pibs <= 0.3 || rsi2 <= 20)) && ((hi(5,1) > rhi(60) && cl(5,1) < rhi(60)) || (lo(5,1) < rlo(60) && cl(5,1) > rlo(60)))","dir":"(lo(5,1) < rlo(60) && cl(5,1) > rlo(60)) - (hi(5,1) > rhi(60) && cl(5,1) < rhi(60))"},
+ "max_trades":1,"stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

@@ -1,0 +1,5 @@
+{"id":"vwap_follow","name":"VWAP band break (5m, ±b SD) — follow",
+ "why":"A day that runs beyond its VWAP bands is a one-sided day: benchmarked algos chasing a moving VWAP keep buying/selling with it.",
+ "params":{"b":[1.5,2,2.5,3],"stopk":[0.1,0.2],"rr":[1,2,3]},
+ "scan":{"tf":5,"from":"10:00","to":"15:00","when":"vsd > 0 && abs(px - vwap) > b*vsd","dir":"sign(px - vwap)"},
+ "max_trades":2,"stop":"stopk*atr","target":"rr","flat":"15:55"}

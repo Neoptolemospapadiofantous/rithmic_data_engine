@@ -1,0 +1,5 @@
+{"id":"overnight_trend_open","name":"Overnight trend continues at the cash open",
+ "why":"A one-directional overnight (Asia + Europe pushing the same way) reflects global institutions repositioning; US real money joins at 09:30 in the same direction.",
+ "params":{"x":[0.3,0.5,0.75],"stopk":[0.2,0.35],"rr":[2,0]},
+ "checks":[{"at":"09:31","when":"!rollwin && abs(open - pc) >= x*atr && (onh - onl) > 0 && abs(open - pc) >= 0.7*(onh - onl)","dir":"sign(open - pc)"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":60}

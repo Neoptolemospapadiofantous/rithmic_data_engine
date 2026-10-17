@@ -1,0 +1,5 @@
+{"id":"midday_break","name":"Midday trend day: 12:00 big move from the open, hold to close",
+ "why":"A day that is already far from its open by noon is a trend day; trend days close near their extreme because trapped counter-trend traders and end-of-day hedging (dealers, leveraged ETFs) push the same way.",
+ "params":{"k":[0.3,0.4,0.5,0.6,0.8],"stopk":[0.3,0.5,0.75]},
+ "checks":[{"at":"12:00","when":"abs(px-open) > k*atr","dir":"sign(px-open)"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55"}

@@ -1,0 +1,34 @@
+{
+  "id": "ema_cross_vwap__tape_trend",
+  "name": "5-minute EMA9/21 cross in the day's direction (with VWAP and the open) — trending tape only (acr 1–5 min)",
+  "why": "A short-term EMA cross only matters when the day's flow agrees — price above VWAP and the open means the session's buyers are in control and the cross is their continuation, not noise. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_vwap_ema.md). Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "params": {
+    "stopk": [
+      0.15,
+      0.25
+    ],
+    "rr": [
+      2,
+      3
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "15:00",
+    "when": "((ema(5,9) > ema(5,21) && lag(5, ema(5,9) <= ema(5,21)) && px > vwap && px > open) || (ema(5,9) < ema(5,21) && lag(5, ema(5,9) >= ema(5,21)) && px < vwap && px < open)) && acr(rt, 30) > 0",
+    "dir": "(ema(5,9) > ema(5,21) && lag(5, ema(5,9) <= ema(5,21)) && px > vwap && px > open) - (ema(5,9) < ema(5,21) && lag(5, ema(5,9) >= ema(5,21)) && px < vwap && px < open)"
+  },
+  "stop": "stopk*atr",
+  "target": "rr",
+  "flat": "15:55",
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

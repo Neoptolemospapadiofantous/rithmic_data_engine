@@ -1,0 +1,4 @@
+{"id":"wk_market","name":"Weak day (long) set, market entry at 09:35 (benchmark)","why":"After a weak close dip buyers absorb the forced selling and the session bounces (weak-day long, no VIX). The plain entry the patterns must beat. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"09:35","to":"09:35","when":"!rollwin && (pibs <= 0.3 || rsi2 <= 20) && (1)","dir":"1"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

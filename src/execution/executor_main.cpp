@@ -1683,6 +1683,10 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 "ours_consistent=%d",
                 broker_bal, broker_dpnl, net, (int)consistent);
         }
+        // Publish the exchange-reported account net for the hedge coordinator
+        // (live_account_net). tid=451 arrives on change, so this stays cheap.
+        if (db && db->is_connected() && !orb_cfg.dry_run)
+            db->write_account_net(net, broker_bal, broker_dpnl);
         if (!broker_loss_halted &&
             notif::broker_loss_breached(broker_dpnl, orb_cfg.daily_loss_limit)) {
             broker_loss_halted = true;
@@ -2493,7 +2497,7 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
     apply_market_hours(today);
     if constexpr (kTrend) {
         const bool ev = db && db->is_connected() && db->calendar_event_day(today);
-        strategy.set_event_day(ev);
+        strategy.set_event_day(ev, db && db->is_connected() && db->calendar_fomc_day(today));
         strategy.set_event_next_day(db && db->is_connected() && db->calendar_event_day(next_ymd_str(today)), db && db->is_connected() && db->calendar_fomc_day(next_ymd_str(today)));
         strategy.set_day_atr(regime.atr_pts);
         apply_vix(today);
@@ -2721,7 +2725,8 @@ asio::awaitable<void> run_executor(const OrbConfig& orb_cfg,
                 pos_write_counter = 0;
                 seed_regime_atr(today);
                 if constexpr (kTrend) {
-                    strategy.set_event_day(db && db->is_connected() && db->calendar_event_day(today));
+                    strategy.set_event_day(db && db->is_connected() && db->calendar_event_day(today),
+                                           db && db->is_connected() && db->calendar_fomc_day(today));
                     strategy.set_event_next_day(db && db->is_connected() && db->calendar_event_day(next_ymd_str(today)), db && db->is_connected() && db->calendar_fomc_day(next_ymd_str(today)));
                     strategy.set_day_atr(regime.atr_pts); apply_vix(today);
                 }
@@ -3992,9 +3997,9 @@ int main(int argc, char* argv[]) {
     {
         std::ifstream cf(config_path);
         const std::string text((std::istreambuf_iterator<char>(cf)), std::istreambuf_iterator<char>());
-        for (const char* k : {"\"lv_room_atr\"", "\"lv_near_atr\"", "\"lv_target\"", "\"lv_stop\"", "\"rb_stop_range\""})
+        for (const char* k : {"\"lv_room_atr\"", "\"lv_near_atr\"", "\"lv_target\"", "\"lv_stop\"", "\"rb_stop_range\"", "\"entry_limit_ticks\""})
             if (text.find(k) != std::string::npos) {
-                std::fprintf(stderr, "FATAL: config carries %s — level overlays / the range-side stop are paper-only (not implemented live)\n", k);
+                std::fprintf(stderr, "FATAL: config carries %s — level overlays / the range-side stop / limit entries are paper-only (not implemented live)\n", k);
                 return 2;
             }
     }

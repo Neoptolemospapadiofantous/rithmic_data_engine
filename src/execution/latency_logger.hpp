@@ -9,7 +9,9 @@
       - entry_price   : actual fill price
       - signal_price  : price at signal time (for slippage calc)
 
-    Slippage in ticks = |fill_price - signal_price| / NQ_TICK_SIZE
+    Slippage in ticks = |fill_price - signal_price| / NQ_TICK_SIZE   — UNSIGNED: a fill 4 ticks better counts like one
+                        4 ticks worse, so its average is NOT a cost (2026-10-16: live MNQ averaged 4.6 ticks here while
+                        the signed entry cost was ≈ 0). Signed costs: scripts/execution_costs.sh (from live_trades prices).
     Slippage in USD   = ticks × tick_value_  (instrument-specific, passed at construction)
     ═══════════════════════════════════════════════════════════════════════════ */
 #include "orb_config.hpp"
@@ -41,7 +43,7 @@ struct TradeLatency {
     // Computed fields (populated by LatencyLogger::finalize)
     int64_t signal_to_submit_us = 0;  // signal → wire (microseconds)
     int64_t submit_to_fill_ms   = 0;  // wire → fill  (milliseconds)
-    int     slippage_ticks      = 0;  // |fill - signal| in ticks
+    int     slippage_ticks      = 0;  // |fill - signal| in ticks (unsigned — see the header)
     double  slippage_usd        = 0.0;
     int     price_chase_ticks   = 0;  // |signal - orb_boundary| in ticks (how far past ORB we chased)
     int     true_slip_ticks     = 0;  // |fill - signal| in ticks (post-order market movement)

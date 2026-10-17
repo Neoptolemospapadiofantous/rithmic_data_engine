@@ -1,0 +1,42 @@
+{
+ "id": "opex_fade",
+ "name": "Options-expiry Friday: fade the move back toward the open",
+ "why": "Dealers who are long gamma into the 3rd-Friday expiry hedge against the move (buy dips, sell rips), pinning price near large strikes. Pre-registered research/preregistered/2026-10-16_confirm_gap.md.",
+ "params": {
+  "k": [
+   0.3,
+   0.5
+  ],
+  "stopk": [
+   0.25,
+   0.4
+  ],
+  "rr": [
+   1,
+   0
+  ]
+ },
+ "checks": [
+  {
+   "at": "11:00",
+   "when": "opex && abs(px-open) > k*atr",
+   "dir": "-sign(px-open)"
+  },
+  {
+   "at": "12:00",
+   "when": "opex && abs(px-open) > k*atr",
+   "dir": "-sign(px-open)"
+  },
+  {
+   "at": "13:00",
+   "when": "opex && abs(px-open) > k*atr",
+   "dir": "-sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55",
+ "min_trades": 40,
+ "control_pct": 0.983,
+ "control_seeds": 400
+}

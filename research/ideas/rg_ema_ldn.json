@@ -1,0 +1,4 @@
+{"id":"rg_ema_ldn","name":"London: trending tape → EMA pullback","why":"When the last hour's 1-minute tape trends (persisting regime), moves extend; an EMA pullback joins the trend. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_regime_switch.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.1,0.15],"th":[0,0.05]},
+ "scan":{"tf":5,"from":"03:00","to":"07:30","when":"!rollwin && acr(1,60) > th && ((ema(5,9) > ema(5,21) && lo(5,1) <= ema(5,9) && cl(5,1) > ema(5,9)) || (ema(5,9) < ema(5,21) && hi(5,1) >= ema(5,9) && cl(5,1) < ema(5,9)))","dir":"sign(ema(5,9) - ema(5,21))"},
+ "max_trades":1,"stop":"stopk*atr","target":"1.5","flat":"08:00","min_trades":100}

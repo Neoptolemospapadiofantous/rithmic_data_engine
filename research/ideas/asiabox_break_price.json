@@ -1,0 +1,21 @@
+{
+ "id": "asiabox_break_price",
+ "name": "Break & hold (follow) at the Asia range (20:00–03:00) — price only (reference)",
+ "why": "A first 5-minute close beyond the Asia range (20:00–03:00) with aggressive flow behind it is real demand running the stops parked there; the triggered stops add fuel in the same direction. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes_all.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "03:05",
+  "to": "11:30",
+  "when": "((cl(5,1) > whi(20,0,3,0) && lag(5, cl(5,1)) <= whi(20,0,3,0)) || (cl(5,1) < wlo(20,0,3,0) && lag(5, cl(5,1)) >= wlo(20,0,3,0)))",
+  "dir": "(cl(5,1) > whi(20,0,3,0) && lag(5, cl(5,1)) <= whi(20,0,3,0)) - (cl(5,1) < wlo(20,0,3,0) && lag(5, cl(5,1)) >= wlo(20,0,3,0))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

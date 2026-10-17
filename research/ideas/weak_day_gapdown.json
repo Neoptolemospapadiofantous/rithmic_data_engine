@@ -1,0 +1,31 @@
+{
+ "id": "weak_day_gapdown",
+ "name": "Weak-day long after a gap down",
+ "why": "A weak close forces de-risking (vol-targeting funds, margin, stops); dealers and dip buyers absorb it and the next session mean-reverts, most in fearful (high VIX) regimes where forced selling overshoots. A panic gap down extends the forced selling. Pre-registered research/preregistered/2026-10-16_round3.md.",
+ "params": {
+  "x": [
+   0.2,
+   0.3,
+   0.5
+  ],
+  "v": [
+   0,
+   15,
+   20,
+   25
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "!rollwin && gap <= -0.1 && (pibs <= x && vix >= v)",
+   "dir": "1"
+  }
+ ],
+ "stop": "0",
+ "target": "0",
+ "flat": "15:55",
+ "min_trades": 40,
+ "control_pct": 0.975,
+ "control_seeds": 400
+}

@@ -1,0 +1,5 @@
+{"id":"friday_derisk","name":"Friday afternoon de-risking (short 14:00 → 15:55 after an up week-day)",
+ "why":"Into the weekend leveraged traders reduce longs they do not want to carry through 65 hours of gap risk, adding supply on Friday afternoons, more after the market rose.",
+ "params":{"k":[-9,0,0.25],"stopk":[0.15,0.3,0]},
+ "checks":[{"at":"14:00","when":"dow == 5 && (px - open) > k*atr","dir":"-1"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":40}

@@ -290,6 +290,38 @@ static bool bbo_unique_index_exists() {
 // One-sided updates (absent side = nullopt → SQL NULL) must merge with
 // COALESCE so a bid-only and an ask-only update at the same ts_event
 // combine into a single two-sided row instead of clobbering each other.
+static void test_write_bbo_same_key_in_batch() {
+    // 2026-10-12 → 10-16 incident: two rows with the same (symbol, exchange, ts_event) in ONE
+    // batch made ON CONFLICT DO UPDATE reject the whole statement, and the WAL retried it for
+    // ever. write_bbo now merges them first (present side wins, absent side keeps).
+    if (!bbo_unique_index_exists())
+        throw SkipTest("idx_bbo_unique not present (required for merge-on-conflict)");
+    {
+        PGConnGuard g(g_connstr);
+        truncate_bbo_table(g.get());
+    }
+    TickDB db(g_connstr);
+    const int64_t ts = 1712000700'000000LL;
+    std::vector<BBORow> rows = {
+        {ts, 18499.75, 10, 3, std::nullopt, 0, 0, "NQ", "CME"},
+        {ts, std::nullopt, 0, 0, 18500.25, 8, 2, "NQ", "CME"},
+        {ts, 18500.00, 4, 1, std::nullopt, 0, 0, "NQ", "CME"},          // later bid wins
+        {ts + 1, 18500.00, 1, 1, 18500.25, 1, 1, "NQ", "CME"},
+    };
+    ASSERT_EQ(db.write_bbo(rows), 2);
+    PGresult* res = PQexec(db.conn(),
+        "SELECT bid_price, bid_size, ask_price, ask_size FROM bbo WHERE ts_event = to_timestamp(1712000700.0)");
+    ASSERT(res && PQresultStatus(res) == PGRES_TUPLES_OK);
+    ASSERT_EQ(PQntuples(res), 1);
+    const double bid = std::atof(PQgetvalue(res, 0, 0)), ask = std::atof(PQgetvalue(res, 0, 2));
+    const int bid_sz = std::atoi(PQgetvalue(res, 0, 1)), ask_sz = std::atoi(PQgetvalue(res, 0, 3));
+    PQclear(res);
+    ASSERT(bid == 18500.00);
+    ASSERT_EQ(bid_sz, 4);
+    ASSERT(ask == 18500.25);
+    ASSERT_EQ(ask_sz, 8);
+}
+
 static void test_write_bbo_null_side_merge() {
     if (!bbo_unique_index_exists())
         throw SkipTest("idx_bbo_unique not present (required for merge-on-conflict)");
@@ -639,6 +671,7 @@ int main() {
     RUN_TEST(write_bbo_empty_batch);
     RUN_TEST(write_bbo_dedup);
     RUN_TEST(write_bbo_null_side_merge);
+    RUN_TEST(write_bbo_same_key_in_batch);
 
     std::printf("\n--- DepthRow tests ---\n");
     RUN_TEST(write_depth_basic);

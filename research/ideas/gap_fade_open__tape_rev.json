@@ -1,0 +1,39 @@
+{
+  "id": "gap_fade_open__tape_rev",
+  "name": "Gap fade at the open toward the prior close — mean-reverting tape only (acr 1–5 min)",
+  "why": "Overnight gaps are made in thin markets; at the cash open the deeper book and arbitrageurs close part of the gap. Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "params": {
+    "g": [
+      0.15,
+      0.3,
+      0.5
+    ],
+    "stopk": [
+      0.2,
+      0.35,
+      0.5
+    ],
+    "rr": [
+      1,
+      2
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:30",
+      "when": "(!rollwin && abs(gap) >= g && abs(gap) <= 1.5) && acr(rt, 30) < 0",
+      "dir": "-sign(gap)"
+    }
+  ],
+  "stop": "stopk*atr",
+  "target": "rr",
+  "flat": "15:55",
+  "min_trades": 60
+}

@@ -1,0 +1,4 @@
+{"id":"null_bar1_1430","expect":"fail","name":"Noise: last 1-minute bar's direction at 14:30","why":"VALIDATION — a coin flip; a working pipeline must reject it","symbol":"NQ","confirm":"ES",
+ "params":{"stopk":[0.2,0.3],"rr":[1,2]},
+ "checks":[{"at":"14:30","when":"!rollwin && cl(1,1) != op(1,1)","dir":"sign(cl(1,1) - op(1,1))"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

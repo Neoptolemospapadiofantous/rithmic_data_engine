@@ -1,0 +1,5 @@
+{"id":"monday_fade","name":"Monday fade of a big Friday move",
+ "why":"Into the weekend traders cut risk in the direction of Friday's move (no one holds a losing position over the weekend); on Monday they re-establish and the move partly reverses.",
+ "params":{"x":[0.5,0.75,1.0],"stopk":[0.3,0.5,0]},
+ "checks":[{"at":"09:30","when":"dow == 1 && !rollwin && abs(pret) >= x","dir":"-sign(pret)"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":40}

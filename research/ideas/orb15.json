@@ -1,0 +1,6 @@
+{"id":"orb15","name":"ORB 15: first 1-minute close beyond the 15-minute opening range",
+ "why":"The first 15 minutes settle the overnight and opening-auction orders; a close beyond that range means one side's resting orders are used up, and the stops parked just beyond the range add fuel in the breakout direction. Narrow ranges leave more of the day's move ahead.",
+ "params":{"srng":[0,1],"stopk":[0.15,0.25],"w":[0.3,0.5,9],"rr":[1.5,2,3]},
+ "scan":{"tf":1,"from":"09:45","to":"11:30","when":"(rhi(15) - rlo(15)) <= w*atr && (cl(1,1) > rhi(15) || cl(1,1) < rlo(15))","dir":"(cl(1,1) > rhi(15)) - (cl(1,1) < rlo(15))"},
+ "stop":"srng * ((cl(1,1) > rhi(15)) * (px - rlo(15)) + (cl(1,1) < rlo(15)) * (rhi(15) - px)) + (1 - srng) * stopk * atr",
+ "target":"rr","flat":"15:55"}

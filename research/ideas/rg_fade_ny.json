@@ -1,0 +1,4 @@
+{"id":"rg_fade_ny","name":"New York: reverting tape → fade a VWAP stretch","why":"When the last hour's 1-minute tape mean-reverts, a stretch from VWAP snaps back. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_regime_switch.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.15,0.25],"th":[0,0.05]},
+ "scan":{"tf":5,"from":"10:00","to":"15:00","when":"!rollwin && acr(1,60) < -th && vsd > 0 && abs(cl(5,1) - vwap) > 1.5 * vsd","dir":"-sign(cl(5,1) - vwap)"},
+ "max_trades":1,"stop":"stopk*atr","target":"1.5","flat":"15:55","min_trades":100}

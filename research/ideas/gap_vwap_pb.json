@@ -1,0 +1,4 @@
+{"id":"gap_vwap_pb","name":"Gap direction set, then a VWAP pullback","why":"The overnight gap is repositioning that tends to continue into the cash session (gap-agree cascade). Add on a pullback to VWAP in that direction. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"09:35","to":"14:00","when":"!rollwin && abs(gap) >= 0.1 && ((sign(gap) > 0 && lo(5,1) <= vwap && cl(5,1) > vwap) || (sign(gap) < 0 && hi(5,1) >= vwap && cl(5,1) < vwap))","dir":"sign(gap)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

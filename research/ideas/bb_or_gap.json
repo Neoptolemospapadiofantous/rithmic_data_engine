@@ -1,0 +1,30 @@
+{
+  "id": "bb_or_gap",
+  "name": "Break → box → go: 15-minute opening range — only on the gap side",
+  "why": "Breakout traders who were right add after a pause; the pause candle (the box) holds liquidity just beyond the level, and its break shows the level has flipped. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_break_box.md). Gap-side follow-up, pre-registered 2026-10-17.",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "r": [
+      0.5,
+      0.75
+    ],
+    "rr": [
+      1.5,
+      2
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "09:45",
+    "to": "14:00",
+    "when": "abs(gap) >= 0.1 && ((cl(5,3) > rhi(15) && op(5,3) <= rhi(15) && lo(5,2) > rhi(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) - (cl(5,3) < rlo(15) && op(5,3) >= rlo(15) && hi(5,2) < rlo(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2))) * sign(gap) > 0 && (!rollwin && ((cl(5,3) > rhi(15) && op(5,3) <= rhi(15) && lo(5,2) > rhi(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) || (cl(5,3) < rlo(15) && op(5,3) >= rlo(15) && hi(5,2) < rlo(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2))))",
+    "dir": "(cl(5,3) > rhi(15) && op(5,3) <= rhi(15) && lo(5,2) > rhi(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) - (cl(5,3) < rlo(15) && op(5,3) >= rlo(15) && hi(5,2) < rlo(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2))"
+  },
+  "max_trades": 1,
+  "stop": "max(0.05 * atr, (cl(5,3) > rhi(15) && op(5,3) <= rhi(15) && lo(5,2) > rhi(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) * (px - lo(5,2)) + (cl(5,3) < rlo(15) && op(5,3) >= rlo(15) && hi(5,2) < rlo(15) && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2)) * (hi(5,2) - px) + 0.25)",
+  "target": "rr",
+  "flat": "15:55",
+  "min_trades": 100
+}

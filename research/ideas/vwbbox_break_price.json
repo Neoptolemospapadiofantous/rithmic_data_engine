@@ -1,0 +1,21 @@
+{
+ "id": "vwbbox_break_price",
+ "name": "Break & hold (follow) at VWAP ± 2 standard deviations — price only (reference)",
+ "why": "A first 5-minute close beyond VWAP ± 2 standard deviations with aggressive flow behind it is real demand running the stops parked there; the triggered stops add fuel in the same direction. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes_all.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:00",
+  "to": "12:00",
+  "when": "vsd > 0 && ((cl(5,1) > lag(5, vwap + 2*vsd) && lag(5, cl(5,1)) <= lag(5, vwap + 2*vsd)) || (cl(5,1) < lag(5, vwap - 2*vsd) && lag(5, cl(5,1)) >= lag(5, vwap - 2*vsd)))",
+  "dir": "(cl(5,1) > lag(5, vwap + 2*vsd) && lag(5, cl(5,1)) <= lag(5, vwap + 2*vsd)) - (cl(5,1) < lag(5, vwap - 2*vsd) && lag(5, cl(5,1)) >= lag(5, vwap - 2*vsd))"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

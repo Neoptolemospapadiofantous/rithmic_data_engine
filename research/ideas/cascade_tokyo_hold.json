@@ -1,0 +1,47 @@
+{
+ "id": "cascade_tokyo_hold",
+ "name": "Cascade at the Tokyo cash open, held to 03:00",
+ "why": "The session's opening flow (Asian desks and hedgers at the Globex / Tokyo open, European desks at the London open) is repositioning that takes more than 20 minutes; the open's direction carries, as it does in New York. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_cascade_all_sessions.md).",
+ "params": {
+  "k1": [
+   0.1,
+   0.15,
+   0.2
+  ],
+  "k2": [
+   0.15,
+   0.2
+  ],
+  "stopk": [
+   0.1,
+   0.15
+  ]
+ },
+ "checks": [
+  {
+   "at": "20:20",
+   "when": "abs(px - at(20,0)) > k1*atr",
+   "dir": "sign(px - at(20,0))"
+  },
+  {
+   "at": "20:50",
+   "when": "abs(px - at(20,0)) > k2*atr",
+   "dir": "sign(px - at(20,0))"
+  },
+  {
+   "at": "21:20",
+   "when": "abs(px - at(20,0)) > k2*atr",
+   "dir": "sign(px - at(20,0))"
+  },
+  {
+   "at": "21:50",
+   "when": "abs(px - at(20,0)) > k2*atr",
+   "dir": "sign(px - at(20,0))"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "03:00",
+ "control_pct": 0.993,
+ "control_seeds": 400
+}

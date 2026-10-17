@@ -1,0 +1,4 @@
+{"id":"wk_or_retest","name":"Weak day (long) set, then a retest of the opening range","why":"After a weak close dip buyers absorb the forced selling and the session bounces (weak-day long, no VIX). The 15-minute opening range edge holds on the retest. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"09:35","to":"14:00","when":"!rollwin && (pibs <= 0.3 || rsi2 <= 20) && ((1 > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (1 < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15)))","dir":"1"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}

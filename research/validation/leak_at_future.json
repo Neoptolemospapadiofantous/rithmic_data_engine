@@ -1,0 +1,4 @@
+{"id":"leak_at_future","expect":"noedge","name":"Look-ahead trap: the 15:50 price used at 10:00","why":"VALIDATION — at(15,50) is in the future at 10:00; the evaluator must return nothing (no trades) or the pipeline leaks","symbol":"NQ","confirm":"ES",
+ "params":{"stopk":[0.2,0.3],"rr":[1,2]},
+ "checks":[{"at":"10:00","when":"1","dir":"sign(at(15,50) - px)"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

@@ -135,6 +135,11 @@ struct OrbConfig {
     double      book_tp_min_pts   = 1.0;           // …only once at least this many points in profit (slippage + commission cover)
     int         book_size_agree   = 0;             // extra contracts when the book agrees with the entry
     int         fill_wait_secs    = 0;             // wait up to N s for spread ≤ 1 tick / microprice lean before filling
+    // Limit entry (2026-10-16, PAPER ONLY — the executor refuses it): rest a limit entry_limit_ticks better than the
+    // last trade at the signal; it fills at the limit only when a later tick trades THROUGH it (at least one tick
+    // past — queue-position conservative), else it is cancelled after entry_limit_secs and the signal is not traded.
+    int         entry_limit_ticks = 0;
+    int         entry_limit_secs  = 60;
     // Fixed take-profit (2026-09-28): the first exit that is neither a stop, a trail nor the
     // window end. tp_points wins when set; else tp_r × sl_points. 0 = off (every existing
     // strategy). Paper fills at the target (limit-like); live flattens at market on the touch.

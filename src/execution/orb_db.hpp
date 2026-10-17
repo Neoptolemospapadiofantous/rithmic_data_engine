@@ -14,6 +14,7 @@
 #include "orb_strategy.hpp"
 #include "log.hpp"
 #include <libpq-fe.h>
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <stdexcept>
@@ -444,6 +445,39 @@ public:
                 20, params);
         } catch (std::exception& e) {
             LOG("[ORBDB] write_position failed: %s", e.what());
+        }
+    }
+
+    // ── Publish exchange-reported account net (tid=451) for the hedge coordinator ──
+    // Upserted on every AccountPnLPositionUpdate; hedge_coordinator reads the anchor
+    // account's row as its exposure feed. NaN balance/day_pnl → SQL NULL. Never throws.
+    void write_account_net(int net_qty, double balance, double day_pnl) {
+        if (!is_connected()) {
+            reconnect();
+            if (!is_connected()) return;
+        }
+        char nq[16], bal[32], dpnl[32];
+        snprintf(nq, sizeof(nq), "%d", net_qty);
+        const char* bal_param  = nullptr;
+        const char* dpnl_param = nullptr;
+        if (!std::isnan(balance)) { snprintf(bal,  sizeof(bal),  "%.4f", balance);  bal_param  = bal; }
+        if (!std::isnan(day_pnl)) { snprintf(dpnl, sizeof(dpnl), "%.4f", day_pnl);  dpnl_param = dpnl; }
+        const char* params[4] = {
+            account_label_.c_str(),  // $1
+            nq,                      // $2
+            bal_param,               // $3
+            dpnl_param               // $4
+        };
+        try {
+            exec_params(
+                "INSERT INTO live_account_net (account_label, net_qty, balance, day_pnl, updated_at)"
+                " VALUES ($1, $2::int, $3::double precision, $4::double precision, NOW())"
+                " ON CONFLICT (account_label) DO UPDATE SET"
+                "  net_qty=EXCLUDED.net_qty, balance=EXCLUDED.balance,"
+                "  day_pnl=EXCLUDED.day_pnl, updated_at=NOW()",
+                4, params);
+        } catch (std::exception& e) {
+            LOG("[ORBDB] write_account_net failed: %s", e.what());
         }
     }
 
@@ -947,6 +981,17 @@ private:
         exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS legends_price   DOUBLE PRECISION");
         exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS be_triggered    BOOLEAN NOT NULL DEFAULT FALSE");
         exec("ALTER TABLE live_position ADD COLUMN IF NOT EXISTS trailing_active BOOLEAN NOT NULL DEFAULT FALSE");
+
+        // Exchange-reported net per account — the hedge coordinator's anchor feed.
+        exec(R"(
+            CREATE TABLE IF NOT EXISTS live_account_net (
+                account_label   TEXT PRIMARY KEY,
+                net_qty         INT NOT NULL DEFAULT 0,
+                balance         DOUBLE PRECISION,
+                day_pnl         DOUBLE PRECISION,
+                updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        )");
 
         // Drop old single-account unique index and recreate with account_label
         exec("DROP INDEX IF EXISTS live_position_inst_strat_idx");

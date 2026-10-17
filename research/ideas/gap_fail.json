@@ -1,0 +1,6 @@
+{"id":"gap_fail","name":"Failed gap: gap outside yesterday's range back inside by 10:30 → toward the prior close",
+ "why":"A gap that cannot hold outside the prior range traps the overnight buyers/sellers; their exit pushes price back toward the prior close where yesterday's positions sit.",
+ "params":{"g":[0.1,0.25,0.5],"stopk":[0.2,0.35,0.5],"rr":[1,2]},
+ "checks":[{"at":"10:00","when":"!rollwin && abs(gap) >= g && ((open > ph && px < ph) || (open < pl && px > pl))","dir":"(open < pl) - (open > ph)"},
+           {"at":"10:30","when":"!rollwin && abs(gap) >= g && ((open > ph && px < ph) || (open < pl && px > pl))","dir":"(open < pl) - (open > ph)"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":60}

@@ -1,0 +1,5 @@
+{"id":"on_overshoot_fade","name":"Fade a large Asia move at the European open (03:00 → 09:25)",
+ "why":"Asia-session liquidity is thin, so large overnight moves are often stops and hedging flow rather than information; European market makers absorb and reverse part of them before the US open.",
+ "params":{"k":[0.3,0.5,0.7],"stopk":[0.3,0.5]},
+ "checks":[{"at":"03:00","when":"abs(px - at(18,0)) > k*atr","dir":"-sign(px - at(18,0))"}],
+ "stop":"stopk*atr","target":"0","flat":"09:25","min_trades":100}

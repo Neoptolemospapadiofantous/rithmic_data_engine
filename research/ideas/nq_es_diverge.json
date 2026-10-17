@@ -1,0 +1,28 @@
+{
+ "id": "nq_es_diverge",
+ "name": "NQ vs ES divergence → trade NQ back toward ES",
+ "pair": "ES",
+ "why": "Index arbitrage and basket desks keep NQ and ES in line; when NQ's move from the open (in its own ATR) runs away from ES's, the spread trades pull it back. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_owned_data_ideas.md).",
+ "params": {
+  "z": [
+   0.3,
+   0.5
+  ],
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:00",
+  "to": "15:00",
+  "when": "!rollwin && abs((px - open)/atr - xs) > z",
+  "dir": "-sign((px - open)/atr - xs)"
+ },
+ "stop": "stopk*atr",
+ "target": "1.5",
+ "flat": "15:55",
+ "control_pct": 0.995,
+ "control_seeds": 400
+}

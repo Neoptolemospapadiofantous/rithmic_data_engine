@@ -1,0 +1,42 @@
+{
+  "id": "strong_open__tape_trend",
+  "name": "Strong open 09:50 (follow the first 20 minutes) — trending tape only (acr 1–5 min)",
+  "why": "A large move in the first 20 minutes is institutional order flow (overnight orders, fund rebalancing executed at the open, stops above/below overnight levels) that keeps executing through the morning; late traders and trapped fades add to it. Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "params": {
+    "k": [
+      0.2,
+      0.25,
+      0.3,
+      0.35
+    ],
+    "stopk": [
+      0.2,
+      0.25,
+      0.35
+    ],
+    "rr": [
+      1.5,
+      2,
+      3
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:50",
+      "when": "(abs(px - open) > k * atr) && acr(rt, 30) > 0",
+      "dir": "sign(px - open)"
+    }
+  ],
+  "stop": "stopk * atr",
+  "target": "rr",
+  "flat": "15:55"
+}

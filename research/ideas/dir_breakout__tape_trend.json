@@ -1,0 +1,33 @@
+{
+  "id": "dir_breakout__tape_trend",
+  "name": "Direction set at 10:00, then a new day extreme — trending tape only (acr 1–5 min)",
+  "why": "Continuation: a fresh high (low) after the morning confirms buyers (sellers) are still in control. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_first.md). Tape filter pre-registered 2026-10-17 (research/preregistered/2026-10-17_tape_filter_all.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "stopk": [
+      0.25,
+      0.35
+    ],
+    "rt": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:05",
+    "to": "14:00",
+    "when": "(!rollwin && abs(at(10,0) - open) > 0.25 * atr && ((sign(at(10,0) - open) > 0 && cl(5,1) > lag(5, hi_since(9,30))) || (sign(at(10,0) - open) < 0 && cl(5,1) < lag(5, lo_since(9,30))))) && acr(rt, 30) > 0",
+    "dir": "sign(at(10,0) - open)"
+  },
+  "max_trades": 1,
+  "stop": "stopk*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100
+}

@@ -1,0 +1,28 @@
+{
+ "id": "weak_day_ts",
+ "name": "Weak close + VIX term structure in backwardation → buy the open, hold to 15:55",
+ "why": "A weak close while near-term fear is priced above 3-month fear is forced de-risking at its most acute; dealers and dip buyers absorb it and the next session mean-reverts. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_vix_term_structure.md).",
+ "params": {
+  "x": [
+   0.3,
+   0.5
+  ],
+  "t": [
+   0.95,
+   1.0
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "pibs <= x && vts >= t",
+   "dir": "1"
+  }
+ ],
+ "stop": "0",
+ "target": "0",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

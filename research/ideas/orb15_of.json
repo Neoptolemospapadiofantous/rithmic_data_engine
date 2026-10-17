@@ -1,0 +1,5 @@
+{"id":"orb15_of","name":"ORB 15 with order flow: break taken only when RTH aggressor flow agrees",
+ "why":"A range break that aggressive buyers (sellers) are driving — net market orders since the open on the break's side — is real demand exhausting the other side's resting orders; a break against the flow is a stop run that resting liquidity absorbs and reverses.",
+ "params":{"f":[0.0,0.03,0.06],"stopk":[0.15,0.25],"rr":[2,3]},
+ "scan":{"tf":1,"from":"09:45","to":"11:30","when":"flow && cvol > 0 && (cl(1,1) > rhi(15) || cl(1,1) < rlo(15)) && ((cl(1,1) > rhi(15)) - (cl(1,1) < rlo(15))) * cdelta > f * cvol","dir":"(cl(1,1) > rhi(15)) - (cl(1,1) < rlo(15))"},
+ "stop":"stopk*atr","target":"rr","flat":"15:55","from":"2023-03-01","train_months":6,"min_trades":60}

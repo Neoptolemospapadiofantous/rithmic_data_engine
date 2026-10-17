@@ -1,0 +1,71 @@
+{
+ "id": "grid_cascade",
+ "name": "Cascade mega grid: thresholds × stop × target × break-even × partial",
+ "why": "Same institutional open flow as strong_open; on days the open is quiet the flow often starts later in the morning (European close, delayed program orders), so re-checking at 10:30-11:30 catches it. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_mega_grid.md).",
+ "params": {
+  "k1": [
+   0.15,
+   0.2,
+   0.25,
+   0.3,
+   0.35
+  ],
+  "k2": [
+   0.2,
+   0.25,
+   0.3,
+   0.35
+  ],
+  "stopk": [
+   0.15,
+   0.2,
+   0.25,
+   0.35,
+   0.5
+  ],
+  "rr": [
+   0,
+   1,
+   1.5,
+   2,
+   3,
+   4,
+   5
+  ],
+  "be": [
+   0,
+   1
+  ],
+  "pr": [
+   0,
+   1
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "abs(px-open) > k1*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "10:30",
+   "when": "abs(px-open) > k2*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:00",
+   "when": "abs(px-open) > k2*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:30",
+   "when": "abs(px-open) > k2*atr",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55",
+ "be_r": "be",
+ "partial_r": "pr"
+}

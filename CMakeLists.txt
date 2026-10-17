@@ -220,6 +220,22 @@ target_link_libraries(cancel_stops PRIVATE rithmic_lib)
 target_compile_definitions(cancel_stops PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
 target_compile_features(cancel_stops PRIVATE cxx_std_20)
 
+# ── Hedge coordinator ──────────────────────────────────────────────
+# Keeps hedge accounts at the mirror of their anchor accounts' net exposure
+# (hedge_pairs / hedge_status tables; dashboard Hedges page manages bindings).
+add_executable(hedge_coordinator src/hedge/hedge_main.cpp)
+target_include_directories(hedge_coordinator PRIVATE
+    src/
+    src/hedge/
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${Boost_INCLUDE_DIRS}
+    ${Protobuf_INCLUDE_DIRS}
+    ${PostgreSQL_INCLUDE_DIRS}
+)
+target_link_libraries(hedge_coordinator PRIVATE rithmic_lib)
+target_compile_definitions(hedge_coordinator PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(hedge_coordinator PRIVATE cxx_std_20)
+
 # ── Paper fleet engine ─────────────────────────────────────────────
 # Runs ~20 paper strategies against the live tick stream in PostgreSQL.
 # Never connects to Rithmic; only libpq + header-only strategy/risk code.
@@ -344,3 +360,17 @@ target_compile_features(audit_daemon PRIVATE cxx_std_20)
 # ── Install ────────────────────────────────────────────────────────
 install(TARGETS rithmic_engine DESTINATION bin)
 install(DIRECTORY certs/ DESTINATION share/rithmic_engine/certs)
+
+# ── edge_lab: idea → screen → walk-forward → controls → robustness → prop fit (research/README.md) ──
+# Header-only (nlohmann/json); reads data/edge_lab/cache exported by scripts/edge_lab.sh. No DB link.
+add_executable(edge_lab src/research/edge_lab_main.cpp)
+target_compile_features(edge_lab PRIVATE cxx_std_20)
+target_link_libraries(edge_lab PRIVATE pthread)
+
+add_executable(test_edge_lab tests/research/test_edge_lab.cpp)
+target_compile_features(test_edge_lab PRIVATE cxx_std_20)
+target_link_libraries(test_edge_lab PRIVATE pthread)
+
+# synthetic market with a planted edge — validates the pipeline end to end (scripts/edge_lab_validate.sh)
+add_executable(synth_market tests/research/synth_market.cpp)
+target_compile_features(synth_market PRIVATE cxx_std_20)

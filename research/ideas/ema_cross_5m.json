@@ -1,0 +1,5 @@
+{"id":"ema_cross_5m","name":"5m EMA fast/slow cross, NY 10:00-15:30",
+ "why":"Trend-following money (CTA-style intraday models) adds risk when short averages cross; if enough of it trades the same signal the cross is self-reinforcing.",
+ "params":{"f":[9,21],"sl":[21,50],"stopk":[0.1,0.2],"rr":[1,2,3]},
+ "scan":{"tf":5,"from":"10:00","to":"15:30","when":"(ema(5,f) > ema(5,sl)) != lag(5, ema(5,f) > ema(5,sl)) && f < sl","dir":"sign(ema(5,f) - ema(5,sl))"},
+ "max_trades":3,"stop":"stopk*atr","target":"rr","flat":"15:55"}

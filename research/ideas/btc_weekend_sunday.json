@@ -1,0 +1,30 @@
+{
+ "id": "btc_weekend_sunday",
+ "name": "Bitcoin's weekend move → NQ Sunday 18:00 open",
+ "pair": "BTCUSDT",
+ "why": "Bitcoin trades through the weekend while index futures are closed, so the weekend's risk mood is priced there first; the Monday NQ open has to catch up. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_owned_data_ideas.md).",
+ "params": {
+  "z": [
+   0.02,
+   0.04
+  ],
+  "stopk": [
+   0,
+   0.5
+  ]
+ },
+ "checks": [
+  {
+   "at": "18:00",
+   "when": "dow == 1 && abs(xr) > z",
+   "dir": "sign(xr)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0",
+ "flat": "09:25",
+ "from": "2020-01-06",
+ "min_trades": 60,
+ "control_pct": 0.995,
+ "control_seeds": 400
+}

@@ -1,0 +1,5 @@
+{"id":"highvix_vwap_fade","name":"High-VIX days: fade stretches away from VWAP",
+ "why":"In high-volatility regimes intraday moves are driven by de-risking flows that overshoot; dealers long gamma are paid to absorb them and pin price back toward the day's average. In calm regimes the same stretch is information and keeps going (vwap_fade fails on all days).",
+ "params":{"v":[22,27],"b":[2.0,2.5],"stopk":[0.15,0.25]},
+ "scan":{"tf":5,"from":"10:00","to":"15:00","when":"vix >= v && vsd > 0 && abs(cl(5,1) - vwap) > b*vsd","dir":"-sign(cl(5,1) - vwap)"},
+ "stop":"stopk*atr","target":"1.5","flat":"15:55","min_trades":100}

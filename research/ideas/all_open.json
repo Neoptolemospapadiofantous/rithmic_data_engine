@@ -1,0 +1,4 @@
+{"id":"all_open","name":"All days: fade a stretch away from the open (twin)","why":"Twin of nd_open on every day. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_no_direction_mr.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.15,0.25],"rr":[1,1.5]},
+ "scan":{"tf":5,"from":"10:35","to":"15:00","when":"!rollwin && abs(px - open) > 0.25 * atr","dir":"-sign(px - open)"},
+ "max_trades":1,"stop":"stopk*atr","target":"rr","flat":"15:55","min_trades":100}

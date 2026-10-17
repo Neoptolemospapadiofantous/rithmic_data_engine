@@ -1,0 +1,6 @@
+{"id":"monday_long_1100","name":"Monday long from 11:00 (11:00 -> 15:55)",
+ "why":"As monday_long; the behaviour map put two thirds of Monday's RTH gain after 11:00 (+8.0 bp vs +2.5 bp on other days, same hours), i.e. the re-risking is a steady afternoon bid, not an opening jump. Pre-registered; holdout 2025-01 on judged once.",
+ "symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0,0.5]},
+ "checks":[{"at":"11:00","when":"dow == 1 && !rollwin","dir":"1"}],
+ "stop":"stopk*atr","target":"0","flat":"15:55","min_trades":60}

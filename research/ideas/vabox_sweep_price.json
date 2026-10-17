@@ -1,0 +1,21 @@
+{
+ "id": "vabox_sweep_price",
+ "name": "Sweep & reclaim (fade) at yesterday's value area — price only (reference)",
+ "why": "Stops cluster just beyond yesterday's value area; aggressors who push through it and cannot hold beyond it (the 5-minute bar closes back inside) are trapped, and their exits plus the liquidity that absorbed them drive price back across the box. Pre-registered 2026-10-16 (research/preregistered/2026-10-16_liquidity_boxes_all.md). Reference run without the delta condition, 2010-26.",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:35",
+  "to": "12:00",
+  "when": "!rollwin && ((hi(5,1) > pvah && cl(5,1) < pvah) || (lo(5,1) < pval && cl(5,1) > pval))",
+  "dir": "(lo(5,1) < pval && cl(5,1) > pval) - (hi(5,1) > pvah && cl(5,1) < pvah)"
+ },
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55"
+}

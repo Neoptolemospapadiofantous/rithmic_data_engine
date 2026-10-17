@@ -198,6 +198,8 @@ struct FleetConfig {
         c.book_tp_min_pts    = json_dbl(p, "book_tp_min_pts",    c.book_tp_min_pts);
         c.book_size_agree    = json_int(p, "book_size_agree",    c.book_size_agree);
         c.fill_wait_secs     = json_int(p, "fill_wait_secs",     c.fill_wait_secs);
+        c.entry_limit_ticks  = json_int(p, "entry_limit_ticks",  c.entry_limit_ticks);
+        c.entry_limit_secs   = json_int(p, "entry_limit_secs",   c.entry_limit_secs);
         c.tp_points          = json_dbl(p, "tp_points",          c.tp_points);
         c.rvol_min           = json_dbl(p, "rvol_min",           c.rvol_min);
         c.rvol_max           = json_dbl(p, "rvol_max",           c.rvol_max);

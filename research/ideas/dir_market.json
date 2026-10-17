@@ -1,0 +1,4 @@
+{"id":"dir_market","name":"Direction set at 10:00, market entry (benchmark)","why":"A strong morning keeps going; this is the plain entry the fleet patterns must beat. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_first.md).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"10:05","to":"10:05","when":"!rollwin && abs(at(10,0) - open) > 0.25 * atr && (1)","dir":"sign(at(10,0) - open)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100}
