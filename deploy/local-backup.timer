@@ -1,0 +1,10 @@
+# local-backup.timer — every night 03:30 local, after pg-backup.timer (02:40) has written the night's dump.
+[Unit]
+Description=Nightly local backup to the second drive
+
+[Timer]
+OnCalendar=*-*-* 03:30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

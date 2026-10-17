@@ -38,6 +38,12 @@ jq -r --argjson now "$now_m" '
   # 3. gap retest armed, 09:45 (the 15-min opening range is known)
   (if $now >= 15 and $now < 20 and $hold == null and ($gor.side // null) != null and $sp.trade == null then
      ["gap", "NQ gap retest armed (09:45–13:55): \($gor.side | ascii_upcase) on a 5-min bar that touches \($gor.level.price // "the opening-range edge") and closes beyond it."] | @tsv else empty end),
+  # 4b. the momentum + 5-min EMA-20 setup (research/preregistered/2026-10-17_mtf_1m_dir_5m_entry.md; paper id mom_dir_30_ema20)
+  (if (.live.mom.setup // null) != null and .live.mom.allowed then
+     (.live.mom) as $m | ($m.setup.stop_pts) as $st | ([((600 / ($st * 2)) | floor), 10] | min | if . < 1 then 1 else . end) as $n
+     | (if $m.dir == "LONG" then 1 else -1 end) as $sd
+     | ["mom-\($m.setup.at)", "MOMENTUM + EMA-20 — NQ \($m.dir) at the \($m.setup.at) close ≈ \($m.setup.price). Stop \((($m.setup.price - $sd * $st) * 4 | round) / 4) (\($st) pts), \($n) MNQ for ~$600 risk; move to break-even at +\($st) pts, hold to 15:55. Max 3 a day, done after a loss. (Paper candidate, not a proven rule.)"] | @tsv
+   else empty end),
   # 4. the trade
   (if $sp != null and $sp.status == "TRADE NOW" and $sp.trade != null then
      ($sp.trade) as $t | mnq($t.stop_pts; $t.target_pts) as $n |

@@ -1,0 +1,9 @@
+[Unit]
+Description=Nightly copy of Postgres dumps, git bundles and owned market data to the second drive (scripts/local_backup.sh)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash -c '/home/theone/Desktop/rithmic_engine/scripts/local_backup.sh >> /home/theone/Desktop/rithmic_engine/data/logs/local_backup.log 2>&1'
+Nice=15
+IOSchedulingClass=idle

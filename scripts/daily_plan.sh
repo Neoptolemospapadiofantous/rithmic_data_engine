@@ -62,6 +62,9 @@ SELECT json_build_object(
   'rth_bars', (SELECT coalesce(json_agg(json_build_object('m', (extract(epoch FROM (minute AT TIME ZONE 'America/New_York')::time) / 60)::int - 570,
                  'o', open, 'h', high, 'l', low, 'c', close, 'v', volume, 'bv', buy_volume) ORDER BY minute), '[]')
                FROM bars_1m, w WHERE symbol = 'NQ' AND minute >= w.rth0 AND minute < w.rth0 + interval '390 minutes'),
+  'pre5', (SELECT coalesce(json_agg(c ORDER BY bk), '[]') FROM (
+           SELECT floor(extract(epoch FROM minute) / 300) AS bk, (array_agg(close ORDER BY minute DESC))[1] AS c
+           FROM bars_1m, w WHERE symbol = 'NQ' AND minute >= w.on0 AND minute < w.rth0 GROUP BY 1) t5b),
   'pre2', (SELECT coalesce(json_agg(c ORDER BY bk), '[]') FROM (
            SELECT floor(extract(epoch FROM minute) / 120) AS bk, (array_agg(close ORDER BY minute DESC))[1] AS c
            FROM bars_1m, w WHERE symbol = 'NQ' AND minute >= w.on0 AND minute < w.rth0 GROUP BY 1) t5),
@@ -163,7 +166,7 @@ jq -r '"plan \(.date) (\(.stage), \(.generated_et) ET): " + ([.strategies[] | "\
 if [[ "$plan" == "$(TZ=America/New_York date +%F)" ]]; then now_m=$(( 10#$(TZ=America/New_York date +%H) * 60 + 10#$(TZ=America/New_York date +%M) - 570 )); else now_m=390; fi
 raw_now_m=$now_m
 (( now_m < 0 )) && now_m=0; (( now_m > 390 )) && now_m=390
-jq --argjson bars "$(jq -c '.rth_bars // []' <<<"$raw")" --argjson pre2 "$(jq -c '.pre2 // []' <<<"$raw")" --argjson now "$now_m" -f scripts/daily_plan_live.jq "$OUT/$plan.json" >"$OUT/$plan.json.tmp" \
+jq --argjson bars "$(jq -c '.rth_bars // []' <<<"$raw")" --argjson pre2 "$(jq -c '.pre2 // []' <<<"$raw")" --argjson pre5 "$(jq -c '.pre5 // []' <<<"$raw")" --argjson now "$now_m" -f scripts/daily_plan_live.jq "$OUT/$plan.json" >"$OUT/$plan.json.tmp" \
   && mv "$OUT/$plan.json.tmp" "$OUT/$plan.json" && cp "$OUT/$plan.json" "$OUT/latest.json" || echo "live section failed"
 # ── Telegram alerts for the hand-traded sprint (scripts/plan_alerts.sh), today's plan only, never for a replayed day
 if [[ "$plan" == "$(TZ=America/New_York date +%F)" ]]; then scripts/plan_alerts.sh "$OUT/$plan.json" "$raw_now_m" || true; fi
