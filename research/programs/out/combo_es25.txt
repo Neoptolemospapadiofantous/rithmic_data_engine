@@ -1,0 +1,31 @@
+2019-01 → 2026-10, 1785 sessions · NQ trade days 1471 · ES trade days 1361
+
+== select_flex_25k (eval: $1,500 target, $1,000 drawdown, 40 % consistency; funded: the plan's payout rules)
+  NQ only 1 MNQ                      trade days 82.4% (win 40.0%), $ 4022/yr at funded size | eval: pass 46.7%, blown 34.5%, days to pass median  45 (fastest 10% 17) | 1st payout median 17.4 wks, evals/yr  3.0, paid in the year $ 1895
+  NQ only 2 MNQ                      trade days 82.4% (win 40.0%), $ 8044/yr at funded size | eval: pass 42.7%, blown 53.3%, days to pass median  21 (fastest 10%  9) | 1st payout median 16.0 wks, evals/yr  7.8, paid in the year $ 2781
+  NQ only 3 MNQ                      trade days 82.4% (win 40.0%), $12066/yr at funded size | eval: pass 36.9%, blown 62.8%, days to pass median  18 (fastest 10%  7) | 1st payout median 17.0 wks, evals/yr 11.7, paid in the year $ 3495
+  NQ + ES 1 + 1                      trade days 89.3% (win 42.0%), $ 6022/yr at funded size | eval: pass 49.4%, blown 44.2%, days to pass median  34 (fastest 10% 12) | 1st payout median 16.2 wks, evals/yr  4.8, paid in the year $ 2568
+  NQ + ES 2 + 2                      trade days 89.3% (win 42.0%), $12044/yr at funded size | eval: pass 44.2%, blown 55.7%, days to pass median  20 (fastest 10%  8) | 1st payout median 17.0 wks, evals/yr 10.1, paid in the year $ 4000
+  NQ + ES 3 + 3                      trade days 89.3% (win 42.0%), $18066/yr at funded size | eval: pass 32.6%, blown 67.4%, days to pass median  16 (fastest 10%  7) | 1st payout median 16.0 wks, evals/yr 13.0, paid in the year $ 6539
+  NQ + ES 4 + 4 (eval) then 2 + 2    trade days 89.3% (win 42.0%), $12044/yr at funded size | eval: pass 27.1%, blown 72.9%, days to pass median  15 (fastest 10%  6) | 1st payout median 14.6 wks, evals/yr 16.6, paid in the year $ 4454
+  NQ + ES 5 + 5                      trade days 89.3% (win 42.0%), $30111/yr at funded size | eval: pass 25.4%, blown 74.6%, days to pass median  14 (fastest 10%  6) | 1st payout median 18.0 wks, evals/yr 18.7, paid in the year $ 6974
+
+== select_daily_25k (eval: $1,500 target, $1,000 drawdown, 40 % consistency; funded: the plan's payout rules)
+  NQ only 1 MNQ                      trade days 82.4% (win 40.0%), $ 4022/yr at funded size | eval: pass 46.7%, blown 34.5%, days to pass median  45 (fastest 10% 17) | 1st payout median 22.8 wks, evals/yr  2.8, paid in the year $ 1840
+  NQ only 2 MNQ                      trade days 82.4% (win 40.0%), $ 8044/yr at funded size | eval: pass 42.7%, blown 53.3%, days to pass median  21 (fastest 10%  9) | 1st payout median 20.4 wks, evals/yr  9.5, paid in the year $ 2644
+  NQ only 3 MNQ                      trade days 82.4% (win 40.0%), $12066/yr at funded size | eval: pass 36.9%, blown 62.8%, days to pass median  18 (fastest 10%  7) | 1st payout median 18.2 wks, evals/yr 14.5, paid in the year $ 2724
+  NQ + ES 1 + 1                      trade days 89.3% (win 42.0%), $ 6022/yr at funded size | eval: pass 49.4%, blown 44.2%, days to pass median  34 (fastest 10% 12) | 1st payout median 18.6 wks, evals/yr  5.0, paid in the year $ 2873
+  NQ + ES 2 + 2                      trade days 89.3% (win 42.0%), $12044/yr at funded size | eval: pass 44.2%, blown 55.7%, days to pass median  20 (fastest 10%  8) | 1st payout median 16.8 wks, evals/yr 10.7, paid in the year $ 5014
+  NQ + ES 3 + 3                      trade days 89.3% (win 42.0%), $18066/yr at funded size | eval: pass 32.6%, blown 67.4%, days to pass median  16 (fastest 10%  7) | 1st payout median 13.2 wks, evals/yr 14.0, paid in the year $ 7248
+  NQ + ES 4 + 4 (eval) then 2 + 2    trade days 89.3% (win 42.0%), $12044/yr at funded size | eval: pass 27.1%, blown 72.9%, days to pass median  15 (fastest 10%  6) | 1st payout median 16.4 wks, evals/yr 18.1, paid in the year $ 5093
+  NQ + ES 5 + 5                      trade days 89.3% (win 42.0%), $30111/yr at funded size | eval: pass 25.4%, blown 74.6%, days to pass median  14 (fastest 10%  6) | 1st payout median 13.2 wks, evals/yr 21.0, paid in the year $ 7303
+
+== growth_25k (eval: $1,500 target, $1,000 drawdown, 40 % consistency; funded: the plan's payout rules)
+  NQ only 1 MNQ                      trade days 82.4% (win 40.0%), $ 4022/yr at funded size | eval: pass 46.7%, blown 34.5%, days to pass median  44 (fastest 10% 17) | 1st payout median 24.2 wks, evals/yr  2.2, paid in the year $ 1381
+  NQ only 2 MNQ                      trade days 82.4% (win 40.0%), $ 8044/yr at funded size | eval: pass 45.5%, blown 50.6%, days to pass median  16 (fastest 10%  6) | 1st payout median 22.6 wks, evals/yr  7.7, paid in the year $ 1762
+  NQ only 3 MNQ                      trade days 82.4% (win 40.0%), $12066/yr at funded size | eval: pass 44.5%, blown 55.4%, days to pass median   9 (fastest 10%  3) | 1st payout median 26.6 wks, evals/yr 20.1, paid in the year $  950
+  NQ + ES 1 + 1                      trade days 89.3% (win 42.0%), $ 6022/yr at funded size | eval: pass 51.3%, blown 42.5%, days to pass median  29 (fastest 10% 10) | 1st payout median 20.0 wks, evals/yr  3.5, paid in the year $ 1926
+  NQ + ES 2 + 2                      trade days 89.3% (win 42.0%), $12044/yr at funded size | eval: pass 52.6%, blown 47.3%, days to pass median  12 (fastest 10%  4) | 1st payout median 24.8 wks, evals/yr  9.2, paid in the year $ 2225
+  NQ + ES 3 + 3                      trade days 89.3% (win 42.0%), $18066/yr at funded size | eval: pass 44.9%, blown 55.1%, days to pass median   6 (fastest 10%  2) | 1st payout median 20.6 wks, evals/yr 21.9, paid in the year $ 2052
+  NQ + ES 4 + 4 (eval) then 2 + 2    trade days 89.3% (win 42.0%), $12044/yr at funded size | eval: pass 40.1%, blown 59.9%, days to pass median   4 (fastest 10%  1) | 1st payout median 13.4 wks, evals/yr 11.5, paid in the year $ 3263
+  NQ + ES 5 + 5                      trade days 89.3% (win 42.0%), $30111/yr at funded size | eval: pass 37.6%, blown 62.4%, days to pass median   3 (fastest 10%  1) | 1st payout median 12.6 wks, evals/yr 65.7, paid in the year $  239

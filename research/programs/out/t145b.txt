@@ -1,0 +1,20 @@
+T1 cascade trades on order-flow days (2023-03 → 2026-03), NQ pts/trade after cost:
+  all +12.02 (n 535) · model takes +14.15 (n 371) · flow agrees +12.42 (n 475) · both +15.06 (n 329)
+
+== select_flex_25k, NQ, 2 micros per trade (day's trades merged, worst points together)
+  T5 today's plan: cascade + gap retest              trades/day 1.06 · trade days 82.4% (win 41.2%) · $ 13253/yr · eval pass 50.4% blown 49.4% · 1st payout 18.0 wks · paid/yr $ 3492 · evals/yr  8.3
+  T5 + box_go (3 entries)                            trades/day 1.11 · trade days 82.5% (win 41.2%) · $ 13585/yr · eval pass 49.0% blown 50.9% · 1st payout 18.2 wks · paid/yr $ 3475 · evals/yr  9.1
+  T5 + box_go, cascade only if the model takes it    trades/day 0.90 · trade days 66.2% (win 44.1%) · $ 12424/yr · eval pass 50.1% blown 48.7% · 1st payout 18.6 wks · paid/yr $ 4599 · evals/yr  6.9
+  T4 cap 1 trade a day                               trades/day 0.82 · trade days 82.5% (win 40.1%) · $  8069/yr · eval pass 41.8% blown 54.1% · 1st payout 16.4 wks · paid/yr $ 2713 · evals/yr  8.2
+  T4 cap 2 trades a day                              trades/day 1.07 · trade days 82.5% (win 41.2%) · $ 12628/yr · eval pass 48.7% blown 51.3% · 1st payout 17.6 wks · paid/yr $ 3720 · evals/yr  8.0
+  T4 stop after the first loss                       trades/day 1.09 · trade days 82.5% (win 40.6%) · $ 13156/yr · eval pass 49.7% blown 50.2% · 1st payout 17.6 wks · paid/yr $ 3309 · evals/yr  8.9
+  T4 cap 2 + stop after a loss                       trades/day 1.06 · trade days 82.5% (win 40.6%) · $ 12370/yr · eval pass 49.4% blown 50.1% · 1st payout 18.4 wks · paid/yr $ 3549 · evals/yr  7.8
+
+== select_daily_25k, NQ, 2 micros per trade (day's trades merged, worst points together)
+  T5 today's plan: cascade + gap retest              trades/day 1.06 · trade days 82.4% (win 41.2%) · $ 13253/yr · eval pass 50.4% blown 49.4% · 1st payout 17.6 wks · paid/yr $ 2628 · evals/yr  9.9
+  T5 + box_go (3 entries)                            trades/day 1.11 · trade days 82.5% (win 41.2%) · $ 13585/yr · eval pass 49.0% blown 50.9% · 1st payout 18.0 wks · paid/yr $ 2889 · evals/yr 10.4
+  T5 + box_go, cascade only if the model takes it    trades/day 0.90 · trade days 66.2% (win 44.1%) · $ 12424/yr · eval pass 50.1% blown 48.7% · 1st payout 18.0 wks · paid/yr $ 4012 · evals/yr  7.9
+  T4 cap 1 trade a day                               trades/day 0.82 · trade days 82.5% (win 40.1%) · $  8069/yr · eval pass 41.8% blown 54.1% · 1st payout 20.2 wks · paid/yr $ 2776 · evals/yr  9.3
+  T4 cap 2 trades a day                              trades/day 1.07 · trade days 82.5% (win 41.2%) · $ 12628/yr · eval pass 48.7% blown 51.3% · 1st payout 17.8 wks · paid/yr $ 2746 · evals/yr  9.8
+  T4 stop after the first loss                       trades/day 1.09 · trade days 82.5% (win 40.6%) · $ 13156/yr · eval pass 49.7% blown 50.2% · 1st payout 18.4 wks · paid/yr $ 3331 · evals/yr  9.6
+  T4 cap 2 + stop after a loss                       trades/day 1.06 · trade days 82.5% (win 40.6%) · $ 12370/yr · eval pass 49.4% blown 50.1% · 1st payout 18.4 wks · paid/yr $ 3197 · evals/yr  9.3

@@ -1,0 +1,117 @@
+
+######## New York — 19800 samples (6 decision times) — 4032 rules
+
+ BEST RULE — walk-forward 2013-24 (each year's rule chosen on 2011..year-1):
+  regime rules                        +2.63 pts/trade (n  1181)   eras -0.66 / +10.37 / +3.96
+  no-regime baseline (follow/fade @T)  +1.60 pts/trade (n  2527)   eras -0.36 / +4.59 / +1.33
+  shuffled readings: median +1.64, 95th +5.27 → real is at the 70th percentile
+  VERDICT: FAIL
+  rule picked each year:
+    2013  10:30 vix=low FOLLOW to flat +stop/2R                        →  -0.08 (n 196)
+    2014  10:30 on_range=low FOLLOW to flat                            →  -0.27 (n 101)
+    2015  10:30 acr60=high FOLLOW to flat +stop/2R                     →  +2.51 (n  70)
+    2016  10:30 acr60=high FOLLOW to flat +stop/2R                     →  -1.22 (n  91)
+    2017  10:30 vix=low FOLLOW to flat +stop/2R                        →  -0.19 (n 197)
+    2018  10:30 range_atr=low FOLLOW to flat +stop/2R                  →  -5.70 (n  83)
+    2019  11:30 sess_er=high FOLLOW to flat +stop/2R                   →  +0.03 (n  78)
+    2020  10:30 er5_30=high FOLLOW to flat +stop/2R                    →  +6.15 (n  81)
+    2021  10:00 gap_agree=high FOLLOW to flat +stop/2R                 → +12.23 (n  56)
+    2022  10:30 gap_agree=high FOLLOW to flat +stop/2R                 → +24.87 (n  72)
+    2023  10:30 gap_agree=high FOLLOW to flat +stop/2R                 →  +2.95 (n  69)
+    2024  10:30 vwap_side=high FOLLOW to flat +stop/2R                 →  +4.75 (n  87)
+  in-sample best on 2011-24: 10:30 gap_agree=high FOLLOW to flat +stop/2R; holdout 2025-26 of the rule(s) chosen on ≤2024: +1.47 (n 77)  [not a PASS — record only]
+
+ TOP-10 RULES — walk-forward 2013-24 (each year's rule chosen on 2011..year-1):
+  regime rules                        +3.34 pts/trade (n 10045)   eras -0.55 / +8.82 / +7.56
+  no-regime baseline (follow/fade @T)  +1.59 pts/trade (n 25262)   eras -0.37 / +2.79 / +4.88
+  shuffled readings: median +1.18, 95th +2.35 → real is at the 100th percentile
+  VERDICT: FAIL
+  in-sample best on 2011-24: 10:30 gap_agree=high FOLLOW to flat +stop/2R; holdout 2025-26 of the rule(s) chosen on ≤2024: +3.53 (n 934)  [not a PASS — record only]
+
+  in-sample top 8 (2011-24, the 'optimised' view — not tradable evidence):
+    10:30 gap_agree=high FOLLOW to flat +stop/2R                  +6.90 pts (n  923, t 4.1)
+    10:30 er5_60=high FOLLOW to flat +stop/2R                     +7.04 pts (n  893, t 4.0)
+    10:30 gap_agree=high FOLLOW 120m +stop/2R                     +5.23 pts (n  923, t 3.9)
+    10:30 sess_er=high FOLLOW to flat +stop/2R                    +6.81 pts (n  917, t 3.9)
+    10:30 vwap_side=high FOLLOW to flat +stop/2R                  +6.20 pts (n  962, t 3.7)
+    10:30 move_atr=high FOLLOW to flat +stop/2R                   +6.40 pts (n  924, t 3.7)
+    11:00 gap_agree=high FOLLOW to flat +stop/2R                  +5.90 pts (n  903, t 3.6)
+    10:00 sess_er=high FOLLOW 120m +stop/2R                       +5.64 pts (n  916, t 3.6)
+
+######## London — 13060 samples (4 decision times) — 2688 rules
+
+ BEST RULE — walk-forward 2013-24 (each year's rule chosen on 2011..year-1):
+  regime rules                        -0.50 pts/trade (n   755)   eras -1.07 / -0.74 / +40.06
+  no-regime baseline (follow/fade @T)  +0.70 pts/trade (n  2502)   eras -0.05 / +1.00 / +2.27
+  shuffled readings: median +0.41, 95th +1.00 → real is at the 0th percentile
+  VERDICT: FAIL
+  rule picked each year:
+    2013  04:00 vix=low FOLLOW to flat                                 →  -2.10 (n 189)
+    2014  05:00 vwap_side=mid FADE to flat                             →  -1.30 (n  65)
+    2015  06:00 vix=mid FADE to flat +stop/2R                          →  +1.91 (n  49)
+    2016  06:00 vix=mid FADE to flat +stop/2R                          →  -0.54 (n  68)
+    2017  06:00 vix=mid FADE to flat                                   →  +3.48 (n  13)
+    2018  06:00 vix=mid FADE to flat                                   →  -1.53 (n  70)
+    2019  06:00 gap_agree=high FADE to flat                            →  +2.24 (n  85)
+    2020  06:00 gap_agree=high FADE to flat                            →  -1.67 (n  69)
+    2021  06:00 vwap_side=high FADE to flat                            →  -3.26 (n  74)
+    2022  06:00 acr30=high FADE to flat                                →  -0.76 (n  65)
+    2023  06:00 vix=high FADE to flat                                  →  +3.25 (n   2)
+    2024  06:00 vix=high FADE to flat                                  → +52.33 (n   6)
+  in-sample best on 2011-24: 06:00 vix=high FADE to flat; holdout 2025-26 of the rule(s) chosen on ≤2024: +7.45 (n 121)  [not a PASS — record only]
+
+ TOP-10 RULES — walk-forward 2013-24 (each year's rule chosen on 2011..year-1):
+  regime rules                        +0.12 pts/trade (n  9065)   eras -0.41 / +0.54 / +1.50
+  no-regime baseline (follow/fade @T)  -0.23 pts/trade (n 25024)   eras -0.58 / -0.31 / +0.93
+  shuffled readings: median +0.54, 95th +1.25 → real is at the 15th percentile
+  VERDICT: FAIL
+  in-sample best on 2011-24: 06:00 vix=high FADE to flat; holdout 2025-26 of the rule(s) chosen on ≤2024: +6.51 (n 994)  [not a PASS — record only]
+
+  in-sample top 8 (2011-24, the 'optimised' view — not tradable evidence):
+    06:00 vix=high FADE to flat                                   +3.57 pts (n  803, t 3.0)
+    06:00 vix=high FADE 120m                                      +3.57 pts (n  803, t 3.0)
+    06:00 vix=high FADE to flat +stop/2R                          +2.80 pts (n  803, t 2.8)
+    06:00 vix=high FADE 120m +stop/2R                             +2.80 pts (n  803, t 2.8)
+    06:00 move_atr=high FADE to flat                              +2.38 pts (n  869, t 2.4)
+    06:00 move_atr=high FADE 120m                                 +2.38 pts (n  869, t 2.4)
+    06:00 gap_agree=high FADE 60m                                 +1.18 pts (n  890, t 2.3)
+    06:00 move_atr=high FADE 60m                                  +1.66 pts (n  869, t 2.3)
+
+######## Asia — 12907 samples (4 decision times) — 2688 rules
+
+ BEST RULE — walk-forward 2013-24 (each year's rule chosen on 2011..year-1):
+  regime rules                        -0.52 pts/trade (n   971)   eras -0.75 / +1.26 / -3.10
+  no-regime baseline (follow/fade @T)  -0.92 pts/trade (n  2482)   eras -1.16 / +2.74 / -7.57
+  shuffled readings: median -1.07, 95th +1.01 → real is at the 70th percentile
+  VERDICT: FAIL
+  rule picked each year:
+    2013  21:00 vix=low FADE to flat                                   →  -0.57 (n 189)
+    2014  21:00 er5_60=mid FADE to flat                                →  -2.26 (n  68)
+    2015  20:00 acr30=mid FADE to flat +stop/2R                        →  -0.82 (n  55)
+    2016  21:00 vix=high FOLLOW 120m                                   →  +2.95 (n  87)
+    2017  22:00 vix=high FOLLOW 120m                                   →  -2.12 (n   2)
+    2018  22:00 vix=high FOLLOW 120m                                   →  -2.75 (n 123)
+    2019  20:00 vwap_side=low FADE 120m                                →  -4.31 (n  74)
+    2020  20:00 acr60=mid FADE to flat                                 →  +5.21 (n  77)
+    2021  20:00 er5_60=mid FADE 120m                                   →  +4.73 (n  72)
+    2022  20:00 er5_60=mid FADE to flat                                →  -0.78 (n  70)
+    2023  22:00 move_atr=mid FADE 120m                                 →  -1.46 (n  85)
+    2024  21:00 acr60=low FADE to flat +stop/2R                        →  -5.12 (n  69)
+  in-sample best on 2011-24: 21:00 sess_er=mid FADE to flat +stop/2R; holdout 2025-26 of the rule(s) chosen on ≤2024: -11.74 (n 76)  [not a PASS — record only]
+
+ TOP-10 RULES — walk-forward 2013-24 (each year's rule chosen on 2011..year-1):
+  regime rules                        -0.97 pts/trade (n  9681)   eras -1.04 / -0.23 / -2.50
+  no-regime baseline (follow/fade @T)  -1.14 pts/trade (n 24835)   eras -0.97 / -0.12 / -3.66
+  shuffled readings: median -1.07, 95th -0.29 → real is at the 70th percentile
+  VERDICT: FAIL
+  in-sample best on 2011-24: 21:00 sess_er=mid FADE to flat +stop/2R; holdout 2025-26 of the rule(s) chosen on ≤2024: -2.43 (n 1002)  [not a PASS — record only]
+
+  in-sample top 8 (2011-24, the 'optimised' view — not tradable evidence):
+    21:00 sess_er=mid FADE to flat +stop/2R                       +1.46 pts (n  877, t 1.6)
+    21:00 er5_30=mid FADE to flat +stop/2R                        +1.45 pts (n  848, t 1.6)
+    21:00 move_atr=mid FADE to flat +stop/2R                      +1.39 pts (n  866, t 1.6)
+    21:00 acr60=low FADE to flat +stop/2R                         +1.24 pts (n  820, t 1.5)
+    22:00 move_atr=high FOLLOW 60m                                +0.83 pts (n  883, t 1.5)
+    22:00 move_atr=mid FADE 120m                                  +0.78 pts (n  865, t 1.3)
+    22:00 move_atr=high FOLLOW 120m +stop/2R                      +0.77 pts (n  883, t 1.3)
+    22:00 move_atr=high FOLLOW to flat                            +1.55 pts (n  883, t 1.3)

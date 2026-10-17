@@ -1,0 +1,201 @@
+{
+  "controls": {
+    "claimed": "dir + (time or day)",
+    "day_mean": 0.0,
+    "day_pct": 0.0,
+    "dir_mean": 0.0,
+    "dir_pct": 0.0,
+    "need_pct": 0.95,
+    "real_net": -402.87053571428567,
+    "seeds": 0,
+    "time_mean": 0.0,
+    "time_pct": 0.0
+  },
+  "corr": {},
+  "cost": 1.0,
+  "data": {
+    "from": "2025-01-01",
+    "symbol": "NQ",
+    "to": "2026-10-16"
+  },
+  "gates": [
+    {
+      "gate": "screen",
+      "pass": false,
+      "rule": "best variant with >= min_trades nets > 0 after cost"
+    },
+    {
+      "gate": "walk_forward",
+      "pass": false,
+      "rule": ">= 30 out-of-sample trades, net > 0, PF >= 1.05"
+    },
+    {
+      "gate": "controls",
+      "pass": false,
+      "rule": "beats random direction AND (random time or random day) in >= need_pct of seeds"
+    },
+    {
+      "gate": "robustness",
+      "pass": false,
+      "rule": ">= need of the checks, and the latest era positive"
+    },
+    {
+      "gate": "prop_fit",
+      "pass": false,
+      "rule": "break-even eval fee > prop_fee with payouts > 0"
+    }
+  ],
+  "id": "gap_market_holdout",
+  "name": "Gap direction set, market entry at 09:35 (benchmark)",
+  "oos": {
+    "avg_pts": -11.190848214285714,
+    "gross_pts": -10.190848214285715,
+    "months_positive_pct": 0.3333333333333333,
+    "months_positive_pct_2019": 0.3333333333333333,
+    "n": 36,
+    "pf": 0.8143602698104787,
+    "t": -0.5648323525806254,
+    "trades_per_year": 24.0,
+    "years": 1,
+    "years_positive": 0
+  },
+  "prop": [
+    {
+      "be_fee": 0.0,
+      "evals": 3,
+      "mnq": 2,
+      "paid": 0.0,
+      "passes": 0,
+      "payouts": 0,
+      "years": 0.1746031746031746
+    },
+    {
+      "be_fee": 0.0,
+      "evals": 5,
+      "mnq": 4,
+      "paid": 0.0,
+      "passes": 0,
+      "payouts": 0,
+      "years": 0.1746031746031746
+    },
+    {
+      "be_fee": 0.0,
+      "evals": 9,
+      "mnq": 6,
+      "paid": 0.0,
+      "passes": 2,
+      "payouts": 0,
+      "years": 0.1746031746031746
+    }
+  ],
+  "quick": true,
+  "robust": {
+    "checks": [
+      {
+        "detail": "no trades",
+        "name": "era 2010-18",
+        "ok": false,
+        "ran": false
+      },
+      {
+        "detail": "no trades",
+        "name": "era 2019-22",
+        "ok": false,
+        "ran": false
+      },
+      {
+        "detail": "-11.19 pts/trade, n 36",
+        "name": "era 2023-26",
+        "ok": false,
+        "ran": true
+      },
+      {
+        "detail": "-785 pts total",
+        "name": "cost × 1.5",
+        "ok": false,
+        "ran": true
+      },
+      {
+        "detail": "0% of 1",
+        "name": "plateau (variants net > 0)",
+        "ok": false,
+        "ran": true
+      }
+    ],
+    "eras": [
+      {
+        "avg_pts": null,
+        "era": "2010-18",
+        "n": 0
+      },
+      {
+        "avg_pts": null,
+        "era": "2019-22",
+        "n": 0
+      },
+      {
+        "avg_pts": -11.190848214285714,
+        "era": "2023-26",
+        "n": 36
+      }
+    ],
+    "need": 3,
+    "ok": 0,
+    "ran": 3,
+    "recent_ok": false
+  },
+  "screen": {
+    "best": "stopk=0.25",
+    "best_avg": -3.1359219269103,
+    "best_t": -0.39161887306817206,
+    "plateau": 0.0,
+    "t_needed": 1.959963984540054,
+    "variants": 1
+  },
+  "seconds": 0.612712275,
+  "spec": {
+    "confirm": "ES",
+    "flat": "15:55",
+    "from": "2025-01-01",
+    "id": "gap_market_holdout",
+    "max_trades": 1,
+    "min_trades": 10,
+    "name": "Gap direction set, market entry at 09:35 (benchmark)",
+    "params": {
+      "stopk": [
+        0.25
+      ]
+    },
+    "scan": {
+      "dir": "sign(gap)",
+      "from": "09:35",
+      "tf": 5,
+      "to": "09:35",
+      "when": "!rollwin && abs(gap) >= 0.1 && (1)"
+    },
+    "stop": "stopk*atr",
+    "symbol": "NQ",
+    "target": "2",
+    "why": "The overnight gap is repositioning that tends to continue into the cash session (gap-agree cascade). The plain entry the patterns must beat. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md)."
+  },
+  "spec_path": "/tmp/claude-1000/-home-theone-Desktop-rithmic-engine/d4ee09fb-64ce-4235-905d-6aad43c0129b/scratchpad/ho/gap_market_holdout.json",
+  "stage_reached": 0,
+  "verdict": "QUICK-LOOK",
+  "walk": {
+    "blind_net": -707.9866071428573,
+    "by_year": [
+      {
+        "n": 36,
+        "net_pts": -402.87053571428567,
+        "year": 2026
+      }
+    ],
+    "hindsight_net": -707.9866071428573,
+    "months_positive": 1,
+    "months_tested": 10,
+    "months_traded": 4,
+    "oos_net": -402.87053571428584,
+    "train_months": 12,
+    "win": 0.3055555555555556
+  }
+}

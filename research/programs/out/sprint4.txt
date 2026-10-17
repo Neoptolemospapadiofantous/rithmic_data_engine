@@ -1,0 +1,22 @@
+Sprint execution tests — Lightning 25K, $600 risk, target 0.5R, NQ 2019-2024
+  BASE (as on the Plan page)                   +0.036 R/trade (n 1149) | payout ≤7d  6.69%  ≤10d 12.83%  ≤20d 24.62%  blown ≤7d  33.6%
+1. late entry
+  enter 1 min late                             -0.000 R/trade (n 1149) | payout ≤7d  3.79%  ≤10d  7.24%  ≤20d 19.03%  blown ≤7d  34.8%
+  enter 2 min late                             +0.000 R/trade (n 1149) | payout ≤7d  4.34%  ≤10d  8.69%  ≤20d 19.45%  blown ≤7d  34.6%
+  enter 3 min late                             +0.001 R/trade (n 1149) | payout ≤7d  5.66%  ≤10d 10.48%  ≤20d 19.79%  blown ≤7d  36.6%
+  enter 5 min late                             -0.014 R/trade (n 1149) | payout ≤7d  3.03%  ≤10d  7.38%  ≤20d 21.72%  blown ≤7d  36.6%
+2. worse fill
+  fill 5 pts worse                             -0.079 R/trade (n 1149) | payout ≤7d  2.69%  ≤10d  5.17%  ≤20d 10.14%  blown ≤7d  48.1%
+  fill 10 pts worse                            -0.192 R/trade (n 1149) | payout ≤7d  1.59%  ≤10d  2.62%  ≤20d  5.24%  blown ≤7d  57.9%
+  fill 20 pts worse                            -0.401 R/trade (n 1149) | payout ≤7d  0.07%  ≤10d  0.28%  ≤20d  0.48%  blown ≤7d  74.6%
+3. missed signals (mean of 20 random seeds)
+  skip 10% of days at random                  +0.035 R/trade          | payout ≤7d  4.44%  ≤10d 10.10%  ≤20d 23.17%  blown ≤7d  29.6%
+  skip 20% of days at random                  +0.034 R/trade          | payout ≤7d  2.69%  ≤10d  7.91%  ≤20d 20.96%  blown ≤7d  26.2%
+  skip 30% of days at random                  +0.033 R/trade          | payout ≤7d  1.47%  ≤10d  5.66%  ≤20d 18.62%  blown ≤7d  22.6%
+  skip the day after a losing day              +0.019 R/trade (n  813) | payout ≤7d  5.38%  ≤10d  9.17%  ≤20d 18.28%  blown ≤7d  20.1%
+4. news days
+  skip CPI / PPI / NFP / FOMC days             +0.031 R/trade (n  981) | payout ≤7d  3.03%  ≤10d  9.38%  ≤20d 20.83%  blown ≤7d  27.2%
+5. break-even
+  break-even at +0.25R                         +0.041 R/trade (n 1149) | payout ≤7d  0.83%  ≤10d  4.00%  ≤20d 19.52%  blown ≤7d  16.6%
+6. second chance
+  after a stop-out, the next setup (≤ 2/day) +0.038 R/trade (n 1197) | payout ≤7d  6.69%  ≤10d 13.38%  ≤20d 26.14%  blown ≤7d  35.4%

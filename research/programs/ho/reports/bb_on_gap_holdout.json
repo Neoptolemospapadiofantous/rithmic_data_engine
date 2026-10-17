@@ -1,0 +1,198 @@
+{
+  "controls": {
+    "claimed": "dir + (time or day)",
+    "day_mean": 0.0,
+    "day_pct": 0.0,
+    "dir_mean": 0.0,
+    "dir_pct": 0.0,
+    "need_pct": 0.95,
+    "real_net": 0.0,
+    "seeds": 0,
+    "time_mean": 0.0,
+    "time_pct": 0.0
+  },
+  "corr": {},
+  "cost": 1.0,
+  "data": {
+    "from": "2025-01-01",
+    "symbol": "NQ",
+    "to": "2026-10-16"
+  },
+  "gates": [
+    {
+      "gate": "screen",
+      "pass": true,
+      "rule": "best variant with >= min_trades nets > 0 after cost"
+    },
+    {
+      "gate": "walk_forward",
+      "pass": false,
+      "rule": ">= 30 out-of-sample trades, net > 0, PF >= 1.05"
+    },
+    {
+      "gate": "controls",
+      "pass": false,
+      "rule": "beats random direction AND (random time or random day) in >= need_pct of seeds"
+    },
+    {
+      "gate": "robustness",
+      "pass": false,
+      "rule": ">= need of the checks, and the latest era positive"
+    },
+    {
+      "gate": "prop_fit",
+      "pass": false,
+      "rule": "break-even eval fee > prop_fee with payouts > 0"
+    }
+  ],
+  "id": "bb_on_gap_holdout",
+  "name": "Break → box → go: overnight high / low — only on the gap side",
+  "oos": {
+    "avg_pts": 0.0,
+    "gross_pts": 0.0,
+    "months_positive_pct": 0.0,
+    "months_positive_pct_2019": 0.0,
+    "n": 0,
+    "pf": 0.0,
+    "t": 0.0,
+    "trades_per_year": 0.0,
+    "years": 0,
+    "years_positive": 0
+  },
+  "prop": [
+    {
+      "be_fee": 0.0,
+      "evals": 0,
+      "mnq": 2,
+      "paid": 0.0,
+      "passes": 0,
+      "payouts": 0,
+      "years": 0.0
+    },
+    {
+      "be_fee": 0.0,
+      "evals": 0,
+      "mnq": 4,
+      "paid": 0.0,
+      "passes": 0,
+      "payouts": 0,
+      "years": 0.0
+    },
+    {
+      "be_fee": 0.0,
+      "evals": 0,
+      "mnq": 6,
+      "paid": 0.0,
+      "passes": 0,
+      "payouts": 0,
+      "years": 0.0
+    }
+  ],
+  "quick": true,
+  "robust": {
+    "checks": [
+      {
+        "detail": "no trades",
+        "name": "era 2010-18",
+        "ok": false,
+        "ran": false
+      },
+      {
+        "detail": "no trades",
+        "name": "era 2019-22",
+        "ok": false,
+        "ran": false
+      },
+      {
+        "detail": "no trades",
+        "name": "era 2023-26",
+        "ok": false,
+        "ran": false
+      },
+      {
+        "detail": "+0 pts total",
+        "name": "cost × 1.5",
+        "ok": false,
+        "ran": true
+      },
+      {
+        "detail": "100% of 1",
+        "name": "plateau (variants net > 0)",
+        "ok": true,
+        "ran": true
+      }
+    ],
+    "eras": [
+      {
+        "avg_pts": null,
+        "era": "2010-18",
+        "n": 0
+      },
+      {
+        "avg_pts": null,
+        "era": "2019-22",
+        "n": 0
+      },
+      {
+        "avg_pts": null,
+        "era": "2023-26",
+        "n": 0
+      }
+    ],
+    "need": 2,
+    "ok": 1,
+    "ran": 2,
+    "recent_ok": false
+  },
+  "screen": {
+    "best": "r=0.75 rr=2",
+    "best_avg": 8.01976461038961,
+    "best_t": 0.3991253292780906,
+    "plateau": 1.0,
+    "t_needed": 1.959963984540054,
+    "variants": 1
+  },
+  "seconds": 0.816642065,
+  "spec": {
+    "confirm": "ES",
+    "flat": "15:55",
+    "from": "2025-01-01",
+    "id": "bb_on_gap_holdout",
+    "max_trades": 1,
+    "min_trades": 5,
+    "name": "Break → box → go: overnight high / low — only on the gap side",
+    "params": {
+      "r": [
+        0.75
+      ],
+      "rr": [
+        2
+      ]
+    },
+    "scan": {
+      "dir": "(cl(5,3) > onh && op(5,3) <= onh && lo(5,2) > onh && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) - (cl(5,3) < onl && op(5,3) >= onl && hi(5,2) < onl && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2))",
+      "from": "09:45",
+      "tf": 5,
+      "to": "14:00",
+      "when": "abs(gap) >= 0.1 && ((cl(5,3) > onh && op(5,3) <= onh && lo(5,2) > onh && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) - (cl(5,3) < onl && op(5,3) >= onl && hi(5,2) < onl && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2))) * sign(gap) > 0 && (!rollwin && ((cl(5,3) > onh && op(5,3) <= onh && lo(5,2) > onh && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) || (cl(5,3) < onl && op(5,3) >= onl && hi(5,2) < onl && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2))))"
+    },
+    "stop": "max(0.05 * atr, (cl(5,3) > onh && op(5,3) <= onh && lo(5,2) > onh && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) > hi(5,2)) * (px - lo(5,2)) + (cl(5,3) < onl && op(5,3) >= onl && hi(5,2) < onl && (hi(5,2) - lo(5,2)) <= r * (hi(5,3) - lo(5,3)) && cl(5,1) < lo(5,2)) * (hi(5,2) - px) + 0.25)",
+    "symbol": "NQ",
+    "target": "rr",
+    "why": "Breakout traders who were right add after a pause; the pause candle (the box) holds liquidity just beyond the level, and its break shows the level has flipped. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_break_box.md). Gap-side follow-up, pre-registered 2026-10-17."
+  },
+  "spec_path": "/tmp/claude-1000/-home-theone-Desktop-rithmic-engine/d4ee09fb-64ce-4235-905d-6aad43c0129b/scratchpad/ho/bb_on_gap_holdout.json",
+  "stage_reached": 1,
+  "verdict": "QUICK-LOOK",
+  "walk": {
+    "blind_net": 0.0,
+    "by_year": [],
+    "hindsight_net": 0.0,
+    "months_positive": 0,
+    "months_tested": 0,
+    "months_traded": 0,
+    "oos_net": 0.0,
+    "train_months": 12,
+    "win": 0.0
+  }
+}

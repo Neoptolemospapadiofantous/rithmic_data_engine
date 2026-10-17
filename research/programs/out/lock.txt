@@ -1,0 +1,64 @@
+
+== select_daily_25k · NQ only (lock exact) · 2 micros per market
+  lock none   days locked  0.0% · $  8044/yr · eval pass 42.7% blown 53.3% (median  21 days) · 1st payout 20.4 wks · paid/yr $ 2644 · evals/yr  9.5
+  lock $100   days locked 54.3% · $  1521/yr · eval pass 39.1% blown 48.0% (median  59 days) · 1st payout 31.0 wks · paid/yr $  581 · evals/yr  4.9
+  lock $150   days locked 45.9% · $  2692/yr · eval pass 36.3% blown 57.7% (median  41 days) · 1st payout 29.0 wks · paid/yr $  771 · evals/yr  5.2
+  lock $200   days locked 38.3% · $  2744/yr · eval pass 40.5% blown 55.9% (median  43 days) · 1st payout 27.6 wks · paid/yr $ 1190 · evals/yr  6.7
+  lock $300   days locked 27.6% · $  4041/yr · eval pass 37.2% blown 58.6% (median  30 days) · 1st payout 27.8 wks · paid/yr $  896 · evals/yr  7.5
+  lock $500   days locked 15.2% · $  6840/yr · eval pass 47.4% blown 48.7% (median  19 days) · 1st payout 18.4 wks · paid/yr $ 2195 · evals/yr  9.4
+
+== select_daily_25k · NQ only (lock exact) · 3 micros per market
+  lock none   days locked  0.0% · $ 12066/yr · eval pass 36.9% blown 62.8% (median  18 days) · 1st payout 18.2 wks · paid/yr $ 2724 · evals/yr 14.5
+  lock $100   days locked 61.8% · $  1356/yr · eval pass 23.6% blown 66.0% (median  40 days) · 1st payout 17.8 wks · paid/yr $   11 · evals/yr  8.8
+  lock $150   days locked 54.3% · $  2282/yr · eval pass 34.2% blown 60.6% (median  33 days) · 1st payout 28.4 wks · paid/yr $  714 · evals/yr 10.3
+  lock $200   days locked 48.8% · $  3905/yr · eval pass 39.3% blown 60.1% (median  25 days) · 1st payout 27.2 wks · paid/yr $  991 · evals/yr 11.4
+  lock $300   days locked 38.3% · $  4116/yr · eval pass 35.9% blown 64.1% (median  19 days) · 1st payout 23.0 wks · paid/yr $ 1250 · evals/yr 13.6
+  lock $500   days locked 24.2% · $  5692/yr · eval pass 36.5% blown 62.9% (median  13 days) · 1st payout 22.8 wks · paid/yr $ 1690 · evals/yr 16.0
+
+== select_daily_25k · NQ + ES (lock approximate, optimistic) · 2 micros per market
+  lock none   days locked  0.0% · $ 12044/yr · eval pass 42.4% blown 57.5% (median  20 days) · 1st payout 16.6 wks · paid/yr $ 4017 · evals/yr 12.8
+  lock $100   days locked 66.4% · $  3984/yr · eval pass 39.6% blown 51.7% (median  37 days) · 1st payout 31.2 wks · paid/yr $  394 · evals/yr  8.3
+  lock $150   days locked 59.4% · $  6213/yr · eval pass 48.6% blown 50.7% (median  29 days) · 1st payout 28.8 wks · paid/yr $ 1389 · evals/yr 10.0
+  lock $200   days locked 51.8% · $  7126/yr · eval pass 49.1% blown 50.9% (median  24 days) · 1st payout 24.0 wks · paid/yr $ 1530 · evals/yr 11.0
+  lock $300   days locked 40.8% · $  8719/yr · eval pass 46.3% blown 53.7% (median  20 days) · 1st payout 23.4 wks · paid/yr $ 1946 · evals/yr 12.6
+  lock $500   days locked 24.6% · $  8713/yr · eval pass 44.6% blown 55.4% (median  15 days) · 1st payout 18.8 wks · paid/yr $ 2267 · evals/yr 15.5
+
+== select_daily_25k · NQ + ES (lock approximate, optimistic) · 3 micros per market
+  lock none   days locked  0.0% · $ 18066/yr · eval pass 31.3% blown 68.7% (median  16 days) · 1st payout 14.8 wks · paid/yr $ 3279 · evals/yr 19.5
+  lock $100   days locked 73.1% · $  3634/yr · eval pass 29.0% blown 66.2% (median  34 days) · 1st payout 34.6 wks · paid/yr $   55 · evals/yr 16.5
+  lock $150   days locked 66.4% · $  5977/yr · eval pass 35.2% blown 64.4% (median  25 days) · 1st payout 28.8 wks · paid/yr $   44 · evals/yr 19.1
+  lock $200   days locked 61.5% · $  8252/yr · eval pass 41.0% blown 59.0% (median  19 days) · 1st payout 21.4 wks · paid/yr $  401 · evals/yr 21.1
+  lock $300   days locked 51.8% · $ 10689/yr · eval pass 38.2% blown 61.8% (median  12 days) · 1st payout 19.6 wks · paid/yr $ 1271 · evals/yr 25.0
+  lock $500   days locked 37.7% · $ 13232/yr · eval pass 36.9% blown 63.1% (median   9 days) · 1st payout 19.2 wks · paid/yr $ 2805 · evals/yr 29.7
+
+== select_flex_25k · NQ only (lock exact) · 2 micros per market
+  lock none   days locked  0.0% · $  8044/yr · eval pass 42.7% blown 53.3% (median  21 days) · 1st payout 16.0 wks · paid/yr $ 2781 · evals/yr  7.8
+  lock $100   days locked 54.3% · $  1521/yr · eval pass 39.1% blown 48.0% (median  59 days) · 1st payout  nan wks · paid/yr $    0 · evals/yr  4.3
+  lock $150   days locked 45.9% · $  2692/yr · eval pass 36.3% blown 57.7% (median  41 days) · 1st payout 23.6 wks · paid/yr $ 1262 · evals/yr  5.6
+  lock $200   days locked 38.3% · $  2744/yr · eval pass 40.5% blown 55.9% (median  43 days) · 1st payout 20.2 wks · paid/yr $ 1490 · evals/yr  7.2
+  lock $300   days locked 27.6% · $  4041/yr · eval pass 37.2% blown 58.6% (median  30 days) · 1st payout 20.8 wks · paid/yr $ 1164 · evals/yr  8.0
+  lock $500   days locked 15.2% · $  6840/yr · eval pass 47.4% blown 48.7% (median  19 days) · 1st payout 13.8 wks · paid/yr $ 2350 · evals/yr  9.2
+
+== select_flex_25k · NQ only (lock exact) · 3 micros per market
+  lock none   days locked  0.0% · $ 12066/yr · eval pass 36.9% blown 62.8% (median  18 days) · 1st payout 17.0 wks · paid/yr $ 3495 · evals/yr 11.7
+  lock $100   days locked 61.8% · $  1356/yr · eval pass 23.6% blown 66.0% (median  40 days) · 1st payout  nan wks · paid/yr $    0 · evals/yr  7.7
+  lock $150   days locked 54.3% · $  2282/yr · eval pass 34.2% blown 60.6% (median  33 days) · 1st payout 19.8 wks · paid/yr $ 1381 · evals/yr 10.7
+  lock $200   days locked 48.8% · $  3905/yr · eval pass 39.3% blown 60.1% (median  25 days) · 1st payout 15.8 wks · paid/yr $ 1691 · evals/yr 12.0
+  lock $300   days locked 38.3% · $  4116/yr · eval pass 35.9% blown 64.1% (median  19 days) · 1st payout 14.8 wks · paid/yr $ 2245 · evals/yr 13.6
+  lock $500   days locked 24.2% · $  5692/yr · eval pass 36.5% blown 62.9% (median  13 days) · 1st payout 17.4 wks · paid/yr $ 2192 · evals/yr 15.7
+
+== select_flex_25k · NQ + ES (lock approximate, optimistic) · 2 micros per market
+  lock none   days locked  0.0% · $ 12044/yr · eval pass 42.4% blown 57.5% (median  20 days) · 1st payout 18.2 wks · paid/yr $ 3038 · evals/yr 11.5
+  lock $100   days locked 66.4% · $  3984/yr · eval pass 39.6% blown 51.7% (median  37 days) · 1st payout  nan wks · paid/yr $    0 · evals/yr  5.5
+  lock $150   days locked 59.4% · $  6213/yr · eval pass 48.6% blown 50.7% (median  29 days) · 1st payout 12.4 wks · paid/yr $ 2479 · evals/yr 10.7
+  lock $200   days locked 51.8% · $  7126/yr · eval pass 49.1% blown 50.9% (median  24 days) · 1st payout 12.6 wks · paid/yr $ 2286 · evals/yr 11.5
+  lock $300   days locked 40.8% · $  8719/yr · eval pass 46.3% blown 53.7% (median  20 days) · 1st payout 13.0 wks · paid/yr $ 3095 · evals/yr 13.4
+  lock $500   days locked 24.6% · $  8713/yr · eval pass 44.6% blown 55.4% (median  15 days) · 1st payout 14.8 wks · paid/yr $ 2538 · evals/yr 15.7
+
+== select_flex_25k · NQ + ES (lock approximate, optimistic) · 3 micros per market
+  lock none   days locked  0.0% · $ 18066/yr · eval pass 31.3% blown 68.7% (median  16 days) · 1st payout 16.2 wks · paid/yr $ 6518 · evals/yr 13.5
+  lock $100   days locked 73.1% · $  3634/yr · eval pass 29.0% blown 66.2% (median  34 days) · 1st payout  nan wks · paid/yr $    0 · evals/yr 13.8
+  lock $150   days locked 66.4% · $  5977/yr · eval pass 35.2% blown 64.4% (median  25 days) · 1st payout 13.4 wks · paid/yr $ 1507 · evals/yr 17.8
+  lock $200   days locked 61.5% · $  8252/yr · eval pass 41.0% blown 59.0% (median  19 days) · 1st payout 11.4 wks · paid/yr $ 1982 · evals/yr 21.0
+  lock $300   days locked 51.8% · $ 10689/yr · eval pass 38.2% blown 61.8% (median  12 days) · 1st payout 11.0 wks · paid/yr $ 2412 · evals/yr 24.5
+  lock $500   days locked 37.7% · $ 13232/yr · eval pass 36.9% blown 63.1% (median   9 days) · 1st payout 13.6 wks · paid/yr $ 5842 · evals/yr 25.8

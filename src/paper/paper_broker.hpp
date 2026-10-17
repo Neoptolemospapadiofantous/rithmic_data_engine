@@ -274,7 +274,8 @@ public:
         //   entry ± trail_be_offset (no delay); the trail activates only after
         //   trail_delay_secs AND MFE ≥ trail_be_trigger, independent of BE.
         int64_t elapsed_s = (t.ts_micros - entry_time_us_) / 1'000'000;
-        if (!be_moved_ && mfe_ >= cfg_.trail_be_trigger) {
+        const double be_trig = (cfg_.be_r > 0.0 && r_dist_ > 0.0) ? cfg_.be_r * r_dist_ : cfg_.trail_be_trigger;   // be_r: break-even in R
+        if (!be_moved_ && mfe_ >= be_trig) {
             double be = snap(entry_price_ + pos_dir_ * cfg_.trail_be_offset, pos_dir_);
             if ((pos_dir_ > 0 && be > stop_price_) || (pos_dir_ < 0 && be < stop_price_)) {
                 stop_price_ = be;

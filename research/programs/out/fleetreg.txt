@@ -1,0 +1,19 @@
+2026 fleet trades 1118746 (no regime for 0), strategies 7988. Choose on January, judge on March + September + October.
+  pooled test trades, 1-minute tape: trending -1.36 pts/trade (n 225932) · reverting -1.93 (n 236473)
+  pooled test trades, 5-minute tape: trending -1.18 pts/trade (n 213178) · reverting -2.07 (n 249227)
+
+  1-minute tape regime: a side chosen for 5987 strategies
+    test months, per strategy: filtered vs unfiltered +0.232 pts/trade, better for 56.3% of strategies; fleet net with filter − without: +417450 pts
+    shuffled-regime control (100 runs): -0.001 pts/trade, better for 50.0%, fleet net +359411 — the real regime beats it on per-trade gain in 100% and on share better in 100% of runs
+
+  5-minute tape regime: a side chosen for 5996 strategies
+    test months, per strategy: filtered vs unfiltered +0.116 pts/trade, better for 52.0% of strategies; fleet net with filter − without: +378115 pts
+    shuffled-regime control (100 runs): +0.001 pts/trade, better for 50.0%, fleet net +358789 — the real regime beats it on per-trade gain in 100% and on share better in 100% of runs
+  1-minute tape regime: a side chosen for 5987 strategies
+    test months, per strategy: filtered vs unfiltered +0.232 pts/trade, better for 56.3% of strategies; fleet net with filter − without: +417450 pts
+    strategies positive in the test months: 628 without the filter, 1237 with it (781 turned from losing to winning); clearly profitable (> +1 pt/trade, >= 20 trades): 279 without, 541 with
+    shuffled-regime control (100 runs): -0.001 pts/trade, better for 50.0%, fleet net +359411 — the real regime beats it on per-trade gain in 100% and on share better in 100% of runs
+  5-minute tape regime: a side chosen for 5996 strategies
+    test months, per strategy: filtered vs unfiltered +0.116 pts/trade, better for 52.0% of strategies; fleet net with filter − without: +378115 pts
+    strategies positive in the test months: 622 without the filter, 1269 with it (878 turned from losing to winning); clearly profitable (> +1 pt/trade, >= 20 trades): 276 without, 532 with
+    shuffled-regime control (100 runs): +0.001 pts/trade, better for 50.0%, fleet net +358789 — the real regime beats it on per-trade gain in 100% and on share better in 100% of runs

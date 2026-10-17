@@ -1,0 +1,29 @@
+days 1785, cascade trades 1236, weak-day trades 449
+── baseline + funded size ──
+Flex: eval 8 -> funded 2 (today's plan)      | paid in yr 100% | first payout median 16.4 wks (eval  9.2 + funded  6.8) | <=8 wks   8% <=12 wks  28% | evals 2.7 | avg 1st payout $758
+Flex: eval 8 -> funded 3                     | paid in yr  93% | first payout median 18.2 wks (eval 11.8 + funded  6.4) | <=8 wks   9% <=12 wks  26% | evals 3.8 | avg 1st payout $937
+Flex: eval 8 -> funded 4                     | paid in yr  90% | first payout median 18.4 wks (eval 12.8 + funded  5.8) | <=8 wks  10% <=12 wks  25% | evals 4.2 | avg 1st payout $1045
+Flex: eval 8 -> funded 6                     | paid in yr  75% | first payout median 19.4 wks (eval 15.2 + funded  5.2) | <=8 wks  11% <=12 wks  22% | evals 4.9 | avg 1st payout $1873
+── eval size ──
+Flex: eval 6 -> funded 3                     | paid in yr  88% | first payout median 19.6 wks (eval 12.6 + funded  5.8) | <=8 wks   9% <=12 wks  23% | evals 3.0 | avg 1st payout $1042
+Flex: eval 10 -> funded 3                    | paid in yr  93% | first payout median 16.6 wks (eval  9.8 + funded  6.4) | <=8 wks  10% <=12 wks  28% | evals 4.2 | avg 1st payout $926
+Flex: eval 12 -> funded 3                    | paid in yr  96% | first payout median 16.2 wks (eval  9.4 + funded  6.4) | <=8 wks  10% <=12 wks  29% | evals 4.6 | avg 1st payout $855
+── add the weak-day long on the same account ──
+Flex: eval 8+wk2 -> funded 2+wk2             | paid in yr  85% | first payout median 18.2 wks (eval 11.6 + funded  5.2) | <=8 wks  10% <=12 wks  26% | evals 3.6 | avg 1st payout $954
+Flex: eval 8+wk4 -> funded 3+wk3             | paid in yr  85% | first payout median 17.6 wks (eval 11.8 + funded  4.4) | <=8 wks  13% <=12 wks  27% | evals 4.2 | avg 1st payout $1499
+Flex: eval 8+wk4 -> funded 4+wk4             | paid in yr  86% | first payout median 19.6 wks (eval 15.2 + funded  4.4) | <=8 wks  12% <=12 wks  26% | evals 4.8 | avg 1st payout $1735
+── other plans, same strategy ──
+select_daily_50k: eval 8 -> funded 2         | paid in yr  76% | first payout median 24.8 wks (eval  8.4 + funded 13.8) | <=8 wks   4% <=12 wks  10% | evals 2.9 | avg 1st payout $515
+select_daily_50k: eval 8 -> funded 4         | paid in yr  67% | first payout median 22.2 wks (eval 12.6 + funded  8.2) | <=8 wks  10% <=12 wks  20% | evals 4.2 | avg 1st payout $761
+mff_rapid_50k: eval 8 -> funded 2            | paid in yr  71% | first payout median 25.0 wks (eval  7.4 + funded 15.8) | <=8 wks   3% <=12 wks   9% | evals 3.2 | avg 1st payout $765
+mff_rapid_50k: eval 8 -> funded 4            | paid in yr  74% | first payout median 25.4 wks (eval 11.6 + funded  7.0) | <=8 wks  12% <=12 wks  21% | evals 6.0 | avg 1st payout $989
+mff_rapid_eod_50k: eval 8 -> funded 2        | paid in yr  67% | first payout median 27.0 wks (eval 12.8 + funded 13.0) | <=8 wks   2% <=12 wks   8% | evals 2.8 | avg 1st payout $775
+mff_rapid_eod_50k: eval 8 -> funded 4        | paid in yr  64% | first payout median 24.8 wks (eval 15.2 + funded  5.6) | <=8 wks   5% <=12 wks  12% | evals 3.6 | avg 1st payout $968
+lucid_flex_50k: eval 8 -> funded 2           | paid in yr 100% | first payout median 15.6 wks (eval  7.2 + funded  7.8) | <=8 wks  13% <=12 wks  34% | evals 2.7 | avg 1st payout $787
+lucid_flex_50k: eval 8 -> funded 4           | paid in yr  96% | first payout median 18.2 wks (eval 11.6 + funded  6.6) | <=8 wks  15% <=12 wks  29% | evals 4.5 | avg 1st payout $1031
+apex_eod_50k: eval 8 -> funded 2             | paid in yr  81% | first payout median 19.0 wks (eval  3.4 + funded 14.0) | <=8 wks   7% <=12 wks  19% | evals 2.6 | avg 1st payout $1580
+apex_eod_50k: eval 8 -> funded 4             | paid in yr  94% | first payout median 15.4 wks (eval  4.8 + funded 10.2) | <=8 wks  18% <=12 wks  34% | evals 3.8 | avg 1st payout $1798
+topstep_50k: eval 8 -> funded 2              | paid in yr 100% | first payout median 14.4 wks (eval  7.4 + funded  6.4) | <=8 wks  14% <=12 wks  38% | evals 2.5 | avg 1st payout $732
+topstep_50k: eval 8 -> funded 4              | paid in yr  96% | first payout median 17.4 wks (eval 11.8 + funded  5.4) | <=8 wks  16% <=12 wks  30% | evals 4.0 | avg 1st payout $1041
+growth_50k: eval 8 -> funded 2               | paid in yr  74% | first payout median 22.4 wks (eval  3.8 + funded 16.0) | <=8 wks   4% <=12 wks  11% | evals 2.7 | avg 1st payout $1735
+growth_50k: eval 8 -> funded 4               | paid in yr  84% | first payout median 25.0 wks (eval  7.2 + funded 16.6) | <=8 wks   9% <=12 wks  18% | evals 5.7 | avg 1st payout $1857

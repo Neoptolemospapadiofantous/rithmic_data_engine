@@ -145,6 +145,7 @@ struct OrbConfig {
     // strategy). Paper fills at the target (limit-like); live flattens at market on the touch.
     double      tp_points         = 0.0;
     double      tp_r              = 0.0;
+    double      be_r              = 0.0;   // break-even when MFE ≥ be_r × the trade's stop distance (PaperBroker only; 0 = trail_be_trigger)
     double take_profit_pts() const { return tp_points > 0.0 ? tp_points : (tp_r > 0.0 ? tp_r * sl_points : 0.0); }
     // Relative-volume gate (2026-09-29): the last closed minute's tick volume vs the mean of the
     // previous rvol_bars closed minutes (paper_quote.hpp RegimeState). 0 = off.
@@ -345,6 +346,7 @@ struct OrbConfig {
         c.trail_step_range     = json_dbl(text, "trail_step_range",     c.trail_step_range);
         c.tp_r_range           = json_dbl(text, "tp_r_range",           c.tp_r_range);
         c.tp_r                 = json_dbl(text, "tp_r",                 c.tp_r);
+        c.be_r                 = json_dbl(text, "be_r",                 c.be_r);
         c.regime_min_range_atr = json_dbl(text, "regime_min_range_atr", c.regime_min_range_atr);
         c.regime_max_range_atr = json_dbl(text, "regime_max_range_atr", c.regime_max_range_atr);
         c.regime_min_eff       = json_dbl(text, "regime_min_eff",       c.regime_min_eff);

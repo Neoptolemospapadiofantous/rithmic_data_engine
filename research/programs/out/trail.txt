@@ -1,0 +1,20 @@
+
+== cascade — 2322 trades (current exit: vwap+stall)
+  2010-07 → 2024-12
+    not trending     n  921 |  base 2R  +5.41  vwap+stall  +5.87  vwap runner  +4.07  15m trail  +3.63
+    trending tape    n 1192 |  base 2R  +3.39  vwap+stall  +4.31  vwap runner  +5.35  15m trail  +2.39
+    SWITCH (trending → vwap runner, else current): +5.58 vs current +4.99 pts/trade (n 2113) | eras switch/current: +0.77/+0.69  +10.38/+9.69  +11.18/+9.25
+  HOLDOUT 2025+ (judged once)
+    not trending     n   88 |  base 2R +14.23  vwap+stall +17.32  vwap runner +11.70  15m trail +10.68
+    trending tape    n  121 |  base 2R  +7.08  vwap+stall +11.93  vwap runner +10.47  15m trail  +0.17
+    SWITCH (trending → vwap runner, else current): +13.35 vs current +14.20 pts/trade (n 209)
+
+== gap retest — 1352 trades (current exit: base 2R)
+  2010-07 → 2024-12
+    not trending     n  583 |  base 2R  +6.65  vwap+stall  +3.67  vwap runner  +2.87  15m trail  +3.43
+    trending tape    n  637 |  base 2R +11.20  vwap+stall  +5.41  vwap runner  +7.10  15m trail  +4.00
+    SWITCH (trending → vwap runner, else current): +6.89 vs current +9.03 pts/trade (n 1220) | eras switch/current: +0.02/+0.42  +11.30/+16.11  +15.84/+16.89
+  HOLDOUT 2025+ (judged once)
+    not trending     n   65 |  base 2R +11.53  vwap+stall +24.30  vwap runner +19.60  15m trail +10.05
+    trending tape    n   67 |  base 2R  +1.56  vwap+stall  +4.13  vwap runner  -3.10  15m trail  -0.80
+    SWITCH (trending → vwap runner, else current): +4.10 vs current +6.47 pts/trade (n 132)

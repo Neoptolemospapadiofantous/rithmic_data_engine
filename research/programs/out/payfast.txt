@@ -1,0 +1,97 @@
+FASTEST PAYOUT search, plan trades 2019-2024 (1472 start days), day merged pessimistic, cost 1.5 pts, NQ micros
+
+== select_flex_25k: best by P(payout within 7 trading days)
+  plan setups, up to 3 (any exit), eval 10 MNQ, funded 7 MNQ         ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d  77.3%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 6 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.4%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 5 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.4%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 4 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.4%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 3 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.4%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 2 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.4%  first payout ~$0
+
+== select_flex_50k: best by P(payout within 7 trading days)
+  plan setups, up to 3 (any exit), eval 39 MNQ, funded 33 MNQ        ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d  86.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 11 MNQ     ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 9 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 7 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 5 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 3 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+
+== select_daily_25k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 8 MNQ, funded 10 MNQ                     ≤5d  0.34%  ≤7d  1.44%  ≤10d  2.40%  blown ≤7d  67.6%  first payout ~$875
+  plan, 1 trade a day, eval 9 MNQ, funded 10 MNQ                     ≤5d  0.34%  ≤7d  1.37%  ≤10d  2.26%  blown ≤7d  70.3%  first payout ~$889
+  plan, 1 trade a day, eval 6 MNQ, funded 10 MNQ                     ≤5d  0.34%  ≤7d  1.37%  ≤10d  2.40%  blown ≤7d  60.5%  first payout ~$889
+  plan, 1 trade a day, eval 7 MNQ, funded 10 MNQ                     ≤5d  0.34%  ≤7d  1.37%  ≤10d  2.33%  blown ≤7d  64.2%  first payout ~$902
+  plan, 1 trade a day, eval 7 MNQ, funded 9 MNQ                      ≤5d  0.34%  ≤7d  1.30%  ≤10d  2.26%  blown ≤7d  64.0%  first payout ~$851
+  plan, 1 trade a day, eval 5 MNQ, funded 10 MNQ                     ≤5d  0.34%  ≤7d  1.30%  ≤10d  2.53%  blown ≤7d  54.0%  first payout ~$918
+
+== select_daily_50k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 15 MNQ, funded 19 MNQ                    ≤5d  0.34%  ≤7d  1.64%  ≤10d  2.67%  blown ≤7d  65.1%  first payout ~$1772
+  plan, 1 trade a day, eval 15 MNQ, funded 21 MNQ                    ≤5d  0.41%  ≤7d  1.58%  ≤10d  2.53%  blown ≤7d  65.3%  first payout ~$1852
+  plan, 1 trade a day, eval 11 MNQ, funded 19 MNQ                    ≤5d  0.34%  ≤7d  1.58%  ≤10d  2.74%  blown ≤7d  56.4%  first payout ~$1795
+  plan, 1 trade a day, eval 17 MNQ, funded 19 MNQ                    ≤5d  0.34%  ≤7d  1.58%  ≤10d  2.53%  blown ≤7d  68.8%  first payout ~$1795
+  plan, 1 trade a day, eval 13 MNQ, funded 19 MNQ                    ≤5d  0.34%  ≤7d  1.58%  ≤10d  2.53%  blown ≤7d  61.7%  first payout ~$1822
+  plan, 1 trade a day, eval 11 MNQ, funded 21 MNQ                    ≤5d  0.41%  ≤7d  1.51%  ≤10d  2.60%  blown ≤7d  56.6%  first payout ~$1879
+
+== growth_25k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 5 MNQ, funded 2 MNQ                      ≤5d  0.00%  ≤7d  0.07%  ≤10d  0.21%  blown ≤7d  53.5%  first payout ~$819
+  plan, 1 trade a day, eval 9 MNQ, funded 3 MNQ                      ≤5d  0.00%  ≤7d  0.07%  ≤10d  0.55%  blown ≤7d  72.7%  first payout ~$1000
+  plan, 1 trade a day, eval 9 MNQ, funded 2 MNQ                      ≤5d  0.00%  ≤7d  0.07%  ≤10d  0.82%  blown ≤7d  66.3%  first payout ~$819
+  plan, 1 trade a day, eval 10 MNQ, funded 2 MNQ                     ≤5d  0.00%  ≤7d  0.07%  ≤10d  0.82%  blown ≤7d  68.6%  first payout ~$819
+  plan, 1 trade a day, eval 8 MNQ, funded 3 MNQ                      ≤5d  0.00%  ≤7d  0.07%  ≤10d  0.55%  blown ≤7d  71.2%  first payout ~$1000
+  plan, 1 trade a day, eval 8 MNQ, funded 2 MNQ                      ≤5d  0.00%  ≤7d  0.07%  ≤10d  0.75%  blown ≤7d  65.1%  first payout ~$819
+
+== growth_50k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 37 MNQ, funded 11 MNQ                    ≤5d  0.00%  ≤7d  0.27%  ≤10d  0.89%  blown ≤7d  89.7%  first payout ~$1500
+  plan, 1 trade a day, eval 37 MNQ, funded 9 MNQ                     ≤5d  0.00%  ≤7d  0.27%  ≤10d  1.10%  blown ≤7d  87.4%  first payout ~$1500
+  plan, 1 trade a day, eval 39 MNQ, funded 17 MNQ                    ≤5d  0.00%  ≤7d  0.27%  ≤10d  0.55%  blown ≤7d  92.2%  first payout ~$1500
+  plan, 1 trade a day, eval 39 MNQ, funded 15 MNQ                    ≤5d  0.00%  ≤7d  0.27%  ≤10d  0.62%  blown ≤7d  91.4%  first payout ~$1500
+  plan, 1 trade a day, eval 37 MNQ, funded 13 MNQ                    ≤5d  0.00%  ≤7d  0.27%  ≤10d  0.82%  blown ≤7d  90.5%  first payout ~$1500
+  plan, 1 trade a day, eval 39 MNQ, funded 13 MNQ                    ≤5d  0.00%  ≤7d  0.27%  ≤10d  0.82%  blown ≤7d  90.6%  first payout ~$1500
+
+== mff_rapid_50k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 29 MNQ, funded 15 MNQ                    ≤5d  0.07%  ≤7d  0.41%  ≤10d  0.55%  blown ≤7d  82.4%  first payout ~$2086
+  plan, 1 trade a day, eval 35 MNQ, funded 15 MNQ                    ≤5d  0.07%  ≤7d  0.41%  ≤10d  0.55%  blown ≤7d  83.8%  first payout ~$2086
+  plan, 1 trade a day, eval 39 MNQ, funded 15 MNQ                    ≤5d  0.07%  ≤7d  0.41%  ≤10d  0.55%  blown ≤7d  84.3%  first payout ~$2086
+  plan, 1 trade a day, eval 43 MNQ, funded 15 MNQ                    ≤5d  0.07%  ≤7d  0.41%  ≤10d  0.55%  blown ≤7d  85.2%  first payout ~$2086
+  plan, 1 trade a day, eval 17 MNQ, funded 15 MNQ                    ≤5d  0.07%  ≤7d  0.41%  ≤10d  0.68%  blown ≤7d  74.0%  first payout ~$2086
+  plan, 1 trade a day, eval 25 MNQ, funded 15 MNQ                    ≤5d  0.07%  ≤7d  0.41%  ≤10d  0.55%  blown ≤7d  80.2%  first payout ~$2086
+
+== mff_rapid_eod_50k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 21 MNQ, funded 29 MNQ                    ≤5d  0.00%  ≤7d  0.41%  ≤10d  0.89%  blown ≤7d  72.5%  first payout ~$2902
+  plan, 1 trade a day, eval 13 MNQ, funded 29 MNQ                    ≤5d  0.00%  ≤7d  0.41%  ≤10d  0.89%  blown ≤7d  60.1%  first payout ~$2902
+  plan, 1 trade a day, eval 19 MNQ, funded 29 MNQ                    ≤5d  0.00%  ≤7d  0.41%  ≤10d  0.89%  blown ≤7d  69.7%  first payout ~$2902
+  plan, 1 trade a day, eval 17 MNQ, funded 29 MNQ                    ≤5d  0.00%  ≤7d  0.41%  ≤10d  0.89%  blown ≤7d  67.4%  first payout ~$2902
+  plan, 1 trade a day, eval 11 MNQ, funded 29 MNQ                    ≤5d  0.00%  ≤7d  0.41%  ≤10d  0.96%  blown ≤7d  54.9%  first payout ~$2902
+  plan, 1 trade a day, eval 15 MNQ, funded 29 MNQ                    ≤5d  0.00%  ≤7d  0.41%  ≤10d  0.89%  blown ≤7d  63.6%  first payout ~$2902
+
+== apex_eod_50k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 53 MNQ, funded 35 MNQ                    ≤5d  0.00%  ≤7d  0.48%  ≤10d  1.58%  blown ≤7d  91.2%  first payout ~$2000
+  plan, 1 trade a day, eval 57 MNQ, funded 21 MNQ                    ≤5d  0.00%  ≤7d  0.48%  ≤10d  1.78%  blown ≤7d  88.6%  first payout ~$2000
+  plan, 1 trade a day, eval 57 MNQ, funded 19 MNQ                    ≤5d  0.00%  ≤7d  0.48%  ≤10d  1.78%  blown ≤7d  87.9%  first payout ~$2000
+  plan, 1 trade a day, eval 57 MNQ, funded 17 MNQ                    ≤5d  0.00%  ≤7d  0.48%  ≤10d  1.92%  blown ≤7d  87.4%  first payout ~$2000
+  plan, 1 trade a day, eval 43 MNQ, funded 17 MNQ                    ≤5d  0.00%  ≤7d  0.48%  ≤10d  2.12%  blown ≤7d  85.3%  first payout ~$2000
+  plan, 1 trade a day, eval 43 MNQ, funded 19 MNQ                    ≤5d  0.00%  ≤7d  0.48%  ≤10d  1.92%  blown ≤7d  86.0%  first payout ~$2000
+
+== apex_intraday_50k: best by P(payout within 7 trading days)
+  plan, 1 trade a day, eval 49 MNQ, funded 11 MNQ                    ≤5d  0.00%  ≤7d  0.34%  ≤10d  1.10%  blown ≤7d  90.0%  first payout ~$1984
+  plan, 1 trade a day, eval 51 MNQ, funded 13 MNQ                    ≤5d  0.00%  ≤7d  0.34%  ≤10d  0.89%  blown ≤7d  91.4%  first payout ~$2000
+  plan, 1 trade a day, eval 45 MNQ, funded 17 MNQ                    ≤5d  0.00%  ≤7d  0.34%  ≤10d  0.55%  blown ≤7d  92.7%  first payout ~$2000
+  plan, 1 trade a day, eval 45 MNQ, funded 15 MNQ                    ≤5d  0.00%  ≤7d  0.34%  ≤10d  0.62%  blown ≤7d  91.9%  first payout ~$2000
+  plan, 1 trade a day, eval 45 MNQ, funded 13 MNQ                    ≤5d  0.00%  ≤7d  0.34%  ≤10d  0.96%  blown ≤7d  91.0%  first payout ~$2000
+  plan, 1 trade a day, eval 45 MNQ, funded 11 MNQ                    ≤5d  0.00%  ≤7d  0.34%  ≤10d  1.10%  blown ≤7d  89.9%  first payout ~$1984
+
+== topstep_50k: best by P(payout within 7 trading days)
+  plan setups, up to 3 (any exit), eval 49 MNQ, funded 41 MNQ        ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d  91.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 19 MNQ     ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 17 MNQ     ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 15 MNQ     ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 13 MNQ     ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 11 MNQ     ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+
+== lucid_flex_50k: best by P(payout within 7 trading days)
+  plan setups, up to 3 (any exit), eval 39 MNQ, funded 33 MNQ        ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d  87.7%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 11 MNQ     ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 9 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 7 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 5 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0
+  plan setups, again only after a win, eval 1 MNQ, funded 3 MNQ      ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.00%  blown ≤7d   0.0%  first payout ~$0

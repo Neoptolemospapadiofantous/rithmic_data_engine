@@ -1,0 +1,13 @@
+NQ 2010-07 → 2024-12, one position at a time, ≤3 trades/day, cost 1.0 pt/trade (NQ pts)
+
+-- re-enter after ANY exit
+  BASE   trade days 2608, trades/trade-day 1.27, per trade +3.92, per trade-day  +4.99 (eras +0.57 / +9.67 / +14.16) | 2nd/3rd trades n  707 +2.27 vs twins +0.70 (eras +0.18/+6.62/+2.85 vs +0.41/+4.70/-6.27)
+  +NEW   trade days 2608, trades/trade-day 1.40, per trade +3.40, per trade-day  +4.75 (eras +0.67 / +9.30 / +12.80) | 2nd/3rd trades n 1035 +0.96 vs twins +3.36 (eras +0.37/+3.70/-1.44 vs +0.63/+8.73/+4.75)
+  +VWAP  trade days 2608, trades/trade-day 1.54, per trade +3.08, per trade-day  +4.74 (eras +0.39 / +10.01 / +12.43) | 2nd/3rd trades n 1405 +0.68 vs twins +0.90 (eras -0.25/+3.89/-1.88 vs +0.00/+3.63/-0.79)
+  +HOLD  trade days 2608, trades/trade-day 1.49, per trade +3.64, per trade-day  +5.44 (eras +0.70 / +9.73 / +16.82) | 2nd/3rd trades n 1287 +2.17 vs twins +4.17 (eras +0.36/+3.71/+6.68 vs +0.37/+9.65/+9.24)
+
+-- re-enter after a WIN only
+  BASE   trade days 2608, trades/trade-day 1.13, per trade +4.52, per trade-day  +5.12 (eras +0.68 / +9.76 / +14.45) | 2nd/3rd trades n  344 +5.66 vs twins -0.82 (eras +1.24/+13.49/+7.81 vs +1.12/-0.49/-9.65)
+  +NEW   trade days 2608, trades/trade-day 1.20, per trade +4.05, per trade-day  +4.85 (eras +0.72 / +8.63 / +14.70) | 2nd/3rd trades n  520 +2.41 vs twins +1.95 (eras +0.98/+3.76/+5.24 vs +1.42/+4.64/-0.38)
+  +VWAP  trade days 2608, trades/trade-day 1.14, per trade +4.55, per trade-day  +5.20 (eras +0.65 / +9.80 / +15.09) | 2nd/3rd trades n  369 +5.82 vs twins +1.64 (eras +0.89/+12.74/+11.44 vs +0.45/+3.88/+1.82)
+  +HOLD  trade days 2608, trades/trade-day 1.22, per trade +4.20, per trade-day  +5.14 (eras +0.88 / +9.00 / +15.29) | 2nd/3rd trades n  581 +3.42 vs twins -0.18 (eras +1.64/+4.89/+7.34 vs +1.79/-3.82/-0.98)

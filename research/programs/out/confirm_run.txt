@@ -1,0 +1,7 @@
+[edge_lab] ES: 5464074 bars, 4068 days, 0 order-book minutes
+es_cascade_gap_agree: PASS  (oos 854 trades, 1.97 pts/trade net, PF 1.42)  → data/edge_lab/reports/es_cascade_gap_agree.md
+[edge_lab] NQ: 5218889 bars, 4046 days, 1058329 order-book minutes
+opex_fade: FAIL at SCREEN  (oos 26 trades, -2.48 pts/trade net, PF 0.87)  → data/edge_lab/reports/opex_fade.md
+cascade_skip_opex: FAIL at CONTROLS  (oos 2247 trades, 4.50 pts/trade net, PF 1.20)  → data/edge_lab/reports/cascade_skip_opex.md
+cascade_skip_opex_compl: FAIL at CONTROLS  (oos 41 trades, 16.36 pts/trade net, PF 1.71)  → data/edge_lab/reports/cascade_skip_opex_compl.md
+done

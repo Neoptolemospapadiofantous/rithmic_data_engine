@@ -1,0 +1,23 @@
+{
+  "id": "monday_long",
+  "name": "Monday RTH long (09:30 -> 15:55)",
+  "why": "No one can hedge over the weekend, so funds and dealers cut exposure into Friday's close and carry less risk through it; on Monday they put it back on during the cash session (2026-10-17 behaviour map: Monday RTH +12 bp vs +3.6 bp an average session, up in 13 of 17 years). Pre-registered from that map; holdout 2025-01 on is judged once.",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "params": {
+    "stopk": [
+      0
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:30",
+      "when": "dow == 1 && !rollwin",
+      "dir": "1"
+    }
+  ],
+  "stop": "stopk*atr",
+  "target": "0",
+  "flat": "15:55",
+  "min_trades": 60
+}

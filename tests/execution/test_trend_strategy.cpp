@@ -319,6 +319,34 @@ int main() {
         CHECK(run_bg(20040, 20048, 20068, sd).empty(), "box_go: a box that dips back below the overnight high → no trade");
         CHECK(run_bg(20040, 20052, 20063, sd).empty(), "box_go: the go bar does not close above the box → no trade");
         CHECK(run_bg(19990, 20052, 20068, sd).empty(), "box_go: a gap DOWN never takes the long break");
+
+        // mom_dir (2026-10-17): ATR 100, flat 20000 until 09:30, then a path from the 09:30 open; signals only at 5-minute closes
+        //   from 09:45, when the last 30 one-minute moves went one way with efficiency ≥ 0.3 and price is on that side of VWAP and the open
+        auto run_mom = [&](const std::vector<double>& rth, bool ema_entry, int notify_after, double notify_pnl, double& sd) {
+            TrendConfig tc; tc.mode = "mom_dir"; tc.tf_min = 1; tc.win_start = 930; tc.win_end = 1555; tc.mom_entry_ema = ema_entry;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(100.0);
+            for (int mm = 9 * 60; mm < 9 * 60 + 30; ++mm) bar1(s, 0, mm / 60, mm % 60, 20000, 20001, 19999, 20000, 0.5);
+            double prev = 20000; sd = 0;
+            for (size_t i = 0; i < rth.size(); ++i) { const int mm = 9 * 60 + 30 + (int)i; const double c = rth[i];
+                bar1(s, 0, mm / 60, mm % 60, prev, std::max(prev, c) + 0.25, std::min(prev, c) - 0.25, c, 0.5); prev = c;
+                if ((int)out.size() == notify_after && sd == 0) { sd = s.take_stop_dist(); s.notify_trade_filled(out.back().sig, "stop", notify_pnl); } }
+            return out;
+        };
+        std::vector<double> rise; for (int i = 0; i < 40; ++i) rise.push_back(20000 + 1.5 * (i + 1));            // straight up 1.5 pts/min
+        auto mr = run_mom(rise, false, 99, 0, sd); const double sd_first = [&] { double x; auto o = run_mom(rise, false, 1, 50, x); (void)o; return x; }();
+        CHECK(!mr.empty() && mr[0].sig == OrbSignal::BUY && mr[0].why == "mom_dir_long" && std::fabs(sd_first - 25.0) < 1e-9,
+              "mom_dir: a straight 30-minute rise above VWAP and the open → LONG at the first 5-minute close from 09:45, stop 0.25 ATR");
+        std::vector<double> chop; for (int i = 0; i < 40; ++i) chop.push_back(20000 + ((i % 2) ? 6.0 : -6.0) + 0.1 * i);   // ±6 every minute
+        CHECK(run_mom(chop, false, 99, 0, sd).empty(), "mom_dir: a choppy last 30 minutes (efficiency < 0.3) → no trade");
+        std::vector<double> below; for (int i = 0; i < 40; ++i) below.push_back(i < 5 ? 20000 - 12.0 * (i + 1) : 19940 + 1.0 * (i - 4));
+        CHECK(run_mom(below, false, 99, 0, sd).empty() || run_mom(below, false, 99, 0, sd)[0].sig != OrbSignal::BUY,
+              "mom_dir: a straight rise that is still below the 09:30 open → no long");
+        auto lost = run_mom(rise, false, 1, -50.0, sd);
+        CHECK(lost.size() == 1, "mom_dir: after a losing trade (notify_trade_filled with P&L < 0) no more entries that day");
+        auto won = run_mom(rise, false, 1, 50.0, sd);
+        CHECK(won.size() >= 2 && won[1].sig == OrbSignal::BUY, "mom_dir: after a winning trade the next 5-minute close in the direction may enter again");
     }
     // ── late strong open (2026-10-15): re-check later only on days the main decision gave no direction ──
     {

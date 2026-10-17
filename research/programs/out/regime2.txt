@@ -1,0 +1,36 @@
+
+### REAL NQ — 3408 days
+  Asia 18:00-03:00       character: AC1 -0.029 (t -14.9; eras -0.045 -0.009 -0.017)  VR 0.878 | first half's regime → second half: corr +0.047, same sign 52.7% | first-third direction continues 49.1%
+  London 03:00-08:00     character: AC1 -0.019 (t -8.3; eras -0.028 -0.012 -0.007)  VR 0.924 | first half's regime → second half: corr +0.022, same sign 50.6% | first-third direction continues 48.5%
+  New York 09:30-16:00   character: AC1 -0.008 (t -3.6; eras -0.012 -0.005 -0.001)  VR 0.902 | first half's regime → second half: corr -0.002, same sign 50.1% | first-third direction continues 52.8%
+  Asia → London (same day)               regime corr +0.047, same sign 52.9% (n 3408)
+  London → New York (same day)           regime corr +0.065, same sign 52.0% (n 3407)
+  Asia → New York (same day)             regime corr -0.012, same sign 49.4% (n 3407)
+  yesterday's New York → today's New York regime corr -0.055, same sign 48.1% (n 3405)
+
+### SYNTHETIC random walk (no regimes — must show nothing) — 3732 days
+  Asia 18:00-03:00       character: AC1 +0.001 (t +0.3; eras -0.003 +0.005 +0.003)  VR 1.005 | first half's regime → second half: corr -0.007, same sign 50.2% | first-third direction continues 49.0%
+  London 03:00-08:00     character: AC1 +0.002 (t +0.9; eras +0.001 +0.003 +0.004)  VR 1.010 | first half's regime → second half: corr -0.024, same sign 49.2% | first-third direction continues 48.6%
+  New York 09:30-16:00   character: AC1 -0.000 (t -0.2; eras +0.002 -0.007 +0.001)  VR 0.999 | first half's regime → second half: corr -0.005, same sign 48.8% | first-third direction continues 50.9%
+  Asia → London (same day)               regime corr -0.003, same sign 50.6% (n 3732)
+  London → New York (same day)           regime corr -0.022, same sign 47.7% (n 3732)
+  Asia → New York (same day)             regime corr +0.014, same sign 50.6% (n 3732)
+  yesterday's New York → today's New York regime corr -0.008, same sign 49.4% (n 3731)
+
+### SYNTHETIC planted regimes, weak (phi 0.05) — 3732 days
+  Asia 18:00-03:00       character: AC1 -0.002 (t -1.4; eras -0.002 -0.003 -0.002)  VR 0.996 | first half's regime → second half: corr +0.022, same sign 51.1% | first-third direction continues 50.6%
+  London 03:00-08:00     character: AC1 -0.003 (t -1.6; eras -0.003 -0.005 -0.003)  VR 0.992 | first half's regime → second half: corr -0.025, same sign 48.4% | first-third direction continues 50.2%
+  New York 09:30-16:00   character: AC1 -0.000 (t -0.1; eras +0.002 -0.005 -0.001)  VR 1.001 | first half's regime → second half: corr -0.007, same sign 48.7% | first-third direction continues 49.9%
+  Asia → London (same day)               regime corr +0.019, same sign 50.1% (n 3732)
+  London → New York (same day)           regime corr -0.008, same sign 49.2% (n 3732)
+  Asia → New York (same day)             regime corr +0.001, same sign 50.7% (n 3732)
+  yesterday's New York → today's New York regime corr -0.016, same sign 50.1% (n 3731)
+
+### SYNTHETIC planted regimes, strong (phi 0.20) — 3732 days
+  Asia 18:00-03:00       character: AC1 +0.001 (t +0.5; eras +0.001 -0.001 +0.002)  VR 1.001 | first half's regime → second half: corr +0.101, same sign 53.3% | first-third direction continues 50.3%
+  London 03:00-08:00     character: AC1 -0.000 (t -0.0; eras +0.001 -0.003 +0.000)  VR 0.998 | first half's regime → second half: corr +0.022, same sign 50.2% | first-third direction continues 50.7%
+  New York 09:30-16:00   character: AC1 +0.003 (t +1.6; eras +0.005 -0.001 +0.003)  VR 1.006 | first half's regime → second half: corr +0.051, same sign 50.4% | first-third direction continues 49.5%
+  Asia → London (same day)               regime corr +0.131, same sign 53.1% (n 3732)
+  London → New York (same day)           regime corr +0.084, same sign 52.5% (n 3732)
+  Asia → New York (same day)             regime corr +0.125, same sign 55.4% (n 3732)
+  yesterday's New York → today's New York regime corr -0.013, same sign 50.1% (n 3731)

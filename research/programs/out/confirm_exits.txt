@@ -1,0 +1,2 @@
+[edge_lab] NQ: 5218889 bars, 4046 days, 1058329 order-book minutes
+cascade_gap_agree__exits: PASS (vwap)  (oos 897 trades, 10.05 pts/trade net, PF 1.72)  → data/edge_lab/reports/cascade_gap_agree__exits.md

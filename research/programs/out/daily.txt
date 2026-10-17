@@ -1,0 +1,14 @@
+cascade + 12:00, walk-forward trades by check slot (VWAP+stall exits, NQ pts/trade after 1.0 cost)
+slot            2010-18          2019-22          2023-24  2025+ (holdout)
+09:50     +0.28 (n  554)   +11.69 (n  300)    +7.58 (n  186)    +6.75 (n  106)
+10:30     +0.02 (n  293)    +4.70 (n  179)   +11.52 (n   87)   +12.35 (n   57)
+11:00     +0.72 (n  190)    -3.37 (n   95)    -1.61 (n   45)    +3.26 (n   23)
+11:30     -0.01 (n  113)   +14.61 (n   64)   +22.96 (n   23)   +90.78 (n   17)
+12:00     -0.61 (n  533)    +0.19 (n  345)    -3.74 (n  148)    -2.75 (n   96)
+
+the plan, 2019-01 → 2026-10 (1785 sessions), MNQ cost 1.5, 1 MNQ per piece
+  cascade (today)                            trades on 69.2% of days (Mon 69 Tue 72 Wed 62 Thu 70 Fri 73%) · winning days 37.7% of trade days ·  +9.8 pts/day traded · max DD  972 · Flex 1st payout 16.4 wks, <=12 wks  28%
+  cascade + gap retest                       trades on 82.4% of days (Mon 83 Tue 85 Wed 77 Thu 84 Fri 84%) · winning days 40.0% of trade days ·  +9.7 pts/day traded · max DD 1036 · Flex 1st payout 11.2 wks, <=12 wks  54%
+  cascade + 12:00 + gap retest               trades on 99.2% of days (Mon 99 Tue 99 Wed 99 Thu 99 Fri 99%) · winning days 38.1% of trade days ·  +7.0 pts/day traded · max DD 1239 · Flex 1st payout 13.2 wks, <=12 wks  45%
+  all four (cascade, gap, weak-day, Monday)  trades on 87.4% of days (Mon 92 Tue 87 Wed 82 Thu 88 Fri 88%) · winning days 45.6% of trade days · +18.7 pts/day traded · max DD 1872 · Flex 1st payout 11.2 wks, <=12 wks  53%
+  all four, cascade + 12:00                  trades on 99.2% of days (Mon 99 Tue 99 Wed 99 Thu 99 Fri 99%) · winning days 42.5% of trade days · +15.8 pts/day traded · max DD 1746 · Flex 1st payout 13.0 wks, <=12 wks  46%

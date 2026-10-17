@@ -1,0 +1,60 @@
+
+=== NQ New York (cost 1.60 pts) ===
+  any | BE +1R hold (frozen) n  3271 +0.037 R (+0.011 / +0.081 / +0.053) *  +2.25 pts | 25-26 +0.178 R (n 257)
+  any | BE +0.5R hold        n  3904 -0.005 R (-0.024 / +0.019 / +0.014)    +0.87 pts | 25-26 +0.109 R (n 257)
+  any | BE +1.5R hold        n  3108 +0.038 R (+0.008 / +0.093 / +0.051) *  +2.54 pts | 25-26 +0.154 R (n 257)
+  any | 2R target            n  3654 -0.003 R (-0.055 / +0.069 / +0.070)    +1.47 pts | 25-26 +0.144 R (n 315)
+  any | trail 0.25 ATR       n  3572 -0.012 R (-0.063 / +0.066 / +0.039)    +0.99 pts | 25-26 +0.059 R (n 315)
+  any | BE +1R then trail 1R n  3725 -0.009 R (-0.055 / +0.047 / +0.065)    +0.85 pts | 25-26 +0.094 R (n 325)
+  any | time exit 60 min     n  4355 -0.039 R (-0.076 / +0.015 / -0.008)    -0.21 pts | 25-26 +0.113 R (n 374)
+  any | time exit 120 min    n  3904 -0.008 R (-0.040 / +0.025 / +0.050)    +0.47 pts | 25-26 +0.091 R (n 318)
+  EMA20 | BE +1R hold (frozen) n   964 +0.079 R (+0.066 / +0.076 / +0.136) *  +2.23 pts | 25-26 +0.223 R (n 74)
+  EMA20 | BE +0.5R hold      n   996 +0.009 R (-0.009 / +0.026 / +0.031)    +0.05 pts | 25-26 +0.216 R (n 74)
+  EMA20 | BE +1.5R hold      n   956 +0.101 R (+0.049 / +0.120 / +0.259) *  +3.59 pts | 25-26 +0.189 R (n 74)
+  EMA20 | 2R target          n   958 +0.057 R (+0.035 / +0.082 / +0.084) *  +1.66 pts | 25-26 +0.074 R (n 74)
+  EMA20 | trail 0.25 ATR     n   974 -0.002 R (-0.008 / -0.025 / +0.079)    -0.38 pts | 25-26 +0.021 R (n 77)
+  EMA20 | BE +1R then trail 1R n   980 +0.063 R (+0.060 / +0.048 / +0.107) *  +1.29 pts | 25-26 +0.066 R (n 77)
+  EMA20 | time exit 60 min   n   996 -0.033 R (-0.059 / -0.036 / +0.077)    -0.90 pts | 25-26 +0.192 R (n 80)
+  EMA20 | time exit 120 min  n   979 +0.028 R (-0.003 / +0.038 / +0.124)    +1.09 pts | 25-26 +0.171 R (n 77)
+
+=== NQ London (cost 1.60 pts) ===
+  any | BE +1R hold (frozen) n  2994 -0.112 R (-0.171 / -0.017 / -0.064)    -1.55 pts | 25-26 -0.035 R (n 256)
+  EMA20 | BE +1R hold (frozen) n  1657 -0.105 R (-0.161 / -0.032 / -0.055)    -1.48 pts | 25-26 -0.028 R (n 160)
+
+=== NQ Asia (cost 1.60 pts) ===
+  any | BE +1R hold (frozen) n  3066 -0.125 R (-0.182 / -0.080 / +0.017)    -1.56 pts | 25-26 +0.046 R (n 259)
+  EMA20 | BE +1R hold (frozen) n  2666 -0.115 R (-0.173 / -0.051 / +0.005)    -1.13 pts | 25-26 -0.009 R (n 201)
+
+=== ES New York (cost 0.65 pts) ===
+  any | BE +1R hold (frozen) n  3324 -0.062 R (-0.114 / +0.008 / +0.028)    -0.09 pts | 25-26 +0.067 R (n 259)
+  EMA20 | BE +1R hold (frozen) n   959 -0.063 R (-0.146 / +0.037 / -0.003)    -0.03 pts | 25-26 +0.287 R (n 86)
+
+=== ES London (cost 0.65 pts) ===
+  any | BE +1R hold (frozen) n  3006 -0.139 R (-0.188 / -0.083 / -0.048)    -0.73 pts | 25-26 -0.077 R (n 255)
+  EMA20 | BE +1R hold (frozen) n  1364 -0.112 R (-0.176 / -0.060 / -0.001)    -0.50 pts | 25-26 -0.039 R (n 147)
+
+=== ES Asia (cost 0.65 pts) ===
+  any | BE +1R hold (frozen) n  3087 -0.156 R (-0.212 / -0.097 / -0.051)    -0.81 pts | 25-26 -0.006 R (n 260)
+  EMA20 | BE +1R hold (frozen) n  2316 -0.101 R (-0.136 / -0.068 / -0.035)    -0.43 pts | 25-26 +0.016 R (n 210)
+
+Splits, NQ New York, frozen rule (any 5-min close, BE +1R hold):
+  entry ≤ 11:30            n  2808 +0.043 R (+0.023 / +0.088 / +0.032) *  +2.29 pts | 25-26 +0.169 R (n 233)
+  entry > 11:30              n   463 +0.000 R (-0.061 / +0.038 / +0.189)    +2.01 pts | 25-26 +0.270 R (n 24)
+  plan direction agrees      n   665 +0.047 R (-0.001 / +0.147 / +0.018)    +2.41 pts | 25-26 -0.208 R (n 49)
+  plan direction disagrees   n   149 -0.124 R (-0.295 / +0.133 / -0.163)    +1.88 pts | 25-26 +0.522 R (n 9)
+  no plan direction yet      n  2457 +0.044 R (+0.032 / +0.057 / +0.069) *  +2.23 pts | 25-26 +0.258 R (n 199)
+
+Walk-forward exit choice, NQ New York, any 5-min close (each year the best total R of 2010..year-1):
+    2013 BE +1R hold (frozen)   -0.084 R (frozen -0.084)
+    2014 BE +1R hold (frozen)   +0.018 R (frozen +0.018)
+    2015 BE +1R hold (frozen)   -0.002 R (frozen -0.002)
+    2016 BE +1R hold (frozen)   +0.044 R (frozen +0.044)
+    2017 BE +1R hold (frozen)   +0.011 R (frozen +0.011)
+    2018 BE +1R hold (frozen)   +0.281 R (frozen +0.281)
+    2019 BE +1R hold (frozen)   -0.014 R (frozen -0.014)
+    2020 BE +1R hold (frozen)   +0.006 R (frozen +0.006)
+    2021 BE +1R hold (frozen)   +0.210 R (frozen +0.210)
+    2022 BE +1R hold (frozen)   +0.117 R (frozen +0.117)
+    2023 BE +1R hold (frozen)   -0.010 R (frozen -0.010)
+    2024 BE +1R hold (frozen)   +0.121 R (frozen +0.121)
+  WF +0.060 R/trade vs frozen +0.060

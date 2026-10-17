@@ -1,0 +1,42 @@
+rows 8277713, priced 8275996
+family                       trades   paper  replay | entry edge: dir × move after +5m / +15m / +30m / +60m (NQ pts, t)            | exits
+ALL FLEET                   8275996   -1.52   -0.04 | +0.23 (t+24.5) +0.39 (t+25.4) +0.97 (t+43.6) +1.50 (t+51.5) | best fixed +60m +1.50 → exit adds -1.54 | long  49%
+orb                         1581453   -1.52   -0.08 | +0.32 (t+14.1) +0.45 (t+11.6) +1.37 (t+23.5) +3.17 (t+43.1) | best fixed +60m +3.17 → exit adds -3.25 | long  51%
+fibr_e                      1134955   -1.62   -0.07 | +0.37 (t+14.4) +0.78 (t+19.0) +1.85 (t+31.2) +2.53 (t+31.9) | best fixed +60m +2.53 → exit adds -2.60 | long  45%
+fibc                         994026   -1.84   -0.17 | +0.46 (t+18.3) +0.45 (t+10.7) +0.96 (t+15.9) +1.38 (t+16.6) | best fixed +60m +1.38 → exit adds -1.55 | long  45%
+fibr_x                       502842   -1.88   -0.27 | +0.80 (t+24.1) +0.11 (t +2.1) +0.45 (t +5.7) -1.06 (t -9.7) | best fixed +5 m +0.80 → exit adds -1.07 | long  45%
+fib_pb                       272516   -1.73   -0.11 | +0.90 (t+19.3) +1.21 (t+15.5) +1.91 (t+16.9) +1.49 (t +9.6) | best fixed +30m +1.91 → exit adds -2.02 | long  46%
+delta_div                    272223   -1.40   +0.11 | +0.00 (t +0.1) -0.93 (t -9.8) -1.44 (t-11.1) -2.65 (t-15.2) | best fixed +5 m +0.00 → exit adds +0.11 | long  44%
+volume_burst                 269120   -1.30   +0.17 | +0.16 (t +3.0) +0.55 (t +6.4) +0.56 (t +4.4) +0.71 (t +4.2) | best fixed +60m +0.71 → exit adds -0.54 | long  47%
+keltner_ride                 237854   -1.19   -0.09 | -0.74 (t-11.7) +0.91 (t +8.6) +2.03 (t+13.2) +4.50 (t+23.6) | best fixed +60m +4.50 → exit adds -4.59 | long  50%
+trend_ema_pb                 234783   -1.21   +0.06 | +0.17 (t +2.6) +0.88 (t +7.9) +2.63 (t+16.9) +4.08 (t+20.6) | best fixed +60m +4.08 → exit adds -4.02 | long  52%
+trend_donchian               192696   -1.20   -0.02 | -0.30 (t -4.1) +0.79 (t +6.4) +3.12 (t+17.2) +4.80 (t+21.1) | best fixed +60m +4.80 → exit adds -4.82 | long  53%
+mr_vwap_fade                 192547   -1.40   -0.06 | -0.71 (t-12.1) -1.41 (t-13.1) -2.16 (t-16.0) -2.43 (t-13.2) | best fixed +5 m -0.71 → exit adds +0.65 | long  43%
+ichimoku                     138209   -1.48   -0.05 | +0.77 (t +9.8) +1.79 (t+13.5) +1.77 (t +9.8) +2.99 (t+12.4) | best fixed +60m +2.99 → exit adds -3.04 | long  52%
+mr                            96748   -1.51   +0.00 | +0.23 (t +2.4) +1.89 (t+12.4) +1.60 (t +8.2) +0.35 (t +1.3) | best fixed +15m +1.89 → exit adds -1.89 | long  73%
+nt_orb                        90522   -1.35   +0.14 | +0.27 (t +6.6) +0.69 (t +9.8) +0.80 (t +8.1) +1.56 (t+11.6) | best fixed +60m +1.56 → exit adds -1.42 | long  50%
+trend_vwap                    84226   -1.57   -0.10 | -0.38 (t -3.9) +0.50 (t +3.2) +1.29 (t +5.6) +1.52 (t +5.3) | best fixed +60m +1.52 → exit adds -1.62 | long  63%
+roc                           83401   -1.26   -0.07 | +0.39 (t +3.5) +0.17 (t +0.9) +2.06 (t +7.4) +4.07 (t+11.9) | best fixed +60m +4.07 → exit adds -4.14 | long  49%
+fail_bo                       77863   -1.43   -0.10 | -0.24 (t -2.4) -0.99 (t -5.4) -1.18 (t -4.8) -1.31 (t -4.2) | best fixed +5 m -0.24 → exit adds +0.14 | long  48%
+ema_ribbon                    61506   -1.20   +0.06 | -0.04 (t -0.3) +1.02 (t +4.7) +2.94 (t +9.7) +4.87 (t+12.5) | best fixed +60m +4.87 → exit adds -4.81 | long  53%
+delta_trend                   58859   -1.22   +0.15 | -0.31 (t -2.6) +1.01 (t +5.1) +1.80 (t +6.6) +3.22 (t +9.0) | best fixed +60m +3.22 → exit adds -3.07 | long  51%
+trend_supertrend              54422   -0.98   +0.19 | -0.02 (t -0.1) +0.93 (t +4.3) +1.08 (t +3.5) +1.42 (t +3.7) | best fixed +60m +1.42 → exit adds -1.23 | long  50%
+asia_orb                      42904   -1.28   +0.17 | +0.44 (t +9.2) +0.80 (t +9.6) +0.70 (t +6.5) +0.55 (t +3.7) | best fixed +15m +0.80 → exit adds -0.62 | long  53%
+mtf                           42690   -1.87   -0.04 | +0.28 (t +2.2) -0.32 (t -1.3) -0.85 (t -2.6) -0.67 (t -1.4) | best fixed +5 m +0.28 → exit adds -0.32 | long  60%
+trend_drive                   39222   -1.48   -0.35 | +0.81 (t +5.1) +1.32 (t +5.4) +1.13 (t +3.6) -0.42 (t -1.0) | best fixed +15m +1.32 → exit adds -1.66 | long  52%
+ib_break                      36604   -1.61   +0.07 | -0.54 (t -3.6) -0.71 (t -2.8) +2.76 (t +7.3) +3.59 (t +7.3) | best fixed +60m +3.59 → exit adds -3.52 | long  54%
+mr_band_fade                  35948   -1.35   -0.10 | -0.86 (t -5.9) -1.57 (t -5.7) -2.49 (t -6.6) -3.67 (t -7.3) | best fixed +5 m -0.86 → exit adds +0.76 | long  59%
+orb_retest                    32290   -2.00   -0.19 | -0.44 (t -2.5) +0.98 (t +3.5) +0.79 (t +2.0) +5.65 (t+11.3) | best fixed +60m +5.65 → exit adds -5.84 | long  51%
+trend_rs_es                   31541   -1.22   +0.11 | +0.54 (t +2.6) +2.87 (t +8.9) +6.67 (t+14.2) +8.18 (t+13.9) | best fixed +60m +8.18 → exit adds -8.07 | long  48%
+nt_ldl_mr_vwap_fade           27953   -1.38   -0.13 | -0.30 (t -3.4) -0.47 (t -3.1) -1.07 (t -4.6) -1.55 (t -4.3) | best fixed +5 m -0.30 → exit adds +0.17 | long  43%
+nt_ldl_volume_burst           23175   -1.54   +0.00 | +0.18 (t +1.7) -0.71 (t -4.0) -0.69 (t -2.6) -0.68 (t -1.6) | best fixed +5 m +0.18 → exit adds -0.18 | long  51%
+nt_ldn_mr_vwap_fade           22926   -1.31   +0.03 | -0.66 (t -8.1) -0.99 (t -7.0) -1.29 (t -6.4) -2.11 (t -7.2) | best fixed +5 m -0.66 → exit adds +0.69 | long  46%
+mtf_london                    22390   -1.35   +0.01 | -0.13 (t -1.6) +0.38 (t +2.7) +0.39 (t +1.9) -1.16 (t -3.8) | best fixed +30m +0.39 → exit adds -0.37 | long  60%
+mtf_pm                        22354   -1.15   +0.27 | +0.34 (t +2.2) +0.82 (t +3.3) +2.59 (t +6.7) +0.49 (t +0.9) | best fixed +30m +2.59 → exit adds -2.32 | long  51%
+mtf_allday                    22295   -1.57   +0.09 | +0.11 (t +0.6) +0.67 (t +1.9) +0.58 (t +1.3) -0.33 (t -0.6) | best fixed +15m +0.67 → exit adds -0.58 | long  54%
+mtf_all                       21587   -1.45   +0.24 | +0.02 (t +0.1) -0.66 (t -2.0) -2.27 (t -5.1) -3.67 (t -6.0) | best fixed +5 m +0.02 → exit adds +0.21 | long  59%
+asia                          21437   -1.67   -0.12 | -0.29 (t -4.5) -0.53 (t -4.8) -0.52 (t -3.3) -0.56 (t -2.5) | best fixed +5 m -0.29 → exit adds +0.17 | long  56%
+mtf_fixed                     20138   -1.75   +0.19 | +0.03 (t +0.1) -0.80 (t -2.1) -2.46 (t -5.0) -2.64 (t -4.0) | best fixed +5 m +0.03 → exit adds +0.16 | long  57%
+
+strategy ids with ≥300 trades: 6383 | entry edge t>2 at +15m: 526 (8.2%), at +60m: 1064 (16.7%), both: 332 — chance alone ≈ 2.3% each
+  own exit beats the best fixed-time exit: 980 (15.4%) | average trade > 1.6 pts (≈ the measured round-trip cost): 10 (0.2%)

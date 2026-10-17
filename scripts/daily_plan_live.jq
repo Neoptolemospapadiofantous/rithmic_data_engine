@@ -86,7 +86,22 @@ def bars5: [$bars | group_by(.m / 5 | floor)[] | {k: (.[0].m / 5 | floor), o: .[
                                else {result: "WIN", pts: ($st * 0.5), at: hhmm($hit.m + 1)} end)
          elif $now >= 385 then ([$bars[] | select(.m < 385)] | last) as $lb | {result: "FLAT 15:55", pts: ((($sd * ($lb.c - $sp.price)) * 4 | round) / 4), at: "15:55"}
          else {result: "OPEN", pts: (if ($bars | length) > 0 then ((($sd * (($bars | last.c) - $sp.price)) * 4 | round) / 4) else 0 end), at: hhmm($now)} end end) as $spout
-  | . + {live: {status: $status, at: hhmm($now), next: $next,
+  # ── 1-min momentum direction (research/preregistered/2026-10-17_mtf_1m_dir_5m_entry.md, forward-paper candidate): the last 30
+  #    one-minute moves went one way fairly straight (|net| / path ≥ 0.3) and price is on that side of VWAP and the open, ≤ 13:55
+  | ([$bars[] | select(.m < $now)]) as $mb
+  | (if ($mb | length) < 31 then null else
+       ($mb[-31:]) as $w | ([range(1; 31) as $i | (($w[$i].c - $w[$i - 1].c) | fabs)] | add) as $path | ($w[30].c - $w[0].c) as $net
+       | (if $path > 0 then (($net | fabs) / $path) else 0 end) as $eff
+       | (if $eff >= 0.3 then (if $net > 0 then 1 else -1 end) else 0 end) as $md
+       | {dir: (if $md > 0 then "LONG" elif $md < 0 then "SHORT" else null end), eff: (($eff * 100 | round) / 100), net_pts: (($net * 4 | round) / 4),
+          allowed: ($md != 0 and $now <= 265 and $vwap != null and ($md * ($px - $vwap)) > 0 and ($md * ($px - $open)) > 0 and (($long_hold and $md < 0) | not)),
+          why: (if $md == 0 then "last 30 min not straight enough (efficiency \(($eff * 100 | round) / 100) < 0.3)"
+                elif $now > 265 then "after 13:55"
+                elif ($long_hold and $md < 0) then "a long hold is on: no shorts"
+                elif ($md * ($px - $vwap)) <= 0 then "price on the wrong side of VWAP"
+                elif ($md * ($px - $open)) <= 0 then "price on the wrong side of the 09:30 open"
+                else "enter at a 5-min close in this direction (the EMA-20 touch is a fine place); stop 0.25 ATR, break-even at +1R, hold; ≤ 3 a day, done after a loss" end)} end) as $mom
+  | . + {live: {status: $status, at: hhmm($now), next: $next, mom: $mom,
                 sprint: {status: $spst, outcome: $spout, trade: (if $sp == null then null else $sp + {target_pts: (($sp.stop_pts * 0.5 * 4 | round) / 4),
                           stop_price: ((($sp.price - (if $sp.dir == "LONG" then 1 else -1 end) * $sp.stop_pts) * 4 | round) / 4),
                           target_price: ((($sp.price + (if $sp.dir == "LONG" then 1 else -1 end) * $sp.stop_pts * 0.5) * 4 | round) / 4)} end)},

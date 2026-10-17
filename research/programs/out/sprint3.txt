@@ -1,0 +1,24 @@
+
+== lightning_25k (no evaluation) — top 8 by P(first payout ≤ 7 trading days)
+  plan+weak+Monday   target 0.5R  risk $ 600 | ≤5d  0.00%  ≤7d  6.69%  ≤10d 12.83%  ≤20d 24.62%  blown≤7d  33.6%  payout ~$1210
+  plan+weak-day      target 0.5R  risk $ 600 | ≤5d  0.00%  ≤7d  5.59%  ≤10d 11.86%  ≤20d 23.17%  blown≤7d  33.2%  payout ~$1209
+  plan               target 0.5R  risk $ 600 | ≤5d  0.00%  ≤7d  4.34%  ≤10d  8.83%  ≤20d 20.34%  blown≤7d  33.1%  payout ~$1180
+  plan+weak-day HOLD target 0.5R  risk $ 600 | ≤5d  0.00%  ≤7d  2.00%  ≤10d  5.66%  ≤20d 15.10%  blown≤7d  32.1%  payout ~$1012
+  plan+weak+Monday   target 0.5R  risk $ 500 | ≤5d  0.00%  ≤7d  0.48%  ≤10d  5.17%  ≤20d 17.93%  blown≤7d  22.1%  payout ~$1253
+  plan+weak-day      target 0.5R  risk $ 500 | ≤5d  0.00%  ≤7d  0.21%  ≤10d  4.41%  ≤20d 16.83%  blown≤7d  21.1%  payout ~$1250
+  plan+weak+Monday   target 1.0R  risk $ 400 | ≤5d  0.00%  ≤7d  0.76%  ≤10d  2.83%  ≤20d 10.00%  blown≤7d  23.8%  payout ~$1000
+  plan+weak+Monday   target 1.0R  risk $ 600 | ≤5d  0.00%  ≤7d  0.69%  ≤10d  2.69%  ≤20d  8.14%  blown≤7d  51.0%  payout ~$1000
+
+== lightning_50k (no evaluation) — top 8 by P(first payout ≤ 7 trading days)
+  plan+weak+Monday   target 0.5R  risk $1200 | ≤5d  0.00%  ≤7d  8.00%  ≤10d 16.21%  ≤20d 26.55%  blown≤7d  39.9%  payout ~$1915
+  plan+weak-day      target 0.5R  risk $1200 | ≤5d  0.00%  ≤7d  6.97%  ≤10d 14.28%  ≤20d 26.83%  blown≤7d  38.8%  payout ~$1833
+  plan               target 0.5R  risk $1200 | ≤5d  0.00%  ≤7d  5.17%  ≤10d 11.45%  ≤20d 22.14%  blown≤7d  39.0%  payout ~$1870
+  plan+weak+Monday   target 0.5R  risk $1000 | ≤5d  0.00%  ≤7d  3.17%  ≤10d  8.34%  ≤20d 20.55%  blown≤7d  29.5%  payout ~$1996
+  plan+weak-day      target 0.5R  risk $1000 | ≤5d  0.00%  ≤7d  2.34%  ≤10d  7.10%  ≤20d 19.10%  blown≤7d  28.8%  payout ~$1966
+  plan+weak-day HOLD target 0.5R  risk $1200 | ≤5d  0.00%  ≤7d  2.48%  ≤10d  6.76%  ≤20d 17.17%  blown≤7d  35.9%  payout ~$1561
+  plan               target 0.5R  risk $1000 | ≤5d  0.00%  ≤7d  2.28%  ≤10d  5.59%  ≤20d 16.34%  blown≤7d  27.6%  payout ~$1926
+  plan+weak+Monday   target 1.0R  risk $ 800 | ≤5d  0.00%  ≤7d  0.76%  ≤10d  3.24%  ≤20d 11.59%  blown≤7d  28.4%  payout ~$1500
+days with a trade, plan: 74.0%
+days with a trade, plan+weak-day: 75.7%
+days with a trade, plan+weak-day HOLD: 75.7%
+days with a trade, plan+weak+Monday: 78.1%

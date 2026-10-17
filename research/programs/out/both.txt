@@ -1,0 +1,12 @@
+
+== select_daily_25k, 2 micros per trade
+  NQ        first strategy per market    trades/day 0.82 · trade days 82.4% (win 40.0%) · $  8044/yr · eval pass 42.7% blown 53.3% (median 21 d) · 1st payout 20.4 wks · paid/yr $ 2644 · evals/yr  9.5
+  NQ        both strategies, same dir    trades/day 1.06 · trade days 82.4% (win 41.2%) · $ 13253/yr · eval pass 53.6% blown 46.2% (median 29 d) · 1st payout 17.6 wks · paid/yr $ 3879 · evals/yr  7.2
+  NQ + ES   first strategy per market    trades/day 1.50 · trade days 89.3% (win 40.5%) · $  9983/yr · eval pass 40.6% blown 58.5% (median 21 d) · 1st payout 17.0 wks · paid/yr $ 3994 · evals/yr 11.5
+  NQ + ES   both strategies, same dir    trades/day 1.91 · trade days 89.3% (win 40.7%) · $ 16966/yr · eval pass 39.5% blown 60.4% (median 21 d) · 1st payout 14.2 wks · paid/yr $ 6481 · evals/yr 10.9
+
+== select_flex_25k, 2 micros per trade
+  NQ        first strategy per market    trades/day 0.82 · trade days 82.4% (win 40.0%) · $  8044/yr · eval pass 42.7% blown 53.3% (median 21 d) · 1st payout 16.0 wks · paid/yr $ 2781 · evals/yr  7.8
+  NQ        both strategies, same dir    trades/day 1.06 · trade days 82.4% (win 41.2%) · $ 13253/yr · eval pass 53.6% blown 46.2% (median 29 d) · 1st payout 16.0 wks · paid/yr $ 3957 · evals/yr  6.8
+  NQ + ES   first strategy per market    trades/day 1.50 · trade days 89.3% (win 40.5%) · $  9983/yr · eval pass 40.6% blown 58.5% (median 21 d) · 1st payout 16.4 wks · paid/yr $ 3809 · evals/yr 10.9
+  NQ + ES   both strategies, same dir    trades/day 1.91 · trade days 89.3% (win 40.7%) · $ 16966/yr · eval pass 39.5% blown 60.4% (median 21 d) · 1st payout 16.4 wks · paid/yr $ 5252 · evals/yr 10.2

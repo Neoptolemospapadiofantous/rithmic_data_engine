@@ -1,0 +1,10 @@
+days 1785 · trades: cascade 1236, gap retest 791 (both on 556 days, same direction on 424), weak-day 449, Monday 217
+
+plan (1 MNQ per piece, pts)    |  trades   pts/yr    max DD  worst m +months days/wk | Flex 50K: eval 8 dir + 2 hold → funded 2 dir + 1 hold
+cascade only (today's plan)    |    1236    +1715       972     -680     66%    3.5 | paid in yr 100%, 1st payout median 16.4 wks, <=12 wks  28%, evals 2.7, avg 1st $758
+cascade + gap retest           |    1471    +2011      1036     -356     66%    4.1 | paid in yr 100%, 1st payout median 11.2 wks, <=12 wks  54%, evals 3.7, avg 1st $747
+gap retest only                |     791    +1587      1124     -475     69%    2.2 | paid in yr 100%, 1st payout median 13.4 wks, <=12 wks  43%, evals 3.0, avg 1st $737
+cascade + weak-day             |    1528    +3142      1538     -682     71%    3.8 | paid in yr  94%, 1st payout median 15.0 wks, <=12 wks  33%, evals 3.2, avg 1st $928
+cascade + weak-day + Monday    |    1635    +3831      1371     -629     72%    3.9 | paid in yr 100%, 1st payout median 13.8 wks, <=12 wks  40%, evals 2.6, avg 1st $810
+cascade + gap + weak-day       |    1772    +3417      2066    -1018     66%    4.3 | paid in yr 100%, 1st payout median 11.4 wks, <=12 wks  53%, evals 3.4, avg 1st $799
+all four                       |    1874    +4125      1872     -558     69%    4.4 | paid in yr 100%, 1st payout median 11.2 wks, <=12 wks  53%, evals 3.2, avg 1st $825

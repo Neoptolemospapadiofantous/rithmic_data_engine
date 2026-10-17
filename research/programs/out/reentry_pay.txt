@@ -1,0 +1,17 @@
+25K plans, NQ 2 micros a trade, the day's trades merged (worst points together), 2019-01 → 2024-12 (1472 days), cost 1.5 pts/trade
+
+== select_flex_25k
+  plan, 1 trade a day                        trade days 74.0% (win 45.7%) · $  6892/yr · eval pass 36.7% blown 62.7% · 1st payout 18.4 wks · paid/yr $ 1643 · evals/yr 10.2
+  plan setups, up to 3 (any exit)            trade days 74.0% (win 46.8%) · $  7840/yr · eval pass 38.9% blown 60.6% · 1st payout 17.8 wks · paid/yr $ 1301 · evals/yr 10.8
+  plan setups, again only after a win        trade days 74.0% (win 45.7%) · $  8008/yr · eval pass 32.7% blown 65.1% · 1st payout 23.2 wks · paid/yr $ 1853 · evals/yr  8.5
+  +VWAP pullback, again only after a win     trade days 74.0% (win 45.7%) · $  8179/yr · eval pass 33.2% blown 64.9% · 1st payout 23.0 wks · paid/yr $ 1870 · evals/yr  8.9
+  +HOLD check, again only after a win        trade days 74.0% (win 45.7%) · $  7796/yr · eval pass 25.7% blown 72.0% · 1st payout 26.4 wks · paid/yr $ 1330 · evals/yr  8.1
+  +VWAP pullback, after any exit             trade days 74.0% (win 49.5%) · $  7488/yr · eval pass 30.1% blown 69.9% · 1st payout 18.4 wks · paid/yr $ 2374 · evals/yr 13.2
+
+== select_daily_25k
+  plan, 1 trade a day                        trade days 74.0% (win 45.7%) · $  6892/yr · eval pass 36.7% blown 62.7% · 1st payout 24.6 wks · paid/yr $ 1591 · evals/yr  9.8
+  plan setups, up to 3 (any exit)            trade days 74.0% (win 46.8%) · $  7840/yr · eval pass 38.9% blown 60.6% · 1st payout 23.4 wks · paid/yr $ 1805 · evals/yr 10.5
+  plan setups, again only after a win        trade days 74.0% (win 45.7%) · $  8008/yr · eval pass 32.7% blown 65.1% · 1st payout 26.8 wks · paid/yr $ 1356 · evals/yr  8.4
+  +VWAP pullback, again only after a win     trade days 74.0% (win 45.7%) · $  8179/yr · eval pass 33.2% blown 64.9% · 1st payout 26.4 wks · paid/yr $ 1326 · evals/yr  9.0
+  +HOLD check, again only after a win        trade days 74.0% (win 45.7%) · $  7796/yr · eval pass 25.7% blown 72.0% · 1st payout 30.4 wks · paid/yr $  762 · evals/yr  8.0
+  +VWAP pullback, after any exit             trade days 74.0% (win 49.5%) · $  7488/yr · eval pass 30.1% blown 69.9% · 1st payout 26.2 wks · paid/yr $ 1203 · evals/yr 13.9

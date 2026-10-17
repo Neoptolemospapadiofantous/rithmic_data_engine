@@ -1,0 +1,15 @@
+date check (10:00 volume spike):
+  JOLTS  days 186: 10:00 volume ≥ 1.5× the 09:45–09:59 rate on 25.3% (2019+: 41.9%)
+  ISM    days 190: 10:00 volume ≥ 1.5× the 09:45–09:59 rate on 49.5% (2019+: 47.2%)
+  other days 3476: 17.5%
+
+cascade walk-forward trades, NQ pts/trade after cost, by slot: 10:00-release days vs other days
+                              2010-18            2019-22            2023-24      2025+ holdout
+09:50  release day     +2.11 (n   45)    +13.86 (n   23)     -4.71 (n   19)    -26.36 (n   13)
+09:50  other days      +0.47 (n  424)    +13.63 (n  245)    +11.34 (n  174)    +13.17 (n  114)
+10:30  release day     +2.13 (n   35)     +1.35 (n   21)    +39.12 (n   10)   +152.83 (n    3)
+10:30  other days      +0.03 (n  276)     +3.50 (n  208)     +7.42 (n   82)     +6.51 (n   43)
+11:00  release day     +1.94 (n   21)    +13.02 (n    9)     -2.36 (n    5)    -13.99 (n    6)
+11:00  other days      +0.27 (n  181)     +3.19 (n   86)     -2.89 (n   45)    -14.70 (n   15)
+11:30  release day     +0.48 (n   15)    +23.08 (n    3)    -52.00 (n    1)      +nan (n    0)
+11:30  other days      +3.09 (n   89)    +22.06 (n   72)    +26.69 (n   24)    +91.65 (n   15)

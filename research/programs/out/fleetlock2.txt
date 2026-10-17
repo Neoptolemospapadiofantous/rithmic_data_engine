@@ -1,0 +1,7 @@
+2026 fleet, 4954 strategies with >= 10 trading days and >= 20 trades in January and in the test months (chosen on Jan + Mar, judged on Sep + Oct)
+net points per trading day per strategy, test months (average over strategies):
+  no filter, no lock (baseline)                  -3.91   profitable strategies  1059
+  best side + lock chosen on January             -2.28   profitable strategies  1211   better than baseline for 63.1%
+  random side + lock (luck baseline)             -2.60   profitable strategies  1282   better than baseline for 56.9%
+  the same lock on every strategy, no regime:     5 pts: +0.33  10 pts: +0.27  20 pts: +0.19  40 pts: +0.07  (change vs baseline)
+  what January picked:  all trades / lock 10 6;  all trades / lock 20 16;  all trades / lock 40 40;  all trades / lock 5 34;  all trades / lock none 268;  reverting only / lock 10 27;  reverting only / lock 20 52;  reverting only / lock 40 92;  reverting only / lock 5 129;  reverting only / lock none 578;  trending only / lock 10 61;  trending only / lock 20 158;  trending only / lock 40 296;  trending only / lock 5 326;  trending only / lock none 2871;

@@ -1,0 +1,73 @@
+EMA sweep, 2880 combinations, cost 1.6 pts, 2010-2024, R per trade (eras 2010-18 / 2019-22 / 2023-24)
+TODAY'S PANEL RULE:
+   5m EMA14 TOUCH trend -     mom -       BE+1R hold             n  2516 -0.048 R (-0.142 / +0.090 / +0.059)  +1.60 pts yrs+  6/15
+TOP 20 (n ≥ 300):
+   1m EMA50 DEEP  trend ALIGN mom RSI>50  BE+1R hold             n   333 +0.072 R (-0.014 / +0.214 / +0.091)  +4.17 pts yrs+  8/15
+   1m EMA50 DEEP  trend SLOPE mom RSI>50  BE+1R hold             n   315 +0.072 R (-0.050 / +0.395 / -0.111)  +2.91 pts yrs+  6/15
+   2m EMA9  NEAR  trend ALIGN mom IMPULSE BE+1R hold             n  2750 +0.068 R (-0.007 / +0.200 / +0.107)  +3.98 pts yrs+  9/15
+   1m EMA20 NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2828 +0.065 R (+0.001 / +0.178 / +0.096)  +3.71 pts yrs+  9/15
+   2m EMA9  NEAR  trend ALIGN mom -       BE+1R hold             n  2794 +0.065 R (-0.004 / +0.194 / +0.080)  +3.71 pts yrs+ 10/15
+   2m EMA9  NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2795 +0.065 R (-0.004 / +0.193 / +0.080)  +3.71 pts yrs+ 10/15
+   1m EMA20 NEAR  trend ALIGN mom -       BE+1R hold             n  2829 +0.064 R (+0.001 / +0.172 / +0.096)  +3.63 pts yrs+  9/15
+   1m EMA20 NEAR  trend -     mom -       BE+1R hold             n  2859 +0.062 R (+0.004 / +0.160 / +0.103)  +3.74 pts yrs+  9/15
+   1m EMA20 NEAR  trend -     mom RSI>50  BE+1R hold             n  2856 +0.062 R (+0.003 / +0.158 / +0.105)  +3.72 pts yrs+  9/15
+   1m EMA20 NEAR  trend SLOPE mom -       BE+1R hold             n  2841 +0.061 R (-0.006 / +0.171 / +0.110)  +3.73 pts yrs+  9/15
+   1m EMA14 NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2861 +0.061 R (-0.004 / +0.172 / +0.096)  +3.55 pts yrs+  9/15
+   1m EMA14 NEAR  trend ALIGN mom -       BE+1R hold             n  2862 +0.060 R (-0.004 / +0.170 / +0.096)  +3.53 pts yrs+  9/15
+   1m EMA20 NEAR  trend SLOPE mom RSI>50  BE+1R hold             n  2840 +0.060 R (-0.005 / +0.167 / +0.109)  +3.67 pts yrs+  9/15
+   1m EMA21 NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2825 +0.060 R (+0.001 / +0.164 / +0.089)  +3.46 pts yrs+ 10/15
+   1m EMA14 NEAR  trend -     mom RSI>50  BE+1R hold             n  2897 +0.059 R (+0.001 / +0.151 / +0.107)  +3.52 pts yrs+  9/15
+   1m EMA21 NEAR  trend ALIGN mom -       BE+1R hold             n  2826 +0.059 R (+0.002 / +0.157 / +0.089)  +3.38 pts yrs+ 10/15
+   1m EMA14 NEAR  trend -     mom -       BE+1R hold             n  2908 +0.059 R (+0.001 / +0.148 / +0.108)  +3.49 pts yrs+  9/15
+   1m EMA9  NEAR  trend ALIGN mom -       BE+1R hold             n  2858 +0.058 R (-0.008 / +0.163 / +0.112)  +3.48 pts yrs+  9/15
+   1m EMA9  NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2858 +0.058 R (-0.008 / +0.163 / +0.112)  +3.49 pts yrs+  9/15
+   3m EMA9  NEAR  trend -     mom MACD>0  BE+1R hold             n  2715 +0.057 R (-0.009 / +0.187 / +0.058)  +3.77 pts yrs+ 11/15
+cells positive in all three eras: 25 of 2816 (chance alone ≈ 352) · trend AND momentum cells: 11 of 1557 (chance ≈ 194)
+TOP 10 'trend AND momentum align':
+   1m EMA50 DEEP  trend ALIGN mom RSI>50  BE+1R hold             n   333 +0.072 R (-0.014 / +0.214 / +0.091)  +4.17 pts yrs+  8/15
+   1m EMA50 DEEP  trend SLOPE mom RSI>50  BE+1R hold             n   315 +0.072 R (-0.050 / +0.395 / -0.111)  +2.91 pts yrs+  6/15
+   2m EMA9  NEAR  trend ALIGN mom IMPULSE BE+1R hold             n  2750 +0.068 R (-0.007 / +0.200 / +0.107)  +3.98 pts yrs+  9/15
+   1m EMA20 NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2828 +0.065 R (+0.001 / +0.178 / +0.096)  +3.71 pts yrs+  9/15
+   2m EMA9  NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2795 +0.065 R (-0.004 / +0.193 / +0.080)  +3.71 pts yrs+ 10/15
+   1m EMA14 NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2861 +0.061 R (-0.004 / +0.172 / +0.096)  +3.55 pts yrs+  9/15
+   1m EMA20 NEAR  trend SLOPE mom RSI>50  BE+1R hold             n  2840 +0.060 R (-0.005 / +0.167 / +0.109)  +3.67 pts yrs+  9/15
+   1m EMA21 NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2825 +0.060 R (+0.001 / +0.164 / +0.089)  +3.46 pts yrs+ 10/15
+   1m EMA9  NEAR  trend ALIGN mom RSI>50  BE+1R hold             n  2858 +0.058 R (-0.008 / +0.163 / +0.112)  +3.49 pts yrs+  9/15
+   1m EMA14 NEAR  trend ALIGN mom IMPULSE BE+1R hold             n  2648 +0.057 R (+0.010 / +0.140 / +0.076)  +2.89 pts yrs+ 10/15
+Average by dimension (all cells pooled):
+  timeframe 1m -0.050 | 2m -0.058 | 3m -0.065 | 5m -0.076 | 15m -0.077 |
+  length    EMA9 -0.046 | EMA14 -0.055 | EMA20 -0.067 | EMA21 -0.067 | EMA34 -0.077 | EMA50 -0.084 |
+  pullback  TOUCH -0.064 | DEEP -0.072 | NEAR -0.058 |
+  trend     - -0.064 | SLOPE -0.059 | ALIGN -0.060 | HTF15 -0.067 |
+  momentum  - -0.059 | RSI>50 -0.059 | MACD>0 -0.069 | IMPULSE -0.066 |
+  exit      BE+1R hold -0.018 | 0.5R target -0.092 |
+Walk-forward (all cells):
+    2013  3m EMA9  DEEP  trend SLOPE mom MACD>0  BE+1R hold             -0.576 R (n  79)
+    2014  5m EMA50 TOUCH trend HTF15 mom MACD>0  0.5R target            -0.124 R (n  53)
+    2015  5m EMA50 TOUCH trend HTF15 mom MACD>0  BE+1R hold             -0.262 R (n  41)
+    2016  1m EMA14 DEEP  trend ALIGN mom MACD>0  BE+1R hold             -0.164 R (n  31)
+    2017  5m EMA50 DEEP  trend HTF15 mom MACD>0  BE+1R hold             -0.665 R (n  21)
+    2018  1m EMA14 DEEP  trend HTF15 mom IMPULSE BE+1R hold             -0.119 R (n  74)
+    2019  1m EMA14 NEAR  trend -     mom IMPULSE BE+1R hold             +0.026 R (n 199)
+    2020  1m EMA14 DEEP  trend SLOPE mom RSI>50  BE+1R hold             +0.080 R (n  71)
+    2021  1m EMA9  NEAR  trend ALIGN mom MACD>0  BE+1R hold             +0.097 R (n 208)
+    2022  2m EMA9  NEAR  trend ALIGN mom -       BE+1R hold             +0.268 R (n 208)
+    2023  2m EMA9  NEAR  trend ALIGN mom -       BE+1R hold             +0.041 R (n 200)
+    2024  2m EMA9  NEAR  trend ALIGN mom IMPULSE BE+1R hold             +0.139 R (n 179)
+  WF 2013-24 +0.021 R/trade, +4.46 pts (n 1364)
+  HOLDOUT 2025-26 (one look)  2m EMA9  NEAR  trend ALIGN mom IMPULSE BE+1R hold: +0.006 R, +1.31 pts (n 218)
+Walk-forward (trend AND momentum cells only):
+    2013  3m EMA9  DEEP  trend SLOPE mom MACD>0  BE+1R hold             -0.576 R (n  79)
+    2014  5m EMA50 TOUCH trend HTF15 mom MACD>0  0.5R target            -0.124 R (n  53)
+    2015  5m EMA50 TOUCH trend HTF15 mom MACD>0  BE+1R hold             -0.262 R (n  41)
+    2016  1m EMA14 DEEP  trend ALIGN mom MACD>0  BE+1R hold             -0.164 R (n  31)
+    2017  5m EMA50 DEEP  trend HTF15 mom MACD>0  BE+1R hold             -0.665 R (n  21)
+    2018  1m EMA14 DEEP  trend HTF15 mom IMPULSE BE+1R hold             -0.119 R (n  74)
+    2019  1m EMA14 DEEP  trend SLOPE mom RSI>50  BE+1R hold             +0.185 R (n  85)
+    2020  1m EMA14 DEEP  trend SLOPE mom RSI>50  BE+1R hold             +0.080 R (n  71)
+    2021  1m EMA9  NEAR  trend ALIGN mom MACD>0  BE+1R hold             +0.097 R (n 208)
+    2022  2m EMA9  NEAR  trend ALIGN mom RSI>50  BE+1R hold             +0.268 R (n 208)
+    2023  2m EMA9  NEAR  trend ALIGN mom RSI>50  BE+1R hold             +0.041 R (n 200)
+    2024  2m EMA9  NEAR  trend ALIGN mom IMPULSE BE+1R hold             +0.139 R (n 179)
+  WF 2013-24 +0.032 R/trade, +5.04 pts (n 1250)
+  HOLDOUT 2025-26 (one look)  2m EMA9  NEAR  trend ALIGN mom IMPULSE BE+1R hold: +0.006 R, +1.31 pts (n 218)

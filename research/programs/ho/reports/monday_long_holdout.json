@@ -1,0 +1,93 @@
+{
+  "controls": {
+    "day_pct": 0.0,
+    "dir_pct": 0.0,
+    "time_pct": 0.0
+  },
+  "corr": {},
+  "cost": 1.0,
+  "id": "monday_long_holdout",
+  "name": "Monday RTH long (09:30 -> 15:55)",
+  "oos": {
+    "avg_pts": 104.78125,
+    "gross_pts": 105.78125,
+    "months_positive_pct": 0.6,
+    "months_positive_pct_2019": 0.6,
+    "n": 8,
+    "pf": 2.702894870492636,
+    "t": 1.2230898605923253,
+    "trades_per_year": 5.333333333333333,
+    "years": 1,
+    "years_positive": 1
+  },
+  "prop": [
+    {
+      "be_fee": 0.0,
+      "evals": 1,
+      "mnq": 2,
+      "paid": 0.0,
+      "passes": 1,
+      "payouts": 0,
+      "years": 0.2619047619047619
+    },
+    {
+      "be_fee": 0.0,
+      "evals": 2,
+      "mnq": 4,
+      "paid": 0.0,
+      "passes": 1,
+      "payouts": 0,
+      "years": 0.2619047619047619
+    },
+    {
+      "be_fee": 0.0,
+      "evals": 2,
+      "mnq": 6,
+      "paid": 0.0,
+      "passes": 1,
+      "payouts": 0,
+      "years": 0.2619047619047619
+    }
+  ],
+  "quick": true,
+  "robust": {
+    "ok": 3,
+    "ran": 3
+  },
+  "screen": {
+    "best": "stopk=0",
+    "best_avg": 66.30208333333333,
+    "best_t": 2.1521041055653276,
+    "plateau": 1.0,
+    "t_needed": 1.959963984540054,
+    "variants": 1
+  },
+  "seconds": 0.622873666,
+  "spec": {
+    "checks": [
+      {
+        "at": "09:30",
+        "dir": "1",
+        "when": "dow == 1 && !rollwin"
+      }
+    ],
+    "confirm": "ES",
+    "flat": "15:55",
+    "from": "2025-01-01",
+    "id": "monday_long_holdout",
+    "min_trades": 10,
+    "name": "Monday RTH long (09:30 -> 15:55)",
+    "params": {
+      "stopk": [
+        0
+      ]
+    },
+    "stop": "stopk*atr",
+    "symbol": "NQ",
+    "target": "0",
+    "why": "No one can hedge over the weekend, so funds and dealers cut exposure into Friday's close and carry less risk through it; on Monday they put it back on during the cash session (2026-10-17 behaviour map: Monday RTH +12 bp vs +3.6 bp an average session, up in 13 of 17 years). Pre-registered from that map; holdout 2025-01 on is judged once."
+  },
+  "spec_path": "/tmp/claude-1000/-home-theone-Desktop-rithmic-engine/d4ee09fb-64ce-4235-905d-6aad43c0129b/scratchpad/ho/monday_long_holdout.json",
+  "stage_reached": 1,
+  "verdict": "QUICK-LOOK"
+}

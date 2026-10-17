@@ -488,7 +488,7 @@ int main(int argc, char** argv) {
             } else if (rp->strategy) {
                 rp->strategy->notify_trade_filled(closed_dir, t.exit_reason);
             } else if (rp->trend) {
-                rp->trend->notify_trade_filled(closed_dir, t.exit_reason);
+                rp->trend->notify_trade_filled(closed_dir, t.exit_reason, t.pnl_usd);
             }
             paper::PaperDailyRow d;
             d.strategy_id = rp->fcfg.id;

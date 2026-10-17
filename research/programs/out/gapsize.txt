@@ -1,0 +1,13 @@
+--- base sizing
+select_flex_50k   eval 8 MNQ, funded 2 MNQ, 1 acct  | first payout ≤ 1 month   0%  ≤ 2 months  12%  ≤ 3 months  33%  within the year  95% | median 16.0 wks (75%: 24.0) | evals until it 3.3
+select_daily_50k  eval 6 MNQ, funded 2 MNQ, 1 acct  | first payout ≤ 1 month   0%  ≤ 2 months   4%  ≤ 3 months  12%  within the year  79% | median 23.4 wks (75%: 32.4) | evals until it 2.7
+--- 2x on gap-agree days
+select_flex_50k   eval 8 MNQ, funded 2 MNQ, 1 acct  | first payout ≤ 1 month   0%  ≤ 2 months   8%  ≤ 3 months  26%  within the year  90% | median 17.8 wks (75%: 27.2) | evals until it 4.3
+select_daily_50k  eval 6 MNQ, funded 2 MNQ, 1 acct  | first payout ≤ 1 month   0%  ≤ 2 months   5%  ≤ 3 months  16%  within the year  79% | median 21.2 wks (75%: 31.4) | evals until it 3.7
+--- base sizing
+REAL SEQUENCE select_flex_50k  eval 8 → funded 2 MNQ | starts 1533 | paid within 252 days 100% | first payout median  82 trading days (16.4 wks), 25%  57, 75% 117 | ≤ 60 days  28%
+REAL SEQUENCE select_daily_50k eval 6 → funded 2 MNQ | starts 1533 | paid within 252 days  74% | first payout median 123 trading days (24.6 wks), 25%  77, 75% 179 | ≤ 60 days  11%
+--- 2x on gap-agree days
+REAL SEQUENCE select_flex_50k  eval 8 → funded 2 MNQ | starts 1533 | paid within 252 days  95% | first payout median  84 trading days (16.8 wks), 25%  60, 75% 119 | ≤ 60 days  24%
+REAL SEQUENCE select_daily_50k eval 6 → funded 2 MNQ | starts 1533 | paid within 252 days  85% | first payout median 104 trading days (20.8 wks), 25%  65, 75% 168 | ≤ 60 days  19%
+trades 2019+: 1236, gap-agree 448

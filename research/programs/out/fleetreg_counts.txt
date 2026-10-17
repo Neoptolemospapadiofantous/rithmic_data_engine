@@ -1,0 +1,6 @@
+  1-minute tape regime: a side chosen for 5987 strategies
+    strategies positive in the test months: 628 without the filter, 1237 with it (781 turned from losing to winning); clearly profitable (> +1 pt/trade, >= 20 trades): 279 without, 541 with
+    shuffled control, same counts: positive with the filter 1096 (turned 679), clearly profitable 417
+  5-minute tape regime: a side chosen for 5996 strategies
+    strategies positive in the test months: 622 without the filter, 1269 with it (878 turned from losing to winning); clearly profitable (> +1 pt/trade, >= 20 trades): 276 without, 532 with
+    shuffled control, same counts: positive with the filter 1093 (turned 675), clearly profitable 422

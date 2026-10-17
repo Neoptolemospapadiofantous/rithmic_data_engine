@@ -126898,6 +126898,70 @@
         "last_entry_hour": 24,
         "family": "gap_direction"
       }
+    },
+    {
+      "id": "mom_dir_30_any",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "_comment": "2026-10-17 FORWARD TEST (research/preregistered/2026-10-17_mtf_1m_dir_5m_entry.md): 1-min momentum direction — the last 30 one-minute moves went one way with efficiency >= 0.3 — and price on that side of VWAP and the 09:30 open; enter at ANY 5-min close 09:45-13:55 (the random-bar twin did +0.04-0.05 R 2010-24, 2025-26 +0.16). Stop 0.25 ATR, break-even at +1R (be_r), hold to 15:55, <= 3 a day, done after a loss. Rules frozen 2026-10-17; judged on new days only. Paper only.",
+        "mode": "mom_dir",
+        "mom_window": 30,
+        "mom_eff": 0.3,
+        "mom_entry_ema": false,
+        "mom_ema_len": 20,
+        "mom_ema_tol_atr": 0.03,
+        "mom_stop_atr": 0.25,
+        "mom_stop_after_loss": true,
+        "be_r": 1.0,
+        "trail_be_offset": 1.5,
+        "win_start": 930,
+        "win_end": 1555,
+        "session_open_hour": 9,
+        "session_open_min": 30,
+        "tf_min": 1,
+        "sl_points": 1000,
+        "trail_step": 50000,
+        "trail_be_trigger": 50000.0,
+        "trail_delay_secs": 0,
+        "max_daily_trades": 3,
+        "eod_flatten_hour": 15,
+        "eod_flatten_min": 55,
+        "last_entry_hour": 24,
+        "family": "momentum_direction"
+      }
+    },
+    {
+      "id": "mom_dir_30_ema20",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "_comment": "2026-10-17 FORWARD TEST, same as mom_dir_30_any but the entry needs the 5-min bar to come within 0.03 ATR of the 5-min EMA-20 and close back (+0.082 R 2010-24, all eras positive, 2025-26 +0.18 on 71 trades; fragile to the window/threshold — see the pre-registration). Paper only.",
+        "mode": "mom_dir",
+        "mom_window": 30,
+        "mom_eff": 0.3,
+        "mom_entry_ema": true,
+        "mom_ema_len": 20,
+        "mom_ema_tol_atr": 0.03,
+        "mom_stop_atr": 0.25,
+        "mom_stop_after_loss": true,
+        "be_r": 1.0,
+        "trail_be_offset": 1.5,
+        "win_start": 930,
+        "win_end": 1555,
+        "session_open_hour": 9,
+        "session_open_min": 30,
+        "tf_min": 1,
+        "sl_points": 1000,
+        "trail_step": 50000,
+        "trail_be_trigger": 50000.0,
+        "trail_delay_secs": 0,
+        "max_daily_trades": 3,
+        "eod_flatten_hour": 15,
+        "eod_flatten_min": 55,
+        "last_entry_hour": 24,
+        "family": "momentum_direction"
+      }
     }
   ]
 }

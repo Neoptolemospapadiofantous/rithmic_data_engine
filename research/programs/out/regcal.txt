@@ -1,0 +1,13 @@
+CUT Asia er30_q67=0.2151 ac60_q33=-0.0981 (n 727825)
+CUT London er30_q67=0.2214 ac60_q33=-0.0788 (n 595302)
+CUT New York er30_q67=0.2316 ac60_q33=-0.0509 (n 645509)
+
+== 2019-2024 (calibration years)
+  Asia      | TREND 33.3% of minutes, same 60 min later 32.8%, next-30 efficiency 0.174 | MEAN-REVERT 24.7% of minutes, same 60 min later 25.4%, next-30 efficiency 0.179 | CHOP 41.9% of minutes, same 60 min later 42.5%, next-30 efficiency 0.176 | trend next 30 min continues 47.9%, +0.19 pts
+  London    | TREND 33.3% of minutes, same 60 min later 33.3%, next-30 efficiency 0.181 | MEAN-REVERT 24.7% of minutes, same 60 min later 25.6%, next-30 efficiency 0.185 | CHOP 42.0% of minutes, same 60 min later 41.9%, next-30 efficiency 0.183 | trend next 30 min continues 47.9%, +0.11 pts
+  New York  | TREND 33.3% of minutes, same 60 min later 32.4%, next-30 efficiency 0.184 | MEAN-REVERT 24.5% of minutes, same 60 min later 26.3%, next-30 efficiency 0.188 | CHOP 42.2% of minutes, same 60 min later 43.8%, next-30 efficiency 0.188 | trend next 30 min continues 51.1%, +1.03 pts
+
+== 2025-01 → 2026-10-16 (not used to set the cuts)
+  Asia      | TREND 34.8% of minutes, same 60 min later 34.1%, next-30 efficiency 0.180 | MEAN-REVERT 21.0% of minutes, same 60 min later 22.0%, next-30 efficiency 0.183 | CHOP 44.2% of minutes, same 60 min later 44.0%, next-30 efficiency 0.181 | trend next 30 min continues 50.0%, +0.64 pts
+  London    | TREND 32.3% of minutes, same 60 min later 31.4%, next-30 efficiency 0.182 | MEAN-REVERT 25.0% of minutes, same 60 min later 26.5%, next-30 efficiency 0.179 | CHOP 42.7% of minutes, same 60 min later 41.7%, next-30 efficiency 0.181 | trend next 30 min continues 47.6%, -0.24 pts
+  New York  | TREND 31.2% of minutes, same 60 min later 29.9%, next-30 efficiency 0.177 | MEAN-REVERT 31.0% of minutes, same 60 min later 34.0%, next-30 efficiency 0.179 | CHOP 37.8% of minutes, same 60 min later 41.1%, next-30 efficiency 0.182 | trend next 30 min continues 49.1%, +0.24 pts

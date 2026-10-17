@@ -1,0 +1,51 @@
+EMA-14 hand trade, 96 combinations, cost 1.6 pts, 2010-2024 (R = per unit of risk; pts = NQ points)
+TODAY:   E0 touch-bar close | 0.25ATR | X0 2R                       n  2620 win 40.8% -0.066 R (eras -0.156/+0.075/+0.022)  +0.98 pts yrs+  6/15
+TOP 15 by R/trade:
+  E2 limit at EMA | 0.25ATR | X2 BE hold                     n  2669 win 42.6% -0.025 R (eras -0.105/+0.053/+0.156)  +2.33 pts yrs+  6/15
+  E2 limit at EMA | 0.25ATR | X4 BE+trail 1R                 n  3018 win 48.1% -0.042 R (eras -0.128/+0.042/+0.136)  +1.53 pts yrs+  7/15
+  E3 confirm bar close | 0.25ATR | X2 BE hold                n  2332 win 42.8% -0.047 R (eras -0.136/+0.088/+0.031)  +1.38 pts yrs+  6/15
+  E0 touch-bar close | 0.25ATR | X2 BE hold                  n  2516 win 42.4% -0.048 R (eras -0.142/+0.090/+0.059)  +1.60 pts yrs+  6/15
+  E2 limit at EMA | 0.25ATR | X1 2R+BE                       n  2953 win 44.3% -0.051 R (eras -0.135/+0.029/+0.128)  +1.34 pts yrs+  6/15
+  E2 limit at EMA | 0.25ATR | X3 trail .25ATR                n  2891 win 34.7% -0.051 R (eras -0.137/+0.044/+0.107)  +1.16 pts yrs+  7/15
+  E3 confirm bar close | 0.25ATR | X4 BE+trail 1R            n  2541 win 48.0% -0.056 R (eras -0.142/+0.063/+0.045)  +0.70 pts yrs+  6/15
+  E0 touch-bar close | 0.25ATR | X4 BE+trail 1R              n  2813 win 47.8% -0.057 R (eras -0.144/+0.059/+0.056)  +0.99 pts yrs+  5/15
+  E3 confirm bar close | 0.25ATR | X3 trail .25ATR           n  2490 win 36.8% -0.059 R (eras -0.134/+0.039/+0.046)  +0.19 pts yrs+  5/15
+  E3 confirm bar close | 0.25ATR | X1 2R+BE                  n  2480 win 43.9% -0.060 R (eras -0.139/+0.050/+0.037)  +0.53 pts yrs+  6/15
+  E0 touch-bar close | 0.25ATR | X1 2R+BE                    n  2725 win 43.9% -0.062 R (eras -0.143/+0.050/+0.035)  +0.52 pts yrs+  5/15
+  E0 touch-bar close | 0.25ATR | X3 trail .25ATR             n  2706 win 35.3% -0.065 R (eras -0.156/+0.054/+0.060)  +0.74 pts yrs+  6/15
+  E0 touch-bar close | 0.25ATR | X0 2R                       n  2620 win 40.8% -0.066 R (eras -0.156/+0.075/+0.022)  +0.98 pts yrs+  6/15
+  E2 limit at EMA | 0.15ATR | X2 BE hold                     n  2872 win 37.0% -0.068 R (eras -0.199/+0.109/+0.101)  +1.39 pts yrs+  6/15
+  E3 confirm bar close | 0.25ATR | X0 2R                     n  2408 win 40.8% -0.068 R (eras -0.158/+0.062/+0.041)  +0.66 pts yrs+  6/15
+Best per ENTRY:
+  E0 touch-bar close | 0.25ATR | X2 BE hold                  n  2516 win 42.4% -0.048 R (eras -0.142/+0.090/+0.059)  +1.60 pts yrs+  6/15
+  E1 stop above bar high | 0.25ATR | X2 BE hold              n  2357 win 41.1% -0.074 R (eras -0.157/+0.032/+0.043)  +0.52 pts yrs+  5/15
+  E2 limit at EMA | 0.25ATR | X2 BE hold                     n  2669 win 42.6% -0.025 R (eras -0.105/+0.053/+0.156)  +2.33 pts yrs+  6/15
+  E3 confirm bar close | 0.25ATR | X2 BE hold                n  2332 win 42.8% -0.047 R (eras -0.136/+0.088/+0.031)  +1.38 pts yrs+  6/15
+Best per EXIT:
+  E0 touch-bar close | 0.25ATR | X0 2R                       n  2620 win 40.8% -0.066 R (eras -0.156/+0.075/+0.022)  +0.98 pts yrs+  6/15
+  E2 limit at EMA | 0.25ATR | X1 2R+BE                       n  2953 win 44.3% -0.051 R (eras -0.135/+0.029/+0.128)  +1.34 pts yrs+  6/15
+  E2 limit at EMA | 0.25ATR | X2 BE hold                     n  2669 win 42.6% -0.025 R (eras -0.105/+0.053/+0.156)  +2.33 pts yrs+  6/15
+  E2 limit at EMA | 0.25ATR | X3 trail .25ATR                n  2891 win 34.7% -0.051 R (eras -0.137/+0.044/+0.107)  +1.16 pts yrs+  7/15
+  E2 limit at EMA | 0.25ATR | X4 BE+trail 1R                 n  3018 win 48.1% -0.042 R (eras -0.128/+0.042/+0.136)  +1.53 pts yrs+  7/15
+  E2 limit at EMA | 0.25ATR | X5 swing3 trail                n  3022 win 18.4% -0.096 R (eras -0.160/-0.016/+0.004)  -1.03 pts yrs+  2/15
+  E2 limit at EMA | 0.25ATR | X6 EMA exit                    n  2871 win 16.9% -0.089 R (eras -0.165/+0.020/-0.005)  -0.57 pts yrs+  4/15
+  E3 confirm bar close | 0.25ATR | X7 VWAP exit+2R           n  2402 win 31.0% -0.073 R (eras -0.149/+0.048/-0.011)  -0.06 pts yrs+  6/15
+Best per STOP:
+  E2 limit at EMA | 0.25ATR | X2 BE hold                     n  2669 win 42.6% -0.025 R (eras -0.105/+0.053/+0.156)  +2.33 pts yrs+  6/15
+  E2 limit at EMA | 0.15ATR | X2 BE hold                     n  2872 win 37.0% -0.068 R (eras -0.199/+0.109/+0.101)  +1.39 pts yrs+  6/15
+  E0 touch-bar close | swing10-2 | X3 trail .25ATR           n  2700 win 31.8% -0.074 R (eras -0.167/+0.055/+0.037)  +0.08 pts yrs+  5/15
+Walk-forward (best total R of 2010..year-1):
+    2013 E3 confirm bar close | 0.25ATR | X1 2R+BE                  -0.318 R (n 171) | today -0.296
+    2014 E3 confirm bar close | 0.25ATR | X3 trail .25ATR           -0.198 R (n 170) | today -0.172
+    2015 E3 confirm bar close | 0.25ATR | X1 2R+BE                  -0.079 R (n 157) | today -0.146
+    2016 E3 confirm bar close | 0.25ATR | X1 2R+BE                  -0.180 R (n 187) | today -0.151
+    2017 E3 confirm bar close | 0.25ATR | X1 2R+BE                  -0.056 R (n 166) | today -0.060
+    2018 E3 confirm bar close | 0.25ATR | X1 2R+BE                  +0.072 R (n 182) | today +0.015
+    2019 E2 limit at EMA | 0.25ATR | X2 BE hold                     -0.031 R (n 190) | today +0.071
+    2020 E2 limit at EMA | 0.25ATR | X2 BE hold                     +0.052 R (n 200) | today +0.001
+    2021 E2 limit at EMA | 0.25ATR | X2 BE hold                     +0.034 R (n 185) | today +0.073
+    2022 E3 confirm bar close | 0.25ATR | X2 BE hold                +0.170 R (n 180) | today +0.151
+    2023 E3 confirm bar close | 0.25ATR | X2 BE hold                -0.089 R (n 155) | today -0.025
+    2024 E2 limit at EMA | 0.25ATR | X2 BE hold                     +0.248 R (n 179) | today +0.061
+  WF 2013-24 -0.028 R/trade +1.91 pts (n 2122) | today -0.038 R +1.48 pts
+HOLDOUT 2025-26 (one look) E2 limit at EMA | 0.25ATR | X2 BE hold: -0.001 R -1.19 pts (n 218) | today -0.002 R -0.35 pts (n 235)

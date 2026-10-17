@@ -1,0 +1,78 @@
+
+══ decision at 09:30 — 3315 sessions. What the rest of the day did: continue 26%  reverse 23%  chop 51%
+   always guessing the most common (chop) is right 51% of the time — the bar any rule must clear
+   by overnight range (18:00–09:29, ATR):
+     < 0.4 (quiet)              n  523  continue  25%  reverse  19%  chop  55%  | rest of day +0.04 ATR in the morning's direction | continue by era 23/34/26%
+     0.4–0.8                  n 1872  continue  26%  reverse  23%  chop  52%  | rest of day +0.02 ATR in the morning's direction | continue by era 24/28/26%
+     ≥ 0.8 (wide)             n  920  continue  26%  reverse  26%  chop  49%  | rest of day -0.05 ATR in the morning's direction | continue by era 25/27/25%
+   by weak day + VIX ≥ 20 (the mean-reversion setup):
+     not a weak-day setup       n 2903  continue  25%  reverse  23%  chop  52%  | rest of day +0.01 ATR in the morning's direction | continue by era 24/27/25%
+     weak day + VIX ≥ 20      n  412  continue  29%  reverse  25%  chop  45%  | rest of day -0.02 ATR in the morning's direction | continue by era 23/33/35%
+   rule |gap| ≥ 0.3 ATR                      fires   48% of days · when it says TREND it continues  28% (doesn't reverse  76%) · when it says CHOP it is chop  54% · overall right  41% (base 51%)
+   rule overnight range ≥ 0.8 ATR            fires   28% of days · when it says TREND it continues  26% (doesn't reverse  74%) · when it says CHOP it is chop  52% · overall right  45% (base 51%)
+
+══ decision at 10:00 — 3315 sessions. What the rest of the day did: continue 25%  reverse 21%  chop 53%
+   always guessing the most common (chop) is right 53% of the time — the bar any rule must clear
+   by how far price is from the 09:30 open (ATR):
+     < 0.15 (flat)              n 1373  continue  24%  reverse  23%  chop  52%  | rest of day +0.02 ATR in the morning's direction | continue by era 23/25/27%
+     0.15–0.30                n 1000  continue  26%  reverse  21%  chop  53%  | rest of day +0.00 ATR in the morning's direction | continue by era 24/29/26%
+     0.30–0.50                n  644  continue  27%  reverse  20%  chop  53%  | rest of day +0.05 ATR in the morning's direction | continue by era 25/29/31%
+     ≥ 0.50 (strong)          n  298  continue  25%  reverse  18%  chop  57%  | rest of day +0.07 ATR in the morning's direction | continue by era 23/33/19%
+   by morning efficiency (|move| / morning range):
+     < 0.3 (two-sided)          n  955  continue  24%  reverse  26%  chop  50%  | rest of day -0.00 ATR in the morning's direction | continue by era 24/24/26%
+     0.3–0.6                  n 1157  continue  24%  reverse  21%  chop  55%  | rest of day +0.01 ATR in the morning's direction | continue by era 24/23/26%
+     ≥ 0.6 (one-way)          n 1203  continue  28%  reverse  19%  chop  54%  | rest of day +0.06 ATR in the morning's direction | continue by era 25/34/27%
+   by overnight range (18:00–09:29, ATR):
+     < 0.4 (quiet)              n  523  continue  23%  reverse  24%  chop  53%  | rest of day -0.01 ATR in the morning's direction | continue by era 20/31/25%
+     0.4–0.8                  n 1872  continue  26%  reverse  20%  chop  54%  | rest of day +0.04 ATR in the morning's direction | continue by era 25/29/26%
+     ≥ 0.8 (wide)             n  920  continue  25%  reverse  24%  chop  51%  | rest of day +0.01 ATR in the morning's direction | continue by era 24/24/27%
+   by weak day + VIX ≥ 20 (the mean-reversion setup):
+     not a weak-day setup       n 2903  continue  25%  reverse  21%  chop  53%  | rest of day +0.02 ATR in the morning's direction | continue by era 24/27/26%
+     weak day + VIX ≥ 20      n  412  continue  27%  reverse  22%  chop  51%  | rest of day +0.05 ATR in the morning's direction | continue by era 23/30/27%
+   rule |move| ≥ 0.30 ATR (the cascade's test) fires   28% of days · when it says TREND it continues  27% (doesn't reverse  81%) · when it says CHOP it is chop  53% · overall right  45% (base 53%)
+   rule |move| ≥ 0.50 ATR                    fires    9% of days · when it says TREND it continues  25% (doesn't reverse  82%) · when it says CHOP it is chop  53% · overall right  50% (base 53%)
+   rule |move| ≥ 0.30 and efficiency ≥ 0.6 fires   24% of days · when it says TREND it continues  28% (doesn't reverse  81%) · when it says CHOP it is chop  53% · overall right  47% (base 53%)
+
+══ decision at 10:30 — 3315 sessions. What the rest of the day did: continue 26%  reverse 22%  chop 52%
+   always guessing the most common (chop) is right 52% of the time — the bar any rule must clear
+   by how far price is from the 09:30 open (ATR):
+     < 0.15 (flat)              n 1115  continue  25%  reverse  23%  chop  53%  | rest of day +0.01 ATR in the morning's direction | continue by era 25/25/26%
+     0.15–0.30                n  866  continue  27%  reverse  21%  chop  52%  | rest of day +0.04 ATR in the morning's direction | continue by era 25/30/26%
+     0.30–0.50                n  751  continue  25%  reverse  20%  chop  54%  | rest of day +0.01 ATR in the morning's direction | continue by era 25/25/26%
+     ≥ 0.50 (strong)          n  583  continue  31%  reverse  22%  chop  47%  | rest of day +0.05 ATR in the morning's direction | continue by era 28/38/30%
+   by morning efficiency (|move| / morning range):
+     < 0.3 (two-sided)          n 1018  continue  25%  reverse  22%  chop  53%  | rest of day +0.01 ATR in the morning's direction | continue by era 24/24/26%
+     0.3–0.6                  n 1115  continue  25%  reverse  23%  chop  52%  | rest of day +0.02 ATR in the morning's direction | continue by era 24/26/25%
+     ≥ 0.6 (one-way)          n 1182  continue  29%  reverse  20%  chop  50%  | rest of day +0.03 ATR in the morning's direction | continue by era 27/34/28%
+   by overnight range (18:00–09:29, ATR):
+     < 0.4 (quiet)              n  523  continue  24%  reverse  24%  chop  52%  | rest of day -0.01 ATR in the morning's direction | continue by era 23/31/22%
+     0.4–0.8                  n 1872  continue  27%  reverse  20%  chop  53%  | rest of day +0.04 ATR in the morning's direction | continue by era 25/29/28%
+     ≥ 0.8 (wide)             n  920  continue  27%  reverse  24%  chop  50%  | rest of day +0.01 ATR in the morning's direction | continue by era 27/27/26%
+   by weak day + VIX ≥ 20 (the mean-reversion setup):
+     not a weak-day setup       n 2903  continue  26%  reverse  21%  chop  52%  | rest of day +0.02 ATR in the morning's direction | continue by era 25/28/27%
+     weak day + VIX ≥ 20      n  412  continue  28%  reverse  23%  chop  49%  | rest of day +0.05 ATR in the morning's direction | continue by era 26/30/23%
+   rule |move| ≥ 0.30 ATR (the cascade's test) fires   40% of days · when it says TREND it continues  28% (doesn't reverse  79%) · when it says CHOP it is chop  52% · overall right  42% (base 52%)
+   rule |move| ≥ 0.50 ATR                    fires   18% of days · when it says TREND it continues  31% (doesn't reverse  78%) · when it says CHOP it is chop  53% · overall right  49% (base 52%)
+   rule |move| ≥ 0.30 and efficiency ≥ 0.6 fires   30% of days · when it says TREND it continues  30% (doesn't reverse  79%) · when it says CHOP it is chop  53% · overall right  46% (base 52%)
+
+══ decision at 11:00 — 3315 sessions. What the rest of the day did: continue 26%  reverse 21%  chop 53%
+   always guessing the most common (chop) is right 53% of the time — the bar any rule must clear
+   by how far price is from the 09:30 open (ATR):
+     < 0.15 (flat)              n  981  continue  25%  reverse  22%  chop  53%  | rest of day +0.01 ATR in the morning's direction | continue by era 25/27/22%
+     0.15–0.30                n  806  continue  25%  reverse  21%  chop  54%  | rest of day +0.02 ATR in the morning's direction | continue by era 24/28/23%
+     0.30–0.50                n  749  continue  27%  reverse  19%  chop  54%  | rest of day +0.01 ATR in the morning's direction | continue by era 26/30/28%
+     ≥ 0.50 (strong)          n  779  continue  26%  reverse  22%  chop  52%  | rest of day +0.01 ATR in the morning's direction | continue by era 26/28/25%
+   by morning efficiency (|move| / morning range):
+     < 0.3 (two-sided)          n 1002  continue  25%  reverse  23%  chop  52%  | rest of day +0.01 ATR in the morning's direction | continue by era 24/29/21%
+     0.3–0.6                  n 1110  continue  26%  reverse  19%  chop  55%  | rest of day +0.02 ATR in the morning's direction | continue by era 25/26/26%
+     ≥ 0.6 (one-way)          n 1203  continue  27%  reverse  20%  chop  53%  | rest of day +0.01 ATR in the morning's direction | continue by era 27/29/25%
+   by overnight range (18:00–09:29, ATR):
+     < 0.4 (quiet)              n  523  continue  24%  reverse  21%  chop  54%  | rest of day -0.01 ATR in the morning's direction | continue by era 22/34/23%
+     0.4–0.8                  n 1872  continue  26%  reverse  19%  chop  55%  | rest of day +0.03 ATR in the morning's direction | continue by era 25/29/25%
+     ≥ 0.8 (wide)             n  920  continue  26%  reverse  24%  chop  49%  | rest of day -0.00 ATR in the morning's direction | continue by era 28/25/24%
+   by weak day + VIX ≥ 20 (the mean-reversion setup):
+     not a weak-day setup       n 2903  continue  26%  reverse  21%  chop  53%  | rest of day +0.01 ATR in the morning's direction | continue by era 25/28/24%
+     weak day + VIX ≥ 20      n  412  continue  28%  reverse  21%  chop  51%  | rest of day +0.03 ATR in the morning's direction | continue by era 29/29/24%
+   rule |move| ≥ 0.30 ATR (the cascade's test) fires   46% of days · when it says TREND it continues  27% (doesn't reverse  80%) · when it says CHOP it is chop  54% · overall right  41% (base 53%)
+   rule |move| ≥ 0.50 ATR                    fires   23% of days · when it says TREND it continues  26% (doesn't reverse  78%) · when it says CHOP it is chop  54% · overall right  47% (base 53%)
+   rule |move| ≥ 0.30 and efficiency ≥ 0.6 fires   33% of days · when it says TREND it continues  27% (doesn't reverse  80%) · when it says CHOP it is chop  53% · overall right  45% (base 53%)

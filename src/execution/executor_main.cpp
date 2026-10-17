@@ -3997,9 +3997,9 @@ int main(int argc, char* argv[]) {
     {
         std::ifstream cf(config_path);
         const std::string text((std::istreambuf_iterator<char>(cf)), std::istreambuf_iterator<char>());
-        for (const char* k : {"\"lv_room_atr\"", "\"lv_near_atr\"", "\"lv_target\"", "\"lv_stop\"", "\"rb_stop_range\"", "\"entry_limit_ticks\""})
+        for (const char* k : {"\"lv_room_atr\"", "\"lv_near_atr\"", "\"lv_target\"", "\"lv_stop\"", "\"rb_stop_range\"", "\"entry_limit_ticks\"", "\"be_r\""})
             if (text.find(k) != std::string::npos) {
-                std::fprintf(stderr, "FATAL: config carries %s — level overlays / the range-side stop / limit entries are paper-only (not implemented live)\n", k);
+                std::fprintf(stderr, "FATAL: config carries %s — level overlays / the range-side stop / limit entries / R-based break-even (be_r) are paper-only (not implemented live)\n", k);
                 return 2;
             }
     }

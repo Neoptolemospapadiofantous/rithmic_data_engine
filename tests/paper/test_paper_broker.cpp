@@ -822,6 +822,24 @@ TEST(stop_dist_sets_stop_and_scales_tp_r) {
     ASSERT_NEAR(b.stop_price(), 20000.25 - 15.0, 1e-9);
 }
 
+// be_r (2026-10-17, mom_dir): break-even when MFE ≥ be_r × this trade's stop distance, not the flat trail_be_trigger
+TEST(be_r_moves_stop_at_one_r) {
+    FakeStore store;
+    OrbConfig cfg = make_cfg(); cfg.be_r = 1.0; cfg.trail_be_trigger = 50000; cfg.trail_step = 50000; cfg.trail_be_offset = 1.5;
+    auto b = make_broker(store, cfg);
+    b.on_tick(tick(et_ts(10, 0), 20000.0));
+    b.set_stop_dist(20.0);
+    b.on_signal(OrbSignal::BUY, 20000.0, "mom_dir_long");
+    b.on_tick(tick(et_ts(10, 0, 1), 20000.0));                  // entry @ 20000.25, stop 19980.25
+    b.on_tick(tick(et_ts(10, 0, 5), 20015.0));                  // +14.75 < 1R: stop unchanged
+    ASSERT_NEAR(b.stop_price(), 19980.25, 1e-9);
+    b.on_tick(tick(et_ts(10, 0, 9), 20020.50));                 // +20.25 ≥ 1R → stop to entry + 1.5
+    ASSERT_NEAR(b.stop_price(), 20001.75, 1e-9);
+    b.on_tick(tick(et_ts(10, 1, 0), 20001.50));                 // back through it → out at the break-even stop
+    ASSERT(!b.in_position());
+    ASSERT(store.trades[0].pnl_pts > 0.0);
+}
+
 TEST(take_profit_r_multiple_and_off_by_default) {
     OrbConfig c = make_cfg();
     ASSERT_NEAR(c.take_profit_pts(), 0.0, 1e-9);            // off: nothing changes for the fleet

@@ -140,6 +140,14 @@ struct TrendConfig {
     // closes beyond —; the next bar stays entirely beyond it with a range ≤ bg_box_ratio × the break bar's (the box); the bar after
     // closes beyond the box → enter. Stop: the other side of the box + 1 tick (≥ 0.05 ATR); target tp_r; one trade a day; tf_min 5.
     double bg_gap_min_atr = 0.1, bg_box_ratio = 0.75;
+    // mom_dir (2026-10-17, research/preregistered/2026-10-17_mtf_1m_dir_5m_entry.md, forward-paper candidate): direction = the last
+    // mom_window one-minute moves when they went one way fairly straight (|net| / Σ|moves| ≥ mom_eff); at each 5-minute close
+    // (09:45–13:55) with price on that side of VWAP and the 09:30 open → enter (mom_entry_ema: only when that 5-minute bar came
+    // within mom_ema_tol_atr × ATR of the 5-minute EMA(mom_ema_len) and closed back on the trade side). tf_min 1, stop
+    // mom_stop_atr × day ATR, break-even via the broker's be_r, ≤ max_daily_trades, done for the day after a losing trade
+    // (mom_stop_after_loss; the host reports the closed trade's P&L through notify_trade_filled).
+    int mom_window = 30, mom_ema_len = 20; double mom_eff = 0.3, mom_ema_tol_atr = 0.03, mom_stop_atr = 0.25;
+    bool mom_entry_ema = false, mom_stop_after_loss = true;
     // noise_momentum (Zarattini/Aziz/Barbon 2024 noise-area intraday momentum; ledger L1, BK1): every nm_check_min minutes
     // after the RTH open, bands = max/min(09:30 open, prior RTH close) × (1 ± σ(m)), σ(m) = mean |close(m)/open − 1| at
     // that minute of the session over the last nm_days sessions. Flat: close above the upper band → long, below the
@@ -409,6 +417,10 @@ struct TrendConfig {
         c.gr_gap_min_atr = jdbl(t, "gr_gap_min_atr", c.gr_gap_min_atr);
         c.drive_flow_agree = jbool(t, "drive_flow_agree", c.drive_flow_agree); c.gr_flow_agree = jbool(t, "gr_flow_agree", c.gr_flow_agree);
         c.bg_gap_min_atr = jdbl(t, "bg_gap_min_atr", c.bg_gap_min_atr); c.bg_box_ratio = jdbl(t, "bg_box_ratio", c.bg_box_ratio);
+        c.mom_window = jint(t, "mom_window", c.mom_window); c.mom_ema_len = jint(t, "mom_ema_len", c.mom_ema_len);
+        c.mom_eff = jdbl(t, "mom_eff", c.mom_eff); c.mom_ema_tol_atr = jdbl(t, "mom_ema_tol_atr", c.mom_ema_tol_atr);
+        c.mom_stop_atr = jdbl(t, "mom_stop_atr", c.mom_stop_atr);
+        c.mom_entry_ema = jbool(t, "mom_entry_ema", c.mom_entry_ema); c.mom_stop_after_loss = jbool(t, "mom_stop_after_loss", c.mom_stop_after_loss);
         c.lf_delta_min = jdbl(t, "lf_delta_min", c.lf_delta_min); c.lf_stop_atr = jdbl(t, "lf_stop_atr", c.lf_stop_atr);
         c.round_step = jdbl(t, "round_step", c.round_step);
         c.drive_gap_agree = jdbl(t, "drive_gap_agree", c.drive_gap_agree);
@@ -597,6 +609,7 @@ public:
         lf_hi_ = lf_lo_ = lf_prev_c_ = 0; lf_n_ = 0; lf_flow_seen_ = false;
         gr_hi_ = gr_lo_ = 0; gr_n_ = 0; gr_done_ = false;
         bg_n_ = 0; bg_done_ = false;
+        mom_halt_ = false;
         drive_dir_ = 0; drive_done_ = false; late_armed_ = false; drive_late_i_ = 0; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
         td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
@@ -618,7 +631,8 @@ public:
     void seed_open_position(OrbSignal dir, int64_t entry_ts_us) {
         sess_.in_position = true; pos_dir_ = (dir == OrbSignal::BUY) ? 1 : -1; entry_ts_ = entry_ts_us;
     }
-    void notify_trade_filled(OrbSignal, const std::string& reason = "") {
+    void notify_trade_filled(OrbSignal, const std::string& reason = "", double pnl_usd = std::nan("")) {
+        if (tc_.mode == "mom_dir" && tc_.mom_stop_after_loss && !std::isnan(pnl_usd) && pnl_usd < 0.0) mom_halt_ = true;
         if (tc_.mode == "absorption_zone") az_on_closed(reason);
         if (tc_.mode == "trend_confirm") { tcf_dir_ = 0; tcf_exit_sent_ = false; tcf_trail_on_ = false; }
         // A host release of an entry that never executed gives the trade back to max_daily_trades
@@ -970,6 +984,7 @@ private:
         else if (tc_.mode == "round_break")  mode_round_break(b, hhmm);
         else if (tc_.mode == "gap_or_retest") mode_gap_or_retest(b, hhmm);
         else if (tc_.mode == "box_go")       mode_box_go(b, hhmm);
+        else if (tc_.mode == "mom_dir")      mode_mom_dir(b, hhmm);
         else if (tc_.mode == "pdhl_breakout") mode_pdhl(b, hhmm);
         else if (tc_.mode == "squeeze")      mode_squeeze(b, hhmm);
         else if (tc_.mode == "supertrend")   mode_supertrend(b, hhmm);
@@ -1132,6 +1147,32 @@ private:
         stop_dist_ = tc_.lf_stop_atr * day_atr_;
         LOG("[TREND round_break] band %.0f-%.0f (open %.2f), close %.2f prev %.2f delta %+.0f/%.0f → %s", lo, hi, rth_open_, b.c, prev_c, d, b.v, dir > 0 ? "LONG" : "SHORT");
         emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "round_break_long" : "round_break_short");
+    }
+    void mode_mom_dir(const Bar& b, int hhmm) {
+        // every 1-minute close: keep the last mom_window + 1 closes and build 5-minute bars (EMA from 18:00)
+        mom_c_.push_back(b.c); while ((int)mom_c_.size() > tc_.mom_window + 1) mom_c_.pop_front();
+        if (b.mod % 5 == 0 || mom_n5_ == 0) { mom_h5_ = b.h; mom_l5_ = b.l; mom_n5_ = 1; } else { mom_h5_ = std::max(mom_h5_, b.h); mom_l5_ = std::min(mom_l5_, b.l); ++mom_n5_; }
+        if (b.mod % 5 != 4) return;                                // only at a 5-minute close
+        const double ema_prev = mom_ema_; const double k = 2.0 / (tc_.mom_ema_len + 1);
+        mom_ema_ = mom_ema_ <= 0.0 ? b.c : mom_ema_ + k * (b.c - mom_ema_);
+        const int end = b.mod + 1;
+        if (!in_rth_ || mom_halt_ || rth_open_ <= 0.0 || day_atr_ <= 0.0 || end < 9 * 60 + 45 || end > 13 * 60 + 55) return;
+        if ((int)mom_c_.size() < tc_.mom_window + 1) return;
+        double path = 0.0; for (size_t i = 1; i < mom_c_.size(); ++i) path += std::fabs(mom_c_[i] - mom_c_[i - 1]);
+        const double net = mom_c_.back() - mom_c_.front();
+        if (path <= 0.0 || std::fabs(net) / path < tc_.mom_eff) return;
+        const int dir = net > 0 ? 1 : -1; const double vw = vwap();
+        if (vw <= 0.0 || dir * (b.c - vw) <= 0.0 || dir * (b.c - rth_open_) <= 0.0) return;
+        if (tc_.mom_entry_ema) {
+            if (ema_prev <= 0.0) return;
+            const double tol = tc_.mom_ema_tol_atr * day_atr_;
+            if (!(dir > 0 ? (mom_l5_ <= ema_prev + tol && b.c > ema_prev) : (mom_h5_ >= ema_prev - tol && b.c < ema_prev))) return;
+        }
+        if (!can_enter(hhmm, dir)) return;
+        stop_dist_ = tc_.mom_stop_atr * day_atr_;
+        LOG("[TREND mom_dir] %d-min move %+.2f (efficiency %.2f), close %.2f vs VWAP %.2f / open %.2f → %s",
+            tc_.mom_window, net, std::fabs(net) / path, b.c, vw, rth_open_, dir > 0 ? "LONG" : "SHORT");
+        emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "mom_dir_long" : "mom_dir_short");
     }
     void mode_box_go(const Bar& b, int hhmm) {
         if (!in_rth_ || b.mod < 9 * 60 + 30) return;
@@ -2439,6 +2480,7 @@ private:
     double vwap_pv_ = 0, vwap_v_ = 0; std::vector<double> vwap_hist_;
     double lf_hi_ = 0, lf_lo_ = 0, lf_prev_c_ = 0; int lf_n_ = 0; bool lf_flow_seen_ = false;   // asia_sweep / round_break
     double gr_hi_ = 0, gr_lo_ = 0; int gr_n_ = 0; bool gr_done_ = false;                          // gap_or_retest
+    std::deque<double> mom_c_; double mom_ema_ = 0.0, mom_h5_ = 0.0, mom_l5_ = 0.0; int mom_n5_ = 0; bool mom_halt_ = false;   // mom_dir
     Bar bg_hist_[2]; int bg_n_ = 0; bool bg_done_ = false;                                       // box_go: the two 5-minute bars before
     int drive_x_entry_mod_ = -1; double drive_x_px_ = 0, drive_x_best_ = 0, drive_x_risk_ = 0; bool drive_x_stall_done_ = false;   // thesis exits
     int drive_dir_ = 0; bool drive_done_ = false; bool late_armed_ = false; int drive_late_i_ = 0; double gap_ = 0; bool gap_done_ = false; bool tod_done_ = false;

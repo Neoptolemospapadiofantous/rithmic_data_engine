@@ -1,0 +1,185 @@
+NQ behaviour map — 3357 sessions 20100701 → 20261015 (roll windows excluded), bp = log return x 1e4
+flags: * |t| >= 2 and same sign in all three eras, *** |t| >= 3 and same sign in all eras. eras = 2010-18 / 2019-22 / 2023-26
+
+== 1. Where the return comes from (per session)
+  overnight 16:00 -> 09:30     n  3323  mean   +4.32 bp  t +3.26  up 56.1%  sd   76.3 |  eras   +4.60   +2.63   +5.68  ***
+  RTH 09:30 -> 16:00           n  3357  mean   +3.57 bp  t +2.03  up 54.7%  sd  102.1 |  eras   +2.66   +4.73   +4.52  *
+  close-to-close 17:00         n  3323  mean   +7.62 bp  t +3.43  up 56.1%  sd  128.0 |  eras   +7.17   +7.02   +9.50  ***
+    2010  overnight sum   +670 bp   RTH sum  +1404 bp
+    2011  overnight sum   +544 bp   RTH sum   +456 bp
+    2012  overnight sum  +1096 bp   RTH sum   -285 bp
+    2013  overnight sum  +1389 bp   RTH sum  +1247 bp
+    2014  overnight sum  +1443 bp   RTH sum   +669 bp
+    2015  overnight sum  +1083 bp   RTH sum   -100 bp
+    2016  overnight sum    -44 bp   RTH sum   +385 bp
+    2017  overnight sum  +1510 bp   RTH sum  +1358 bp
+    2018  overnight sum   +488 bp   RTH sum   -357 bp
+    2019  overnight sum   +943 bp   RTH sum  +1587 bp
+    2020  overnight sum  +3037 bp   RTH sum  +2298 bp
+    2021  overnight sum   +643 bp   RTH sum   +973 bp
+    2022  overnight sum  -2386 bp   RTH sum   -801 bp
+    2023  overnight sum   +743 bp   RTH sum  +3161 bp
+    2024  overnight sum  +2430 bp   RTH sum   -909 bp
+    2025  overnight sum  +1540 bp   RTH sum   +651 bp
+    2026  overnight sum   -782 bp   RTH sum   +263 bp
+
+== 2. Time of day (30-minute buckets, ET start time): mean return, and range as a share of the day's ATR
+  18:00  rng 0.139 atr  vol  3324 n  3357  mean   -0.11 bp  t -0.35  up 48.7%  sd   17.6 |  eras   -0.46   +0.57   -0.02
+  18:30  rng 0.082 atr  vol  1977 n  3357  mean   -0.03 bp  t -0.18  up 48.9%  sd   10.2 |  eras   -0.20   +0.15   +0.19
+  19:00  rng 0.086 atr  vol  2314 n  3357  mean   +0.26 bp  t +1.52  up 49.2%  sd    9.9 |  eras   +0.39   +0.27   -0.10
+  19:30  rng 0.086 atr  vol  2289 n  3357  mean   +0.32 bp  t +1.84  up 50.6%  sd   10.2 |  eras   +0.44   +0.01   +0.40
+  20:00  rng 0.114 atr  vol  3302 n  3357  mean   +0.40 bp  t +1.83  up 49.4%  sd   12.5 |  eras   +0.20   +1.19   -0.06
+  20:30  rng 0.102 atr  vol  2845 n  3357  mean   -0.22 bp  t -1.08  up 50.4%  sd   11.8 |  eras   -0.34   -0.40   +0.30
+  21:00  rng 0.103 atr  vol  2834 n  3357  mean   +0.20 bp  t +0.94  up 50.1%  sd   12.0 |  eras   +0.10   +0.30   +0.32
+  21:30  rng 0.103 atr  vol  2804 n  3357  mean   +0.43 bp  t +2.06  up 50.0%  sd   12.1 |  eras   +0.22   +0.65   +0.68  *
+  22:00  rng 0.090 atr  vol  2352 n  3357  mean   -0.09 bp  t -0.49  up 49.6%  sd   11.2 |  eras   -0.09   -0.59   +0.50
+  22:30  rng 0.082 atr  vol  2020 n  3357  mean   -0.13 bp  t -0.79  up 47.9%  sd    9.8 |  eras   +0.03   -0.02   -0.69
+  23:00  rng 0.075 atr  vol  1818 n  3357  mean   +0.18 bp  t +1.25  up 50.6%  sd    8.4 |  eras   +0.09   +0.26   +0.33
+  23:30  rng 0.071 atr  vol  1606 n  3357  mean   -0.02 bp  t -0.15  up 48.3%  sd    8.3 |  eras   +0.09   -0.07   -0.25
+  00:00  rng 0.072 atr  vol  1634 n  3357  mean   +0.13 bp  t +0.86  up 48.7%  sd    8.7 |  eras   +0.37   +0.06   -0.40
+  00:30  rng 0.071 atr  vol  1623 n  3357  mean   +0.39 bp  t +2.63  up 49.6%  sd    8.6 |  eras   +0.30   +0.98   -0.10
+  01:00  rng 0.084 atr  vol  2041 n  3357  mean   +0.01 bp  t +0.04  up 47.9%  sd    9.5 |  eras   -0.09   +0.14   +0.08
+  01:30  rng 0.084 atr  vol  2094 n  3357  mean   +0.43 bp  t +2.46  up 50.6%  sd   10.1 |  eras   +0.45   +0.68   +0.06  *
+  02:00  rng 0.114 atr  vol  3162 n  3357  mean   +0.60 bp  t +2.73  up 50.6%  sd   12.7 |  eras   +1.05   -0.10   +0.29
+  02:30  rng 0.103 atr  vol  2840 n  3357  mean   +0.38 bp  t +1.96  up 48.7%  sd   11.3 |  eras   +0.47   +0.90   -0.49
+  03:00  rng 0.173 atr  vol  5627 n  3357  mean   -0.07 bp  t -0.23  up 48.6%  sd   17.9 |  eras   -0.16   -0.43   +0.60
+  03:30  rng 0.144 atr  vol  4477 n  3357  mean   +0.11 bp  t +0.42  up 50.4%  sd   15.3 |  eras   -0.22   +0.34   +0.68
+  04:00  rng 0.148 atr  vol  5071 n  3357  mean   +0.09 bp  t +0.33  up 50.0%  sd   15.6 |  eras   -0.11   +0.47   +0.12
+  04:30  rng 0.126 atr  vol  3901 n  3357  mean   -0.07 bp  t -0.31  up 50.6%  sd   12.7 |  eras   +0.03   -0.00   -0.41
+  05:00  rng 0.125 atr  vol  3745 n  3357  mean   +0.07 bp  t +0.33  up 50.5%  sd   13.0 |  eras   +0.25   +0.03   -0.32
+  05:30  rng 0.117 atr  vol  3496 n  3357  mean   +0.15 bp  t +0.73  up 50.7%  sd   12.2 |  eras   +0.10   +0.22   +0.21
+  06:00  rng 0.119 atr  vol  3681 n  3357  mean   -0.07 bp  t -0.30  up 50.2%  sd   13.2 |  eras   +0.24   -0.37   -0.49
+  06:30  rng 0.116 atr  vol  3743 n  3357  mean   +0.31 bp  t +1.51  up 51.0%  sd   11.8 |  eras   +0.26   +0.20   +0.56
+  07:00  rng 0.131 atr  vol  4843 n  3357  mean   +0.58 bp  t +2.38  up 52.9%  sd   14.1 |  eras   +0.84   +0.43   +0.10  *
+  07:30  rng 0.126 atr  vol  4988 n  3357  mean   -0.41 bp  t -1.76  up 47.6%  sd   13.5 |  eras   -0.02   -1.34   -0.27
+  08:00  rng 0.144 atr  vol  6866 n  3357  mean   +0.22 bp  t +0.77  up 50.0%  sd   16.8 |  eras   +0.50   -0.03   -0.17
+  08:30  rng 0.201 atr  vol 12258 n  3357  mean   -0.12 bp  t -0.25  up 47.9%  sd   26.4 |  eras   -0.38   -0.04   +0.47
+  09:00  rng 0.160 atr  vol 11824 n  3357  mean   -0.10 bp  t -0.38  up 49.4%  sd   15.0 |  eras   +0.19   -0.64   -0.18
+  09:30  rng 0.451 atr  vol 68805 n  3357  mean   +0.72 bp  t +1.02  up 52.1%  sd   41.0 |  eras   +0.24   +1.79   +0.64
+  10:00  rng 0.368 atr  vol 50095 n  3357  mean   +0.18 bp  t +0.30  up 52.3%  sd   34.1 |  eras   +0.05   +0.47   +0.16
+  10:30  rng 0.310 atr  vol 40224 n  3357  mean   -0.85 bp  t -1.68  up 51.3%  sd   29.2 |  eras   -0.42   -1.13   -1.61
+  11:00  rng 0.275 atr  vol 33909 n  3357  mean   +0.99 bp  t +2.15  up 53.8%  sd   26.7 |  eras   +0.86   +1.29   +0.96  *
+  11:30  rng 0.248 atr  vol 29577 n  3357  mean   +0.75 bp  t +1.78  up 53.5%  sd   24.4 |  eras   +0.41   +0.56   +1.86
+  12:00  rng 0.224 atr  vol 25415 n  3357  mean   +0.08 bp  t +0.20  up 51.7%  sd   22.0 |  eras   +0.36   -0.56   +0.11
+  12:30  rng 0.207 atr  vol 22603 n  3357  mean   +0.33 bp  t +0.92  up 53.1%  sd   20.6 |  eras   +0.39   +0.49   -0.03
+  13:00  rng 0.213 atr  vol 22423 n  3357  mean   +0.05 bp  t +0.13  up 51.6%  sd   22.6 |  eras   -0.16   -0.21   +0.93
+  13:30  rng 0.206 atr  vol 21289 n  3357  mean   +0.50 bp  t +1.32  up 51.6%  sd   21.9 |  eras   +0.13   -0.04   +2.10
+  14:00  rng 0.228 atr  vol 23517 n  3357  mean   +0.29 bp  t +0.76  up 52.8%  sd   22.3 |  eras   +0.26   +0.91   -0.36
+  14:30  rng 0.219 atr  vol 23247 n  3357  mean   +0.74 bp  t +1.85  up 53.1%  sd   23.1 |  eras   +0.35   +1.71   +0.55
+  15:00  rng 0.229 atr  vol 24684 n  3357  mean   +0.08 bp  t +0.21  up 52.0%  sd   23.4 |  eras   +0.50   +0.18   -1.11
+  15:30  rng 0.266 atr  vol 41094 n  3357  mean   -0.28 bp  t -0.55  up 50.4%  sd   29.9 |  eras   -0.35   -0.67   +0.36
+  16:00  rng 0.173 atr  vol 13083 n  3357  mean   +0.61 bp  t +1.86  up 52.2%  sd   19.1 |  eras   +0.96   -0.44   +1.02
+  16:30  rng 0.105 atr  vol  3155 n  3357  mean   +0.48 bp  t +1.95  up 50.6%  sd   14.2 |  eras   +0.44   +1.13   -0.22
+
+== 3. Weekday (RTH / overnight before it / range in ATR)
+  Mon RTH                      n   619  mean  +12.33 bp  t +3.36  up 58.5%  sd   91.4 |  eras   +2.55  +23.22  +24.36  ***
+  Mon overnight                n   595  mean   +1.18 bp  t +0.31  up 55.0%  sd   91.3 |  eras   +0.83   -6.06  +11.22
+      Mon range 0.98 ATR
+  Tue RTH                      n   681  mean   +1.86 bp  t +0.50  up 54.5%  sd   97.4 |  eras   +7.37  -13.60   +6.64
+  Tue overnight                n   678  mean   +7.27 bp  t +2.72  up 56.2%  sd   69.7 |  eras   +7.83  +16.78   -5.73
+      Tue range 1.01 ATR
+  Wed RTH                      n   679  mean   +2.21 bp  t +0.52  up 51.8%  sd  111.4 |  eras   +1.04   +1.05   +6.62
+  Wed overnight                n   674  mean   +6.32 bp  t +2.33  up 57.9%  sd   70.3 |  eras   +6.30   +9.25   +2.74  *
+      Wed range 1.04 ATR
+  Thu RTH                      n   724  mean   -0.33 bp  t -0.08  up 52.8%  sd  107.1 |  eras   +1.04  +13.85  -21.71
+  Thu overnight                n   722  mean   +3.71 bp  t +1.29  up 55.0%  sd   77.5 |  eras   +3.19   -6.77  +18.21
+      Thu range 1.07 ATR
+  Fri RTH                      n   654  mean   +2.82 bp  t +0.72  up 56.6%  sd  100.1 |  eras   +1.35   -0.26  +10.22
+  Fri overnight                n   654  mean   +2.73 bp  t +0.96  up 56.3%  sd   72.3 |  eras   +4.49   -0.45   +2.01
+      Fri range 1.02 ATR
+
+== 4. Month of year (close-to-close, per session)
+  Jan                          n   324  mean   +8.88 bp  t +1.35  up 57.4%  sd  118.8 |  eras   +8.39   +2.43  +16.31
+  Feb                          n   306  mean   +3.96 bp  t +0.56  up 58.8%  sd  124.5 |  eras  +15.16  -12.42   -2.49
+  Mar                          n   195  mean  +11.19 bp  t +1.01  up 54.4%  sd  154.6 |  eras   +2.26  +22.66  +17.98
+  Apr                          n   310  mean   +4.23 bp  t +0.48  up 54.2%  sd  155.7 |  eras   +3.68  +12.04   -4.79
+  May                          n   319  mean   +9.33 bp  t +1.41  up 55.2%  sd  117.9 |  eras   +8.43   -5.92  +31.15
+  Jun                          n   178  mean  +10.24 bp  t +1.08  up 59.0%  sd  127.0 |  eras   -0.01  +14.08  +36.33
+  Jul                          n   324  mean  +19.97 bp  t +3.36  up 60.2%  sd  107.0 |  eras  +19.97  +29.95   +5.79  ***
+  Aug                          n   355  mean   +1.54 bp  t +0.21  up 56.1%  sd  135.3 |  eras   -0.04   +8.04   -2.30
+  Sep                          n   180  mean  -11.79 bp  t -1.32  up 50.0%  sd  119.4 |  eras   +1.19  -38.19   -7.75
+  Oct                          n   361  mean   +9.33 bp  t +1.38  up 55.1%  sd  128.4 |  eras  +11.59  +14.55   -1.98
+  Nov                          n   300  mean  +12.66 bp  t +1.75  up 57.0%  sd  125.3 |  eras   +2.10  +30.85  +20.16
+  Dec                          n   171  mean   +5.07 bp  t +0.61  up 51.5%  sd  109.5 |  eras   +4.99  -11.90  +29.71
+
+== 5. Calendar events (close-to-close of that session; RTH in brackets below)
+  all sessions                 n  3323  mean   +7.62 bp  t +3.43  up 56.1%  sd  128.0 |  eras   +7.17   +7.02   +9.50  ***
+    (RTH) all sessions         n  3357  mean   +3.57 bp  t +2.03  up 54.7%  sd  102.1 |  eras   +2.66   +4.73   +4.52  *
+  turn of month (last 1 + first 3) n   716  mean   +7.25 bp  t +1.50  up 53.9%  sd  129.8 |  eras   +7.52   +9.66   +3.62
+    (RTH) turn of month (last 1 + first 3) n   731  mean   +4.70 bp  t +1.24  up 53.4%  sd  102.3 |  eras   +0.89   +3.84  +15.20
+  not turn of month            n  2607  mean   +7.72 bp  t +3.09  up 56.7%  sd  127.5 |  eras   +7.08   +6.29  +11.14  ***
+    (RTH) not turn of month    n  2626  mean   +3.26 bp  t +1.64  up 55.1%  sd  102.0 |  eras   +3.14   +4.98   +1.46
+  first trading day            n   180  mean  +18.59 bp  t +1.86  up 56.1%  sd  134.5 |  eras  +22.13  +27.03   -1.31
+    (RTH) first trading day    n   190  mean   +3.28 bp  t +0.44  up 55.3%  sd  103.3 |  eras   +2.71   +3.32   +4.61
+  last trading day             n   186  mean   -3.73 bp  t -0.41  up 48.4%  sd  122.9 |  eras   +4.64  -22.28   -2.65
+    (RTH) last trading day     n   189  mean   -5.13 bp  t -0.78  up 43.9%  sd   91.0 |  eras   -5.65   -8.24   -0.09
+  mid-month tdom 9-15          n  1109  mean   +6.24 bp  t +1.75  up 55.5%  sd  118.6 |  eras   +8.60   -1.58   +9.56
+    (RTH) mid-month tdom 9-15  n  1117  mean   +4.80 bp  t +1.70  up 55.7%  sd   94.3 |  eras   +6.78   +3.35   +1.35
+  OPEX Friday                  n   122  mean  -11.97 bp  t -1.20  up 50.0%  sd  110.0 |  eras  -12.76  -10.98  -11.07
+    (RTH) OPEX Friday          n   122  mean  -17.56 bp  t -2.12  up 45.9%  sd   91.4 |  eras  -13.78  -30.65  -12.01  *
+  OPEX week Mon-Thu            n   550  mean   +2.79 bp  t +0.55  up 53.1%  sd  119.8 |  eras   +8.25  -10.89   +5.62
+    (RTH) OPEX week Mon-Thu    n   550  mean   +1.14 bp  t +0.29  up 53.8%  sd   93.2 |  eras   +2.66   +2.70   -4.65
+  week after OPEX              n   858  mean  +12.94 bp  t +2.91  up 58.2%  sd  130.5 |  eras  +12.81   +7.17  +20.45  *
+    (RTH) week after OPEX      n   867  mean   +7.11 bp  t +2.01  up 55.7%  sd  104.0 |  eras   +7.12   +9.62   +4.02  *
+  FOMC day                     n    79  mean  +17.42 bp  t +0.97  up 54.4%  sd  159.6 |  eras   -2.87  +32.25  +53.39
+    (RTH) FOMC day             n    79  mean  -13.71 bp  t -1.03  up 39.2%  sd  118.5 |  eras  -14.32  -26.81   +4.31
+  NFP Friday                   n   179  mean   -0.37 bp  t -0.04  up 52.0%  sd  139.5 |  eras   -1.69  -20.60  +26.91
+    (RTH) NFP Friday           n   179  mean   +3.17 bp  t +0.40  up 54.2%  sd  106.4 |  eras   -3.90   +7.59  +15.82
+  pre-holiday                  n   197  mean  +14.20 bp  t +1.68  up 61.9%  sd  118.8 |  eras  +19.73  -12.32  +34.56
+    (RTH) pre-holiday          n   197  mean   +8.53 bp  t +1.36  up 57.4%  sd   88.2 |  eras  +11.25   -1.23  +14.31
+  big-tech earnings session    n     0  mean   +0.00 bp  t +0.00  up  0.0%  sd    0.0 |  eras   +0.00   +0.00   +0.00
+    (RTH) big-tech earnings session n     0  mean   +0.00 bp  t +0.00  up  0.0%  sd    0.0 |  eras   +0.00   +0.00   +0.00
+
+== 6. Memory from yesterday (today's RTH return, conditioned on yesterday)
+  VIX 15-20                    n  1198  mean   -1.25 bp  t -0.48  up 53.5%  sd   90.8 |  eras   -0.80   +0.84   -3.53
+  VIX 20-25                    n   501  mean   +9.49 bp  t +1.79  up 59.7%  sd  118.8 |  eras   +6.23   +1.32  +32.57
+  VIX < 15                     n  1211  mean   +2.17 bp  t +1.20  up 54.3%  sd   62.7 |  eras   +1.75   +7.48   +0.56
+  VIX >= 25                    n   405  mean  +13.11 bp  t +1.49  up 53.6%  sd  176.9 |  eras  +13.80   +9.99  +43.32
+  above 50-day                 n  2337  mean   +1.69 bp  t +1.04  up 54.7%  sd   78.5 |  eras   +1.23   +0.61   +4.00
+  below 50-day                 n   978  mean   +7.40 bp  t +1.61  up 54.8%  sd  143.2 |  eras   +4.73  +12.62   +6.42
+  gap down > 0.3 ATR           n   674  mean   +5.50 bp  t +1.25  up 56.1%  sd  114.6 |  eras   +5.30   +1.10  +11.57
+  gap small                    n  1714  mean   +2.50 bp  t +1.06  up 53.6%  sd   97.3 |  eras   -1.25   +5.76   +8.93
+  gap up > 0.3 ATR             n   927  mean   +3.45 bp  t +1.04  up 56.0%  sd  100.7 |  eras   +7.07   +5.73   -8.70
+  yday closed bottom 20%       n   562  mean  +11.96 bp  t +2.19  up 54.3%  sd  129.4 |  eras   +6.86  +19.78  +12.88  *
+  yday closed middle           n  1707  mean   +2.52 bp  t +1.08  up 55.0%  sd   96.3 |  eras   +0.90   +9.46   -0.75
+  yday closed top 20%          n  1046  mean   +0.17 bp  t +0.06  up 54.6%  sd   93.7 |  eras   +2.32   -9.53   +8.79
+  yday down 0.3-1 ATR          n   625  mean   +5.35 bp  t +1.11  up 53.3%  sd  120.9 |  eras   -0.21   +3.75  +21.51
+  yday down > 1 ATR            n   322  mean  +11.47 bp  t +1.67  up 55.3%  sd  122.9 |  eras   -0.39  +31.28  +11.41
+  yday flat                    n  1081  mean   +4.12 bp  t +1.42  up 55.4%  sd   95.5 |  eras   +3.24  +14.96   -4.69
+  yday up 0.3-1 ATR            n   897  mean   +1.80 bp  t +0.59  up 55.4%  sd   90.9 |  eras   +6.21   -2.95   -3.25
+  yday up > 1 ATR              n   390  mean   -4.91 bp  t -1.08  up 53.3%  sd   89.9 |  eras   -3.84  -23.42  +15.46
+
+== 7. Intraday momentum / reversal (correlations, per era) — does an earlier move predict a later one?
+  overnight -> RTH                             corr all -0.006 (n 3323, t -0.4) | eras +0.006 +0.046 -0.109
+  prior close->10:00 -> 15:30-16:00 (Gao)      corr all -0.013 (n 3323, t -0.8) | eras +0.021 -0.016 -0.075
+  10:00-15:30 -> 15:30-16:00                   corr all +0.051 (n 3357, t +3.0) | eras +0.095 +0.046 -0.027
+  09:30-10:00 -> 10:00-16:00                   corr all +0.059 (n 3357, t +3.4) | eras +0.032 +0.069 +0.095
+  prior close->10:00 -> 10:00-15:30            corr all +0.065 (n 3323, t +3.8) | eras +0.064 +0.108 -0.001
+  RTH -> next overnight (real)                 corr all +0.001 (n 3323) | eras +0.021 -0.003 -0.028
+  RTH -> next RTH                              corr all -0.101 (n 3356) | eras -0.060 -0.125 -0.137
+  consecutive RTH half hours (bucket -> next bucket), all-years corr:
+    09:30 +0.006 10:00 +0.016 10:30 +0.005 11:00 -0.027 11:30 -0.021 12:00 -0.022 12:30 -0.030 13:00 +0.108 13:30 -0.031 14:00 -0.052 14:30 +0.029 15:00 +0.095 15:30 -0.005
+
+== 8. Gao intraday momentum as a trade: last 30 min in the direction of prior close -> 10:00 (per trade, bp, before cost)
+  all days                     n  3284  mean   -0.50 bp  t -0.96  up 49.1%  sd   30.0 |  eras   +0.40   -1.15   -2.00
+  first move > 0.5 ATR         n  1108  mean   -0.80 bp  t -0.78  up 49.0%  sd   34.0 |  eras   +0.87   -2.62   -2.31
+
+== 9. Follow-ups
+  bucket 08:30 -> next  corr -0.010 | eras -0.031 +0.047 -0.099
+  bucket 10:30 -> next  corr +0.005 | eras +0.014 +0.040 -0.078
+  bucket 12:30 -> next  corr -0.030 | eras -0.008 -0.063 -0.020
+  bucket 13:30 -> next  corr -0.031 | eras -0.030 -0.059 +0.018
+  bucket 14:00 -> next  corr -0.052 | eras +0.014 -0.178 +0.057
+  bucket 14:30 -> next  corr +0.029 | eras +0.043 +0.051 -0.050
+  bucket 15:00 -> next  corr +0.095 | eras +0.085 +0.178 -0.057
+  Monday RTH by year (bp sum): 2010:+184 2011:-49 2012:+1060 2013:-259 2014:-32 2015:+646 2016:+135 2017:+376 2018:-1212 2019:+92 2020:+2334 2021:+374 2022:+891 2023:+1345 2024:+291 2025:+1075 2026:+382
+  OPEX Friday RTH by year: 2010:-105 2011:-310 2012:-555 2013:+206 2014:+4 2015:-77 2016:+109 2017:-13 2018:-181 2019:-172 2020:-99 2021:-256 2022:-392 2023:+80 2024:-292 2025:-162 2026:+73
+  Mon RTH, Fri closed low half n   252  mean  +14.97 bp  t +2.28  up 56.3%  sd  104.2 |  eras   -2.64  +34.32  +32.45
+  Mon RTH, Fri closed high half n   367  mean  +10.52 bp  t +2.47  up 59.9%  sd   81.4 |  eras   +5.83  +15.34  +17.78  *
+  Mon RTH, gap down            n   270  mean  +11.71 bp  t +2.01  up 61.9%  sd   95.6 |  eras   -1.61  +16.25  +42.08
+  Mon RTH, gap up              n   342  mean  +12.26 bp  t +2.56  up 55.3%  sd   88.6 |  eras   +4.44  +30.10  +12.73  *
+  Mon 09:30-11:00              n   619  mean   +4.14 bp  t +1.67  up 54.9%  sd   61.5 |  eras   +0.52   +3.70  +14.18
+  Mon 11:00-16:00              n   619  mean   +8.00 bp  t +2.80  up 60.3%  sd   71.1 |  eras   +1.64  +19.60  +10.17  *
+  Tue-Fri 11:00-16:00          n  2738  mean   +2.51 bp  t +1.62  up 56.0%  sd   81.1 |  eras   +3.00   +0.04   +4.29
+
+(128 lines tested — with this many, expect ~6 |t|>2 by luck; the era-consistency flag is the filter)

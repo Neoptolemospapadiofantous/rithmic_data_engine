@@ -1,0 +1,28 @@
+
+== H: size by signal strength, select_flex_25k
+  2 micros always (adopted plan)   eval pass 50.4% blown 49.4% · 1st payout 18.0 wks · paid/yr $ 3492 · evals/yr  8.3
+  3 when the gap agrees, else 2    eval pass 40.7% blown 59.2% · 1st payout 18.2 wks · paid/yr $ 6076 · evals/yr  7.7
+  3 when the gap agrees, else 1    eval pass 37.1% blown 61.8% · 1st payout 19.4 wks · paid/yr $ 3790 · evals/yr  8.6
+  2 when the gap agrees, else 1    eval pass 51.7% blown 47.7% · 1st payout 19.2 wks · paid/yr $ 3516 · evals/yr  6.6
+
+== H: size by signal strength, select_daily_25k
+  2 micros always (adopted plan)   eval pass 50.4% blown 49.4% · 1st payout 17.6 wks · paid/yr $ 2628 · evals/yr  9.9
+  3 when the gap agrees, else 2    eval pass 40.7% blown 59.2% · 1st payout 16.6 wks · paid/yr $ 3518 · evals/yr 11.3
+  3 when the gap agrees, else 1    eval pass 37.1% blown 61.8% · 1st payout 18.0 wks · paid/yr $ 2047 · evals/yr 11.6
+  2 when the gap agrees, else 1    eval pass 51.7% blown 47.7% · 1st payout 17.2 wks · paid/yr $ 3142 · evals/yr  7.6
+
+== G: N accounts started a few days apart (each restarts with a new eval when blown), select_flex_25k, first 12 months
+  1 account   0 days apart: first payout after 21.2 wks on average · months with a payout  3.0 of 12 · payouts/yr  3.5 · paid/yr $  3476 · evals/yr  8.1
+  2 accounts 10 days apart: first payout after 20.8 wks on average · months with a payout  3.2 of 12 · payouts/yr  6.9 · paid/yr $  6836 · evals/yr 15.9
+  3 accounts 10 days apart: first payout after 20.6 wks on average · months with a payout  3.3 of 12 · payouts/yr 10.1 · paid/yr $ 10013 · evals/yr 23.4
+  3 accounts 20 days apart: first payout after 20.9 wks on average · months with a payout  3.4 of 12 · payouts/yr  9.6 · paid/yr $  9579 · evals/yr 22.4
+  5 accounts 10 days apart: first payout after 20.3 wks on average · months with a payout  3.5 of 12 · payouts/yr 16.0 · paid/yr $ 15880 · evals/yr 37.6
+  5 accounts 20 days apart: first payout after 20.9 wks on average · months with a payout  3.6 of 12 · payouts/yr 14.5 · paid/yr $ 14412 · evals/yr 34.1
+
+== G: N accounts started a few days apart (each restarts with a new eval when blown), select_daily_25k, first 12 months
+  1 account   0 days apart: first payout after 20.3 wks on average · months with a payout  2.5 of 12 · payouts/yr  5.6 · paid/yr $  2633 · evals/yr  9.7
+  2 accounts 10 days apart: first payout after 20.1 wks on average · months with a payout  2.6 of 12 · payouts/yr 11.0 · paid/yr $  5206 · evals/yr 19.0
+  3 accounts 10 days apart: first payout after 20.0 wks on average · months with a payout  2.6 of 12 · payouts/yr 16.1 · paid/yr $  7664 · evals/yr 28.0
+  3 accounts 20 days apart: first payout after 20.2 wks on average · months with a payout  2.6 of 12 · payouts/yr 15.6 · paid/yr $  7418 · evals/yr 26.7
+  5 accounts 10 days apart: first payout after 19.8 wks on average · months with a payout  2.7 of 12 · payouts/yr 25.8 · paid/yr $ 12281 · evals/yr 44.7
+  5 accounts 20 days apart: first payout after 20.3 wks on average · months with a payout  2.8 of 12 · payouts/yr 23.7 · paid/yr $ 11328 · evals/yr 40.5

@@ -1,0 +1,10 @@
+[edge_lab] NQ: 5218889 bars, 4046 days, 1058329 order-book minutes
+[edge_lab] ES: 5464074 bars, 4068 days, 0 order-book minutes
+cascade_gap_agree_g05: PASS  (oos 987 trades, 8.97 pts/trade net, PF 1.44)  → data/edge_lab/reports/cascade_gap_agree_g05.md
+cascade_gap_agree_g2: PASS  (oos 733 trades, 9.10 pts/trade net, PF 1.47)  → data/edge_lab/reports/cascade_gap_agree_g2.md
+cascade_gap_agree_g3: FAIL at CONTROLS  (oos 590 trades, 7.47 pts/trade net, PF 1.39)  → data/edge_lab/reports/cascade_gap_agree_g3.md
+cascade_on_break: FAIL at CONTROLS  (oos 2022 trades, 4.58 pts/trade net, PF 1.22)  → data/edge_lab/reports/cascade_on_break.md
+cascade_on_break_compl: FAIL at CONTROLS  (oos 623 trades, 4.96 pts/trade net, PF 1.19)  → data/edge_lab/reports/cascade_on_break_compl.md
+weak_day_gapdown: FAIL at CONTROLS  (oos 208 trades, 13.98 pts/trade net, PF 1.36)  → data/edge_lab/reports/weak_day_gapdown.md
+weak_day_gapup: FAIL at CONTROLS  (oos 334 trades, 5.56 pts/trade net, PF 1.14)  → data/edge_lab/reports/weak_day_gapup.md
+done

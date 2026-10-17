@@ -1,0 +1,25 @@
+{
+  "id": "gap_breakout_holdout",
+  "name": "Gap direction set, then a new day extreme",
+  "why": "The overnight gap is repositioning that tends to continue into the cash session (gap-agree cascade). A fresh high (low) in that direction. Pre-registered 2026-10-17 (research/preregistered/2026-10-17_direction_sources.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "params": {
+    "stopk": [
+      0.35
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "09:35",
+    "to": "14:00",
+    "when": "!rollwin && abs(gap) >= 0.1 && ((sign(gap) > 0 && cl(5,1) > lag(5, hi_since(9,30))) || (sign(gap) < 0 && cl(5,1) < lag(5, lo_since(9,30))))",
+    "dir": "sign(gap)"
+  },
+  "max_trades": 1,
+  "stop": "stopk*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 10,
+  "from": "2025-01-01"
+}

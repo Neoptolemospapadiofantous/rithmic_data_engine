@@ -1,0 +1,16 @@
+Follow the last 5-minute move, enter next minute's open, exit after 5 / 10 / 15 min. NQ points per trade BEFORE cost (cost ≈ 1.0).
+
+reverting (acr < -0.1)
+  small (< 0.03 ATR)   |  5 min: -0.03 pts (t  -1.4, continues 47.5%, n  169559) | 10 min: -0.03 pts (t  -0.9, continues 48.3%, n  169559) | 15 min: -0.06 pts (t  -1.4, continues 48.6%, n  169559)
+  medium (0.03–0.08) |  5 min: -0.07 pts (t  -2.3, continues 47.2%, n  134644) | 10 min: -0.02 pts (t  -0.5, continues 48.0%, n  134644) | 15 min: -0.01 pts (t  -0.2, continues 48.5%, n  134644)
+  big (≥ 0.08 ATR)   |  5 min: -0.23 pts (t  -3.3, continues 47.6%, n   46191) | 10 min: -0.44 pts (t  -4.5, continues 48.0%, n   46191) | 15 min: -0.41 pts (t  -3.3, continues 48.3%, n   46191)
+
+neutral
+  small (< 0.03 ATR)   |  5 min: +0.02 pts (t  +0.9, continues 47.9%, n  178523) | 10 min: -0.03 pts (t  -0.9, continues 48.3%, n  178523) | 15 min: -0.02 pts (t  -0.5, continues 48.8%, n  178523)
+  medium (0.03–0.08) |  5 min: -0.11 pts (t  -3.9, continues 47.1%, n  171804) | 10 min: -0.10 pts (t  -2.5, continues 48.0%, n  171804) | 15 min: -0.09 pts (t  -1.8, continues 48.7%, n  171804)
+  big (≥ 0.08 ATR)   |  5 min: -0.13 pts (t  -2.2, continues 47.4%, n   85058) | 10 min: -0.11 pts (t  -1.4, continues 48.2%, n   85058) | 15 min: -0.11 pts (t  -1.1, continues 48.5%, n   85058)
+
+trending (acr > +0.1)
+  small (< 0.03 ATR)   |  5 min: +0.05 pts (t  +1.4, continues 48.3%, n   95119) | 10 min: +0.05 pts (t  +1.0, continues 48.9%, n   95119) | 15 min: +0.12 pts (t  +2.0, continues 49.3%, n   95119)
+  medium (0.03–0.08) |  5 min: -0.08 pts (t  -2.2, continues 47.3%, n  104293) | 10 min: -0.02 pts (t  -0.3, continues 48.3%, n  104293) | 15 min: +0.09 pts (t  +1.5, continues 49.2%, n  104293)
+  big (≥ 0.08 ATR)   |  5 min: -0.09 pts (t  -1.4, continues 47.6%, n   73327) | 10 min: +0.16 pts (t  +1.8, continues 48.9%, n   73327) | 15 min: +0.26 pts (t  +2.5, continues 49.5%, n   73327)

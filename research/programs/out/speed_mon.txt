@@ -1,0 +1,8 @@
+days 1785, cascade trades 1236, weak-day trades 217
+── Monday long (RTH 09:30-15:55, no stop) added on the same account; cascade shorts skipped on Monday-long days ──
+Flex: eval 8 -> funded 2 (today's plan)      | paid in yr 100% | first payout median 16.4 wks (eval  9.2 + funded  6.8) | <=8 wks   8% <=12 wks  28% | evals 2.7 | avg 1st payout $758
+Flex: eval 8+mon2 -> funded 2+mon1           | paid in yr 100% | first payout median 16.0 wks (eval  9.6 + funded  6.0) | <=8 wks  11% <=12 wks  33% | evals 2.6 | avg 1st payout $859
+Flex: eval 8+mon2 -> funded 2+mon2           | paid in yr 100% | first payout median 16.6 wks (eval 10.6 + funded  5.4) | <=8 wks  13% <=12 wks  33% | evals 2.8 | avg 1st payout $958
+Flex: eval 8+mon4 -> funded 2+mon2           | paid in yr 100% | first payout median 16.0 wks (eval 10.6 + funded  5.2) | <=8 wks  15% <=12 wks  35% | evals 3.1 | avg 1st payout $936
+Flex: eval 8+mon4 -> funded 3+mon3           | paid in yr 100% | first payout median 18.0 wks (eval 13.2 + funded  5.2) | <=8 wks  15% <=12 wks  29% | evals 3.6 | avg 1st payout $1198
+Flex: eval 0+mon4 -> funded 0+mon2 (Monday alone) | paid in yr  54% | first payout median 32.2 wks (eval 22.2 + funded  7.6) | <=8 wks   0% <=12 wks   1% | evals 1.4 | avg 1st payout $1340

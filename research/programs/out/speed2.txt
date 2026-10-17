@@ -1,0 +1,12 @@
+days 1785, cascade trades 1236, weak-day trades 449
+EDGE +2 pts/trade (synthetic): 8 -> 2        | paid in yr 100% | first payout median 14.4 wks (eval  7.8 + funded  6.0) | <=8 wks  10% <=12 wks  35% | evals 2.3 | avg 1st payout $858
+EDGE +4 pts/trade (synthetic): 8 -> 2        | paid in yr 100% | first payout median 12.6 wks (eval  6.6 + funded  5.8) | <=8 wks  11% <=12 wks  45% | evals 2.0 | avg 1st payout $912
+EDGE +6 pts/trade (synthetic): 8 -> 2        | paid in yr 100% | first payout median 11.8 wks (eval  6.0 + funded  5.8) | <=8 wks  15% <=12 wks  52% | evals 1.9 | avg 1st payout $1014
+EDGE +10 pts/trade (synthetic): 8 -> 2       | paid in yr 100% | first payout median 10.4 wks (eval  4.8 + funded  5.0) | <=8 wks  26% <=12 wks  66% | evals 1.6 | avg 1st payout $1260
+1 Flex accounts,  0 days apart (any account)            | first payout median 16.4 wks | <=8 wks   8% | evals per start 2.7
+2 Flex accounts, 10 days apart (any account)            | first payout median 15.6 wks | <=8 wks   9% | evals per start 5.3
+3 Flex accounts, 10 days apart (any account)            | first payout median 15.4 wks | <=8 wks   9% | evals per start 8.0
+3 Flex accounts, 20 days apart (any account)            | first payout median 15.8 wks | <=8 wks   8% | evals per start 8.0
+── baseline + funded size ──
+Flex: eval 8 -> funded 2 (today's plan)      | paid in yr 100% | first payout median 16.4 wks (eval  9.2 + funded  6.8) | <=8 wks   8% <=12 wks  28% | evals 2.7 | avg 1st payout $758
+Flex: eval 8 -> funded 3                     | paid in yr  93% | first payout median 18.2 wks (eval 11.8 + funded  6.4) | <=8 wks   9% <=12 wks  26% | evals 3.8 | avg 1st payout $937

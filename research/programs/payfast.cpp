@@ -1,0 +1,83 @@
+// 2026-10-17 re-entries in the day's direction (research/preregistered/2026-10-17_reentry.md).
+#include "research/meta.hpp"
+#include <array>
+#include <cstdio>
+#include <random>
+using namespace lab;
+struct Res { double pts; int xm; bool win; double mae = 0, mfe = 0; };
+struct Acc { double n = 0, s = 0; void add(double x) { n++; s += x; } double m() const { return n ? s / n : NAN; } };
+int main() {
+  std::set<int> fomc; paper::VixRegime vix; vix.load("data/regime");
+  Series s; std::string err; if (!load_raw("data/edge_lab/cache", "NQ", s, err)) return 1; build_days(s, fomc, vix);
+  const int NM = 386, LAST = 265;   // minutes after 09:30: 15:55 = 385, last entry 13:55 = 265
+  const char* RN[4] = {"BASE", "+NEW", "+VWAP", "+HOLD"};
+  struct Out { Acc day, trades, re, twin, era[3], reera[3], twera[3]; int ntr = 0; double days = 0; };
+  Out R[4][2]; std::mt19937 rng(11);
+  struct Cfg { const char* nm; int r, fl, cap; }; const Cfg CF[6] = {{"plan, 1 trade a day", 0, 0, 1}, {"plan setups, up to 3 (any exit)", 0, 0, 3}, {"plan setups, again only after a win", 0, 1, 3},
+    {"+VWAP pullback, again only after a win", 2, 1, 3}, {"+HOLD check, again only after a win", 3, 1, 3}, {"+VWAP pullback, after any exit", 2, 0, 3}};
+  std::vector<int> dates; std::vector<std::array<std::vector<payout::Trade>, 6>> cal;
+  for (auto& D : s.days) {
+    if (D.ok && D.date >= 20190101 && D.date <= 20241231) { dates.push_back(D.date); cal.emplace_back(); }
+    if (!D.ok || D.rollwin || D.date > 20241231 || !(D.atr > 0) || std::isnan(D.pc)) continue;
+    const int i0 = first_bar_at(s, D, hm_to_tday(9, 30), D.b0); if (i0 >= D.b1 || tday_min(s.t[i0]) != hm_to_tday(9, 30)) continue;
+    std::array<double, NM> o, h, l, c, vw; double pv = 0, vv = 0, last = s.o[i0]; int j = i0;
+    for (int m = 0; m < NM; ++m) { const int tm = hm_to_tday(9, 30) + m; while (j < D.b1 && tday_min(s.t[j]) < tm) ++j;
+      if (j < D.b1 && tday_min(s.t[j]) == tm) { o[m] = s.o[j]; h[m] = s.h[j]; l[m] = s.l[j]; c[m] = s.c[j]; pv += (h[m] + l[m] + c[m]) / 3 * std::max(1.0f, s.v[j]); vv += std::max(1.0f, s.v[j]); }
+      else { o[m] = h[m] = l[m] = c[m] = last; } last = c[m]; vw[m] = vv > 0 ? pv / vv : last; }
+    const double op = o[0], atr = D.atr, gap = (op - D.pc) / atr; const int era = D.date < 20190101 ? 0 : D.date < 20230101 ? 1 : 2;
+    auto px = [&](int m) { return m == 0 ? op : c[m - 1]; };   // price at minute m (time 09:30 + m)
+    auto run = [&](int me, int dir, double stopk) -> Res { const double p = px(me), st = stopk * atr;
+      double ma = 0, mf = 0;
+      for (int m = me; m < NM - 1; ++m) { ma = std::min(ma, dir > 0 ? l[m] - p : p - h[m]); mf = std::max(mf, dir > 0 ? h[m] - p : p - l[m]);
+        if (dir > 0 ? l[m] <= p - st : h[m] >= p + st) return {-st - 1, m + 1, false, std::max(ma, -st), mf}; if (dir > 0 ? h[m] >= p + 2 * st : l[m] <= p - 2 * st) return {2 * st - 1, m + 1, true, ma, std::min(mf, 2 * st)}; }
+      return {dir * (c[NM - 2] - p) - 1, NM - 1, false, ma, mf}; };
+    auto b5 = [&](int k, double& O, double& H, double& L, double& C) { O = o[5 * k]; H = -1e18; L = 1e18; for (int m = 5 * k; m < 5 * k + 5; ++m) { H = std::max(H, h[m]); L = std::min(L, l[m]); } C = c[5 * k + 4]; };
+    double orh = -1e18, orl = 1e18; for (int m = 0; m < 15; ++m) { orh = std::max(orh, h[m]); orl = std::min(orl, l[m]); }
+    const int gdir = gap >= 0.1 ? 1 : gap <= -0.1 ? -1 : 0;
+    for (int ci = 0; ci < 6; ++ci) { const int r = CF[ci].r, fl = CF[ci].fl, cap = CF[ci].cap; double dp = 0, dm = 0, df = 0;
+      Out& O = R[r][fl]; (void)O; bool used[4] = {false, false, false, false}, gused = false, hused[4] = {false, false, false, false}; int D_ = 0, X = 0, ntr = 0; double dayp = 0; bool lastwin = true;
+      const int CM[4] = {20, 60, 90, 120}; const double CK[4] = {0.25, 0.30, 0.30, 0.30}; const int HM[4] = {150, 180, 210, 240};
+      while (ntr < cap) {
+        if (ntr > 0 && fl == 1 && !lastwin) break;
+        int bm = 1 << 30, bdir = 0, src = -1, bi = -1; double bst = 0.25;
+        auto cand = [&](int m, int d, double sk, int sc, int idx) { if (m < X || m > LAST || (D_ && d != D_) || !d) return; if (m < bm) { bm = m; bdir = d; bst = sk; src = sc; bi = idx; } };
+        for (int q = 0; q < 4; ++q) if (!used[q] && CM[q] >= X) { const double mv = px(CM[q]) - op; if (std::fabs(mv) >= CK[q] * atr) cand(CM[q], mv > 0 ? 1 : -1, 0.25, 0, q); else if (ntr == 0) {} }
+        if (!gused && gdir) for (int k = 3; 5 * k <= LAST; ++k) { if (5 * k < X) continue; double a, H, L, C; b5(k, a, H, L, C);
+          if (gdir > 0 ? (L <= orh && C > orh) : (H >= orl && C < orl)) { cand(5 * k + 5, gdir, 0.35, 1, 0); break; } }
+        if (ntr > 0 && r == 1) { double ex = D_ > 0 ? -1e18 : 1e18; for (int m = 0; m < X; ++m) ex = D_ > 0 ? std::max(ex, h[m]) : std::min(ex, l[m]);
+          for (int k = (X + 4) / 5; 5 * k + 5 <= LAST; ++k) { double a, H, L, C; b5(k, a, H, L, C); if (D_ > 0 ? C > ex : C < ex) { cand(5 * k + 5, D_, 0.25, 2, 0); break; } } }
+        if (ntr > 0 && r == 2) for (int k = (X + 4) / 5; 5 * k + 5 <= LAST; ++k) { double a, H, L, C; b5(k, a, H, L, C); const double v = vw[5 * k + 4];
+          if (D_ > 0 ? (L <= v && C > v) : (H >= v && C < v)) { cand(5 * k + 5, D_, 0.25, 2, 0); break; } }
+        if (ntr > 0 && r == 3) for (int q = 0; q < 4; ++q) if (!hused[q] && HM[q] >= X) { const double mv = D_ * (px(HM[q]) - op); if (mv >= 0.30 * atr) { cand(HM[q], D_, 0.25, 3, q); break; } }
+        if (src < 0) break;
+        if (src == 0) for (int q = 0; q <= bi; ++q) used[q] = true;   // a later check consumes the earlier ones
+        if (src == 1) gused = true; if (src == 3) for (int q = 0; q <= bi; ++q) hused[q] = true;
+        if (!D_) D_ = bdir;
+        const Res res = run(bm, bdir, bst); dayp += res.pts; dp += (res.pts - 0.5) * 4; dm += (res.mae - 1.5) * 4; df += res.mfe * 4; O.trades.add(res.pts); ++ntr;
+        if (ntr > 1) { O.re.add(res.pts); O.reera[era].add(res.pts);
+          const int tm = std::uniform_int_distribution<int>(X, LAST)(rng); const Res tw = run(tm, D_, 0.25); O.twin.add(tw.pts); O.twera[era].add(tw.pts); }
+        X = res.xm; lastwin = res.win; if (X >= NM - 1) break;
+      }
+      if (ntr && D.date >= 20190101) cal.back()[ci] = {{dp, std::min(dm, dp), df}};
+    }
+  }
+  const int Dn = dates.size();
+  // fastest payout: P(first payout within H trading days of the evaluation's first day), eval size E micros, funded size F micros
+  printf("FASTEST PAYOUT search, plan trades 2019-2024 (%d start days), day merged pessimistic, cost 1.5 pts, NQ micros\n", Dn);
+  struct Row { double p5, p7, p10, blow7, amt; std::string nm; };
+  for (auto& pl : payout::plans()) { std::vector<Row> rows; const int maxm = pl.max_minis ? pl.max_minis * 10 : 40;
+    for (int ci : {0, 1, 2}) for (int E = 1; E <= maxm; E += (maxm > 10 ? 2 : 1)) for (int F = 1; F <= maxm; F += (maxm > 10 ? 2 : 1)) {
+      auto scale = [&](int m, std::vector<std::vector<payout::Trade>>& sc, std::vector<const std::vector<payout::Trade>*>& cv) { sc.assign(Dn, {}); cv.assign(Dn, nullptr);
+        for (int i = 0; i < Dn; ++i) if (!cal[i][ci].empty()) { auto x = cal[i][ci][0]; const double f = m / 2.0; sc[i] = {{x.pnl * f, x.mae * f, x.mfe * f}}; cv[i] = &sc[i]; } };
+      std::vector<std::vector<payout::Trade>> se, sf; std::vector<const std::vector<payout::Trade>*> ce, cf; scale(E, se, ce); scale(F, sf, cf);
+      int st = 0, p5 = 0, p7 = 0, p10 = 0, bl = 0; double amt = 0; int na = 0;
+      for (int s0 = 0; s0 + 12 < Dn; ++s0) { ++st; auto e = payout::run_eval(pl, ce, s0, 10); if (!e.passed) { bl += e.failed && e.days <= 7; continue; }
+        auto r = payout::run_account(pl, cf, s0 + e.days, 10 - e.days); if (r.breach && e.days + r.days <= 7 && r.pay_days.empty()) ++bl;
+        if (!r.pay_days.empty()) { const int d = e.days + r.pay_days[0]; p5 += d <= 5; p7 += d <= 7; p10 += d <= 10; if (d <= 7) { amt += r.paid_sum; ++na; } } }
+      char b[96]; snprintf(b, 96, "%s, eval %d MNQ, funded %d MNQ", CF[ci].nm, E, F);
+      rows.push_back({100.0 * p5 / st, 100.0 * p7 / st, 100.0 * p10 / st, 100.0 * bl / st, na ? amt / na : 0, b}); }
+    std::sort(rows.begin(), rows.end(), [](const Row& a, const Row& b) { return a.p7 > b.p7; });
+    printf("\n== %s: best by P(payout within 7 trading days)\n", pl.name.c_str());
+    for (int q = 0; q < 6 && q < (int)rows.size(); ++q) printf("  %-66s ≤5d %5.2f%%  ≤7d %5.2f%%  ≤10d %5.2f%%  blown ≤7d %5.1f%%  first payout ~$%.0f\n",
+      rows[q].nm.c_str(), rows[q].p5, rows[q].p7, rows[q].p10, rows[q].blow7, rows[q].amt); }
+}

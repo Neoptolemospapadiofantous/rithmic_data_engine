@@ -1,0 +1,16 @@
+
+== cascade + gap retest (stops on every trade)
+  MNQ   | expected per day (all days) | 25K evaluation ($1,500 target, $1,000 drawdown), from every start day | then Select Daily 25K funded, first 12 months
+  1     |     +16 $/day (sd   157)     | pass 45.3%  blown 35.3%  (rest unfinished in 120 days) · days to pass: median  47, fastest 10%  20 |   4.1 payouts, $ 1542 paid, account blown 100%
+  2     |     +32 $/day (sd   314)     | pass 42.4%  blown 53.5%  (rest unfinished in 120 days) · days to pass: median  22, fastest 10%   9 |   2.9 payouts, $ 1233 paid, account blown 100%
+  3     |     +48 $/day (sd   471)     | pass 36.5%  blown 63.1%  (rest unfinished in 120 days) · days to pass: median  19, fastest 10%   8 |   1.5 payouts, $  712 paid, account blown 100%
+  5     |     +80 $/day (sd   785)     | pass 25.4%  blown 74.5%  (rest unfinished in 120 days) · days to pass: median  15, fastest 10%   6 |   1.1 payouts, $  583 paid, account blown  99%
+  10    |    +160 $/day (sd  1570)     | pass 16.3%  blown 83.7%  (rest unfinished in 120 days) · days to pass: median  12, fastest 10%   5 |   1.7 payouts, $ 1013 paid, account blown  95%
+
+== all four (+ weak-day, Monday; no-stop holds)
+  MNQ   | expected per day (all days) | 25K evaluation ($1,500 target, $1,000 drawdown), from every start day | then Select Daily 25K funded, first 12 months
+  1     |     +33 $/day (sd   289)     | pass 40.1%  blown 49.2%  (rest unfinished in 120 days) · days to pass: median  33, fastest 10%  14 |   0.7 payouts, $  292 paid, account blown 100%
+  2     |     +65 $/day (sd   578)     | pass 25.9%  blown 71.7%  (rest unfinished in 120 days) · days to pass: median  18, fastest 10%   7 |   0.7 payouts, $  304 paid, account blown 100%
+  3     |     +98 $/day (sd   868)     | pass 24.7%  blown 74.5%  (rest unfinished in 120 days) · days to pass: median  18, fastest 10%   6 |   0.6 payouts, $  331 paid, account blown 100%
+  5     |    +164 $/day (sd  1446)     | pass 16.6%  blown 82.9%  (rest unfinished in 120 days) · days to pass: median  14, fastest 10%   5 |   1.0 payouts, $  524 paid, account blown 100%
+  10    |    +327 $/day (sd  2892)     | pass  9.2%  blown 90.6%  (rest unfinished in 120 days) · days to pass: median  11, fastest 10%   5 |   0.5 payouts, $  310 paid, account blown 100%

@@ -1,0 +1,6 @@
+2019-01 → 2026-10, 1785 sessions · NQ trade days 1471 · ES trade days 1361
+  NQ only: eval 8 MNQ → funded 2 (today's plan) trade days 82.4%, winning 40.0% of them, funded-size $ 8044/yr | Flex: 1st payout median 11.2 wks, <=12 wks  54%, evals/yr 8.6, paid in the year $ 5036
+  NQ + ES: eval 8 MNQ + 8 MES → funded 2 + 2   trade days 89.3%, winning 42.0% of them, funded-size $12044/yr | Flex: 1st payout median 10.8 wks, <=12 wks  57%, evals/yr 11.5, paid in the year $ 6645
+  NQ + ES: eval 6 + 6 → funded 2 + 2           trade days 89.3%, winning 42.0% of them, funded-size $12044/yr | Flex: 1st payout median 11.0 wks, <=12 wks  56%, evals/yr 8.9, paid in the year $ 6610
+  NQ + ES: eval 8 + 8 → funded 3 + 3           trade days 89.3%, winning 42.0% of them, funded-size $18066/yr | Flex: 1st payout median 11.8 wks, <=12 wks  51%, evals/yr 15.8, paid in the year $ 8554
+  ES only: eval 8 MES → funded 2               trade days 89.3%, winning 42.7% of them, funded-size $ 8022/yr | Flex: 1st payout median 13.8 wks, <=12 wks  40%, evals/yr 6.1, paid in the year $ 2576

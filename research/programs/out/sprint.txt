@@ -1,0 +1,45 @@
+SPRINT search: plan setups, NQ 2019-2024 (1472 days), micros sized by $ risk, cost 1.5 pts
+
+== select_daily_25k — top 8 by P(payout ≤ 7 days) (+ half ≤ 10 days)
+  1 trade/day        target 1.5R  eval risk $ 450  funded risk $1200 | ≤5d  0.68%  ≤7d  1.78%  ≤10d  3.49%  blown≤7d  37.6%  payout ~$748
+  1 trade/day        target 1.5R  eval risk $ 600  funded risk $1200 | ≤5d  0.75%  ≤7d  1.71%  ≤10d  3.08%  blown≤7d  58.9%  payout ~$824
+  1 trade/day        target 1.0R  eval risk $ 800  funded risk $ 900 | ≤5d  0.34%  ≤7d  1.44%  ≤10d  3.29%  blown≤7d  62.7%  payout ~$772
+  1 trade/day        target 1.5R  eval risk $ 800  funded risk $1200 | ≤5d  0.68%  ≤7d  1.64%  ≤10d  2.67%  blown≤7d  66.0%  payout ~$854
+  1 trade/day        target 1.5R  eval risk $ 600  funded risk $ 750 | ≤5d  0.27%  ≤7d  1.23%  ≤10d  3.08%  blown≤7d  57.0%  payout ~$747
+  1 trade/day        target 2.0R  eval risk $ 450  funded risk $ 900 | ≤5d  0.27%  ≤7d  1.37%  ≤10d  2.81%  blown≤7d  38.3%  payout ~$845
+  1 trade/day        target 2.0R  eval risk $ 450  funded risk $ 750 | ≤5d  0.27%  ≤7d  1.30%  ≤10d  2.95%  blown≤7d  38.1%  payout ~$731
+  1 trade/day        target 2.0R  eval risk $ 450  funded risk $1200 | ≤5d  0.27%  ≤7d  1.30%  ≤10d  2.74%  blown≤7d  39.7%  payout ~$792
+  several accounts, best setting, started on consecutive days:  k=1: ≤7d 1.8% ≤10d 3.5%  k=3: ≤7d 2.5% ≤10d 5.7%  k=5: ≤7d 2.5% ≤10d 6.3%  k=10: ≤7d 2.5% ≤10d 6.4%
+
+== select_daily_50k — top 8 by P(payout ≤ 7 days) (+ half ≤ 10 days)
+  1 trade/day        target 1.5R  eval risk $ 900  funded risk $1800 | ≤5d  0.89%  ≤7d  2.67%  ≤10d  5.48%  blown≤7d  44.0%  payout ~$1247
+  1 trade/day        target 1.5R  eval risk $1200  funded risk $1800 | ≤5d  0.89%  ≤7d  2.47%  ≤10d  4.79%  blown≤7d  62.1%  payout ~$1306
+  1 trade/day        target 1.5R  eval risk $ 900  funded risk $2400 | ≤5d  0.89%  ≤7d  2.53%  ≤10d  4.52%  blown≤7d  46.6%  payout ~$1473
+  1 trade/day        target 1.5R  eval risk $1600  funded risk $1800 | ≤5d  0.89%  ≤7d  2.33%  ≤10d  4.38%  blown≤7d  69.9%  payout ~$1358
+  1 trade/day        target 1.5R  eval risk $1200  funded risk $2400 | ≤5d  0.89%  ≤7d  2.33%  ≤10d  3.84%  blown≤7d  64.6%  payout ~$1484
+  1 trade/day        target 1.0R  eval risk $1600  funded risk $1800 | ≤5d  0.48%  ≤7d  2.05%  ≤10d  3.97%  blown≤7d  70.6%  payout ~$1230
+  1 trade/day        target 2.0R  eval risk $ 900  funded risk $1800 | ≤5d  0.55%  ≤7d  1.99%  ≤10d  3.84%  blown≤7d  43.7%  payout ~$1511
+  1 trade/day        target 1.0R  eval risk $1600  funded risk $1500 | ≤5d  0.55%  ≤7d  1.99%  ≤10d  3.84%  blown≤7d  70.0%  payout ~$1364
+  several accounts, best setting, started on consecutive days:  k=1: ≤7d 2.7% ≤10d 5.5%  k=3: ≤7d 3.6% ≤10d 8.2%  k=5: ≤7d 3.7% ≤10d 8.5%  k=10: ≤7d 3.7% ≤10d 8.6%
+
+== growth_25k — top 8 by P(payout ≤ 7 days) (+ half ≤ 10 days)
+  1 trade/day        target 1.5R  eval risk $ 800  funded risk $ 450 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.89%  blown≤7d  61.8%  payout ~$940
+  1 trade/day        target 2.0R  eval risk $ 800  funded risk $ 450 | ≤5d  0.00%  ≤7d  0.07%  ≤10d  0.75%  blown≤7d  65.6%  payout ~$1000
+  1 trade/day        target 2.0R  eval risk $ 800  funded risk $ 300 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.75%  blown≤7d  57.7%  payout ~$859
+  1 trade/day        target 3.0R  eval risk $ 800  funded risk $ 300 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.62%  blown≤7d  58.6%  payout ~$977
+  1 trade/day        target 2.0R  eval risk $ 600  funded risk $ 450 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.55%  blown≤7d  60.5%  payout ~$1000
+  1 trade/day        target 3.0R  eval risk $ 600  funded risk $ 300 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.55%  blown≤7d  54.5%  payout ~$990
+  1 trade/day        target 1.0R  eval risk $ 800  funded risk $ 750 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.55%  blown≤7d  63.6%  payout ~$1000
+  1 trade/day        target 2.0R  eval risk $ 600  funded risk $ 300 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.48%  blown≤7d  54.2%  payout ~$831
+  several accounts, best setting, started on consecutive days:  k=1: ≤7d 0.0% ≤10d 0.9%  k=3: ≤7d 0.0% ≤10d 0.9%  k=5: ≤7d 0.0% ≤10d 0.9%  k=10: ≤7d 0.0% ≤10d 0.9%
+
+== select_flex_25k — top 8 by P(payout ≤ 7 days) (+ half ≤ 10 days)
+  1 trade/day        target 1.0R  eval risk $ 800  funded risk $ 450 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.82%  blown≤7d  59.4%  payout ~$592
+  1 trade/day        target 1.0R  eval risk $ 600  funded risk $ 450 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.75%  blown≤7d  49.5%  payout ~$588
+  1 trade/day        target 1.0R  eval risk $ 800  funded risk $ 600 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.75%  blown≤7d  61.2%  payout ~$844
+  1 trade/day        target 0.5R  eval risk $ 800  funded risk $ 750 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.68%  blown≤7d  48.7%  payout ~$765
+  1 trade/day        target 1.0R  eval risk $ 800  funded risk $ 300 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.68%  blown≤7d  59.0%  payout ~$398
+  1 trade/day        target 1.0R  eval risk $ 600  funded risk $ 600 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.68%  blown≤7d  51.2%  payout ~$837
+  1 trade/day        target 0.5R  eval risk $ 800  funded risk $1200 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.68%  blown≤7d  50.2%  payout ~$1250
+  1 trade/day        target 0.5R  eval risk $ 800  funded risk $ 900 | ≤5d  0.00%  ≤7d  0.00%  ≤10d  0.68%  blown≤7d  48.8%  payout ~$976
+  several accounts, best setting, started on consecutive days:  k=1: ≤7d 0.0% ≤10d 0.8%  k=3: ≤7d 0.0% ≤10d 0.9%  k=5: ≤7d 0.0% ≤10d 0.9%  k=10: ≤7d 0.0% ≤10d 0.9%

@@ -1,0 +1,108 @@
+
+===== hold 60m, one position at a time, after 1.6 pts cost (NQ pts/trade; median over strategy ids) =====
+ALL 5277 ids: fleet entries -0.43 (46% of ids > 0) | open-dir twin +1.78 (74%) | day twin -1.85 (33%)
+  by year (all trades pooled): 2024 real +0.85 time +2.89 day -1.90 | 2025 real -1.36 time +2.07 day -1.41 | 2026 real +0.36 time -4.61 day -3.33 | 
+  orb                    ids 1139  real  +1.65 ( 68% >0)  open-dir twin  +4.56  day twin  -2.14  → signal vs open-dir -2.91, today's direction adds +3.78
+  fibr_e                 ids  665  real  +0.29 ( 52% >0)  open-dir twin  +0.63  day twin  -1.75  → signal vs open-dir -0.33, today's direction adds +2.05
+  fibc                   ids  544  real  -1.34 ( 23% >0)  open-dir twin  +0.41  day twin  -2.12  → signal vs open-dir -1.74, today's direction adds +0.78
+  fibr_x                 ids  480  real  -1.60 ( 14% >0)  open-dir twin  +1.75  day twin  -2.21  → signal vs open-dir -3.35, today's direction adds +0.61
+  fib_pb                 ids  215  real  -0.61 ( 29% >0)  open-dir twin  +1.89  day twin  -2.38  → signal vs open-dir -2.50, today's direction adds +1.77
+  delta_div              ids  196  real  -3.29 (  5% >0)  open-dir twin  +0.45  day twin  -1.85  → signal vs open-dir -3.74, today's direction adds -1.44
+  volume_burst           ids  193  real  -1.71 ( 23% >0)  open-dir twin  +0.26  day twin  -1.75  → signal vs open-dir -1.97, today's direction adds +0.04
+  keltner_ride           ids  175  real  +3.43 ( 97% >0)  open-dir twin  +0.66  day twin  -1.62  → signal vs open-dir +2.77, today's direction adds +5.05
+  trend_ema_pb           ids  171  real  +2.18 ( 80% >0)  open-dir twin  +2.57  day twin  -0.75  → signal vs open-dir -0.39, today's direction adds +2.93
+  trend_donchian         ids  152  real  +2.90 ( 88% >0)  open-dir twin  +3.41  day twin  -0.88  → signal vs open-dir -0.52, today's direction adds +3.78
+  mr_vwap_fade           ids  134  real  -5.10 (  0% >0)  open-dir twin  +2.61  day twin  -0.81  → signal vs open-dir -7.71, today's direction adds -4.29
+  ichimoku               ids  119  real  +2.05 ( 70% >0)  open-dir twin  +3.90  day twin  -2.14  → signal vs open-dir -1.85, today's direction adds +4.19
+  trend_vwap             ids   73  real  -1.83 ( 29% >0)  open-dir twin  +3.01  day twin  -2.02  → signal vs open-dir -4.84, today's direction adds +0.19
+  mr                     ids   73  real  -0.74 ( 33% >0)  open-dir twin  +2.19  day twin  -1.98  → signal vs open-dir -2.93, today's direction adds +1.24
+  roc                    ids   63  real  +3.31 ( 90% >0)  open-dir twin  +2.53  day twin  -1.96  → signal vs open-dir +0.78, today's direction adds +5.26
+  fail_bo                ids   60  real  -5.12 (  7% >0)  open-dir twin  +3.76  day twin  -0.79  → signal vs open-dir -8.88, today's direction adds -4.32
+  trend_supertrend       ids   57  real  -0.07 ( 46% >0)  open-dir twin  +0.68  day twin  -3.37  → signal vs open-dir -0.75, today's direction adds +3.30
+  orb_retest             ids   52  real  +4.85 (100% >0)  open-dir twin  +4.88  day twin  -1.55  → signal vs open-dir -0.04, today's direction adds +6.40
+  mr_band_fade           ids   46  real  -3.27 ( 28% >0)  open-dir twin  +2.50  day twin  -2.01  → signal vs open-dir -5.77, today's direction adds -1.26
+  ema_ribbon             ids   46  real  +0.56 ( 61% >0)  open-dir twin  +0.31  day twin  -2.25  → signal vs open-dir +0.24, today's direction adds +2.81
+  ib_break               ids   44  real  +1.68 ( 64% >0)  open-dir twin  +1.72  day twin  -1.42  → signal vs open-dir -0.04, today's direction adds +3.10
+  delta_trend            ids   44  real  +0.78 ( 70% >0)  open-dir twin  +3.05  day twin  -2.96  → signal vs open-dir -2.27, today's direction adds +3.74
+  trend_drive            ids   40  real  -1.45 ( 48% >0)  open-dir twin  +0.61  day twin  -0.75  → signal vs open-dir -2.05, today's direction adds -0.70
+  trend_day_vwap         ids   26  real  +2.70 ( 54% >0)  open-dir twin  +3.67  day twin  -1.52  → signal vs open-dir -0.97, today's direction adds +4.22
+  trend_rs_es            ids   22  real  +9.16 ( 95% >0)  open-dir twin  +2.15  day twin  +0.75  → signal vs open-dir +7.01, today's direction adds +8.42
+  trend_day_ema          ids   21  real  +0.76 ( 67% >0)  open-dir twin  -0.47  day twin  -1.43  → signal vs open-dir +1.23, today's direction adds +2.19
+  mtf                    ids   21  real  -2.14 ( 33% >0)  open-dir twin  +0.92  day twin  -1.49  → signal vs open-dir -3.06, today's direction adds -0.65
+  trend                  ids   20  real  -1.61 ( 10% >0)  open-dir twin  +2.94  day twin  -2.52  → signal vs open-dir -4.55, today's direction adds +0.91
+  thrust_fade            ids   18  real  -4.90 (  6% >0)  open-dir twin  +2.90  day twin  -3.17  → signal vs open-dir -7.80, today's direction adds -1.73
+  gap_fade               ids   18  real  -0.31 ( 22% >0)  open-dir twin  +3.97  day twin  -4.39  → signal vs open-dir -4.27, today's direction adds +4.08
+  globex_donchian        ids   17  real  -5.94 ( 12% >0)  open-dir twin  -8.12  day twin  -1.97  → signal vs open-dir +2.19, today's direction adds -3.96
+  vwap_reclaim           ids   15  real  -1.67 ( 33% >0)  open-dir twin  +1.18  day twin  +0.80  → signal vs open-dir -2.85, today's direction adds -2.48
+
+===== hold 120m, one position at a time, after 1.6 pts cost (NQ pts/trade; median over strategy ids) =====
+ALL 5252 ids: fleet entries +0.02 (50% of ids > 0) | open-dir twin +3.19 (76%) | day twin -1.61 (40%)
+  by year (all trades pooled): 2024 real +2.19 time +5.24 day -1.75 | 2025 real -1.40 time +3.49 day -1.06 | 2026 real -1.53 time -6.94 day -3.14 | 
+  orb                    ids 1117  real  -0.34 ( 41% >0)  open-dir twin  +3.84  day twin  -1.14  → signal vs open-dir -4.17, today's direction adds +0.81
+  fibr_e                 ids  665  real  +1.09 ( 58% >0)  open-dir twin  +2.08  day twin  -1.44  → signal vs open-dir -0.99, today's direction adds +2.54
+  fibc                   ids  544  real  +0.96 ( 63% >0)  open-dir twin  +2.81  day twin  -2.11  → signal vs open-dir -1.85, today's direction adds +3.07
+  fibr_x                 ids  480  real  +0.46 ( 50% >0)  open-dir twin  +4.24  day twin  -2.32  → signal vs open-dir -3.78, today's direction adds +2.78
+  fib_pb                 ids  215  real  +1.25 ( 70% >0)  open-dir twin  +3.44  day twin  -2.81  → signal vs open-dir -2.19, today's direction adds +4.06
+  delta_div              ids  196  real  -4.56 ( 18% >0)  open-dir twin  +1.72  day twin  -2.41  → signal vs open-dir -6.28, today's direction adds -2.15
+  volume_burst           ids  193  real  +1.91 ( 65% >0)  open-dir twin  +4.28  day twin  -2.50  → signal vs open-dir -2.38, today's direction adds +4.41
+  keltner_ride           ids  175  real  +7.78 ( 84% >0)  open-dir twin  +5.78  day twin  -0.03  → signal vs open-dir +2.00, today's direction adds +7.81
+  trend_ema_pb           ids  171  real  +3.89 ( 80% >0)  open-dir twin  +2.23  day twin  +0.71  → signal vs open-dir +1.65, today's direction adds +3.18
+  trend_donchian         ids  152  real  +1.90 ( 75% >0)  open-dir twin  +2.57  day twin  -0.91  → signal vs open-dir -0.67, today's direction adds +2.81
+  mr_vwap_fade           ids  134  real  -6.42 ( 12% >0)  open-dir twin  +4.14  day twin  -1.59  → signal vs open-dir -10.56, today's direction adds -4.83
+  ichimoku               ids  119  real  +3.69 ( 56% >0)  open-dir twin  +7.40  day twin  -3.24  → signal vs open-dir -3.71, today's direction adds +6.93
+  trend_vwap             ids   73  real  +0.22 ( 55% >0)  open-dir twin  +4.22  day twin  -2.06  → signal vs open-dir -4.00, today's direction adds +2.28
+  mr                     ids   73  real  -2.06 ( 22% >0)  open-dir twin  +5.68  day twin  -3.94  → signal vs open-dir -7.74, today's direction adds +1.88
+  roc                    ids   63  real  +5.82 ( 90% >0)  open-dir twin  +4.49  day twin  -0.13  → signal vs open-dir +1.34, today's direction adds +5.96
+  fail_bo                ids   60  real  -6.11 (  7% >0)  open-dir twin  +5.94  day twin  -1.94  → signal vs open-dir -12.05, today's direction adds -4.17
+  trend_supertrend       ids   57  real  -0.86 ( 44% >0)  open-dir twin  +4.14  day twin  -2.91  → signal vs open-dir -5.00, today's direction adds +2.04
+  orb_retest             ids   52  real  -0.82 ( 27% >0)  open-dir twin  +0.43  day twin  -1.70  → signal vs open-dir -1.25, today's direction adds +0.87
+  mr_band_fade           ids   46  real  -4.56 (  9% >0)  open-dir twin  +7.47  day twin  -1.85  → signal vs open-dir -12.03, today's direction adds -2.71
+  ema_ribbon             ids   46  real  +2.85 ( 61% >0)  open-dir twin  +0.93  day twin  -2.32  → signal vs open-dir +1.92, today's direction adds +5.16
+  ib_break               ids   44  real  +1.90 ( 68% >0)  open-dir twin  +2.16  day twin  +0.32  → signal vs open-dir -0.26, today's direction adds +1.58
+  delta_trend            ids   44  real  +1.48 ( 57% >0)  open-dir twin  +2.32  day twin  -2.03  → signal vs open-dir -0.84, today's direction adds +3.51
+  trend_drive            ids   40  real  -0.67 ( 48% >0)  open-dir twin  +0.66  day twin  -1.33  → signal vs open-dir -1.34, today's direction adds +0.66
+  trend_day_vwap         ids   26  real  +3.28 ( 54% >0)  open-dir twin  +4.70  day twin  -0.32  → signal vs open-dir -1.42, today's direction adds +3.60
+  trend_rs_es            ids   22  real +17.55 ( 91% >0)  open-dir twin  +8.23  day twin  +4.01  → signal vs open-dir +9.32, today's direction adds +13.54
+  mtf                    ids   21  real  -3.79 ( 14% >0)  open-dir twin  +3.57  day twin  -0.79  → signal vs open-dir -7.36, today's direction adds -3.00
+  trend_day_ema          ids   20  real  +3.41 ( 85% >0)  open-dir twin  +0.69  day twin  +3.91  → signal vs open-dir +2.72, today's direction adds -0.51
+  trend                  ids   20  real  -3.70 ( 10% >0)  open-dir twin  +7.96  day twin  -3.07  → signal vs open-dir -11.66, today's direction adds -0.63
+  thrust_fade            ids   18  real  -5.42 (  0% >0)  open-dir twin  +5.86  day twin  -5.41  → signal vs open-dir -11.28, today's direction adds -0.01
+  gap_fade               ids   18  real  +2.69 (100% >0)  open-dir twin  +4.84  day twin  +2.63  → signal vs open-dir -2.14, today's direction adds +0.07
+  globex_donchian        ids   17  real  -8.80 ( 12% >0)  open-dir twin  -9.86  day twin  -2.06  → signal vs open-dir +1.07, today's direction adds -6.73
+  vwap_reclaim           ids   15  real  -3.24 ( 47% >0)  open-dir twin  +5.05  day twin  -1.90  → signal vs open-dir -8.29, today's direction adds -1.33
+
+===== hold to 15:55, one position at a time, after 1.6 pts cost (NQ pts/trade; median over strategy ids) =====
+ALL 5261 ids: fleet entries +4.69 (68% of ids > 0) | open-dir twin +7.22 (89%) | day twin -2.00 (43%)
+  by year (all trades pooled): 2024 real +5.28 time +5.24 day -1.54 | 2025 real +6.56 time +12.63 day -1.77 | 2026 real -4.41 time -10.50 day -3.40 | 
+  orb                    ids 1135  real  +2.78 ( 65% >0)  open-dir twin  +7.30  day twin  -2.41  → signal vs open-dir -4.53, today's direction adds +5.19
+  fibr_e                 ids  665  real +10.63 ( 76% >0)  open-dir twin  +5.32  day twin  -0.94  → signal vs open-dir +5.31, today's direction adds +11.57
+  fibc                   ids  544  real  +8.43 ( 76% >0)  open-dir twin  +5.98  day twin  -1.78  → signal vs open-dir +2.45, today's direction adds +10.21
+  fibr_x                 ids  480  real +11.23 (100% >0)  open-dir twin +10.30  day twin  -3.56  → signal vs open-dir +0.93, today's direction adds +14.78
+  fib_pb                 ids  215  real +12.90 ( 90% >0)  open-dir twin  +8.60  day twin  -2.09  → signal vs open-dir +4.30, today's direction adds +14.99
+  delta_div              ids  196  real  -5.19 ( 18% >0)  open-dir twin  +3.54  day twin  -4.03  → signal vs open-dir -8.73, today's direction adds -1.16
+  volume_burst           ids  193  real  +7.03 ( 65% >0)  open-dir twin  +7.51  day twin  -1.37  → signal vs open-dir -0.48, today's direction adds +8.40
+  keltner_ride           ids  175  real +11.70 ( 78% >0)  open-dir twin +10.39  day twin  -2.70  → signal vs open-dir +1.31, today's direction adds +14.40
+  trend_ema_pb           ids  171  real  +9.82 ( 80% >0)  open-dir twin  +5.49  day twin  +0.20  → signal vs open-dir +4.34, today's direction adds +9.62
+  trend_donchian         ids  152  real  +7.93 ( 80% >0)  open-dir twin  +6.66  day twin  -1.28  → signal vs open-dir +1.28, today's direction adds +9.21
+  mr_vwap_fade           ids  134  real  -5.11 ( 18% >0)  open-dir twin  +4.61  day twin  +1.36  → signal vs open-dir -9.72, today's direction adds -6.46
+  ichimoku               ids  119  real +10.88 ( 92% >0)  open-dir twin +10.91  day twin  -1.77  → signal vs open-dir -0.03, today's direction adds +12.64
+  trend_vwap             ids   73  real  +3.91 ( 67% >0)  open-dir twin  +5.75  day twin  -2.99  → signal vs open-dir -1.83, today's direction adds +6.91
+  mr                     ids   73  real  -0.34 ( 44% >0)  open-dir twin +12.06  day twin  -0.02  → signal vs open-dir -12.40, today's direction adds -0.32
+  roc                    ids   63  real +15.15 ( 84% >0)  open-dir twin +12.40  day twin  -1.89  → signal vs open-dir +2.75, today's direction adds +17.03
+  fail_bo                ids   60  real  -6.10 ( 18% >0)  open-dir twin  +8.59  day twin  -2.97  → signal vs open-dir -14.69, today's direction adds -3.13
+  trend_supertrend       ids   57  real  -0.70 ( 47% >0)  open-dir twin +10.06  day twin  -3.77  → signal vs open-dir -10.75, today's direction adds +3.07
+  orb_retest             ids   52  real  +3.57 ( 85% >0)  open-dir twin  +5.00  day twin  -1.83  → signal vs open-dir -1.43, today's direction adds +5.40
+  mr_band_fade           ids   46  real  -6.74 ( 15% >0)  open-dir twin  +8.39  day twin  -2.31  → signal vs open-dir -15.13, today's direction adds -4.43
+  ema_ribbon             ids   46  real  +7.83 ( 76% >0)  open-dir twin  +6.31  day twin  +0.83  → signal vs open-dir +1.52, today's direction adds +7.00
+  ib_break               ids   44  real  +2.41 ( 73% >0)  open-dir twin  +2.75  day twin  -1.82  → signal vs open-dir -0.34, today's direction adds +4.23
+  delta_trend            ids   44  real  -1.72 ( 23% >0)  open-dir twin  +6.53  day twin  +0.22  → signal vs open-dir -8.25, today's direction adds -1.94
+  trend_drive            ids   40  real  +5.98 ( 62% >0)  open-dir twin  +2.65  day twin  -0.47  → signal vs open-dir +3.33, today's direction adds +6.45
+  trend_day_vwap         ids   26  real  +2.45 ( 58% >0)  open-dir twin  +2.09  day twin  +0.47  → signal vs open-dir +0.36, today's direction adds +1.98
+  trend_rs_es            ids   22  real +27.86 ( 86% >0)  open-dir twin  +9.20  day twin  +1.38  → signal vs open-dir +18.66, today's direction adds +26.48
+  trend_day_ema          ids   20  real  +5.66 ( 95% >0)  open-dir twin  +4.55  day twin  -1.59  → signal vs open-dir +1.10, today's direction adds +7.24
+  trend                  ids   20  real  -6.50 (  5% >0)  open-dir twin  +7.94  day twin  -2.44  → signal vs open-dir -14.44, today's direction adds -4.06
+  mtf                    ids   20  real -10.92 (  0% >0)  open-dir twin  +3.55  day twin  -5.10  → signal vs open-dir -14.46, today's direction adds -5.82
+  thrust_fade            ids   18  real -13.14 (  6% >0)  open-dir twin +15.93  day twin  -1.25  → signal vs open-dir -29.07, today's direction adds -11.89
+  gap_fade               ids   18  real  +8.94 (100% >0)  open-dir twin +24.85  day twin  -0.26  → signal vs open-dir -15.92, today's direction adds +9.20
+  globex_donchian        ids   16  real  -7.57 ( 19% >0)  open-dir twin  -8.32  day twin  +8.73  → signal vs open-dir +0.74, today's direction adds -16.30
+  vwap_reclaim           ids   15  real  -7.95 ( 20% >0)  open-dir twin +13.86  day twin  -6.40  → signal vs open-dir -21.82, today's direction adds -1.56
