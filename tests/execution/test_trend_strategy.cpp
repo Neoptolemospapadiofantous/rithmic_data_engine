@@ -347,6 +347,31 @@ int main() {
         CHECK(lost.size() == 1, "mom_dir: after a losing trade (notify_trade_filled with P&L < 0) no more entries that day");
         auto won = run_mom(rise, false, 1, 50.0, sd);
         CHECK(won.size() >= 2 && won[1].sig == OrbSignal::BUY, "mom_dir: after a winning trade the next 5-minute close in the direction may enter again");
+        // mom_entry vwap / dip (2026-10-17): 2 pts/min straight up from 09:30, then the 09:45 bar dips to 20020 (below VWAP, ≥ 0.1 ATR off the
+        // 30-min high) and closes 20095 (above VWAP and above the 09:44 close) → both enter; on the plain rise neither does (any-bar does)
+        auto run_entry = [&](const std::string& entry, bool dip_bar, bool need_plan = false, double atr = 100.0) {
+            TrendConfig tc; tc.mode = "mom_dir"; tc.tf_min = 1; tc.win_start = 930; tc.win_end = 1555; tc.mom_entry = entry; tc.mom_need_plan = need_plan;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session(); s.set_day_atr(atr);
+            for (int mm = 9 * 60; mm < 9 * 60 + 30; ++mm) bar1(s, 0, mm / 60, mm % 60, 20000, 20001, 19999, 20000, 0.5);
+            double prev = 20000;
+            for (int i = 0; i < 15; ++i) { const double c = 20000 + 2.0 * (i + 1); bar1(s, 0, 9, 30 + i, prev, c + 0.25, prev - 0.25, c, 0.5); prev = c; }
+            for (int i = 0; i < 5; ++i) { const int mm = 45 + i; const double c = dip_bar ? (i == 4 ? 20095.0 : 20031.0 + 12 * i) : 20030.0 + 2.0 * (i + 1);
+                const double lo = dip_bar && i == 0 ? 20020.0 : std::min(prev, c) - 0.25; bar1(s, 0, 9, mm, prev, std::max(prev, c) + 0.25, lo, c, 0.5); prev = c; }
+            bar1(s, 0, 9, 50, prev, prev + 0.25, prev - 0.25, prev, 0.5);
+            return out;
+        };
+        CHECK(run_entry("vwap", true).size() == 1 && run_entry("vwap", true)[0].sig == OrbSignal::BUY, "mom_dir vwap: a 5-min bar that dips through VWAP and closes back above it → LONG");
+        CHECK(run_entry("vwap", false).empty(), "mom_dir vwap: no pullback to VWAP → no trade");
+        CHECK(run_entry("dip", true).size() == 1, "mom_dir dip: a ≥ 0.1 ATR pullback from the 30-min high that closes above the previous 5-min close → LONG");
+        CHECK(run_entry("dip", false).empty(), "mom_dir dip: no pullback → no trade");
+        CHECK(run_entry("any", false).size() == 1, "mom_dir any: the plain straight rise enters at the 09:45 close");
+        // mom_need_plan (2026-10-17): the 09:50 cascade check (+95 ≥ 0.25 × ATR 100) sets the plan LONG in the same bar → the VWAP entry
+        // is taken; with ATR 400 the move is < 0.25 ATR, no plan direction exists yet → no entry (without the flag it would enter)
+        CHECK(run_entry("vwap", true, true, 100.0).size() == 1, "mom_dir + need_plan: plan direction LONG from the 09:50 check → the VWAP entry is taken");
+        CHECK(run_entry("vwap", true, true, 400.0).empty(), "mom_dir + need_plan: no plan direction yet → no entry");
+        CHECK(run_entry("vwap", true, false, 400.0).size() == 1, "mom_dir without need_plan: the same bar enters");
     }
     // ── late strong open (2026-10-15): re-check later only on days the main decision gave no direction ──
     {

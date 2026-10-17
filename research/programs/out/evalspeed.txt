@@ -1,0 +1,21 @@
+25K eval within H trading days, plan setups, NQ micros, day merged pessimistic, 2019-2024 (1472 days), cost 1.5 pts
+
+== select_flex_25k (target, drawdown, consistency from payout_sim.hpp)
+  plan, 1 trade a day                      2 MNQ:   5d pass  1.7% blown  6.4%  10d pass  6.2% blown 20.1%  20d pass 16.1% blown 39.0%  60d pass 33.2% blown 57.1%
+  plan, 1 trade a day                      3 MNQ:   5d pass  3.1% blown 21.9%  10d pass  9.7% blown 40.6%  20d pass 19.1% blown 57.8%  60d pass 30.7% blown 68.3%
+  plan, 1 trade a day                      4 MNQ:   5d pass  3.7% blown 34.0%  10d pass 10.6% blown 50.4%  20d pass 19.5% blown 64.2%  60d pass 27.2% blown 72.7%
+  plan, 1 trade a day                      6 MNQ:   5d pass  4.5% blown 50.0%  10d pass  9.8% blown 65.4%  20d pass 14.9% blown 77.3%  60d pass 18.2% blown 81.7%
+  plan setups, again only after a win      2 MNQ:   5d pass  1.0% blown  7.1%  10d pass  5.0% blown 23.5%  20d pass 12.5% blown 42.1%  60d pass 26.7% blown 59.2%
+  plan setups, again only after a win      3 MNQ:   5d pass  1.2% blown 24.1%  10d pass  6.4% blown 43.5%  20d pass 13.8% blown 60.7%  60d pass 26.0% blown 72.3%
+  plan setups, again only after a win      4 MNQ:   5d pass  1.4% blown 37.5%  10d pass  6.4% blown 54.0%  20d pass 13.6% blown 66.7%  60d pass 22.9% blown 76.8%
+  plan setups, again only after a win      6 MNQ:   5d pass  1.6% blown 53.6%  10d pass  6.4% blown 68.9%  20d pass 10.0% blown 79.8%  60d pass 14.8% blown 85.1%
+
+== select_daily_25k (target, drawdown, consistency from payout_sim.hpp)
+  plan, 1 trade a day                      2 MNQ:   5d pass  1.7% blown  6.4%  10d pass  6.2% blown 20.1%  20d pass 16.1% blown 39.0%  60d pass 33.2% blown 57.1%
+  plan, 1 trade a day                      3 MNQ:   5d pass  3.1% blown 21.9%  10d pass  9.7% blown 40.6%  20d pass 19.1% blown 57.8%  60d pass 30.7% blown 68.3%
+  plan, 1 trade a day                      4 MNQ:   5d pass  3.7% blown 34.0%  10d pass 10.6% blown 50.4%  20d pass 19.5% blown 64.2%  60d pass 27.2% blown 72.7%
+  plan, 1 trade a day                      6 MNQ:   5d pass  4.5% blown 50.0%  10d pass  9.8% blown 65.4%  20d pass 14.9% blown 77.3%  60d pass 18.2% blown 81.7%
+  plan setups, again only after a win      2 MNQ:   5d pass  1.0% blown  7.1%  10d pass  5.0% blown 23.5%  20d pass 12.5% blown 42.1%  60d pass 26.7% blown 59.2%
+  plan setups, again only after a win      3 MNQ:   5d pass  1.2% blown 24.1%  10d pass  6.4% blown 43.5%  20d pass 13.8% blown 60.7%  60d pass 26.0% blown 72.3%
+  plan setups, again only after a win      4 MNQ:   5d pass  1.4% blown 37.5%  10d pass  6.4% blown 54.0%  20d pass 13.6% blown 66.7%  60d pass 22.9% blown 76.8%
+  plan setups, again only after a win      6 MNQ:   5d pass  1.6% blown 53.6%  10d pass  6.4% blown 68.9%  20d pass 10.0% blown 79.8%  60d pass 14.8% blown 85.1%

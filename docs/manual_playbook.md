@@ -155,6 +155,17 @@ The overnight sessions are context, not trades.
 
 Published as a page (with a morning calculator): https://claude.ai/artifact/L5tcGniUqD7LWF1GSPLqer
 
+## Momentum + pullback (2026-10-17) — paper candidates, on the Plan page and in Telegram
+
+Founder: "find the direction, the momentum, enter on the momentum with EMA". Tested family (research/README.md ledger):
+1. Direction = the PLAN's direction (first cascade check or gap retest) — the box says "plan agrees" when it matches.
+2. Momentum = the last 45 one-minute bars moved fairly straight one way (|net| / path ≥ 0.3), price on that side of VWAP and the open.
+3. Entry = a 5-min bar that comes within 0.05 ATR of VWAP and closes back in the direction (best entry tested; EMA-20 touch second).
+4. Stop 0.25 ATR, break-even at +1R, hold to 15:55; ≤ 3 a day, one at a time, done after a loss; no entries after 13:55.
+Engine replay, $ per MNQ per trade (2010-18 / 2019-22 / 2023-24): with plan agreement +4.62 / +15.28 / +36.13; without +3.60 /
++11.62 / +15.34; the 30-min EMA-20 version −1.67 / +5.61 / +14.44. New York only (ES and the night sessions fail). Small edge,
+big swings: size so one stop ≈ $600 (3 MNQ at an 82-pt stop). Alerts: "MOMENTUM + VWAP PULLBACK — PLAN AGREES" is the strong one.
+
 ## One-week payout sprint (founder 2026-10-17: "we want to make it happen") — simulated, not a tested edge
 
 Searched (scratchpad sprint.cpp / sprint2.cpp, plan setups 2019-24, sizing by $ risk, costs 1.5 pts, days merged pessimistic):

@@ -1,6 +1,7 @@
 # daily_plan_live.jq — "am I allowed to trade right now?" for the day plan (scripts/daily_plan.sh), from today's 1-minute bars.
 # Input: the plan (.) ; $bars = today's RTH 1-minute bars [{m: minutes after 09:30, o,h,l,c,v,bv}] ; $now = minutes after 09:30 now ;
-# $pre2 = the overnight 2-minute closes (18:00 → 09:30, oldest first) that seed the EMA-9 / EMA-21.
+# $pre2 = the overnight 2-minute closes (18:00 → 09:30, oldest first) that seed the EMA-9 / EMA-21; $pre5 the same in 5-min
+# closes (EMA-20); $pre1 = the last 60 one-minute closes before 09:30 (the momentum windows reach back into them).
 # Only the tested rules (research/preregistered/2026-10-17_*): cascade checks 09:50 (0.25 ATR) / 10:30 · 11:00 · 11:30 (0.30 ATR),
 # gap retest (gap side, 15-min opening-range edge touched and closed beyond, bars starting 09:45–13:55), box_go (gap side, overnight
 # high/low broken, a smaller box beyond it, a close beyond the box). Order flow = RTH cumulative aggressor delta (2·buy − volume).
@@ -89,8 +90,9 @@ def bars5: [$bars | group_by(.m / 5 | floor)[] | {k: (.[0].m / 5 | floor), o: .[
   # ── 1-min momentum direction (research/preregistered/2026-10-17_mtf_1m_dir_5m_entry.md, forward-paper candidate): the last 30
   #    one-minute moves went one way fairly straight (|net| / path ≥ 0.3) and price is on that side of VWAP and the open, ≤ 13:55
   | ([$bars[] | select(.m < $now)]) as $mb
-  | (if ($mb | length) < 31 then null else
-       ($mb[-31:]) as $w | ([range(1; 31) as $i | (($w[$i].c - $w[$i - 1].c) | fabs)] | add) as $path | ($w[30].c - $w[0].c) as $net
+  | ((($pre1 // []) + [$mb[] | .c])) as $mcl            # 1-min closes incl. the hour before 09:30 (the engine's window reaches back too)
+  | (if ($mb | length) < 1 or ($mcl | length) < 31 then null else
+       ($mcl[-31:]) as $w | ([range(1; 31) as $i | (($w[$i] - $w[$i - 1]) | fabs)] | add) as $path | ($w[30] - $w[0]) as $net
        | (if $path > 0 then (($net | fabs) / $path) else 0 end) as $eff
        | (if $eff >= 0.3 then (if $net > 0 then 1 else -1 end) else 0 end) as $md
        # the tested entry (mom_dir_30_ema20): the 5-min bar that just closed came within 0.03 ATR of the 5-min EMA-20 and closed back
@@ -108,7 +110,22 @@ def bars5: [$bars | group_by(.m / 5 | floor)[] | {k: (.[0].m / 5 | floor), o: .[
                 elif ($md * ($px - $vwap)) <= 0 then "price on the wrong side of VWAP"
                 elif ($md * ($px - $open)) <= 0 then "price on the wrong side of the 09:30 open"
                 else "wait for a 5-min bar that comes within 0.03 ATR of the 5-min EMA-20 and closes back in this direction; stop 0.25 ATR, break-even at +1R, hold to 15:55; ≤ 3 a day, done after a loss" end)} end) as $mom
-  | . + {live: {status: $status, at: hhmm($now), next: $next, mom: $mom,
+  # ── 45-min momentum + VWAP pullback (research/preregistered/2026-10-17_momentum_entries.md; paper id mom_dir_45_vwap, the best of
+  #    the family at real costs on every year): the 5-min bar that just closed came within 0.05 ATR of VWAP (as it stood before the bar)
+  #    and closed back, in the 45-min momentum direction, on that side of VWAP and the open, ≤ 13:55
+  | (if ($mb | length) < 1 or ($mcl | length) < 46 then null else
+       ($mcl[-46:]) as $w | ([range(1; 46) as $i | (($w[$i] - $w[$i - 1]) | fabs)] | add) as $path | ($w[45] - $w[0]) as $net
+       | (if $path > 0 then (($net | fabs) / $path) else 0 end) as $eff | (if $eff >= 0.3 then (if $net > 0 then 1 else -1 end) else 0 end) as $md
+       | ([$mb[] | select(.m < $now - 5)]) as $pre | ([$pre[] | (.v // 0) | if . < 1 then 1 else . end]) as $pv
+       | (if ($pre | length) > 0 then ([range(0; $pre | length) as $i | (($pre[$i].h + $pre[$i].l + $pre[$i].c) / 3) * $pv[$i]] | add) / ($pv | add) else null end) as $vwb
+       | ($b5 | last) as $l5
+       | ($md != 0 and $vwb != null and $l5 != null and (($l5.k + 1) * 5) == $now and $now <= 265 and $vwap != null
+          and ($md * ($px - $vwap)) > 0 and ($md * ($px - $open)) > 0 and (($long_hold and $md < 0) | not)
+          and (if $md > 0 then ($l5.l <= $vwb + 0.05 * $atr and $l5.c > $vwb) else ($l5.h >= $vwb - 0.05 * $atr and $l5.c < $vwb) end)) as $vset
+       | {dir: (if $md > 0 then "LONG" elif $md < 0 then "SHORT" else null end), eff: (($eff * 100 | round) / 100),
+          plan_agrees: ($pd != null and $md != 0 and (($pd.dir == "LONG") == ($md > 0))),
+          setup: (if $vset then {at: hhmm($now), price: $l5.c, vwap: (($vwb * 4 | round) / 4), stop_pts: (($atr * 0.25 * 4 | round) / 4)} else null end)} end) as $mom45
+  | . + {live: {status: $status, at: hhmm($now), next: $next, mom: $mom, mom45: $mom45,
                 sprint: {status: $spst, outcome: $spout, trade: (if $sp == null then null else $sp + {target_pts: (($sp.stop_pts * 0.5 * 4 | round) / 4),
                           stop_price: ((($sp.price - (if $sp.dir == "LONG" then 1 else -1 end) * $sp.stop_pts) * 4 | round) / 4),
                           target_price: ((($sp.price + (if $sp.dir == "LONG" then 1 else -1 end) * $sp.stop_pts * 0.5) * 4 | round) / 4)} end)},

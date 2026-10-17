@@ -7,6 +7,21 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-17 (later) — momentum family, VWAP pullback with plan agreement, alerts, second-drive backup, validation
+- Trend engine mode `mom_dir` (1-min momentum direction + 5-min entry `mom_entry` any / ema / vwap / dip, `mom_window`, `mom_eff`,
+  `mom_last_entry`, `mom_need_plan` = the plan's cascade / gap-retest direction tracked inside the mode, done-after-a-loss via the
+  closed trade's P&L) and PaperBroker `be_r` (break-even at be_r × the trade's stop; paper only — executor refuses it, leaderboard
+  marks it not live-runnable). Tests in test_trend_strategy (13 mom_dir checks) and test_paper_broker.
+- Paper ids `mom_dir_30_any`, `mom_dir_30_ema20`, `mom_dir_45_vwap`, `mom_dir_45_vwap_plan`, `mom_dir_45_dip`, `mom_dir_45_ema9_tight`;
+  backfill (label `backfill`, 09-17 → 10-16) and every-year engine replays (label `mom_hist`, NQ bars 2010-07 → 2026-03).
+- Plan page: momentum boxes (`live.mom` 30-min + EMA-20, `live.mom45` 45-min + VWAP + plan agreement), momentum windows include the
+  hour before 09:30; alerts `mom-HH:MM` and `momv-HH:MM`.
+- `scripts/local_backup.sh` + `local-backup.timer`: nightly copy to the second drive (pg dumps 14 there / 3 on the main disk — the
+  main disk was 98 % full —, git bundles, owned market data). The Oracle off-box copy has been failing since ≥ 2026-09-27.
+- Validation: `scripts/research_repro.sh` (20 / 20 research programs reproduce), `scripts/edge_lab_validate.sh` (60 / 60),
+  `scripts/plan_parity.sh` (12 / 13 momentum entries flagged by the page; the miss is the post-data-gap ATR on 2026-09-22).
+- Research ledger for the day: research/README.md "Ledger — 2026-10-17"; programs + outputs in research/programs/.
+
 ## 2026-10-17 — daily plan for hand trading, payout sprint, regime + EMA research, dry gap-retest unit
 - Daily plan (`scripts/daily_plan.sh` + `scripts/daily_plan_live.jq`, dashboard /plan): "Right now" panel (which setup triggered,
   order flow, allowed / not allowed), EMA permission box (2-min EMA-9 / EMA-21, day direction, VWAP + open side, ≤ 13:55),

@@ -108,6 +108,31 @@ shown on the dashboard's **Lab** page (`/lab`, bot repo `ui/routers/lab.py`) nex
 paper-fleet diagnosis. 2026-10-17: 46/46 as expected. Lesson from it: 3 of the 12 real-data coin flips passed screen AND
 walk-forward — only the controls stopped them, so a leaderboard (gates 1–2 at best) cannot tell luck from edge.
 
+## One-off research programs and reproducibility (`research/programs/`, 2026-10-17)
+
+Tests that are not edge_lab ideas (sweeps, payout simulations, execution and regime studies) are C++ programs in
+`research/programs/` (index + build line in its README); each one's printed result is kept in `research/programs/out/`.
+`scripts/research_repro.sh` rebuilds and re-runs them and compares with the saved output (2026-10-17: 20 of 20 identical).
+`scripts/edge_lab_validate.sh` checks the pipeline itself (2026-10-17: 60 of 60 as expected). `scripts/plan_parity.sh FROM TO`
+checks that the Plan page flags the momentum entries the paper engine takes (2026-10-17: 12 of 13; the one miss is 2026-09-22,
+when the engine's ATR still spanned the March–September data gap).
+
+## Ledger — 2026-10-17 (every file in research/preregistered/2026-10-17_*; verdict in one line)
+| Pre-registration | Verdict |
+|---|---|
+| regime_optimize | 9,408 regime rules, walk-forward + shuffles: FAIL all sessions — only "trending by 10:30 in the gap direction" (= the cascade) carries |
+| fleet_entries_exits | the fleet's exits lose the move; its signals add nothing over "go with the day since 09:30" |
+| reentry | 2nd / 3rd trade only after a winner (+5.7 vs −0.8 random); no faster 25K payout |
+| ema_permission / ema_stops / ema_entries_trails / ema_sweep / open_regime_ema | EMA pullback ≈ breakeven out of sample whatever the stop / trail / entry / filter (3,300+ variants) |
+| manual_execution | 1 min late or 5 pts worse kills the sprint edge → alerts within the minute, bracket at once |
+| mtf_1m_dir_5m_entry | 1-min momentum DIRECTION (straight last 30 min, VWAP + open side) carries a small edge; the EMA entry adds nothing |
+| momentum_round2 | NQ New York only (ES and the night sessions fail); the frozen exit kept |
+| momentum_optimize | 12,000 settings: walk-forward +0.168 vs +0.079 but a narrow spike → not adopted |
+| momentum_entries | straightness (not size) + PULLBACK entries; best = 45-min momentum + VWAP pullback (+0.118 R, all eras) |
+| momentum_addons | VWAP rule only when the plan direction agrees: +0.249 R vs −0.001 → adopted on paper (mom_dir_45_vwap_plan); order flow / VIX sizing / scaling out not adopted |
+Engine replays of every year (label `mom_hist`, 2010-07 → 2026-03, the fleet's real costs) confirm the momentum ranking:
+mom_dir_45_vwap_plan > mom_dir_45_vwap > mom_dir_45_dip > mom_dir_30_ema20 / _any; all lose a little or break even in 2010-18.
+
 ## Known limits
 - 1-minute OHLC only (no queue position); cost is a fixed real round trip per contract in every year.
 - The continuous contract is not back-adjusted (see `rollwin`). NQ has no data 2026-03-20 … 2026-09-18.

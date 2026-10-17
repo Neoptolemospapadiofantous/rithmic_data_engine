@@ -1,0 +1,42 @@
+
+===== A mom_dir_45_vwap (700 trades 2010-24) =====
+ 1. order flow (2023-03 → 2024-12):
+  RTH delta agrees                     n   75  +0.143 R/trade
+  RTH delta disagrees                  n   15  +0.520 R/trade
+  last-15-min delta agrees             n   76  -0.027 R/trade
+  last-15-min delta disagrees          n   14  +1.469 R/trade
+ 2. VIX (prior close):
+  VIX < 16                             n  324  +0.059 R/trade
+  VIX 16-22                            n  244  +0.154 R/trade
+  VIX >= 22                            n  132  +0.194 R/trade
+ 4. cascade / plan direction at entry:
+  plan agrees                          n  298  +0.249 R/trade
+  plan disagrees                       n   81  +0.103 R/trade
+  no plan direction yet                n  321  -0.001 R/trade
+ policies (total R, worst drawdown, return/drawdown, R per unit risked):
+  flat 1 unit                                  | 10-18  +25.9R dd  35.0 ret/dd  0.74 R/unit +0.070 | 19-22  +44.7R dd  14.1 ret/dd  3.16 R/unit +0.192 | 23-24  +11.8R dd   7.8 ret/dd  1.50 R/unit +0.120 | ALL  +82.3R dd  35.0 ret/dd  2.36 R/unit +0.118
+  2 units when VIX >= 20                       | 10-18  +28.7R dd  37.4 ret/dd  0.77 R/unit +0.068 | 19-22  +74.7R dd  28.3 ret/dd  2.64 R/unit +0.210 | 23-24  +17.6R dd  11.5 ret/dd  1.53 R/unit +0.156 | ALL +121.0R dd  37.4 ret/dd  3.23 R/unit +0.135
+  2 units when the plan agrees                 | 10-18  +51.7R dd  49.6 ret/dd  1.04 R/unit +0.096 | 19-22  +82.9R dd  15.7 ret/dd  5.27 R/unit +0.252 | 23-24  +22.0R dd  11.6 ret/dd  1.90 R/unit +0.168 | ALL +156.6R dd  49.6 ret/dd  3.16 R/unit +0.157
+  only when the plan agrees                    | 10-18  +25.8R dd  16.9 ret/dd  1.53 R/unit +0.153 | 19-22  +38.2R dd   5.5 ret/dd  6.91 R/unit +0.398 | 23-24  +10.2R dd   5.6 ret/dd  1.81 R/unit +0.309 | ALL  +74.2R dd  16.9 ret/dd  4.39 R/unit +0.249
+  3. scale out: half at +1R, rest BE hold      | 10-18   +5.2R dd  37.3 ret/dd  0.14 R/unit +0.014 | 19-22  +28.7R dd  10.1 ret/dd  2.83 R/unit +0.123 | 23-24  +11.1R dd   7.4 ret/dd  1.50 R/unit +0.113 | ALL  +45.0R dd  37.3 ret/dd  1.20 R/unit +0.064
+
+===== B mom_dir_30_ema20 (964 trades 2010-24) =====
+ 1. order flow (2023-03 → 2024-12):
+  RTH delta agrees                     n   99  +0.268 R/trade
+  RTH delta disagrees                  n   22  -0.294 R/trade
+  last-15-min delta agrees             n  109  +0.146 R/trade
+  last-15-min delta disagrees          n   12  +0.346 R/trade
+ 2. VIX (prior close):
+  VIX < 16                             n  436  +0.065 R/trade
+  VIX 16-22                            n  323  +0.017 R/trade
+  VIX >= 22                            n  205  +0.205 R/trade
+ 4. cascade / plan direction at entry:
+  plan agrees                          n  389  +0.089 R/trade
+  plan disagrees                       n  198  +0.049 R/trade
+  no plan direction yet                n  377  +0.083 R/trade
+ policies (total R, worst drawdown, return/drawdown, R per unit risked):
+  flat 1 unit                                  | 10-18  +33.6R dd  14.3 ret/dd  2.35 R/unit +0.066 | 19-22  +24.3R dd  13.0 ret/dd  1.87 R/unit +0.076 | 23-24  +17.8R dd   5.4 ret/dd  3.32 R/unit +0.136 | ALL  +75.7R dd  15.1 ret/dd  5.03 R/unit +0.079
+  2 units when VIX >= 20                       | 10-18  +47.8R dd  14.3 ret/dd  3.34 R/unit +0.080 | 19-22  +49.4R dd  26.4 ret/dd  1.87 R/unit +0.099 | 23-24  +19.4R dd   5.8 ret/dd  3.33 R/unit +0.131 | ALL +116.6R dd  30.8 ret/dd  3.78 R/unit +0.093
+  2 units when the plan agrees                 | 10-18  +36.4R dd  19.2 ret/dd  1.90 R/unit +0.051 | 19-22  +53.5R dd  15.4 ret/dd  3.48 R/unit +0.116 | 23-24  +20.4R dd   8.2 ret/dd  2.50 R/unit +0.117 | ALL +110.3R dd  19.2 ret/dd  5.76 R/unit +0.082
+  only when the plan agrees                    | 10-18   +2.8R dd  13.3 ret/dd  0.21 R/unit +0.014 | 19-22  +29.2R dd   7.4 ret/dd  3.97 R/unit +0.212 | 23-24   +2.6R dd   4.2 ret/dd  0.61 R/unit +0.058 | ALL  +34.6R dd  13.3 ret/dd  2.59 R/unit +0.089
+  3. scale out: half at +1R, rest BE hold      | 10-18  +12.2R dd  16.5 ret/dd  0.74 R/unit +0.024 | 19-22  +13.3R dd  10.9 ret/dd  1.23 R/unit +0.041 | 23-24  +16.6R dd   4.1 ret/dd  4.06 R/unit +0.127 | ALL  +42.2R dd  16.5 ret/dd  2.56 R/unit +0.044

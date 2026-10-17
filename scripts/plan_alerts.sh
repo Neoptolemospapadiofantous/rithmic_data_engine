@@ -44,6 +44,12 @@ jq -r --argjson now "$now_m" '
      | (if $m.dir == "LONG" then 1 else -1 end) as $sd
      | ["mom-\($m.setup.at)", "MOMENTUM + EMA-20 — NQ \($m.dir) at the \($m.setup.at) close ≈ \($m.setup.price). Stop \((($m.setup.price - $sd * $st) * 4 | round) / 4) (\($st) pts), \($n) MNQ for ~$600 risk; move to break-even at +\($st) pts, hold to 15:55. Max 3 a day, done after a loss. (Paper candidate, not a proven rule.)"] | @tsv
    else empty end),
+  # 4c. 45-min momentum + VWAP pullback (paper id mom_dir_45_vwap)
+  (if (.live.mom45.setup // null) != null then
+     (.live.mom45) as $m | ($m.setup.stop_pts) as $st | ([((600 / ($st * 2)) | floor), 10] | min | if . < 1 then 1 else . end) as $n
+     | (if $m.dir == "LONG" then 1 else -1 end) as $sd
+     | ["momv-\($m.setup.at)", "MOMENTUM + VWAP PULLBACK\(if $m.plan_agrees then " — PLAN AGREES (the strong version)" else " — plan direction NOT set / not agreeing (weaker: ≈ 0 R in tests)" end) — NQ \($m.dir) at the \($m.setup.at) close ≈ \($m.setup.price) (VWAP \($m.setup.vwap)). Stop \((($m.setup.price - $sd * $st) * 4 | round) / 4) (\($st) pts), \($n) MNQ for ~$600 risk; break-even at +\($st) pts, hold to 15:55. Max 3 a day, done after a loss. (Paper candidate — positive every period in the engine replay.)"] | @tsv
+   else empty end),
   # 4. the trade
   (if $sp != null and $sp.status == "TRADE NOW" and $sp.trade != null then
      ($sp.trade) as $t | mnq($t.stop_pts; $t.target_pts) as $n |
