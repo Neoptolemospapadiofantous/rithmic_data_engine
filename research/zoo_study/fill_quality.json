@@ -1,0 +1,279 @@
+{
+ "model": "fill_quality",
+ "tasks": [
+  {
+   "task": "fill_quality.slip_ticks",
+   "primary": true,
+   "kind": "l1",
+   "n": 85,
+   "n_features": 7,
+   "span": [
+    "2026-09-21",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 41,
+     "n_test": 41,
+     "metric": 0.9294852361910335,
+     "baseline": 2.8780487804878048
+    }
+   ],
+   "notes": [],
+   "metric": 0.9294852361910335,
+   "baseline": 2.8780487804878048,
+   "shuffled": {
+    "n": 20,
+    "min": 1.7127634539919652,
+    "median": 2.8642226675457287,
+    "max": 3.7380126446678976,
+    "p95": 3.6252363673129238,
+    "p05": 2.116744227556243,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 41,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "pre5_range_pts",
+     "importance": 0.26449166311936373,
+     "thirds": [
+      0.26974835867345975,
+      0.27247222057732695,
+      0.2502361598756081
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.007875596521074522,
+     "works": true
+    },
+    {
+     "feature": "entry_min_after_open",
+     "importance": 0.26164629452245375,
+     "thirds": [
+      0.27401311301616643,
+      0.38121626103139705,
+      0.1195605260580559
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.07442317632189621,
+     "works": true
+    },
+    {
+     "feature": "pre5_volume",
+     "importance": 0.2567869903170909,
+     "thirds": [
+      0.33209997173834177,
+      0.2890369822758259,
+      0.1409499420617218
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.010186849337862052,
+     "works": true
+    },
+    {
+     "feature": "orb_range_pts",
+     "importance": 0.06090888769445253,
+     "thirds": [
+      0.07054297503343729,
+      0.0698153077339094,
+      0.040942187440746444
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.05970432543771438,
+     "works": true
+    },
+    {
+     "feature": "pre5_ticks",
+     "importance": 0.016508726887833357,
+     "thirds": [
+      0.01735837687004811,
+      0.015942619675961202,
+      0.016203373135156806
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.04631046630909763,
+     "works": false
+    },
+    {
+     "feature": "is_long",
+     "importance": 0.0013900004575299828,
+     "thirds": [
+      0.0019044120816659044,
+      -0.0007406682337659509,
+      0.003130584991394536
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.028407630488305906,
+     "works": false
+    },
+    {
+     "feature": "hour_et",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.00484863773172878,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "entry_min_after_open",
+    "pre5_volume",
+    "pre5_range_pts",
+    "orb_range_pts"
+   ],
+   "refit_working_metric": 0.9472493601187799,
+   "seconds": 1.5,
+   "span_days": 25.0
+  },
+  {
+   "task": "fill_quality.fill_ms",
+   "primary": false,
+   "kind": "l1",
+   "n": 85,
+   "n_features": 7,
+   "span": [
+    "2026-09-21",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 41,
+     "n_test": 41,
+     "metric": 97213702354.68018,
+     "baseline": 1223355365625.2195
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 97213702354.68018,
+   "baseline": 1223355365625.2195,
+   "shuffled": {
+    "n": 20,
+    "min": 659969568309.9728,
+    "median": 1251057975002.3347,
+    "max": 1407589681728.202,
+    "p95": 1403112207346.101,
+    "p05": 669388520266.8943,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 41,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "entry_min_after_open",
+     "importance": 400870299482.1987,
+     "thirds": [
+      332292313055.4651,
+      502883198915.85175,
+      364863470090.1317
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 29578376427.24626,
+     "works": true
+    },
+    {
+     "feature": "orb_range_pts",
+     "importance": 201570761900.67593,
+     "thirds": [
+      179239461139.45837,
+      219031634092.5428,
+      206815838821.5152
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 16565295576.810806,
+     "works": true
+    },
+    {
+     "feature": "pre5_range_pts",
+     "importance": 18674953323.106964,
+     "thirds": [
+      32845044859.75988,
+      20284457811.632603,
+      1681542219.0685487
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 2303798242.0081925,
+     "works": true
+    },
+    {
+     "feature": "pre5_volume",
+     "importance": 17755864642.80716,
+     "thirds": [
+      31606688400.091797,
+      11474997037.756947,
+      9603604171.17013
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -23840581405.28715,
+     "works": true
+    },
+    {
+     "feature": "pre5_ticks",
+     "importance": 13870516645.44335,
+     "thirds": [
+      20177540229.153866,
+      14261920463.97169,
+      6656825596.878552
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 8439954023.422661,
+     "works": true
+    },
+    {
+     "feature": "hour_et",
+     "importance": 3611880847.243155,
+     "thirds": [
+      4425715171.154596,
+      4754322626.519851,
+      1505121966.886743
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 19961097457.55904,
+     "works": false
+    },
+    {
+     "feature": "is_long",
+     "importance": 1503040351.841269,
+     "thirds": [
+      0.0,
+      2568814321.82402,
+      1973942609.2274537
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 2364714215.92886,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "entry_min_after_open",
+    "pre5_volume",
+    "pre5_ticks",
+    "pre5_range_pts",
+    "orb_range_pts"
+   ],
+   "refit_working_metric": 102008022372.76744,
+   "seconds": 1.0,
+   "span_days": 25.0
+  }
+ ],
+ "status": "not_validated",
+ "reason": "short history: 85 rows over 25 days (needs \u2265 6 training months for the monthly scheme); exploratory weekly result shown for orientation only",
+ "seconds": 2.5
+}

@@ -1,0 +1,16 @@
+# manual-review.service — your hand trades vs the Plan page, every weekday after the close (LOCAL box, systemd USER unit;
+# fired by manual-review.timer 16:15 New York). Runs scripts/manual_review.sh --notify for today: reads the fills export you
+# dropped in data/manual_fills/ (file name containing the date), writes data/manual_review/<date>.md + ledger.jsonl and sends
+# the summary through grid-notify. No fills file = nothing happens. Read-only on Postgres.
+# Install: cp deploy/manual-review.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now manual-review.timer
+[Unit]
+Description=Weekday 16:15 New York: hand trades vs the plan (manual_review)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/manual_review.sh --notify
+Nice=10
+StandardOutput=journal
+StandardError=journal

@@ -1,0 +1,367 @@
+{
+ "model": "adaptive_risk",
+ "tasks": [
+  {
+   "task": "adaptive_risk.stop_q80",
+   "primary": true,
+   "kind": "quantile",
+   "n": 111989,
+   "n_features": 10,
+   "span": [
+    "2026-09-21",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 32506,
+     "n_test": 41198,
+     "metric": 1.7936603587683642,
+     "baseline": 1.678069235331812
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 73704,
+     "n_test": 38285,
+     "metric": 1.9287408461034816,
+     "baseline": 1.8866084405903094
+    }
+   ],
+   "notes": [],
+   "metric": 1.8587252966497347,
+   "baseline": 1.7785174251751947,
+   "shuffled": {
+    "n": 20,
+    "min": 1.772858019920905,
+    "median": 1.7869233344325322,
+    "max": 1.8044079900903542,
+    "p95": 1.8033005252082002,
+    "p05": 1.7786549710404387,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 79483,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "pre15_range_pts",
+     "importance": 0.04164808902387995,
+     "thirds": [
+      0.03678830427327353,
+      0.07876782787428271,
+      0.009388318353718672
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.002153206982721597,
+     "works": true
+    },
+    {
+     "feature": "entry_min_after_open",
+     "importance": 0.0356431045326077,
+     "thirds": [
+      -0.008896856397154162,
+      0.07912609242478943,
+      0.03670175870406465
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.001895303481570491,
+     "works": true
+    },
+    {
+     "feature": "orb_range_pts",
+     "importance": 0.011651156145195851,
+     "thirds": [
+      -0.00019543054192832087,
+      0.0250390854344537,
+      0.010110260685308292
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.001269997268824759,
+     "works": true
+    },
+    {
+     "feature": "overnight_range_pts",
+     "importance": 0.001289892208128518,
+     "thirds": [
+      0.0008180267609994907,
+      0.0013770500928848017,
+      0.0016746175807767828
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0007337110975406939,
+     "works": true
+    },
+    {
+     "feature": "is_long",
+     "importance": -0.00013878386197982984,
+     "thirds": [
+      -0.007299954953856935,
+      0.005111952382299468,
+      0.001771921279687927
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.00016313431168938725,
+     "works": true
+    },
+    {
+     "feature": "open_gap_pts",
+     "importance": -0.0004105551467047608,
+     "thirds": [
+      -0.009494411215768928,
+      0.007460360356788653,
+      0.0008027282835166183
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.000324373682127795,
+     "works": false
+    },
+    {
+     "feature": "pre5_volume",
+     "importance": -0.00042356541443797633,
+     "thirds": [
+      0.018042528340274665,
+      0.005680281542502131,
+      -0.024994203117627078
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0013909239326155287,
+     "works": true
+    },
+    {
+     "feature": "day_range_at_entry_pts",
+     "importance": -0.002170628020062937,
+     "thirds": [
+      -0.03338411190796593,
+      0.011055548545391458,
+      0.015817857436449458
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0018931037217319701,
+     "works": false
+    },
+    {
+     "feature": "dow",
+     "importance": -0.002352734588313088,
+     "thirds": [
+      -0.00505373114337293,
+      -0.0007837139356826395,
+      -0.001220656738403525
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.0007347259550371927,
+     "works": false
+    },
+    {
+     "feature": "pre5_range_pts",
+     "importance": -0.009254946734573388,
+     "thirds": [
+      0.005499242859234243,
+      -0.005728709772140084,
+      -0.02753593017877387
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.00013624734024196466,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "orb_range_pts",
+    "entry_min_after_open",
+    "pre5_volume",
+    "pre15_range_pts",
+    "overnight_range_pts",
+    "is_long"
+   ],
+   "refit_working_metric": 1.8216497427149416,
+   "seconds": 13.8,
+   "span_days": 25.0
+  },
+  {
+   "task": "adaptive_risk.mfe",
+   "primary": false,
+   "kind": "l1",
+   "n": 111989,
+   "n_features": 10,
+   "span": [
+    "2026-09-21",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 32506,
+     "n_test": 41198,
+     "metric": 6.3499494075551475,
+     "baseline": 6.284652994271567
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 73704,
+     "n_test": 38285,
+     "metric": 8.797213577366147,
+     "baseline": 8.78724350500196
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 7.5287361763134255,
+   "baseline": 7.490089096372809,
+   "shuffled": {
+    "n": 20,
+    "min": 7.480441207620741,
+    "median": 7.490314850384749,
+    "max": 7.505074812889223,
+    "p95": 7.503143192880522,
+    "p05": 7.486505928698907,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 79483,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "overnight_range_pts",
+     "importance": 0.02903986321302643,
+     "thirds": [
+      0.011316606667307206,
+      0.02427686289745843,
+      0.05152678902791088
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0007191907110886377,
+     "works": true
+    },
+    {
+     "feature": "pre5_range_pts",
+     "importance": 0.02263496096527806,
+     "thirds": [
+      0.001941590848997876,
+      0.017920857872415753,
+      0.048043215233157
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0019049986025933858,
+     "works": true
+    },
+    {
+     "feature": "pre5_volume",
+     "importance": 0.017206670442769755,
+     "thirds": [
+      0.06157145511753157,
+      -0.00679923069520747,
+      -0.003153887615965445
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.00013101987097346383,
+     "works": false
+    },
+    {
+     "feature": "pre15_range_pts",
+     "importance": 0.01249692712871937,
+     "thirds": [
+      -0.005210384202877449,
+      0.06687096735216294,
+      -0.02416913341137352
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0021172498658921725,
+     "works": false
+    },
+    {
+     "feature": "is_long",
+     "importance": 0.011856731268778375,
+     "thirds": [
+      0.0028932460310599597,
+      0.01605184895015661,
+      0.016625437146448617
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.001360249477377648,
+     "works": true
+    },
+    {
+     "feature": "entry_min_after_open",
+     "importance": 0.007745489926331039,
+     "thirds": [
+      -0.002988660458886905,
+      -0.008062959880474452,
+      0.034288495272369345
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 7.006908964483453e-05,
+     "works": false
+    },
+    {
+     "feature": "open_gap_pts",
+     "importance": 0.0029795550590639764,
+     "thirds": [
+      0.011602797896430418,
+      -0.0034375532674733476,
+      0.0007730950691559712
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.00011851169225796095,
+     "works": true
+    },
+    {
+     "feature": "day_range_at_entry_pts",
+     "importance": 0.000680670076427603,
+     "thirds": [
+      -0.01896358178356685,
+      0.010137119645941084,
+      0.010869213827314539
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0004728873806644094,
+     "works": true
+    },
+    {
+     "feature": "dow",
+     "importance": -0.004913800352011855,
+     "thirds": [
+      -0.01379846620266072,
+      -0.004654811947618143,
+      0.0037122124405840396
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0002534713646120679,
+     "works": false
+    },
+    {
+     "feature": "orb_range_pts",
+     "importance": -0.008414365696272519,
+     "thirds": [
+      -0.015070556870282026,
+      -0.004487909262791234,
+      -0.005684379721829558
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.000297225288074089,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "pre5_range_pts",
+    "overnight_range_pts",
+    "open_gap_pts",
+    "day_range_at_entry_pts",
+    "is_long"
+   ],
+   "refit_working_metric": 7.50252432777295,
+   "seconds": 9.5,
+   "span_days": 25.0
+  }
+ ],
+ "status": "not_validated",
+ "reason": "short history: 111989 rows over 25 days (needs \u2265 6 training months for the monthly scheme); exploratory weekly result shown for orientation only",
+ "seconds": 24.5
+}

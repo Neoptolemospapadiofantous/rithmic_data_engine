@@ -1,0 +1,7 @@
+{
+ "model": "variant_bandit",
+ "status": "not_validated",
+ "tasks": [],
+ "reason": "Thompson ranking: no supervised label and no features; judging a ranking needs months of forward weeks, and its day_table mixes every paper label (replay labels of the same ids count as pulls)",
+ "seconds": 0.0
+}

@@ -1,0 +1,15 @@
+# working-fleet-report.service — the forward scorecard (config/working_fleet.json rules) every weekday after the close
+# (LOCAL box, systemd USER unit; fired by working-fleet-report.timer 16:30 New York). Runs scripts/working_fleet_report.sh
+# --notify: data/working_fleet/<date>.txt + latest.txt, a Telegram line when a verdict changes, a summary on Fridays.
+# Install: cp deploy/working-fleet-report.{service,timer} ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now working-fleet-report.timer
+[Unit]
+Description=Weekday 16:30 New York: working-fleet forward scorecard
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/bin/bash /home/theone/Desktop/rithmic_engine/scripts/working_fleet_report.sh --notify
+Nice=15
+StandardOutput=journal
+StandardError=journal

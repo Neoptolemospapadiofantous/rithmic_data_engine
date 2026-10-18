@@ -57,6 +57,7 @@ Never run a replay or rebuild `build/` 09:25–16:05 ET on a weekday (these prog
 | `newscheck` | — | verify BLS release dates against NQ's own 08:30 volume spike |
 | `nullgen` | — | Null market from real NQ 1m bars: inside every trading day the bars' moves (open→close step, high/low offsets, |
 | `openreg` | research/preregistered/2026-10-17_open_regime_ema.md | 2026-10-17 opening regime → EMA-14 trades (research/preregistered/2026-10-17_open_regime_ema.md). |
+| `planchk` | research/preregistered/2026-10-18_plan_checks.md | 2026-10-18 plan checks: stacking the setups, news days, quiet-market stand-aside — on the REAL ENGINE all-year trades (out/planchk_trades.csv, SQL in the header). |
 | `pa1m` | — | 2026-10-17 "from the regime can we follow price action on the 1m": at every RTH minute (09:45–15:30) of NQ 2010-07 → |
 | `parity` | — | edge_lab's cascade trades (paper so_cascade_2r's exact rules) on the recorded sessions, for a trade-by-trade parity |
 | `payfast` | research/preregistered/2026-10-17_reentry.md | 2026-10-17 re-entries in the day's direction (research/preregistered/2026-10-17_reentry.md). |

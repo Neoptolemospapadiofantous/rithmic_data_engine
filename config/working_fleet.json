@@ -182,6 +182,70 @@
       "rule": "|gap| ≥ 0.1 ATR sets the side; a 5-min bar breaks the overnight high (low); the next stays beyond it with ≤ 0.75 × the break bar’s range; the next closes beyond that box → enter; stop the other side of the box, 2R, flat 15:55",
       "evidence": "edge_lab bb_on_gap PASS 2026-10-17 (founder idea, pre-registered): +7.31 pts/trade, 127 trades 2010-24 (~8/yr), PF 1.53, eras +1.8/+14.0/+7.2; holdout 2025+ +8.02 on 22 trades. 1 of 6 versions passed — candidate.",
       "cost_pts": 1.0
+    },
+    {
+      "id": "mom_dir_45_vwap_plan",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "45-min momentum + VWAP pullback, plan agrees (NQ)",
+      "rule": "45 one-minute moves with efficiency ≥ 0.3, price on that side of VWAP and the 09:30 open, AND the plan direction (first cascade check / gap retest) already set the same way; 5-min bar 09:45–13:55 dips to within 0.05 ATR of VWAP and closes back; stop 0.25 ATR, break-even +1R, hold to 15:55; ≤ 3 a day, done after a loss",
+      "evidence": "momentum_addons 2026-10-17: plan agrees +0.249 R/trade vs disagrees ≈ 0 (2010-24). Engine all-year replay (mom_hist) $/MNQ/trade +4.62 / +15.28 / +36.13 by era; 2025-26 +150.74 on few trades (holdout looked at — not clean). Rules frozen 2026-10-17.",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "mom_dir_45_vwap",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "45-min momentum + VWAP pullback (NQ)",
+      "rule": "as mom_dir_45_vwap_plan without the plan-agreement condition",
+      "evidence": "momentum_entries 2026-10-17: M-EFF45 × E-VWAP +0.118 R/trade, all three eras positive, the only cell ≥ 0 on ES; engine $/MNQ/trade +3.60 / +11.62 / +15.34 by era",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "mom_dir_45_dip",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "45-min momentum + dip and close back (NQ)",
+      "rule": "45-min efficiency ≥ 0.3 direction; a pullback ≥ 0.1 ATR from the last 30 minutes extreme then a 5-min close back in the direction; stop 0.25 ATR, BE +1R, hold",
+      "evidence": "momentum_entries: +0.048 … +0.107 R, all eras +, ES ≈ 0; engine +0.57 / +11.71 / +4.63 $/MNQ/trade",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "mom_dir_45_ema9_tight",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "45-min momentum + EMA-9 pullback, tight stop (NQ)",
+      "rule": "45-min efficiency ≥ 0.3 direction; 5-min bar within 0.06 ATR of the 5-min EMA-9 closing back; stop 0.15 ATR, no break-even, hold",
+      "evidence": "momentum_round2 2026-10-17 (optimiser neighbourhood); multiple-testing caveat",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "mom_dir_30_ema20",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "30-min momentum + 5-min EMA-20 pullback (NQ, the original)",
+      "rule": "30-min efficiency ≥ 0.3 direction; 5-min bar within 0.03 ATR of the 5-min EMA-20 closing back; stop 0.25 ATR, BE +1R, hold",
+      "evidence": "mtf_1m_dir_5m_entry 2026-10-17; engine −1.67 / +5.61 / +14.44 $/MNQ/trade by era (2010-18 negative)",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "mom_dir_30_any",
+      "fleet": "nq",
+      "tier": "candidate",
+      "name": "30-min momentum, any 5-min close (NQ, the random-entry twin)",
+      "rule": "30-min efficiency ≥ 0.3 direction, any 5-min close 09:45–13:55; stop 0.25 ATR, BE +1R, hold. Kept as the twin: an entry rule is only worth something if it beats this",
+      "evidence": "twin +0.04–0.05 R 2010-24",
+      "cost_pts": 1.0
+    },
+    {
+      "id": "gap_or_retest__nofomc",
+      "fleet": "nq",
+      "tier": "variant",
+      "core": "gap_or_retest",
+      "name": "Gap retest, no FOMC days",
+      "rule": "as gap_or_retest, no entry on an FOMC decision day",
+      "evidence": "2026-10-18_plan_checks: FOMC days −9.25 $/MNQ/trade on 52 engine trades 2010-24 (negative 2010-18 and 2019-22); 30 cells tested — may be chance",
+      "cost_pts": 1.0
     }
   ]
 }

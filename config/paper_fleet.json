@@ -126808,6 +126808,33 @@
       }
     },
     {
+      "id": "gap_or_retest__nofomc",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "_comment": "2026-10-18 variant of gap_or_retest: no entry on FOMC decision days (research/preregistered/2026-10-18_plan_checks.md: FOMC days −9.25 $/MNQ/trade on 52 engine trades 2010-24, negative in 2010-18 and 2019-22). Paper only.",
+        "mode": "gap_or_retest",
+        "gr_gap_min_atr": 0.1,
+        "win_start": 930,
+        "win_end": 1555,
+        "session_open_hour": 9,
+        "session_open_min": 30,
+        "tf_min": 5,
+        "sl_points": 1000,
+        "trail_step": 50000,
+        "trail_be_trigger": 50000.0,
+        "trail_delay_secs": 0,
+        "max_daily_trades": 1,
+        "lf_stop_atr": 0.35,
+        "tp_r": 2.0,
+        "eod_flatten_hour": 15,
+        "eod_flatten_min": 55,
+        "last_entry_hour": 24,
+        "family": "gap_direction",
+        "skip_fomc_day": true
+      }
+    },
+    {
       "id": "so_cascade_2r_vwap_stall__flow",
       "engine": "trend",
       "enabled": true,

@@ -1,0 +1,248 @@
+{
+ "model": "fill_cost",
+ "tasks": [
+  {
+   "task": "fill_cost.cost_usd",
+   "primary": true,
+   "kind": "l1",
+   "n": 1215737,
+   "n_features": 14,
+   "span": [
+    "2026-09-08",
+    "2026-10-18"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 4,
+   "folds": [
+    {
+     "label": "2026-W39",
+     "n_train": 218761,
+     "n_test": 283175,
+     "metric": 0.8252228789370528,
+     "baseline": 0.8252228789370528
+    },
+    {
+     "label": "2026-W40",
+     "n_train": 501936,
+     "n_test": 245024,
+     "metric": 1.135939570060965,
+     "baseline": 1.3118835067563588
+    },
+    {
+     "label": "2026-W41",
+     "n_train": 746960,
+     "n_test": 200003,
+     "metric": 1.16675195067654,
+     "baseline": 1.0562967092260191
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 946963,
+     "n_test": 268774,
+     "metric": 0.491029842396263,
+     "baseline": 0.4296187787461718
+    }
+   ],
+   "notes": [],
+   "metric": 0.8800060294420238,
+   "baseline": 0.8845331296606188,
+   "shuffled": {
+    "n": 20,
+    "min": 0.8924242582589751,
+    "median": 0.8924242582589751,
+    "max": 0.8924242582589751,
+    "p95": 0.8924242582589751,
+    "p05": 0.8924242582589751,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 996976,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "spread_entry",
+     "importance": 0.04962902312704105,
+     "thirds": [
+      0.032661649662041325,
+      0.07796775313363369,
+      0.03825771764201515
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "spread_exit",
+     "importance": 0.033531045079451385,
+     "thirds": [
+      0.019383244350006556,
+      0.042576832647919984,
+      0.038633100812611045
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "hold_min",
+     "importance": 2.721984530230648e-05,
+     "thirds": [
+      -0.0003943107684663327,
+      -0.0011536007399726377,
+      0.0016295723127750295
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 1.2377911925265384e-05,
+     "thirds": [
+      -3.1497420885040484e-06,
+      1.3478237176478558e-05,
+      2.680528741223487e-05
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "bbo_spread_1m",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "bbo_imbalance_1m",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "bbo_micro_dev",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "bbo_updates_5m",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "bbo_spread_rel_1h",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_mtf",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "is_long",
+     "importance": -0.0008339611907243971,
+     "thirds": [
+      0.0,
+      -0.003265490878581834,
+      0.0007636047969342252
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "min_after_open",
+     "importance": -0.0017178230059780141,
+     "thirds": [
+      -0.0018011821066273414,
+      -0.0007367944068374487,
+      -0.002615492253632967
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": -0.004686446301946234,
+     "thirds": [
+      0.0004747384747423422,
+      0.0022100574835603346,
+      -0.01674415039467527
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": -0.0053192628401763755,
+     "thirds": [
+      0.0024378894736972858,
+      0.011352055391770177,
+      -0.029747756728062968
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread_entry",
+    "spread_exit",
+    "hour"
+   ],
+   "refit_working_metric": 0.8330238327992485,
+   "seconds": 116.4,
+   "span_days": 40.0
+  }
+ ],
+ "status": "not_validated",
+ "reason": "short history: 1215737 rows over 40 days (needs \u2265 6 training months for the monthly scheme); exploratory weekly result shown for orientation only",
+ "rows_without_spread": 451496,
+ "labels": "every non-audit label in range, as the model's dataset() selects",
+ "seconds": 135.3
+}

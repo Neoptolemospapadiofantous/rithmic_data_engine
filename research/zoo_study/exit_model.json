@@ -1,0 +1,207 @@
+{
+ "model": "exit_model",
+ "tasks": [
+  {
+   "task": "exit_model.p_remaining_positive",
+   "primary": true,
+   "kind": "binary",
+   "n": 5211,
+   "n_features": 11,
+   "span": [
+    "2026-09-21",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 1187,
+     "n_test": 1628,
+     "metric": 0.6752337915019142,
+     "baseline": 0.5
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 2815,
+     "n_test": 2396,
+     "metric": 0.44151550826803937,
+     "baseline": 0.5
+    }
+   ],
+   "notes": [],
+   "metric": 0.4994923780107395,
+   "baseline": 0.5,
+   "shuffled": {
+    "n": 20,
+    "min": 0.4149941331301363,
+    "median": 0.5122423500291429,
+    "max": 0.5611787652172323,
+    "p95": 0.5466230474960733,
+    "p05": 0.44006643436382203,
+    "percentile_beaten": 0.4
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 4024,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "mfe",
+     "importance": 0.03840624237918434,
+     "thirds": [
+      0.06099249200975856,
+      0.047559196359095966,
+      0.00748542733162696
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.003484723860144209,
+     "works": true
+    },
+    {
+     "feature": "giveback",
+     "importance": 0.01213629174786271,
+     "thirds": [
+      0.013064517654178608,
+      0.019742788766037567,
+      -0.005440879459286496
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.004325629520036749,
+     "works": true
+    },
+    {
+     "feature": "unreal",
+     "importance": 0.01192307568768633,
+     "thirds": [
+      -0.005931690527072209,
+      0.013825301749877872,
+      0.022144206926891702
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.006781157724044881,
+     "works": true
+    },
+    {
+     "feature": "sl_points",
+     "importance": 0.003304150937056083,
+     "thirds": [
+      0.003910608582181308,
+      -0.0014641881254410683,
+      0.003928621420572714
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0021474465012050413,
+     "works": true
+    },
+    {
+     "feature": "unreal_over_mfe",
+     "importance": 0.002064634152669076,
+     "thirds": [
+      -0.002108903682130181,
+      -0.0015235654439839541,
+      0.006243001119820846
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.005093680079466893,
+     "works": false
+    },
+    {
+     "feature": "age_s",
+     "importance": 0.0020364301857310973,
+     "thirds": [
+      0.016757167577585774,
+      -0.011088855612457215,
+      -0.0043726753719404935
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.010996170371561835,
+     "works": false
+    },
+    {
+     "feature": "mae",
+     "importance": 0.0011741769766187237,
+     "thirds": [
+      0.0026295695671086027,
+      0.0001319872966468738,
+      0.0005020446728523587
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0037319419870466865,
+     "works": true
+    },
+    {
+     "feature": "orb_range_pts",
+     "importance": -0.0018106502033576777,
+     "thirds": [
+      0.010250203302002802,
+      -0.013432959048877124,
+      0.0037782704767237328
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.004364931412350408,
+     "works": false
+    },
+    {
+     "feature": "is_long",
+     "importance": -0.0018355433235416664,
+     "thirds": [
+      -0.011119082966128924,
+      -0.004856838457501645,
+      0.002535594304911215
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0011945568032176686,
+     "works": false
+    },
+    {
+     "feature": "trail_step",
+     "importance": -0.003774254114406561,
+     "thirds": [
+      0.01135701722866279,
+      0.007025976728615146,
+      -0.008109702447608374
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.005502734372329761,
+     "works": true
+    },
+    {
+     "feature": "pre5_range_pts",
+     "importance": -0.011163520497476964,
+     "thirds": [
+      -0.004643559581670631,
+      0.006768788114583568,
+      -0.030902555591105395
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0027564775851968413,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "unreal",
+    "mfe",
+    "mae",
+    "giveback",
+    "sl_points",
+    "trail_step"
+   ],
+   "refit_working_metric": 0.5357956891292794,
+   "seconds": 8.0,
+   "span_days": 25.2,
+   "stall_rule_oos": {
+    "trades": 1072,
+    "flattened": 266,
+    "pnl_per_trade_usd": -2.216874378731355,
+    "trail_pnl_per_trade_usd": -0.9805467798507461
+   }
+  }
+ ],
+ "status": "not_validated",
+ "reason": "short history: 5211 rows over 25 days (needs \u2265 6 training months for the monthly scheme); exploratory weekly result shown for orientation only",
+ "paths": 1473,
+ "samples": 5211,
+ "seconds": 25.0
+}

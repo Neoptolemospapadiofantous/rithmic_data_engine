@@ -1,0 +1,7 @@
+{
+ "model": "regime",
+ "status": "not_validated",
+ "tasks": [],
+ "reason": "unsupervised k-means (hourly bar features): no label to shuffle or score",
+ "seconds": 0.0
+}

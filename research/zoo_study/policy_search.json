@@ -1,0 +1,46 @@
+{
+ "model": "policy_search",
+ "status": "not_validated",
+ "reason": "decision grid with no features or labels \u2014 not a supervised model; orientation below",
+ "tasks": [],
+ "orientation": {
+  "n_paths": 1473,
+  "grid": 64,
+  "weeks": [
+   {
+    "week": "2026-W41",
+    "n_test": 459,
+    "policy": {
+     "trail_step": 15.0,
+     "be_trigger": 3.0,
+     "time_stop_min": null
+    },
+    "chosen_pnl_per_trade_usd": -0.8050108932461874,
+    "actual_pnl_per_trade_usd": -4.4988236862745135,
+    "random_policy_pnl_per_trade_usd": {
+     "min": -1.593681917211329,
+     "median": -1.0392156862745097,
+     "max": -0.6143790849673203
+    }
+   },
+   {
+    "week": "2026-W42",
+    "n_test": 613,
+    "policy": {
+     "trail_step": 15.0,
+     "be_trigger": 3.0,
+     "time_stop_min": 10
+    },
+    "chosen_pnl_per_trade_usd": 0.9836867862969005,
+    "actual_pnl_per_trade_usd": 1.6538563197389917,
+    "random_policy_pnl_per_trade_usd": {
+     "min": -0.8270799347471451,
+     "median": 0.5314029363784665,
+     "max": 2.400489396411093
+    }
+   }
+  ],
+  "caveat": "Replays every trade's real tick path under a grid of trail / break-even / time-stop policies. \u2014 paths truncate at the real exit (the model's own caveat)"
+ },
+ "seconds": 8.1
+}

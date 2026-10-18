@@ -1,0 +1,2409 @@
+{
+ "model": "trade_filter",
+ "tasks": [
+  {
+   "task": "trade_filter.p_win",
+   "primary": true,
+   "kind": "binary",
+   "n": 111871,
+   "n_features": 93,
+   "span": [
+    "2026-09-21",
+    "2026-10-14"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 32495,
+     "n_test": 41170,
+     "metric": 0.5376145130793796,
+     "baseline": 0.5
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 73665,
+     "n_test": 38206,
+     "metric": 0.5089813605697387,
+     "baseline": 0.5
+    }
+   ],
+   "notes": [],
+   "metric": 0.5088160995216422,
+   "baseline": 0.5,
+   "shuffled": {
+    "n": 20,
+    "min": 0.44346411396033725,
+    "median": 0.4927045157350316,
+    "max": 0.5520951835624595,
+    "p95": 0.519581451661282,
+    "p05": 0.4459737188967698,
+    "percentile_beaten": 0.75
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 79376,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "mtf:prev_day_range",
+     "importance": 0.02021949406696478,
+     "thirds": [
+      0.04045183088929832,
+      0.009456350988761386,
+      0.0
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0001383106933187069,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_range_pos20",
+     "importance": 0.008429486150357102,
+     "thirds": [
+      0.015089857913079385,
+      -0.004691287880282902,
+      0.003918625826203148
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -3.60223272811155e-05,
+     "works": true
+    },
+    {
+     "feature": "mtf:overnight_eff",
+     "importance": 0.007586963617364417,
+     "thirds": [
+      -0.002524228460014577,
+      -0.003027836697618935,
+      -0.00030965044299628984
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0005348281930259083,
+     "works": false
+    },
+    {
+     "feature": "mtf:dist_pdh_atr",
+     "importance": 0.006046427846663494,
+     "thirds": [
+      0.011846465896217646,
+      -0.004193247036268333,
+      0.0016530669814982634
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0001323140442262524,
+     "works": true
+    },
+    {
+     "feature": "entry_min_after_open",
+     "importance": 0.005653166630682871,
+     "thirds": [
+      0.0036546631602978772,
+      0.006581088612371356,
+      0.010325145280050707
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0014752864665280364,
+     "works": true
+    },
+    {
+     "feature": "pre5_ticks",
+     "importance": 0.005622358729035493,
+     "thirds": [
+      0.002884094260800674,
+      0.01519741216689684,
+      0.00010407288680108762
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0009206129033083709,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_vwap_dist",
+     "importance": 0.0045404754508077015,
+     "thirds": [
+      0.00039382811291209795,
+      0.0021919772884734347,
+      0.0010649862449230829
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0016658592984549526,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_ret10",
+     "importance": 0.0045032090008909394,
+     "thirds": [
+      0.011300189456440646,
+      0.0005999890536715124,
+      0.016115244042899844
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.001431386754343881,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_ema9_21",
+     "importance": 0.003183936448347213,
+     "thirds": [
+      0.004533152442646371,
+      0.006124301086133699,
+      -0.0005117671377797617
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0012189418698463944,
+     "works": true
+    },
+    {
+     "feature": "sl_points",
+     "importance": 0.002040115544557497,
+     "thirds": [
+      0.0018379709226019614,
+      0.012368244095758318,
+      -0.015520986448649021
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0002512434370780414,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_atr14",
+     "importance": 0.0017384860884414265,
+     "thirds": [
+      -0.001351080853863229,
+      0.005900538133087918,
+      8.383539334066992e-05
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0011961518885787413,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_ema21_slope",
+     "importance": 0.0016556167170718394,
+     "thirds": [
+      0.00021810077221616763,
+      0.001619001458019431,
+      0.016350946095169027
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0008791379707331681,
+     "works": true
+    },
+    {
+     "feature": "pre5_volume",
+     "importance": 0.0014917179282580295,
+     "thirds": [
+      0.0004588381267291219,
+      0.003493004348797435,
+      0.0010007099057450786
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.00043436266108185515,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_vol_z20",
+     "importance": 0.0014541169996270086,
+     "thirds": [
+      0.0004388145501680207,
+      0.003131047287349842,
+      -0.003287404858777809
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.00115563395460259,
+     "works": true
+    },
+    {
+     "feature": "mtf:bbo_spread_ticks_1m",
+     "importance": 0.0012554814911887925,
+     "thirds": [
+      -0.0005615419655213505,
+      -0.003607462554215213,
+      0.0004401638034587152
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0018431290427775395,
+     "works": false
+    },
+    {
+     "feature": "mtf:open_gap",
+     "importance": 0.0012266614771564766,
+     "thirds": [
+      0.001435626196275086,
+      0.0027663812727265146,
+      -0.0005082092498459257
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.00039038933362088487,
+     "works": true
+    },
+    {
+     "feature": "mtf:tick_rate_5m",
+     "importance": 0.0010930624978383817,
+     "thirds": [
+      0.0019831956140454856,
+      0.00213542279272948,
+      -0.0003388561725408246
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0002908584833522447,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_ema9_21",
+     "importance": 0.0009645796579767052,
+     "thirds": [
+      -0.007073365951723798,
+      0.0029264719851614497,
+      0.00012657259094484008
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0003200677289894926,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_rvol10",
+     "importance": 0.0009634110460278844,
+     "thirds": [
+      -0.006045626975307972,
+      0.0037836938385590766,
+      0.004300612526941949
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.00043715869647242833,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_ret3",
+     "importance": 0.0008686669007374915,
+     "thirds": [
+      0.0025581758947785917,
+      1.581889194217645e-05,
+      0.002729001549916521
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0018326046261631034,
+     "works": true
+    },
+    {
+     "feature": "mtf:overnight_range",
+     "importance": 0.0008207293233618018,
+     "thirds": [
+      -0.002068530809122937,
+      0.0014202354723670042,
+      0.0001295916085014448
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 6.598557922586901e-05,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_atr14",
+     "importance": 0.0008014795093175597,
+     "thirds": [
+      0.005803656152248915,
+      0.0007096385053946497,
+      5.1294936863421904e-05
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -1.4586218999431332e-05,
+     "works": true
+    },
+    {
+     "feature": "mtf:min_to_news",
+     "importance": 0.0007027522517263462,
+     "thirds": [
+      0.003733476660935697,
+      -0.0026480510667275746,
+      0.002370747536511475
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.00012780865477013005,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_ret10",
+     "importance": 0.0006303138104609696,
+     "thirds": [
+      -0.0008657515556311113,
+      -0.0008811426072417361,
+      0.0016905326535147092
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0009349400625668875,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_ret3",
+     "importance": 0.0006134344205596997,
+     "thirds": [
+      0.00016032521371999174,
+      0.0006942886478416676,
+      2.8078729171043815e-05
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.00026100021266196226,
+     "works": true
+    },
+    {
+     "feature": "open_gap_pts",
+     "importance": 0.0006012806545224291,
+     "thirds": [
+      0.0012771376604996498,
+      0.0022815477266502015,
+      0.0014360731354278288
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0006369253060851121,
+     "works": false
+    },
+    {
+     "feature": "engine=trend",
+     "importance": 0.0004878545844663407,
+     "thirds": [
+      0.0032041009042189537,
+      -0.00019484859464662384,
+      -0.0011483402374422025
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0003435916619044817,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_imb_open15",
+     "importance": 0.00047564203014945907,
+     "thirds": [
+      -0.00014686931617156063,
+      0.0005761932879534859,
+      0.0007100460604305469
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -9.521029385402372e-05,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_vol_z20",
+     "importance": 0.00045510006622712096,
+     "thirds": [
+      0.0018861140655447527,
+      -0.0060326551872308285,
+      0.00189590346858165
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0005923215408171053,
+     "works": true
+    },
+    {
+     "feature": "orb_range_pts",
+     "importance": 0.0003931935315026225,
+     "thirds": [
+      0.0005815357873586224,
+      0.0004650189810915917,
+      0.0009349087574526238
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0013522439729379463,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_ret3",
+     "importance": 0.0003273763380512551,
+     "thirds": [
+      0.001992592696784179,
+      -0.001057273243252399,
+      0.00035409754646489324
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0015516715487382947,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_ret1",
+     "importance": 0.00019733244466728638,
+     "thirds": [
+      0.00031426398174462246,
+      -0.0013050898322553683,
+      0.0011445382904869516
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0006588319040306507,
+     "works": true
+    },
+    {
+     "feature": "mtf:hour_et",
+     "importance": 0.00019013532851029912,
+     "thirds": [
+      -0.0010056217492965037,
+      -0.0002935148792443276,
+      0.0013103842321929404
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.00017099220770375363,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_vwap_dist",
+     "importance": 0.00018614955652127563,
+     "thirds": [
+      0.003978313404881695,
+      -0.0021578601348661076,
+      0.0013731663629288128
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0005574703323173261,
+     "works": true
+    },
+    {
+     "feature": "direction=LONG",
+     "importance": 0.00012444249840865007,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0008137771153303497
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0001588574874793506,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_atr14",
+     "importance": 9.906870652269806e-05,
+     "thirds": [
+      -0.0020846822141409984,
+      0.0004547495619495301,
+      0.0019145751032451086
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0007587977203121618,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_rvol10",
+     "importance": 9.44165450799117e-05,
+     "thirds": [
+      0.0035080508167400605,
+      -0.002416913814240218,
+      0.0008162983121922429
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0007514086786120163,
+     "works": false
+    },
+    {
+     "feature": "mtf:es_rel_ret_15m_bp",
+     "importance": 9.351078369183031e-05,
+     "thirds": [
+      0.0065004874364736455,
+      -0.006321735619326652,
+      0.0001833166865674918
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0002534218745355348,
+     "works": true
+    },
+    {
+     "feature": "mtf:bbo_imb_persist_open15",
+     "importance": 8.537654016917972e-05,
+     "thirds": [
+      0.0007587833239380171,
+      -0.0019728592888938246,
+      0.0005712555912652295
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.00020215580442840925,
+     "works": false
+    },
+    {
+     "feature": "direction=SHORT",
+     "importance": 7.590575749021334e-05,
+     "thirds": [
+      0.0003769152574648493,
+      5.262657944982152e-08,
+      0.0
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 1.643424370271207e-05,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_ema9_21",
+     "importance": 7.446246395395039e-05,
+     "thirds": [
+      0.00014595097719916073,
+      -0.0016636801082843932,
+      0.001657278678920271
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 8.574583939863594e-05,
+     "works": false
+    },
+    {
+     "feature": "overnight_range_pts",
+     "importance": 4.873887721847936e-05,
+     "thirds": [
+      0.0,
+      0.017111065896108335,
+      0.0077409393946666905
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.00023574173507174838,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_ema21_slope",
+     "importance": 3.0041177750583792e-05,
+     "thirds": [
+      -0.0005786712189590814,
+      -0.0012024844481879128,
+      -0.00013362044824706266
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -6.99202668595023e-05,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_vol_z20",
+     "importance": 1.2567668542706744e-05,
+     "thirds": [
+      -0.00023644185440100385,
+      -0.0017797309255620174,
+      0.002045295204835784
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0008328448449176943,
+     "works": false
+    },
+    {
+     "feature": "orb_minutes",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 2.7885454641477885e-05,
+     "works": false
+    },
+    {
+     "feature": "hour_et",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 4.734899144334855e-05,
+     "works": false
+    },
+    {
+     "feature": "source=live",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "source=paper",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_bars",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.0003356552135817055,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_bars",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_bars",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:dow",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0001259340331853635,
+     "works": false
+    },
+    {
+     "feature": "mtf:rth_min_remaining",
+     "importance": -5.5771826416806114e-05,
+     "thirds": [
+      0.0,
+      -0.000362850397633252,
+      6.782153902729071e-06
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -7.467591157147568e-05,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_ret1",
+     "importance": -7.687480111385758e-05,
+     "thirds": [
+      9.83136645592464e-05,
+      -0.00040463590169455,
+      -0.0003810679342092893
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.002218637940860646,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_atr14",
+     "importance": -0.00013745726970230133,
+     "thirds": [
+      -0.0001632195368434286,
+      -0.000709662187355331,
+      0.0007139532438443675
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.00038369156627288863,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_bars",
+     "importance": -0.00022039478411677304,
+     "thirds": [
+      0.0007595907589401541,
+      0.0010459591865089046,
+      0.000491667720523914
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.00012525339758579317,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_ret10",
+     "importance": -0.00023489311112250276,
+     "thirds": [
+      0.0008678790183753949,
+      -0.0013512657087050074,
+      -0.000287931429177446
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.00022148543968847356,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_ret3",
+     "importance": -0.0002931776091419813,
+     "thirds": [
+      0.00492268505544653,
+      -0.003944462776036217,
+      -0.0018790253318636042
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0023428741758669937,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_range_pos20",
+     "importance": -0.00041584105131278195,
+     "thirds": [
+      -0.0011469688592472215,
+      0.0003044559451063078,
+      -8.02715345440741e-05
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.00046639246015462587,
+     "works": false
+    },
+    {
+     "feature": "mtf:delta_share_5m",
+     "importance": -0.0004821393731807344,
+     "thirds": [
+      -0.001110352966762418,
+      -0.0018743739081628964,
+      -5.222265968750639e-05
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0019664686265921287,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_microprice_dev_ticks",
+     "importance": -0.0005373239587947553,
+     "thirds": [
+      -0.0008308966017941844,
+      -0.0013915184636406508,
+      -0.0004582114829486672
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0016358575268886216,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_ema21_slope",
+     "importance": -0.0006661198164386484,
+     "thirds": [
+      0.0005922231431158664,
+      -0.001965772462142379,
+      -0.00034482852816206664
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0005748802230073569,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_range_pos20",
+     "importance": -0.0006900460042592926,
+     "thirds": [
+      -0.0005309311172736697,
+      -0.001233386775624712,
+      0.0009144376539810151
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0005963922699715722,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_ret1",
+     "importance": -0.0007778973384033327,
+     "thirds": [
+      0.000235531630353214,
+      -0.0051024218488717075,
+      0.00863549034338309
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.00012550261342335976,
+     "works": false
+    },
+    {
+     "feature": "dow",
+     "importance": -0.000822309086414652,
+     "thirds": [
+      2.7083561002039235e-05,
+      -0.0011441334125889102,
+      0.0
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0003761866599965654,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_imbalance_1m",
+     "importance": -0.0008396309933975332,
+     "thirds": [
+      -0.0007387313451407751,
+      -0.004517857645628875,
+      -0.0029384758405154423
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.0010950926041815613,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_updates_5m",
+     "importance": -0.0008520075312464348,
+     "thirds": [
+      -0.011655735412341005,
+      0.00214900045022044,
+      -0.0005348184003844181
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -4.4239724272610115e-05,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_rvol10",
+     "importance": -0.0009049383521429367,
+     "thirds": [
+      -9.725872435554229e-05,
+      -0.004791890165171109,
+      0.0007621582591542553
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0018763424336520596,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_ema9_21",
+     "importance": -0.0009060147921400308,
+     "thirds": [
+      0.0008170741801491021,
+      -0.007233784500998664,
+      -0.0033860158987361498
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0009286547608813721,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_range_pos20",
+     "importance": -0.000923854604606722,
+     "thirds": [
+      0.0030193903419412638,
+      -0.003422115030650985,
+      -0.0030807450836811134
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0004562173492516715,
+     "works": false
+    },
+    {
+     "feature": "engine=mtf_scalper",
+     "importance": -0.0009766174065823363,
+     "thirds": [
+      -0.011457164558769928,
+      0.0003973576457605321,
+      0.0032115278793321323
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0002587961565989727,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_vwap_dist",
+     "importance": -0.0009980234940160759,
+     "thirds": [
+      -0.002455615419655266,
+      -0.0050962165173255355,
+      0.0011975192497634013
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0027727068683056,
+     "works": false
+    },
+    {
+     "feature": "day_range_at_entry_pts",
+     "importance": -0.001000929065759193,
+     "thirds": [
+      -0.0028996343414955496,
+      -0.00296799172499661,
+      -0.0009292580820705276
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.00010330589547054755,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_rvol10",
+     "importance": -0.0010884749943319227,
+     "thirds": [
+      -0.002183400272445124,
+      -0.00046303759037624737,
+      0.0004347138983417098
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0019343276097547567,
+     "works": false
+    },
+    {
+     "feature": "mtf:min_after_open",
+     "importance": -0.0012355796866922453,
+     "thirds": [
+      0.0004250611053825515,
+      -0.0035833115590860444,
+      -0.00024813040340708746
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.001036096257440618,
+     "works": false
+    },
+    {
+     "feature": "mtf:dist_pdl_atr",
+     "importance": -0.0013806266058383533,
+     "thirds": [
+      -0.005220715130439357,
+      -0.00035543860175385467,
+      0.002191557462569482
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0014522379757998082,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_ema21_slope",
+     "importance": -0.0013821443706430458,
+     "thirds": [
+      0.0010029532915757033,
+      -0.00394592711060866,
+      -0.0007945389950488879
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.00017889716776438395,
+     "works": false
+    },
+    {
+     "feature": "pre15_range_pts",
+     "importance": -0.0014428588147921916,
+     "thirds": [
+      0.004031877317487187,
+      -0.0039725324778356105,
+      -0.008751053409488152
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0030056518342797913,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_vol_z20",
+     "importance": -0.001507340202794305,
+     "thirds": [
+      -0.006742208049356091,
+      -0.005223486005671518,
+      0.004371699381621541
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.001272709025098762,
+     "works": false
+    },
+    {
+     "feature": "pre5_range_pts",
+     "importance": -0.0016422212435181604,
+     "thirds": [
+      -0.004272557867527715,
+      -0.0121246113198193,
+      0.005151547068491335
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -8.939016245606383e-05,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_ret1",
+     "importance": -0.0017556672153787422,
+     "thirds": [
+      -0.0007639308911377984,
+      -0.003608686122186755,
+      0.002841135847998011
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0002895747405343818,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_spread_rel_1h",
+     "importance": -0.0018214998166787622,
+     "thirds": [
+      -0.0039083992716044125,
+      -0.001828047388129661,
+      -0.004807791056578891
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0007868971117092319,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_ret10",
+     "importance": -0.0019865689599956383,
+     "thirds": [
+      0.0003421360429246678,
+      0.011764563287540363,
+      -0.02747778570310321
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0005280459270793753,
+     "works": false
+    },
+    {
+     "feature": "engine=orb",
+     "importance": -0.002093921127718101,
+     "thirds": [
+      -0.004854358742424747,
+      -0.0035899155369713332,
+      0.0005448054149516324
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.000373948547696749,
+     "works": false
+    },
+    {
+     "feature": "mtf:day_range_so_far",
+     "importance": -0.0021576423034737726,
+     "thirds": [
+      -0.0024275918798818187,
+      -0.0064321225009939306,
+      0.0005171528561204175
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.001004017727989422,
+     "works": false
+    },
+    {
+     "feature": "mtf:day_pos_at_entry",
+     "importance": -0.0025239637215233924,
+     "thirds": [
+      0.0002718459181387578,
+      -0.0019903293397653178,
+      -0.007396442249396095
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0010450024830940224,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_vwap_dist",
+     "importance": -0.00264082106444411,
+     "thirds": [
+      0.00027588579812443115,
+      -0.007183334030635457,
+      -0.0027762706324661046
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0007156481013309901,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_adx14",
+     "importance": -0.0030138841499819046,
+     "thirds": [
+      0.0003175099516025459,
+      -0.01281040735340665,
+      -0.00030894961296275004
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.002568099503959864,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_vwap_slope_atr",
+     "importance": -0.003915454970062559,
+     "thirds": [
+      -0.0011752493716343793,
+      -0.009332383818274049,
+      -0.008810075389309302
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.001354566706120867,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_bb_width_atr",
+     "importance": -0.004786010616246228,
+     "thirds": [
+      -0.008454009476068048,
+      -0.008724252774933706,
+      0.002720183331762949
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0007621032541263745,
+     "works": false
+    },
+    {
+     "feature": "mtf:prev_close_pos",
+     "importance": -0.005298686602882086,
+     "thirds": [
+      -0.0028381908370599283,
+      0.004980795245504354,
+      0.0054634261360670625
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0002712477771388907,
+     "works": false
+    },
+    {
+     "feature": "trail_step",
+     "importance": -0.005593088769137555,
+     "thirds": [
+      -0.011692080807337668,
+      -0.016636393884686185,
+      -0.0026594835394654903
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.000935402420310705,
+     "works": false
+    },
+    {
+     "feature": "dist_from_range_pts",
+     "importance": -0.007258260094922098,
+     "thirds": [
+      -0.022412031511875465,
+      -0.01249649967463613,
+      0.0011664371765508052
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0017977186888617192,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "orb_range_pts",
+    "entry_min_after_open",
+    "pre5_volume",
+    "pre5_ticks",
+    "overnight_range_pts",
+    "sl_points",
+    "direction=SHORT",
+    "mtf:tf1_ret10",
+    "mtf:tf1_atr14",
+    "mtf:tf1_ema9_21",
+    "mtf:tf1_ema21_slope",
+    "mtf:tf1_vol_z20",
+    "mtf:tf1_vwap_dist",
+    "mtf:tf5_ret3",
+    "mtf:tf5_atr14",
+    "mtf:tf5_ema9_21",
+    "mtf:tf60_ret1",
+    "mtf:tf60_ret3",
+    "mtf:tf60_rvol10",
+    "mtf:tf60_atr14",
+    "mtf:tf60_range_pos20",
+    "mtf:tf60_vol_z20",
+    "mtf:tf60_vwap_dist",
+    "mtf:overnight_range",
+    "mtf:open_gap",
+    "mtf:tick_rate_5m",
+    "mtf:prev_day_range",
+    "mtf:dist_pdh_atr",
+    "mtf:es_rel_ret_15m_bp",
+    "mtf:min_to_news",
+    "mtf:bbo_imb_open15"
+   ],
+   "refit_working_metric": 0.5498668078612567,
+   "seconds": 198.8,
+   "span_days": 23.4
+  },
+  {
+   "task": "trade_filter.exp_pnl",
+   "primary": false,
+   "kind": "l1",
+   "n": 111871,
+   "n_features": 93,
+   "span": [
+    "2026-09-21",
+    "2026-10-14"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 32495,
+     "n_test": 41170,
+     "metric": 17.06742264166084,
+     "baseline": 16.946551678576636
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 73665,
+     "n_test": 38206,
+     "metric": 19.63008424288321,
+     "baseline": 19.380770028922157
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 18.30090693333971,
+   "baseline": 18.11821246134852,
+   "shuffled": {
+    "n": 20,
+    "min": 18.118212469378623,
+    "median": 18.118212469378623,
+    "max": 18.118212469378623,
+    "p95": 18.118212469378623,
+    "p05": 18.118212469378623,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 79376,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "sl_points",
+     "importance": 0.25039729907580155,
+     "thirds": [
+      0.4335798763565609,
+      0.21110336196527016,
+      0.10650322052625186
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "engine=mtf_scalper",
+     "importance": 0.1504737528112642,
+     "thirds": [
+      0.059053015466189504,
+      0.1335231785769963,
+      0.2588491603657978
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "trail_step",
+     "importance": 0.0375389731648994,
+     "thirds": [
+      0.049099626295155116,
+      0.023505211516762613,
+      0.04001217515578119
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_vwap_slope_atr",
+     "importance": 0.03030611608039848,
+     "thirds": [
+      0.0002573914935918964,
+      -0.015000868962225411,
+      0.1056646738355198
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "overnight_range_pts",
+     "importance": 0.02378931810119056,
+     "thirds": [
+      -6.190119429660967e-06,
+      0.012755035320846275,
+      0.05862042552029294
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_vwap_dist",
+     "importance": 0.020115108736624164,
+     "thirds": [
+      0.00793647525783996,
+      -0.0160078635225517,
+      0.06841854007008692
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_rvol10",
+     "importance": 0.019294272909631614,
+     "thirds": [
+      0.041210960090213786,
+      -0.001919925534249245,
+      0.018591757621842932
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "day_range_at_entry_pts",
+     "importance": 0.01906770087409555,
+     "thirds": [
+      -0.005699953845840611,
+      -0.004386856167052144,
+      0.06729173522992582
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_vol_z20",
+     "importance": 0.015916920147352444,
+     "thirds": [
+      0.002349372903169922,
+      0.058989816605271986,
+      -0.013589544243233576
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_ema21_slope",
+     "importance": 0.013809078441775568,
+     "thirds": [
+      -0.018343505578305042,
+      -0.028780882679818376,
+      0.08855444853413345
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "pre5_range_pts",
+     "importance": 0.012993219569818137,
+     "thirds": [
+      -0.0016559238614693328,
+      -0.010554250685894573,
+      0.0511912769265507
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_vol_z20",
+     "importance": 0.012149055846634838,
+     "thirds": [
+      0.010512149560333483,
+      -0.047744904879642294,
+      0.07368224846458986
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:min_to_news",
+     "importance": 0.008115527955170166,
+     "thirds": [
+      0.004702709634725366,
+      -0.008044263859918032,
+      0.027688877852216364
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_ret1",
+     "importance": 0.008076901289315685,
+     "thirds": [
+      -0.0002338806365457913,
+      0.01693301381032981,
+      0.007531550082985205
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "entry_min_after_open",
+     "importance": 0.007436330730222806,
+     "thirds": [
+      0.006206144533619807,
+      0.003670051954357234,
+      0.01243298454784778
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_atr14",
+     "importance": 0.007090829253429831,
+     "thirds": [
+      0.0024903144289034175,
+      0.0035866161484911173,
+      0.01519586350718143
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf1_ret1",
+     "importance": 0.006680604885841745,
+     "thirds": [
+      0.0021358788903828698,
+      0.007051621939290697,
+      0.010854471576318758
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_ret10",
+     "importance": 0.0065153309754229834,
+     "thirds": [
+      0.006089039674537844,
+      0.007624525103249624,
+      0.005832402337661335
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_ema9_21",
+     "importance": 0.005998991812850107,
+     "thirds": [
+      0.017630738376105626,
+      -8.276963970175189e-05,
+      0.00044879693628487873
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_rvol10",
+     "importance": 0.005106839327194024,
+     "thirds": [
+      -0.004174761617912637,
+      0.003736139960888352,
+      0.015759542250307845
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "pre5_ticks",
+     "importance": 0.005010192182817263,
+     "thirds": [
+      0.007973261901820905,
+      0.0043014585163987816,
+      0.002755770925907086
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_ret1",
+     "importance": 0.004515738192777974,
+     "thirds": [
+      -0.00017440438329430208,
+      0.001944775071610394,
+      0.011777118328966907
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:open_gap",
+     "importance": 0.004417589450277859,
+     "thirds": [
+      -0.006699496685841666,
+      0.009299510547842971,
+      0.010652990151587004
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf15_vwap_dist",
+     "importance": 0.002784691343790513,
+     "thirds": [
+      0.002077316024999476,
+      -0.006815420843263098,
+      0.013092568428876915
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:overnight_range",
+     "importance": 0.0018774993422667307,
+     "thirds": [
+      -0.00043101880209945876,
+      0.0006098749389849445,
+      0.005453777052913012
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_ret3",
+     "importance": 0.0018330174089072671,
+     "thirds": [
+      -0.0008289223859136996,
+      0.0012448986331605738,
+      0.005083198817884949
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "engine=orb",
+     "importance": 0.0018107480405689103,
+     "thirds": [
+      -0.001935926840653579,
+      0.007518403462176337,
+      -0.0001503066165476241
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:dist_pdl_atr",
+     "importance": 0.0015841451022069464,
+     "thirds": [
+      -0.08144162388805079,
+      0.0436552521412402,
+      0.042540354965667146
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:bbo_microprice_dev_ticks",
+     "importance": 0.0015839422573662887,
+     "thirds": [
+      0.0026346166880504285,
+      -0.0010913797631161514,
+      0.0032086512519434508
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_ema21_slope",
+     "importance": 0.0013532535115999167,
+     "thirds": [
+      0.003010596581148306,
+      0.0003734138653840091,
+      0.0006757244815162267
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:prev_day_range",
+     "importance": 0.001336307131948189,
+     "thirds": [
+      0.012203408493150648,
+      -0.008194537602133779,
+      0.0
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_range_pos20",
+     "importance": 0.001321726376941257,
+     "thirds": [
+      -0.001648756717827382,
+      0.002306903795165738,
+      0.0033071070896070866
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_adx14",
+     "importance": 0.0007268167498644118,
+     "thirds": [
+      0.0013284723548458999,
+      0.0006273767647478224,
+      0.00022458214838678715
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf5_vwap_dist",
+     "importance": 0.0005270297420906899,
+     "thirds": [
+      0.010567125967268253,
+      -0.015350099582582998,
+      0.006364283456640862
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "direction=LONG",
+     "importance": 0.00047043391316421436,
+     "thirds": [
+      0.00145256369230502,
+      -4.12797325509473e-05,
+      0.0
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:rth_min_remaining",
+     "importance": 0.00038259362599433187,
+     "thirds": [
+      -0.0005320061243562435,
+      0.00021457752345668268,
+      0.0014652503971625207
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "mtf:tf60_vwap_dist",
+     "importance": 8.874866416874739e-07,
+     "thirds": [
+      -0.00044314678306882626,
+      -0.0002578115832960748,
+      0.0007036473866257609
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "dow",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour_et",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "source=live",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "source=paper",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_bars",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_bars",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_bars",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:dow",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:min_after_open",
+     "importance": -1.2295941568396529e-05,
+     "thirds": [
+      0.0007895512286939521,
+      -0.001058453850982488,
+      0.00023202403149369388
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "orb_minutes",
+     "importance": -5.8351800042544255e-05,
+     "thirds": [
+      -0.00015616774741076256,
+      -1.888544735351161e-05,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:hour_et",
+     "importance": -8.762534016639733e-05,
+     "thirds": [
+      0.0004928202172230556,
+      -0.0008352326647241171,
+      7.954274501145164e-05
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_vol_z20",
+     "importance": -0.00010193745585098667,
+     "thirds": [
+      -0.001790718015655912,
+      -0.0009093965576724372,
+      0.0023943965530314414
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "direction=SHORT",
+     "importance": -0.00013737945213705417,
+     "thirds": [
+      -0.0005437000478153209,
+      0.00013156688356374957,
+      0.0
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "engine=trend",
+     "importance": -0.00020300401882948903,
+     "thirds": [
+      0.00025912878797207384,
+      -0.0002188537900892129,
+      -0.0006493039219719777
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_ema21_slope",
+     "importance": -0.00023640854711004522,
+     "thirds": [
+      -0.00673211769944615,
+      0.0018895917217719217,
+      0.004133465492783017
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "open_gap_pts",
+     "importance": -0.00037035464398016416,
+     "thirds": [
+      -0.003285497778220048,
+      0.002174447843577809,
+      0.0
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_ema9_21",
+     "importance": -0.0004338035314709998,
+     "thirds": [
+      -0.0011270440956895555,
+      -0.0006246653890045195,
+      0.0004503323055999431
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_ret10",
+     "importance": -0.00048404511356991975,
+     "thirds": [
+      -0.0008243974319704251,
+      -0.0063116197703358525,
+      0.005684114983033339
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "dist_from_range_pts",
+     "importance": -0.0005762608617416731,
+     "thirds": [
+      -0.02839922774149741,
+      0.004185242956481261,
+      0.022486073825126594
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_bars",
+     "importance": -0.0005931140498546484,
+     "thirds": [
+      0.0,
+      -0.0006910081817295577,
+      -0.001088352685048477
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_ema9_21",
+     "importance": -0.0006195655319267245,
+     "thirds": [
+      -0.002783328546717101,
+      0.0008340499614739372,
+      9.060883002902642e-05
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_imb_persist_open15",
+     "importance": -0.0007106999144554038,
+     "thirds": [
+      0.00019339018384059158,
+      -0.0014315403725099428,
+      -0.0008939564807548094
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_imbalance_1m",
+     "importance": -0.0007896426091555497,
+     "thirds": [
+      0.007103395976553628,
+      -0.007505510427654372,
+      -0.00196685786841897
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:day_pos_at_entry",
+     "importance": -0.0008819638492617799,
+     "thirds": [
+      -0.007442154884330421,
+      0.00937136758891981,
+      -0.004575243837388854
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_atr14",
+     "importance": -0.0011199272885995982,
+     "thirds": [
+      -0.0012613573196428973,
+      -0.0016975788966789196,
+      -0.00040081847124398
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_imb_open15",
+     "importance": -0.0013725657271955072,
+     "thirds": [
+      -0.00013987568286282225,
+      0.0010945109679987297,
+      -0.005072472302190078
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "orb_range_pts",
+     "importance": -0.0018209042547006505,
+     "thirds": [
+      -0.0001115940268164195,
+      -0.0021906999323213936,
+      -0.0031604694329232077
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_range_pos20",
+     "importance": -0.001829504243247726,
+     "thirds": [
+      0.0011606119285229254,
+      -0.002254215492925482,
+      -0.0043950061267466365
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:delta_share_5m",
+     "importance": -0.0020988411456585253,
+     "thirds": [
+      -0.008216378060653895,
+      -0.008268787893853612,
+      0.010189106932215707
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_vol_z20",
+     "importance": -0.002921929430745962,
+     "thirds": [
+      0.006963172933992468,
+      -0.0029264909283455154,
+      -0.012802843740352187
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_bb_width_atr",
+     "importance": -0.0035799489219684234,
+     "thirds": [
+      -0.018279483340432633,
+      0.0053233788035846885,
+      0.002216476842937709
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_rvol10",
+     "importance": -0.003637620613407222,
+     "thirds": [
+      -0.0035571484308537294,
+      0.05542675400503398,
+      -0.06278470283834495
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_ret10",
+     "importance": -0.0036702417796441013,
+     "thirds": [
+      -0.0033943996163486646,
+      0.005209890688895058,
+      -0.012826562468417535
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_ret3",
+     "importance": -0.0038560988501444627,
+     "thirds": [
+      0.008540299027971088,
+      -0.018527416625325088,
+      -0.0015810929707662069
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_spread_rel_1h",
+     "importance": -0.0040768449020404775,
+     "thirds": [
+      0.0027569593728490106,
+      0.004619552862120457,
+      -0.019607633916753287
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_ret10",
+     "importance": -0.004121898525537659,
+     "thirds": [
+      -0.007124418552994172,
+      -0.0025613933026853884,
+      -0.002679829218893559
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_range_pos20",
+     "importance": -0.004234192872966247,
+     "thirds": [
+      0.0016793749545701785,
+      -0.003812134897835051,
+      -0.01057005813537657
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:day_range_so_far",
+     "importance": -0.00552725770219098,
+     "thirds": [
+      -0.01183496005598066,
+      -0.004813484888851605,
+      6.688326502910514e-05
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf15_ret3",
+     "importance": -0.007067857792378618,
+     "thirds": [
+      0.0008243527415835672,
+      -0.0034405935866097083,
+      -0.018587767919308364
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_range_pos20",
+     "importance": -0.007386845087473404,
+     "thirds": [
+      0.003102144032916243,
+      -0.02119893978883667,
+      -0.0040636139072248055
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_updates_5m",
+     "importance": -0.007898366882208307,
+     "thirds": [
+      0.00048128389668455895,
+      0.0010417677758518095,
+      -0.025218806933470006
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_ret3",
+     "importance": -0.009070948814004253,
+     "thirds": [
+      -0.0022968948848639315,
+      -0.009680939797896571,
+      -0.015235244734640219
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_ema9_21",
+     "importance": -0.009120270689641075,
+     "thirds": [
+      0.0033028885885713066,
+      -0.007501087735592904,
+      -0.023163143662779363
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:bbo_spread_ticks_1m",
+     "importance": -0.009172128382362388,
+     "thirds": [
+      0.003622596129228839,
+      -0.0019660316746147543,
+      -0.02917370554777321
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:dist_pdh_atr",
+     "importance": -0.009531880630739665,
+     "thirds": [
+      0.006870939748768734,
+      -0.027290412245299933,
+      -0.008176118155561341
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:prev_close_pos",
+     "importance": -0.009916180395931206,
+     "thirds": [
+      -0.002884757930200621,
+      -0.025071468123198316,
+      -0.0017920080868023547
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tick_rate_5m",
+     "importance": -0.009938463395884157,
+     "thirds": [
+      -0.0001790717796961161,
+      -0.014292832713066871,
+      -0.015343689981764896
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "pre15_range_pts",
+     "importance": -0.010115030071258958,
+     "thirds": [
+      -5.531447477515883e-05,
+      -0.026877762382699188,
+      -0.003411760010745013
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_rvol10",
+     "importance": -0.011506517770482816,
+     "thirds": [
+      -0.062274762296898344,
+      0.032149592195579405,
+      -0.004394114401648608
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:es_rel_ret_15m_bp",
+     "importance": -0.01191647150284041,
+     "thirds": [
+      0.001887030560670766,
+      -0.010994894073271411,
+      -0.026642107541365333
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf1_atr14",
+     "importance": -0.014796032164109362,
+     "thirds": [
+      -0.0032068719329327424,
+      -0.05429444918714239,
+      0.013114279479091806
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "pre5_volume",
+     "importance": -0.0177785013071059,
+     "thirds": [
+      -0.0005915464838800233,
+      -0.033190581582462644,
+      -0.01955344293768846
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf60_ema21_slope",
+     "importance": -0.020183082062580838,
+     "thirds": [
+      -0.001213574919737681,
+      -0.05264787703004927,
+      -0.006687284173406027
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:overnight_eff",
+     "importance": -0.027415104785222154,
+     "thirds": [
+      -0.011559995899764175,
+      -0.016854464239008847,
+      -0.05383185262000225
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_atr14",
+     "importance": -0.03802026226426562,
+     "thirds": [
+      7.287509703282068e-05,
+      -0.046168001151205826,
+      -0.06796679254747247
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "mtf:tf5_ret1",
+     "importance": -0.04486597495733875,
+     "thirds": [
+      -0.012559544074593986,
+      -0.02113733837524521,
+      -0.10090316030967231
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "entry_min_after_open",
+    "pre5_ticks",
+    "overnight_range_pts",
+    "sl_points",
+    "trail_step",
+    "engine=mtf_scalper",
+    "mtf:tf1_ret1",
+    "mtf:tf1_rvol10",
+    "mtf:tf1_vol_z20",
+    "mtf:tf1_vwap_dist",
+    "mtf:tf5_ema21_slope",
+    "mtf:tf5_vol_z20",
+    "mtf:tf5_vwap_dist",
+    "mtf:tf15_ret1",
+    "mtf:tf15_rvol10",
+    "mtf:tf15_atr14",
+    "mtf:tf15_range_pos20",
+    "mtf:tf15_vwap_dist",
+    "mtf:tf60_ret1",
+    "mtf:tf60_ret3",
+    "mtf:tf60_ret10",
+    "mtf:tf60_ema9_21",
+    "mtf:overnight_range",
+    "mtf:open_gap",
+    "mtf:tf5_adx14",
+    "mtf:tf5_vwap_slope_atr",
+    "mtf:dist_pdl_atr",
+    "mtf:min_to_news",
+    "mtf:rth_min_remaining",
+    "mtf:bbo_microprice_dev_ticks"
+   ],
+   "refit_working_metric": 18.158957689976294,
+   "seconds": 82.1,
+   "span_days": 23.4
+  }
+ ],
+ "status": "not_validated",
+ "reason": "short history: 111871 rows over 23 days (needs \u2265 6 training months for the monthly scheme); exploratory weekly result shown for orientation only",
+ "seconds": 288.9
+}

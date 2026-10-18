@@ -11,7 +11,7 @@ P=research/programs; O=$P/out; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 # name | arguments (the run whose output is in out/<name>.txt)
 LIST=(
   "regopt|data/edge_lab/cache 200" "regcal|" "reentry|" "reentry_pay|" "perm|$O/mtf_ldn.csv" "emastop|" "emaexit|" "openreg|" "emasweep|"
-  "emamtf|" "emamom|" "mom2|" "momopt|" "momx|" "momadd|" "sprint|" "sprint3|" "sprint4|" "evalspeed|" "payfast|"
+  "emamtf|" "emamom|" "mom2|" "momopt|" "momx|" "momadd|" "sprint|" "sprint3|" "sprint4|" "evalspeed|" "payfast|" "planchk|"
 )
 want=("$@"); same=0; diff_n=0; fail=0
 for row in "${LIST[@]}"; do n="${row%%|*}"; a="${row#*|}"

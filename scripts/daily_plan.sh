@@ -97,6 +97,9 @@ jq -n --arg plan "$plan" --argjson raw "$raw" --argjson vix "$vix" --argjson rsi
   (if $open and $y then ($open - $y.c) else (if $on.last and $y then ($on.last - $y.c) else null end) end) as $gap_pts |
   (if $gap_pts != null and $atr then $gap_pts / $atr else null end) as $gap |
   ([$r.news[]? | select(.kind == "cpi" or .kind == "ppi" or .kind == "nfp" or .kind == "fomc")]) as $events |
+  ([$events[] | .kind] | unique) as $ek |
+  (($ek | index("cpi")) != null or ($ek | index("ppi")) != null) as $cpippi |
+  (($ek | index("fomc")) != null) as $fomc |
   ([$r.news[]? | select(.kind == "holiday")] | length > 0) as $holiday |
   # VIX must be the close of the prior session itself; an older row (file not updated yet) counts as missing
   ((if $vix and $y and ($vix.date == $y.date) then $vix.close else null end)) as $vx |
@@ -134,7 +137,9 @@ jq -n --arg plan "$plan" --argjson raw "$raw" --argjson vix "$vix" --argjson rsi
         on: $monday, status: (if $monday then "ON (candidate — paper first)" else "off — not Monday" end),
         window: "buy 09:30, sell 15:55", risk: (if $atr then "no stop: 1 ATR against = $\(($atr * 2) | round) per MNQ" else null end) },
       { id: "so_cascade", name: "Strong-open cascade", tested: "PASS, +5.8 pts/trade with VWAP + stall exits",
-        on: true, status: (if ($is_weak and $vx != null and $vx >= 20) or $monday then "WATCH — longs only today (a long hold is on: skip shorts)" else "WATCH" end),
+        on: (($cpippi or $fomc) | not), status: (if $fomc then "off — FOMC day (the cascade skips FOMC decision days)"
+                 elif $cpippi then "STAND ASIDE — \($ek | map(select(. == "cpi" or . == "ppi")) | map(ascii_upcase) | join("/")) day: the cascade averaged ≈ $0 per trade on CPI and PPI days 2010-24 (tested 2026-10-18)"
+                 elif ($is_weak and $vx != null and $vx >= 20) or $monday then "WATCH — longs only today (a long hold is on: skip shorts)" else "WATCH" end),
         window: "checks 09:50 (0.25 ATR) · 10:30 / 11:00 / 11:30 (0.30 ATR); one trade (no 12:00 check — it loses, 2026-10-17)",
         levels: (if $open and $atr then [
             {at: "09:50", long_above: (($open + 0.25 * $atr) | tick), short_below: (($open - 0.25 * $atr) | tick)},
@@ -143,9 +148,10 @@ jq -n --arg plan "$plan" --argjson raw "$raw" --argjson vix "$vix" --argjson rsi
         risk: (if $atr then "stop 0.25 ATR = $\((0.25 * $atr * 2) | round) per MNQ, target 2R" else null end),
         exits: "out early on a 5-minute close back through VWAP, or if not +0.5R after 60 minutes; flat 15:55" },
       { id: "gap_or_retest", name: "Gap side + opening-range retest", tested: "PASS +9.0 (holdout +7.2, t 0.6) — paper candidate",
-        on: ($gap != null and ($gap | fabs) >= 0.1),
+        on: ($gap != null and ($gap | fabs) >= 0.1 and ($fomc | not)),
         side: (if $gap == null then null elif $gap >= 0.1 then "long" elif $gap <= -0.1 then "short" else null end),
-        status: (if $gap == null then "waiting for the gap"
+        status: (if $fomc then "off — FOMC day (gap retest −$9 per trade on FOMC days 2010-24, tested 2026-10-18)"
+                 elif $gap == null then "waiting for the gap"
                  elif ($gap | fabs) < 0.1 then "off — gap \($gap | r2) ATR is inside ±0.1"
                  else "\(if $gap > 0 then "LONG" else "SHORT" end) side — gap \($gap | r2) ATR\(if $open then "" else " (estimate until 09:30)" end)" end),
         window: "from 09:45 to 13:55: the first 5-minute bar that touches the 15-minute opening-range edge on the gap side and closes beyond it",
@@ -154,6 +160,7 @@ jq -n --arg plan "$plan" --argjson raw "$raw" --argjson vix "$vix" --argjson rsi
         risk: (if $atr then "stop 0.35 ATR = $\((0.35 * $atr * 2) | round) per MNQ, target 2R, flat 15:55" else null end) }
     ],
     rules: ["The cascade and the gap retest may both trade the same day if they agree in direction (tested 2026-10-17: more paid, fewer blown 25K accounts); never in opposite directions.",
+            "News days (2026-10-18): no cascade on CPI or PPI days (≈ $0 per trade), no gap retest on FOMC days (−$9 per trade). The momentum setups showed nothing reliable on news days.",
             "At most 3 trades a day, all in the direction of the first. A 2nd or 3rd trade only after a WINNER (target hit): the next plan setup or a 5-minute bar that touches VWAP and closes back in the day direction, before 13:55, stop 0.25 ATR, 2R. After a loss, done for the day (tested 2026-10-17: re-entries after a win +5.7 pts vs +0.8 at random times, but they do not speed up 25K payouts).",
             "A long hold is on → no shorts that day. Never hold opposite positions.",
             "No signal = no trade. Fading quiet days lost money in every test.",

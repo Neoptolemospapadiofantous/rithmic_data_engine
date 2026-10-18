@@ -1,0 +1,10 @@
+# working-fleet-report.timer — weekdays 16:30 New York, after the paper fleet's day is written.
+[Unit]
+Description=Weekdays 16:30 New York: working-fleet forward scorecard
+
+[Timer]
+OnCalendar=Mon..Fri 16:30 America/New_York
+Persistent=true
+
+[Install]
+WantedBy=timers.target

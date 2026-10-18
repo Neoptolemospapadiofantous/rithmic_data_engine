@@ -36,10 +36,16 @@ def bars5: [$bars | group_by(.m / 5 | floor)[] | {k: (.[0].m / 5 | floor), o: .[
                  else ($b3.c < $on.lo and $b3.o >= $on.lo and $b2.h < $on.lo and ($b2.h - $b2.l) <= 0.75 * ($b3.h - $b3.l) and $b1.c < $b2.l) end)
         | {setup: "box_go", at: hhmm(($b1.k + 1) * 5), dir: (if $gap > 0 then "LONG" else "SHORT" end), price: $b1.c,
            stop: (if $gap > 0 then $b2.l - 0.25 else $b2.h + 0.25 end), flow_agrees: ((if $gap > 0 then 1 else -1 end) * cd_before(($b1.k + 1) * 5) > 0)}] | first end) as $box
-  | ([$cas, $gor, $box] | map(select(. != null)) | sort_by(.at)) as $all
+  | # a setup whose strategy is off today (news day, 2026-10-18) is shown but never taken and never sets the day's direction
+    ($p.strategies | map({key: .id, value: .on}) | from_entries) as $son
+  | ($son["so_cascade"] != false) as $cas_on | ($son["gap_or_retest"] != false) as $gor_on
+  | ([$cas, $gor, $box] | map(select(. != null)) | sort_by(.at)) as $all0
+  | ($all0 | map(select((.setup == "cascade" and ($cas_on | not)) or (.setup == "gap retest" and ($gor_on | not)) | not))) as $all
   | ($all[0].dir // null) as $first_dir
-  | ($all | map(. + {allowed: (if $long_hold and .dir == "SHORT" then false elif $first_dir != null and .dir != $first_dir then false else true end),
-                     why_not: (if $long_hold and .dir == "SHORT" then "a long hold is on: no shorts" elif $first_dir != null and .dir != $first_dir then "opposite to the day's first trade" else null end)})) as $setups
+  | ($all0 | map((.setup == "cascade" and ($cas_on | not)) or (.setup == "gap retest" and ($gor_on | not))) as $offs | . as $x
+      | [range(0; length) as $i | $x[$i] + (if $offs[$i] then {allowed: false, why_not: "news day: this setup stands aside today"} else
+        {allowed: (if $long_hold and $x[$i].dir == "SHORT" then false elif $first_dir != null and $x[$i].dir != $first_dir then false else true end),
+         why_not: (if $long_hold and $x[$i].dir == "SHORT" then "a long hold is on: no shorts" elif $first_dir != null and $x[$i].dir != $first_dir then "opposite to the day's first trade" else null end)} end)]) as $setups
   | ([$setups[] | select(.allowed)] | last) as $latest
   | (if $now >= 270 then "NO NEW TRADES" elif ($latest != null and ((($now - ($latest.at | split(":") | ((.[0] | tonumber) * 60 + (.[1] | tonumber)) - 570)) | . <= 5))) then "TRADE ALLOWED NOW"
      elif ($setups | length) > 0 then "SETUP TAKEN EARLIER" else "WAIT" end) as $status
@@ -74,7 +80,7 @@ def bars5: [$bars | group_by(.m / 5 | floor)[] | {k: (.[0].m / 5 | floor), o: .[
   #    takes the day when on (tested 2026-10-17: Lightning 25K payout ≤ 7 days 6.7 %, ≤ 20 days 25 %)
   | ([$p.strategies[] | select((.id == "weak_day_long" or .id == "monday_long") and .on)] | first) as $hold
   | (if $hold != null then {source: (if $hold.id == "weak_day_long" then "weak-day long" else "Monday long" end), at: "09:30", dir: "LONG", price: $open, stop_pts: (($atr * 0.25 * 4 | round) / 4)}
-     else ([$cas, $gor] | map(select(. != null)) | sort_by(.at) | .[0]
+     else ([(if $cas_on then $cas else null end), (if $gor_on then $gor else null end)] | map(select(. != null)) | sort_by(.at) | .[0]
            | if . == null then null else {source: .setup, at: .at, dir: .dir, price: .price, stop_pts: (($atr * (if .setup == "cascade" then 0.25 else 0.35 end) * 4 | round) / 4)} end) end) as $sp
   | ($sp | if . == null then null else (.at | split(":") | ((.[0] | tonumber) * 60 + (.[1] | tonumber)) - 570) end) as $spm
   | (if $sp == null then (if $now >= 265 then "NO TRADE TODAY" else "WAIT" end)

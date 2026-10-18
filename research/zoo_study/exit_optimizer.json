@@ -1,0 +1,48 @@
+{
+ "model": "exit_optimizer",
+ "status": "not_validated",
+ "reason": "decision rule (trigger/step/delay) with no features \u2014 not a supervised model; orientation below",
+ "tasks": [],
+ "orientation": {
+  "n_paths": 598,
+  "rules": 70,
+  "weeks": [
+   {
+    "week": "2026-W41",
+    "n_test": 198,
+    "rule": {
+     "trigger": 20.0,
+     "step": 15.0,
+     "delay": 0
+    },
+    "chosen_usd_per_trade": -6.621212121212121,
+    "live_rule_usd_per_trade": -2.1464646464646466,
+    "actual_usd_per_trade": -8.900303030303025,
+    "random_rule_usd_per_trade": {
+     "min": -12.72979797979798,
+     "median": -4.7891414141414135,
+     "max": -1.3156565656565657
+    }
+   },
+   {
+    "week": "2026-W42",
+    "n_test": 254,
+    "rule": {
+     "trigger": 12.0,
+     "step": 15.0,
+     "delay": 0
+    },
+    "chosen_usd_per_trade": 4.344488188976378,
+    "live_rule_usd_per_trade": 5.1141732283464565,
+    "actual_usd_per_trade": 2.9347540866141735,
+    "random_rule_usd_per_trade": {
+     "min": -1.6456692913385826,
+     "median": 3.125,
+     "max": 26.915354330708663
+    }
+   }
+  ],
+  "sim_vs_actual_mae_usd": 21.912997428093647
+ },
+ "seconds": 46.8
+}

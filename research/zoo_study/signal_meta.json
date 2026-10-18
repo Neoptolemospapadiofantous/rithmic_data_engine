@@ -1,0 +1,216 @@
+{
+ "model": "signal_meta",
+ "tasks": [
+  {
+   "task": "signal_meta.p_win",
+   "primary": true,
+   "kind": "binary",
+   "n": 19801,
+   "n_features": 11,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 6644,
+     "n_test": 6744,
+     "metric": 0.43341027814690924,
+     "baseline": 0.5
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 13388,
+     "n_test": 6413,
+     "metric": 0.4926158469338521,
+     "baseline": 0.5
+    }
+   ],
+   "notes": [],
+   "metric": 0.4563963586928276,
+   "baseline": 0.5,
+   "shuffled": {
+    "n": 20,
+    "min": 0.4114625257341139,
+    "median": 0.4695182234453413,
+    "max": 0.5165763252866592,
+    "p95": 0.5016390740642654,
+    "p05": 0.4164309985694083,
+    "percentile_beaten": 0.35
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 13157,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_trend",
+     "importance": 0.015521357169731109,
+     "thirds": [
+      0.010205540014177695,
+      -0.0016856919832699047,
+      0.03611203705286506
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0009020399048792038,
+     "works": true
+    },
+    {
+     "feature": "spread_ticks",
+     "importance": 0.008677152160198386,
+     "thirds": [
+      -0.004747276871126915,
+      0.03814104132443225,
+      -0.004959249065985982
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.003875743840950101,
+     "works": false
+    },
+    {
+     "feature": "min_after_open",
+     "importance": 0.00512656869612742,
+     "thirds": [
+      0.015381866896357121,
+      -0.02279482250416513,
+      0.017329356057368454
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.007911066748594755,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.002988781555139908,
+     "thirds": [
+      -0.022004320037197787,
+      0.011504269919494752,
+      0.012536135470501825
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.00014308817986781564,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0012237645076493887,
+     "thirds": [
+      0.0016093901258469434,
+      -0.0022742534922466527,
+      0.005009772246818989
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0013153854959272759,
+     "works": true
+    },
+    {
+     "feature": "eng_mtf",
+     "importance": 0.00038331675955686204,
+     "thirds": [
+      -0.020603642780373733,
+      0.0001712161988977723,
+      0.010693321443291475
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0013897789160178143,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.00036253115509402576,
+     "thirds": [
+      0.002734229101081553,
+      0.022278051565248713,
+      -0.012181832168071272
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0009955248731395232,
+     "works": false
+    },
+    {
+     "feature": "microprice_dev",
+     "importance": -0.0009609246799570648,
+     "thirds": [
+      0.0001988036526894832,
+      0.0015093961529946908,
+      0.003515349740071505
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.005458317760448883,
+     "works": false
+    },
+    {
+     "feature": "is_long",
+     "importance": -0.00789557675374306,
+     "thirds": [
+      -0.00950312902561925,
+      -0.03322703389139382,
+      0.0029720118672493133
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0005072988855741295,
+     "works": false
+    },
+    {
+     "feature": "spread_rel",
+     "importance": -0.02200231299297043,
+     "thirds": [
+      -0.023485033272099564,
+      -0.020903335546934243,
+      -0.03429272770094841
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.004586553283634395,
+     "works": false
+    },
+    {
+     "feature": "dow",
+     "importance": -0.04546598732833465,
+     "thirds": [
+      0.050319000541195556,
+      -0.08791772395232612,
+      -0.012816315948420809
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.002826736522709802,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "hour",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 0.533948452944276,
+   "seconds": 5.5,
+   "span_days": 23.4,
+   "gate_backtest_oos": {
+    "0.5": {
+     "taken": 2880,
+     "of": 13157,
+     "pnl_per_taken": -8.609980227777775,
+     "pnl_per_all": -4.536521427757086
+    },
+    "0.55": {
+     "taken": 2219,
+     "of": 13157,
+     "pnl_per_taken": -7.449724587201441,
+     "pnl_per_all": -4.536521427757086
+    },
+    "0.6": {
+     "taken": 1684,
+     "of": 13157,
+     "pnl_per_taken": -7.085215159738715,
+     "pnl_per_all": -4.536521427757086
+    }
+   }
+  }
+ ],
+ "status": "not_validated",
+ "reason": "short history: 19801 rows over 23 days (needs \u2265 6 training months for the monthly scheme); exploratory weekly result shown for orientation only",
+ "seconds": 59.0
+}

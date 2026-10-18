@@ -17,7 +17,8 @@ jq -r --argjson now "$now_m" '
                         | [range($n; 0; -1) | select(. * $tgt * 2 - . * 3.2 <= 300)] | (first // 1);
   (.numbers.atr) as $atr | (.numbers.open) as $open |
   ([.strategies[] | select((.id == "weak_day_long" or .id == "monday_long") and .on)] | first) as $hold |
-  ([.strategies[] | select(.id == "so_cascade")] | first | .levels // []) as $lv |
+  ([.strategies[] | select(.id == "so_cascade")] | first) as $cs |
+  (if ($cs.on != false) then ($cs.levels // []) else [] end) as $lv |
   ([.strategies[] | select(.id == "gap_or_retest")] | first) as $gor |
   ((.numbers.news // []) | map(.label // .kind) | join(", ")) as $news |
   (.live.sprint // null) as $sp |
@@ -27,7 +28,7 @@ jq -r --argjson now "$now_m" '
         (($atr * 0.25) | r4) as $st | ($st * 0.5 | r4) as $tg | mnq($st; $tg) as $n |
         "NQ SPRINT — \($hold.name) is ON: BUY at the 09:30 open. \($n) MNQ, stop \($st) pts below the fill, target \($tg) pts above. Place the bracket before 09:30; skip it if you are not filled within the first minute."
       else
-        "NQ plan — no 09:30 trade today. Cascade check 09:50: LONG if ≥ \($lv[0].long_above // "?"), SHORT if ≤ \($lv[0].short_below // "?"). Gap retest: \($gor.status // "off")." end)
+        "NQ plan — no 09:30 trade today. " + (if ($cs.on != false) then "Cascade check 09:50: LONG if ≥ \($lv[0].long_above // "?"), SHORT if ≤ \($lv[0].short_below // "?")." else "Cascade: \($cs.status)." end) + " Gap retest: \($gor.status // "off")." end)
       + (if $news != "" then " NEWS today: \($news)." else "" end)] | @tsv else empty end),
   # 2. one minute before each cascade check, while no sprint trade exists yet
   #    (a level row may cover several checks: "10:30 · 11:00 · 11:30")
@@ -36,7 +37,7 @@ jq -r --argjson now "$now_m" '
      | select($now >= $m - 2 and $now < $m)
      | ["pre-\($at)", "NQ cascade check at \($at): LONG if price ≥ \($L.long_above), SHORT if ≤ \($L.short_below). Have the bracket ready."] | @tsv),
   # 3. gap retest armed, 09:45 (the 15-min opening range is known)
-  (if $now >= 15 and $now < 20 and $hold == null and ($gor.side // null) != null and $sp.trade == null then
+  (if $now >= 15 and $now < 20 and $hold == null and ($gor.on // false) and ($gor.side // null) != null and $sp.trade == null then
      ["gap", "NQ gap retest armed (09:45–13:55): \($gor.side | ascii_upcase) on a 5-min bar that touches \($gor.level.price // "the opening-range edge") and closes beyond it."] | @tsv else empty end),
   # 4b. the momentum + 5-min EMA-20 setup (research/preregistered/2026-10-17_mtf_1m_dir_5m_entry.md; paper id mom_dir_30_ema20)
   (if (.live.mom.setup // null) != null and .live.mom.allowed then

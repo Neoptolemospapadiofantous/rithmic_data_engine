@@ -1,0 +1,3386 @@
+{
+ "model": "overlay_uplift",
+ "tasks": [
+  {
+   "task": "overlay_uplift.all",
+   "primary": true,
+   "kind": "l1",
+   "n": 3612,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 896,
+     "n_test": 946,
+     "metric": 16.999181457387845,
+     "baseline": 20.29833301347072
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 1842,
+     "n_test": 1770,
+     "metric": 19.77586733104814,
+     "baseline": 22.86776535799273
+    }
+   ],
+   "notes": [],
+   "metric": 18.808730056938185,
+   "baseline": 21.97281580058558,
+   "shuffled": {
+    "n": 20,
+    "min": 19.23670768819191,
+    "median": 19.286551146501196,
+    "max": 19.440136209783574,
+    "p95": 19.37999572355878,
+    "p05": 19.236940799478607,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 2716,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "eng_trend",
+     "importance": 2.1541749630023537,
+     "thirds": [
+      4.087384412388479,
+      1.1133446654512835,
+      1.2596596681293117
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.00011059762051364903,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 2.0270561681841803,
+     "thirds": [
+      3.5944296264268956,
+      1.0737488743804522,
+      1.4112580993714534
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0003207188212982714,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.3282963836183857,
+     "thirds": [
+      0.952516235503208,
+      0.031683169659265785,
+      0.0
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.001622450551456467,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.22719576321815182,
+     "thirds": [
+      0.6965118669491005,
+      0.03798731372605069,
+      -0.05343047235077556
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0036444002424265895,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.03355075466661077,
+     "thirds": [
+      -0.07134545255179674,
+      0.00841044049095494,
+      -0.037675489841866396
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 5.6135765326814635e-05,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread",
+    "hour",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 19.34152708391482,
+   "seconds": 0.8,
+   "span_days": 23.3
+  },
+  {
+   "task": "overlay_uplift.am",
+   "primary": false,
+   "kind": "l1",
+   "n": 472,
+   "n_features": 5,
+   "span": [
+    "2026-09-28",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 340,
+     "n_test": 132,
+     "metric": 0.3812121212121213,
+     "baseline": 0.3812121212121213
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 0.3812121212121213,
+   "baseline": 0.3812121212121213,
+   "shuffled": {
+    "n": 20,
+    "min": 0.3812121212121213,
+    "median": 0.3812121212121213,
+    "max": 0.3812121212121213,
+    "p95": 0.3812121212121213,
+    "p05": 0.3812121212121213,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 132,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.1,
+   "span_days": 18.1
+  },
+  {
+   "task": "overlay_uplift.am_x15",
+   "primary": false,
+   "kind": "l1",
+   "n": 572,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 364,
+     "n_test": 208,
+     "metric": 23.472926097516464,
+     "baseline": 16.906442836010143
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 23.472926097516464,
+   "baseline": 16.906442836010143,
+   "shuffled": {
+    "n": 20,
+    "min": 14.833707932692306,
+    "median": 14.834038461538462,
+    "max": 22.27608528111849,
+    "p95": 15.90948190305013,
+    "p05": 14.834021935096155,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 208,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "hour",
+     "importance": 1.4119534878082476,
+     "thirds": [
+      -1.7964161127888587,
+      8.616542488119558,
+      -2.537767801752372
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.049677654128452216,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.12092002065714666,
+     "thirds": [
+      -0.24741963864210775,
+      0.3114114377538641,
+      0.30410651879154643
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.10672702034574973,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "imbalance"
+   ],
+   "refit_working_metric": 14.764233213402699,
+   "seconds": 0.3,
+   "span_days": 17.0
+  },
+  {
+   "task": "overlay_uplift.bbe",
+   "primary": false,
+   "kind": "l1",
+   "n": 5119,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 1944,
+     "n_test": 1546,
+     "metric": 16.26190872725869,
+     "baseline": 19.913595165679787
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 3490,
+     "n_test": 1629,
+     "metric": 14.356540890156976,
+     "baseline": 16.98453399942658
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 15.284320000758314,
+   "baseline": 18.41077921612814,
+   "shuffled": {
+    "n": 20,
+    "min": 14.915182042834648,
+    "median": 14.915182042834648,
+    "max": 14.915182042834648,
+    "p95": 14.915182042834648,
+    "p05": 14.915182042834648,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 3175,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_orb",
+     "importance": 3.209181141995201,
+     "thirds": [
+      5.847822682483875,
+      2.721566856670576,
+      1.055659896717259
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 2.7842705475699843,
+     "thirds": [
+      5.031495686380431,
+      2.196250688279595,
+      1.1229412367277916
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.5979708495078206,
+     "thirds": [
+      1.2268313922906966,
+      0.2721659878168431,
+      0.2943207822696202
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.04808081277316454,
+     "thirds": [
+      0.2866724972059,
+      0.07794747675682814,
+      -0.22060304763230576
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread",
+    "hour",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 15.284320000758314,
+   "seconds": 1.0,
+   "span_days": 23.3
+  },
+  {
+   "task": "overlay_uplift.btp",
+   "primary": false,
+   "kind": "l1",
+   "n": 5565,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 2332,
+     "n_test": 1590,
+     "metric": 18.576958064531823,
+     "baseline": 20.25785574494644
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 3922,
+     "n_test": 1643,
+     "metric": 16.191682101428036,
+     "baseline": 19.156925929195705
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 17.364768640659403,
+   "baseline": 19.698366822187868,
+   "shuffled": {
+    "n": 20,
+    "min": 17.329424486577306,
+    "median": 17.33921399839363,
+    "max": 17.4527545907028,
+    "p95": 17.391646344182337,
+    "p05": 17.33032286806343,
+    "percentile_beaten": 0.2
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 3233,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_orb",
+     "importance": 0.04182002460025913,
+     "thirds": [
+      0.0523376443230422,
+      0.05358958814891608,
+      0.019512147565325932
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0006718618273681265,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.015514572179898068,
+     "thirds": [
+      -0.0345454545454551,
+      0.0503812446568098,
+      0.03072203353533638
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0002520360160151508,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.008545317023510534,
+     "thirds": [
+      -0.02511364528087263,
+      0.0381619827598584,
+      0.012591366884541344
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.00041083434443815275,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.00444245148883553,
+     "thirds": [
+      0.04403276498934901,
+      0.0027346163653930943,
+      -0.03347520096287724
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.000729130081179758,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread",
+    "hour",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 17.364768640659403,
+   "seconds": 0.9,
+   "span_days": 23.3
+  },
+  {
+   "task": "overlay_uplift.bx",
+   "primary": false,
+   "kind": "l1",
+   "n": 4996,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 1839,
+     "n_test": 1539,
+     "metric": 23.572298146320247,
+     "baseline": 27.26374725550513
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 3378,
+     "n_test": 1618,
+     "metric": 22.523980535981284,
+     "baseline": 21.086212839073962
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 23.03502291872175,
+   "baseline": 24.097687488072243,
+   "shuffled": {
+    "n": 20,
+    "min": 21.585023534923835,
+    "median": 21.896233335102497,
+    "max": 22.221777622676232,
+    "p95": 22.168888003237313,
+    "p05": 21.669139212333878,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 3157,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_orb",
+     "importance": 4.958896889323578,
+     "thirds": [
+      6.531137664959848,
+      4.17432123274931,
+      4.169737244809428
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.023525816276540625,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 4.773048086234428,
+     "thirds": [
+      5.920146965537513,
+      4.729964398638674,
+      3.667942496352842
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0010267450265130955,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.5146079536090931,
+     "thirds": [
+      1.3012264978204349,
+      0.13835485781010207,
+      0.10349476893796776
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.01168583895091836,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "spread",
+     "importance": -0.034047885994233695,
+     "thirds": [
+      0.027350757662329528,
+      -0.020652404366791187,
+      -0.10890037500796979
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.058332787541297414,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "hour",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 23.602465780118514,
+   "seconds": 1.0,
+   "span_days": 23.3
+  },
+  {
+   "task": "overlay_uplift.day_x15",
+   "primary": false,
+   "kind": "l1",
+   "n": 761,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 452,
+     "n_test": 309,
+     "metric": 27.218878467064872,
+     "baseline": 21.002317209382248
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 27.218878467064872,
+   "baseline": 21.002317209382248,
+   "shuffled": {
+    "n": 20,
+    "min": 18.35876250553449,
+    "median": 18.564466019417477,
+    "max": 25.947459023433495,
+    "p95": 19.10145397246905,
+    "p05": 18.37369080528212,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 309,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.11209982712877604,
+     "thirds": [
+      -0.9964301679015009,
+      -0.3079475380334884,
+      1.6406771873213137
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.005225960556314548,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": -0.014364735544084083,
+     "thirds": [
+      -3.0019532692434807,
+      4.14501775211744,
+      -1.186158689506201
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.005814553123317109,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.5219448834070682,
+     "thirds": [
+      -1.2928061500616992,
+      0.05195985766315374,
+      -0.32498835782265656
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0016808255767143028,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.3,
+   "span_days": 17.2
+  },
+  {
+   "task": "overlay_uplift.imb",
+   "primary": false,
+   "kind": "l1",
+   "n": 3611,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 908,
+     "n_test": 933,
+     "metric": 17.065973446078527,
+     "baseline": 20.363120006269153
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 1841,
+     "n_test": 1770,
+     "metric": 19.98434711364355,
+     "baseline": 22.836380292098376
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 18.97700614736972,
+   "baseline": 21.982680015857653,
+   "shuffled": {
+    "n": 20,
+    "min": 19.281164562264195,
+    "median": 19.334965050165756,
+    "max": 19.382095846436076,
+    "p95": 19.37748528769695,
+    "p05": 19.281980127551172,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 2703,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "eng_trend",
+     "importance": 3.281877109147395,
+     "thirds": [
+      5.518876987683649,
+      1.7655113749946352,
+      2.5612429647639035
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0013675895446812409,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 2.8029656931073945,
+     "thirds": [
+      5.355732570902278,
+      1.2435269726116942,
+      1.8096375358082128
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0004224132733499333,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.33218977129157423,
+     "thirds": [
+      0.9425006535747557,
+      0.07102262257733472,
+      -0.016953962277361966
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0027299732795012708,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.2598913494384611,
+     "thirds": [
+      0.796377333617594,
+      0.12159960018280032,
+      -0.13830288548500605
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0043742034772004485,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.14286518407735613,
+     "thirds": [
+      -0.15330101933834187,
+      0.05177581768821895,
+      -0.3270703505819412
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.0075251287114086705,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread",
+    "hour",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 19.09028384613254,
+   "seconds": 0.8,
+   "span_days": 23.3
+  },
+  {
+   "task": "overlay_uplift.inv",
+   "primary": false,
+   "kind": "l1",
+   "n": 2447,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 779,
+     "n_test": 568,
+     "metric": 22.036090568042813,
+     "baseline": 28.89462947133378
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 1347,
+     "n_test": 1100,
+     "metric": 17.15774691196921,
+     "baseline": 18.965753421347777
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 18.818957461519453,
+   "baseline": 22.346809534292653,
+   "shuffled": {
+    "n": 20,
+    "min": 18.728756275262857,
+    "median": 18.797110045665,
+    "max": 19.052789754636184,
+    "p95": 18.890905083430727,
+    "p05": 18.7440142901395,
+    "percentile_beaten": 0.35
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 1668,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_orb",
+     "importance": 3.395424179911706,
+     "thirds": [
+      3.947232287984952,
+      2.3242106869900674,
+      3.9148295647601055
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0018428585008183832,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 3.192970641195335,
+     "thirds": [
+      4.055191292278614,
+      3.173390004323984,
+      2.3503306269834106
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.004328353708437365,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.007937337040334568,
+     "thirds": [
+      0.03282281895748511,
+      0.008586933462123626,
+      -0.017597741298598635
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0014785385405965534,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": -0.12708112366641303,
+     "thirds": [
+      0.2309274902339027,
+      -0.48033161890844767,
+      -0.13183924232468697
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.005214132203879353,
+     "works": false
+    },
+    {
+     "feature": "spread",
+     "importance": -0.14296171367884156,
+     "thirds": [
+      0.6582560003321405,
+      -0.5333818687106223,
+      -0.5537592726580378
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0027563987796462974,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "imbalance",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 18.33305329187765,
+   "seconds": 0.7,
+   "span_days": 23.3
+  },
+  {
+   "task": "overlay_uplift.lv_conf",
+   "primary": false,
+   "kind": "l1",
+   "n": 5750,
+   "n_features": 5,
+   "span": [
+    "2026-10-11",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 0,
+   "folds": [],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "status": "not_validated",
+   "reason": "no walk-forward fold possible under the weekly scheme",
+   "span_days": 4.9
+  },
+  {
+   "task": "overlay_uplift.lv_room",
+   "primary": false,
+   "kind": "l1",
+   "n": 5832,
+   "n_features": 5,
+   "span": [
+    "2026-10-11",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 0,
+   "folds": [],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "status": "not_validated",
+   "reason": "no walk-forward fold possible under the weekly scheme",
+   "span_days": 4.9
+  },
+  {
+   "task": "overlay_uplift.lv_stop",
+   "primary": false,
+   "kind": "l1",
+   "n": 5871,
+   "n_features": 5,
+   "span": [
+    "2026-10-11",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 0,
+   "folds": [],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "status": "not_validated",
+   "reason": "no walk-forward fold possible under the weekly scheme",
+   "span_days": 4.9
+  },
+  {
+   "task": "overlay_uplift.lv_tgt",
+   "primary": false,
+   "kind": "l1",
+   "n": 5819,
+   "n_features": 5,
+   "span": [
+    "2026-10-11",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 0,
+   "folds": [],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "status": "not_validated",
+   "reason": "no walk-forward fold possible under the weekly scheme",
+   "span_days": 4.9
+  },
+  {
+   "task": "overlay_uplift.micro",
+   "primary": false,
+   "kind": "l1",
+   "n": 2805,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 631,
+     "n_test": 591,
+     "metric": 18.531625233593097,
+     "baseline": 24.82351985989526
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 1222,
+     "n_test": 1583,
+     "metric": 22.88978558750868,
+     "baseline": 21.607865017915397
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 21.70502350417652,
+   "baseline": 22.482037976337704,
+   "shuffled": {
+    "n": 20,
+    "min": 20.26523518686286,
+    "median": 20.369703128575217,
+    "max": 20.467078013670974,
+    "p95": 20.45389032528389,
+    "p05": 20.31329665266864,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 2174,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_trend",
+     "importance": 0.00612767531012679,
+     "thirds": [
+      0.11453824252436746,
+      -0.33488122976932216,
+      0.23904728159779864
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.00017342338199455298,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": -0.000564418986712667,
+     "thirds": [
+      0.005994140575290885,
+      -0.010938704846230963,
+      0.003256577650998338
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0016701900912122387,
+     "works": false
+    },
+    {
+     "feature": "spread",
+     "importance": -0.01987464943330508,
+     "thirds": [
+      -0.009338085868242274,
+      -0.02420332674713137,
+      -0.02609111011306666
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.004757633026083772,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.05641303187725697,
+     "thirds": [
+      0.1709550603444015,
+      -0.22968665691261236,
+      -0.11058221517845439
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0030879528234595776,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": -0.23175911486906386,
+     "thirds": [
+      -0.01518510709719223,
+      -0.4991265044795291,
+      -0.1808955764257199
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.00025238035909325163,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "eng_trend"
+   ],
+   "refit_working_metric": 20.252154729320175,
+   "seconds": 0.7,
+   "span_days": 23.2
+  },
+  {
+   "task": "overlay_uplift.open",
+   "primary": false,
+   "kind": "l1",
+   "n": 766,
+   "n_features": 5,
+   "span": [
+    "2026-09-28",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 474,
+     "n_test": 292,
+     "metric": 2.691780821917808,
+     "baseline": 2.691780821917808
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 2.691780821917808,
+   "baseline": 2.691780821917808,
+   "shuffled": {
+    "n": 20,
+    "min": 2.691780821917808,
+    "median": 2.691780821917808,
+    "max": 2.691780821917808,
+    "p95": 2.691780821917808,
+    "p05": 2.691780821917808,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": false,
+   "n_test_pooled": 292,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.1,
+   "span_days": 18.0
+  },
+  {
+   "task": "overlay_uplift.rg_expand",
+   "primary": false,
+   "kind": "l1",
+   "n": 11357,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 6122,
+     "n_test": 5235,
+     "metric": 6.477673187734106,
+     "baseline": 7.946815384196224
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 6.477673187734106,
+   "baseline": 7.946815384196224,
+   "shuffled": {
+    "n": 20,
+    "min": 6.313634253486152,
+    "median": 6.313634253486152,
+    "max": 6.313634253486152,
+    "p95": 6.313634253486152,
+    "p05": 6.313634253486152,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 5235,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_orb",
+     "importance": 0.7060487359836116,
+     "thirds": [
+      0.4913869761420891,
+      0.0,
+      1.6267592318087458
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.4187987130691376,
+     "thirds": [
+      0.6399229749070813,
+      0.0,
+      0.6164731643003292
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.05968529081854257,
+     "thirds": [
+      0.013223721170017555,
+      0.24986043236200484,
+      -0.0840282810763954
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "spread",
+     "importance": -0.12562222689669794,
+     "thirds": [
+      -0.2826463642890499,
+      0.0,
+      -0.09422031640104614
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "imbalance",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 6.256764965509,
+   "seconds": 0.6,
+   "span_days": 17.4
+  },
+  {
+   "task": "overlay_uplift.rg_fade",
+   "primary": false,
+   "kind": "l1",
+   "n": 8730,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 3588,
+     "n_test": 5142,
+     "metric": 18.72224989453094,
+     "baseline": 20.65106053226928
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 18.72224989453094,
+   "baseline": 20.65106053226928,
+   "shuffled": {
+    "n": 20,
+    "min": 18.087410647149667,
+    "median": 18.188048817261215,
+    "max": 20.937264185401634,
+    "p95": 18.743527102084744,
+    "p05": 18.153545253938255,
+    "percentile_beaten": 0.05
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 5142,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_orb",
+     "importance": 0.9725046887365579,
+     "thirds": [
+      0.7314268261759785,
+      0.0,
+      2.186087240033703
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 5.604375771994796e-05,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.7227966588569117,
+     "thirds": [
+      0.8145156443723891,
+      0.0,
+      1.3538743321983513
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0005184404234949764,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.014266729354461206,
+     "thirds": [
+      -0.05034274330212796,
+      -0.21262475450299193,
+      0.2201673097417455
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.023747982767690228,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": -0.20764085227297002,
+     "thirds": [
+      -0.3863990479090454,
+      0.0,
+      -0.23652350890985901
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.05841897597263725,
+     "works": false
+    },
+    {
+     "feature": "spread",
+     "importance": -0.27727511622063117,
+     "thirds": [
+      -0.3032582331878686,
+      0.0,
+      -0.5285671154740157
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.02776989663026481,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 17.980762255548676,
+   "seconds": 0.6,
+   "span_days": 17.4
+  },
+  {
+   "task": "overlay_uplift.rg_nochase",
+   "primary": false,
+   "kind": "l1",
+   "n": 10710,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 5527,
+     "n_test": 5183,
+     "metric": 11.794745710452283,
+     "baseline": 12.914276055407266
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 11.794745710452283,
+   "baseline": 12.914276055407266,
+   "shuffled": {
+    "n": 20,
+    "min": 12.071270550066517,
+    "median": 12.071296017943276,
+    "max": 12.071296017943276,
+    "p95": 12.071296017943276,
+    "p05": 12.071294744549437,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 5183,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "imbalance",
+     "importance": 0.25697672696887536,
+     "thirds": [
+      0.41256720431697,
+      0.1387188694691112,
+      0.21962249008531565
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.05440986098044611,
+     "thirds": [
+      0.007384490501738128,
+      0.0,
+      0.15590382737385866
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 2.8297640838954094e-06,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.02386689435510725,
+     "thirds": [
+      0.04929495612962036,
+      0.0,
+      0.022304822959202043
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.006455411209986295,
+     "thirds": [
+      0.027308309846646495,
+      0.0,
+      -0.007950412920462568
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -4.952087147853174e-06,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 2.6175317780325396e-05,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread",
+    "imbalance",
+    "eng_orb"
+   ],
+   "refit_working_metric": 11.762825315793052,
+   "seconds": 0.7,
+   "span_days": 17.4
+  },
+  {
+   "task": "overlay_uplift.rg_range",
+   "primary": false,
+   "kind": "l1",
+   "n": 9533,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 4389,
+     "n_test": 5144,
+     "metric": 17.06081166726972,
+     "baseline": 18.685636400989306
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 17.06081166726972,
+   "baseline": 18.685636400989306,
+   "shuffled": {
+    "n": 20,
+    "min": 16.78714844225487,
+    "median": 16.790471015652844,
+    "max": 16.889593629421316,
+    "p95": 16.835919505438504,
+    "p05": 16.78811301043758,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 5144,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "imbalance",
+     "importance": 0.41008968920195416,
+     "thirds": [
+      0.33029286127453544,
+      0.2780863139987478,
+      0.6220134630461921
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.00019842439929954972,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.31348746148313467,
+     "thirds": [
+      0.42459823799018037,
+      0.0,
+      0.5159822192042511
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.0005859242923496785,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.08957702900154488,
+     "thirds": [
+      0.11822054264804152,
+      0.0,
+      0.1505460948323048
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.06508170111898508,
+     "thirds": [
+      0.1868111481832706,
+      0.0,
+      0.008400905146888248
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -6.2589005992998e-05,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.011489113292138597,
+     "thirds": [
+      -0.007102040704970847,
+      0.0,
+      0.041586930328936234
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0003594406851925827,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread",
+    "imbalance",
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 17.07710552390849,
+   "seconds": 0.6,
+   "span_days": 17.4
+  },
+  {
+   "task": "overlay_uplift.rg_trend",
+   "primary": false,
+   "kind": "l1",
+   "n": 9379,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 4197,
+     "n_test": 5182,
+     "metric": 14.950217198290977,
+     "baseline": 16.549909688123567
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 14.950217198290977,
+   "baseline": 16.549909688123567,
+   "shuffled": {
+    "n": 20,
+    "min": 14.455793963243735,
+    "median": 14.47753685086722,
+    "max": 14.726652387737843,
+    "p95": 14.544025391166697,
+    "p05": 14.465933050383022,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 5182,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "eng_orb",
+     "importance": 0.2103994354033066,
+     "thirds": [
+      0.14235351104939617,
+      0.0,
+      0.48888419639061526
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.1479417196425537,
+     "thirds": [
+      0.15485891896109222,
+      0.0,
+      0.28896223463981097
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.08951743936089862,
+     "thirds": [
+      0.2659193712403859,
+      -0.10651202971991439,
+      -0.42816547130588345
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -8.915041911489782e-05,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": -0.23109775384571307,
+     "thirds": [
+      -0.13717951423768326,
+      0.0,
+      -0.5561681296037928
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.009745862711734117,
+     "works": false
+    },
+    {
+     "feature": "spread",
+     "importance": -0.3836000123364105,
+     "thirds": [
+      -0.24238530891532087,
+      0.0,
+      -0.9084964968856927
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0006622920421147033,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 14.47812015119685,
+   "seconds": 0.6,
+   "span_days": 17.4
+  },
+  {
+   "task": "overlay_uplift.rvol15",
+   "primary": false,
+   "kind": "l1",
+   "n": 10675,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 4890,
+     "n_test": 5785,
+     "metric": 14.080185616961797,
+     "baseline": 15.668345082885892
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 14.080185616961797,
+   "baseline": 15.668345082885892,
+   "shuffled": {
+    "n": 20,
+    "min": 13.956179746822942,
+    "median": 13.95862434282143,
+    "max": 13.977796052935973,
+    "p95": 13.971540707340244,
+    "p05": 13.956306946660465,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 5785,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "imbalance",
+     "importance": 0.43405031033073094,
+     "thirds": [
+      0.672885247381594,
+      0.027169868302447497,
+      0.601971938266112
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0004106156467484665,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.2176022765797395,
+     "thirds": [
+      0.4400741193103624,
+      0.0,
+      0.2126173204689355
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0003743739667608992,
+     "thirds": [
+      -0.14117711602179844,
+      0.0,
+      0.14237365674468982
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.002578437323512064,
+     "works": false
+    },
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.000328026222688275,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": -0.04347172023609005,
+     "thirds": [
+      0.02172921207884535,
+      0.0,
+      -0.1521781906980671
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 8.556757223566871e-05,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "imbalance",
+    "eng_orb"
+   ],
+   "refit_working_metric": 14.15367230844303,
+   "seconds": 0.7,
+   "span_days": 17.3
+  },
+  {
+   "task": "overlay_uplift.rvol25",
+   "primary": false,
+   "kind": "l1",
+   "n": 482,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 243,
+     "n_test": 239,
+     "metric": 13.695659264441465,
+     "baseline": 16.40752344938616
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 13.695659264441465,
+   "baseline": 16.40752344938616,
+   "shuffled": {
+    "n": 20,
+    "min": 13.516421457877053,
+    "median": 13.671397958833044,
+    "max": 13.960414084417597,
+    "p95": 13.950013415142546,
+    "p05": 13.522345455063338,
+    "percentile_beaten": 0.35
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 239,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "imbalance",
+     "importance": 0.1524298052918489,
+     "thirds": [
+      0.32998843078385676,
+      -0.05279813899099235,
+      0.18044936862434824
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.037130117719473714,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.005877767107824086,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.013018960389572362,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.00029074643234514345,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0034099329992053466,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "imbalance"
+   ],
+   "refit_working_metric": 13.695659264441465,
+   "seconds": 0.3,
+   "span_days": 17.2
+  },
+  {
+   "task": "overlay_uplift.rvolq",
+   "primary": false,
+   "kind": "l1",
+   "n": 462,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 221,
+     "n_test": 241,
+     "metric": 14.660855759592994,
+     "baseline": 16.896817574303903
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 14.660855759592994,
+   "baseline": 16.896817574303903,
+   "shuffled": {
+    "n": 20,
+    "min": 14.27308498809813,
+    "median": 14.275138929000242,
+    "max": 14.576758601976056,
+    "p95": 14.362023440631672,
+    "p05": 14.273605321723107,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 241,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "imbalance",
+     "importance": 0.05739875710046931,
+     "thirds": [
+      0.23384350825475195,
+      -0.1989829381676131,
+      0.1351301418248397
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": -0.004092574859868531,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -4.6246775495559526e-08,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.009676027643502196,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0007911470586000983,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "imbalance"
+   ],
+   "refit_working_metric": 14.660855759592994,
+   "seconds": 0.2,
+   "span_days": 17.2
+  },
+  {
+   "task": "overlay_uplift.sg",
+   "primary": false,
+   "kind": "l1",
+   "n": 1397,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 38,
+     "n_test": 61,
+     "metric": 23.06802340978016,
+     "baseline": 35.63401274547022
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 99,
+     "n_test": 1298,
+     "metric": 16.173490877565143,
+     "baseline": 25.63528506638029
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 16.482958489386423,
+   "baseline": 26.084087412535172,
+   "shuffled": {
+    "n": 20,
+    "min": 15.71728265730072,
+    "median": 15.751674697644503,
+    "max": 31.598295201432197,
+    "p95": 26.841723458731416,
+    "p05": 15.71728265730072,
+    "percentile_beaten": 0.15
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 1359,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.0056888564647991705,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.06774890718712671,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.26505989974485544,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.2083556673211603,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": -0.03772677900633496,
+     "thirds": [
+      0.10531134405007378,
+      0.0739750389710192,
+      -0.29246672004009255
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0014751590320685182,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.2,
+   "span_days": 23.2
+  },
+  {
+   "task": "overlay_uplift.sz",
+   "primary": false,
+   "kind": "l1",
+   "n": 5383,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 2031,
+     "n_test": 1679,
+     "metric": 5.153944131625967,
+     "baseline": 6.37330940727362
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 3710,
+     "n_test": 1673,
+     "metric": 2.778904603705917,
+     "baseline": 4.268401446163661
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 3.96854999970167,
+   "baseline": 5.322739294225601,
+   "shuffled": {
+    "n": 20,
+    "min": 3.96854999970167,
+    "median": 3.96854999970167,
+    "max": 3.9685795343090495,
+    "p95": 3.9685514764320393,
+    "p05": 3.96854999970167,
+    "percentile_beaten": 0.05
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 3352,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.9,
+   "span_days": 23.4
+  },
+  {
+   "task": "overlay_uplift.tp1",
+   "primary": false,
+   "kind": "l1",
+   "n": 1008,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 646,
+     "n_test": 362,
+     "metric": 10.519337016574585,
+     "baseline": 12.514149975197986
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 10.519337016574585,
+   "baseline": 12.514149975197986,
+   "shuffled": {
+    "n": 20,
+    "min": 10.519337016574585,
+    "median": 10.519337016574585,
+    "max": 10.519337016574585,
+    "p95": 10.519337016574585,
+    "p05": 10.519337016574585,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 362,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.3,
+   "span_days": 17.3
+  },
+  {
+   "task": "overlay_uplift.tp15",
+   "primary": false,
+   "kind": "l1",
+   "n": 1013,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 650,
+     "n_test": 363,
+     "metric": 9.40358126721763,
+     "baseline": 11.144420428056792
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 9.40358126721763,
+   "baseline": 11.144420428056792,
+   "shuffled": {
+    "n": 20,
+    "min": 9.40358126721763,
+    "median": 9.40358126721763,
+    "max": 9.40358126721763,
+    "p95": 9.40358126721763,
+    "p05": 9.40358126721763,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 363,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.3,
+   "span_days": 17.3
+  },
+  {
+   "task": "overlay_uplift.tp2",
+   "primary": false,
+   "kind": "l1",
+   "n": 1015,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 652,
+     "n_test": 363,
+     "metric": 8.151515151515152,
+     "baseline": 9.884390474741842
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 8.151515151515152,
+   "baseline": 9.884390474741842,
+   "shuffled": {
+    "n": 20,
+    "min": 8.151515151515152,
+    "median": 8.151515151515152,
+    "max": 8.151515151515152,
+    "p95": 8.151515151515152,
+    "p05": 8.151515151515152,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 363,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.3,
+   "span_days": 17.3
+  },
+  {
+   "task": "overlay_uplift.tp3",
+   "primary": false,
+   "kind": "l1",
+   "n": 1021,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 658,
+     "n_test": 363,
+     "metric": 6.767217630853994,
+     "baseline": 7.4155404556758535
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 6.767217630853994,
+   "baseline": 7.4155404556758535,
+   "shuffled": {
+    "n": 20,
+    "min": 6.767217630853994,
+    "median": 6.767217630853994,
+    "max": 6.767217630853994,
+    "p95": 6.767217630853994,
+    "p05": 6.767217630853994,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 363,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.3,
+   "span_days": 17.3
+  },
+  {
+   "task": "overlay_uplift.tr25",
+   "primary": false,
+   "kind": "l1",
+   "n": 13229,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 7820,
+     "n_test": 5409,
+     "metric": 3.417729709743021,
+     "baseline": 4.005301148649192
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 3.417729709743021,
+   "baseline": 4.005301148649192,
+   "shuffled": {
+    "n": 20,
+    "min": 3.417729709743021,
+    "median": 3.417729709743021,
+    "max": 3.417729709743021,
+    "p95": 3.417729709743021,
+    "p05": 3.417729709743021,
+    "percentile_beaten": 0.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 5409,
+   "status": "exploratory",
+   "rule_met": false,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [],
+   "refit_working_metric": null,
+   "seconds": 0.6,
+   "span_days": 17.3
+  },
+  {
+   "task": "overlay_uplift.vt1000",
+   "primary": false,
+   "kind": "l1",
+   "n": 724,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 472,
+     "n_test": 252,
+     "metric": 14.285715777900018,
+     "baseline": 16.563023607748182
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 14.285715777900018,
+   "baseline": 16.563023607748182,
+   "shuffled": {
+    "n": 20,
+    "min": 14.327619072596232,
+    "median": 14.327619072596232,
+    "max": 14.33119050088383,
+    "p95": 14.327797644010612,
+    "p05": 14.327619072596232,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 252,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "eng_trend",
+     "importance": 0.29332304705462703,
+     "thirds": [
+      0.2577052523908542,
+      0.30798920078110414,
+      0.31427468799192226
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -3.3068780440675345e-05,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.24618184085441364,
+     "thirds": [
+      0.22313503151898573,
+      0.36455864212692735,
+      0.15085184891732623
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.0007605819501367172,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 14.285715777900018,
+   "seconds": 0.3,
+   "span_days": 17.2
+  },
+  {
+   "task": "overlay_uplift.vt2000",
+   "primary": false,
+   "kind": "l1",
+   "n": 721,
+   "n_features": 5,
+   "span": [
+    "2026-09-29",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 1,
+   "folds": [
+    {
+     "label": "2026-W42",
+     "n_train": 472,
+     "n_test": 249,
+     "metric": 32.192211799635956,
+     "baseline": 36.065842012116256
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 32.192211799635956,
+   "baseline": 36.065842012116256,
+   "shuffled": {
+    "n": 20,
+    "min": 32.27702810697287,
+    "median": 32.27702810697287,
+    "max": 32.27732931179215,
+    "p95": 32.27704316721383,
+    "p05": 32.27702810697287,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 249,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "eng_trend",
+     "importance": 0.595834536628594,
+     "thirds": [
+      0.5088978273379638,
+      0.5407039532061105,
+      0.737901829341719
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.00014502454261449633,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.532222313709336,
+     "thirds": [
+      0.4961753832596699,
+      0.7697079830157947,
+      0.33078357485255905
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "spread",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": -0.0001561802766624333,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.00011155734047226436,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "eng_orb",
+    "eng_trend"
+   ],
+   "refit_working_metric": 32.192211799635956,
+   "seconds": 0.3,
+   "span_days": 17.2
+  },
+  {
+   "task": "overlay_uplift.wait",
+   "primary": false,
+   "kind": "l1",
+   "n": 5270,
+   "n_features": 5,
+   "span": [
+    "2026-09-23",
+    "2026-10-16"
+   ],
+   "scheme": "weekly",
+   "exploratory": true,
+   "n_folds": 2,
+   "folds": [
+    {
+     "label": "2026-W41",
+     "n_train": 1967,
+     "n_test": 1645,
+     "metric": 2.7303951367781156,
+     "baseline": 4.039082552078907
+    },
+    {
+     "label": "2026-W42",
+     "n_train": 3612,
+     "n_test": 1658,
+     "metric": 4.495043614818253,
+     "baseline": 5.138109002296327
+    }
+   ],
+   "notes": [
+    "secondary task: permutation seeds 5, shuffled-importance refits 3 (time-box)"
+   ],
+   "metric": 3.6161920415890596,
+   "baseline": 4.590758560089951,
+   "shuffled": {
+    "n": 20,
+    "min": 3.6183112528004844,
+    "median": 3.6183112528004844,
+    "max": 3.6183112528004844,
+    "p95": 3.6183112528004844,
+    "p05": 3.6183112528004844,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 3303,
+   "status": "exploratory",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "spread",
+     "importance": 0.0031485423712599215,
+     "thirds": [
+      0.0,
+      0.0009990567139573693,
+      0.008446570399821773
+     ],
+     "thirds_positive": 2,
+     "shuffled_importance": 0.0,
+     "works": true
+    },
+    {
+     "feature": "eng_orb",
+     "importance": 0.0008476844845698217,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0025430534537093765
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "imbalance",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "hour",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    },
+    {
+     "feature": "eng_trend",
+     "importance": 0.0,
+     "thirds": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "thirds_positive": 0,
+     "shuffled_importance": 0.0,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "spread"
+   ],
+   "refit_working_metric": 3.6183112528004844,
+   "seconds": 1.0,
+   "span_days": 23.4
+  }
+ ],
+ "status": "not_validated",
+ "reason": "short history: 3612 rows over 23 days (needs \u2265 6 training months for the monthly scheme); exploratory weekly result shown for orientation only",
+ "pairs_per_overlay": {
+  "rvol15": 10675,
+  "rg_nochase": 10710,
+  "rg_trend": 9379,
+  "rg_range": 9533,
+  "lv_conf": 5750,
+  "rg_fade": 8730,
+  "imb": 3611,
+  "all": 3612,
+  "micro": 2805,
+  "sg": 1397,
+  "inv": 2447,
+  "rg_expand": 11357,
+  "lv_room": 5832,
+  "rvolq": 462,
+  "rvol25": 482,
+  "day_x15": 761,
+  "am_x15": 572,
+  "am_inv": 42,
+  "open_inv": 96,
+  "inv_nc": 29,
+  "inv_tr": 26,
+  "lv_stop": 5871,
+  "tr25": 13229,
+  "lv_tgt": 5819,
+  "bx": 4996,
+  "btp": 5565,
+  "bbe": 5119,
+  "sz": 5383,
+  "wait": 5270,
+  "wide": 13,
+  "open": 766,
+  "am": 472,
+  "vt1000": 724,
+  "tp3": 1021,
+  "tp2": 1015,
+  "tp15": 1013,
+  "tp1": 1008,
+  "vt2000": 721,
+  "pm": 66,
+  "sl1atr": 1,
+  "am_ts": 108,
+  "am_chand": 108,
+  "am_x15b": 28,
+  "day_x15_m8": 31,
+  "am_htf": 83,
+  "rx25_6_15": 280,
+  "rx25_6_0": 284,
+  "rx25_4_15": 280,
+  "rx25_4_0": 284,
+  "rx15_6_15": 280,
+  "rx15_6_0": 284,
+  "rx15_4_15": 280,
+  "rx15_4_0": 284,
+  "vixany": 2,
+  "notcalm": 1
+ },
+ "seconds": 42.2
+}

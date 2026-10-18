@@ -1,0 +1,123 @@
+{
+ "model": "sequence",
+ "status": "PASS",
+ "tasks": [
+  {
+   "task": "sequence_gru",
+   "primary": true,
+   "kind": "binary",
+   "n": 1503140,
+   "n_features": 4,
+   "span": [
+    "2022-01-01",
+    "2026-10-16"
+   ],
+   "scheme": "yearly",
+   "exploratory": false,
+   "n_folds": 3,
+   "folds": [
+    {
+     "label": "2024",
+     "n_train": 702018,
+     "n_test": 351721,
+     "metric": 0.5086552776116688,
+     "baseline": 0.5
+    },
+    {
+     "label": "2025",
+     "n_train": 1053739,
+     "n_test": 348913,
+     "metric": 0.5049726509851368,
+     "baseline": 0.5
+    },
+    {
+     "label": "2026",
+     "n_train": 1402652,
+     "n_test": 100488,
+     "metric": 0.5071961343885777,
+     "baseline": 0.5
+    }
+   ],
+   "notes": [
+    "reduced protocol (pre-registered): 5 shuffled refits per fold, \u22646 epochs, train capped at the most recent 200k frames, early stopping on the last 10 % of the training frames",
+    "time-box: permutation seeds 5 (not 10) and shuffled-importance refits 3 \u2014 the smoke run's permutation pass on ~800k test frames took ~8 min at 2 seeds",
+    "the training rows' times are synthetic (minute index from 2022-01-01) \u2014 only their order matters for the yearly folds; test-row times are the bar times"
+   ],
+   "metric": 0.5046750008569283,
+   "baseline": 0.5,
+   "shuffled": {
+    "n": 5,
+    "min": 0.4942472605202869,
+    "median": 0.4968330106960376,
+    "max": 0.5006185309103489,
+    "p95": 0.5002916348079836,
+    "p05": 0.4944938745729373,
+    "percentile_beaten": 1.0
+   },
+   "beats_baseline": true,
+   "n_test_pooled": 801122,
+   "status": "PASS",
+   "rule_met": true,
+   "features": [
+    {
+     "feature": "vol_z",
+     "importance": 0.0038530805559267465,
+     "thirds": [
+      0.00479574725062133,
+      0.005834543242504731,
+      0.0014373706035039069
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -0.0007889511761953122,
+     "works": true
+    },
+    {
+     "feature": "ret",
+     "importance": 0.000894137531729422,
+     "thirds": [
+      0.0012298099002915563,
+      0.00014593302947063513,
+      0.002768605968570359
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -5.841221170710398e-05,
+     "works": true
+    },
+    {
+     "feature": "range",
+     "importance": 0.0003985756428842357,
+     "thirds": [
+      0.0003935761386693715,
+      0.0007809985027090293,
+      0.0001511015343772737
+     ],
+     "thirds_positive": 3,
+     "shuffled_importance": -3.125205713846693e-05,
+     "works": true
+    },
+    {
+     "feature": "minute_of_day",
+     "importance": 9.806750200829218e-05,
+     "thirds": [
+      -8.124161962219656e-05,
+      0.0003275821017571623,
+      -0.00010459598869734243
+     ],
+     "thirds_positive": 1,
+     "shuffled_importance": -0.00024125539525422638,
+     "works": false
+    }
+   ],
+   "working_features": [
+    "ret",
+    "range",
+    "vol_z"
+   ],
+   "refit_working_metric": 0.5052016296965204,
+   "seconds": 153.4,
+   "accuracy": 0.5033253362159571,
+   "majority_accuracy": 0.5032379587628352
+  }
+ ],
+ "seconds": 170.4
+}

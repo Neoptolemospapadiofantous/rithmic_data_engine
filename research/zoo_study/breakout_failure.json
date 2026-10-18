@@ -1,0 +1,7 @@
+{
+ "model": "breakout_failure",
+ "status": "not_validated",
+ "tasks": [],
+ "reason": "114 cross events (113 failed) \u2014 below the model's own minimum (60 with \u226510 of each)",
+ "seconds": 260.8
+}
