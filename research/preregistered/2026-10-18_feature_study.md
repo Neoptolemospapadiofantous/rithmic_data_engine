@@ -49,3 +49,8 @@ not out-of-sample with respect to WHICH features; the paper fleet's forward resu
 Not run yet: step 4 (exit / trail by regime) and step 5 (the founder's marks — none saved yet).
 Verified: the unchanged `meta` run reproduces the stored so_cascade__meta report line for line; `edge_lab_validate.sh --fast` 15/15;
 `make hermes-fast` 21 PASS / 0 FAIL.
+
+## Step 4 result (appended 2026-10-18): `trail_reg` (15-min trail runner only when reg_score ≥ 60 at entry, else base)
+FAIL "not better than base" on all four: cascade +4.42 vs +4.80 base (trailed 1,380 of 2,322), gap retest +4.74 vs +9.03, momentum
++2.66 vs +3.09, union +3.05 vs +4.01. Trailing loses to the fixed 2R target even in strong regimes. Still passing: cascade vwap+stall
+(+5.82) and gap retest open-runner (+9.27), unchanged.

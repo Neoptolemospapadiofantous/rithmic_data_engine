@@ -465,17 +465,20 @@ std::vector<double> meta_walk(const MetaData& d, const std::vector<double>& ytra
 // X_MEXT / X_MEXT_VS (2026-10-17): the hard stop moves to 1 tick beyond the RTH extreme made against the trade between 09:30 and the
 // entry bar ("the morning's opposite extreme" — on a > 0.5 ATR trending morning it holds all day 83 % of the time), never tighter
 // than the idea's own stop; target price and everything else unchanged. Their control is a stop-width twin, not a timing twin.
-enum ExitRule { X_BASE, X_VWAP, X_OPEN, X_STALL, X_VWAP_STALL, X_VWAP_RUN, X_OPEN_RUN, X_TRAIL_RUN, X_FLOW, X_MEXT, X_MEXT_VS, X__COUNT };
+enum ExitRule { X_BASE, X_VWAP, X_OPEN, X_STALL, X_VWAP_STALL, X_VWAP_RUN, X_OPEN_RUN, X_TRAIL_RUN, X_FLOW, X_MEXT, X_MEXT_VS, X_TRAIL_REG, X_LIQ, X_LIQ_RUN, X__COUNT };
+inline bool exit_moves_target(int r) { return r == X_LIQ || r == X_LIQ_RUN; }
 inline bool exit_moves_stop(int r) { return r == X_MEXT || r == X_MEXT_VS; }
 inline const char* exit_name(int r) {
     static const char* n[] = {"base (stop + target + 15:55)", "vwap: 5m close back through VWAP", "open: 5m close back through the RTH open",
                               "stall: < 0.5R in favour after 60 min", "vwap + stall", "vwap runner (no target)", "open runner (no target)",
                               "15m trail runner (no target)", "flow: 5m aggressor delta against ≥ 20 % of its volume",
-                              "mext: stop beyond the morning's opposite extreme", "mext + vwap + stall"};
+                              "mext: stop beyond the morning's opposite extreme", "mext + vwap + stall",
+                              "trail_reg: 15m trail runner only when the page's regime score ≥ 60 at entry, else base (2026-10-18 feature study, step 4)",
+                              "liq: target = the nearest liquidity pool ≥ 1R beyond entry, 2 ticks before it (else the idea's target)", "liq_run: the same, no fallback target"};
     return n[r];
 }
 inline const char* exit_key(int r) {
-    static const char* n[] = {"base", "vwap", "open", "stall", "vwap_stall", "vwap_run", "open_run", "trail_run", "flow", "mext", "mext_vwap_stall"};
+    static const char* n[] = {"base", "vwap", "open", "stall", "vwap_stall", "vwap_run", "open_run", "trail_run", "flow", "mext", "mext_vwap_stall", "trail_reg", "liq", "liq_run"};
     return n[r];
 }
 
@@ -488,6 +491,56 @@ struct ExitOut { int x = 0; double pts = 0, mae = 0, mfe = 0; bool thesis = fals
 class ExitSim {
 public:
     explicit ExitSim(Market& m) : m_(m), ev_(m) { vw_ = parse("vwap"); ev_.bind(*vw_); op_ = parse("open"); ev_.bind(*op_); }
+    // trail_reg: which trades may trail (the page's regime score ≥ 60 at entry), keyed by (day, entry bar)
+    void set_trail_gate(const Trade& t, bool ok) { gate_[(int64_t)t.day * 10000000LL + t.e] = ok; }
+    bool trail_gate(const Trade& t) const { auto it = gate_.find((int64_t)t.day * 10000000LL + t.e); return it != gate_.end() && it->second; }
+
+    // Liquidity pools known at entry (2026-10-18, research/preregistered/2026-10-18_liquidity_exit.md): prior-day high/low, the
+    // overnight high/low, the 15-minute range high/low (from 09:45) and every unbroken 5-minute swing high/low since 18:00
+    // (2 bars each side, confirmed 2 bars later). Returns the distance (points) to the nearest pool in the trade's direction
+    // at least 1R away, less 2 ticks; NaN when there is none.
+    double liq_target(const Trade& t) const {
+        const Series& s = m_.s(); const Day& D = s.days[t.day];
+        const int i = t.e, dir = t.dir; const double P = s.o[i];
+        const double R = t.stop > 0 ? t.stop : 0.25 * D.atr;
+        std::vector<double> pools;
+        if (!std::isnan(D.ph)) pools.push_back(D.ph);
+        if (!std::isnan(D.pl)) pools.push_back(D.pl);
+        double onh = -1e18, onl = 1e18, orh = -1e18, orl = 1e18;
+        for (int k = D.b0; k < i; ++k) {
+            const int m = tday_min(s.t[k]);
+            if (m < kRthOpen) { onh = std::max(onh, (double)s.h[k]); onl = std::min(onl, (double)s.l[k]); }
+            else if (m < hm_to_tday(9, 45)) { orh = std::max(orh, (double)s.h[k]); orl = std::min(orl, (double)s.l[k]); }
+        }
+        if (onh > -1e18) { pools.push_back(onh); pools.push_back(onl); }
+        if (orh > -1e18 && tday_min(s.t[i]) >= hm_to_tday(9, 45)) { pools.push_back(orh); pools.push_back(orl); }
+        struct B5 { int64_t t0; double h, l, c; };
+        std::vector<B5> b;
+        for (int k = D.b0; k < i; ++k) {
+            const int64_t k0 = s.t[k] / 300 * 300;
+            if (!b.empty() && b.back().t0 == k0) { b.back().h = std::max(b.back().h, (double)s.h[k]); b.back().l = std::min(b.back().l, (double)s.l[k]); b.back().c = s.c[k]; }
+            else b.push_back({k0, (double)s.h[k], (double)s.l[k], (double)s.c[k]});
+        }
+        while (!b.empty() && b.back().t0 + 300 > s.t[i]) b.pop_back();
+        std::vector<double> sh, sl;   // unbroken swings
+        const int N = 2;
+        for (size_t k = 0; k < b.size(); ++k) {
+            const int c = (int)k - N;
+            if (c >= N) {
+                bool ish = true, isl = true;
+                for (int j = c - N; j <= c + N; ++j) { if (j == c) continue; if (b[j].h >= b[c].h) ish = false; if (b[j].l <= b[c].l) isl = false; }
+                if (ish) sh.push_back(b[c].h);
+                if (isl) sl.push_back(b[c].l);
+            }
+            sh.erase(std::remove_if(sh.begin(), sh.end(), [&](double p) { return b[k].c > p; }), sh.end());
+            sl.erase(std::remove_if(sl.begin(), sl.end(), [&](double p) { return b[k].c < p; }), sl.end());
+        }
+        for (double p : sh) pools.push_back(p);
+        for (double p : sl) pools.push_back(p);
+        double best = NAN;
+        for (double p : pools) { const double d = dir * (p - P); if (d >= R && (std::isnan(best) || d < best)) best = d; }
+        return std::isnan(best) ? NAN : best - 0.5;
+    }
 
     // The mext stop distance (points): 1 tick beyond the RTH extreme against the trade from 09:30 to the bar before entry,
     // never tighter than the idea's own stop. No stop on the idea → none here either.
@@ -499,21 +552,24 @@ public:
         return std::max((double)t.stop, t.dir * (s.o[t.e] - ext) + 0.25);
     }
 
-    ExitOut run(const Trade& t, int rule, int force_at = -1, double stop_dist = -1) {
+    ExitOut run(const Trade& t, int rule, int force_at = -1, double stop_dist = -1, double tgt_dist = -1) {
         const Series& s = m_.s();
         const Day& D = s.days[t.day];
         const int e = t.e, dir = t.dir;
         const double P = s.o[e];
         double stop = exit_moves_stop(rule) ? mext_stop(t) : t.stop;
         if (stop_dist >= 0) stop = stop_dist;
-        const bool keep_tgt = !(rule == X_VWAP_RUN || rule == X_OPEN_RUN || rule == X_TRAIL_RUN);
-        const double tgt = keep_tgt ? t.tgt : 0;
+        const bool reg_trail = rule == X_TRAIL_REG && trail_gate(t);
+        const bool keep_tgt = !(rule == X_VWAP_RUN || rule == X_OPEN_RUN || rule == X_TRAIL_RUN || reg_trail);
+        double tgt = keep_tgt ? t.tgt : 0;
+        if (exit_moves_target(rule)) { const double lq = liq_target(t); tgt = !std::isnan(lq) ? lq : (rule == X_LIQ ? t.tgt : 0); }
+        if (tgt_dist >= 0) tgt = tgt_dist;
         const double sp = stop > 0 ? P - dir * stop : NAN, tp = tgt > 0 ? P + dir * tgt : NAN;
-        const bool use_thesis = force_at < 0 && rule != X_BASE && rule != X_MEXT;
+        const bool use_thesis = force_at < 0 && rule != X_BASE && rule != X_MEXT && !(rule == X_TRAIL_REG && !reg_trail) && !exit_moves_target(rule);
         const bool vw = rule == X_VWAP || rule == X_VWAP_STALL || rule == X_VWAP_RUN || rule == X_MEXT_VS;
         const bool opn = rule == X_OPEN || rule == X_OPEN_RUN;
         const bool stall = rule == X_STALL || rule == X_VWAP_STALL || rule == X_MEXT_VS;
-        const bool trail = rule == X_TRAIL_RUN;
+        const bool trail = rule == X_TRAIL_RUN || reg_trail;
         const bool flow = rule == X_FLOW && D.flow;                       // no aggressor data that day → no flow exit
         double b5d = 0, b5v = 0;                                          // the running 5-minute bucket's delta / volume
         const int64_t b5e = s.t[e] / 300, b15e = s.t[e] / 900;
@@ -571,6 +627,7 @@ private:
     Evaluator ev_;
     DayCache dc_;
     NodeP vw_, op_;
+    std::map<int64_t, bool> gate_;
 };
 
 }  // namespace lab

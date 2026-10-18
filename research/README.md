@@ -167,6 +167,7 @@ Engine all-year replays (label `mom_hist`) now also hold `so_cascade_2r_nofomc`,
 | BDH ORB gap-side optimisation, 72 variants (2026-10-18_bdh_optimize) | PASS 2010–24 +6.32 (13/14 years, broad plateau) but every variant NEGATIVE on 2025+ (gap retest +7.15 there) → not adopted |
 | ORB15 trend-or-reverse by regime, 7 reads × 4 (2026-10-18_orb_regime) | no regime verified: the fade is negative under every read; trend separates on gap (+4.2 vs −11.3) and 1-min straightness (+6.0 vs +2.6) but fails controls (random time on those days does as well) → trend regime = trade the day direction, range regime = no trade |
 | feature study: 33 features (21 + the ORB page's 12), permutation importance, refits (2026-10-18_feature_study; `edge_lab meta --page`) | gap retest PASS on the 14 features that work (+15.7 vs +11.0); cascade / momentum / union refits fail a control; reg_score, acr60, or15_w, ema_touches carry signal, struct / CHoCH none (already agree at the signal), ema_dist / pullback hurt |
+| exits: regime-gated trail (`trail_reg`) and liquidity-pool targets (`liq`, `liq_run`) on the 4 bases (2026-10-18_feature_study step 4, 2026-10-18_liquidity_exit) | all FAIL — never better than the fixed 2R; liq on the gap retest beats a same-size-target twin only 89–92 % (need 99) |
 
 ## Known limits
 - 1-minute OHLC only (no queue position); cost is a fixed real round trip per contract in every year.

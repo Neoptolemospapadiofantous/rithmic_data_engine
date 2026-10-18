@@ -589,6 +589,12 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
     const auto& tr = b.w.trades;
     if (tr.empty()) throw std::runtime_error(sp.id + ": no walk-forward trades");
     ExitSim sim(*b.m);
+    {   // trail_reg gate: the page's regime score at each entry (feature study step 4)
+        FeatureMaker fm(*b.m, nullptr, false, true);
+        const auto FN = meta_feature_names(false, true);
+        const int ri = (int)(std::find(FN.begin(), FN.end(), "reg_score") - FN.begin());
+        for (auto& t : tr) { auto f = fm.at(t); sim.set_trail_gate(t, ri < (int)f.size() && f[ri] >= 60); }
+    }
     std::vector<std::vector<ExitOut>> res(X__COUNT);
     for (int r = 0; r < X__COUNT; ++r) for (auto& t : tr) res[r].push_back(sim.run(t, r));
     int mismatch = 0; for (size_t i = 0; i < tr.size(); ++i) if (std::fabs(res[X_BASE][i].pts - tr[i].pts) > 1e-3) ++mismatch;   // stop/target are stored as float
@@ -601,7 +607,7 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
     std::vector<RuleOut> ro(X__COUNT);
     double eb[3] = {0, 0, 0}; int nb[3] = {0, 0, 0};
     for (size_t i = 0; i < tr.size(); ++i) { int e = era_of(s.days[tr[i].day].date); eb[e] += res[X_BASE][i].pts - b.cost; ++nb[e]; }
-    const double NEED = 0.99;   // X__COUNT − 1 (10) exit rules are tested → the control must clear 99 %, not 95 %
+    const double NEED = 0.99;   // X__COUNT − 1 (13) exit rules are tested → the control must clear 99 %, not 95 %
     const int SEEDS = 200;
     for (int r = 1; r < X__COUNT; ++r) {
         RuleOut& q = ro[r];
@@ -626,7 +632,20 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
                 if (L[r].net > n + 1e-6) ++beat;
             }
         }
-        for (int k = 0; k < SEEDS && !durs.empty() && !exit_moves_stop(r); ++k) {
+        if (exit_moves_target(r)) {
+            // Target-distance twin (2026-10-18): the rule's own target distances (in each day's ATR) shuffled across the trades,
+            // everything else unchanged — does the target at the LEVEL beat targets of the same sizes placed without it?
+            std::vector<double> w;
+            for (auto& t : tr) { double a = s.days[t.day].atr; double lq = sim.liq_target(t); double d = !std::isnan(lq) ? lq : (r == X_LIQ ? t.tgt : 0); w.push_back(a > 0 ? d / a : 0); }
+            for (int k = 0; k < SEEDS; ++k) {
+                std::mt19937_64 rng(32452843ULL * (k + 1) + r); std::vector<double> p = w; std::shuffle(p.begin(), p.end(), rng);
+                double n = 0;
+                for (size_t i = 0; i < tr.size(); ++i) { double a = s.days[tr[i].day].atr; n += sim.run(tr[i], r, -1, -1, a > 0 ? p[i] * a : tr[i].tgt).pts - b.cost; }
+                q.twin_mean += n / SEEDS;
+                if (L[r].net > n + 1e-6) ++beat;
+            }
+        }
+        for (int k = 0; k < SEEDS && !durs.empty() && !exit_moves_stop(r) && !exit_moves_target(r); ++k) {
             std::mt19937_64 rng(15485863ULL * (k + 1) + r);
             std::uniform_real_distribution<double> u(0, 1);
             double n = 0;
