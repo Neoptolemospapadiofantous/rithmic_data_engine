@@ -1,0 +1,32 @@
+{
+ "id": "bos_ema_ny",
+ "name": "BOS (5m, 1h vs prior 2h) then EMA pullback \u2014 NY",
+ "why": "Traders who see the structure break (a new swing high after a higher low) wait to buy the first pullback to their moving average; the stops of those who faded the break sit beyond it and add fuel. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bos_ema.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "params": {
+  "E": [
+   9,
+   20
+  ],
+  "stopk": [
+   0.2,
+   0.3
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:30",
+  "to": "14:00",
+  "when": "!rollwin && (((hh(5,12) > lag(60, hh(5,24)) && ll(5,12) >= lag(60, ll(5,24))) && lo(5,1) <= ema(5,E) && cl(5,1) > ema(5,E)) || ((ll(5,12) < lag(60, ll(5,24)) && hh(5,12) <= lag(60, hh(5,24))) && hi(5,1) >= ema(5,E) && cl(5,1) < ema(5,E)))",
+  "dir": "((hh(5,12) > lag(60, hh(5,24)) && ll(5,12) >= lag(60, ll(5,24))) && lo(5,1) <= ema(5,E) && cl(5,1) > ema(5,E)) - ((ll(5,12) < lag(60, ll(5,24)) && hh(5,12) <= lag(60, hh(5,24))) && hi(5,1) >= ema(5,E) && cl(5,1) < ema(5,E))"
+ },
+ "max_trades": 1,
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

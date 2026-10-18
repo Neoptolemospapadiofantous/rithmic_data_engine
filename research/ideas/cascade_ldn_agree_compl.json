@@ -1,0 +1,56 @@
+{
+ "id": "cascade_ldn_agree_compl",
+ "name": "(complement) Cascade only when London's move (03:00 \u2192 08:25) points the same way",
+ "why": "European desks reposition at their open; when New York's open flow goes the same way the two sets of forced flows add up. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_session_cockpit.md). Complement (adoption rule).",
+ "params": {
+  "k1": [
+   0.2,
+   0.25,
+   0.3
+  ],
+  "k2": [
+   0.25,
+   0.3,
+   0.35
+  ],
+  "stopk": [
+   0.2,
+   0.25,
+   0.35
+  ],
+  "rr": [
+   2,
+   3
+  ]
+ },
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "control_pct": 0.996,
+ "control_seeds": 400,
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "!(sign(at(8,25) - at(3,0)) * sign(px-open) > 0) && (abs(px-open) > k1*atr)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "10:30",
+   "when": "!(sign(at(8,25) - at(3,0)) * sign(px-open) > 0) && (abs(px-open) > k2*atr)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:00",
+   "when": "!(sign(at(8,25) - at(3,0)) * sign(px-open) > 0) && (abs(px-open) > k2*atr)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:30",
+   "when": "!(sign(at(8,25) - at(3,0)) * sign(px-open) > 0) && (abs(px-open) > k2*atr)",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55"
+}

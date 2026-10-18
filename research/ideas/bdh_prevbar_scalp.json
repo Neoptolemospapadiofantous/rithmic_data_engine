@@ -1,0 +1,32 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.994,
+ "control_seeds": 400,
+ "id": "bdh_prevbar_scalp",
+ "name": "BDH previous-candle-high scalp (2-min)",
+ "why": "Momentum scalpers buy the first break of the prior candle after a shallow pullback in a VWAP/EMA trend; the pullback's sellers are stopped above. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bdh.md).",
+ "params": {
+  "c": [
+   0.04,
+   0.06
+  ],
+  "rr": [
+   1,
+   1.5
+  ]
+ },
+ "scan": {
+  "tf": 2,
+  "from": "09:46",
+  "to": "12:00",
+  "when": "!rollwin && (((cl(2,1) > vwap && cl(2,1) > ema(2,21) && hi(5,1) > hi(5,2) && hi(2,2) < hi(2,3) && hi(2,3) < hi(2,4) && cl(2,1) > hi(2,2))) && max(px - min(lo(2,1), lo(2,2)), 0.02*atr) <= c*atr || ((cl(2,1) < vwap && cl(2,1) < ema(2,21) && lo(5,1) < lo(5,2) && lo(2,2) > lo(2,3) && lo(2,3) > lo(2,4) && cl(2,1) < lo(2,2))) && max(max(hi(2,1), hi(2,2)) - px, 0.02*atr) <= c*atr)",
+  "dir": "(cl(2,1) > vwap && cl(2,1) > ema(2,21) && hi(5,1) > hi(5,2) && hi(2,2) < hi(2,3) && hi(2,3) < hi(2,4) && cl(2,1) > hi(2,2)) - (cl(2,1) < vwap && cl(2,1) < ema(2,21) && lo(5,1) < lo(5,2) && lo(2,2) > lo(2,3) && lo(2,3) > lo(2,4) && cl(2,1) < lo(2,2))"
+ },
+ "max_trades": 3,
+ "stop": "(cl(2,1) > vwap && cl(2,1) > ema(2,21) && hi(5,1) > hi(5,2) && hi(2,2) < hi(2,3) && hi(2,3) < hi(2,4) && cl(2,1) > hi(2,2)) * max(px - min(lo(2,1), lo(2,2)), 0.02*atr) + (cl(2,1) < vwap && cl(2,1) < ema(2,21) && lo(5,1) < lo(5,2) && lo(2,2) > lo(2,3) && lo(2,3) > lo(2,4) && cl(2,1) < lo(2,2)) * max(max(hi(2,1), hi(2,2)) - px, 0.02*atr)",
+ "target": "rr"
+}

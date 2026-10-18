@@ -1,0 +1,33 @@
+{
+ "id": "rdir_price_delta_compl",
+ "name": "(complement) Price direction at 10:00 when delta does not agree",
+ "why": "Aggressive buyers or sellers who have to get filled now (delta) show who is forced to trade; if their pressure agrees with the price move, the move has real money behind it. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_rithmic_direction.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "from": "2023-03-01",
+ "to": "2026-03-19",
+ "params": {
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "f": [
+   0.02,
+   0.05
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:00",
+   "when": "flow && !rollwin && (!(sign(cdelta) * sign(px - open) > 0 && abs(cdelta) >= f*cvol))",
+   "dir": "sign(px - open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "train_months": 6,
+ "min_trades": 60,
+ "control_pct": 0.994,
+ "control_seeds": 400
+}

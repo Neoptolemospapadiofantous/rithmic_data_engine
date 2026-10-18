@@ -1,0 +1,28 @@
+{
+ "id": "union_scalp_3",
+ "name": "Tested setups, scalp target, up to 3 a day",
+ "why": "The day's first forced flow (open drive, gap continuation, straight 1-minute drive) is the trade with the most behind it. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_scalp_daily.md, follow-up).",
+ "params": {
+  "t": [
+   0.06,
+   0.08
+  ]
+ },
+ "stop": "0.15*atr",
+ "target": "t/0.15",
+ "max_trades": 3,
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "scan": {
+  "tf": 5,
+  "from": "09:50",
+  "to": "13:55",
+  "when": "!rollwin && ((((t == hm(9,50) && abs(px-open) > 0.25*atr) || ((t == hm(10,30) || t == hm(11,0) || t == hm(11,30)) && abs(px-open) > 0.3*atr)) * sign(px-open)) + ((((t == hm(9,50) && abs(px-open) > 0.25*atr) || ((t == hm(10,30) || t == hm(11,0) || t == hm(11,30)) && abs(px-open) > 0.3*atr)) * sign(px-open)) == 0) * (((abs(gap) >= 0.1 && ((gap > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (gap < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15)))) * sign(gap)) + (((abs(gap) >= 0.1 && ((gap > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (gap < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15)))) * sign(gap)) == 0) * (((t == hm(10,0)) * ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) + (((t == hm(10,0)) * ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) == 0) * (((((er(1,45) >= 0.2) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) > 0 && lo(5,1) <= vwap + 0.05*atr && cl(5,1) > vwap) - ((((er(1,45) >= 0.2) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) < 0 && hi(5,1) >= vwap - 0.05*atr && cl(5,1) < vwap))))) != 0",
+  "dir": "((((t == hm(9,50) && abs(px-open) > 0.25*atr) || ((t == hm(10,30) || t == hm(11,0) || t == hm(11,30)) && abs(px-open) > 0.3*atr)) * sign(px-open)) + ((((t == hm(9,50) && abs(px-open) > 0.25*atr) || ((t == hm(10,30) || t == hm(11,0) || t == hm(11,30)) && abs(px-open) > 0.3*atr)) * sign(px-open)) == 0) * (((abs(gap) >= 0.1 && ((gap > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (gap < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15)))) * sign(gap)) + (((abs(gap) >= 0.1 && ((gap > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (gap < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15)))) * sign(gap)) == 0) * (((t == hm(10,0)) * ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) + (((t == hm(10,0)) * ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) == 0) * (((((er(1,45) >= 0.2) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) > 0 && lo(5,1) <= vwap + 0.05*atr && cl(5,1) > vwap) - ((((er(1,45) >= 0.2) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))) < 0 && hi(5,1) >= vwap - 0.05*atr && cl(5,1) < vwap)))))"
+ }
+}

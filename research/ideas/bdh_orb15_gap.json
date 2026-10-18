@@ -1,0 +1,29 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.994,
+ "control_seeds": 400,
+ "id": "bdh_orb15_gap",
+ "name": "BDH 15-min ORB, midpoint stop, gap side only",
+ "why": "Breakout traders and stops beyond the opening range push price once the first 15 minutes' auction is broken; the range midpoint is where the breakout is wrong. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bdh.md). Follow-up: gap side only.",
+ "params": {
+  "rr": [
+   0,
+   1,
+   2
+  ]
+ },
+ "scan": {
+  "tf": 1,
+  "from": "09:45",
+  "to": "11:00",
+  "when": "!rollwin && abs(gap) >= 0.1 && (((cl(1,1) > rhi(15)) && gap > 0) || ((cl(1,1) < rlo(15)) && gap < 0))",
+  "dir": "(cl(1,1) > rhi(15)) - (cl(1,1) < rlo(15))"
+ },
+ "max_trades": 1,
+ "stop": "abs(px - ((rhi(15)+rlo(15))/2))",
+ "target": "rr"
+}

@@ -1,0 +1,36 @@
+{
+ "id": "vwap_side_ema",
+ "name": "VWAP side sets the direction, EMA pullback entry, \u2264 3/day",
+ "why": "Above VWAP the session's average buyer is in profit and defends; trend traders buy the pullback to their moving average there (mirror below). Pre-registered 2026-10-18 (research/preregistered/2026-10-18_momentum_daily.md, follow-up 2).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "params": {
+  "E": [
+   9,
+   20
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "o": [
+   0,
+   1
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:45",
+  "to": "13:55",
+  "when": "!rollwin && (((((px > vwap) && (o == 0 || px > open)) - ((px < vwap) && (o == 0 || px < open))) > 0 && (cl(5,1) > vwap && lo(5,1) <= ema(5,E) + 0.05*atr && cl(5,1) > ema(5,E))) || ((((px > vwap) && (o == 0 || px > open)) - ((px < vwap) && (o == 0 || px < open))) < 0 && (cl(5,1) < vwap && hi(5,1) >= ema(5,E) - 0.05*atr && cl(5,1) < ema(5,E))))",
+  "dir": "((((px > vwap) && (o == 0 || px > open)) - ((px < vwap) && (o == 0 || px < open))) > 0 && (cl(5,1) > vwap && lo(5,1) <= ema(5,E) + 0.05*atr && cl(5,1) > ema(5,E))) - ((((px > vwap) && (o == 0 || px > open)) - ((px < vwap) && (o == 0 || px < open))) < 0 && (cl(5,1) < vwap && hi(5,1) >= ema(5,E) - 0.05*atr && cl(5,1) < ema(5,E)))"
+ },
+ "max_trades": 3,
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

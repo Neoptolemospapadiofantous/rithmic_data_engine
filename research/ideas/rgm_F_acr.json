@@ -1,0 +1,28 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "max_trades": 1,
+ "min_trades": 100,
+ "control_pct": 0.998,
+ "control_seeds": 400,
+ "id": "rgm_F_acr",
+ "name": "ORB15 reverse on acr days",
+ "why": "Failed opening-range break on range-regime days: trapped breakout traders exit back through the range. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_orb_regime.md).",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:50",
+  "to": "13:00",
+  "when": "!rollwin && (acr(1,60) > 0) && ((hi(5,1) > rhi(15) && cl(5,1) < rhi(15)) || (lo(5,1) < rlo(15) && cl(5,1) > rlo(15)))",
+  "dir": "(lo(5,1) < rlo(15) && cl(5,1) > rlo(15)) - (hi(5,1) > rhi(15) && cl(5,1) < rhi(15))"
+ },
+ "stop": "stopk*atr",
+ "target": "2"
+}

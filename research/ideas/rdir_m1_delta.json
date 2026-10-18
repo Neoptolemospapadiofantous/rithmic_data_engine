@@ -1,0 +1,33 @@
+{
+ "id": "rdir_m1_delta",
+ "name": "1-minute momentum direction at 10:00 when the last 45 min delta agrees",
+ "why": "Aggressive buyers or sellers who have to get filled now (delta) show who is forced to trade; if their pressure agrees with the price move, the move has real money behind it. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_rithmic_direction.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "from": "2023-03-01",
+ "to": "2026-03-19",
+ "params": {
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "f": [
+   0.02,
+   0.05
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:00",
+   "when": "flow && !rollwin && (((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) * dsum(1,45) > 0 && abs(dsum(1,45)) >= f*vsum(1,45))",
+   "dir": "((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "train_months": 6,
+ "min_trades": 60,
+ "control_pct": 0.994,
+ "control_seeds": 400
+}

@@ -1,0 +1,32 @@
+{
+ "id": "orb5_sweep_price",
+ "name": "NY ORB 5 failed break \u2192 fade, flat 15:55",
+ "why": "Stops cluster just beyond the opening range; aggressors who push through and cannot hold (the 5-minute bar closes back inside) are trapped, and their exits drive price back across the range. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_session_cockpit.md).",
+ "params": {
+  "stopk": [
+   0.1,
+   0.15,
+   0.25
+  ],
+  "rr": [
+   1.5,
+   2
+  ]
+ },
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "control_pct": 0.996,
+ "control_seeds": 400,
+ "scan": {
+  "tf": 5,
+  "from": "09:40",
+  "to": "12:00",
+  "when": "(lo(5,1) < wlo(9,30,9,35) && cl(5,1) > wlo(9,30,9,35)) || (hi(5,1) > whi(9,30,9,35) && cl(5,1) < whi(9,30,9,35))",
+  "dir": "(lo(5,1) < wlo(9,30,9,35) && cl(5,1) > wlo(9,30,9,35)) - (hi(5,1) > whi(9,30,9,35) && cl(5,1) < whi(9,30,9,35))"
+ },
+ "max_trades": 1,
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "15:55"
+}

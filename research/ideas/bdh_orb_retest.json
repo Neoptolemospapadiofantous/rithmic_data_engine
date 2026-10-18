@@ -1,0 +1,28 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.994,
+ "control_seeds": 400,
+ "id": "bdh_orb_retest",
+ "name": "BDH ORB break \u2192 retest bull/bear flag off the 21 EMA",
+ "why": "Breakout traders and stops beyond the opening range push price once the first 15 minutes' auction is broken; the range midpoint is where the breakout is wrong. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bdh.md).",
+ "params": {
+  "rr": [
+   1,
+   2
+  ]
+ },
+ "scan": {
+  "tf": 2,
+  "from": "09:50",
+  "to": "11:00",
+  "when": "!rollwin && ((hi_since(9,45) > rhi(15) && cl(2,1) > rhi(15) && lo(2,2) > rhi(15) - 0.02*atr && lo(2,2) <= ema(2,21) + 0.02*atr && hi(2,2) < hi(2,3) && cl(2,1) > hi(2,2)) || (lo_since(9,45) < rlo(15) && cl(2,1) < rlo(15) && hi(2,2) < rlo(15) + 0.02*atr && hi(2,2) >= ema(2,21) - 0.02*atr && lo(2,2) > lo(2,3) && cl(2,1) < lo(2,2)))",
+  "dir": "(hi_since(9,45) > rhi(15) && cl(2,1) > rhi(15) && lo(2,2) > rhi(15) - 0.02*atr && lo(2,2) <= ema(2,21) + 0.02*atr && hi(2,2) < hi(2,3) && cl(2,1) > hi(2,2)) - (lo_since(9,45) < rlo(15) && cl(2,1) < rlo(15) && hi(2,2) < rlo(15) + 0.02*atr && hi(2,2) >= ema(2,21) - 0.02*atr && lo(2,2) > lo(2,3) && cl(2,1) < lo(2,2))"
+ },
+ "max_trades": 1,
+ "stop": "(hi_since(9,45) > rhi(15) && cl(2,1) > rhi(15) && lo(2,2) > rhi(15) - 0.02*atr && lo(2,2) <= ema(2,21) + 0.02*atr && hi(2,2) < hi(2,3) && cl(2,1) > hi(2,2)) * max(px - min(lo(2,1),lo(2,2)), 0.02*atr) + (lo_since(9,45) < rlo(15) && cl(2,1) < rlo(15) && hi(2,2) < rlo(15) + 0.02*atr && hi(2,2) >= ema(2,21) - 0.02*atr && lo(2,2) > lo(2,3) && cl(2,1) < lo(2,2)) * max(max(hi(2,1),hi(2,2)) - px, 0.02*atr)",
+ "target": "rr"
+}

@@ -1,0 +1,31 @@
+{
+ "id": "ldn_orb5_break",
+ "name": "London open ORB 5 break (03:00\u201303:05), follow, flat 08:25",
+ "why": "The first minutes of a session settle the orders queued for the open; a close beyond that range means one side's resting orders are used up and the stops beyond it add fuel. European cash open. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_session_cockpit.md).",
+ "params": {
+  "stopk": [
+   0.1,
+   0.15
+  ],
+  "rr": [
+   1.5,
+   2
+  ]
+ },
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "control_pct": 0.996,
+ "control_seeds": 400,
+ "scan": {
+  "tf": 1,
+  "from": "03:05",
+  "to": "06:00",
+  "when": "cl(1,1) > whi(3,0,3,5) || cl(1,1) < wlo(3,0,3,5)",
+  "dir": "(cl(1,1) > whi(3,0,3,5)) - (cl(1,1) < wlo(3,0,3,5))"
+ },
+ "max_trades": 1,
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "08:25"
+}

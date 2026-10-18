@@ -1,0 +1,27 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:58",
+ "min_trades": 100,
+ "control_pct": 0.994,
+ "control_seeds": 400,
+ "id": "bdh_1550",
+ "name": "BDH 15:50 VWAP trade",
+ "why": "Closing-auction / MOC flows into the bell lift price that holds VWAP late in the day. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bdh.md).",
+ "params": {
+  "k": [
+   0.02,
+   0.05
+  ]
+ },
+ "checks": [
+  {
+   "at": "15:49",
+   "when": "!rollwin && px > vwap && px - vwap <= 0.03*atr",
+   "dir": "1"
+  }
+ ],
+ "stop": "k*atr",
+ "target": "0"
+}

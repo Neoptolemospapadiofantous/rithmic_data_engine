@@ -1,0 +1,29 @@
+{
+ "id": "m1_10am_all",
+ "name": "Direction at 10:00 = 1-minute momentum (reference)",
+ "why": "Aggressive buyers or sellers who have to get filled now (delta) show who is forced to trade; if their pressure agrees with the price move, the move has real money behind it. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_rithmic_direction.md). All-years version of rdir_m1 (no flow condition), 2026-10-18.",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "from": "2010-07-01",
+ "to": "2024-12-31",
+ "params": {
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:00",
+   "when": "!rollwin && (((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) != 0)",
+   "dir": "((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "train_months": 12,
+ "min_trades": 100,
+ "control_pct": 0.994,
+ "control_seeds": 400
+}

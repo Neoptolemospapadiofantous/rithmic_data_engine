@@ -1,0 +1,36 @@
+{
+ "id": "mom_scan_3_pb",
+ "name": "1-min momentum scanned 09:45\u201313:55, max 3/day , VWAP pullback entry",
+ "why": "Momentum traders and trend-following programs keep adding while the 1-minute drive stays straight and price holds the right side of VWAP and the open. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_momentum_daily.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "params": {
+  "N": [
+   30,
+   45
+  ],
+  "e": [
+   0.2,
+   0.3
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:45",
+  "to": "13:55",
+  "when": "!rollwin && ((er(1,N) >= e) * sign(cl(1,1) - lag(N, cl(1,1))) * ((cl(1,1) - lag(N, cl(1,1))) * (px - vwap) > 0) * ((cl(1,1) - lag(N, cl(1,1))) * (px - open) > 0)) != 0 && ((((er(1,N) >= e) * sign(cl(1,1) - lag(N, cl(1,1))) * ((cl(1,1) - lag(N, cl(1,1))) * (px - vwap) > 0) * ((cl(1,1) - lag(N, cl(1,1))) * (px - open) > 0)) > 0 && lo(5,1) <= vwap + 0.05*atr && cl(5,1) > vwap) || (((er(1,N) >= e) * sign(cl(1,1) - lag(N, cl(1,1))) * ((cl(1,1) - lag(N, cl(1,1))) * (px - vwap) > 0) * ((cl(1,1) - lag(N, cl(1,1))) * (px - open) > 0)) < 0 && hi(5,1) >= vwap - 0.05*atr && cl(5,1) < vwap))",
+  "dir": "((er(1,N) >= e) * sign(cl(1,1) - lag(N, cl(1,1))) * ((cl(1,1) - lag(N, cl(1,1))) * (px - vwap) > 0) * ((cl(1,1) - lag(N, cl(1,1))) * (px - open) > 0))"
+ },
+ "max_trades": 3,
+ "stop": "stopk*atr",
+ "target": "2",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

@@ -93,7 +93,11 @@ adds size rather than diversification.
 ## 3. When two strategies fire on the same day
 
 - Weak-day long and Monday long are both **long at 09:30** — take one position, not two (or size the sum deliberately).
-- The **cascade and the gap retest may both trade the same day if they agree in direction** (tested 2026-10-17: on a 25K account more paid and fewer blown accounts). Never opposite.
+- The **cascade and the gap retest** may both trade the same day if they agree in direction (2026-10-17: more paid, fewer blown 25K
+  accounts); never in opposite directions. (A 2026-10-18 Lightning stacking test is parked — founder: put aside for now; see
+  research/preregistered/2026-10-18_plan_checks.md.)
+- **News days** (2026-10-18): no cascade on **CPI or PPI** days (≈ $0 per trade there), no gap retest on **FOMC** days (−$9 per trade);
+  the Plan page and the morning brief say so. Momentum showed nothing reliable on news days.
 - **1–3 trades a day, all in the first trade's direction.** A 2nd or 3rd trade only after a **winner**: the next plan setup, or a
   5-minute bar that touches VWAP and closes back in the day's direction (before 13:55, stop 0.25 ATR, 2R). After a loss, done for the
   day. Tested 2026-10-17 (research/preregistered/2026-10-17_reentry.md): re-entries after a win +5.7 pts/trade vs −0.8 for random
@@ -197,3 +201,48 @@ Lightning 25K sprint, by hand:
 3. Target 0.5R (half the stop distance) — a win ≈ $250–300, never more than $300 in a day (20 % rule).
 4. A loss ≈ the whole day's risk; two losses leave about $0–$100 of drawdown → stop the account.
 5. Five winning days → +$1,500 → request the payout (≤ $1,000).
+
+## Checking your own trades (2026-10-18)
+
+Every weekday at 16:15 ET `manual-review.timer` runs `scripts/manual_review.sh --notify`: export the day's fills from your
+platform (fills / order history CSV) into `data/manual_fills/` with the date in the file name (e.g. `2026-10-19.csv`). The review
+replays the Plan page at the minute you entered and says, per trade, which setup it was (cascade, gap retest, box_go, momentum +
+VWAP, momentum + EMA-20, EMA by hand with permission) or why it was off plan, flags a trade after a loss / a 4th trade / one against
+your first trade, and measures your fill against the signal bar's close (+ = worse) and how many seconds after the bar you were in.
+Report `data/manual_review/<date>.md`, running totals in `data/manual_review/ledger.jsonl`, summary to Telegram. Platform times are
+read in this box's zone unless you write another zone name to `data/manual_fills/tz` (or pass `--tz`). For reference, the automated
+executor's measured cost is 1.32 pts per MNQ round trip (43 trades, `scripts/execution_costs.sh`); the research assumes 1.6, and
+5 pts worse per trade erased the sprint edge.
+
+Forward scorecard: `working-fleet-report.timer` (16:30 ET) scores every candidate in `config/working_fleet.json` (now including the
+six momentum ids and `gap_or_retest__nofomc`) on forward days from 2026-10-19 against the rules written there, Telegrams any verdict
+change and a Friday summary; latest table `data/working_fleet/latest.txt`.
+
+## Daily plan on the ORB page — 1–3 good trades (2026-10-18; dashboard /orb)
+
+Everything below is read off /orb; the page computes it from completed bars and states its definitions in "How things are measured".
+Evidence: cascade +4.8, gap retest +9.0, momentum + VWAP pullback +3.1, 10:00 momentum +13.7 pts/trade (2010–24, all gates); regime
+reads gap / straight tape verified for the TREND side only (research/preregistered/2026-10-18_orb_regime.md); no reversal edge found.
+
+1. 09:00 — pre-market. Read ATR, the prior-day levels, overnight high/low, VIX, news. Size so one stop ≈ the risk you accept:
+   stop 0.35 ATR ≈ 125 pts at ATR 356 = $250 per MNQ; 0.25 ATR ≈ 89 pts = $178 per MNQ.
+2. 09:30–09:45 — no trades. Watch the 5-min and 15-min ranges form; note the mid and which way the 5-min range breaks (a clue).
+3. 09:45–09:50 — REGIME card (score 0–100: gap ≥ 0.1 ATR 40 / ≥ 0.3 60; straight tape ≥ 0.30 40 / ≥ 0.45 60; cascade fired +20;
+   gap and tape agree +10). TREND (gap ≥ 0.1 ATR or straight tape) → trade the direction. RANGE / NO TREND → stand aside until
+   a cascade check or straight momentum turns it on; a range day with no read has no tested edge.
+4. DIRECTION card (score: source base cascade 55 / gap 60 / momentum 65, +8 per agreeing read, −15 per read against, −25 if a
+   source was invalidated today; STRONG ≥ 75, OK ≥ 50) — trade only its way, and only while it is not "invalidated" and the reads mostly agree (a yellow "against" line
+   means wait or size down). Sources in order of strength: cascade check (09:50 ≥ 0.25 ATR; 10:30 / 11:00 / 11:30 ≥ 0.30 ATR),
+   gap side, straight momentum.
+5. TRADE 1 — the first of: (a) gap day: a 5-min close beyond the 15-min range on the gap's side (gap retest), stop 0.35 ATR, target 2R;
+   (b) cascade fired: enter at the check, stop 0.25 ATR, target 2R; (c) 10:00 momentum (straightness ≥ 0.30, right side of VWAP and
+   open): enter, stop 0.35 ATR, target 2R or hold to 15:55 after break-even at +1R.
+6. TRADES 2–3 — only after a winner, same direction, before 13:55: a 5-min bar touches VWAP (within 0.05 ATR) and closes back the
+   direction's way; stop 0.25–0.35 ATR, target 2R. The EMA-pullback flags on the page are context (EMA entries ≈ breakeven in tests).
+7. After a loss: done for the day. No entries after 13:55. Flat by 15:55. Never trade against the direction; never fade the range
+   edges on a RANGE read (every tested version loses).
+8. REVERSAL ZONE card (beyond ±3 SD 40 / ±2 SD 25; at a prior-day or overnight high/low +20; ≥ 0.25 ATR from the EMA +15; a CHoCH
+   against the direction in the last 30 min +25; failed range break +15; HIGH ≥ 50): HIGH = no new entry, take profit / tighten.
+   The WHAT NOW line combines regime, direction, zone and the range state into one instruction — follow it.
+9. Structure (BOS / CHoCH), the VWAP ±2/3 SD bands and the levels are for reading, not triggers: a CHoCH against your direction or
+   price at ±3 SD is a reason to take profit or skip the next entry, not to reverse.

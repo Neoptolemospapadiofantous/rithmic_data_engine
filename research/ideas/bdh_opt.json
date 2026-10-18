@@ -1,0 +1,46 @@
+{
+ "id": "bdh_opt",
+ "name": "BDH 15-min ORB, gap side \u2014 optimisation grid",
+ "why": "Overnight repositioning (the gap) continuing through the opening range break. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bdh_optimize.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "params": {
+  "g": [
+   0.05,
+   0.1,
+   0.2
+  ],
+  "s": [
+   0,
+   1
+  ],
+  "k": [
+   1,
+   5
+  ],
+  "t0": [
+   585,
+   600
+  ],
+  "rr": [
+   0,
+   2,
+   3
+  ]
+ },
+ "scan": {
+  "tf": 1,
+  "from": "09:45",
+  "to": "11:00",
+  "when": "!rollwin && t >= t0 && abs(gap) >= g && (((((k == 1) * cl(1,1) + (k == 5) * cl(5,1)) > rhi(15)) && gap > 0) || ((((k == 1) * cl(1,1) + (k == 5) * cl(5,1)) < rlo(15)) && gap < 0))",
+  "dir": "(((k == 1) * cl(1,1) + (k == 5) * cl(5,1)) > rhi(15)) - (((k == 1) * cl(1,1) + (k == 5) * cl(5,1)) < rlo(15))"
+ },
+ "max_trades": 1,
+ "stop": "(s == 0) * abs(px - ((rhi(15)+rlo(15))/2)) + (s == 1) * ((((k == 1) * cl(1,1) + (k == 5) * cl(5,1)) > rhi(15)) * (px - rlo(15)) + (((k == 1) * cl(1,1) + (k == 5) * cl(5,1)) < rlo(15)) * (rhi(15) - px))",
+ "target": "rr",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

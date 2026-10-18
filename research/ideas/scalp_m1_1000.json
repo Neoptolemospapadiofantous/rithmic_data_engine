@@ -1,0 +1,33 @@
+{
+ "id": "scalp_m1_1000",
+ "name": "Scalp the 10:00 momentum",
+ "why": "A small target is hit often when the day's flow is behind the trade. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_scalp_daily.md).",
+ "checks": [
+  {
+   "at": "10:00",
+   "when": "!rollwin && ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) != 0",
+   "dir": "((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))"
+  }
+ ],
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "params": {
+  "s": [
+   0.06,
+   0.1,
+   0.15
+  ],
+  "t": [
+   0.06,
+   0.08
+  ]
+ },
+ "stop": "s*atr",
+ "target": "t/s",
+ "flat": "15:55",
+ "max_trades": 1,
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400
+}

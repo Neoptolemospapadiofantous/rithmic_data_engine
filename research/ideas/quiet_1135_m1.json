@@ -1,0 +1,28 @@
+{
+ "id": "quiet_1135_m1",
+ "name": "No-cascade days: at 11:35 go with 1-minute momentum",
+ "why": "The day's net flow so far is the best available guess of who is still positioning. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_daily_trade.md).",
+ "params": {
+  "stopk": [
+   0.15,
+   0.25
+  ]
+ },
+ "checks": [
+  {
+   "at": "11:35",
+   "when": "!rollwin && abs(at(9,50)-open) <= 0.25*atr && abs(at(10,30)-open) <= 0.3*atr && abs(at(11,0)-open) <= 0.3*atr && abs(px-open) <= 0.3*atr && ((er(1,45) >= 0.2) * sign(cl(1,1) - cl(1,46))) != 0",
+   "dir": "((er(1,45) >= 0.2) * sign(cl(1,1) - cl(1,46)))"
+  }
+ ],
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "target": "2",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "max_trades": 1,
+ "stop": "stopk*atr"
+}

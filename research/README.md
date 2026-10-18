@@ -133,6 +133,39 @@ when the engine's ATR still spanned the March–September data gap).
 Engine replays of every year (label `mom_hist`, 2010-07 → 2026-03, the fleet's real costs) confirm the momentum ranking:
 mom_dir_45_vwap_plan > mom_dir_45_vwap > mom_dir_45_dip > mom_dir_30_ema20 / _any; all lose a little or break even in 2010-18.
 
+## Ledger — 2026-10-18 (research/preregistered/2026-10-18_session_cockpit.md)
+| Test | Verdict |
+|---|---|
+| ORB-15 narrow / price beyond ORB-15 / beyond ORB-5 as cascade filters | beyond-ORB-15 PASSES the gates (+5.33 vs +4.27 base 2010–24) but on 2025+ its complement did better (+28 vs +9) → not adopted; the others fail controls and do not beat the base on 2025+ |
+| London / Globex direction agreeing with the cascade | fail controls (Globex by one seed); 2025+ no better than the base → context only |
+| Globex-open ORB 5 / 15 break, ORB 15 fade | all lose (−0.95 … −1.46 pts/trade) |
+| London-open ORB 5 / 15 break, ORB 15 fade | all lose (−0.71 … −0.99) |
+| NY ORB-5 failed-break fade | loses (−1.42) |
+| Asia sweep (flow) forward on collector sessions | not checkable — `flow` covers only 2023-03 → 2026-03 |
+| BOS (1h vs prior 2h) then EMA pullback — NY / NY 15m / London / Globex (2026-10-18_bos_ema) | all FAIL (+0.78 / +1.01 / −0.70 / −1.29) |
+| the same on the gap side only (`bos_ema_gap`) | PASS +4.03 (1,204, EMA-9, stop 0.3 ATR, 2R); 2025+ +8.45 on 141 (t 0.9); flat 2010–18; weaker than gap_or_retest on the same days → paper candidate |
+| 1-min direction + BOS / CHoCH + EMA pullback (2026-10-18_m1dir_structure_ema) | all FAIL: BOS +10.81 on 215 (13/yr) fails direction control and loses 2025+ (−7.73 on 25); CHoCH 3 trades/yr; no structure +4.71 fails controls |
+| Rithmic order flow as direction at 10:00 (2026-10-18_rithmic_direction, 2023-03 → 2026-03) | 1-min momentum PASS +34.8 (90); delta adds nothing to it; delta agreeing with price +16.4 vs +8.2 disagreeing but FAILS controls; overnight delta −6.6; absorption too rare |
+| 1-min momentum at 10:00 only, all years (rdir_m1 without flow) | PASS +13.7 (22/yr, 11/14 years); 2025+ +59 on 50 |
+| 1-min momentum scanned 09:45–13:55, ≤ 3/day (2026-10-18_momentum_daily) | VWAP-pullback entry PASS +3.09 (128/yr), 2025+ +23 on 201; market entries fail controls |
+| momentum scan with EMA pullback / VWAP side + EMA pullback (follow-ups, 2026-10-18_momentum_daily) | both FAIL controls (+2.09 / +2.24 per trade, ~155/yr); the VWAP-pullback momentum scan stays the passing version |
+| momentum scan with EMA-14 pullback (follow-up 3) | FAIL +1.61 (137/yr), 2023–24 negative — EMA 9/14/20 all fail as the momentum entry |
+| a trade every day: forced 10:05 direction / no-cascade-day fallbacks at 11:35 (2026-10-18_daily_trade) | all FAIL; quiet-day trades ≈ 0 per trade — no edge on days without a setup |
+| 1 trade a day, 20–30 pt target (≈ 0.06–0.08 ATR) (2026-10-18_scalp_daily) | every-day and momentum-pullback scalps lose (all variants); 10:00 momentum scalp PASS (19/yr, win 77 %, target 0.08 / stop 0.15 ATR) |
+| first tested setup of the day (cascade > gap retest > 10:00 momentum > momentum pullback) (scalp_daily follow-up) | 2R PASS +4.01 (≈ 80 % of days, 12/14 years), 2025+ +5.5 on 249 (t 0.7); same entries with a 20–30 pt scalp target FAIL |
+
+## Ledger — 2026-10-18 (research/preregistered/2026-10-18_plan_checks.md — on the real engine's all-year trades, label `mom_hist`)
+| Test | Verdict |
+|---|---|
+| Stacking cascade + gap retest + momentum-VWAP-plan | one bet: daily correlation +0.59 / +0.62 / +0.72, mostly the same direction. On a 25K LIGHTNING (2 MNQ, 40 days) stacking is worse — cascade alone paid 8.4 % / blown 41.8 %, cascade + gap 3.7 % / 56.4 %, all three 1.6 % / 59.2 % — because the 20 % best-day rule punishes big stacked days (without it stacking pays 42 % in 14 days). Not adopted on Lightning; the 10-17 Select / Flex result (stack when agreeing) stands |
+| News days (CPI / NFP / PPI / FOMC), 6 strategies | pass by the letter: cascade CPI / PPI (≈ $0 / trade), gap retest FOMC (−$9 / trade, 52) → plan page stands aside, paper id `gap_or_retest__nofomc`; momentum-VWAP-plan nothing; 30 cells, some by chance |
+| Quiet-market stand-aside (prior VIX, prior ATR %), walk-forward by year | FAIL both: fixes 2013-18 (−2,547 → −59 / +722) but gives back more in 2019-24; 2010-18 is ≈ 0 or negative at every VIX and ATR % level — not fixable by a filter known at the open |
+Engine all-year replays (label `mom_hist`) now also hold `so_cascade_2r_nofomc`, `so_cascade_2r_vwap_stall`, `gap_or_retest`,
+`gap_or_retest__nofomc` ($ per MNQ per trade by era: cascade −0.84 / +8.41 / +16.50, gap retest −0.29 / +27.35 / +25.70).
+| BDH (Patrick Wieland / D-Money) rules from 43 transcripts (2026-10-18_bdh) | 9 tests: 1:1 prev-candle scalp, 14/50 EMA retest, ORB retest, 5-min ORB, failed-break reverse, 15:50 all lose; 15-min ORB midpoint stop +2.9–4.0 FAIL controls (only hold-to-close positive); + gap side +6.4 (FAIL controls by a hair, 2025+ not confirmed) = the gap retest we already have |
+| BDH ORB gap-side optimisation, 72 variants (2026-10-18_bdh_optimize) | PASS 2010–24 +6.32 (13/14 years, broad plateau) but every variant NEGATIVE on 2025+ (gap retest +7.15 there) → not adopted |
+| ORB15 trend-or-reverse by regime, 7 reads × 4 (2026-10-18_orb_regime) | no regime verified: the fade is negative under every read; trend separates on gap (+4.2 vs −11.3) and 1-min straightness (+6.0 vs +2.6) but fails controls (random time on those days does as well) → trend regime = trade the day direction, range regime = no trade |
+
 ## Known limits
 - 1-minute OHLC only (no queue position); cost is a fixed real round trip per contract in every year.
 - The continuous contract is not back-adjusted (see `rollwin`). NQ has no data 2026-03-20 … 2026-09-18.

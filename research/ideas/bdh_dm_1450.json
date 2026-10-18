@@ -1,0 +1,32 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.994,
+ "control_seeds": 400,
+ "id": "bdh_dm_1450",
+ "name": "D-Money 14/50 EMA retest with 1-hour filter",
+ "why": "Higher-timeframe trend traders add on the first retest of the 5-minute 14 EMA while the 14/50 spread shows momentum. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bdh.md).",
+ "params": {
+  "s": [
+   0.02,
+   0.04
+  ],
+  "rr": [
+   1,
+   1.5
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:35",
+  "to": "12:00",
+  "when": "!rollwin && (((ema(60,14) > ema(60,50) && ema(5,14) - ema(5,50) >= s*atr && lo(5,1) <= ema(5,14) && cl(5,1) > ema(5,14) && cl(5,1) > ema(5,50))) && max(px - (ema(5,14)+ema(5,50))/2, 0.02*atr) <= 0.07*atr || ((ema(60,14) < ema(60,50) && ema(5,50) - ema(5,14) >= s*atr && hi(5,1) >= ema(5,14) && cl(5,1) < ema(5,14) && cl(5,1) < ema(5,50))) && max((ema(5,14)+ema(5,50))/2 - px, 0.02*atr) <= 0.07*atr)",
+  "dir": "(ema(60,14) > ema(60,50) && ema(5,14) - ema(5,50) >= s*atr && lo(5,1) <= ema(5,14) && cl(5,1) > ema(5,14) && cl(5,1) > ema(5,50)) - (ema(60,14) < ema(60,50) && ema(5,50) - ema(5,14) >= s*atr && hi(5,1) >= ema(5,14) && cl(5,1) < ema(5,14) && cl(5,1) < ema(5,50))"
+ },
+ "max_trades": 3,
+ "stop": "(ema(60,14) > ema(60,50) && ema(5,14) - ema(5,50) >= s*atr && lo(5,1) <= ema(5,14) && cl(5,1) > ema(5,14) && cl(5,1) > ema(5,50)) * max(px - (ema(5,14)+ema(5,50))/2, 0.02*atr) + (ema(60,14) < ema(60,50) && ema(5,50) - ema(5,14) >= s*atr && hi(5,1) >= ema(5,14) && cl(5,1) < ema(5,14) && cl(5,1) < ema(5,50)) * max((ema(5,14)+ema(5,50))/2 - px, 0.02*atr)",
+ "target": "rr"
+}

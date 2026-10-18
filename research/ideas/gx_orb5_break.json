@@ -1,0 +1,31 @@
+{
+ "id": "gx_orb5_break",
+ "name": "Globex open ORB 5 break (18:00\u201318:05), follow, flat 20:00",
+ "why": "The first minutes of a session settle the orders queued for the open; a close beyond that range means one side's resting orders are used up and the stops beyond it add fuel. Globex reopen: Asian desks and hedgers. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_session_cockpit.md).",
+ "params": {
+  "stopk": [
+   0.1,
+   0.15
+  ],
+  "rr": [
+   1.5,
+   2
+  ]
+ },
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "control_pct": 0.996,
+ "control_seeds": 400,
+ "scan": {
+  "tf": 1,
+  "from": "18:05",
+  "to": "19:30",
+  "when": "cl(1,1) > whi(18,0,18,5) || cl(1,1) < wlo(18,0,18,5)",
+  "dir": "(cl(1,1) > whi(18,0,18,5)) - (cl(1,1) < wlo(18,0,18,5))"
+ },
+ "max_trades": 1,
+ "stop": "stopk*atr",
+ "target": "rr",
+ "flat": "20:00"
+}

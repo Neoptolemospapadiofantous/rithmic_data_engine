@@ -1,0 +1,28 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.994,
+ "control_seeds": 400,
+ "id": "bdh_fail_reverse",
+ "name": "BDH failed first break \u2192 break of the other side",
+ "why": "Breakout traders trapped on the first side exit through the whole range; their stops beyond the other side fuel the reverse. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_bdh.md).",
+ "params": {
+  "rr": [
+   1,
+   2
+  ]
+ },
+ "scan": {
+  "tf": 1,
+  "from": "10:00",
+  "to": "13:00",
+  "when": "!rollwin && ((lo_since(9,45) < rlo(15) && cl(1,1) > rhi(15)) || (hi_since(9,45) > rhi(15) && cl(1,1) < rlo(15)))",
+  "dir": "(lo_since(9,45) < rlo(15) && cl(1,1) > rhi(15)) - (hi_since(9,45) > rhi(15) && cl(1,1) < rlo(15))"
+ },
+ "max_trades": 1,
+ "stop": "abs(px - ((rhi(15)+rlo(15))/2))",
+ "target": "rr"
+}
