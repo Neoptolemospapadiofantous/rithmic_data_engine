@@ -607,7 +607,7 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
     std::vector<RuleOut> ro(X__COUNT);
     double eb[3] = {0, 0, 0}; int nb[3] = {0, 0, 0};
     for (size_t i = 0; i < tr.size(); ++i) { int e = era_of(s.days[tr[i].day].date); eb[e] += res[X_BASE][i].pts - b.cost; ++nb[e]; }
-    const double NEED = 0.99;   // X__COUNT − 1 (13) exit rules are tested → the control must clear 99 %, not 95 %
+    const double NEED = 0.99;   // X__COUNT − 1 (14) exit rules are tested → the control must clear 99 %, not 95 %
     const int SEEDS = 200;
     for (int r = 1; r < X__COUNT; ++r) {
         RuleOut& q = ro[r];
@@ -636,7 +636,7 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
             // Target-distance twin (2026-10-18): the rule's own target distances (in each day's ATR) shuffled across the trades,
             // everything else unchanged — does the target at the LEVEL beat targets of the same sizes placed without it?
             std::vector<double> w;
-            for (auto& t : tr) { double a = s.days[t.day].atr; double lq = sim.liq_target(t); double d = !std::isnan(lq) ? lq : (r == X_LIQ ? t.tgt : 0); w.push_back(a > 0 ? d / a : 0); }
+            for (auto& t : tr) { double a = s.days[t.day].atr; w.push_back(a > 0 ? sim.level_or_fallback(t, r) / a : 0); }
             for (int k = 0; k < SEEDS; ++k) {
                 std::mt19937_64 rng(32452843ULL * (k + 1) + r); std::vector<double> p = w; std::shuffle(p.begin(), p.end(), rng);
                 double n = 0;

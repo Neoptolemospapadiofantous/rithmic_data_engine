@@ -1,0 +1,10 @@
+{"id":"smc_fvg_fill","name":"Fair-value-gap fill (LuxAlgo SMC)",
+ "why":"Three 5-minute bars whose first high is below the third low left a one-sided move with no two-way business inside it; the first return into the gap fills the resting orders of the side that missed the move, and a close back above the gap top shows they were enough (mirror for shorts). Pre-registered 2026-10-18 (research/preregistered/2026-10-18_luxalgo_smc.md).",
+ "symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"rr":[2]},
+ "scan":{"tf":5,"from":"09:50","to":"14:00",
+   "when":"(lag(5, fvgt(5)) == fvgt(5) && lo(5,1) < fvgt(5) && cl(5,1) > fvgt(5)) || (lag(5, fvgbs(5)) == fvgbs(5) && hi(5,1) > fvgbs(5) && cl(5,1) < fvgbs(5))",
+   "dir":"(lag(5, fvgt(5)) == fvgt(5) && lo(5,1) < fvgt(5) && cl(5,1) > fvgt(5)) - (lag(5, fvgbs(5)) == fvgbs(5) && hi(5,1) > fvgbs(5) && cl(5,1) < fvgbs(5))"},
+ "max_trades":1,
+ "stop":"max(0.1*atr, 0.25 + max((lag(5, fvgt(5)) == fvgt(5) && lo(5,1) < fvgt(5) && cl(5,1) > fvgt(5))*(px - fvgb(5)), (lag(5, fvgbs(5)) == fvgbs(5) && hi(5,1) > fvgbs(5) && cl(5,1) < fvgbs(5))*(fvgts(5) - px)))",
+ "target":"rr","flat":"15:55","min_trades":100,"control_pct":0.992,"control_seeds":400}

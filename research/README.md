@@ -62,7 +62,14 @@ tf bar; `rhi(m) rlo(m)` = RTH opening range of the first m minutes; `dwin(h1,m1,
 volume of today's bars in [h1:m1, h2:m2) (known once the window is over); `bk(field, n)` = mean of an order-book field
 (`qimb` = (bid − ask)/(bid + ask) resting size within 10 bps, `cxl` cancel-to-add, `bidq`, `askq`) over the n minutes
 before the bar (NQ, 2023-03 … 2026-03; `meta --book` adds flow/book inputs to the take/skip model); `at(h, m)` = open of the bar at h:m today;
-`hi_since(h, m) lo_since(h, m)`.
+`hi_since(h, m) lo_since(h, m)`; `eqhi(tf, n, tol) eqlo(…)` = a pool of equal highs / lows among the last n tf bars (within tol × ATR), else NaN.
+Market structure on completed tf bars since 18:00 (2026-10-18, LuxAlgo SMC; NaN when there is none — all O(day) with a per-day cache):
+`swh(tf, n) swl(tf, n)` = the most recent CONFIRMED swing high / low (strictly above / below the n bars on each side, known n bars later);
+`obh(tf, n) obl(tf, n)` = top / bottom of the most recent UNMITIGATED bullish order block — on the first close above the last unbroken
+swing high, the last down-close bar between the swing bar and the breaking bar; mitigated by a later close below its low (`obhs obls`
+= the bearish mirror, mitigated by a close above its high); `fvgt(tf) fvgb(tf)` = top / bottom of the most recent UNFILLED bullish fair
+value gap (bar-1 high < bar-3 low; filled by a close below the bottom; `fvgts fvgbs` = the bearish mirror). A block or gap created by
+the last completed bar is already visible, so an entry rule must guard with `lag(tf, obh(tf, n)) == obh(tf, n)` to skip the breaking bar.
 
 ## After a PASS: meta-label and thesis exits (`src/research/meta.hpp`)
 
@@ -83,7 +90,10 @@ Both start from the idea's walk-forward trades (same entries).
   trade by ≥ 20 % of its volume; days with order flow only). `mext` / `mext_vwap_stall` (2026-10-17) move the hard stop to 1 tick beyond the RTH extreme made
   against the trade before entry (never tighter than the idea's stop); their control is a **stop-width twin** (the rule's own widths
   shuffled across trades), not the timing twin. Cascade result: mext +5.84 vs base +4.80 pts/trade but the twin does as well (34.5 %) —
-  the gain is the wider stop, not the level. The hard stop always stays; fills at the next bar's open.
+  the gain is the wider stop, not the level. `liq` / `liq_run` (2026-10-18) take profit at the nearest liquidity pool ≥ 1R beyond the entry,
+  `orbt` (2026-10-18, LuxAlgo ORB targets) at the nearest 09:30–09:44 range high/low ± k × half the range width (k = 1, 2) ≥ 1R beyond
+  the entry, both 2 ticks before the level (else the idea's target; `liq_run` none); their control is a **target-distance twin** (the
+  rule's own distances in ATR shuffled across trades). The hard stop always stays; fills at the next bar's open.
   Gates per rule: better per trade · beats a path-blind time exit with the rule's own exit rate and holding times in
   ≥ 99 % of 200 seeds (8 rules tested) · better in ≥ 2 of 3 eras incl. 2023–26 · higher prop break-even fee.
   Never re-time only the trades the rule exited: those are selected on their future (they went back through the
@@ -168,6 +178,7 @@ Engine all-year replays (label `mom_hist`) now also hold `so_cascade_2r_nofomc`,
 | ORB15 trend-or-reverse by regime, 7 reads × 4 (2026-10-18_orb_regime) | no regime verified: the fade is negative under every read; trend separates on gap (+4.2 vs −11.3) and 1-min straightness (+6.0 vs +2.6) but fails controls (random time on those days does as well) → trend regime = trade the day direction, range regime = no trade |
 | feature study: 33 features (21 + the ORB page's 12), permutation importance, refits (2026-10-18_feature_study; `edge_lab meta --page`) | gap retest PASS on the 14 features that work (+15.7 vs +11.0); cascade / momentum / union refits fail a control; reg_score, acr60, or15_w, ema_touches carry signal, struct / CHoCH none (already agree at the signal), ema_dist / pullback hurt |
 | exits: regime-gated trail (`trail_reg`) and liquidity-pool targets (`liq`, `liq_run`) on the 4 bases (2026-10-18_feature_study step 4, 2026-10-18_liquidity_exit) | all FAIL — never better than the fixed 2R; liq on the gap retest beats a same-size-target twin only 89–92 % (need 99) |
+| LuxAlgo SMC entries (2026-10-18_luxalgo_smc; new DSL `swh/swl obh/obl obhs/obls fvgt/fvgb fvgts/fvgbs`, exit `orbt`): order-block retest, FVG fill, premium/discount gate on cascade + gap retest (each with complement), ORB 50 % targets | nothing adopted — OB retest +0.59/trade on 109/yr (FAIL walk-forward, direction 53 %), FVG fill −3.11 (FAIL screen); the discount/premium gate keeps 7–10 trades/yr of either base and they lose 2010–22 (both FAIL), both complements = the ungated base (+4.45 / +8.94); `orbt` +4.53 vs +4.80 and +8.72 vs +9.03 (FAIL, not better than base) |
 
 ## Known limits
 - 1-minute OHLC only (no queue position); cost is a fixed real round trip per contract in every year.

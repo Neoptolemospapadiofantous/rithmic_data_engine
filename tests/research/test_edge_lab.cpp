@@ -450,6 +450,58 @@ int main() {
         CHECK(ev.eval(*c, first_bar_at(s, s.days[3], parse_hhmm("10:30"), s.days[3].b0), dc) == 0);
         std::remove((dir + "/releases.csv").c_str()); rmdir(dir.c_str());
     }
+    // ── market structure (2026-10-18, LuxAlgo SMC): swings, order blocks, fair value gaps, the ORB 50 % target
+    {
+        Series s = synth(30, 0, 0, false);                                 // flat 1000 (h 1000.5 / l 999.5), ATR 1
+        paper::VixRegime vix; build_days(s, {}, vix);                      // once for the day index, again after the edits
+        const int d = 20;
+        auto set5 = [&](int h, int m, double o, double hi, double lo, double c) {   // one 5-minute bucket = 5 identical 1m bars
+            const Day& D = s.days[d];
+            const int k0 = first_bar_at(s, D, hm_to_tday(h, m), D.b0);
+            for (int k = k0; k < k0 + 5; ++k) { s.o[k] = (float)o; s.h[k] = (float)hi; s.l[k] = (float)lo; s.c[k] = (float)c; }
+        };
+        set5(10, 0, 1000, 1010, 999.5, 1005);     // swing high 1010 (pivot, 2 bars each side → confirmed when 10:10 completes)
+        set5(10, 15, 1004, 1004.5, 1001, 1002);   // the last down-close bar before the break = the order block [1001, 1004.5]
+        set5(10, 20, 1002, 1012, 1001.5, 1011);   // close 1011 > 1010: break of structure
+        set5(10, 25, 1011, 1011.5, 1003, 1009);   // trades into the block (low 1003 ≤ 1004.5), closes above its top → the entry
+        set5(10, 30, 1009, 1009.5, 999, 1000);    // close 1000 < 1001: the block is mitigated (and a new swing low 999)
+        set5(11, 5, 1000, 1006, 1000, 1005);
+        set5(11, 10, 1005, 1006, 1002, 1004);     // bar-1 (11:00) high 1000.5 < bar-3 low 1002: bullish FVG [1000.5, 1002]
+        set5(11, 15, 1004, 1004.5, 1001, 1003);   // into the gap (low 1001 < 1002), close above its top → the entry
+        set5(11, 20, 1003, 1003.5, 999.5, 1000);  // close 1000 < 1000.5: the gap is filled
+        build_days(s, {}, vix);
+        const Day& D = s.days[d];
+        Market m(s); Evaluator ev(m); DayCache dc;
+        auto at = [&](int h, int mi) { return first_bar_at(s, D, hm_to_tday(h, mi), D.b0); };
+        auto obh = parse("obh(5,2)"), obl = parse("obl(5,2)"), obhs = parse("obhs(5,2)"), swh = parse("swh(5,2)"), swl = parse("swl(5,2)");
+        for (auto* n : {&obh, &obl, &obhs, &swh, &swl}) ev.bind(**n);
+        CHECK(std::isnan(ev.eval(*swh, at(10, 10), dc)) && std::fabs(ev.eval(*swh, at(10, 15), dc) - 1010) < 1e-6);   // confirmed 2 bars later
+        CHECK(std::isnan(ev.eval(*obh, at(10, 20), dc)));                                                               // the breaking bar is not complete yet
+        CHECK(std::fabs(ev.eval(*obh, at(10, 25), dc) - 1004.5) < 1e-6 && std::fabs(ev.eval(*obl, at(10, 25), dc) - 1001) < 1e-6);
+        CHECK(std::fabs(ev.eval(*obh, at(10, 30), dc) - 1004.5) < 1e-6);                                               // a touch does not mitigate
+        CHECK(std::isnan(ev.eval(*obh, at(10, 35), dc)) && std::isnan(ev.eval(*obhs, at(10, 35), dc)));                 // closed below its low
+        CHECK(std::fabs(ev.eval(*swl, at(10, 45), dc) - 999) < 1e-6 && std::isnan(ev.eval(*swl, at(10, 40), dc)));
+        auto entry = parse("lag(5, obh(5,2)) == obh(5,2) && lo(5,1) <= obh(5,2) && cl(5,1) > obh(5,2)"); ev.bind(*entry);
+        CHECK(ev.eval(*entry, at(10, 30), dc) == 1 && ev.eval(*entry, at(10, 25), dc) == 0);                           // never on the breaking bar itself
+        auto fvgt = parse("fvgt(5)"), fvgb = parse("fvgb(5)"), fvgts = parse("fvgts(5)");
+        for (auto* n : {&fvgt, &fvgb, &fvgts}) ev.bind(**n);
+        CHECK(std::isnan(ev.eval(*fvgt, at(11, 10), dc)));
+        CHECK(std::fabs(ev.eval(*fvgt, at(11, 15), dc) - 1002) < 1e-6 && std::fabs(ev.eval(*fvgb, at(11, 15), dc) - 1000.5) < 1e-6);
+        CHECK(std::fabs(ev.eval(*fvgt, at(11, 20), dc) - 1002) < 1e-6 && std::isnan(ev.eval(*fvgt, at(11, 25), dc)) && std::isnan(ev.eval(*fvgts, at(11, 20), dc)));
+        auto fentry = parse("lag(5, fvgt(5)) == fvgt(5) && lo(5,1) < fvgt(5) && cl(5,1) > fvgt(5)"); ev.bind(*fentry);
+        CHECK(ev.eval(*fentry, at(11, 20), dc) == 1 && ev.eval(*fentry, at(11, 15), dc) == 0);
+        bool threw = false;
+        try { auto bad = parse("obh(5)"); ev.bind(*bad); } catch (const std::exception&) { threw = true; }
+        CHECK(threw);
+        // orbt: 09:30–09:44 range 999.5–1000.5 (width 1) → long levels 1001 / 1001.5; the nearest ≥ 1R, 2 ticks before it
+        ExitSim sim(m);
+        Trade t; t.day = d; t.e = at(10, 0); t.dir = 1; t.stop = 0.4f; t.tgt = 0.8f; t.flat = at(15, 55);
+        CHECK(std::fabs(sim.orb_target(t) - 0.5) < 1e-6);
+        t.stop = 1.2f; CHECK(std::fabs(sim.orb_target(t) - 1.0) < 1e-6);
+        t.stop = 2.0f; CHECK(std::isnan(sim.orb_target(t)) && std::fabs(sim.level_or_fallback(t, X_ORBT) - t.tgt) < 1e-6);
+        Trade early = t; early.e = at(9, 40); CHECK(std::isnan(sim.orb_target(early)));
+        Trade sh = t; sh.dir = -1; sh.stop = 0.4f; CHECK(std::fabs(sim.orb_target(sh) - 0.5) < 1e-6);   // 999 is 1.0 below the 1000 entry
+    }
     std::printf("test_edge_lab: %d/%d checks passed\n", checks - fails, checks);
     return fails ? 1 : 0;
 }

@@ -204,6 +204,7 @@ struct DayCache {
     int day = -1;
     std::vector<double> rhi, rlo, dhi, dlo, vw, vsd, cd, cv;   // value at bar b0+k = over bars [anchor, b0+k)
     std::map<long, std::vector<double>> extra;                 // session-anchored helpers (hi_since, rhi, at …)
+    std::map<std::string, std::vector<std::vector<double>>> smc;   // market-structure state per bar ("ob|tf|n", "fvg|tf"), see smc_fn()
 };
 
 class Evaluator {
@@ -234,6 +235,15 @@ public:
             for (auto& x : n.a) if (x->kind != Node::Num) throw std::runtime_error(n.name + ": arguments must be constants");
             const int tf = (int)n.a[0]->v;
             if (tf < 1 || 1440 % tf != 0 || n.a[1]->v < 2) throw std::runtime_error(n.name + ": tf must divide 1440, n ≥ 2");
+            m_.agg(tf);
+            return;
+        }
+        if (is_smc(n.name)) {   // order blocks / fair value gaps / swings on completed tf bars since 18:00 (see smc_fn())
+            const bool fvg = n.name.rfind("fvg", 0) == 0;
+            if (n.a.size() != (fvg ? 1u : 2u)) throw std::runtime_error(n.name + (fvg ? "(tf)" : "(tf, n)") + ": constants only");
+            for (auto& x : n.a) if (x->kind != Node::Num) throw std::runtime_error(n.name + ": arguments must be constants");
+            const int tf = (int)n.a[0]->v;
+            if (tf < 1 || 1440 % tf != 0 || (!fvg && n.a[1]->v < 1)) throw std::runtime_error(n.name + ": tf must divide 1440, n ≥ 1");
             m_.agg(tf);
             return;
         }
@@ -309,6 +319,7 @@ private:
             return eval(*n.a[1], j, dc);
         }
         if (f == "rhi" || f == "rlo" || f == "at" || f == "hi_since" || f == "lo_since") return day_fn(n, i, dc);
+        if (is_smc(f)) return smc_fn(n, i, dc);
         if (f == "bk") {
             const Series& s = m_.s();
             const std::vector<float>& src = n.a[0]->slot == 0 ? s.qimb : n.a[0]->slot == 1 ? s.cxl : n.a[0]->slot == 2 ? s.bidq : s.askq;
@@ -407,11 +418,102 @@ private:
         return it->second[i - D.b0];
     }
 
+    // ───────── market structure on completed tf bars, per trading day since 18:00 (LuxAlgo SMC, 2026-10-18,
+    // research/preregistered/2026-10-18_luxalgo_smc.md) ─────────
+    //   swh(tf, n) / swl(tf, n)   level of the most recent CONFIRMED swing high / low: a bar whose high (low) is strictly
+    //                             above (below) the n bars on each side, all inside the day; known n bars later
+    //   obh / obl (tf, n)         top / bottom of the most recent UNMITIGATED bullish order block: on the first close above
+    //                             the last unbroken swing high, the last down-close bar between the swing bar and the
+    //                             breaking bar; mitigated = a later close below its low. obhs / obls: the bearish mirror
+    //                             (last up-close bar before the first close below the last unbroken swing low; mitigated by
+    //                             a close above its high)
+    //   fvgt / fvgb (tf)          top / bottom of the most recent UNFILLED bullish fair value gap: three bars with bar-1
+    //                             high < bar-3 low (gap = [bar-1 high, bar-3 low]); filled = a later close below the bottom.
+    //                             fvgts / fvgbs: the bearish mirror (bar-1 low > bar-3 high; filled by a close above the top)
+    // Value at bar i uses the tf bars completed before i only; NaN when there is none. One pass per day per (tf, n),
+    // cached in DayCache::smc.
+    static bool is_smc(const std::string& f) {
+        static const std::vector<std::string> names = {"swh", "swl", "obh", "obl", "obhs", "obls", "fvgt", "fvgb", "fvgts", "fvgbs"};
+        return std::find(names.begin(), names.end(), f) != names.end();
+    }
+    double smc_fn(const Node& n, int i, DayCache& dc) {
+        const Series& s = m_.s();
+        const int d = s.day_of[i];
+        if (d < 0) return NAN;
+        if (dc.day != d) fill(d, dc);
+        const Day& D = s.days[d];
+        const std::string& f = n.name;
+        const bool fvg = f.rfind("fvg", 0) == 0;
+        const int tf = (int)n.a[0]->v, nn = fvg ? 0 : (int)n.a[1]->v;
+        const std::string key = (fvg ? "fvg|" : "ob|") + std::to_string(tf) + "|" + std::to_string(nn);
+        auto it = dc.smc.find(key);
+        if (it == dc.smc.end()) it = dc.smc.emplace(key, fvg ? fvg_day(D, tf) : ob_day(D, tf, nn)).first;
+        static const std::map<std::string, int> col = {{"obh", 0}, {"obl", 1}, {"obhs", 2}, {"obls", 3}, {"swh", 4}, {"swl", 5},
+                                                       {"fvgt", 0}, {"fvgb", 1}, {"fvgts", 2}, {"fvgbs", 3}};
+        return it->second[col.at(f)][i - D.b0];
+    }
+    struct Box { double top, bot; };
+    // Walks the day's completed tf bars once; `step(b)` is called for every tf bar b completed inside the day, in order, and
+    // `emit(k)` after the bars completed before 1m bar k are processed (the value AT bar k).
+    template <class Step, class Emit>
+    void walk_day(const Day& D, int tf, Step step, Emit emit) const {
+        const Agg& a = m_.agg(tf);
+        int done = a.comp[D.b0];                 // tf bars completed before the day's first bar belong to the previous day
+        const int c0 = done + 1;                 // the day's first tf bar
+        for (int k = D.b0; k < D.b1; ++k) {
+            for (int b = done + 1; b <= a.comp[k]; ++b) step(b, c0);
+            done = std::max(done, a.comp[k]);
+            emit(k);
+        }
+    }
+    std::vector<std::vector<double>> ob_day(const Day& D, int tf, int N) const {
+        const Agg& a = m_.agg(tf);
+        std::vector<std::vector<double>> out(6, std::vector<double>(D.b1 - D.b0, NAN));
+        std::vector<Box> bull, bear;                    // unmitigated blocks, oldest first
+        double sh = NAN, sl = NAN, swh = NAN, swl = NAN; int shi = -1, sli = -1; bool shb = true, slb = true;
+        walk_day(D, tf, [&](int b, int c0) {
+            const int p = b - N;                        // the bar a pivot at p needs: N bars on its right, the last being b
+            if (p - N >= c0) {
+                bool ish = true, isl = true;
+                for (int j = p - N; j <= p + N; ++j) { if (j == p) continue; if (a.h[j] >= a.h[p]) ish = false; if (a.l[j] <= a.l[p]) isl = false; }
+                if (ish) { sh = swh = a.h[p]; shi = p; shb = false; }
+                if (isl) { sl = swl = a.l[p]; sli = p; slb = false; }
+            }
+            bull.erase(std::remove_if(bull.begin(), bull.end(), [&](const Box& x) { return a.c[b] < x.bot; }), bull.end());
+            bear.erase(std::remove_if(bear.begin(), bear.end(), [&](const Box& x) { return a.c[b] > x.top; }), bear.end());
+            if (!shb && a.c[b] > sh) { shb = true; for (int q = b - 1; q >= shi; --q) if (a.c[q] < a.o[q]) { bull.push_back({a.h[q], a.l[q]}); break; } }
+            if (!slb && a.c[b] < sl) { slb = true; for (int q = b - 1; q >= sli; --q) if (a.c[q] > a.o[q]) { bear.push_back({a.h[q], a.l[q]}); break; } }
+        }, [&](int k) {
+            const int r = k - D.b0;
+            if (!bull.empty()) { out[0][r] = bull.back().top; out[1][r] = bull.back().bot; }
+            if (!bear.empty()) { out[2][r] = bear.back().top; out[3][r] = bear.back().bot; }
+            out[4][r] = swh; out[5][r] = swl;
+        });
+        return out;
+    }
+    std::vector<std::vector<double>> fvg_day(const Day& D, int tf) const {
+        const Agg& a = m_.agg(tf);
+        std::vector<std::vector<double>> out(4, std::vector<double>(D.b1 - D.b0, NAN));
+        std::vector<Box> bull, bear;                    // unfilled gaps, oldest first
+        walk_day(D, tf, [&](int b, int c0) {
+            bull.erase(std::remove_if(bull.begin(), bull.end(), [&](const Box& x) { return a.c[b] < x.bot; }), bull.end());
+            bear.erase(std::remove_if(bear.begin(), bear.end(), [&](const Box& x) { return a.c[b] > x.top; }), bear.end());
+            if (b - 2 < c0) return;                      // all three bars inside the day
+            if (a.h[b - 2] < a.l[b]) bull.push_back({a.l[b], a.h[b - 2]});
+            if (a.l[b - 2] > a.h[b]) bear.push_back({a.l[b - 2], a.h[b]});
+        }, [&](int k) {
+            const int r = k - D.b0;
+            if (!bull.empty()) { out[0][r] = bull.back().top; out[1][r] = bull.back().bot; }
+            if (!bear.empty()) { out[2][r] = bear.back().top; out[3][r] = bear.back().bot; }
+        });
+        return out;
+    }
+
     void fill(int d, DayCache& dc) {
         const Series& s = m_.s();
         const Day& D = s.days[d];
         const int n = D.b1 - D.b0 + 1;
-        dc.day = d; dc.extra.clear();
+        dc.day = d; dc.extra.clear(); dc.smc.clear();
         for (auto* v : {&dc.rhi, &dc.rlo, &dc.dhi, &dc.dlo, &dc.vw, &dc.vsd, &dc.cd, &dc.cv}) v->assign(n, NAN);
         double hi = -1e18, lo = 1e18, rhi = -1e18, rlo = 1e18, pv = 0, pv2 = 0, vol = 0, cd = 0, cv = 0;
         int rth = D.rth0;

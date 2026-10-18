@@ -465,8 +465,8 @@ std::vector<double> meta_walk(const MetaData& d, const std::vector<double>& ytra
 // X_MEXT / X_MEXT_VS (2026-10-17): the hard stop moves to 1 tick beyond the RTH extreme made against the trade between 09:30 and the
 // entry bar ("the morning's opposite extreme" — on a > 0.5 ATR trending morning it holds all day 83 % of the time), never tighter
 // than the idea's own stop; target price and everything else unchanged. Their control is a stop-width twin, not a timing twin.
-enum ExitRule { X_BASE, X_VWAP, X_OPEN, X_STALL, X_VWAP_STALL, X_VWAP_RUN, X_OPEN_RUN, X_TRAIL_RUN, X_FLOW, X_MEXT, X_MEXT_VS, X_TRAIL_REG, X_LIQ, X_LIQ_RUN, X__COUNT };
-inline bool exit_moves_target(int r) { return r == X_LIQ || r == X_LIQ_RUN; }
+enum ExitRule { X_BASE, X_VWAP, X_OPEN, X_STALL, X_VWAP_STALL, X_VWAP_RUN, X_OPEN_RUN, X_TRAIL_RUN, X_FLOW, X_MEXT, X_MEXT_VS, X_TRAIL_REG, X_LIQ, X_LIQ_RUN, X_ORBT, X__COUNT };
+inline bool exit_moves_target(int r) { return r == X_LIQ || r == X_LIQ_RUN || r == X_ORBT; }
 inline bool exit_moves_stop(int r) { return r == X_MEXT || r == X_MEXT_VS; }
 inline const char* exit_name(int r) {
     static const char* n[] = {"base (stop + target + 15:55)", "vwap: 5m close back through VWAP", "open: 5m close back through the RTH open",
@@ -474,11 +474,12 @@ inline const char* exit_name(int r) {
                               "15m trail runner (no target)", "flow: 5m aggressor delta against ≥ 20 % of its volume",
                               "mext: stop beyond the morning's opposite extreme", "mext + vwap + stall",
                               "trail_reg: 15m trail runner only when the page's regime score ≥ 60 at entry, else base (2026-10-18 feature study, step 4)",
-                              "liq: target = the nearest liquidity pool ≥ 1R beyond entry, 2 ticks before it (else the idea's target)", "liq_run: the same, no fallback target"};
+                              "liq: target = the nearest liquidity pool ≥ 1R beyond entry, 2 ticks before it (else the idea's target)", "liq_run: the same, no fallback target",
+                              "orbt: target = the nearest ORB 50 % level (09:30–09:44 range high/low ± k × half its width, k = 1, 2) ≥ 1R beyond entry, 2 ticks before it (else the idea's target; 2026-10-18 luxalgo_smc)"};
     return n[r];
 }
 inline const char* exit_key(int r) {
-    static const char* n[] = {"base", "vwap", "open", "stall", "vwap_stall", "vwap_run", "open_run", "trail_run", "flow", "mext", "mext_vwap_stall", "trail_reg", "liq", "liq_run"};
+    static const char* n[] = {"base", "vwap", "open", "stall", "vwap_stall", "vwap_run", "open_run", "trail_run", "flow", "mext", "mext_vwap_stall", "trail_reg", "liq", "liq_run", "orbt"};
     return n[r];
 }
 
@@ -542,6 +543,31 @@ public:
         return std::isnan(best) ? NAN : best - 0.5;
     }
 
+    // ORB 50 % targets (2026-10-18, research/preregistered/2026-10-18_luxalgo_smc.md — LuxAlgo's ORB levels): from the
+    // 09:30–09:44 range (high H, low L, width w) the levels H + k·w/2 above and L − k·w/2 below, k = 1, 2. Returns the distance
+    // (points) to the nearest level in the trade's direction at least 1R beyond the entry, less 2 ticks; NaN when there is
+    // none or the range is not known yet (entry before 09:45).
+    double orb_target(const Trade& t) const {
+        const Series& s = m_.s(); const Day& D = s.days[t.day];
+        const int i = t.e, dir = t.dir; const double P = s.o[i];
+        if (D.rth0 < 0 || i <= D.rth0 || tday_min(s.t[i]) < hm_to_tday(9, 45)) return NAN;
+        const double R = t.stop > 0 ? t.stop : 0.25 * D.atr;
+        double H = -1e18, L = 1e18;
+        for (int k = D.rth0; k < i && tday_min(s.t[k]) < hm_to_tday(9, 45); ++k) { H = std::max(H, (double)s.h[k]); L = std::min(L, (double)s.l[k]); }
+        if (H < -1e17) return NAN;
+        const double w = H - L;
+        double best = NAN;
+        for (int k = 1; k <= 2; ++k) {
+            const double lv = dir > 0 ? H + k * 0.5 * w : L - k * 0.5 * w, d = dir * (lv - P);
+            if (d >= R && (std::isnan(best) || d < best)) best = d;
+        }
+        return std::isnan(best) ? NAN : best - 0.5;
+    }
+    // The target distance a level rule puts on a trade (NaN = no level → the rule's fallback applies).
+    double level_target(const Trade& t, int rule) const { return rule == X_ORBT ? orb_target(t) : liq_target(t); }
+    // The level rules' effective target distance: the level when there is one, else the idea's target (liq_run: none).
+    double level_or_fallback(const Trade& t, int rule) const { const double lq = level_target(t, rule); return !std::isnan(lq) ? lq : (rule == X_LIQ_RUN ? 0 : t.tgt); }
+
     // The mext stop distance (points): 1 tick beyond the RTH extreme against the trade from 09:30 to the bar before entry,
     // never tighter than the idea's own stop. No stop on the idea → none here either.
     double mext_stop(const Trade& t) const {
@@ -562,7 +588,7 @@ public:
         const bool reg_trail = rule == X_TRAIL_REG && trail_gate(t);
         const bool keep_tgt = !(rule == X_VWAP_RUN || rule == X_OPEN_RUN || rule == X_TRAIL_RUN || reg_trail);
         double tgt = keep_tgt ? t.tgt : 0;
-        if (exit_moves_target(rule)) { const double lq = liq_target(t); tgt = !std::isnan(lq) ? lq : (rule == X_LIQ ? t.tgt : 0); }
+        if (exit_moves_target(rule)) tgt = level_or_fallback(t, rule);
         if (tgt_dist >= 0) tgt = tgt_dist;
         const double sp = stop > 0 ? P - dir * stop : NAN, tp = tgt > 0 ? P + dir * tgt : NAN;
         const bool use_thesis = force_at < 0 && rule != X_BASE && rule != X_MEXT && !(rule == X_TRAIL_REG && !reg_trail) && !exit_moves_target(rule);

@@ -1,0 +1,5 @@
+{"id":"gap_or_retest_pd_compl","name":"(complement) Gap retest in premium (longs) / discount (shorts), or no swing yet","why":"Complement of gap_or_retest_pd (adoption rule). Pre-registered 2026-10-18 (research/preregistered/2026-10-18_luxalgo_smc.md).",
+ "symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"stopk":[0.25,0.35]},
+ "scan":{"tf":5,"from":"09:35","to":"14:00","when":"!(sign(gap) * (px - 0.5*(swh(5,5)+swl(5,5))) < 0) && (!rollwin && abs(gap) >= 0.1 && ((sign(gap) > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (sign(gap) < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15))))","dir":"sign(gap)"},
+ "max_trades":1,"stop":"stopk*atr","target":"2","flat":"15:55","min_trades":100,"control_pct":0.992,"control_seeds":400}

@@ -1,0 +1,8 @@
+{"id":"cascade_pd","name":"Cascade only in discount (longs) / premium (shorts) of the last 5-bar swing range","why":"so_cascade taken only when the entry is on the cheap side of the 50 % of the range between the last confirmed 5-minute swing high and low (n = 5): the institutional open flow is joined where the counter-party still has room to be wrong, not after the move has already used the range. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_luxalgo_smc.md).",
+ "symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"k1":[0.2,0.25,0.3],"k2":[0.25,0.3,0.35],"stopk":[0.2,0.25,0.35],"rr":[2,3]},
+ "checks":[{"at":"09:50","when":"(sign(px-open) * (px - 0.5*(swh(5,5)+swl(5,5))) < 0) && (abs(px-open) > k1*atr)","dir":"sign(px-open)"},
+           {"at":"10:30","when":"(sign(px-open) * (px - 0.5*(swh(5,5)+swl(5,5))) < 0) && (abs(px-open) > k2*atr)","dir":"sign(px-open)"},
+           {"at":"11:00","when":"(sign(px-open) * (px - 0.5*(swh(5,5)+swl(5,5))) < 0) && (abs(px-open) > k2*atr)","dir":"sign(px-open)"},
+           {"at":"11:30","when":"(sign(px-open) * (px - 0.5*(swh(5,5)+swl(5,5))) < 0) && (abs(px-open) > k2*atr)","dir":"sign(px-open)"}],
+ "stop":"stopk*atr","target":"rr","flat":"15:55","control_pct":0.992,"control_seeds":400}
