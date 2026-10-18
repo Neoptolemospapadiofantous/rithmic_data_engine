@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <functional>
 #include <cstdio>
 #include <ctime>
 #include <filesystem>
@@ -27,6 +28,7 @@ namespace {
 struct Ctx {
     std::string data = "data/edge_lab/cache", out = "data/edge_lab", regime = "data/regime";
     int threads = 4; bool quick = false; bool meta_book = false;   // meta: add the flow / order-book inputs
+    bool meta_page = false;                                        // meta: + the ORB page's reads and the feature study (2026-10-18)
     std::map<std::string, std::unique_ptr<Series>> series;
     std::map<std::string, std::unique_ptr<Market>> market;
     std::set<int> fomc; paper::VixRegime vix;
@@ -336,13 +338,12 @@ void prop_table(std::ostringstream& o, const std::string& who, const std::vector
           << f2(p.years > 0 ? p.paid / p.years : 0, 0) << " | " << f2(p.be_fee, 0) << " |\n";
 }
 
-json run_meta(Ctx& c, const Spec& sp, std::string& md) {
-    auto t0 = std::chrono::steady_clock::now();
-    Base b = prepare(c, sp);
+// One full meta evaluation (walk-forward, the five gates, the report body) on a feature set. run_meta calls it once; with
+// --page (feature study, 2026-10-18) it is called again on the features that survive permutation importance.
+struct MetaEval { std::string md, verdict; int stage = 0; json R; std::vector<double> pg; std::vector<int> T; Line Lb, Lm; };
+MetaEval eval_meta(Ctx& c, const Spec& sp, Base& b, const MetaData& d, const std::vector<std::string>& FN, const std::string& sfx, const std::string& title, std::chrono::steady_clock::time_point t0) {
+    MetaEval E;
     const Series& s = b.m->s();
-    Market* esm = sp.confirm.empty() || sp.confirm == sp.symbol ? nullptr : get_market(c, sp.confirm);
-    MetaData d = meta_data(*b.m, esm ? &esm->s() : nullptr, b.w.trades, b.cost, c.meta_book);
-    const auto FN = meta_feature_names(c.meta_book);
     auto gfit = [](const std::vector<std::vector<float>>& X, const std::vector<double>& y) { return gbm_fit(X, y); };
     auto rfit = [](const std::vector<std::vector<float>>& X, const std::vector<double>& y) { return ridge_fit(X, y); };
     const int MINY = 3;
@@ -352,7 +353,7 @@ json run_meta(Ctx& c, const Spec& sp, std::string& md) {
     for (size_t i = 0; i < d.tr.size(); ++i) if (!std::isnan(pg[i])) T.push_back((int)i);
     if (T.empty()) throw std::runtime_error(sp.id + ": not enough history for the meta walk-forward");
     {   // per-trade decisions (2026-10-17): which walk-forward trades the model would take — for combining with other filters
-        std::ofstream pf(c.out + "/reports/" + sp.id + (c.meta_book ? "__meta_book" : "__meta") + ".trades.csv");
+        std::ofstream pf(c.out + "/reports/" + sp.id + sfx + ".trades.csv");
         pf << "date,entry_epoch_et,dir,net_pts,pred_gbm,pred_ridge,take\n";
         for (int i : T)
             pf << s.days[d.tr[i].day].date << "," << s.t[d.tr[i].e] << "," << d.tr[i].dir << "," << (d.tr[i].pts - b.cost) << "," << pg[i] << ","
@@ -430,7 +431,7 @@ json run_meta(Ctx& c, const Spec& sp, std::string& md) {
     const std::string verdict = stage == 5 ? "PASS" : std::string("FAIL at ") + gname[stage];
 
     std::ostringstream o;
-    o << "# Meta-label (take / skip)" << (c.meta_book ? " with flow / order-book inputs" : "") << " on " << sp.name << " (`" << sp.id << (c.meta_book ? "__meta_book" : "__meta") << "`)\n\n";
+    o << "# " << title << " on " << sp.name << " (`" << sp.id << sfx << "`)\n\n";
     o << "The base trades are the idea's walk-forward trades. For every year from the " << (MINY + 1) << "th on, a model trained only on\n"
          "EARLIER years predicts each signal's result in R from the context at the signal; the signal is taken when the\n"
          "prediction is > 0 (fixed in advance). Primary model: boosted depth-2 trees (150 rounds, shrink 0.05, ≥60 trades a\n"
@@ -464,13 +465,120 @@ json run_meta(Ctx& c, const Spec& sp, std::string& md) {
     prop_table(o, "base", pb); prop_table(o, "meta", pm);
     double secs = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
     o << "\n_edge_lab meta run in " << f2(secs, 1) << " s_\n";
-    md = o.str();
+    E.md = o.str();
 
-    json R; R["id"] = sp.id + (c.meta_book ? "__meta_book" : "__meta"); R["name"] = std::string(c.meta_book ? "Meta-label + flow/book: " : "Meta-label: ") + sp.name; R["verdict"] = verdict; R["stage_reached"] = stage; R["quick"] = false;
+    json R; R["id"] = sp.id + sfx; R["name"] = title + ": " + sp.name; R["verdict"] = verdict; R["stage_reached"] = stage; R["quick"] = false;
     R["oos"] = {{"n", Lm.n}, {"avg_pts", Lm.avg}, {"pf", Lm.pf}, {"base_n", Lb.n}, {"base_avg_pts", Lb.avg}, {"base_pf", Lb.pf}, {"ridge_avg_pts", Lr.avg}};
     R["controls"] = {{"random_skip_pct", p_skip}, {"shuffled_label_pct", p_lab}};
     R["prop"] = {{"meta_be_fee", bem}, {"base_be_fee", beb}};
     R["seconds"] = secs;
+    E.R = R; E.verdict = verdict; E.stage = stage; E.pg = pg; E.T = T; E.Lb = Lb; E.Lm = Lm;
+    return E;
+}
+
+// Permutation importance (feature study): for each feature, permute its column within every tested year, predict with that
+// year's walk-forward model, and measure the drop in out-of-sample net per tested signal (taken when the prediction is > 0).
+// Done on the real-label models and on one shuffled-label model: a feature "works" only if it helps in ≥ 2 of 3 eras AND
+// more than it "helps" the model trained on shuffled results.
+struct FeatImp { int f; double imp = 0, imp_sh = 0; double era[3] = {0, 0, 0}; bool works = false; };
+std::vector<FeatImp> permutation_importance(const MetaData& d, const std::vector<double>& ytrain, const Series& s, double cost, int MINY, int seeds) {
+    auto gfit = [](const std::vector<std::vector<float>>& X, const std::vector<double>& y) { return gbm_fit(X, y); };
+    auto models = meta_walk_models(d, ytrain, MINY, gfit);
+    const int F = d.X.empty() ? 0 : (int)d.X[0].size();
+    std::vector<FeatImp> out(F);
+    std::map<int, std::vector<int>> by_year; for (size_t i = 0; i < d.tr.size(); ++i) by_year[d.year[i]].push_back((int)i);
+    auto net = [&](int i) { return d.tr[i].pts - cost; };
+    // score = net of taken signals per tested signal, overall and per era
+    auto score = [&](const std::function<float(int, int)>& xf, double* era) {
+        double tot = 0; int n = 0; double es[3] = {0, 0, 0}; int en[3] = {0, 0, 0};
+        for (auto& [Y, m] : models) {
+            auto it = by_year.find(Y); if (it == by_year.end()) continue;
+            for (int i : it->second) {
+                std::vector<float> x = d.X[i]; for (int f = 0; f < F; ++f) x[f] = xf(i, f);
+                const double p = m.predict(x); const int e = era_of(s.days[d.tr[i].day].date);
+                ++n; ++en[e]; if (p > 0) { tot += net(i); es[e] += net(i); }
+            }
+        }
+        for (int e = 0; e < 3; ++e) era[e] = en[e] ? es[e] / en[e] : NAN;
+        return n ? tot / n : NAN;
+    };
+    double base_era[3]; const double base = score([&](int i, int f) { return d.X[i][f]; }, base_era);
+    for (int f = 0; f < F; ++f) {
+        out[f].f = f; double acc = 0, acc_e[3] = {0, 0, 0};
+        for (int sd = 0; sd < seeds; ++sd) {
+            std::mt19937_64 rng(1234567ULL * (sd + 1) + f);
+            std::vector<float> perm(d.tr.size());
+            for (auto& [Y, idx] : by_year) { std::vector<int> p = idx; std::shuffle(p.begin(), p.end(), rng); for (size_t j = 0; j < idx.size(); ++j) perm[idx[j]] = d.X[p[j]][f]; }
+            double e3[3]; const double sc = score([&](int i, int g) { return g == f ? perm[i] : d.X[i][g]; }, e3);
+            acc += (base - sc) / seeds; for (int e = 0; e < 3; ++e) acc_e[e] += (std::isnan(e3[e]) || std::isnan(base_era[e]) ? 0 : base_era[e] - e3[e]) / seeds;
+        }
+        out[f].imp = acc; for (int e = 0; e < 3; ++e) out[f].era[e] = acc_e[e];
+    }
+    return out;
+}
+
+json run_meta(Ctx& c, const Spec& sp, std::string& md) {
+    auto t0 = std::chrono::steady_clock::now();
+    Base b = prepare(c, sp);
+    const Series& s = b.m->s();
+    Market* esm = sp.confirm.empty() || sp.confirm == sp.symbol ? nullptr : get_market(c, sp.confirm);
+    MetaData d = meta_data(*b.m, esm ? &esm->s() : nullptr, b.w.trades, b.cost, c.meta_book, c.meta_page);
+    const auto FN = meta_feature_names(c.meta_book, c.meta_page);
+    const std::string sfx = c.meta_page ? (c.meta_book ? "__meta_page_book" : "__meta_page") : (c.meta_book ? "__meta_book" : "__meta");
+    const std::string title = std::string("Meta-label (take / skip)") + (c.meta_page ? " + the ORB page's reads" : "") + (c.meta_book ? " with flow / order-book inputs" : "");
+    MetaEval E0 = eval_meta(c, sp, b, d, FN, sfx, title, t0);
+    if (!c.meta_page) { md = E0.md; return E0.R; }
+    {   // every signal's feature row (for the manual-marks comparison and for checking a feature is what it claims to be)
+        std::ofstream ff(c.out + "/reports/" + sp.id + sfx + ".features.csv");
+        ff << "date,entry_epoch_et,dir,net_pts"; for (auto& n : FN) ff << "," << n; ff << "\n";
+        for (size_t i = 0; i < d.tr.size(); ++i) {
+            ff << s.days[d.tr[i].day].date << "," << s.t[d.tr[i].e] << "," << d.tr[i].dir << "," << (d.tr[i].pts - b.cost);
+            for (float x : d.X[i]) ff << "," << (std::isnan(x) ? "" : std::to_string(x)); ff << "\n";
+        }
+    }
+
+    // feature study (research/preregistered/2026-10-18_feature_study.md): importance on real and shuffled labels, then refits
+    const int MINY = 3, SEEDS = 20;
+    std::vector<FeatImp> imp = permutation_importance(d, d.y, s, b.cost, MINY, SEEDS);
+    {
+        std::mt19937_64 rng(104729ULL);
+        std::vector<double> ys = d.y;
+        std::map<int, std::vector<int>> yi; for (size_t i = 0; i < d.y.size(); ++i) yi[d.year[i]].push_back((int)i);
+        for (auto& [y, idx] : yi) { std::vector<int> p = idx; std::shuffle(p.begin(), p.end(), rng); for (size_t j = 0; j < idx.size(); ++j) ys[idx[j]] = d.y[p[j]]; }
+        std::vector<FeatImp> sh = permutation_importance(d, ys, s, b.cost, MINY, std::max(5, SEEDS / 4));
+        for (size_t f = 0; f < imp.size(); ++f) imp[f].imp_sh = sh[f].imp;
+    }
+    std::vector<int> works, top8;
+    for (auto& x : imp) { int up = 0; for (double e : x.era) up += e > 0; x.works = up >= 2 && x.imp > x.imp_sh && x.imp > 0; if (x.works) works.push_back(x.f); }
+    { std::vector<int> ord(imp.size()); std::iota(ord.begin(), ord.end(), 0); std::sort(ord.begin(), ord.end(), [&](int a, int z) { return imp[a].imp > imp[z].imp; }); for (size_t k = 0; k < ord.size() && k < 8; ++k) top8.push_back(ord[k]); std::sort(top8.begin(), top8.end()); }
+    auto names_of = [&](const std::vector<int>& k) { std::vector<std::string> n; for (int f : k) n.push_back(FN[f]); return n; };
+    auto join = [&](const std::vector<int>& k) { std::string o; for (int f : k) o += (o.empty() ? "" : ", ") + FN[f]; return o.empty() ? "(none)" : o; };
+    std::ostringstream o;
+    o << "# Feature study on " << sp.name << " (`" << sp.id << sfx << "`)\n\n";
+    o << "Pre-registered 2026-10-18 (research/preregistered/2026-10-18_feature_study.md). Step 1 = the meta walk-forward on all " << FN.size()
+      << " features; step 2 = permutation importance (" << SEEDS << " seeds, within-year permutation, drop in out-of-sample net per tested signal) on the\n"
+         "real-label models and on a shuffled-label model; a feature works if it helps in ≥ 2 of 3 eras and more than on shuffled labels; step 3 = refits on the\n"
+         "features that work and on the top 8. The verdict is the refit on the features that work.\n\n";
+    o << "## Step 2 — what works\n\n| feature | importance (pts / signal) | 2010–18 | 2019–22 | 2023–26 | on shuffled labels | works |\n|---|---|---|---|---|---|---|\n";
+    { std::vector<int> ord(imp.size()); std::iota(ord.begin(), ord.end(), 0); std::sort(ord.begin(), ord.end(), [&](int a, int z) { return imp[a].imp > imp[z].imp; });
+      for (int f : ord) o << "| " << FN[f] << " | " << sg(imp[f].imp, 3) << " | " << sg(imp[f].era[0], 3) << " | " << sg(imp[f].era[1], 3) << " | " << sg(imp[f].era[2], 3) << " | " << sg(imp[f].imp_sh, 3) << " | " << (imp[f].works ? "**yes**" : "no") << " |\n"; }
+    o << "\nFeatures that work: " << join(works) << "\nTop 8 by importance: " << join(top8) << "\n\n";
+    MetaEval E1, E2;
+    if (works.size() >= 2) E1 = eval_meta(c, sp, b, meta_subset(d, works), names_of(works), sfx + "_works", "Refit on the features that work", t0);
+    E2 = eval_meta(c, sp, b, meta_subset(d, top8), names_of(top8), sfx + "_top8", "Refit on the top 8", t0);
+    const std::string verdict = works.size() < 2 ? "FAIL — fewer than 2 features work" : E1.verdict;
+    o << "## Verdict: **" << verdict << "**\n\n| model | taken / signals | net pts/trade | base | verdict |\n|---|---|---|---|---|\n";
+    o << "| all features | " << E0.Lm.n << " / " << E0.Lb.n << " | " << sg(E0.Lm.avg) << " | " << sg(E0.Lb.avg) << " | " << E0.verdict << " |\n";
+    if (works.size() >= 2) o << "| features that work (" << works.size() << ") | " << E1.Lm.n << " / " << E1.Lb.n << " | " << sg(E1.Lm.avg) << " | " << sg(E1.Lb.avg) << " | " << E1.verdict << " |\n";
+    o << "| top 8 | " << E2.Lm.n << " / " << E2.Lb.n << " | " << sg(E2.Lm.avg) << " | " << sg(E2.Lb.avg) << " | " << E2.verdict << " |\n\n---\n\n";
+    o << E0.md << "\n---\n\n" << (works.size() >= 2 ? E1.md + "\n---\n\n" : "") << E2.md;
+    md = o.str();
+    json R = works.size() >= 2 ? E1.R : E0.R;
+    R["id"] = sp.id + sfx; R["name"] = "Feature study: " + sp.name; R["verdict"] = verdict; R["stage_reached"] = works.size() >= 2 ? E1.stage : 0;
+    R["features"] = {{"all", FN}, {"works", names_of(works)}, {"top8", names_of(top8)}};
+    json imps = json::array(); for (auto& x : imp) imps.push_back({{"f", FN[x.f]}, {"imp", x.imp}, {"imp_sh", x.imp_sh}, {"era", {x.era[0], x.era[1], x.era[2]}}, {"works", x.works}});
+    R["importance"] = imps;
+    R["all_features"] = {{"verdict", E0.verdict}, {"avg_pts", E0.Lm.avg}}; R["top8"] = {{"verdict", E2.verdict}, {"avg_pts", E2.Lm.avg}};
     return R;
 }
 
@@ -602,7 +710,7 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
 int main(int argc, char** argv) {
     const std::string mode = argc >= 3 ? argv[1] : "";
     if (mode != "run" && mode != "meta" && mode != "exits") {
-        std::cerr << "usage: edge_lab {run|meta|exits} SPEC.json [...] [--data DIR] [--out DIR] [--threads N] [--quick] [--book]\n";
+        std::cerr << "usage: edge_lab {run|meta|exits} SPEC.json [...] [--data DIR] [--out DIR] [--threads N] [--quick] [--book] [--page]\n";
         return 2;
     }
     Ctx c;
@@ -615,6 +723,7 @@ int main(int argc, char** argv) {
         else if (a == "--threads") c.threads = std::max(1, std::stoi(need("--threads")));
         else if (a == "--quick") c.quick = true;
         else if (a == "--book") c.meta_book = true;
+        else if (a == "--page") c.meta_page = true;
         else specs.push_back(a);
     }
     {   // FOMC decision days exported by scripts/edge_lab.sh from the calendar table

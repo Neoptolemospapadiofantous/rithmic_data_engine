@@ -31,7 +31,28 @@
 namespace lab {
 
 // ───────────────────────────── features at the decision bar ─────────────────────────────
-inline std::vector<std::string> meta_feature_names(bool book = false) {
+// --page (2026-10-18, research/preregistered/2026-10-18_feature_study.md): the dashboard ORB page's reads as 12 more features,
+// computed here with the page's own definitions (5-minute buckets since 18:00, EMA-14 of their closes, swings with 2 bars each
+// side, BOS / CHoCH on a close through the last unbroken swing, the 15-minute range's break / failed-break state with a 0.05 ATR
+// buffer, and the page's regime / reversal-zone scores).
+inline std::vector<std::string> page_feature_names() {
+    return {
+        "er45",          // straightness of the last 45 one-minute closes (|net| / path)
+        "acr60",         // lag-1 autocorrelation of the last 60 one-minute moves
+        "sd_pos",        // dir·(px − VWAP)/σ — position in the VWAP SD bands
+        "ema_dist",      // dir·(px − EMA14 of 5-min closes)/atr
+        "ema_touches",   // completed RTH 5-min bars that straddled the EMA today (first bar of each visit)
+        "struct",        // swing structure: +1 aligned with the trade, −1 against, 0 none yet
+        "bos_age",       // minutes since the last BOS / CHoCH (NaN = none yet)
+        "choch_against", // a CHoCH against the trade in the last 30 minutes (0/1)
+        "or15_w",        // 15-minute opening range width / atr (NaN before 09:45)
+        "or15_pos",      // dir·(px − range mid) / width
+        "reg_score",     // the page's regime score 0–100
+        "zone_score",    // the page's reversal-zone score 0–100
+    };
+}
+
+inline std::vector<std::string> meta_feature_names(bool book = false, bool page = false) {
     std::vector<std::string> n = {
         "move",      // dir·(px − open)/atr          how far the open move has gone
         "gap",       // dir·(open − pc)/atr          gap in the trade's direction (NaN in the roll window)
@@ -58,12 +79,13 @@ inline std::vector<std::string> meta_feature_names(bool book = false) {
         "qimb5",     // dir·book qty imbalance within 10 bps, mean of the last 5 minutes (mbo_1m, 2023-03 … 2026-03)
         "cxl5",      // cancel-to-add ratio, mean of the last 5 minutes
     }) n.push_back(x);
+    if (page) for (auto& x : page_feature_names()) n.push_back(x);
     return n;
 }
 
 class FeatureMaker {
 public:
-    FeatureMaker(Market& m, const Series* es, bool book = false) : m_(m), ev_(m), es_(es), book_(book) {}
+    FeatureMaker(Market& m, const Series* es, bool book = false, bool page = false) : m_(m), ev_(m), es_(es), book_(book), page_(page) {}
 
     std::vector<float> at(const Trade& t) {
         const Series& s = m_.s();
@@ -101,10 +123,114 @@ public:
             push(s.qimb.size() == s.size() ? d * v("bk(qimb,5)") : NAN);
             push(s.cxl.size() == s.size() ? v("bk(cxl,5)") : NAN);
         }
+        if (page_) {
+            const PageReads P = page_reads(t);
+            const double er = v("er(1,45)"), ac = v("acr(1,60)"), vsd = v("vsd");
+            push(er); push(ac);
+            push(vsd > 0 ? d * (px - vw) / vsd : NAN);
+            push(std::isnan(P.ema) ? NAN : d * (px - P.ema) / atr);
+            push(P.touches);
+            push(P.state == 0 ? 0.0 : (P.state == 1 ? 1.0 : -1.0) * d);
+            push(P.last_event_t > 0 ? (s.t[i] - P.last_event_t) / 60.0 : NAN);
+            push(P.choch_dir != 0 && P.choch_dir != (int)d && s.t[i] - P.choch_t <= 30 * 60 ? 1.0 : 0.0);
+            const double w = P.orh - P.orl;
+            push(std::isnan(P.orh) ? NAN : w / atr);
+            push(std::isnan(P.orh) || !(w > 0) ? NAN : d * (px - 0.5 * (P.orh + P.orl)) / w);
+            // regime score (page formula): gap ≥ 0.1 ATR 40 (60 at ≥ 0.3); straight tape ≥ 0.30 on the right side 40 (60 at ≥ 0.45);
+            // a cascade check fired +20; gap and tape agreeing +10; capped at 100
+            double reg = 0;
+            const double gap = D.rollwin || std::isnan(D.pc) ? 0 : (op - D.pc) / atr;
+            const int gd = std::fabs(gap) >= 0.1 ? (gap > 0 ? 1 : -1) : 0;
+            if (gd) reg += std::fabs(gap) >= 0.3 ? 60 : 40;
+            const double c45 = v("cl(1,1)") - v("lag(45, cl(1,1))");
+            const int md = c45 > 0 ? 1 : -1;
+            const bool sided = !std::isnan(vw) && (md > 0 ? px > vw && px > op : px < vw && px < op);
+            const bool mom_on = er >= 0.3 && sided;
+            if (mom_on) reg += er >= 0.45 ? 60 : 40;
+            if (P.cascade) reg += 20;
+            if (gd && mom_on && gd == md) reg += 10;
+            push(std::min(100.0, reg));
+            // reversal-zone score (page formula): beyond ±3σ 40 (±2σ 25); within 0.05 ATR of a prior-day / overnight high or low
+            // +20 each; ≥ 0.25 ATR from the EMA +15; a CHoCH against the trade in the last 30 min +25; a failed range break +15
+            double zone = 0;
+            if (vsd > 0) { const double z = std::fabs(px - vw) / vsd; zone += z >= 3 ? 40 : z >= 2 ? 25 : 0; }
+            for (double lv : {D.ph, D.pl, onh, onl}) if (!std::isnan(lv) && std::fabs(px - lv) <= 0.05 * atr) zone += 20;
+            if (!std::isnan(P.ema) && std::fabs(px - P.ema) >= 0.25 * atr) zone += 15;
+            if (P.choch_dir != 0 && P.choch_dir != (int)d && s.t[i] - P.choch_t <= 30 * 60) zone += 25;
+            if (P.failed) zone += 15;
+            push(std::min(100.0, zone));
+        }
         return f;
     }
 
 private:
+    struct PageReads {
+        double ema = NAN;          // EMA-14 of completed 5-min closes since 18:00
+        int touches = 0;           // RTH 5-min bars straddling the EMA, first of each visit
+        int state = 0;             // swing structure: 1 bull, −1 bear, 0 none
+        int64_t last_event_t = 0;  // epoch of the last BOS / CHoCH (bucket end)
+        int choch_dir = 0; int64_t choch_t = 0;   // the last CHoCH's direction and time
+        double orh = NAN, orl = NAN;              // 15-minute opening range (set from 09:45)
+        bool failed = false;       // the range state machine is in RANGE (a break failed)
+        bool cascade = false;      // a cascade check fired before the decision bar
+    };
+    // One scan of the day's bars before the decision bar i, with the ORB page's definitions.
+    PageReads page_reads(const Trade& t) {
+        const Series& s = m_.s(); const Day& D = s.days[t.day];
+        PageReads P;
+        const int i = t.e; const int64_t now = s.t[i];
+        struct B5 { int64_t t0; double o, h, l, c; };
+        std::vector<B5> b; b.reserve(300);
+        for (int k = D.b0; k < i; ++k) {
+            const int64_t k0 = s.t[k] / 300 * 300;
+            if (!b.empty() && b.back().t0 == k0) { B5& x = b.back(); x.h = std::max(x.h, (double)s.h[k]); x.l = std::min(x.l, (double)s.l[k]); x.c = s.c[k]; }
+            else b.push_back({k0, (double)s.o[k], (double)s.h[k], (double)s.l[k], (double)s.c[k]});
+        }
+        while (!b.empty() && b.back().t0 + 300 > now) b.pop_back();   // completed buckets only
+        // 15-minute opening range from the 1-minute bars 09:30–09:44, known from 09:45
+        if (D.rth0 >= 0 && tday_min(now) >= hm_to_tday(9, 45)) {
+            double h = -1e18, l = 1e18;
+            for (int k = D.rth0; k < i && tday_min(s.t[k]) < hm_to_tday(9, 45); ++k) { h = std::max(h, (double)s.h[k]); l = std::min(l, (double)s.l[k]); }
+            if (h > -1e18) { P.orh = h; P.orl = l; }
+        }
+        // cascade checks: the close of the minute before 09:50 (≥ 0.25 ATR from the open), 10:30 / 11:00 / 11:30 (≥ 0.30)
+        if (D.rth0 >= 0 && !std::isnan(D.ro)) {
+            const int chk[4][2] = {{hm_to_tday(9, 50), 25}, {hm_to_tday(10, 30), 30}, {hm_to_tday(11, 0), 30}, {hm_to_tday(11, 30), 30}};
+            for (auto& c : chk) {
+                if (tday_min(now) < c[0]) break;
+                double last = NAN; for (int k = D.rth0; k < i && tday_min(s.t[k]) < c[0]; ++k) last = s.c[k];
+                if (!std::isnan(last) && std::fabs(last - D.ro) >= c[1] / 100.0 * D.atr) { P.cascade = true; break; }
+            }
+        }
+        // the 5-minute scan: EMA-14, touches, swings (N = 2) with BOS / CHoCH, the range state machine
+        const double a = 2.0 / 15, tol = 0.05 * D.atr;
+        double e = NAN; bool away = true;
+        struct Sw { double p; bool broken; int64_t t; };
+        Sw sh{NAN, true, 0}, sl{NAN, true, 0};
+        int rstate = 0;   // 0 wait, 1 trend, 2 range
+        const int N = 2;
+        for (size_t k = 0; k < b.size(); ++k) {
+            const B5& x = b[k]; const int64_t end = x.t0 + 300;
+            e = std::isnan(e) ? x.c : e + a * (x.c - e);
+            const bool rth = tday_min(x.t0) >= kRthOpen;
+            if (rth) { const bool touch = x.l <= e && x.h >= e; if (touch && away) ++P.touches; away = !touch; }
+            const int c = (int)k - N;
+            if (c >= N) {
+                bool ish = true, isl = true;
+                for (int j = c - N; j <= c + N; ++j) { if (j == c) continue; if (b[j].h >= b[c].h) ish = false; if (b[j].l <= b[c].l) isl = false; }
+                if (ish) sh = {b[c].h, false, b[c].t0};
+                if (isl) sl = {b[c].l, false, b[c].t0};
+            }
+            if (!sh.broken && !std::isnan(sh.p) && x.c > sh.p) { sh.broken = true; const bool ch = P.state == -1; P.state = 1; P.last_event_t = end; if (ch) { P.choch_dir = 1; P.choch_t = end; } }
+            if (!sl.broken && !std::isnan(sl.p) && x.c < sl.p) { sl.broken = true; const bool ch = P.state == 1; P.state = -1; P.last_event_t = end; if (ch) { P.choch_dir = -1; P.choch_t = end; } }
+            if (!std::isnan(P.orh) && tday_min(x.t0) >= hm_to_tday(9, 45)) {
+                if ((rstate == 0 || rstate == 2) && (x.c > P.orh + tol || x.c < P.orl - tol)) rstate = 1;
+                else if (rstate == 1 && x.c <= P.orh - tol && x.c >= P.orl + tol) rstate = 2;
+            }
+        }
+        P.ema = e; P.failed = rstate == 2;
+        return P;
+    }
     double value(const std::string& name, int i) {
         auto it = nodes_.find(name);
         if (it == nodes_.end()) { auto n = parse(name); ev_.bind(*n); it = nodes_.emplace(name, std::move(n)).first; }
@@ -127,7 +253,7 @@ private:
     Evaluator ev_;
     DayCache dc_;
     const Series* es_;
-    bool book_;
+    bool book_, page_;
     std::map<std::string, NodeP> nodes_;
 };
 
@@ -281,8 +407,8 @@ struct MetaData {
     std::vector<int> year;
 };
 
-inline MetaData meta_data(Market& m, const Series* es, const std::vector<Trade>& base, double cost, bool book = false) {
-    MetaData d; FeatureMaker fm(m, es, book);
+inline MetaData meta_data(Market& m, const Series* es, const std::vector<Trade>& base, double cost, bool book = false, bool page = false) {
+    MetaData d; FeatureMaker fm(m, es, book, page);
     for (const Trade& t : base) {
         const double atr = m.s().days[t.day].atr;
         const double R = t.stop > 0 ? t.stop : 0.25 * atr;   // no-stop ideas: R = 0.25 × ATR
@@ -293,6 +419,29 @@ inline MetaData meta_data(Market& m, const Series* es, const std::vector<Trade>&
         d.year.push_back(m.s().days[t.day].date / 10000);
     }
     return d;
+}
+
+// The same data with only the columns `keep` (feature selection refits).
+inline MetaData meta_subset(const MetaData& d, const std::vector<int>& keep) {
+    MetaData o = d;
+    for (auto& x : o.X) { std::vector<float> r; r.reserve(keep.size()); for (int f : keep) r.push_back(x[f]); x = r; }
+    return o;
+}
+
+// The per-year walk-forward models themselves (for permutation importance): fit on years < Y for every tested year Y.
+template <class Fit>
+auto meta_walk_models(const MetaData& d, const std::vector<double>& ytrain, int min_years, Fit fit) {
+    using M = decltype(fit(std::vector<std::vector<float>>{}, std::vector<double>{}));
+    std::vector<std::pair<int, M>> out;
+    if (d.tr.empty()) return out;
+    const int y0 = d.year.front();
+    for (int Y = y0 + min_years; Y <= d.year.back(); ++Y) {
+        std::vector<std::vector<float>> X; std::vector<double> y;
+        for (size_t i = 0; i < d.tr.size(); ++i) if (d.year[i] < Y) { X.push_back(d.X[i]); y.push_back(ytrain[i]); }
+        if (X.size() < 200) continue;
+        out.emplace_back(Y, fit(X, y));
+    }
+    return out;
 }
 
 // For every year with ≥ min_years of earlier data, fit on years < Y, predict Y. Returns one prediction per trade

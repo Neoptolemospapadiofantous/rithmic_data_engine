@@ -69,6 +69,7 @@ before the bar (NQ, 2023-03 … 2026-03; `meta --book` adds flow/book inputs to 
 ```
 scripts/edge_lab.sh meta  research/ideas/so_cascade.json   # take / skip model  → reports/so_cascade__meta.md
 scripts/edge_lab.sh exits research/ideas/so_cascade.json   # thesis exits       → reports/so_cascade__exits.md
+scripts/edge_lab.sh meta  research/ideas/so_cascade.json --page   # + the ORB page's 12 reads, permutation importance, refits → reports/so_cascade__meta_page.md (+ .features.csv)
 ```
 Both start from the idea's walk-forward trades (same entries).
 - **meta**: features at the signal (move, gap, overnight range/position/break, VWAP, room to yesterday's extreme,
@@ -165,6 +166,7 @@ Engine all-year replays (label `mom_hist`) now also hold `so_cascade_2r_nofomc`,
 | BDH (Patrick Wieland / D-Money) rules from 43 transcripts (2026-10-18_bdh) | 9 tests: 1:1 prev-candle scalp, 14/50 EMA retest, ORB retest, 5-min ORB, failed-break reverse, 15:50 all lose; 15-min ORB midpoint stop +2.9–4.0 FAIL controls (only hold-to-close positive); + gap side +6.4 (FAIL controls by a hair, 2025+ not confirmed) = the gap retest we already have |
 | BDH ORB gap-side optimisation, 72 variants (2026-10-18_bdh_optimize) | PASS 2010–24 +6.32 (13/14 years, broad plateau) but every variant NEGATIVE on 2025+ (gap retest +7.15 there) → not adopted |
 | ORB15 trend-or-reverse by regime, 7 reads × 4 (2026-10-18_orb_regime) | no regime verified: the fade is negative under every read; trend separates on gap (+4.2 vs −11.3) and 1-min straightness (+6.0 vs +2.6) but fails controls (random time on those days does as well) → trend regime = trade the day direction, range regime = no trade |
+| feature study: 33 features (21 + the ORB page's 12), permutation importance, refits (2026-10-18_feature_study; `edge_lab meta --page`) | gap retest PASS on the 14 features that work (+15.7 vs +11.0); cascade / momentum / union refits fail a control; reg_score, acr60, or15_w, ema_touches carry signal, struct / CHoCH none (already agree at the signal), ema_dist / pullback hurt |
 
 ## Known limits
 - 1-minute OHLC only (no queue position); cost is a fixed real round trip per contract in every year.
