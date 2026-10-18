@@ -595,6 +595,8 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
         const int ri = (int)(std::find(FN.begin(), FN.end(), "reg_score") - FN.begin());
         for (auto& t : tr) { auto f = fm.at(t); sim.set_trail_gate(t, ri < (int)f.size() && f[ri] >= 60); }
     }
+    std::vector<char> pgate;   // trail_path gate: path efficiency at entry ≥ 0.55 (2026-10-18_direction_followups)
+    for (auto& t : tr) { const double pe = sim.path_eff(t); pgate.push_back(!std::isnan(pe) && pe >= 0.55); sim.set_path_gate(t, pgate.back()); }
     std::vector<std::vector<ExitOut>> res(X__COUNT);
     for (int r = 0; r < X__COUNT; ++r) for (auto& t : tr) res[r].push_back(sim.run(t, r));
     int mismatch = 0; for (size_t i = 0; i < tr.size(); ++i) if (std::fabs(res[X_BASE][i].pts - tr[i].pts) > 1e-3) ++mismatch;   // stop/target are stored as float
@@ -607,7 +609,7 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
     std::vector<RuleOut> ro(X__COUNT);
     double eb[3] = {0, 0, 0}; int nb[3] = {0, 0, 0};
     for (size_t i = 0; i < tr.size(); ++i) { int e = era_of(s.days[tr[i].day].date); eb[e] += res[X_BASE][i].pts - b.cost; ++nb[e]; }
-    const double NEED = 0.99;   // X__COUNT − 1 (14) exit rules are tested → the control must clear 99 %, not 95 %
+    const double NEED = 0.99;   // X__COUNT − 1 (15) exit rules are tested → the control must clear 99 %, not 95 %
     const int SEEDS = 200;
     for (int r = 1; r < X__COUNT; ++r) {
         RuleOut& q = ro[r];
@@ -645,7 +647,19 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
                 if (L[r].net > n + 1e-6) ++beat;
             }
         }
-        for (int k = 0; k < SEEDS && !durs.empty() && !exit_moves_stop(r) && !exit_moves_target(r); ++k) {
+        if (r == X_TRAIL_PATH) {
+            // Gate-shuffle twin (2026-10-18_direction_followups): the runner given to the same NUMBER of trades chosen at
+            // random — does the straight path pick the right trades to let run?
+            for (int k = 0; k < SEEDS; ++k) {
+                std::mt19937_64 rng(49979687ULL * (k + 1) + r); std::vector<char> p = pgate; std::shuffle(p.begin(), p.end(), rng);
+                double n = 0;
+                for (size_t i = 0; i < tr.size(); ++i) { sim.set_path_gate(tr[i], p[i]); n += sim.run(tr[i], r).pts - b.cost; }
+                q.twin_mean += n / SEEDS;
+                if (L[r].net > n + 1e-6) ++beat;
+            }
+            for (size_t i = 0; i < tr.size(); ++i) sim.set_path_gate(tr[i], pgate[i]);
+        }
+        for (int k = 0; k < SEEDS && !durs.empty() && !exit_moves_stop(r) && !exit_moves_target(r) && r != X_TRAIL_PATH; ++k) {
             std::mt19937_64 rng(15485863ULL * (k + 1) + r);
             std::uniform_real_distribution<double> u(0, 1);
             double n = 0;
@@ -687,7 +701,7 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
     o << "Same entries as the idea's walk-forward trades (" << tr.size() << "), different exits. The hard stop always stays; the thesis\n"
          "checks run on completed 5-minute bars (15-minute for the trail) and fill at the next bar's open. A rule passes when it\n"
          "beats the base exit per trade, beats the random-timing twin (a path-blind time exit with the rule's exit rate and\n"
-         "holding times) in ≥ 99 % of " << SEEDS << " seeds (" << X__COUNT - 1 << " rules tested; the mext stop rules face a stop-width twin instead: their own widths shuffled across trades), is better in ≥ 2 of 3 eras including 2023–26, and raises the prop\n"
+         "holding times) in ≥ 99 % of " << SEEDS << " seeds (" << X__COUNT - 1 << " rules tested; the mext stop rules face a stop-width twin instead: their own widths shuffled across trades; trail_path a gate-shuffle twin: the runner on the same number of random trades), is better in ≥ 2 of 3 eras including 2023–26, and raises the prop\n"
          "break-even fee. Base reproduces the walk-forward trades exactly: " << (mismatch ? "NO (" + std::to_string(mismatch) + " differ)" : "yes") << ".\n\n";
     o << "## Verdict: **" << verdict << "**\n\n" << line_head();
     for (int r = 0; r < X__COUNT; ++r) o << line_row(exit_name(r), L[r], b.pv);

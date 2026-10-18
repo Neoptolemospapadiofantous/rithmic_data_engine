@@ -1,0 +1,23 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.975,
+  "control_seeds": 400,
+  "id": "iw_cont",
+  "name": "Intraday Wyckoff: the midday range after the morning move breaks WITH it (re-accumulation / re-distribution)",
+  "why": "After a real morning move the 10:30-onward consolidation is the move's operators re-loading; a close out of the range in the morning direction is them resuming. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_direction_followups.md).",
+  "params": {},
+  "scan": {
+    "tf": 5,
+    "from": "11:30",
+    "to": "14:00",
+    "when": "lag(5, (abs((at(10,30)-open)) >= 0.4*atr && (hi_since(10,30) - lo_since(10,30)) <= 0.5*abs((at(10,30)-open)))) && ((sign((at(10,30)-open)) > 0 && (cl(5,1) > lag(5, hi_since(10,30)))) || (sign((at(10,30)-open)) < 0 && (cl(5,1) < lag(5, lo_since(10,30)))))",
+    "dir": "((cl(5,1) > lag(5, hi_since(10,30)))) - ((cl(5,1) < lag(5, lo_since(10,30))))"
+  },
+  "stop": "max(0.1*atr, 0.25 + max(((cl(5,1) > lag(5, hi_since(10,30))))*(px - lag(5, lo_since(10,30))), ((cl(5,1) < lag(5, lo_since(10,30))))*(lag(5, hi_since(10,30)) - px)))"
+}

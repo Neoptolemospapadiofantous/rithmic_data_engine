@@ -502,6 +502,72 @@ int main() {
         Trade early = t; early.e = at(9, 40); CHECK(std::isnan(sim.orb_target(early)));
         Trade sh = t; sh.dir = -1; sh.stop = 0.4f; CHECK(std::fabs(sim.orb_target(sh) - 0.5) < 1e-6);   // 999 is 1.0 below the 1000 entry
     }
+    // ── trail_path gate: path efficiency at entry (2026-10-18_direction_followups) — 09:30→09:50 rises 10 pts, bars ±0.5
+    {
+        Series s = synth(30, 10, 0, false);
+        paper::VixRegime vix; build_days(s, {}, vix);
+        Market m(s); ExitSim sim(m);
+        const Day& D = s.days[20];
+        Trade t; t.day = 20; t.e = first_bar_at(s, D, hm_to_tday(9, 50), D.b0); t.dir = 1; t.stop = 1; t.tgt = 2; t.flat = first_bar_at(s, D, hm_to_tday(15, 55), D.b0);
+        CHECK(std::fabs(sim.path_eff(t) - 10.0 / 10.5) < 1e-6);   // |1010 − 1000| / (1010 − 999.5)
+        Trade early = t; early.e = D.rth0; CHECK(std::isnan(sim.path_eff(early)));
+        CHECK(std::string(exit_key(X_TRAIL_PATH)) == "trail_path");
+    }
+    // ── Wyckoff phase inputs (2026-10-18_wyckoff_phases.md): a steady uptrend of +1 per session, ATR 1
+    {
+        Series s = synth(80, 0, 0, false);
+        paper::VixRegime vix; build_days(s, {}, vix);
+        int sess = 0;   // +1 per ok session (s.days also holds partial days)
+        for (size_t k = 0; k < s.days.size(); ++k) {
+            for (int i = s.days[k].b0; i < s.days[k].b1; ++i) { s.o[i] += (float)sess; s.h[i] += (float)sess; s.l[i] += (float)sess; s.c[i] += (float)sess; }
+            if (s.days[k].ok) ++sess;
+        }
+        build_days(s, {}, vix);
+        const Day& D = s.days[75];
+        CHECK(std::fabs(D.e20 - 1) < 1e-6 && std::fabs(D.r20 - 20) < 1e-6 && std::fabs(D.r60 - 40) < 1e-6);
+        CHECK(std::fabs(D.uv20 - 1) < 1e-6 && std::fabs(D.p20 - 1) < 1e-6);
+        CHECK(std::isnan(s.days[15].e20) && std::isnan(s.days[40].r60) && !std::isnan(s.days[40].e20));   // 21 / 61 sessions needed
+        Market m(s); Evaluator ev(m); DayCache dc;
+        auto e = parse("e20 + r20 + r60 + uv20 + p20"); ev.bind(*e);
+        CHECK(std::fabs(ev.eval(*e, first_bar_at(s, D, hm_to_tday(10, 0), D.b0), dc) - 63) < 1e-6);
+    }
+    // ── LuxAlgo's own definitions, mode 1 (2026-10-18_luxalgo_faithful.md): the lowest-low block, the filtered / wick-filled gap
+    {
+        Series s = synth(30, 0, 0, false);
+        paper::VixRegime vix; build_days(s, {}, vix);
+        const int d = 20;
+        auto set5 = [&](int h, int m, double o, double hi, double lo, double c) {
+            const Day& D = s.days[d];
+            const int k0 = first_bar_at(s, D, hm_to_tday(h, m), D.b0);
+            for (int k = k0; k < k0 + 5; ++k) { s.o[k] = (float)o; s.h[k] = (float)hi; s.l[k] = (float)lo; s.c[k] = (float)c; }
+        };
+        set5(10, 0, 1000, 1010, 999.5, 1005);     // swing high 1010; 10:05 / 10:10 stay flat (low 999.5, the lowest after it)
+        set5(10, 15, 1004, 1004.5, 1001, 1002);   // mode 0's block (last down-close); mode 1 takes 10:10 [999.5, 1000.5]
+        set5(10, 20, 1002, 1012, 1001.5, 1011);   // break of structure
+        set5(10, 25, 1011, 1011.5, 1003, 1009);
+        set5(10, 30, 1009, 1009.5, 999.8, 1000);  // closes below mode 0's block, above mode 1's → only mode 0 mitigated
+        set5(11, 5, 1000, 1006, 1000, 1005);      // bar 2: closes above bar-1 high 1000.5 with a large body
+        set5(11, 10, 1005, 1006, 1002, 1004);     // bar 3: low 1002 > 1000.5 → gap [1000.5, 1002] in both modes
+        set5(11, 15, 1004, 1004.5, 1000.2, 1003); // trades below the bottom, closes above: mode 1 filled, mode 0 not
+        set5(12, 0, 1000.6, 1000.7, 1000.6, 1000.6);   // bar 2 with no body → LuxAlgo rejects the gap below
+        set5(12, 5, 1001.5, 1002, 1001, 1001.5);       // bar 3: low 1001 > 11:55 high 1000.5 → mode 0 gap [1000.5, 1001]
+        build_days(s, {}, vix);
+        const Day& D = s.days[d];
+        Market m(s); Evaluator ev(m); DayCache dc;
+        auto at = [&](int h, int mi) { return first_bar_at(s, D, hm_to_tday(h, mi), D.b0); };
+        auto obh0 = parse("obh(5,2)"), obh1 = parse("obh(5,2,1)"), obl1 = parse("obl(5,2,1)");
+        auto fv0 = parse("fvgt(5)"), fv1 = parse("fvgt(5,1)"), fb1 = parse("fvgb(5,1)");
+        for (auto* n : {&obh0, &obh1, &obl1, &fv0, &fv1, &fb1}) ev.bind(**n);
+        CHECK(std::fabs(ev.eval(*obh1, at(10, 25), dc) - 1000.5) < 1e-6 && std::fabs(ev.eval(*obl1, at(10, 25), dc) - 999.5) < 1e-6);
+        CHECK(std::fabs(ev.eval(*obh0, at(10, 25), dc) - 1004.5) < 1e-6);                      // mode 0 unchanged
+        CHECK(std::isnan(ev.eval(*obh0, at(10, 35), dc)) && std::fabs(ev.eval(*obh1, at(10, 35), dc) - 1000.5) < 1e-6);
+        CHECK(std::fabs(ev.eval(*fv1, at(11, 15), dc) - 1002) < 1e-6 && std::fabs(ev.eval(*fb1, at(11, 15), dc) - 1000.5) < 1e-6);
+        CHECK(std::isnan(ev.eval(*fv1, at(11, 20), dc)) && std::fabs(ev.eval(*fv0, at(11, 20), dc) - 1002) < 1e-6);   // wick fill
+        CHECK(std::isnan(ev.eval(*fv1, at(12, 10), dc)) && std::fabs(ev.eval(*fv0, at(12, 10), dc) - 1001) < 1e-6);   // body filter
+        bool threw = false;
+        try { auto bad = parse("fvgt(5,2)"); ev.bind(*bad); } catch (const std::exception&) { threw = true; }
+        CHECK(threw);
+    }
     std::printf("test_edge_lab: %d/%d checks passed\n", checks - fails, checks);
     return fails ? 1 : 0;
 }

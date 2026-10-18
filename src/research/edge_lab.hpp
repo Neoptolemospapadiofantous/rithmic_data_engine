@@ -140,6 +140,22 @@ public:
 
     // RTH volume up to (not including) bar i divided by its average at the same minute of the session over the previous
     // 20 ok days (NaN outside RTH, before 20 days of history, or when the baseline is 0). Computed once.
+    // LuxAlgo's FVG auto threshold per tf bar b: 2 × the mean |body %| ((close − open) / open) of tf bars 0 … b−1
+    // (Pine `ta.cum(math.abs(delta)) / bar_index * 2`). NaN for b = 0. (2026-10-18_luxalgo_faithful.md)
+    const std::vector<double>& lux_thr(int tf) {
+        auto it = lux_thr_.find(tf);
+        if (it != lux_thr_.end()) return it->second;
+        const Agg& a = agg(tf);
+        std::vector<double> t(a.c.size(), NAN);
+        double cum = 0;
+        for (size_t b = 0; b < a.c.size(); ++b) {
+            if (b > 0) t[b] = 2.0 * cum / (double)b;
+            if (a.o[b] > 0) cum += std::fabs((a.c[b] - a.o[b]) / a.o[b]);
+        }
+        return lux_thr_.emplace(tf, std::move(t)).first->second;
+    }
+    const std::vector<double>& lux_thr(int tf) const { return lux_thr_.at(tf); }
+
     const std::vector<float>& rvol() {
         if (!rvol_.empty()) return rvol_;
         rvol_.assign(s_.size(), NAN);
@@ -164,6 +180,7 @@ public:
 
 private:
     std::vector<float> rvol_;
+    std::map<int, std::vector<double>> lux_thr_;
     double delta(size_t i) const {
         int d = s_.day_of[i];
         if (d < 0 || !s_.days[d].flow) return NAN;
@@ -181,7 +198,7 @@ enum VarId {
     V_vix, V_vixc1, V_vixc5, V_vixpct, V_dow, V_tdom, V_tdleft, V_fomc, V_opex, V_nfp, V_rollwin,
     V_year, V_month, V_flow, V_mtd, V_prehol,
     V_ppoc, V_pvah, V_pval, V_pwh, V_pwl, V_pmh, V_pml, V_npoca, V_npocb,
-    V_sma100, V_sma200, V_xma, V_xs, V_xr, V_vts, V_vvix, V_skew, V_y10, V_y2, V_y10c, V_usdc, V_earn, V_rvol, V_cpi, V_ppi, V__count
+    V_sma100, V_sma200, V_xma, V_xs, V_xr, V_vts, V_vvix, V_skew, V_y10, V_y2, V_y10c, V_usdc, V_earn, V_rvol, V_cpi, V_ppi, V_e20, V_r20, V_r60, V_uv20, V_p20, V__count
 };
 inline const std::map<std::string, int>& var_names() {
     static const std::map<std::string, int> m = {
@@ -195,7 +212,8 @@ inline const std::map<std::string, int>& var_names() {
         {"ppoc", V_ppoc}, {"pvah", V_pvah}, {"pval", V_pval}, {"pwh", V_pwh}, {"pwl", V_pwl}, {"pmh", V_pmh}, {"pml", V_pml},
         {"npoca", V_npoca}, {"npocb", V_npocb}, {"sma100", V_sma100}, {"sma200", V_sma200}, {"xma", V_xma},
         {"xs", V_xs}, {"xr", V_xr}, {"vts", V_vts}, {"vvix", V_vvix}, {"skew", V_skew}, {"y10", V_y10}, {"y2", V_y2},
-        {"y10c", V_y10c}, {"usdc", V_usdc}, {"earn", V_earn}, {"rvol", V_rvol}, {"cpi", V_cpi}, {"ppi", V_ppi}};
+        {"y10c", V_y10c}, {"usdc", V_usdc}, {"earn", V_earn}, {"rvol", V_rvol}, {"cpi", V_cpi}, {"ppi", V_ppi},
+        {"e20", V_e20}, {"r20", V_r20}, {"r60", V_r60}, {"uv20", V_uv20}, {"p20", V_p20}};
     return m;
 }
 
@@ -240,11 +258,16 @@ public:
         }
         if (is_smc(n.name)) {   // order blocks / fair value gaps / swings on completed tf bars since 18:00 (see smc_fn())
             const bool fvg = n.name.rfind("fvg", 0) == 0;
-            if (n.a.size() != (fvg ? 1u : 2u)) throw std::runtime_error(n.name + (fvg ? "(tf)" : "(tf, n)") + ": constants only");
+            const size_t na = fvg ? 1u : 2u;   // + an optional mode (0 = 2026-10-18 definitions, 1 = LuxAlgo's)
+            if (n.a.size() != na && n.a.size() != na + 1)
+                throw std::runtime_error(n.name + (fvg ? "(tf[, mode])" : "(tf, n[, mode])") + ": constants only");
             for (auto& x : n.a) if (x->kind != Node::Num) throw std::runtime_error(n.name + ": arguments must be constants");
             const int tf = (int)n.a[0]->v;
             if (tf < 1 || 1440 % tf != 0 || (!fvg && n.a[1]->v < 1)) throw std::runtime_error(n.name + ": tf must divide 1440, n ≥ 1");
+            const int mode = n.a.size() > na ? (int)n.a[na]->v : 0;
+            if (mode != 0 && mode != 1) throw std::runtime_error(n.name + ": mode must be 0 or 1");
             m_.agg(tf);
+            if (fvg && mode == 1) m_.lux_thr(tf);   // build once, before threads start
             return;
         }
         if (n.name == "dwin" || n.name == "vwin" || n.name == "whi" || n.name == "wlo") {   // window delta / volume / high / low
@@ -445,9 +468,11 @@ private:
         const std::string& f = n.name;
         const bool fvg = f.rfind("fvg", 0) == 0;
         const int tf = (int)n.a[0]->v, nn = fvg ? 0 : (int)n.a[1]->v;
-        const std::string key = (fvg ? "fvg|" : "ob|") + std::to_string(tf) + "|" + std::to_string(nn);
+        const size_t na = fvg ? 1u : 2u;
+        const int mode = n.a.size() > na ? (int)n.a[na]->v : 0;
+        const std::string key = (fvg ? "fvg|" : "ob|") + std::to_string(tf) + "|" + std::to_string(nn) + "|" + std::to_string(mode);
         auto it = dc.smc.find(key);
-        if (it == dc.smc.end()) it = dc.smc.emplace(key, fvg ? fvg_day(D, tf) : ob_day(D, tf, nn)).first;
+        if (it == dc.smc.end()) it = dc.smc.emplace(key, fvg ? fvg_day(D, tf, mode) : ob_day(D, tf, nn, mode)).first;
         static const std::map<std::string, int> col = {{"obh", 0}, {"obl", 1}, {"obhs", 2}, {"obls", 3}, {"swh", 4}, {"swl", 5},
                                                        {"fvgt", 0}, {"fvgb", 1}, {"fvgts", 2}, {"fvgbs", 3}};
         return it->second[col.at(f)][i - D.b0];
@@ -466,7 +491,9 @@ private:
             emit(k);
         }
     }
-    std::vector<std::vector<double>> ob_day(const Day& D, int tf, int N) const {
+    // mode 0: the block is the last opposite-close bar before the break; mode 1 (LuxAlgo): the bar with the lowest low
+    // (bullish) / highest high (bearish) among swing bar + 1 … breaking bar − 1, ties → the most recent.
+    std::vector<std::vector<double>> ob_day(const Day& D, int tf, int N, int mode = 0) const {
         const Agg& a = m_.agg(tf);
         std::vector<std::vector<double>> out(6, std::vector<double>(D.b1 - D.b0, NAN));
         std::vector<Box> bull, bear;                    // unmitigated blocks, oldest first
@@ -481,8 +508,16 @@ private:
             }
             bull.erase(std::remove_if(bull.begin(), bull.end(), [&](const Box& x) { return a.c[b] < x.bot; }), bull.end());
             bear.erase(std::remove_if(bear.begin(), bear.end(), [&](const Box& x) { return a.c[b] > x.top; }), bear.end());
-            if (!shb && a.c[b] > sh) { shb = true; for (int q = b - 1; q >= shi; --q) if (a.c[q] < a.o[q]) { bull.push_back({a.h[q], a.l[q]}); break; } }
-            if (!slb && a.c[b] < sl) { slb = true; for (int q = b - 1; q >= sli; --q) if (a.c[q] > a.o[q]) { bear.push_back({a.h[q], a.l[q]}); break; } }
+            if (!shb && a.c[b] > sh) {
+                shb = true;
+                if (mode == 1) { int m = -1; for (int q = b - 1; q > shi; --q) if (m < 0 || a.l[q] < a.l[m]) m = q; if (m >= 0) bull.push_back({a.h[m], a.l[m]}); }
+                else for (int q = b - 1; q >= shi; --q) if (a.c[q] < a.o[q]) { bull.push_back({a.h[q], a.l[q]}); break; }
+            }
+            if (!slb && a.c[b] < sl) {
+                slb = true;
+                if (mode == 1) { int m = -1; for (int q = b - 1; q > sli; --q) if (m < 0 || a.h[q] > a.h[m]) m = q; if (m >= 0) bear.push_back({a.h[m], a.l[m]}); }
+                else for (int q = b - 1; q >= sli; --q) if (a.c[q] > a.o[q]) { bear.push_back({a.h[q], a.l[q]}); break; }
+            }
         }, [&](int k) {
             const int r = k - D.b0;
             if (!bull.empty()) { out[0][r] = bull.back().top; out[1][r] = bull.back().bot; }
@@ -491,14 +526,25 @@ private:
         });
         return out;
     }
-    std::vector<std::vector<double>> fvg_day(const Day& D, int tf) const {
+    // mode 0: any three-bar gap, filled by a close through its far side; mode 1 (LuxAlgo): bar 2 must close beyond bar 1's
+    // extreme with |body %| above the auto threshold (Market::lux_thr), filled as soon as a bar TRADES through the far side.
+    std::vector<std::vector<double>> fvg_day(const Day& D, int tf, int mode = 0) const {
         const Agg& a = m_.agg(tf);
+        const std::vector<double>* thr = mode == 1 ? &m_.lux_thr(tf) : nullptr;
         std::vector<std::vector<double>> out(4, std::vector<double>(D.b1 - D.b0, NAN));
         std::vector<Box> bull, bear;                    // unfilled gaps, oldest first
         walk_day(D, tf, [&](int b, int c0) {
-            bull.erase(std::remove_if(bull.begin(), bull.end(), [&](const Box& x) { return a.c[b] < x.bot; }), bull.end());
-            bear.erase(std::remove_if(bear.begin(), bear.end(), [&](const Box& x) { return a.c[b] > x.top; }), bear.end());
+            const double fb = mode == 1 ? a.l[b] : a.c[b], fs = mode == 1 ? a.h[b] : a.c[b];
+            bull.erase(std::remove_if(bull.begin(), bull.end(), [&](const Box& x) { return fb < x.bot; }), bull.end());
+            bear.erase(std::remove_if(bear.begin(), bear.end(), [&](const Box& x) { return fs > x.top; }), bear.end());
             if (b - 2 < c0) return;                      // all three bars inside the day
+            if (mode == 1) {
+                const double T = (*thr)[b], body = a.o[b - 1] > 0 ? (a.c[b - 1] - a.o[b - 1]) / a.o[b - 1] : 0;
+                if (std::isnan(T)) return;
+                if (a.l[b] > a.h[b - 2] && a.c[b - 1] > a.h[b - 2] && body > T) bull.push_back({a.l[b], a.h[b - 2]});
+                if (a.h[b] < a.l[b - 2] && a.c[b - 1] < a.l[b - 2] && -body > T) bear.push_back({a.l[b - 2], a.h[b]});
+                return;
+            }
             if (a.h[b - 2] < a.l[b]) bull.push_back({a.l[b], a.h[b - 2]});
             if (a.l[b - 2] > a.h[b]) bear.push_back({a.l[b - 2], a.h[b]});
         }, [&](int k) {
@@ -564,6 +610,11 @@ private:
             case V_pc2: return D.pc2;
             case V_pibs: return D.pibs;
             case V_sma50: return D.sma50;
+            case V_e20: return D.e20;
+            case V_r20: return D.r20;
+            case V_r60: return D.r60;
+            case V_uv20: return D.uv20;
+            case V_p20: return D.p20;
             case V_rsi2: return D.rsi2;
             case V_gap: return D.atr > 0 ? (D.ro - D.pc) / D.atr : NAN;
             case V_prng: return D.ph - D.pl;

@@ -465,7 +465,7 @@ std::vector<double> meta_walk(const MetaData& d, const std::vector<double>& ytra
 // X_MEXT / X_MEXT_VS (2026-10-17): the hard stop moves to 1 tick beyond the RTH extreme made against the trade between 09:30 and the
 // entry bar ("the morning's opposite extreme" — on a > 0.5 ATR trending morning it holds all day 83 % of the time), never tighter
 // than the idea's own stop; target price and everything else unchanged. Their control is a stop-width twin, not a timing twin.
-enum ExitRule { X_BASE, X_VWAP, X_OPEN, X_STALL, X_VWAP_STALL, X_VWAP_RUN, X_OPEN_RUN, X_TRAIL_RUN, X_FLOW, X_MEXT, X_MEXT_VS, X_TRAIL_REG, X_LIQ, X_LIQ_RUN, X_ORBT, X__COUNT };
+enum ExitRule { X_BASE, X_VWAP, X_OPEN, X_STALL, X_VWAP_STALL, X_VWAP_RUN, X_OPEN_RUN, X_TRAIL_RUN, X_FLOW, X_MEXT, X_MEXT_VS, X_TRAIL_REG, X_LIQ, X_LIQ_RUN, X_ORBT, X_TRAIL_PATH, X__COUNT };
 inline bool exit_moves_target(int r) { return r == X_LIQ || r == X_LIQ_RUN || r == X_ORBT; }
 inline bool exit_moves_stop(int r) { return r == X_MEXT || r == X_MEXT_VS; }
 inline const char* exit_name(int r) {
@@ -475,11 +475,12 @@ inline const char* exit_name(int r) {
                               "mext: stop beyond the morning's opposite extreme", "mext + vwap + stall",
                               "trail_reg: 15m trail runner only when the page's regime score ≥ 60 at entry, else base (2026-10-18 feature study, step 4)",
                               "liq: target = the nearest liquidity pool ≥ 1R beyond entry, 2 ticks before it (else the idea's target)", "liq_run: the same, no fallback target",
-                              "orbt: target = the nearest ORB 50 % level (09:30–09:44 range high/low ± k × half its width, k = 1, 2) ≥ 1R beyond entry, 2 ticks before it (else the idea's target; 2026-10-18 luxalgo_smc)"};
+                              "orbt: target = the nearest ORB 50 % level (09:30–09:44 range high/low ± k × half its width, k = 1, 2) ≥ 1R beyond entry, 2 ticks before it (else the idea's target; 2026-10-18 luxalgo_smc)",
+                              "trail_path: 15m trail runner only when the path at entry is straight (|open − 09:30 open| / RTH range so far ≥ 0.55), else base (2026-10-18 direction_followups)"};
     return n[r];
 }
 inline const char* exit_key(int r) {
-    static const char* n[] = {"base", "vwap", "open", "stall", "vwap_stall", "vwap_run", "open_run", "trail_run", "flow", "mext", "mext_vwap_stall", "trail_reg", "liq", "liq_run", "orbt"};
+    static const char* n[] = {"base", "vwap", "open", "stall", "vwap_stall", "vwap_run", "open_run", "trail_run", "flow", "mext", "mext_vwap_stall", "trail_reg", "liq", "liq_run", "orbt", "trail_path"};
     return n[r];
 }
 
@@ -495,6 +496,17 @@ public:
     // trail_reg: which trades may trail (the page's regime score ≥ 60 at entry), keyed by (day, entry bar)
     void set_trail_gate(const Trade& t, bool ok) { gate_[(int64_t)t.day * 10000000LL + t.e] = ok; }
     bool trail_gate(const Trade& t) const { auto it = gate_.find((int64_t)t.day * 10000000LL + t.e); return it != gate_.end() && it->second; }
+    // trail_path gate (2026-10-18_direction_followups): the live rota's path efficiency at entry ≥ 0.55. The gate-shuffle twin
+    // overrides it per trade (set_path_gate); path_eff() is the measured value.
+    double path_eff(const Trade& t) const {
+        const Series& s = m_.s(); const Day& D = s.days[t.day];
+        if (D.rth0 < 0 || t.e <= D.rth0) return NAN;
+        double hi = -1e18, lo = 1e18;
+        for (int k = D.rth0; k < t.e; ++k) { hi = std::max(hi, (double)s.h[k]); lo = std::min(lo, (double)s.l[k]); }
+        return std::fabs(s.o[t.e] - s.o[D.rth0]) / std::max(hi - lo, 1.0);
+    }
+    void set_path_gate(const Trade& t, bool ok) { pgate_[(int64_t)t.day * 10000000LL + t.e] = ok; }
+    bool path_gate(const Trade& t) const { auto it = pgate_.find((int64_t)t.day * 10000000LL + t.e); return it != pgate_.end() && it->second; }
 
     // Liquidity pools known at entry (2026-10-18, research/preregistered/2026-10-18_liquidity_exit.md): prior-day high/low, the
     // overnight high/low, the 15-minute range high/low (from 09:45) and every unbroken 5-minute swing high/low since 18:00
@@ -585,13 +597,13 @@ public:
         const double P = s.o[e];
         double stop = exit_moves_stop(rule) ? mext_stop(t) : t.stop;
         if (stop_dist >= 0) stop = stop_dist;
-        const bool reg_trail = rule == X_TRAIL_REG && trail_gate(t);
+        const bool reg_trail = (rule == X_TRAIL_REG && trail_gate(t)) || (rule == X_TRAIL_PATH && path_gate(t));
         const bool keep_tgt = !(rule == X_VWAP_RUN || rule == X_OPEN_RUN || rule == X_TRAIL_RUN || reg_trail);
         double tgt = keep_tgt ? t.tgt : 0;
         if (exit_moves_target(rule)) tgt = level_or_fallback(t, rule);
         if (tgt_dist >= 0) tgt = tgt_dist;
         const double sp = stop > 0 ? P - dir * stop : NAN, tp = tgt > 0 ? P + dir * tgt : NAN;
-        const bool use_thesis = force_at < 0 && rule != X_BASE && rule != X_MEXT && !(rule == X_TRAIL_REG && !reg_trail) && !exit_moves_target(rule);
+        const bool use_thesis = force_at < 0 && rule != X_BASE && rule != X_MEXT && !((rule == X_TRAIL_REG || rule == X_TRAIL_PATH) && !reg_trail) && !exit_moves_target(rule);
         const bool vw = rule == X_VWAP || rule == X_VWAP_STALL || rule == X_VWAP_RUN || rule == X_MEXT_VS;
         const bool opn = rule == X_OPEN || rule == X_OPEN_RUN;
         const bool stall = rule == X_STALL || rule == X_VWAP_STALL || rule == X_MEXT_VS;
@@ -653,7 +665,7 @@ private:
     Evaluator ev_;
     DayCache dc_;
     NodeP vw_, op_;
-    std::map<int64_t, bool> gate_;
+    std::map<int64_t, bool> gate_, pgate_;
 };
 
 }  // namespace lab

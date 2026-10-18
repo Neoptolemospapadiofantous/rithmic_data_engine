@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400,
+  "id": "dp_phase",
+  "name": "Day direction on a straight path, with the Wyckoff phase direction",
+  "why": "The plan direction (09:50 cascade / gap side) on a straight intraday path, only when it agrees with the multi-session Wyckoff phase: intraday repositioning in the direction of the phase is the large operators' own campaign. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_wyckoff_phases.md).",
+  "params": {
+    "p": [
+      0.3,
+      0.55
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "09:55",
+    "to": "14:00",
+    "when": "(abs(px-open)/max(hod-lod, 1) >= p && sign(px-open) == ((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open) + (1-(abs(at(9,50)-open) > 0.25*atr))*(!rollwin && abs(gap) >= 0.1)*sign(gap))) && ((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open) + (1-(abs(at(9,50)-open) > 0.25*atr))*(!rollwin && abs(gap) >= 0.1)*sign(gap)) != 0 && ((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open) + (1-(abs(at(9,50)-open) > 0.25*atr))*(!rollwin && abs(gap) >= 0.1)*sign(gap)) == (((e20 >= 0.315 && r20 > 0) || (e20 <= 0.143 && r60 < 0)) - ((e20 >= 0.315 && r20 < 0) || (e20 <= 0.143 && r60 > 0)))",
+    "dir": "((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open) + (1-(abs(at(9,50)-open) > 0.25*atr))*(!rollwin && abs(gap) >= 0.1)*sign(gap))"
+  },
+  "stop": "0.25*atr",
+  "target": "2"
+}

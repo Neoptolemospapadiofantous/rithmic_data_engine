@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400,
+  "id": "wy_trend",
+  "name": "Wyckoff markup / markdown: trade the 20-session trend's direction from the open",
+  "why": "In a straight 20-session markup the large operators are still adding (markdown: still distributing); the open-to-close session continues their direction. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_wyckoff_phases.md).",
+  "params": {
+    "stopk": [
+      0.35,
+      1.0
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:30",
+      "when": "(e20 >= 0.315 && r20 > 0) || (e20 >= 0.315 && r20 < 0)",
+      "dir": "((e20 >= 0.315 && r20 > 0)) - ((e20 >= 0.315 && r20 < 0))"
+    }
+  ],
+  "stop": "stopk*atr",
+  "target": "0"
+}

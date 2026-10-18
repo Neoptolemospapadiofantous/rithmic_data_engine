@@ -94,6 +94,12 @@ struct Day {
     int64_t pct = 0;             // wall-clock time of the prior ok day's RTH close (end of its last RTH bar), 0 = none
     double poc = NAN, vah = NAN, val = NAN;   // this day's own profile (feeds the next day's p* and the naked list)
     bool prehol = false;          // the next session is more than one weekday away (exchange holiday follows; schedule is public)
+    // Wyckoff phase inputs (2026-10-18, research/preregistered/2026-10-18_wyckoff_phases.md), from the last ok sessions' RTH
+    // closes C and volumes: e20 = |C[-1] − C[-21]| / Σ|ΔC| over those 20 steps (1 = straight line, ~0.2 = random walk),
+    // r20 = (C[-1] − C[-21]) / atr, r60 = (C[-21] − C[-61]) / atr (the 40 sessions before that window), uv20 = the share of
+    // the last 20 sessions' RTH volume traded on up-close sessions (close > the session before), p20 = where C[-1] sits in
+    // the last 20 closes' min–max (0 = at the low, 1 = at the high)
+    double e20 = NAN, r20 = NAN, r60 = NAN, uv20 = NAN, p20 = NAN;
 };
 
 struct Series {
@@ -281,7 +287,7 @@ inline void build_days(Series& s, const std::set<int>& fomc, const paper::VixReg
     }
     const std::vector<int> rolls = roll_dates(2009, 2028);
     // prior-day facts from the chain of ok days (reset after a > 7 calendar-day hole)
-    std::vector<double> ranges, closes;
+    std::vector<double> ranges, closes, vols;
     int prev = -1;
     for (size_t k = 0; k < s.days.size(); ++k) {
         Day& d = s.days[k];
@@ -297,7 +303,7 @@ inline void build_days(Series& s, const std::set<int>& fomc, const paper::VixReg
         if (prev >= 0) {
             const Day& p = s.days[prev];
             int gap = (int)((timegm_ymd(d.date) - timegm_ymd(p.date)) / 86400);
-            if (gap > 7) { ranges.clear(); closes.clear(); }
+            if (gap > 7) { ranges.clear(); closes.clear(); vols.clear(); }
             else {
                 d.pc = p.rc; d.ph = p.rh; d.pl = p.rl;
                 d.pibs = p.rh > p.rl ? (p.rc - p.rl) / (p.rh - p.rl) : NAN;
@@ -337,7 +343,25 @@ inline void build_days(Series& s, const std::set<int>& fomc, const paper::VixReg
             }
             d.rsi2 = up + dn > 0 ? 100 * up / (up + dn) : 50;
         }
-        if (d.ok) { ranges.push_back(d.rh - d.rl); closes.push_back(d.rc); prev = (int)k; }
+        if (closes.size() >= 21 && !std::isnan(d.atr) && d.atr > 0) {   // Wyckoff phase inputs (see Day)
+            const size_t n = closes.size();
+            double path = 0, lo = 1e18, hi = -1e18, upv = 0, allv = 0;
+            for (size_t j = n - 20; j < n; ++j) {
+                path += std::fabs(closes[j] - closes[j - 1]);
+                if (closes[j] > closes[j - 1]) upv += vols[j];
+                allv += vols[j];
+            }
+            for (size_t j = n - 20; j < n; ++j) { lo = std::min(lo, closes[j]); hi = std::max(hi, closes[j]); }
+            d.e20 = path > 0 ? std::fabs(closes[n - 1] - closes[n - 21]) / path : NAN;
+            d.r20 = (closes[n - 1] - closes[n - 21]) / d.atr;
+            if (n >= 61) d.r60 = (closes[n - 21] - closes[n - 61]) / d.atr;
+            d.uv20 = allv > 0 ? upv / allv : NAN;
+            d.p20 = hi > lo ? (closes[n - 1] - lo) / (hi - lo) : NAN;
+        }
+        if (d.ok) {
+            double rv = 0; for (int j = d.rth0; j < d.rth1; ++j) rv += s.v[j];
+            ranges.push_back(d.rh - d.rl); closes.push_back(d.rc); vols.push_back(rv); prev = (int)k;
+        }
     }
     // month-to-date and pre-holiday, over ok days
     {

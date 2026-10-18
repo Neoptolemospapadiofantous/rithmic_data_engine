@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400,
+  "id": "wy_range_vol",
+  "name": "Wyckoff accumulation / distribution confirmed by effort (up-session volume share)",
+  "why": "As wy_range, only when the range's volume shows the operators' effort: more volume on up sessions in accumulation, on down sessions in distribution. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_wyckoff_phases.md).",
+  "params": {
+    "stopk": [
+      0.35,
+      1.0
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:30",
+      "when": "((e20 <= 0.143 && r60 < 0) && uv20 > 0.5) || ((e20 <= 0.143 && r60 > 0) && uv20 < 0.5)",
+      "dir": "((e20 <= 0.143 && r60 < 0) && uv20 > 0.5) - ((e20 <= 0.143 && r60 > 0) && uv20 < 0.5)"
+    }
+  ],
+  "stop": "stopk*atr",
+  "target": "0"
+}

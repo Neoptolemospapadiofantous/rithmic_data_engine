@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400,
+  "id": "wy_range",
+  "name": "Wyckoff accumulation / distribution: the range after a decline resolves up, after a rise down",
+  "why": "A 20-session trading range after a decline is where large operators absorb the supply of the late sellers (accumulation) before marking price up; after a rise it is distribution before the markdown. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_wyckoff_phases.md).",
+  "params": {
+    "stopk": [
+      0.35,
+      1.0
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:30",
+      "when": "(e20 <= 0.143 && r60 < 0) || (e20 <= 0.143 && r60 > 0)",
+      "dir": "((e20 <= 0.143 && r60 < 0)) - ((e20 <= 0.143 && r60 > 0))"
+    }
+  ],
+  "stop": "stopk*atr",
+  "target": "0"
+}

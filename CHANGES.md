@@ -7,6 +7,59 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-18 — edge_lab: direction-trade follow-ups (path sizing, path runner, intraday Wyckoff)
+- New exit rule `trail_path` (15-min trail runner only when the path at entry is straight, eff ≥ 0.55) with a gate-shuffle twin;
+  test_edge_lab 597/597. research/preregistered/2026-10-18_direction_followups.md: `gap_or_retest_eff` (gap retest with path ≥ 0.55 at entry)
+  PASSES every gate (+11.19/trade, holdout 2025+ 69 trades +2,349 pts) but is 1.44 × its complement (+7.77), short of the
+  pre-registered 1.5 × — not adopted; cascade unaffected by path; `trail_path` worse than 2R; intraday Wyckoff too rare.
+
+## 2026-10-18 — edge_lab: Wyckoff market phases (nothing adopted)
+- New daily DSL variables `e20 r20 r60 uv20 p20` (src/research/bars.hpp, prior sessions only; test_edge_lab 594/594).
+- research/preregistered/2026-10-18_wyckoff_phases.md (founder: accumulation / markup / distribution / markdown): none of 5 ideas beats
+  random direction (74–86 % vs 99 %); each positive average sits in one era; the phase as a filter on the plan direction does nothing.
+
+## 2026-10-18 — edge_lab: LuxAlgo-faithful SMC definitions; SMC with the day path + direction (nothing adopted)
+- Review of the LuxAlgo SMC test (b9d4b4b): no look-ahead, runs reproduce exactly; but the order block and FVG were not
+  LuxAlgo's definitions. New optional DSL argument `mode` 1 (`obh(tf, n, 1)` = lowest-low / highest-high block; `fvgt(tf, 1)` =
+  bar-2 close + auto body threshold, wick-filled), default 0 unchanged (old ideas re-run identical); test_edge_lab 590/590.
+- research/preregistered/2026-10-18_luxalgo_faithful.md: `smc_ob_retest_lux` −0.62/trade FAIL screen, `smc_fvg_fill_lux` −1.65 FAIL WF.
+- research/preregistered/2026-10-18_smc_path_direction.md (founder: "incorporate path and direction"): OB / FVG retests only in
+  the day direction (09:50 cascade / gap side) on a straight path (eff ≥ 0.30 / 0.55), `dir` = the day direction so the time
+  control is a same-direction random bar. All positive (+0.97 / +2.43, reference `dp_base` +3.72) and all beat random direction,
+  none beats random timing (1 % / 65 % / 59 %): the direction is the edge, the levels add no timing.
+
+## 2026-10-18 — dashboard /orb cockpit: Structure + SMC tabs (regime, BOS / CHoCH, where to join; LuxAlgo-style layer)
+- SMC tab (bot frontend/src/app/orb/SmcTab.tsx, also a Desk chart overlay): LuxAlgo-style swings / internal structure (N = 5 / 2),
+  BOS / CHoCH, order blocks, FVGs, EQH / EQL pools + sweeps, premium / discount, strong / weak highs and lows, and the 09:30–09:45
+  ORB with ±50 % targets — all from completed bars before the cursor. CONTEXT ONLY: the same concepts were tested in edge_lab
+  (research/preregistered/2026-10-18_luxalgo_smc.md, commit b9d4b4b) and nothing was adopted (OB retest ≈ 0 after cost, FVG fill
+  loses, premium / discount gate and ORB targets no better than the base).
+- Founder: "a page that tells me what regime we are in, shows CHoCH and BOS and where to join". Bot dashboard `/orb?tab=structure`
+  (frontend/src/app/orb/StructureTab.tsx; the old `/structure` and `/practice` URLs redirect to the /orb tabs), live for today and replay for past plan days. Regime: day efficiency
+  since 09:30 (live-rota bands), 1-min tape acr(60), 1-min momentum er(45), 5-min structure, gap, VIX. BOS / CHoCH use the exact
+  edge_lab definitions (last hour vs the prior 2 hours on 5-min bars; CHoCH = the 2 hours before pointed the other way), drawn on
+  the chart with the prior 2-hour high / low. The only entry shown is the tested one, `bos_ema_gap` (2026-10-18_bos_ema.md: gap
+  ≥ 0.1 ATR, BOS on the gap's side, 10:30–14:00 5-min EMA-9 pullback, next bar's open, stop 0.3 ATR, 2R). It does not skip the
+  roll week the way the test did. Everything else on the page is context.
+- The 2026-10-18 Lightning stacking result is PARKED (founder: "put aside for now"): the Plan page and playbook are back to the
+  10-17 agree-only rule.
+
+## 2026-10-18 — plan checks (stacking, news days, quiet markets), hand-trade review, forward scorecard timer
+- Research (research/preregistered/2026-10-18_plan_checks.md, research/programs/planchk.cpp, on the engine's all-year trades —
+  label `mom_hist` now also holds so_cascade_2r_nofomc, so_cascade_2r_vwap_stall, gap_or_retest, gap_or_retest__nofomc):
+  the setups are one bet (correlation +0.6–0.7); on a 25K Lightning stacking raises blown accounts (the 20 % best-day rule) —
+  PARKED by the founder, not applied; news days → no cascade on CPI / PPI days, no gap retest on FOMC days; VIX / ATR % stand-aside filters
+  fail the walk-forward.
+- Plan page: cascade / gap-retest status and the live panel respect news days (a stand-aside setup is shown, never taken, never
+  sets the day's direction or the sprint trade); morning brief and the cascade / gap alerts follow. On an FOMC day the cascade is
+  `on: false` too (it was shown "off" while still `on`, so the 09:50 level alerts would have gone out).
+- Paper id `gap_or_retest__nofomc` (backfilled + all-year replay); dry `tradeify_gor` executor `skip_fomc_day: true`.
+- `scripts/manual_review.sh` + `manual-review.timer` (weekdays 16:15 ET): your fills export vs the Plan page replayed at each
+  entry minute, signed fill-vs-signal cost, ledger `data/manual_review/ledger.jsonl`, Telegram summary.
+- `scripts/working_fleet_report.sh` + `working-fleet-report.timer` (weekdays 16:30 ET): forward scorecard, Telegram on a verdict
+  change and on Fridays; config/working_fleet.json gains the six momentum ids and gap_or_retest__nofomc.
+- Validation: hermes 23/23, golden replay identical, research_repro 21/21 (planchk added), plan_parity 12/13 (same 09-22 miss).
+
 ## 2026-10-17 (later) — momentum family, VWAP pullback with plan agreement, alerts, second-drive backup, validation
 - Trend engine mode `mom_dir` (1-min momentum direction + 5-min entry `mom_entry` any / ema / vwap / dip, `mom_window`, `mom_eff`,
   `mom_last_entry`, `mom_need_plan` = the plan's cascade / gap-retest direction tracked inside the mode, done-after-a-loss via the
