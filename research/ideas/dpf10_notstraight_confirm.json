@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 60,
+  "id": "dpf10_notstraight_confirm",
+  "name": "Gap rule (10:00, straight intraday path) only when the 10-session daily path is NOT straight (e10 < 0.429) — confirmation 2019–24",
+  "why": "The gap-side day direction continues best when the market has not already trended for two weeks: a fresh overnight repositioning after a choppy fortnight has room to run. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_daily_path_direction.md) — confirmation of the 2010-18 pick.",
+  "from": "2019-01-01",
+  "to": "2024-12-31",
+  "params": {
+    "c": [
+      3
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "10:00",
+    "when": "t == 600 && ((!rollwin && abs(gap) >= 0.1)*sign(gap)) != 0 && (abs(px-open)/max(hod-lod, 1)) >= 0.55 && sign(px-open) == ((!rollwin && abs(gap) >= 0.1)*sign(gap)) && ((c == 1)*(e10 >= 0.429 && sign(r10) == ((!rollwin && abs(gap) >= 0.1)*sign(gap))) + (c == 2)*(e10 >= 0.429 && sign(r10) == -((!rollwin && abs(gap) >= 0.1)*sign(gap))) + (c == 3)*(e10 < 0.429)) > 0",
+    "dir": "((!rollwin && abs(gap) >= 0.1)*sign(gap))"
+  },
+  "control_pct": 0.983,
+  "control_seeds": 400
+}

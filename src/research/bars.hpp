@@ -100,6 +100,9 @@ struct Day {
     // the last 20 sessions' RTH volume traded on up-close sessions (close > the session before), p20 = where C[-1] sits in
     // the last 20 closes' min–max (0 = at the low, 1 = at the high)
     double e20 = NAN, r20 = NAN, r60 = NAN, uv20 = NAN, p20 = NAN;
+    // the same daily path / direction over 5 and 10 sessions (2026-10-18_daily_path_direction): eN = |C[-1] − C[-1-N]| / Σ|ΔC|,
+    // rN = (C[-1] − C[-1-N]) / atr
+    double e5 = NAN, r5 = NAN, e10 = NAN, r10 = NAN;
 };
 
 struct Series {
@@ -342,6 +345,13 @@ inline void build_days(Series& s, const std::set<int>& fomc, const paper::VixReg
                 if (!init) { up = u; dn = w; init = true; } else { up = (up + u) / 2; dn = (dn + w) / 2; }
             }
             d.rsi2 = up + dn > 0 ? 100 * up / (up + dn) : 50;
+        }
+        for (size_t N : {5, 10}) {   // daily path / direction over N sessions (see Day)
+            if (closes.size() < N + 1 || std::isnan(d.atr) || d.atr <= 0) continue;
+            const size_t n = closes.size(); double path = 0;
+            for (size_t j = n - N; j < n; ++j) path += std::fabs(closes[j] - closes[j - 1]);
+            const double e = path > 0 ? std::fabs(closes[n - 1] - closes[n - 1 - N]) / path : NAN, r = (closes[n - 1] - closes[n - 1 - N]) / d.atr;
+            if (N == 5) { d.e5 = e; d.r5 = r; } else { d.e10 = e; d.r10 = r; }
         }
         if (closes.size() >= 21 && !std::isnan(d.atr) && d.atr > 0) {   // Wyckoff phase inputs (see Day)
             const size_t n = closes.size();

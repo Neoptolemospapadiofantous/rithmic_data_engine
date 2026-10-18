@@ -1,0 +1,38 @@
+{
+  "id": "pdm_mom",
+  "name": "Path × direction map — The 45-minute momentum side",
+  "why": "The 45-minute momentum side is institutional repositioning that continues; the map asks at which entry time and path shape it pays. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_path_direction_map.md) — discovery map 2010-18.",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2018-12-31",
+  "params": {
+    "T": [
+      600,
+      630,
+      660,
+      720,
+      780
+    ],
+    "b": [
+      0,
+      1,
+      2
+    ],
+    "s": [
+      1,
+      -1
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "13:00",
+    "when": "t == T && ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) != 0 && ((b == 0)*((abs(px-open)/max(hod-lod, 1)) < 0.30) + (b == 1)*((abs(px-open)/max(hod-lod, 1)) >= 0.30 && (abs(px-open)/max(hod-lod, 1)) < 0.55) + (b == 2)*((abs(px-open)/max(hod-lod, 1)) >= 0.55)) == 1 && sign(px-open) == s*((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))",
+    "dir": "((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))"
+  },
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 150
+}

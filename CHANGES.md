@@ -7,6 +7,75 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+## 2026-10-18 — path × direction: confirmed rules, paper mode `path_dir`, pages; course indicators as filters (nothing adopted)
+- research/preregistered/2026-10-18_path_direction_map.md: map 2010–18 → picks → 2019–24 confirmation → 2025+ holdout. CONFIRMED: the gap
+  side (+28.26/trade) and the 45-min momentum side (+22.16) at the 10:00 candle close on a straight path (eff ≥ 0.55); cascade fails.
+- Trend engine mode `path_dir` (src/execution/trend_strategy.hpp, tests in test_trend_strategy); paper ids `pd_gap_1000` / `pd_mom_1000`
+  (config/paper_fleet.json, registered, backfilled 09-21..10-16 under label `backfill`). The forward paper engine is NOT rebuilt /
+  restarted yet (founder's call).
+- Plan page `live.path_now` / `live.pathdir` (scripts/daily_plan_live.jq) and the bot /orb Direction card show the path and the 10:00
+  read as a paper candidate (never "allowed now" or the sprint trade).
+- research/preregistered/2026-10-18_indicator_filters.md: RSI, MACD, VWAP band, Keltner, EMA, VWAP, value area, CVD as filters on it —
+  mostly always on (redundant); none confirmed. Trade the rules unfiltered.
+- research/preregistered/2026-10-18_path_direction_robustness.md: plateau PASS, no exit beats 2R, both-agree days corroborated on 2010–18
+  (momentum-only days lost then) — strongest form: the gap rule, sized up when momentum agrees.
+- research/preregistered/2026-10-18_daily_path_direction.md (founder: "on a daily can we set the path and direction?"): new DSL vars e5 r5 e10 r10.
+  Daily direction alone fails; the daily PATH is a confirmed size rule on the gap rule — full size when the 10-session daily path is
+  NOT straight (e10 < 0.429): 2019–24 +29.44/trade vs +28.26, holdout 36 trades +1,485 vs the excluded days −3.
+- research/preregistered/2026-10-18_range_day_mr.md: fades on RANGE days (daily path not straight + choppy morning) — VWAP band, first-hour
+  poke, 0.3 ATR to the open — all FAIL (−2.78 / −2.35 / +0.07). Plan page: new "Today · direction & path" panel (numbers.daily10 +
+  live.regime_today, scripts/daily_plan.sh / daily_plan_live.jq + bot /plan): pre-market daily path / direction and size, then at the
+  10:00 candle close TREND (trade the direction) / RANGE (stand aside) / MIXED. Founder: "everyday I wanna be able to see direction and path".
+- research/preregistered/2026-10-18_path_direction_extensions.md: second chance after 10:00 FAILS; the gap rule replicates on ES 2019–24
+  (PASS, +4.86 ES pts/trade) but ES 2025+ is flat; news days are not worse — no flag.
+- Year by year the gap rule is positive in 13 of 15 full years (2013, 2017, 2019 not); prop sim (Select Daily 50K, 2020–24) 1 eval, never
+  breached, $2.9k/yr at 2 MNQ, $6.8k/yr at 4 MNQ. Sizing book (2 / 1 / 0.5 units) beats flat in 2010–18, 2019–24 and 2025–26.
+  research/preregistered/2026-10-18_london_path_direction.md: the same idea at the London open FAILS at discovery.
+- research/preregistered/2026-10-18_gap_rule_checks.md: gap rule long and short legs both pay (not drift); VIX / ES agreement no rule;
+  correlation with weak_day_long 0.19 per month — independent of the weakness bet.
+- research/preregistered/2026-10-18_book_and_definition.md: two-edge book (GAP + WEAK long, opposite days skip the GAP short) 2011–26
+  +14,170 pts with max drawdown 566 vs WEAK alone 1,395; the path rule survives a 5-min-close definition; no weekday effect.
+- research/preregistered/2026-10-18_daily_book.md (founder: "20-50 points a day with 1 NQ"): every confirmed setup as one book, one position at
+  a time — ~85 % of sessions traded; 2025 +21.7 pts/session, 2026 +27.1, 2019–24 ≈ +3 … +15 by year; extra trades/day add little.
+  Per-day at the measured 2-pt cost (new edge_lab `--trades` flag): +10.6 pts/session 2019–26, median day 0, 36 % of days ≥ +20 /
+  39 % ≤ −20, max drawdown 1,156 pts; 2025 is +12.2 without one +2,117 day. 1 NQ of it does not fit a prop account.
+- research/preregistered/2026-10-18_high_winrate_book.md: high-win-rate exits — none qualifies (≥ 60 % win rate loses in 2010–18 at real
+  cost); 2019–26 the 0.5R form wins 68 % of trades / 51 % of days for ~25 % fewer points than 2R. edge_lab variants.csv: `win` column.
+- research/preregistered/2026-10-18_prop_daily_stop.md (founder: blowing accounts is okay, trade every day, take the P&L and stop):
+  daily stops add nothing; the plain 2R book at 3 MNQ on a 50K plan pays ≈ $1.8k per account (Topstep 50K 5 MNQ ≈ $2.2k) in the test years.
+- research/preregistered/2026-10-18_book_ablation.md: leave-one-out — keep the weakness long, the cascade and the gap retest; the 10:00
+  gap / momentum rules add nothing inside the one-position book → book = W + C + R (≈ $1.9k Select Daily 50K / $2.5k Topstep per account).
+- research/preregistered/2026-10-18_trend_scalp.md (founder: "1-3 trades 10-30 points each everyday … path and direction … momentum"):
+  every fixed 10–30-point daily form fails at real cost, including the confirmed entries with small fixed exits — the edge needs ATR-sized exits.
+- research/preregistered/2026-10-18_consistency.md (founder: "I cant have 1 winning day in 10 days"): scale-out makes more days green
+  (≤ 66 %) but positive 10-day windows stay ≈ 60 % and a few big days still carry the profit — no consistent form found.
+- research/preregistered/2026-10-18_book_management.md: break-even stops, earlier flat times and a daily-path filter on the cascade —
+  none beats the book in both periods; it stays 0.35 ATR / 2R / flat 15:55. A 90 %-win-rate exit (10 pt target, 100 pt stop) nets −0.93/trade.
+- research/preregistered/2026-10-18_cascade_orderbook.md: the order book (resting-size imbalance) as a cascade filter — the pick fails
+  confirmation; a cascade running into stacked size against it earns far less in both periods (hypothesis for later, data ends 2026-03).
+- research/preregistered/2026-10-18_cause_effect_effort.md: Cause & Effect (tight overnight / narrow prior day) and Effort vs Result (rvol)
+  as cascade filters — no consistent effect; the one cell meeting the rule (mid prior-day range) contradicts the theory, not adopted.
+- research/preregistered/2026-10-18_weekly_and_tom.md: two cascade rules pass the written test — skip a cascade WITH a straight week,
+  size up cascade longs at the turn of the month — both to the forward record before any sizing change.
+- research/preregistered/2026-10-18_weekly_tom_checks.md: neither rule replicates on both ES and the other NQ entries → forward record only.
+- research/preregistered/2026-10-18_weakness_path.md: confirming the weakness long at 10:00, or cutting it on a straight-down morning,
+  earns less in both periods — buy the 09:30 open and hold stays.
+- research/preregistered/2026-10-18_book_stop_target.md: 15 stop × target cells — 0.35 ATR / 2R stays; it sits on a plateau.
+- research/preregistered/2026-10-18_bos_morning.md (founder: BOS 09:30–11:30, 2–3 trades): all 24 variants lose in 2010–18; best 2019–24 +1.5 pts/session.
+- research/preregistered/2026-10-18_cascade_es_vix.md: size up cascade SHORTS after the prior VIX close fell — passes on NQ in both periods
+  and replicates on ES in every period; ES confirmation itself adds nothing.
+- VestMarkets 5K (founder's account) addendum in 2026-10-18_prop_daily_stop.md: drop the weakness long ($150 daily limit), $100 risk ≈ 47 %
+  pass in ~15 trades, ≈ $300 expected per $38 eval; several accounts on one strategy fail together — give each account ONE setup
+  (cascade-only 51 % / retest-only 60 % pass, both fail 25 %).
+- research/preregistered/2026-10-18_vix_short_checks.md: the VIX short effect also holds on gap-retest shorts; doubling size adds points
+- research/preregistered/2026-10-18_multi_trade_day.md: sequential second trades add almost nothing (fit on 8 % of sessions); running cascade, retest and gap rule side by side (overlap allowed) is ADOPTED — +15.05 pts/session 2019–24 vs +6.66, drawdown 1,247 vs 1,139.
+- research/preregistered/2026-10-18_side_by_side_adds.md: adding the 10:00 momentum rule or the weakness long (0.5 ATR stop) to the side-by-side book is not adopted (2010–18 miss / drawdown cap); F stays.
+- research/preregistered/2026-10-18_late_entries.md: dropping the late cascade checks or ending the retest at 12:00 / 11:00 makes F worse; the late entries stay.
+- research/preregistered/2026-10-18_combine_many.md: 13 strategies screened for combining; only the gap-down weakness long and the Asia open drive add to the side-by-side book (+1.9 pts/session 2019–24); not usable on Vest (no stop).
+- research/preregistered/2026-10-18_price_action_validation.md: every price-action test re-checked — code, pipeline (76/76) and all 55 specs reproduce; no reversed or cost-hidden edge. data/edge_lab/validation/summary.* rewritten by the full run.
+- research/preregistered/2026-10-18_follow_and_quad_close.md: following NQ's lead over ES fails at controls; data finding — the edge_lab NQ cache (Databento NQ.c.0, calendar roll) has no RTH bars on quarterly expiry Fridays and runs expiry week on the expiring contract. New specs research/ideas/nq_es_follow.json, quad_close.json.
+  (+19 %) but more drawdown (+35 %) — on a prop account use 1.5× or keep 1×.
+
 ## 2026-10-18 — edge_lab: direction-trade follow-ups (path sizing, path runner, intraday Wyckoff)
 - New exit rule `trail_path` (15-min trail runner only when the path at entry is straight, eff ≥ 0.55) with a gate-shuffle twin;
   test_edge_lab 597/597. research/preregistered/2026-10-18_direction_followups.md: `gap_or_retest_eff` (gap retest with path ≥ 0.55 at entry)

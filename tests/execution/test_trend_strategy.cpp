@@ -343,6 +343,36 @@ int main() {
         std::vector<double> below; for (int i = 0; i < 40; ++i) below.push_back(i < 5 ? 20000 - 12.0 * (i + 1) : 19940 + 1.0 * (i - 4));
         CHECK(run_mom(below, false, 99, 0, sd).empty() || run_mom(below, false, 99, 0, sd)[0].sig != OrbSignal::BUY,
               "mom_dir: a straight rise that is still below the 09:30 open → no long");
+
+        // path_dir (2026-10-18, research/preregistered/2026-10-18_path_direction_map.md): ATR 100; yesterday closed 20000; today
+        // opens at `open` and follows `rth` minute closes from 09:30; one look at the 1-minute close ending 10:00
+        auto run_pd = [&](const std::string& src, double open, const std::vector<double>& rth, double& sd) {
+            TrendConfig tc; tc.mode = "path_dir"; tc.tf_min = 1; tc.win_start = 930; tc.win_end = 1555; tc.pd_source = src;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session();
+            for (int mm = 9 * 60 + 30; mm < 16 * 60; ++mm) bar1(s, -1, mm / 60, mm % 60, 20000, 20000.25, 19999.75, 20000, 0.5);
+            s.reset_session(); s.set_day_atr(100.0);
+            for (int mm = 8 * 60 + 30; mm < 9 * 60 + 30; ++mm) bar1(s, 0, mm / 60, mm % 60, open, open + 0.25, open - 0.25, open, 0.5);
+            double prev = open; sd = 0;
+            for (size_t i = 0; i < rth.size(); ++i) { const int mm = 9 * 60 + 30 + (int)i; const double c = rth[i];
+                bar1(s, 0, mm / 60, mm % 60, prev, std::max(prev, c) + 0.25, std::min(prev, c) - 0.25, c, 0.5); prev = c;
+                if (!out.empty() && sd == 0) sd = s.take_stop_dist(); }
+            return out;
+        };
+        std::vector<double> pd_up; for (int i = 0; i < 60; ++i) pd_up.push_back(20030 + 1.0 * (i + 1));                 // straight up 1 pt/min
+        auto pd = run_pd("gap", 20030, pd_up, sd);
+        CHECK(pd.size() == 1 && pd[0].sig == OrbSignal::BUY && pd[0].why == "path_dir_long" && std::fabs(pd[0].px - 20060) < 1e-9 && std::fabs(sd - 25.0) < 1e-9,
+              "path_dir gap: +0.3 ATR gap, a straight path on the gap side → LONG once, at the 10:00 close, stop 0.25 ATR");
+        std::vector<double> zz; for (int i = 0; i < 60; ++i) zz.push_back(20030 + ((i % 2) ? 20.0 : -20.0));   // wide chop: 10:00 close 20 above the open on a ~40-pt range (efficiency ~0.49)
+        CHECK(run_pd("gap", 20030, zz, sd).empty(), "path_dir gap: a choppy path (efficiency < 0.55) → no trade");
+        std::vector<double> dn; for (int i = 0; i < 60; ++i) dn.push_back(20030 - 1.0 * (i + 1));
+        CHECK(run_pd("gap", 20030, dn, sd).empty(), "path_dir gap: price below the open against a gap up → no trade");
+        std::vector<double> up_small; for (int i = 0; i < 60; ++i) up_small.push_back(20005 + 1.0 * (i + 1));
+        CHECK(run_pd("gap", 20005, up_small, sd).empty(), "path_dir gap: a gap under 0.1 ATR sets no side → no trade");
+        auto pm = run_pd("mom", 20005, up_small, sd);
+        CHECK(pm.size() == 1 && pm[0].sig == OrbSignal::BUY && pm[0].why == "path_dir_long",
+              "path_dir mom: no gap, but a straight 45-minute rise above VWAP and the open on a straight path → LONG once");
         auto lost = run_mom(rise, false, 1, -50.0, sd);
         CHECK(lost.size() == 1, "mom_dir: after a losing trade (notify_trade_filled with P&L < 0) no more entries that day");
         auto won = run_mom(rise, false, 1, 50.0, sd);

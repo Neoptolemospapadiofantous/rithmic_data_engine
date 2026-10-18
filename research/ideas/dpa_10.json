@@ -1,0 +1,24 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100,
+  "id": "dpa_10",
+  "name": "Daily path × direction alone (10 sessions): 10:00 entry in the 10-session direction when its path is straight",
+  "why": "The daily trend that has been straight continues into the next session. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_daily_path_direction.md) test 2.",
+  "from": "2010-07-01",
+  "to": "2024-12-31",
+  "params": {},
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "10:00",
+    "when": "t == 600 && e10 >= 0.429 && sign(r10) != 0",
+    "dir": "sign(r10)"
+  },
+  "control_pct": 0.983,
+  "control_seeds": 400
+}

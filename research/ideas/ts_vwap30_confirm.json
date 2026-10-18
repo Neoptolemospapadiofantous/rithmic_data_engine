@@ -1,0 +1,33 @@
+{
+  "id": "ts_vwap30_confirm",
+  "name": "Daily trend scalp: path × direction, 1-3 trades of 10-30 points",
+  "why": "On a day whose path since the open is straight, the side of the open is where the day's order flow is; joining it for a fixed 10-30 points, up to three times, harvests that drift in small pieces. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_trend_scalp.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "from": "2023-01-01",
+  "params": {
+    "e": [
+      1
+    ],
+    "S": [
+      30
+    ],
+    "T": [
+      30
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "13:55",
+    "when": "((abs(px-open)/max(hod-lod, 1)) >= 0.55 && abs(px-open) >= 0.15*atr && sign(px-open)*(px - vwap) > 0) && ((e == 0) + (e == 1)*((sign(px-open) > 0 && lo(5,1) <= vwap + 0.05*atr && cl(5,1) > vwap) || (sign(px-open) < 0 && hi(5,1) >= vwap - 0.05*atr && cl(5,1) < vwap)) + (e == 2)*((sign(px-open) > 0 && lo(5,1) <= ema(5,20) && cl(5,1) > ema(5,20)) || (sign(px-open) < 0 && hi(5,1) >= ema(5,20) && cl(5,1) < ema(5,20)))) > 0",
+    "dir": "sign(px-open)"
+  },
+  "max_trades": 3,
+  "stop": "S",
+  "target": "T/S",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.95,
+  "control_seeds": 400
+}

@@ -1,0 +1,29 @@
+{
+  "id": "quad_close",
+  "name": "Quarterly rebalance day: trade the 14:00-15:00 move into the close",
+  "why": "2026-10-18_follow_and_quad_close",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "k": [
+      0.05,
+      0.1
+    ],
+    "stopk": [
+      0,
+      0.2
+    ]
+  },
+  "checks": [
+    {
+      "at": "15:00",
+      "when": "opex && (month == 3 || month == 6 || month == 9 || month == 12) && abs(px - at(14,0)) > k * atr",
+      "dir": "sign(px - at(14,0))"
+    }
+  ],
+  "stop": "stopk*atr",
+  "target": "0",
+  "flat": "15:55",
+  "min_trades": 30
+}

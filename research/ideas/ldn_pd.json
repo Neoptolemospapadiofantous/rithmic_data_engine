@@ -1,0 +1,22 @@
+{
+  "id": "ldn_pd",
+  "name": "London-open path × direction: the Asia move side, joined at the 03:30 candle close on a straight 03:00–03:30 path",
+  "why": "The Asia session move is overnight repositioning; if the London open carries it in a straight line for 30 minutes, European flow is joining it. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_london_path_direction.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "from": "2010-07-01",
+  "to": "2018-12-31",
+  "params": {},
+  "scan": {
+    "tf": 5,
+    "from": "03:30",
+    "to": "03:30",
+    "when": "t == 210 && ((abs((at(3,0) - at(18,0))) >= 0.1*atr)*sign((at(3,0) - at(18,0)))) != 0 && (abs(px - at(3,0))/max(whi(3,0,3,30) - wlo(3,0,3,30), 1)) >= 0.55 && sign(px - at(3,0)) == ((abs((at(3,0) - at(18,0))) >= 0.1*atr)*sign((at(3,0) - at(18,0))))",
+    "dir": "((abs((at(3,0) - at(18,0))) >= 0.1*atr)*sign((at(3,0) - at(18,0))))"
+  },
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "09:25",
+  "min_trades": 100
+}

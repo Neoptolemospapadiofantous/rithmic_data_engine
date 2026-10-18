@@ -198,7 +198,7 @@ enum VarId {
     V_vix, V_vixc1, V_vixc5, V_vixpct, V_dow, V_tdom, V_tdleft, V_fomc, V_opex, V_nfp, V_rollwin,
     V_year, V_month, V_flow, V_mtd, V_prehol,
     V_ppoc, V_pvah, V_pval, V_pwh, V_pwl, V_pmh, V_pml, V_npoca, V_npocb,
-    V_sma100, V_sma200, V_xma, V_xs, V_xr, V_vts, V_vvix, V_skew, V_y10, V_y2, V_y10c, V_usdc, V_earn, V_rvol, V_cpi, V_ppi, V_e20, V_r20, V_r60, V_uv20, V_p20, V__count
+    V_sma100, V_sma200, V_xma, V_xs, V_xr, V_vts, V_vvix, V_skew, V_y10, V_y2, V_y10c, V_usdc, V_earn, V_rvol, V_cpi, V_ppi, V_e20, V_r20, V_r60, V_uv20, V_p20, V_e5, V_r5, V_e10, V_r10, V__count
 };
 inline const std::map<std::string, int>& var_names() {
     static const std::map<std::string, int> m = {
@@ -213,7 +213,8 @@ inline const std::map<std::string, int>& var_names() {
         {"npoca", V_npoca}, {"npocb", V_npocb}, {"sma100", V_sma100}, {"sma200", V_sma200}, {"xma", V_xma},
         {"xs", V_xs}, {"xr", V_xr}, {"vts", V_vts}, {"vvix", V_vvix}, {"skew", V_skew}, {"y10", V_y10}, {"y2", V_y2},
         {"y10c", V_y10c}, {"usdc", V_usdc}, {"earn", V_earn}, {"rvol", V_rvol}, {"cpi", V_cpi}, {"ppi", V_ppi},
-        {"e20", V_e20}, {"r20", V_r20}, {"r60", V_r60}, {"uv20", V_uv20}, {"p20", V_p20}};
+        {"e20", V_e20}, {"r20", V_r20}, {"r60", V_r60}, {"uv20", V_uv20}, {"p20", V_p20},
+        {"e5", V_e5}, {"r5", V_r5}, {"e10", V_e10}, {"r10", V_r10}};
     return m;
 }
 
@@ -615,6 +616,10 @@ private:
             case V_r60: return D.r60;
             case V_uv20: return D.uv20;
             case V_p20: return D.p20;
+            case V_e5: return D.e5;
+            case V_r5: return D.r5;
+            case V_e10: return D.e10;
+            case V_r10: return D.r10;
             case V_rsi2: return D.rsi2;
             case V_gap: return D.atr > 0 ? (D.ro - D.pc) / D.atr : NAN;
             case V_prng: return D.ph - D.pl;

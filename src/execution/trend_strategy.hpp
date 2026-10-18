@@ -156,6 +156,15 @@ struct TrendConfig {
     // set and agrees — the first of the cascade checks (09:50 ≥ 0.25 ATR from the 09:30 open, 10:30 / 11:00 / 11:30 ≥ 0.30 ATR) and the
     // gap retest (|gap| ≥ 0.1 ATR; a 5-min bar from 09:45 touching the 15-min opening-range edge on the gap side and closing beyond it)
     bool mom_need_plan = false;
+    // path_dir (2026-10-18, research/preregistered/2026-10-18_path_direction_map.md, edge_lab pdm_gap_confirm / pdm_mom_confirm:
+    // confirmed 2019-24 +28.3 / +22.2 pts/trade, holdout 2025+ +919 / +2,448 pts): at the 1-minute close ending pd_at (HHMM) the day
+    // direction is read from pd_source — "gap": the overnight gap side when |gap| ≥ pd_gap_min_atr × day ATR; "mom": the last
+    // pd_mom_window one-minute moves with efficiency ≥ pd_mom_eff and price on that side of VWAP —; the trade is taken only when the
+    // path since 09:30 is straight (|close − 09:30 open| / max(RTH high − low, 1) ≥ pd_min_eff) and price is on the direction's side
+    // of the 09:30 open. One trade a day (tf_min 1), stop pd_stop_atr × day ATR, target tp_r. The edge_lab rule also skips the roll
+    // window for the gap source; this mode does not know the roll calendar.
+    std::string pd_source = "gap"; int pd_at = 1000, pd_mom_window = 45;
+    double pd_min_eff = 0.55, pd_gap_min_atr = 0.1, pd_mom_eff = 0.3, pd_stop_atr = 0.25;
     // noise_momentum (Zarattini/Aziz/Barbon 2024 noise-area intraday momentum; ledger L1, BK1): every nm_check_min minutes
     // after the RTH open, bands = max/min(09:30 open, prior RTH close) × (1 ± σ(m)), σ(m) = mean |close(m)/open − 1| at
     // that minute of the session over the last nm_days sessions. Flat: close above the upper band → long, below the
@@ -430,6 +439,9 @@ struct TrendConfig {
         c.mom_stop_atr = jdbl(t, "mom_stop_atr", c.mom_stop_atr);
         c.mom_entry_ema = jbool(t, "mom_entry_ema", c.mom_entry_ema); c.mom_stop_after_loss = jbool(t, "mom_stop_after_loss", c.mom_stop_after_loss);
         c.mom_entry = jstr(t, "mom_entry", c.mom_entry); c.mom_vwap_tol_atr = jdbl(t, "mom_vwap_tol_atr", c.mom_vwap_tol_atr); c.mom_dip_atr = jdbl(t, "mom_dip_atr", c.mom_dip_atr); c.mom_last_entry = jint(t, "mom_last_entry", c.mom_last_entry); c.mom_need_plan = jbool(t, "mom_need_plan", c.mom_need_plan);
+        c.pd_source = jstr(t, "pd_source", c.pd_source); c.pd_at = jint(t, "pd_at", c.pd_at); c.pd_mom_window = jint(t, "pd_mom_window", c.pd_mom_window);
+        c.pd_min_eff = jdbl(t, "pd_min_eff", c.pd_min_eff); c.pd_gap_min_atr = jdbl(t, "pd_gap_min_atr", c.pd_gap_min_atr);
+        c.pd_mom_eff = jdbl(t, "pd_mom_eff", c.pd_mom_eff); c.pd_stop_atr = jdbl(t, "pd_stop_atr", c.pd_stop_atr);
         c.lf_delta_min = jdbl(t, "lf_delta_min", c.lf_delta_min); c.lf_stop_atr = jdbl(t, "lf_stop_atr", c.lf_stop_atr);
         c.round_step = jdbl(t, "round_step", c.round_step);
         c.drive_gap_agree = jdbl(t, "drive_gap_agree", c.drive_gap_agree);
@@ -619,6 +631,7 @@ public:
         gr_hi_ = gr_lo_ = 0; gr_n_ = 0; gr_done_ = false;
         bg_n_ = 0; bg_done_ = false;
         mom_halt_ = false; mp_dir_ = 0; mp_orn_ = 0; mp_gr_done_ = false;
+        pd_done_ = false;
         drive_dir_ = 0; drive_done_ = false; late_armed_ = false; drive_late_i_ = 0; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
         td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
@@ -994,6 +1007,7 @@ private:
         else if (tc_.mode == "gap_or_retest") mode_gap_or_retest(b, hhmm);
         else if (tc_.mode == "box_go")       mode_box_go(b, hhmm);
         else if (tc_.mode == "mom_dir")      mode_mom_dir(b, hhmm);
+        else if (tc_.mode == "path_dir")     mode_path_dir(b, hhmm);
         else if (tc_.mode == "pdhl_breakout") mode_pdhl(b, hhmm);
         else if (tc_.mode == "squeeze")      mode_squeeze(b, hhmm);
         else if (tc_.mode == "supertrend")   mode_supertrend(b, hhmm);
@@ -1207,6 +1221,32 @@ private:
         LOG("[TREND mom_dir] %d-min move %+.2f (efficiency %.2f), close %.2f vs VWAP %.2f / open %.2f → %s",
             tc_.mom_window, net, std::fabs(net) / path, b.c, vw, rth_open_, dir > 0 ? "LONG" : "SHORT");
         emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "mom_dir_long" : "mom_dir_short");
+    }
+    void mode_path_dir(const Bar& b, int hhmm) {
+        pd_c_.push_back(b.c); while ((int)pd_c_.size() > tc_.pd_mom_window + 1) pd_c_.pop_front();   // every 1-minute close
+        if (pd_done_ || !in_rth_ || rth_open_ <= 0.0 || day_atr_ <= 0.0) return;
+        if (b.mod + 1 != (tc_.pd_at / 100) * 60 + tc_.pd_at % 100) return;
+        pd_done_ = true;                                                // one look a day, at pd_at
+        int dir = 0;
+        if (tc_.pd_source == "gap") {
+            if (!have_prev_) return;
+            dir = gap_ >= tc_.pd_gap_min_atr * day_atr_ ? 1 : gap_ <= -tc_.pd_gap_min_atr * day_atr_ ? -1 : 0;
+        } else if (tc_.pd_source == "mom") {
+            if ((int)pd_c_.size() < tc_.pd_mom_window + 1) return;
+            double path = 0.0; for (size_t i = 1; i < pd_c_.size(); ++i) path += std::fabs(pd_c_[i] - pd_c_[i - 1]);
+            const double net = pd_c_.back() - pd_c_.front(), vw = vwap();
+            if (path <= 0.0 || std::fabs(net) / path < tc_.pd_mom_eff || vw <= 0.0) return;
+            dir = net > 0 ? 1 : -1;
+            if (dir * (b.c - vw) <= 0.0) return;
+        }
+        if (dir == 0 || dir * (b.c - rth_open_) <= 0.0) return;         // price on the direction's side of the open
+        const double range = std::max(day_hi_ - day_lo_, 1.0), eff = std::fabs(b.c - rth_open_) / range;
+        if (eff < tc_.pd_min_eff) { LOG("[TREND path_dir] %s %s, path %.2f < %.2f — no trade", tc_.pd_source.c_str(), dir > 0 ? "up" : "down", eff, tc_.pd_min_eff); return; }
+        if (!can_enter(hhmm, dir)) return;
+        stop_dist_ = tc_.pd_stop_atr * day_atr_;
+        LOG("[TREND path_dir] %s side %s, gap %+.2f (%.2f ATR), path %.2f, close %.2f vs open %.2f → %s", tc_.pd_source.c_str(),
+            dir > 0 ? "up" : "down", gap_, gap_ / day_atr_, eff, b.c, rth_open_, dir > 0 ? "LONG" : "SHORT");
+        emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "path_dir_long" : "path_dir_short");
     }
     void mode_box_go(const Bar& b, int hhmm) {
         if (!in_rth_ || b.mod < 9 * 60 + 30) return;
@@ -2509,6 +2549,7 @@ private:
     bool in_rth_ = false, rth_seen_ = false, have_prev_ = false;
     double rth_open_ = 0, rth_close_ = 0; int rth_open_mod_ = 0;
     double day_hi_ = std::numeric_limits<double>::lowest(), day_lo_ = std::numeric_limits<double>::max();
+    bool pd_done_ = false; std::deque<double> pd_c_;   // path_dir
     double on_hi_ = std::numeric_limits<double>::lowest(), on_lo_ = std::numeric_limits<double>::max();
     double prev_hi_ = 0, prev_lo_ = 0, prev_close_ = 0, prev2_lo_ = 0; bool have_prev2_ = false;
     double vwap_pv_ = 0, vwap_v_ = 0; std::vector<double> vwap_hist_;

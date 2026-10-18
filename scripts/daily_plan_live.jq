@@ -131,7 +131,51 @@ def bars5: [$bars | group_by(.m / 5 | floor)[] | {k: (.[0].m / 5 | floor), o: .[
        | {dir: (if $md > 0 then "LONG" elif $md < 0 then "SHORT" else null end), eff: (($eff * 100 | round) / 100),
           plan_agrees: ($pd != null and $md != 0 and (($pd.dir == "LONG") == ($md > 0))),
           setup: (if $vset then {at: hhmm($now), price: $l5.c, vwap: (($vwb * 4 | round) / 4), stop_pts: (($atr * 0.25 * 4 | round) / 4)} else null end)} end) as $mom45
-  | . + {live: {status: $status, at: hhmm($now), next: $next, mom: $mom, mom45: $mom45,
+  # ── path × direction at 10:00 (research/preregistered/2026-10-18_path_direction_map.md; paper ids pd_gap_1000 / pd_mom_1000,
+  #    confirmed 2019-24 + holdout 2025+, PAPER CANDIDATE — context here, never sets "allowed now" or the sprint trade): at the
+  #    1-minute close ending 10:00 the path since 09:30 is straight (|close − open| / max(RTH range, 1) ≥ 0.55) and price is on the
+  #    side of the gap (|gap| ≥ 0.1 ATR) or of the 45-minute momentum (efficiency ≥ 0.3, price on that side of VWAP); stop 0.25 ATR, 2R
+  | ($mb | if length > 0 then (((last.c - $open) | fabs) / ([(map(.h) | max) - (map(.l) | min), 1] | max)) else null end) as $path_now
+  | ([$bars[] | select(.m < 30)]) as $b10
+  | (if $now < 30 or ($b10 | length) < 25 then null else
+       ($b10 | last.c) as $c10
+       | ((($c10 - $open) | fabs) / ([($b10 | map(.h) | max) - ($b10 | map(.l) | min), 1] | max)) as $e10
+       | (if $gap != null and ($gap | fabs) >= 0.1 then (if $gap > 0 then 1 else -1 end) else 0 end) as $gd
+       | ([$b10[] | (.v // 0) | if . < 1 then 1 else . end]) as $v10
+       | (([range(0; $b10 | length) as $i | (($b10[$i].h + $b10[$i].l + $b10[$i].c) / 3) * $v10[$i]] | add) / ($v10 | add)) as $vw10
+       | ((($pre1 // []) + [$b10[] | .c])) as $cl10
+       | (if ($cl10 | length) < 46 then 0 else ($cl10[-46:]) as $w | ([range(1; 46) as $i | (($w[$i] - $w[$i - 1]) | fabs)] | add) as $pth | ($w[45] - $w[0]) as $nt
+            | (if $pth > 0 and (($nt | fabs) / $pth) >= 0.3 and ((if $nt > 0 then 1 else -1 end) * ($c10 - $vw10)) > 0 then (if $nt > 0 then 1 else -1 end) else 0 end) end) as $md10
+       | ($e10 >= 0.55) as $straight
+       | ($gd != 0 and $straight and ($gd * ($c10 - $open)) > 0) as $gok
+       | ($md10 != 0 and $straight and ($md10 * ($c10 - $open)) > 0) as $mok
+       | (if $gok then $gd elif $mok then $md10 else 0 end) as $pdd
+       | {at: "10:00", path: (($e10 * 100 | round) / 100), straight: $straight,
+          gap_side: (if $gd > 0 then "LONG" elif $gd < 0 then "SHORT" else null end), mom_side: (if $md10 > 0 then "LONG" elif $md10 < 0 then "SHORT" else null end),
+          gap_ok: $gok, mom_ok: $mok, both: ($gok and $mok and $gd == $md10),
+          dir: (if $pdd > 0 then "LONG" elif $pdd < 0 then "SHORT" else null end), price: $c10,
+          stop_pts: (($atr * 0.25 * 4 | round) / 4), target_pts: (($atr * 0.5 * 4 | round) / 4),
+          size: (if $pdd == 0 then null elif ($p.numbers.daily10 // null) == null then "full (no 10-session daily path — data gap)"
+                 elif $p.numbers.daily10.straight and $gok then "reduced: the last 10 sessions trended straight (daily path \($p.numbers.daily10.path)) — the gap rule pays less then"
+                 else "full: the last 10 sessions were not a straight trend (daily path \($p.numbers.daily10.path))" end),
+          why: (if $pdd != 0 then (if $gok and $mok and $gd == $md10 then "straight path, gap and momentum agree (the strongest days 2019-24)" elif $gok then "straight path on the gap side" else "straight path on the momentum side" end)
+                elif ($straight | not) then "path \(($e10 * 100 | round) / 100) < 0.55 at 10:00: not straight — no path × direction trade today"
+                elif $gd == 0 and $md10 == 0 then "straight path, but no gap side and no momentum side"
+                else "straight path, but price is on the wrong side of the open for the gap / momentum side" end),
+          note: "paper candidate (pd_gap_1000 / pd_mom_1000), not a live signal"} end) as $pathdir
+  # ── today's regime from PATH and DIRECTION (research/preregistered/2026-10-18_path_direction_map.md, _daily_path_direction.md,
+  #    _range_day_mr.md): TREND = the 10:00 path × direction read fired (trade that direction); RANGE = the 10:00 path is choppy
+  #    (< 0.30) — every mean-reversion test lost, so stand aside; MIXED = in between (only the plan's other setups apply)
+  | ($p.numbers.daily10 // null) as $d10
+  | {daily: (if $d10 == null then "last 10 sessions: no reading (data gap)" else "last 10 sessions \($d10.dir), daily path \($d10.path) — \(if $d10.straight then "a straight trend: today's trend trade at reduced size" else "not a straight trend: today's trend trade at full size" end)" end),
+     phase: (if $now < 30 or $pathdir == null then "WAIT" elif $pathdir.dir != null then "TREND" elif $pathdir.path < 0.30 then "RANGE" else "MIXED" end),
+     dir: ($pathdir.dir // null),
+     text: (if $now < 30 or $pathdir == null then "read at the 10:00 candle close: is the path since 09:30 straight (≥ 0.55) and on the gap / momentum side?"
+            elif $pathdir.dir != null then "TREND day \($pathdir.dir): enter on the 10:00 candle close, stop 0.25 ATR, 2R, flat 15:55 — \($pathdir.why)"
+            elif $pathdir.path < 0.30 then "RANGE day (10:00 path \($pathdir.path)): stand aside — every mean-reversion test lost, including fades on exactly these days (2026-10-18)"
+            else "MIXED (10:00 path \($pathdir.path)): no path × direction trade; only the plan's other setups apply" end)} as $regime_today
+  | . + {live: {status: $status, at: hhmm($now), next: $next, mom: $mom, mom45: $mom45, regime_today: $regime_today,
+                path_now: (if $path_now == null then null else ($path_now * 100 | round) / 100 end), pathdir: $pathdir,
                 sprint: {status: $spst, outcome: $spout, trade: (if $sp == null then null else $sp + {target_pts: (($sp.stop_pts * 0.5 * 4 | round) / 4),
                           stop_price: ((($sp.price - (if $sp.dir == "LONG" then 1 else -1 end) * $sp.stop_pts) * 4 | round) / 4),
                           target_price: ((($sp.price + (if $sp.dir == "LONG" then 1 else -1 end) * $sp.stop_pts * 0.5) * 4 | round) / 4)} end)},

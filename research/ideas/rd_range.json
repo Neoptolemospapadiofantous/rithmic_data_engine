@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "tg",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.983,
+  "control_seeds": 400,
+  "params": {
+    "tg": [
+      1,
+      2
+    ]
+  },
+  "id": "rd_range",
+  "name": "Range day: fade a failed poke beyond the first-hour range",
+  "why": "On a range day the first-hour range is the day's accepted value; a poke beyond it that closes back inside trapped the breakout traders, whose stops carry price back into the range. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_range_day_mr.md).",
+  "scan": {
+    "tf": 5,
+    "from": "10:30",
+    "to": "14:00",
+    "when": "e10 < 0.429 && (abs(px-open)/max(hod-lod, 1)) < 0.30 && ((hi(5,1) > rhi(60) && cl(5,1) < rhi(60)) || (lo(5,1) < rlo(60) && cl(5,1) > rlo(60)))",
+    "dir": "((lo(5,1) < rlo(60) && cl(5,1) > rlo(60))) - ((hi(5,1) > rhi(60) && cl(5,1) < rhi(60)))"
+  }
+}

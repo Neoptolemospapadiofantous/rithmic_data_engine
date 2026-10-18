@@ -127116,6 +127116,62 @@
         "mom_vwap_tol_atr": 0.05,
         "mom_need_plan": true
       }
+    },
+    {
+      "id": "pd_gap_1000",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "_comment": "2026-10-18 path x direction (research/preregistered/2026-10-18_path_direction_map.md, edge_lab pdm_gap_confirm): at the 10:00 one-minute close, the overnight gap side (|gap| >= 0.1 ATR) when the path since 09:30 is straight (|close - open| / RTH range >= 0.55) and price is on the gap side of the open; stop 0.25 ATR, 2R, flat 15:55, one a day. Confirmed 2019-24 +28.3 pts/trade (163), holdout 2025+ 50 trades +919 pts. Shares about half its days with pd_mom_1000 (one bet). Paper only.",
+        "win_start": 930,
+        "win_end": 1555,
+        "session_open_hour": 9,
+        "session_open_min": 30,
+        "tf_min": 1,
+        "sl_points": 1000,
+        "trail_step": 50000,
+        "trail_be_trigger": 50000.0,
+        "trail_delay_secs": 0,
+        "max_daily_trades": 1,
+        "tp_r": 2.0,
+        "eod_flatten_hour": 15,
+        "eod_flatten_min": 55,
+        "last_entry_hour": 24,
+        "family": "path_direction",
+        "mode": "path_dir",
+        "pd_at": 1000,
+        "pd_min_eff": 0.55,
+        "pd_stop_atr": 0.25,
+        "pd_source": "gap"
+      }
+    },
+    {
+      "id": "pd_mom_1000",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "_comment": "2026-10-18 path x direction (research/preregistered/2026-10-18_path_direction_map.md, edge_lab pdm_mom_confirm): at the 10:00 one-minute close, the 45-minute momentum side (efficiency >= 0.3, price on that side of VWAP and the open) when the path since 09:30 is straight (>= 0.55); stop 0.25 ATR, 2R, flat 15:55, one a day. Confirmed 2019-24 +22.2 pts/trade (170), holdout 2025+ 53 trades +2,448 pts. Shares about half its days with pd_gap_1000 (one bet). Paper only.",
+        "win_start": 930,
+        "win_end": 1555,
+        "session_open_hour": 9,
+        "session_open_min": 30,
+        "tf_min": 1,
+        "sl_points": 1000,
+        "trail_step": 50000,
+        "trail_be_trigger": 50000.0,
+        "trail_delay_secs": 0,
+        "max_daily_trades": 1,
+        "tp_r": 2.0,
+        "eod_flatten_hour": 15,
+        "eod_flatten_min": 55,
+        "last_entry_hour": 24,
+        "family": "path_direction",
+        "mode": "path_dir",
+        "pd_at": 1000,
+        "pd_min_eff": 0.55,
+        "pd_stop_atr": 0.25,
+        "pd_source": "mom"
+      }
     }
   ]
 }

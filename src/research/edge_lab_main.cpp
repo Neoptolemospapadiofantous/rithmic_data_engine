@@ -29,6 +29,7 @@ struct Ctx {
     std::string data = "data/edge_lab/cache", out = "data/edge_lab", regime = "data/regime";
     int threads = 4; bool quick = false; bool meta_book = false;   // meta: add the flow / order-book inputs
     bool meta_page = false;                                        // meta: + the ORB page's reads and the feature study (2026-10-18)
+    bool trades = false;                                           // run: write the best variant's screen trades (--trades, 2026-10-18)
     std::map<std::string, std::unique_ptr<Series>> series;
     std::map<std::string, std::unique_ptr<Market>> market;
     std::set<int> fomc; paper::VixRegime vix;
@@ -112,11 +113,18 @@ json run_idea(Ctx& c, const Spec& sp, std::string& md) {
     std::sort(rank.begin(), rank.end(), [](const VS& a, const VS& b) { return a.st.net > b.st.net; });
     {   // every variant's in-sample result (for frozen-setting holdouts and plateau checks)
         std::ofstream vf(c.out + "/reports/" + sp.id + ".variants.csv");
-        vf << "label,n,net_avg,pf,t\n";
-        for (auto& r : rank) vf << '"' << vs[r.v].label << "\"," << r.st.n << "," << r.st.avg << "," << r.st.pf << "," << r.st.t << "\n";
+        vf << "label,n,net_avg,pf,t,win\n";   // win = share of trades with net > 0 (added 2026-10-18; appended last)
+        for (auto& r : rank) vf << '"' << vs[r.v].label << "\"," << r.st.n << "," << r.st.avg << "," << r.st.pf << "," << r.st.t << "," << r.st.win << "\n";
     }
     const VS* best = nullptr;
     for (auto& r : rank) if (r.st.n >= sp.min_trades) { best = &r; break; }
+    if (c.trades && !rank.empty()) {   // every screen trade of the best variant (or the top-ranked one): per-day statistics outside edge_lab
+        const auto& tv = vt[best ? best->v : rank.front().v];
+        std::ofstream tf(c.out + "/reports/" + sp.id + ".trades.csv");
+        tf << "date,entry_epoch,exit_epoch,dir,gross_pts,net_pts,mae,mfe,src\n";
+        for (auto& t : tv) tf << s.days[t.day].date << "," << s.t[t.e] << "," << s.t[t.x] << "," << t.dir << "," << t.pts << "," << t.pts - cost << ","
+                              << t.mae << "," << t.mfe << "," << t.src << "\n";
+    }
     const double years = s.days.empty() ? 1 : std::max(1.0, (double)(s.days.back().date / 10000 - std::max(sp.from_ymd, s.days.front().date) / 10000) + 0.5);
     // Bonferroni: t a single best-of-V needs for a two-sided 5 % test (normal approximation)
     auto z_for = [](double p) { double lo = 0, hi = 10; for (int k = 0; k < 80; ++k) { double mid = (lo + hi) / 2; if (0.5 * std::erfc(mid / std::sqrt(2.0)) > p) lo = mid; else hi = mid; } return lo; };
@@ -743,7 +751,7 @@ json run_exits(Ctx& c, const Spec& sp, std::string& md) {
 int main(int argc, char** argv) {
     const std::string mode = argc >= 3 ? argv[1] : "";
     if (mode != "run" && mode != "meta" && mode != "exits") {
-        std::cerr << "usage: edge_lab {run|meta|exits} SPEC.json [...] [--data DIR] [--out DIR] [--threads N] [--quick] [--book] [--page]\n";
+        std::cerr << "usage: edge_lab {run|meta|exits} SPEC.json [...] [--data DIR] [--out DIR] [--threads N] [--quick] [--book] [--page] [--trades]\n";
         return 2;
     }
     Ctx c;
@@ -757,6 +765,7 @@ int main(int argc, char** argv) {
         else if (a == "--quick") c.quick = true;
         else if (a == "--book") c.meta_book = true;
         else if (a == "--page") c.meta_page = true;
+        else if (a == "--trades") c.trades = true;
         else specs.push_back(a);
     }
     {   // FOMC decision days exported by scripts/edge_lab.sh from the calendar table

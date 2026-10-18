@@ -1,0 +1,43 @@
+{
+  "id": "casc_book_confirm",
+  "name": "Cascade when aggressor delta AND the resting book agree — confirmation 2024-09 → 2026-03",
+  "why": "Resting size near the price shows who is defending which side: a cascade the book leans with (or that runs into size stacked against it) should behave differently. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_cascade_orderbook.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "from": "2024-09-01",
+  "to": "2026-03-19",
+  "params": {
+    "q": [
+      4
+    ]
+  },
+  "checks": [
+    {
+      "at": "09:50",
+      "when": "abs(px-open) > 0.25*atr && ((q == 0) + (q == 1)*(sign(px-open)*bk(qimb,20) > 0) + (q == 2)*(sign(px-open)*bk(qimb,20) < 0) + (q == 3)*(flow && sign(px-open)*cdelta > 0) + (q == 4)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) > 0)) + (q == 5)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) < 0))) > 0",
+      "dir": "sign(px-open)"
+    },
+    {
+      "at": "10:30",
+      "when": "abs(px-open) > 0.30*atr && ((q == 0) + (q == 1)*(sign(px-open)*bk(qimb,20) > 0) + (q == 2)*(sign(px-open)*bk(qimb,20) < 0) + (q == 3)*(flow && sign(px-open)*cdelta > 0) + (q == 4)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) > 0)) + (q == 5)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) < 0))) > 0",
+      "dir": "sign(px-open)"
+    },
+    {
+      "at": "11:00",
+      "when": "abs(px-open) > 0.30*atr && ((q == 0) + (q == 1)*(sign(px-open)*bk(qimb,20) > 0) + (q == 2)*(sign(px-open)*bk(qimb,20) < 0) + (q == 3)*(flow && sign(px-open)*cdelta > 0) + (q == 4)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) > 0)) + (q == 5)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) < 0))) > 0",
+      "dir": "sign(px-open)"
+    },
+    {
+      "at": "11:30",
+      "when": "abs(px-open) > 0.30*atr && ((q == 0) + (q == 1)*(sign(px-open)*bk(qimb,20) > 0) + (q == 2)*(sign(px-open)*bk(qimb,20) < 0) + (q == 3)*(flow && sign(px-open)*cdelta > 0) + (q == 4)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) > 0)) + (q == 5)*((flow && sign(px-open)*cdelta > 0) && (sign(px-open)*bk(qimb,20) < 0))) > 0",
+      "dir": "sign(px-open)"
+    }
+  ],
+  "max_trades": 1,
+  "stop": "0.35*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 50,
+  "control_pct": 0.95,
+  "control_seeds": 400
+}

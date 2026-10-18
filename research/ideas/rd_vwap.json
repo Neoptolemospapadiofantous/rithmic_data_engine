@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "tg",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.983,
+  "control_seeds": 400,
+  "params": {
+    "tg": [
+      1,
+      2
+    ]
+  },
+  "id": "rd_vwap",
+  "name": "Range day: fade a close beyond VWAP ± 1.5 SD",
+  "why": "On a range day (no straight fortnight, choppy morning) nobody is repositioning; a stretch beyond the VWAP band is liquidity-seeking, and the market makers who absorbed it lean it back toward value. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_range_day_mr.md).",
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "14:00",
+    "when": "e10 < 0.429 && (abs(px-open)/max(hod-lod, 1)) < 0.30 && ((cl(5,1) > vwap + 1.5*vsd) || (cl(5,1) < vwap - 1.5*vsd))",
+    "dir": "((cl(5,1) < vwap - 1.5*vsd)) - ((cl(5,1) > vwap + 1.5*vsd))"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "if_mom",
+  "name": "Indicator filters on the path × direction trade — 45-minute momentum side",
+  "why": "The 45-minute momentum side on a straight path at the 10:00 candle close is the confirmed day-direction trade; the filter asks whether a course indicator picks its better days. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_indicator_filters.md) — discovery 2010-18.",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2018-12-31",
+  "params": {
+    "f": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "q": [
+      1,
+      -1
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "10:00",
+    "when": "t == 600 && ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) != 0 && (abs(px-open)/max(hod-lod, 1)) >= 0.55 && sign(px-open) == ((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) && (f == 0 || ((((f == 1)*(((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))*(rsi(5,14) - 50) > 0) + (f == 2)*(((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))*(ema(5,12) - ema(5,26)) > 0) + (f == 3)*(((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))*(px - vwap) > vsd) + (f == 4)*(((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))*(px - ema(5,20)) > 2*atrb(5,10)) + (f == 5)*(((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))*(px - ema(5,20)) > 0) + (f == 6)*(((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))*(px - vwap) > 0) + (f == 7)*((((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) > 0 && px > pvah) || (((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0)) < 0 && px < pval)) + (f == 8)*(((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))*cdelta > 0))) > 0) == (q == 1))",
+    "dir": "((er(1,45) >= 0.3) * sign(cl(1,1) - cl(1,46)) * ((cl(1,1) - cl(1,46)) * (px - vwap) > 0) * ((cl(1,1) - cl(1,46)) * (px - open) > 0))"
+  },
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 80
+}

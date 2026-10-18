@@ -526,6 +526,7 @@ int main() {
         const Day& D = s.days[75];
         CHECK(std::fabs(D.e20 - 1) < 1e-6 && std::fabs(D.r20 - 20) < 1e-6 && std::fabs(D.r60 - 40) < 1e-6);
         CHECK(std::fabs(D.uv20 - 1) < 1e-6 && std::fabs(D.p20 - 1) < 1e-6);
+        CHECK(std::fabs(D.e5 - 1) < 1e-6 && std::fabs(D.r5 - 5) < 1e-6 && std::fabs(D.e10 - 1) < 1e-6 && std::fabs(D.r10 - 10) < 1e-6);
         CHECK(std::isnan(s.days[15].e20) && std::isnan(s.days[40].r60) && !std::isnan(s.days[40].e20));   // 21 / 61 sessions needed
         Market m(s); Evaluator ev(m); DayCache dc;
         auto e = parse("e20 + r20 + r60 + uv20 + p20"); ev.bind(*e);

@@ -1,0 +1,27 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 1,
+  "id": "dpf10_straight_compl",
+  "name": "Complement: gap rule when the 10-session daily path IS straight — 2019–24",
+  "why": "2026-10-18_daily_path_direction test 1",
+  "from": "2019-01-01",
+  "to": "2024-12-31",
+  "params": {
+    "c": [
+      1,
+      2
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "10:00",
+    "when": "t == 600 && ((!rollwin && abs(gap) >= 0.1)*sign(gap)) != 0 && (abs(px-open)/max(hod-lod, 1)) >= 0.55 && sign(px-open) == ((!rollwin && abs(gap) >= 0.1)*sign(gap)) && ((c == 1)*(e10 >= 0.429 && sign(r10) == ((!rollwin && abs(gap) >= 0.1)*sign(gap))) + (c == 2)*(e10 >= 0.429 && sign(r10) == -((!rollwin && abs(gap) >= 0.1)*sign(gap))) + (c == 3)*(e10 < 0.429)) > 0",
+    "dir": "((!rollwin && abs(gap) >= 0.1)*sign(gap))"
+  }
+}

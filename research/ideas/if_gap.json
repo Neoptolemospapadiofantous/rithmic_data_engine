@@ -1,0 +1,37 @@
+{
+  "id": "if_gap",
+  "name": "Indicator filters on the path × direction trade — gap side",
+  "why": "The gap side on a straight path at the 10:00 candle close is the confirmed day-direction trade; the filter asks whether a course indicator picks its better days. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_indicator_filters.md) — discovery 2010-18.",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2018-12-31",
+  "params": {
+    "f": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "q": [
+      1,
+      -1
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "10:00",
+    "when": "t == 600 && ((!rollwin && abs(gap) >= 0.1)*sign(gap)) != 0 && (abs(px-open)/max(hod-lod, 1)) >= 0.55 && sign(px-open) == ((!rollwin && abs(gap) >= 0.1)*sign(gap)) && (f == 0 || ((((f == 1)*(((!rollwin && abs(gap) >= 0.1)*sign(gap))*(rsi(5,14) - 50) > 0) + (f == 2)*(((!rollwin && abs(gap) >= 0.1)*sign(gap))*(ema(5,12) - ema(5,26)) > 0) + (f == 3)*(((!rollwin && abs(gap) >= 0.1)*sign(gap))*(px - vwap) > vsd) + (f == 4)*(((!rollwin && abs(gap) >= 0.1)*sign(gap))*(px - ema(5,20)) > 2*atrb(5,10)) + (f == 5)*(((!rollwin && abs(gap) >= 0.1)*sign(gap))*(px - ema(5,20)) > 0) + (f == 6)*(((!rollwin && abs(gap) >= 0.1)*sign(gap))*(px - vwap) > 0) + (f == 7)*((((!rollwin && abs(gap) >= 0.1)*sign(gap)) > 0 && px > pvah) || (((!rollwin && abs(gap) >= 0.1)*sign(gap)) < 0 && px < pval)) + (f == 8)*(((!rollwin && abs(gap) >= 0.1)*sign(gap))*cdelta > 0))) > 0) == (q == 1))",
+    "dir": "((!rollwin && abs(gap) >= 0.1)*sign(gap))"
+  },
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 80
+}

@@ -1,0 +1,28 @@
+{
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "tg",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.983,
+  "control_seeds": 400,
+  "params": {
+    "tg": [
+      1,
+      2
+    ]
+  },
+  "id": "rd_open",
+  "name": "Range day: fade a 0.3 ATR excursion from the open",
+  "why": "On a range day the 09:30 open is the anchor; an excursion of 0.3 ATR with a choppy path is noise that the two-sided market pulls back toward the open. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_range_day_mr.md).",
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "14:00",
+    "when": "e10 < 0.429 && (abs(px-open)/max(hod-lod, 1)) < 0.30 && abs(px-open) >= 0.3*atr",
+    "dir": "-sign(px-open)"
+  }
+}

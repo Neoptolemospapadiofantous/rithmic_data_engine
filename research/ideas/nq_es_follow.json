@@ -1,0 +1,29 @@
+{
+  "id": "nq_es_follow",
+  "name": "NQ leads ES → trade NQ the way it leads",
+  "pair": "ES",
+  "why": "2026-10-18_follow_and_quad_close",
+  "params": {
+    "z": [
+      0.3,
+      0.5
+    ],
+    "stopk": [
+      0.15,
+      0.25
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "15:00",
+    "when": "!rollwin && abs((px - open)/atr - xs) > z",
+    "dir": "sign((px - open)/atr - xs)"
+  },
+  "stop": "stopk*atr",
+  "target": "1.5",
+  "flat": "15:55",
+  "control_pct": 0.995,
+  "control_seeds": 400,
+  "to": "2024-12-31"
+}

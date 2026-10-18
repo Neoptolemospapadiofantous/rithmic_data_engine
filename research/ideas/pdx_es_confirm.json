@@ -1,0 +1,24 @@
+{
+  "symbol": "ES",
+  "confirm": "NQ",
+  "max_trades": 1,
+  "stop": "0.25*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 60,
+  "params": {},
+  "id": "pdx_es_confirm",
+  "name": "Gap rule on ES (10:00 candle close, straight path, gap side) — replication",
+  "why": "The overnight-gap repositioning is index-wide, so the NQ rule should hold on ES unchanged. Pre-registered 2026-10-18 (research/preregistered/2026-10-18_path_direction_extensions.md) — confirmation 2019-24.",
+  "from": "2019-01-01",
+  "to": "2024-12-31",
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "10:00",
+    "when": "t == 600 && (((!rollwin && abs(gap) >= 0.1)*sign(gap)) != 0 && (abs(px-open)/max(hod-lod, 1)) >= 0.55 && sign(px-open) == ((!rollwin && abs(gap) >= 0.1)*sign(gap)))",
+    "dir": "((!rollwin && abs(gap) >= 0.1)*sign(gap))"
+  },
+  "control_pct": 0.983,
+  "control_seeds": 400
+}

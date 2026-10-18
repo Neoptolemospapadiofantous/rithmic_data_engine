@@ -86,6 +86,16 @@ jq -n --arg plan "$plan" --argjson raw "$raw" --argjson vix "$vix" --argjson rsi
   (if $y and ($y.h > $y.l) then ($y.c - $y.l) / ($y.h - $y.l) else null end) as $ibs |
   (if ($p | length) >= 3 then ($p[0].c < $p[1].c and $p[1].c < $p[2].c) else false end) as $streak2 |
   (if $y and $atr then ($y.c - $y.o) / $atr else null end) as $body |
+  # daily path / direction over the last 10 sessions (research/preregistered/2026-10-18_daily_path_direction.md): straight =
+  # e10 ≥ 0.429 (the 2010-18 top tercile). The 10:00 gap rule paid more when the fortnight was NOT straight (2019-24 +29.4 vs +18.3,
+  # holdout 2025+ +1,485 vs −3) → full size then, reduced size after a straight fortnight. No value across a data hole (> 21 days).
+  (if ($p | length) >= 11 and ((($p[0].date | strptime("%Y-%m-%d") | mktime) - ($p[10].date | strptime("%Y-%m-%d") | mktime)) / 86400) <= 21
+      and ((($plan | strptime("%Y-%m-%d") | mktime) - ($p[0].date | strptime("%Y-%m-%d") | mktime)) / 86400) <= 5 then
+     ([range(0; 10) as $i | (($p[$i].c - $p[$i + 1].c) | fabs)] | add) as $pth | ($p[0].c - $p[10].c) as $net
+     | {path: (if $pth > 0 then (($net | fabs) / $pth * 100 | round / 100) else null end), dir: (if $net > 0 then "UP" elif $net < 0 then "DOWN" else "FLAT" end),
+        move_atr: (if $atr then ($net / $atr * 100 | round / 100) else null end),
+        straight: ($pth > 0 and ($net | fabs) / $pth >= 0.429)}
+   else null end) as $daily10 |
   ([ (if $ibs != null and $ibs <= 0.3 then "closed in its bottom \(($ibs * 100) | round)%" else empty end),
      (if $rsi2 != null and $rsi2 <= 20 then "RSI(2) \($rsi2)" else empty end),
      (if $streak2 then "two lower closes" else empty end),
@@ -109,7 +119,7 @@ jq -n --arg plan "$plan" --argjson raw "$raw" --argjson vix "$vix" --argjson rsi
     stage: (if $r.or15 then "after 09:45 — opening range set" elif $open then "after 09:30 — open known" else "pre-open" end),
     holiday: $holiday,
     numbers: {
-      atr: ($atr | if . then r2 else null end), prior: $y, ibs: ($ibs | if . then r2 else null end), rsi2: $rsi2, two_lower_closes: $streak2,
+      atr: ($atr | if . then r2 else null end), daily10: $daily10, prior: $y, ibs: ($ibs | if . then r2 else null end), rsi2: $rsi2, two_lower_closes: $streak2,
       prior_body_atr: ($body | if . then r2 else null end), vix: $vix, vix_current: ($vx != null), open: $open,
       gap_pts: ($gap_pts | if . != null then r2 else null end), gap_atr: ($gap | if . != null then r2 else null end),
       gap_basis: (if $open then "09:30 open" elif $on.last then "last price \($on.last_at) ET (estimate until the open)" else null end),
