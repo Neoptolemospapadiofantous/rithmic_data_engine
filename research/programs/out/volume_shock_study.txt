@@ -1,0 +1,83 @@
+Overnight volume shocks — NQ 1m 2010-07 → 2026-10: a minute with volume >= K x the previous 60 min average and a move >= 0.05 ATR.
+Signed in the shock's direction, ATR units (1 ATR ~ 330 NQ pts today). Eras 2010-18 / 2019-22 / 2023-26.
+
+== K  5x, Asia 18:05-03:00: 2920 shocks (180.2 a year)
+  +3 min                                         +0.0022 (t  +1.6) | eras +0.0021 +0.0043 -0.0028
+  +15 min                                        +0.0061 (t  +2.7) | eras +0.0057 +0.0085 +0.0021
+  +60 min                                        +0.0060 (t  +1.8) | eras +0.0064 +0.0127 -0.0113
+  +120 min                                       +0.0141 (t  +2.7) | eras +0.0245 +0.0085 -0.0098
+  to the 09:30 open                              +0.0162 (t  +1.6) | eras +0.0275 -0.0086 +0.0334
+  gives back >= half within 5 min                  44.9% | eras  46.7  40.9  47.6 %
+  after that give-back: next 60 min from the half +0.0113 (t  +2.2) | eras +0.0159 +0.0131 -0.0087
+
+== K  5x, London 03:00-08:25: 3264 shocks (201.5 a year)
+  +3 min                                         -0.0006 (t  -0.5) | eras -0.0000 -0.0037 +0.0027
+  +15 min                                        +0.0040 (t  +2.1) | eras +0.0053 +0.0031 -0.0019
+  +60 min                                        +0.0062 (t  +1.9) | eras +0.0055 +0.0116 -0.0006
+  +120 min                                       +0.0035 (t  +0.7) | eras +0.0006 +0.0105 +0.0065
+  to the 09:30 open                              -0.0137 (t  -2.4) | eras -0.0196 +0.0086 -0.0227
+  gives back >= half within 5 min                  51.0% | eras  51.1  50.3  52.3 %
+  after that give-back: next 60 min from the half +0.0081 (t  +1.8) | eras +0.0065 +0.0118 +0.0103
+
+== K  5x, 08:25-09:25 (data releases): 1726 shocks (106.5 a year)
+  +3 min                                         -0.0070 (t  -2.5) | eras -0.0067 -0.0058 -0.0088
+  +15 min                                        -0.0080 (t  -1.9) | eras -0.0063 -0.0111 -0.0087
+  +60 min                                        -0.0247 (t  -3.6) | eras -0.0235 -0.0109 -0.0402
+  +120 min                                       -0.0397 (t  -3.6) | eras -0.0435 -0.0348 -0.0365
+  to the 09:30 open                              -0.0146 (t  -2.9) | eras -0.0132 -0.0113 -0.0204
+  gives back >= half within 5 min                  60.8% | eras  62.6  60.2  57.7 %
+  after that give-back: next 60 min from the half -0.0168 (t  -1.9) | eras -0.0150 +0.0040 -0.0412
+
+== K 10x, Asia 18:05-03:00: 1180 shocks (72.8 a year)
+  +3 min                                         +0.0052 (t  +2.3) | eras +0.0063 +0.0051 -0.0007
+  +15 min                                        +0.0074 (t  +2.1) | eras +0.0043 +0.0158 +0.0022
+  +60 min                                        +0.0049 (t  +1.0) | eras +0.0037 +0.0174 -0.0214
+  +120 min                                       +0.0073 (t  +1.0) | eras +0.0160 +0.0043 -0.0326
+  to the 09:30 open                              +0.0139 (t  +1.0) | eras +0.0236 -0.0037 +0.0064
+  gives back >= half within 5 min                  38.1% | eras  39.2  32.2  48.1 %
+  after that give-back: next 60 min from the half +0.0089 (t  +1.1) | eras +0.0114 +0.0125 -0.0091
+
+== K 10x, London 03:00-08:25: 909 shocks (56.1 a year)
+  +3 min                                         +0.0010 (t  +0.5) | eras +0.0017 -0.0016 +0.0002
+  +15 min                                        +0.0062 (t  +1.7) | eras +0.0063 +0.0063 +0.0047
+  +60 min                                        -0.0027 (t  -0.4) | eras -0.0085 +0.0018 +0.0517
+  +120 min                                       -0.0015 (t  -0.2) | eras -0.0104 +0.0219 +0.0445
+  to the 09:30 open                              -0.0434 (t  -4.1) | eras -0.0506 -0.0070 -0.0475
+  gives back >= half within 5 min                  44.6% | eras  45.6  37.2  50.0 %
+  after that give-back: next 60 min from the half -0.0071 (t  -0.7) | eras -0.0079 -0.0268 +0.0362
+
+== K 10x, 08:25-09:25 (data releases): 618 shocks (38.1 a year)
+  +3 min                                         -0.0070 (t  -1.4) | eras -0.0075 -0.0023 -0.0094
+  +15 min                                        +0.0010 (t  +0.1) | eras +0.0054 -0.0017 -0.0057
+  +60 min                                        -0.0066 (t  -0.6) | eras -0.0014 -0.0096 -0.0149
+  +120 min                                       -0.0470 (t  -2.6) | eras -0.0450 -0.0729 -0.0323
+  to the 09:30 open                              -0.0026 (t  -0.3) | eras +0.0005 +0.0035 -0.0131
+  gives back >= half within 5 min                  51.8% | eras  56.5  48.7  44.6 %
+  after that give-back: next 60 min from the half -0.0020 (t  -0.1) | eras +0.0158 -0.0029 -0.0463
+
+== K 20x, Asia 18:05-03:00: 349 shocks (21.5 a year)
+  +3 min                                         +0.0014 (t  +0.4) | eras +0.0037 -0.0072 -0.0045
+  +15 min                                        +0.0075 (t  +1.2) | eras +0.0058 +0.0171 +0.0035
+  +60 min                                        +0.0183 (t  +2.0) | eras +0.0129 +0.0473 +0.0093
+  +120 min                                       +0.0180 (t  +1.5) | eras +0.0108 +0.0560 +0.0077
+  to the 09:30 open                              +0.0260 (t  +1.0) | eras +0.0185 +0.0484 +0.0560
+  gives back >= half within 5 min                  32.1% | eras  31.7  29.8  41.7 %
+  after that give-back: next 60 min from the half +0.0320 (t  +2.3) | eras +0.0199 +0.0599 +0.0871
+
+== K 20x, London 03:00-08:25: 149 shocks (9.2 a year)
+  +3 min                                         -0.0010 (t  -0.2) | eras -0.0023 -0.0102 +0.0431
+  +15 min                                        +0.0071 (t  +0.7) | eras +0.0104 -0.0444 +0.0670
+  +60 min                                        -0.0185 (t  -0.9) | eras -0.0207 -0.1089 +0.2273
+  +120 min                                       -0.0160 (t  -0.7) | eras -0.0252 -0.0513 +0.2291
+  to the 09:30 open                              -0.0493 (t  -2.1) | eras -0.0589 -0.0900 +0.2163
+  gives back >= half within 5 min                  45.0% | eras  46.0  37.5  42.9 %
+  after that give-back: next 60 min from the half -0.0537 (t  -1.9) | eras -0.0410 -0.2640 +0.1215
+
+== K 20x, 08:25-09:25 (data releases): 205 shocks (12.7 a year)
+  +3 min                                         +0.0144 (t  +1.5) | eras +0.0062 +0.0503 +0.0124
+  +15 min                                        +0.0404 (t  +3.3) | eras +0.0341 +0.0633 +0.0413
+  +60 min                                        +0.0324 (t  +1.8) | eras +0.0470 +0.0038 +0.0173
+  +120 min                                       -0.0384 (t  -1.2) | eras -0.0193 -0.0385 -0.0777
+  to the 09:30 open                              +0.0372 (t  +2.5) | eras +0.0477 +0.0448 +0.0115
+  gives back >= half within 5 min                  36.6% | eras  44.1  30.0  24.6 %
+  after that give-back: next 60 min from the half +0.0388 (t  +1.6) | eras +0.0486 -0.0501 +0.0593

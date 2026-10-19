@@ -35,3 +35,11 @@ overnight hold O3 (2026-10-19_attack_behaviour). Operation rule as before (port5
 4. Regimes (171 windows, 2 pts): NQ up > 15 % $13.4k/yr (6 losing of 107), flat $15.3k (0 of 49), down > 10 % $14.5k (0 of 9); mean VIX
    < 15 $11.3k (5 of 52), 15–20 $16.6k (1 of 62), > 20 $13.7k (0 of 51). Works in falling markets; weakest in calm bull years.
 5. Live entry slippage (+1.25 pts per trade on top of 2 / 6 pt costs): $14,714 (6/82) / $9,850 (5/89) / $11,177 (13/82) / $7,199 (9/89) vs $16,139 / $11,201 / $12,542 / $7,718 — the plan survives live-style slippage, about −$0.5–1.5k/yr.
+
+## Follow-up, pre-registered 2026-10-19 BEFORE running (founder: "today at globex we had a huge fill, check")
+Weekend of 2026-10-16/18: Friday NQ fell 30,024 → 29,379 (IBS 0.14), VIX closed 19.99 (+34.7 % over 5 sessions, 82nd percentile); Sunday
+opened 29,227 (below Friday's low), was back above Friday's close in 1 minute and reached 29,813 at 02:21. The weakness rules as tested
+used the PRIOR day's VIX (Thursday 16.46) → no trade. For an entry at the 18:00 reopen the SAME day's VIX close (16:15) is already known.
+Test: W1 (any weakness & fear gate, 18:00 → next close) and W1v20 (IBS ≤ 0.3 & VIX ≥ 20, 18:00 → next close) with the gate on the same
+day's VIX close vs the prior day's; per trade by era, then the Vest operation in place of O3 (rule as before: mean net/yr up in all four
+cells, losing windows not up).
