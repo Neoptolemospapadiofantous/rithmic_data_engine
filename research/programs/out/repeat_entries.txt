@@ -1,0 +1,54 @@
+
+== NQ, straightness >= 0.40 — 3315 NY days (13.2 yrs). Net R per trade (1R = 0.10 ATR ≈ 32 NQ pts today; cost 2 pts at today's scale)
+  rule                                       /day    /yr    net R      t   eras 10-18/19-22/23-26   win%   pts/tr   days%  bad days
+  A 1m EMA20 pullback                        5.92   1493   -0.033   -4.0  -0.040  -0.032  -0.020   42.5    -1.06   97.4%      4.5%
+  B VWAP pullback                            2.11    532   -0.031   -2.2  -0.046  -0.017  -0.013   42.3    -1.00   72.4%      1.1%
+  C 5m EMA9 pullback                         3.97   1000   -0.022   -2.1  -0.025  +0.003  -0.043   43.0    -0.70   94.4%      2.2%
+  D 1m dip then new high/low                 4.59   1158   -0.036   -3.7  -0.040  -0.038  -0.022   41.9    -1.14   98.7%      2.5%
+  ALL (any of A-D)                          10.02   2526   -0.035   -5.4  -0.043  -0.031  -0.021   42.1    -1.13   99.9%     11.2%
+  control R15: every 15 min in context       6.89   1737   -0.009   -1.2  -0.013  +0.009  -0.021   43.3    -0.30   98.3%      5.2%
+  control: ALL with coin-flip direction     10.31   2599   -0.042   -6.5  -0.038  -0.058  -0.033   41.6    -1.33   99.9%     13.8%
+  entries before 11:30 only:
+  A 1m EMA20 pullback                        2.59    654   -0.020   -1.5  -0.029  -0.009  -0.009
+  B VWAP pullback                            1.43    360   -0.027   -1.5  -0.047  -0.014  +0.002
+  C 5m EMA9 pullback                         1.67    420   -0.016   -1.0  -0.005  +0.025  -0.087
+  D 1m dip then new high/low                 2.82    711   -0.030   -2.4  -0.036  -0.029  -0.016
+  ALL (any of A-D)                           5.22   1316   -0.026   -2.8  -0.037  -0.019  -0.005
+  control R15: every 15 min in context       2.93    738   +0.010   +0.9  -0.002  +0.051  -0.007
+  control: ALL with coin-flip direction      5.40   1360   -0.035   -3.9  -0.015  -0.070  -0.045
+
+== NQ, straightness >= 0.55 — 3315 NY days (13.2 yrs). Net R per trade (1R = 0.10 ATR ≈ 32 NQ pts today; cost 2 pts at today's scale)
+  rule                                       /day    /yr    net R      t   eras 10-18/19-22/23-26   win%   pts/tr   days%  bad days
+  A 1m EMA20 pullback                        4.24   1069   -0.019   -1.9  -0.033  +0.001  -0.008   43.3    -0.61   84.4%      2.6%
+  B VWAP pullback                            1.07    269   -0.016   -0.8  -0.046  +0.029  +0.001   42.9    -0.50   44.6%      0.7%
+  C 5m EMA9 pullback                         2.79    702   +0.000   +0.0  -0.010  +0.043  -0.025   44.1    +0.00   78.0%      1.2%
+  D 1m dip then new high/low                 3.70    932   -0.039   -3.7  -0.043  -0.046  -0.024   41.7    -1.26   94.7%      1.1%
+  ALL (any of A-D)                           7.46   1879   -0.026   -3.5  -0.035  -0.018  -0.015   42.5    -0.84   97.0%      5.8%
+  control R15: every 15 min in context       5.08   1281   +0.006   +0.7  -0.002  +0.033  -0.003   44.0    +0.21   87.8%      3.0%
+  control: ALL with coin-flip direction      7.67   1932   -0.042   -5.6  -0.045  -0.029  -0.049   41.6    -1.34   97.0%      9.0%
+  entries before 11:30 only:
+  A 1m EMA20 pullback                        1.76    444   -0.007   -0.4  -0.014  +0.009  -0.008
+  B VWAP pullback                            0.76    193   -0.011   -0.5  -0.034  +0.005  +0.020
+  C 5m EMA9 pullback                         1.09    275   +0.013   +0.6  +0.022  +0.080  -0.080
+  D 1m dip then new high/low                 2.27    572   -0.033   -2.4  -0.036  -0.032  -0.028
+  ALL (any of A-D)                           3.87    974   -0.017   -1.6  -0.024  -0.011  -0.006
+  control R15: every 15 min in context       2.15    541   +0.027   +1.9  +0.006  +0.094  +0.003
+  control: ALL with coin-flip direction      4.00   1009   -0.047   -4.5  -0.062  -0.019  -0.045
+
+== NQ, straightness >= 0.70 — 3315 NY days (13.2 yrs). Net R per trade (1R = 0.10 ATR ≈ 32 NQ pts today; cost 2 pts at today's scale)
+  rule                                       /day    /yr    net R      t   eras 10-18/19-22/23-26   win%   pts/tr   days%  bad days
+  A 1m EMA20 pullback                        2.32    584   -0.007   -0.5  -0.023  +0.015  +0.005   43.8    -0.22   56.6%      1.6%
+  B VWAP pullback                            0.22     57   -0.015   -0.3  -0.044  -0.028  +0.049   42.4    -0.49   16.0%      0.0%
+  C 5m EMA9 pullback                         1.50    377   -0.002   -0.1  +0.007  +0.018  -0.044   44.2    -0.05   50.5%      1.0%
+  D 1m dip then new high/low                 2.72    686   -0.031   -2.4  -0.046  -0.027  +0.000   42.0    -0.98   77.1%      0.8%
+  ALL (any of A-D)                           4.58   1154   -0.019   -2.0  -0.029  -0.006  -0.011   42.7    -0.61   78.9%      3.2%
+  control R15: every 15 min in context       3.01    760   +0.013   +1.1  +0.003  +0.032  +0.015   44.4    +0.42   64.7%      1.9%
+  control: ALL with coin-flip direction      4.77   1203   -0.055   -5.8  -0.040  -0.056  -0.087   41.2    -1.75   78.9%      7.6%
+  entries before 11:30 only:
+  A 1m EMA20 pullback                        0.87    220   +0.008   +0.4  -0.022  +0.060  +0.018
+  B VWAP pullback                            0.20     50   +0.002   +0.0  -0.019  -0.009  +0.050
+  C 5m EMA9 pullback                         0.51    129   +0.034   +1.2  +0.053  +0.103  -0.084
+  D 1m dip then new high/low                 1.66    418   -0.013   -0.8  -0.032  -0.005  +0.022
+  ALL (any of A-D)                           2.36    594   -0.001   -0.1  -0.020  +0.017  +0.023
+  control R15: every 15 min in context       1.26    319   +0.056   +3.0  +0.022  +0.119  +0.062
+  control: ALL with coin-flip direction      2.47    623   -0.048   -3.6  -0.044  -0.048  -0.056

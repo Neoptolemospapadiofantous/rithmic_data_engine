@@ -1,0 +1,83 @@
+PART A — flags with NO filters, trades a day (every signal; 'loose' = pole 6 bars >= 0.10 ATR, flag 5 bars <= 0.8 x pole; 'standard' = pole >= 0.20, flag <= 0.6). 3315 days.
+  session    1m loose / std    2m loose / std    3m loose / std    4m loose / std    5m loose / std   15m loose / std   all charts loose / std
+  NY         2.86 /  0.49       1.97 /  0.51       1.42 /  0.42       1.10 /  0.37       0.89 /  0.33       0.28 /  0.14       8.51 /  2.25
+  London     0.68 /  0.06       0.75 /  0.10       0.68 /  0.08       0.61 /  0.10       0.52 /  0.09       0.15 /  0.06       3.38 /  0.48
+  Asia       0.33 /  0.02       0.41 /  0.04       0.44 /  0.04       0.43 /  0.06       0.41 /  0.06       0.23 /  0.06       2.26 /  0.28
+
+PART B — feature selection, NY flags (loose, all charts, every signal, 1.5R to close). rho = Spearman with the net R multiple (profit per unit of risk; sizing is by risk, so R is what pays). Quintiles show win % and mean net R. IS 2010-18, OOS 2019-26.
+
+== BULL flags: IS n 8115 (WR 43.8%, +2.01 pts) · OOS n 8463 (WR 43.3%, +0.61 pts) — pts = NQ points at today's range
+  feature (ranked by consistent strength)            rho IS  rho OOS  verdict
+  stop size (ATR)                                    +0.432   +0.430  CONSISTENT: higher is better
+  pole size (ATR)                                    +0.328   +0.339  CONSISTENT: higher is better
+  flags already seen today                           +0.196   +0.178  CONSISTENT: higher is better
+  chart minutes                                      +0.167   +0.176  CONSISTENT: higher is better
+  distance from VWAP (ATR, signed)                   +0.130   +0.137  CONSISTENT: higher is better
+  flag range / pole                                  +0.113   +0.115  CONSISTENT: higher is better
+  flag drift against the pole (+ = counter-trend)    -0.120   -0.106  CONSISTENT: lower is better
+  minutes since 09:30                                -0.114   -0.100  CONSISTENT: lower is better
+  session move (ATR)                                 +0.089   +0.089  CONSISTENT: higher is better
+  breakout distance beyond flag (R)                  +0.086   +0.090  CONSISTENT: higher is better
+  prior day agrees                                   -0.064   -0.071  CONSISTENT: lower is better
+  on the trade's side of VWAP                        +0.069   +0.062  CONSISTENT: higher is better
+  breakout bar body / range                          +0.050   +0.058  CONSISTENT: higher is better
+  session straightness                               +0.051   +0.039  CONSISTENT: higher is better
+  with the day's side of the open                    +0.035   +0.055  CONSISTENT: higher is better
+  VIX (prior close)                                  +0.042   +0.028  CONSISTENT: higher is better
+  pole bars closing with the move                    +0.027   +0.025  CONSISTENT: higher is better
+  breakout close position in its bar                 +0.024   +0.053  CONSISTENT: higher is better
+  flag pullback depth / pole                         -0.046   -0.022  CONSISTENT: lower is better
+  flag volume / pole volume                          +0.033   +0.012  
+  flag lower highs (bull) / higher lows (bear)       -0.011   -0.052  
+  pole straightness (net / path)                     +0.011   +0.020  
+  with the 10:00 direction (after 10:00)             +0.009   +0.011  
+  gap agrees                                         -0.016   +0.010  
+  quintiles (cut on IS) — win % and pts in IS | OOS, lowest → highest:
+    stop size (ATR)                                | 41.1% -0.05R / 40.8% -0.06R | 40.7% -0.05R / 41.4% -0.02R | 42.7% +0.00R / 43.9% +0.02R | 45.2% +0.04R / 44.6% +0.02R | 49.5% +0.12R / 48.0% +0.07R
+    pole size (ATR)                                | 43.2% -0.00R / 41.4% -0.05R | 41.9% -0.03R / 41.6% -0.03R | 41.2% -0.04R / 42.5% -0.01R | 43.8% +0.03R / 44.7% +0.03R | 49.0% +0.11R / 46.7% +0.05R
+    flags already seen today                       | 42.1% -0.02R / 43.0% +0.00R | 42.8% -0.02R / 42.6% -0.01R | 43.4% -0.00R / 42.9% -0.01R | 45.3% +0.04R / 40.6% -0.07R | 46.1% +0.06R / 46.2% +0.04R
+    chart minutes                                  | 43.3% +0.02R / 41.0% -0.04R | 41.5% -0.02R / 43.0% +0.01R | 43.5% -0.00R / 41.5% -0.04R | 45.1% +0.04R / 44.8% +0.03R | 47.8% +0.05R / 49.1% +0.06R
+    distance from VWAP (ATR, signed)               | 41.9% -0.03R / 40.9% -0.06R | 42.5% -0.01R / 42.4% -0.02R | 43.9% +0.03R / 42.2% -0.02R | 45.6% +0.04R / 44.4% +0.02R | 45.4% +0.03R / 46.6% +0.06R
+    flag range / pole                              | 42.7% -0.01R / 45.1% +0.03R | 44.1% +0.02R / 43.0% -0.01R | 43.3% -0.00R / 42.0% -0.03R | 44.4% +0.02R / 42.1% -0.03R | 44.8% +0.03R / 44.3% +0.02R
+  PART C quality score (19 consistent features, built on 2010-18) — by score quintile, low → high:
+    2010-18 R  :  -0.073  -0.044  +0.022  +0.027  +0.131
+    2019-26    :  39.6% -0.089R (1.14/day)  41.6% -0.037R (1.18/day)  42.1% -0.014R (1.16/day)  44.5% +0.038R (1.12/day)  48.9% +0.087R (1.07/day)
+    2025-26    :  36.2% -0.178R (n 265)       43.2% +0.008R (n 280)       36.9% -0.128R (n 268)       38.5% -0.110R (n 278)       37.3% -0.157R (n 263)     
+
+== BEAR flags: IS n 6030 (WR 40.3%, -1.43 pts) · OOS n 5423 (WR 40.0%, -2.21 pts) — pts = NQ points at today's range
+  feature (ranked by consistent strength)            rho IS  rho OOS  verdict
+  stop size (ATR)                                    +0.488   +0.470  CONSISTENT: higher is better
+  pole size (ATR)                                    +0.399   +0.383  CONSISTENT: higher is better
+  chart minutes                                      +0.237   +0.228  CONSISTENT: higher is better
+  flags already seen today                           +0.257   +0.226  CONSISTENT: higher is better
+  distance from VWAP (ATR, signed)                   +0.268   +0.216  CONSISTENT: higher is better
+  session move (ATR)                                 +0.208   +0.160  CONSISTENT: higher is better
+  minutes since 09:30                                -0.113   -0.123  CONSISTENT: lower is better
+  with the day's side of the open                    +0.134   +0.107  CONSISTENT: higher is better
+  on the trade's side of VWAP                        +0.145   +0.102  CONSISTENT: higher is better
+  session straightness                               +0.141   +0.098  CONSISTENT: higher is better
+  flag range / pole                                  +0.093   +0.102  CONSISTENT: higher is better
+  breakout distance beyond flag (R)                  +0.092   +0.107  CONSISTENT: higher is better
+  flag drift against the pole (+ = counter-trend)    -0.106   -0.073  CONSISTENT: lower is better
+  flag volume / pole volume                          +0.075   +0.055  CONSISTENT: higher is better
+  breakout bar body / range                          +0.043   +0.070  CONSISTENT: higher is better
+  breakout close position in its bar                 +0.040   +0.047  CONSISTENT: higher is better
+  flag lower highs (bull) / higher lows (bear)       -0.030   -0.036  CONSISTENT: lower is better
+  pole bars closing with the move                    +0.056   +0.025  CONSISTENT: higher is better
+  with the 10:00 direction (after 10:00)             +0.041   +0.022  CONSISTENT: higher is better
+  pole straightness (net / path)                     +0.019   +0.021  
+  VIX (prior close)                                  -0.003   -0.034  
+  gap agrees                                         +0.037   -0.027  
+  prior day agrees                                   +0.046   -0.038  
+  flag pullback depth / pole                         -0.055   +0.002  
+  quintiles (cut on IS) — win % and pts in IS | OOS, lowest → highest:
+    stop size (ATR)                                | 37.2% -0.14R / 38.7% -0.10R | 39.6% -0.07R / 38.2% -0.10R | 38.8% -0.09R / 38.9% -0.08R | 43.1% +0.04R / 42.6% +0.00R | 42.9% +0.01R / 42.0% +0.01R
+    pole size (ATR)                                | 39.3% -0.09R / 40.1% -0.06R | 37.2% -0.13R / 39.0% -0.09R | 40.1% -0.04R / 39.3% -0.07R | 42.7% +0.01R / 40.3% -0.05R | 42.2% +0.00R / 41.1% -0.03R
+    chart minutes                                  | 38.9% -0.08R / 39.1% -0.08R | 38.6% -0.08R / 38.0% -0.09R |  0.0% +0.00R /  0.0% +0.00R | 42.2% -0.00R / 41.9% -0.01R | 44.1% +0.01R / 42.5% -0.02R
+    flags already seen today                       | 36.6% -0.14R / 38.7% -0.09R | 39.9% -0.06R / 39.6% -0.07R | 38.5% -0.09R / 35.9% -0.15R | 44.5% +0.04R / 39.8% -0.07R | 43.6% +0.04R / 44.3% +0.05R
+    distance from VWAP (ATR, signed)               | 38.0% -0.12R / 38.6% -0.10R | 39.9% -0.06R / 41.0% -0.03R | 40.1% -0.05R / 41.5% -0.03R | 43.9% +0.05R / 38.4% -0.09R | 39.6% -0.06R / 40.3% -0.04R
+    session move (ATR)                             | 40.3% -0.06R / 40.0% -0.07R | 39.6% -0.06R / 37.6% -0.12R | 37.6% -0.12R / 39.4% -0.07R | 42.6% +0.02R / 42.2% +0.01R | 41.5% -0.02R / 40.1% -0.06R
+  PART C quality score (19 consistent features, built on 2010-18) — by score quintile, low → high:
+    2010-18 R  :  -0.133  -0.087  -0.069  -0.001  +0.047
+    2019-26    :  39.4% -0.088R (0.64/day)  39.1% -0.081R (0.70/day)  39.3% -0.069R (0.80/day)  38.5% -0.089R (0.76/day)  43.4% +0.031R (0.73/day)
+    2025-26    :  46.6% +0.114R (n 116)       41.8% +0.020R (n 134)       43.8% +0.037R (n 162)       40.6% -0.023R (n 175)       41.1% -0.043R (n 192)     

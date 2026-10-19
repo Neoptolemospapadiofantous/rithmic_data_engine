@@ -1,0 +1,85 @@
+Flag review 2 — NY 3/4/5m structural flags, bull + bear, NQ 2010-07 → 2026-10: 49342 flags (ES loaded). R after 2 pts cost (2m trigger, else pole-top stop).
+
+== BULL flags with the context on and pole >= 4x bar — avg R (n) 2010-18 | 2019-24 | 2025-26
+  ALL (reference)                                +0.182 (2700) | +0.227 (1745) | -0.125 (338)
+  room to next level >= 1 pole (target clear)    +0.264 (1476) | +0.115 ( 244) | -0.297 (  7)
+  room 0.5-1 pole                                +0.153 ( 392) | +0.208 ( 405) | -0.952 ( 30)
+  room < 0.5 pole (level right above)            +0.050 ( 832) | +0.259 (1096) | -0.039 (301)
+  pole broke a level                             +0.216 (2279) | +0.282 (1504) | -0.085 (320)
+  pole broke no level                            -0.000 ( 421) | -0.119 ( 241) | -0.845 ( 18)
+  1st pullback of the leg                        +0.391 ( 714) | +0.510 ( 548) | -0.031 (108)
+  2nd pullback                                   +0.197 ( 832) | +0.224 ( 541) | -0.011 (116)
+  3rd+ pullback                                  +0.042 (1154) | -0.008 ( 656) | -0.330 (114)
+  pole top = new high of day                     +0.190 (2624) | +0.234 (1672) | -0.120 (316)
+  pole top below the high of day                 -0.084 (  76) | +0.067 (  73) | -0.199 ( 22)
+  ES confirms (same side, straight)              +0.182 (1902) | +0.155 (1321) | -0.151 (278)
+  ES does not confirm                            +0.184 ( 798) | +0.450 ( 424) | -0.007 ( 60)
+  NQ stronger than ES (rel > +0.1 ATR)           +0.236 (1504) | +0.370 ( 910) | -0.262 (143)
+  NQ weaker than ES (rel < -0.1)                 +0.251 ( 323) | -0.230 ( 169) | +0.324 ( 30)
+  60-min move >= 0.3 ATR with the flag           +0.272 (1508) | +0.444 ( 907) | -0.255 (183)
+  60-min move < 0.3 ATR                          +0.069 (1192) | -0.008 ( 838) | +0.028 (155)
+  beyond the prior close by >= 0.5 ATR           +0.261 (1667) | +0.287 (1083) | -0.182 (167)
+  within 0.5 ATR of the prior close              +0.054 (1033) | +0.129 ( 662) | -0.070 (171)
+  FOMC day                                       -0.687 (  16) | +0.853 (  27) | +nan (  0)
+  NFP day                                        +0.982 ( 142) | +0.650 ( 115) | -1.106 (  5)
+  no FOMC / NFP                                  +0.143 (2542) | +0.186 (1603) | -0.111 (333)
+  gap with the flag > 0.1 ATR                    +0.285 (1298) | +0.385 ( 878) | +0.154 (141)
+  prior close beyond SMA50 with the flag         +0.198 (1891) | +0.241 (1232) | -0.205 (236)
+  VIX moved with the flag yesterday              +0.098 (1365) | +0.272 (1004) | -0.117 (173)
+  down-day regime (gap + SMA50 + VIX) [bears]    +0.217 ( 451) | +0.405 ( 334) | -0.164 ( 78)
+  pole delta share terciles (flow days, cuts +0.021 +0.037):  low +0.266 (297)  mid +0.101 (297)  high +0.089 (297)
+  flag delta share terciles (flow days, cuts -0.049 -0.015):  low +0.269 (297)  mid +0.239 (297)  high -0.052 (297)
+
+== BEAR flags with the context on and pole >= 4x bar — avg R (n) 2010-18 | 2019-24 | 2025-26
+  ALL (reference)                                +0.009 (2642) | -0.029 (1698) | -0.130 (329)
+  room to next level >= 1 pole (target clear)    +0.057 (1136) | -0.409 (  73) | -1.062 (  2)
+  room 0.5-1 pole                                -0.131 ( 533) | +0.004 ( 344) | -0.489 ( 22)
+  room < 0.5 pole (level right above)            +0.030 ( 973) | -0.016 (1281) | -0.098 (305)
+  pole broke a level                             +0.031 (2275) | -0.023 (1509) | -0.050 (283)
+  pole broke no level                            -0.128 ( 367) | -0.071 ( 189) | -0.623 ( 46)
+  1st pullback of the leg                        +0.159 ( 647) | +0.149 ( 430) | +0.025 (101)
+  2nd pullback                                   -0.065 ( 783) | +0.056 ( 470) | -0.215 (104)
+  3rd+ pullback                                  -0.023 (1212) | -0.174 ( 798) | -0.184 (124)
+  pole top = new high of day                     -0.011 (2560) | -0.059 (1646) | -0.101 (319)
+  pole top below the high of day                 +0.618 (  82) | +0.921 (  52) | -1.041 ( 10)
+  ES confirms (same side, straight)              +0.029 (1954) | -0.067 (1294) | -0.193 (281)
+  ES does not confirm                            -0.049 ( 688) | +0.094 ( 404) | +0.239 ( 48)
+  NQ stronger than ES (rel > +0.1 ATR)           +0.034 (1478) | +0.008 ( 883) | -0.142 (148)
+  NQ weaker than ES (rel < -0.1)                 +0.026 ( 448) | +0.004 ( 251) | -0.521 ( 31)
+  60-min move >= 0.3 ATR with the flag           +0.049 (1960) | -0.003 (1238) | -0.147 (245)
+  60-min move < 0.3 ATR                          -0.107 ( 682) | -0.096 ( 460) | -0.081 ( 84)
+  beyond the prior close by >= 0.5 ATR           +0.178 (1656) | -0.030 (1057) | -0.139 (209)
+  within 0.5 ATR of the prior close              -0.275 ( 986) | -0.027 ( 641) | -0.114 (120)
+  FOMC day                                       -0.725 (  82) | -0.899 (  24) | -1.073 (  1)
+  NFP day                                        +0.591 ( 154) | -0.136 (  65) | -0.981 ( 22)
+  no FOMC / NFP                                  -0.003 (2406) | -0.011 (1609) | -0.066 (306)
+  gap with the flag > 0.1 ATR                    +0.202 ( 887) | +0.010 ( 624) | -0.160 (114)
+  prior close beyond SMA50 with the flag         +0.191 ( 738) | +0.024 ( 533) | +0.067 (100)
+  VIX moved with the flag yesterday              -0.078 (1343) | -0.141 ( 734) | +0.261 (130)
+  down-day regime (gap + SMA50 + VIX) [bears]    +0.900 (  85) | +0.310 (  69) | +0.576 ( 15)
+  pole delta share terciles (flow days, cuts +0.019 +0.034):  low -0.103 (300)  mid +0.095 (300)  high +0.139 (300)
+  flag delta share terciles (flow days, cuts -0.038 -0.009):  low -0.028 (300)  mid +0.154 (300)  high +0.005 (300)
+
+== 7. Failed flags traded the other way (close below 50 % of the pole → enter against the flag; stop beyond the pole top; target the pole start) — avg R (n) per period
+  failed bull flag → SHORT (all)                  -0.044 (3811) | -0.066 (2550) | -0.100 (469) | win 55%
+  failed bull flag → SHORT (context was on)       -0.028 ( 452) | +0.058 ( 312) | -0.038 ( 72) | win 57%
+  failed bear flag → LONG  (all)                  +0.023 (4112) | -0.005 (3089) | -0.053 (500) | win 58%
+  failed bear flag → LONG  (context was on)       +0.032 ( 701) | -0.046 ( 494) | -0.236 ( 88) | win 54%
+
+== Stacked rule per side — each step adds the condition that most raises the 2010-18 mean (>= 150 trades left in 2010-18). Later periods are the test.
+  -- bull
+    start: context + pole >= 4x                    +0.182 (2700) | +0.227 (1745) | -0.125 (338)
+    + 1st pullback of the leg                      +0.391 ( 714) | +0.510 ( 548) | -0.031 (108)
+    + pole >= 5x bar                               +0.605 ( 314) | +0.650 ( 247) | -0.291 ( 49)
+    + gap with the flag > 0.1 ATR                  +0.723 ( 150) | +1.050 ( 146) | +0.049 ( 25)
+  -- bear
+    start: context + pole >= 4x                    +0.009 (2642) | -0.029 (1698) | -0.130 (329)
+    + gap with the flag > 0.1 ATR                  +0.202 ( 887) | +0.010 ( 624) | -0.160 (114)
+    + room < 0.5 pole (level right above)          +0.799 ( 257) | +0.092 ( 426) | -0.077 (105)
+    + pole broke a level                           +1.130 ( 211) | +0.110 ( 375) | +0.037 ( 87)
+
+== First-pullback flags as a daily rule (context on, pole >= 4x bar, 3-5m, both sides). Flags a day (all charts) | days with one | avg R per period
+  1st pullback, both sides                     0.77/day | days  40% | all +0.281 / +0.351 / -0.004 | first of the day +0.279 / +0.383 / -0.012
+  1st or 2nd pullback, both sides              1.63/day | days  55% | all +0.166 / +0.247 / -0.057 | first of the day +0.229 / +0.328 / +0.007
+  1st pullback, pole broke a level, no FOMC    0.75/day | days  39% | all +0.295 / +0.344 / +0.001 | first of the day +0.302 / +0.386 / -0.003
+  1st pullback, bull only                      0.41/day | days  21% | all +0.391 / +0.510 / -0.031 | first of the day +0.398 / +0.535 / -0.243

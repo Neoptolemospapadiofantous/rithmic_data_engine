@@ -1,0 +1,58 @@
+Profit locks on the loose NY 1-5m flag streams (with the day), NQ and ES, one at a time, <= 5 a day each, 2 pts cost.
+pts = net NQ-equivalent points per trade at today's range; total = pts per trade x trades per day x 252 (per 1 NQ-sized unit a year).
+
+== NQ — L2 (straightness .40, pole .15, flag .7)
+  in-trade lock                      daily rule                   /day     WR      pts  2025-26  2019-24   pts/yr
+  E0 1.5R to close (base)            none                         1.28  42.1%    +1.19    -2.09    +2.29     +385
+  E0 1.5R to close (base)            D1 stop day at +1.5R         1.22  42.1%    +1.21    -2.02    +2.29     +373
+  E0 1.5R to close (base)            D2 stop day at +3R           1.28  42.1%    +1.26    -1.92    +2.23     +404
+  E0 1.5R to close (base)            D3 stop after 2 losses       1.23  42.0%    +1.07    -1.78    +2.28     +331
+  E0 1.5R to close (base)            D4 stop after the first win   0.96  41.9%    +1.20    -0.04    +1.71     +288
+  E1 +0.5R → break-even            none                         1.34  26.9%    +0.10    -1.97    +0.97      +32
+  E2 +1R → lock +0.25R             none                         1.30  48.2%    +0.76    -1.93    +0.99     +249
+  E3 +1R → lock +0.5R              none                         1.31  48.2%    +0.63    -2.79    +1.37     +209
+  E4 +1R → lock +0.5R, target 2R   none                         1.25  48.1%    +0.70    -5.08    +2.43     +221
+  E5 +1R → lock +0.5R, target 3R   none                         1.17  47.7%    +0.71    -7.18    +2.26     +209
+  E6 +0.75R → lock +0.25R          none                         1.33  54.2%    +0.74    -2.42    +1.03     +249
+
+== ES — L2 (straightness .40, pole .15, flag .7)
+  in-trade lock                      daily rule                   /day     WR      pts  2025-26  2019-24   pts/yr
+  E0 1.5R to close (base)            none                         1.16  40.6%    -1.73    +2.79    -1.55     -506
+  E0 1.5R to close (base)            D1 stop day at +1.5R         1.11  40.6%    -1.74    +2.86    -1.11     -487
+  E0 1.5R to close (base)            D2 stop day at +3R           1.15  40.6%    -1.62    +3.31    -1.57     -470
+  E0 1.5R to close (base)            D3 stop after 2 losses       1.11  40.6%    -1.46    +2.64    -1.04     -407
+  E0 1.5R to close (base)            D4 stop after the first win   0.89  40.0%    -2.79    +5.73    -1.93     -627
+  E1 +0.5R → break-even            none                         1.21  24.3%    -3.24    -2.14    -1.41     -991
+  E2 +1R → lock +0.25R             none                         1.17  47.4%    -1.69    +1.25    -0.34     -496
+  E3 +1R → lock +0.5R              none                         1.17  47.5%    -1.43    +0.37    +0.36     -424
+  E4 +1R → lock +0.5R, target 2R   none                         1.13  47.3%    -1.34    +1.06    +0.85     -380
+  E5 +1R → lock +0.5R, target 3R   none                         1.07  47.2%    -0.76    +0.94    +1.88     -204
+  E6 +0.75R → lock +0.25R          none                         1.19  52.8%    -2.69    -0.76    -1.35     -806
+
+== NQ — L4 (no VWAP, pole 4 / flag 3)
+  in-trade lock                      daily rule                   /day     WR      pts  2025-26  2019-24   pts/yr
+  E0 1.5R to close (base)            none                         1.45  42.2%    +0.34    -4.16    -0.37     +124
+  E0 1.5R to close (base)            D1 stop day at +1.5R         1.37  42.1%    +0.41    -4.84    -0.38     +142
+  E0 1.5R to close (base)            D2 stop day at +3R           1.44  42.1%    +0.39    -4.28    -0.25     +142
+  E0 1.5R to close (base)            D3 stop after 2 losses       1.36  42.6%    +0.86    -3.43    +0.62     +296
+  E0 1.5R to close (base)            D4 stop after the first win   1.03  42.7%    +1.59    -3.44    -0.57     +411
+  E1 +0.5R → break-even            none                         1.51  27.7%    -0.38    -5.58    -0.16     -144
+  E2 +1R → lock +0.25R             none                         1.46  47.8%    +0.07    -4.60    -1.10      +27
+  E3 +1R → lock +0.5R              none                         1.47  47.9%    +0.02    -3.25    -0.75       +7
+  E4 +1R → lock +0.5R, target 2R   none                         1.40  47.8%    -0.39    -5.00    -1.36     -137
+  E5 +1R → lock +0.5R, target 3R   none                         1.33  48.1%    +0.78    -2.51    -0.24     +260
+  E6 +0.75R → lock +0.25R          none                         1.49  53.7%    +0.10    -4.52    -0.86      +37
+
+== ES — L4 (no VWAP, pole 4 / flag 3)
+  in-trade lock                      daily rule                   /day     WR      pts  2025-26  2019-24   pts/yr
+  E0 1.5R to close (base)            none                         1.30  41.1%    -1.26    -4.28    +0.44     -413
+  E0 1.5R to close (base)            D1 stop day at +1.5R         1.22  41.1%    -1.53    -4.49    +0.13     -471
+  E0 1.5R to close (base)            D2 stop day at +3R           1.28  41.2%    -1.20    -3.85    +0.59     -387
+  E0 1.5R to close (base)            D3 stop after 2 losses       1.22  41.2%    -1.31    -2.96    +0.20     -403
+  E0 1.5R to close (base)            D4 stop after the first win   0.96  40.5%    -2.58    -2.33    -1.64     -626
+  E1 +0.5R → break-even            none                         1.35  25.1%    -2.67    -1.80    -0.64     -910
+  E2 +1R → lock +0.25R             none                         1.31  47.4%    -2.25    -6.04    -0.58     -744
+  E3 +1R → lock +0.5R              none                         1.32  47.4%    -2.69    -6.03    -0.83     -899
+  E4 +1R → lock +0.5R, target 2R   none                         1.27  47.7%    -1.91    -6.01    +0.54     -610
+  E5 +1R → lock +0.5R, target 3R   none                         1.21  47.2%    -2.16    -4.20    -0.05     -658
+  E6 +0.75R → lock +0.25R          none                         1.33  52.9%    -2.50    -3.29    -1.30     -842

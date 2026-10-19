@@ -1,0 +1,71 @@
+Micro flags (1-4 strong candles + 1-4 small candles) — NY 1-5m bull + bear, 12567 candidates, 5760 configs. R after 2 pts cost.
+Selection 2010-18 (1771 days), test 2019-24 (1285), holdout 2025-26 (259).
+
+== How many micro flags a day (any size, no context) per chart and side:
+  1m  bull 1.01/day (with context 0.25)  bear 0.90/day (with context 0.28)
+  2m  bull 0.43/day (with context 0.13)  bear 0.39/day (with context 0.13)
+  3m  bull 0.26/day (with context 0.08)  bear 0.23/day (with context 0.08)
+  4m  bull 0.17/day (with context 0.06)  bear 0.17/day (with context 0.06)
+  5m  bull 0.13/day (with context 0.05)  bear 0.12/day (with context 0.04)
+
+== Does the 2010-18 ranking carry forward? (33 configs with >= 150 trades 2010-18)
+  top 100.0% (  33): 2019-24 positive  60.6%, mean +0.094R | 2025-26 positive  39.4%, mean +0.230R
+  top  10.0% (   3): 2019-24 positive 100.0%, mean +0.358R | 2025-26 positive 100.0%, mean +1.548R
+  top   5.0% (   1): 2019-24 positive 100.0%, mean +0.345R | 2025-26 positive 100.0%, mean +1.466R
+  top   1.0% (   1): 2019-24 positive 100.0%, mean +0.345R | 2025-26 positive 100.0%, mean +1.466R
+
+== Top 20 by 2010-18
+  1m bear pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  hold     | 2010-18   427 +0.258 (12% win) | 2019-24   194 +0.345 | 2025-26   11 +1.466 | 0.19/day
+  1m bear pole 2 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   hold     | 2010-18   357 +0.237 (13% win) | 2019-24   166 +0.250 | 2025-26    8 +2.264 | 0.16/day
+  2m bull pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  hold     | 2010-18   227 +0.208 (16% win) | 2019-24    70 +0.479 | 2025-26    5 +0.915 | 0.09/day
+  2m bull pole 2 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   hold     | 2010-18   191 +0.179 (17% win) | 2019-24    59 +0.304 | 2025-26    5 +0.381 | 0.08/day
+  1m bull pole 1 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  hold     | 2010-18   177 +0.174 (16% win) | 2019-24    59 -0.427 | 2025-26    7 -1.156 | 0.07/day
+  1m bull pole 1 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  2R       | 2010-18   177 +0.149 (42% win) | 2019-24    59 -0.081 | 2025-26    7 -0.299 | 0.07/day
+  1m bull pole 1 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  measured | 2010-18   177 +0.098 (35% win) | 2019-24    59 -0.068 | 2025-26    7 -1.156 | 0.07/day
+  2m bull pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  2R       | 2010-18   227 +0.095 (40% win) | 2019-24    70 +0.031 | 2025-26    5 +0.092 | 0.09/day
+  1m bull pole 1 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   2R       | 2010-18   160 +0.056 (39% win) | 2019-24    50 -0.046 | 2025-26    7 -0.697 | 0.07/day
+  2m bull pole 2 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   measured | 2010-18   191 +0.036 (29% win) | 2019-24    59 -0.008 | 2025-26    5 -0.340 | 0.08/day
+  1m bear pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  2R       | 2010-18   427 +0.033 (39% win) | 2019-24   194 +0.024 | 2025-26   11 +0.189 | 0.19/day
+  1m bull pole 1 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   hold     | 2010-18   160 +0.030 (17% win) | 2019-24    50 -0.365 | 2025-26    7 -1.126 | 0.07/day
+  1m bear pole 2 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   2R       | 2010-18   357 +0.030 (38% win) | 2019-24   166 -0.039 | 2025-26    8 -0.017 | 0.16/day
+  1m bull pole 1 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   measured | 2010-18   160 +0.016 (36% win) | 2019-24    50 -0.010 | 2025-26    7 -1.126 | 0.07/day
+  2m bull pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  measured | 2010-18   227 +0.006 (26% win) | 2019-24    70 +0.070 | 2025-26    5 -0.148 | 0.09/day
+  1m bear pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  measured | 2010-18   427 +0.000 (29% win) | 2019-24   194 +0.001 | 2025-26   11 +0.623 | 0.19/day
+  2m bull pole 2 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   2R       | 2010-18   191 -0.004 (36% win) | 2019-24    59 +0.109 | 2025-26    5 -0.494 | 0.08/day
+  1m bear pole 2 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   measured | 2010-18   357 -0.032 (31% win) | 2019-24   166 -0.107 | 2025-26    8 +0.632 | 0.16/day
+  1m bear pole 1 bar(s) >=2x flag 1 bar(s)     M2 pole-top stop   2R       | 2010-18   162 -0.046 (35% win) | 2019-24    75 +0.048 | 2025-26    4 +0.388 | 0.07/day
+  1m bear pole 1 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  2R       | 2010-18   189 -0.050 (35% win) | 2019-24    84 +0.010 | 2025-26    4 +1.125 | 0.08/day
+
+== Best per chart × side (2010-18)
+  1m bull pole 1 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  hold     | 2010-18   177 +0.174 (16% win) | 2019-24    59 -0.427 | 2025-26    7 -1.156 | 0.07/day
+  1m bear pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  hold     | 2010-18   427 +0.258 (12% win) | 2019-24   194 +0.345 | 2025-26   11 +1.466 | 0.19/day
+  2m bull pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  hold     | 2010-18   227 +0.208 (16% win) | 2019-24    70 +0.479 | 2025-26    5 +0.915 | 0.09/day
+  2m bear pole 2 bar(s) >=2x flag 1 bar(s)     M1 flag-high stop  measured | 2010-18   161 -0.075 (25% win) | 2019-24    98 +0.226 | 2025-26    9 -0.007 | 0.08/day
+
+== Each choice on its own (mean 2019-24 R of configs using it minus the mean of all; 2025-26 mean in brackets)
+  all configs mean 2019-24 +0.094
+  chart 1m               -0.062 (+0.051) [24]
+  chart 2m               +0.167 (+0.708) [9]
+  chart 3m               +0.000 (+0.000) [0]
+  chart 4m               +0.000 (+0.000) [0]
+  chart 5m               +0.000 (+0.000) [0]
+  bull                   -0.016 (-0.411) [18]
+  bear                   +0.019 (+0.999) [15]
+  pole 1 bar(s)          -0.189 (-0.141) [12]
+  pole 2 bar(s)          +0.108 (+0.442) [21]
+  pole 3 bar(s)          +0.000 (+0.000) [0]
+  pole 4 bar(s)          +0.000 (+0.000) [0]
+  flag 1 bar(s)          +0.000 (+0.230) [33]
+  flag 2 bar(s)          +0.000 (+0.000) [0]
+  flag 3 bar(s)          +0.000 (+0.000) [0]
+  flag 4 bar(s)          +0.000 (+0.000) [0]
+  pole >= 2x bar         +0.000 (+0.230) [33]
+  pole >= 3x bar         +0.000 (+0.000) [0]
+  pole >= 4x bar         +0.000 (+0.000) [0]
+  with context           +0.000 (+0.000) [0]
+  no context             +0.000 (+0.230) [33]
+  M1 flag-high stop      +0.046 (+0.471) [18]
+  M2 pole-top stop       -0.055 (-0.059) [15]
+  exit measured          -0.070 (+0.073) [11]
+  exit 2R                -0.073 (-0.072) [11]
+  exit hold              +0.143 (+0.690) [11]

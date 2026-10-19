@@ -1,0 +1,121 @@
+Bull-flag sequence — NY 3/4/5m, NQ 2010-07 → 2026-10, 43255 flag candidates on 3315 days. R after 2 pts cost; common target = pole top + pole length.
+
+== 1. Validation sequence (cumulative). Per entry: avg R 2010-18 / 2019-26 (fill %). n/day = candidates a day on 3+4+5m.
+  step                                                      n/day | E0 at once          | E1 flag-high break  | E2 pole-top break   | E3 wick close       | E4 wick-high break  | E5 50% limit        | E6 EMA20 limit     
+  0 every candidate (pole >= 2x avg bar, pullback 15-50%)   13.05 | +0.040/+0.023 (100%) | -0.019/+0.001 (43%) | -0.020/-0.010 (58%) | -0.107/-0.088 (44%) | -0.116/-0.062 (34%) | +0.033/+0.027 (38%) | +0.014/+0.023 (52%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        |  +3.2/ +2.7 13.05/d    |  -0.6/ +0.7 5.57/d    |  -0.5/ +1.2 7.59/d    |  -1.5/ -0.7 5.72/d    |  -2.4/ -0.7 4.40/d    |  +0.6/ +1.7 4.94/d    |  +0.5/ +2.0 6.82/d   
+  1 + price above the 09:30 open                             8.82 | +0.058/+0.063 (100%) | +0.038/+0.034 (43%) | +0.015/+0.033 (59%) | -0.088/-0.020 (45%) | -0.095/+0.009 (35%) | +0.054/+0.064 (35%) | +0.033/+0.060 (48%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        |  +3.8/ +5.4 8.82/d    |  +1.7/ +2.5 3.80/d    |  +0.6/ +2.9 5.20/d    |  -1.3/ +0.6 4.00/d    |  -2.1/ +1.2 3.08/d    |  +0.9/ +2.7 3.10/d    |  +0.4/ +3.8 4.24/d   
+  2 + above VWAP                                             8.44 | +0.054/+0.065 (100%) | +0.041/+0.031 (43%) | +0.019/+0.033 (59%) | -0.079/-0.012 (46%) | -0.087/+0.016 (35%) | +0.041/+0.055 (34%) | +0.024/+0.064 (47%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        |  +3.7/ +5.5 8.44/d    |  +2.0/ +2.5 3.65/d    |  +0.9/ +3.0 4.99/d    |  -1.1/ +0.8 3.85/d    |  -1.9/ +1.5 2.96/d    |  +0.3/ +2.4 2.91/d    |  -0.1/ +4.0 3.97/d   
+  3 + straight session path (>= 0.55)                        4.45 | +0.073/+0.109 (100%) | +0.083/+0.058 (45%) | +0.063/+0.075 (61%) | -0.011/+0.043 (46%) | -0.042/+0.067 (35%) | +0.058/+0.183 (32%) | +0.037/+0.140 (43%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        |  +5.7/ +8.6 4.45/d    |  +3.9/ +4.1 1.98/d    |  +2.6/ +4.5 2.69/d    |  -0.1/ +1.2 2.05/d    |  -1.1/ +2.0 1.58/d    |  +1.4/ +6.5 1.41/d    |  +0.2/ +7.3 1.89/d   
+  4 + pole >= 4x the average bar                             1.63 | +0.087/+0.092 (100%) | +0.165/+0.113 (47%) | +0.144/+0.157 (59%) | +0.027/+0.161 (54%) | -0.040/+0.233 (42%) | +0.047/+0.165 (22%) | -0.009/+0.100 (38%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        |  +9.9/+12.2 1.63/d    |  +9.2/ +8.8 0.76/d    |  +6.7/+10.0 0.96/d    |  +0.5/ +3.6 0.87/d    |  -1.2/ +6.7 0.68/d    |  +2.0/ +8.7 0.36/d    |  -2.7/+10.2 0.62/d   
+  5 + pole >= 60% up bars                                    1.39 | +0.099/+0.097 (100%) | +0.174/+0.116 (47%) | +0.172/+0.154 (60%) | +0.084/+0.208 (53%) | +0.002/+0.259 (42%) | +0.092/+0.176 (21%) | +0.005/+0.113 (38%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        | +11.7/+12.7 1.39/d    | +10.1/ +9.4 0.65/d    |  +8.0/+10.3 0.83/d    |  +1.7/ +4.9 0.74/d    |  +0.0/ +8.0 0.58/d    |  +3.8/ +8.4 0.30/d    |  -2.2/+10.9 0.52/d   
+  6 + flag volume below pole volume                          1.22 | +0.116/+0.099 (100%) | +0.220/+0.107 (48%) | +0.209/+0.157 (61%) | +0.176/+0.173 (53%) | +0.079/+0.235 (42%) | +0.103/+0.135 (21%) | +0.010/+0.107 (37%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        | +12.9/+13.4 1.22/d    | +12.1/ +8.2 0.59/d    |  +9.9/+10.3 0.75/d    |  +3.1/ +4.3 0.65/d    |  +1.8/ +7.3 0.51/d    |  +3.9/ +6.5 0.25/d    |  -1.8/+11.0 0.46/d   
+  7 + entry before 14:00                                     1.06 | +0.136/+0.126 (100%) | +0.300/+0.129 (50%) | +0.287/+0.192 (62%) | +0.253/+0.249 (55%) | +0.122/+0.291 (43%) | +0.111/+0.149 (21%) | -0.004/+0.131 (38%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        | +14.9/+16.7 1.06/d    | +15.7/ +9.7 0.52/d    | +13.0/+12.1 0.66/d    |  +4.3/ +5.8 0.58/d    |  +2.8/ +9.0 0.46/d    |  +4.3/ +7.4 0.22/d    |  -2.9/+13.2 0.40/d   
+  8 + pole >= 0.40 x ATR                                     0.86 | +0.129/+0.145 (100%) | +0.351/+0.208 (49%) | +0.326/+0.275 (62%) | +0.259/+0.340 (55%) | +0.108/+0.390 (44%) | +0.097/+0.158 (20%) | -0.003/+0.164 (38%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        | +15.3/+20.1 0.86/d    | +18.3/+13.3 0.43/d    | +14.9/+16.1 0.54/d    |  +4.6/ +7.4 0.47/d    |  +2.5/+11.4 0.38/d    |  +3.9/ +8.2 0.17/d    |  -3.7/+16.1 0.33/d   
+  9 + pole volume >= 0.8 x session avg bar                   0.70 | +0.141/+0.139 (100%) | +0.381/+0.183 (51%) | +0.336/+0.296 (63%) | +0.386/+0.479 (54%) | +0.215/+0.508 (43%) | +0.105/+0.131 (20%) | +0.008/+0.162 (38%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        | +17.2/+20.6 0.70/d    | +20.3/+14.5 0.35/d    | +16.2/+18.8 0.44/d    |  +6.8/+10.2 0.38/d    |  +4.9/+14.6 0.30/d    |  +3.6/ +6.3 0.14/d    |  -3.9/+15.6 0.26/d   
+  10 + entry before 12:00                                    0.63 | +0.132/+0.148 (100%) | +0.370/+0.204 (50%) | +0.318/+0.327 (63%) | +0.371/+0.548 (53%) | +0.172/+0.542 (43%) | +0.108/+0.151 (21%) | +0.014/+0.179 (38%)
+      net pts at today's range 2010-18 / 2019-26, trades a day        | +14.9/+21.0 0.63/d    | +19.4/+14.8 0.32/d    | +14.9/+19.8 0.40/d    |  +6.1/+10.7 0.33/d    |  +3.8/+14.6 0.27/d    |  +3.9/ +7.2 0.13/d    |  -4.2/+16.9 0.24/d   
+
+  Final sequence (all 10 steps), per entry: trades a year | win % | avg R | profit factor (R) | years with R > 0 | 2025-26 avg R (n)
+    E0 at once           158.6/yr | 55.5% | +0.139R | PF 1.37 | 13/17 yrs | +0.020 (166)
+    E1 flag-high break    79.5/yr | 42.0% | +0.290R | PF 1.50 | 14/17 yrs | -0.401 (85)
+    E2 pole-top break    100.6/yr | 40.3% | +0.322R | PF 1.54 | 15/17 yrs | -0.238 (111)
+    E3 wick close         83.9/yr | 18.4% | +0.450R | PF 1.49 | 13/17 yrs | +0.240 (92)
+    E4 wick-high break    68.6/yr | 23.8% | +0.338R | PF 1.41 | 13/17 yrs | +0.425 (71)
+    E5 50% limit          33.1/yr | 32.9% | +0.128R | PF 1.19 | 12/17 yrs | +0.198 (35)
+    E6 EMA20 limit        60.7/yr | 44.5% | +0.097R | PF 1.18 | 11/17 yrs | +0.285 (73)
+
+== 2. Which features matter — candidates with the context on (steps 1-3), 14758 flags. Spearman with R per period; then mean R by tercile of the feature (low / mid / high), 2010-26.
+  -- entry E3 wick close
+    pole size / avg bar                      rho +0.162 / +0.215 SAME SIGN | terciles -0.064 / -0.058 / +0.160  (cuts 3.28, 4.31)
+    pole bars                                rho -0.095 / -0.085 SAME SIGN | terciles +0.010 / +0.024 / +0.003  (cuts 12.00, 16.00)
+    pole share of up bars                    rho +0.071 / +0.070 SAME SIGN | terciles -0.072 / +0.010 / +0.090  (cuts 0.62, 0.71)
+    pole volume / session avg bar vol        rho +0.262 / +0.328 SAME SIGN | terciles -0.172 / +0.022 / +0.188  (cuts 0.65, 0.85)
+    pullback depth (share of pole)           rho -0.049 / -0.027           | terciles +0.169 / -0.070 / -0.061  (cuts 0.24, 0.33)
+    flag bars at setup                       rho -nan / -nan           | terciles +0.000 / +0.000 / +0.013  (cuts 2.00, 2.00)
+    flag range / pole                        rho -0.031 / -0.031 SAME SIGN | terciles +0.145 / -0.020 / -0.086  (cuts 0.19, 0.26)
+    flag volume / pole volume (per bar)      rho -0.082 / -0.120 SAME SIGN | terciles +0.123 / +0.041 / -0.126  (cuts 0.65, 0.82)
+    pole size / ATR                          rho +0.385 / +0.449 SAME SIGN | terciles -0.072 / -0.096 / +0.207  (cuts 0.29, 0.46)
+    distance above VWAP / ATR                rho +0.020 / +0.037           | terciles +0.069 / -0.096 / +0.066  (cuts 0.19, 0.32)
+    straightness of session path             rho -0.093 / -0.099 SAME SIGN | terciles +0.163 / -0.010 / -0.115  (cuts 0.68, 0.79)
+    minutes after 09:30                      rho -0.219 / -0.275 SAME SIGN | terciles +0.231 / -0.074 / -0.116  (cuts 117.00, 219.00)
+    day's range so far / ATR                 rho +0.104 / +0.130 SAME SIGN | terciles +0.017 / +0.089 / -0.068  (cuts 0.62, 0.89)
+    pole top above opening-range high (0/1)  rho -0.082 / -0.066 SAME SIGN | terciles +0.046 / +0.000 / +0.011  (cuts 1.00, 1.00)
+    pole top above prior-day high (0/1)      rho -0.145 / -0.093 SAME SIGN | terciles -0.110 / +0.000 / +0.065  (cuts 1.00, 1.00)
+    gap from prior close / ATR               rho -0.088 / -0.065 SAME SIGN | terciles -0.166 / -0.168 / +0.371  (cuts -0.11, 0.27)
+  -- entry E1 flag-high break
+    pole size / avg bar                      rho +0.127 / +0.159 SAME SIGN | terciles +0.015 / +0.035 / +0.163  (cuts 3.17, 4.17)
+    pole bars                                rho -0.026 / -0.022           | terciles +0.058 / +0.051 / +0.094  (cuts 11.00, 15.00)
+    pole share of up bars                    rho +0.054 / +0.066 SAME SIGN | terciles +0.032 / +0.096 / +0.081  (cuts 0.62, 0.71)
+    pole volume / session avg bar vol        rho +0.154 / +0.197 SAME SIGN | terciles -0.017 / +0.051 / +0.179  (cuts 0.65, 0.85)
+    pullback depth (share of pole)           rho -0.029 / +0.015           | terciles +0.198 / +0.023 / -0.006  (cuts 0.24, 0.32)
+    flag bars at setup                       rho -nan / -nan           | terciles +0.000 / +0.000 / +0.071  (cuts 2.00, 2.00)
+    flag range / pole                        rho +0.010 / +0.035           | terciles +0.168 / +0.055 / -0.009  (cuts 0.19, 0.25)
+    flag volume / pole volume (per bar)      rho -0.035 / -0.027           | terciles +0.147 / +0.078 / -0.012  (cuts 0.63, 0.80)
+    pole size / ATR                          rho +0.242 / +0.298 SAME SIGN | terciles -0.026 / +0.045 / +0.193  (cuts 0.29, 0.45)
+    distance above VWAP / ATR                rho +0.008 / +0.002           | terciles +0.082 / +0.099 / +0.032  (cuts 0.19, 0.32)
+    straightness of session path             rho -0.067 / -0.103 SAME SIGN | terciles +0.156 / +0.057 / -0.000  (cuts 0.68, 0.80)
+    minutes after 09:30                      rho -0.160 / -0.189 SAME SIGN | terciles +0.206 / +0.071 / -0.062  (cuts 112.00, 224.00)
+    day's range so far / ATR                 rho +0.062 / +0.043 SAME SIGN | terciles +0.061 / +0.158 / -0.006  (cuts 0.61, 0.88)
+    pole top above opening-range high (0/1)  rho -0.030 / -0.079           | terciles +0.142 / +0.000 / +0.065  (cuts 1.00, 1.00)
+    pole top above prior-day high (0/1)      rho -0.063 / -0.032 SAME SIGN | terciles -0.017 / +0.000 / +0.112  (cuts 1.00, 1.00)
+    gap from prior close / ATR               rho -0.002 / +0.002           | terciles -0.037 / +0.009 / +0.241  (cuts -0.09, 0.29)
+  -- entry E2 pole-top break
+    pole size / avg bar                      rho +0.183 / +0.207 SAME SIGN | terciles -0.015 / +0.068 / +0.155  (cuts 3.10, 4.08)
+    pole bars                                rho -0.016 / -0.027           | terciles +0.079 / +0.059 / +0.069  (cuts 11.00, 15.00)
+    pole share of up bars                    rho +0.074 / +0.062 SAME SIGN | terciles +0.008 / +0.086 / +0.107  (cuts 0.62, 0.71)
+    pole volume / session avg bar vol        rho +0.215 / +0.225 SAME SIGN | terciles -0.052 / +0.087 / +0.173  (cuts 0.64, 0.84)
+    pullback depth (share of pole)           rho +0.046 / +0.078 SAME SIGN | terciles +0.162 / +0.048 / -0.003  (cuts 0.23, 0.31)
+    flag bars at setup                       rho -nan / -nan           | terciles +0.000 / +0.000 / +0.069  (cuts 2.00, 2.00)
+    flag range / pole                        rho -0.010 / +0.020           | terciles +0.162 / +0.040 / +0.006  (cuts 0.19, 0.26)
+    flag volume / pole volume (per bar)      rho -0.061 / -0.045 SAME SIGN | terciles +0.142 / +0.097 / -0.032  (cuts 0.64, 0.80)
+    pole size / ATR                          rho +0.303 / +0.349 SAME SIGN | terciles -0.026 / +0.039 / +0.194  (cuts 0.28, 0.43)
+    distance above VWAP / ATR                rho +0.024 / -0.015           | terciles +0.101 / +0.069 / +0.037  (cuts 0.19, 0.32)
+    straightness of session path             rho -0.090 / -0.128 SAME SIGN | terciles +0.151 / +0.069 / -0.013  (cuts 0.69, 0.81)
+    minutes after 09:30                      rho -0.187 / -0.231 SAME SIGN | terciles +0.199 / +0.104 / -0.093  (cuts 116.00, 225.00)
+    day's range so far / ATR                 rho +0.096 / +0.047 SAME SIGN | terciles +0.044 / +0.166 / -0.003  (cuts 0.60, 0.87)
+    pole top above opening-range high (0/1)  rho -0.039 / -0.068 SAME SIGN | terciles +0.141 / +0.000 / +0.063  (cuts 1.00, 1.00)
+    pole top above prior-day high (0/1)      rho -0.061 / -0.052 SAME SIGN | terciles -0.003 / +0.000 / +0.103  (cuts 1.00, 1.00)
+    gap from prior close / ATR               rho +0.004 / -0.017           | terciles -0.032 / -0.001 / +0.240  (cuts -0.09, 0.28)
+
+== 3. Entries compared on the same flags (context on, steps 1-3). Per chart: fill % | win % | avg R | pts at today's range | 2019-26 avg R.
+  -- 3m
+    E0 at once           fill 100.0% | win 46.6% | +0.101R | 2019-26 +0.130R (2862)
+    E1 flag-high break   fill 44.1% | win 35.2% | +0.032R | 2019-26 +0.020R (1347)
+    E2 pole-top break    fill 60.8% | win 33.3% | +0.053R | 2019-26 +0.065R (1842)
+    E3 wick close        fill 45.9% | win 14.0% | -0.088R | 2019-26 +0.016R (1235)
+    E4 wick-high break   fill 35.0% | win 19.2% | -0.044R | 2019-26 +0.059R (978)
+    E5 50% limit         fill 32.9% | win 29.0% | +0.101R | 2019-26 +0.200R (897)
+    E6 EMA20 limit       fill 43.6% | win 35.4% | +0.091R | 2019-26 +0.187R (1233)
+  -- 4m
+    E0 at once           fill 100.0% | win 48.7% | +0.087R | 2019-26 +0.100R (2223)
+    E1 flag-high break   fill 44.9% | win 38.4% | +0.091R | 2019-26 +0.093R (1051)
+    E2 pole-top break    fill 60.9% | win 36.0% | +0.064R | 2019-26 +0.068R (1405)
+    E3 wick close        fill 46.7% | win 16.7% | +0.056R | 2019-26 +0.056R (967)
+    E4 wick-high break   fill 36.4% | win 21.5% | +0.001R | 2019-26 +0.070R (779)
+    E5 50% limit         fill 31.5% | win 32.6% | +0.125R | 2019-26 +0.161R (684)
+    E6 EMA20 limit       fill 42.2% | win 39.1% | +0.076R | 2019-26 +0.107R (944)
+  -- 5m
+    E0 at once           fill 100.0% | win 50.4% | +0.075R | 2019-26 +0.086R (1805)
+    E1 flag-high break   fill 45.0% | win 41.5% | +0.108R | 2019-26 +0.075R (842)
+    E2 pole-top break    fill 59.6% | win 39.1% | +0.102R | 2019-26 +0.102R (1109)
+    E3 wick close        fill 45.2% | win 19.1% | +0.122R | 2019-26 +0.071R (799)
+    E4 wick-high break   fill 35.0% | win 25.2% | +0.099R | 2019-26 +0.076R (631)
+    E5 50% limit         fill 29.9% | win 34.0% | +0.123R | 2019-26 +0.182R (537)
+    E6 EMA20 limit       fill 41.2% | win 42.0% | +0.087R | 2019-26 +0.106R (751)
+  Paired: on flags where BOTH fill, mean difference in NET POINTS at today's range vs E3 wick close (positive = better than E3), 2010-18 / 2019-26:
+    E0 at once           +0.893 (3781) / +4.811 (3001)
+    E1 flag-high break   -13.847 (1326) / -11.000 (1199)
+    E2 pole-top break    -12.820 (1648) / -6.783 (1447)
+    E4 wick-high break   -5.455 (2839) / -3.162 (2388)
+    E5 50% limit         +15.728 (1547) / +24.602 (1237)
+    E6 EMA20 limit       +11.614 (2254) / +20.927 (1899)

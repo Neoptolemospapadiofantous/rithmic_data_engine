@@ -1,0 +1,226 @@
+Multi-timeframe flag entries — flag on the higher chart, entry on the lower chart. NY bull + bear, NQ 2010-07 → 2026-10, 24892 flag × lower-chart pairs.
+Cells: fill % | win % | avg R 2010-18 / 2019-24 / 2025-26 (n 2025-26) | median stop in pts at today's range.
+
+== bull flag on 3m, entry on 1m, pole >= 0.00 ATR — 2193 flags (0.66 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 41.9 | measured 34% +0.19/+0.20/-0.31 (102) | 2R 40% +0.12/+0.08/-0.24 (102) | hold 34% +0.25/+0.26/-0.35 (102) |
+  L1 lower-chart break, flag stop   fill  70% | stop 20.7 | measured 19% +0.10/+0.07/-0.35 (121) | 2R 34% -0.04/-0.12/-0.30 (121) | hold 19% +0.07/+0.13/-0.41 (121) |
+  L2 lower-chart break, tight stop  fill  70% | stop 18.1 | measured 16% +0.12/+0.04/-0.39 (121) | 2R 33% -0.07/-0.17/-0.25 (121) | hold 16% +0.09/+0.11/-0.39 (121) |
+  L3 lower-chart wick close         fill  74% | stop  8.7 | measured  8% -0.04/-0.24/-0.06 (122) | 2R 35% -0.18/-0.19/-0.47 (122) | hold  8% -0.00/-0.13/-0.22 (122) |
+  L4 lower-chart CHoCH              fill  16% | stop 25.7 | measured 24% +0.12/+0.25/-0.13 (27) | 2R 35% -0.08/-0.06/+0.02 (27) | hold 23% +0.02/+0.31/-0.13 (27) |
+
+== bull flag on 3m, entry on 1m, pole >= 0.30 ATR — 1987 flags (0.60 a day)
+  H  pole-top stop (higher chart)   fill  61% | stop 43.4 | measured 35% +0.22/+0.20/-0.34 (92) | 2R 40% +0.14/+0.09/-0.24 (92) | hold 34% +0.27/+0.26/-0.34 (92) |
+  L1 lower-chart break, flag stop   fill  70% | stop 21.6 | measured 19% +0.12/+0.10/-0.46 (108) | 2R 35% -0.02/-0.10/-0.28 (108) | hold 19% +0.09/+0.17/-0.46 (108) |
+  L2 lower-chart break, tight stop  fill  70% | stop 18.9 | measured 16% +0.14/+0.07/-0.44 (108) | 2R 34% -0.07/-0.16/-0.19 (108) | hold 16% +0.10/+0.15/-0.44 (108) |
+  L3 lower-chart wick close         fill  75% | stop  9.1 | measured  8% -0.05/-0.22/-0.26 (108) | 2R 35% -0.17/-0.17/-0.43 (108) | hold  8% -0.01/-0.12/-0.30 (108) |
+  L4 lower-chart CHoCH              fill  16% | stop 26.4 | measured 24% +0.19/+0.19/-0.02 (23) | 2R 35% -0.04/-0.07/+0.10 (23) | hold 23% +0.09/+0.24/-0.02 (23) |
+
+== bull flag on 3m, entry on 2m, pole >= 0.00 ATR — 2193 flags (0.66 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 41.9 | measured 34% +0.19/+0.20/-0.31 (102) | 2R 40% +0.12/+0.08/-0.24 (102) | hold 34% +0.25/+0.26/-0.35 (102) |
+  L1 lower-chart break, flag stop   fill  53% | stop 26.0 | measured 24% +0.15/+0.16/-0.33 (80) | 2R 37% +0.02/+0.03/-0.22 (80) | hold 24% +0.11/+0.20/-0.39 (80) |
+  L2 lower-chart break, tight stop  fill  53% | stop 24.0 | measured 22% +0.14/+0.13/-0.39 (80) | 2R 37% +0.01/+0.04/-0.23 (80) | hold 22% +0.11/+0.18/-0.47 (80) |
+  L3 lower-chart wick close         fill  60% | stop 11.8 | measured 12% +0.19/+0.17/-0.56 (99) | 2R 36% -0.12/-0.03/-0.24 (99) | hold 12% +0.12/+0.24/-0.56 (99) |
+  L4 lower-chart CHoCH              fill   2% | stop 35.2 | measured 30% +0.06/-0.05/-1.03 (1) | 2R 39% -0.06/+0.24/-1.03 (1) | hold 30% -0.01/+0.03/-1.03 (1) |
+
+== bull flag on 3m, entry on 2m, pole >= 0.30 ATR — 1987 flags (0.60 a day)
+  H  pole-top stop (higher chart)   fill  61% | stop 43.4 | measured 35% +0.22/+0.20/-0.34 (92) | 2R 40% +0.14/+0.09/-0.24 (92) | hold 34% +0.27/+0.26/-0.34 (92) |
+  L1 lower-chart break, flag stop   fill  53% | stop 26.9 | measured 24% +0.14/+0.16/-0.48 (71) | 2R 36% +0.01/+0.05/-0.27 (71) | hold 23% +0.10/+0.20/-0.48 (71) |
+  L2 lower-chart break, tight stop  fill  53% | stop 25.1 | measured 22% +0.13/+0.12/-0.56 (71) | 2R 37% +0.00/+0.05/-0.28 (71) | hold 22% +0.10/+0.16/-0.56 (71) |
+  L3 lower-chart wick close         fill  61% | stop 12.5 | measured 12% +0.22/+0.14/-0.46 (87) | 2R 37% -0.09/-0.00/-0.13 (87) | hold 12% +0.14/+0.21/-0.46 (87) |
+  L4 lower-chart CHoCH              fill   3% | stop 35.2 | measured 28% +0.06/-0.32/-1.03 (1) | 2R 38% -0.06/+0.16/-1.03 (1) | hold 28% -0.01/-0.36/-1.03 (1) |
+
+== bull flag on 4m, entry on 1m, pole >= 0.00 ATR — 1764 flags (0.53 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 45.0 | measured 38% +0.15/+0.23/-0.22 (77) | 2R 42% +0.12/+0.12/-0.05 (77) | hold 38% +0.15/+0.26/-0.27 (77) |
+  L1 lower-chart break, flag stop   fill  76% | stop 21.4 | measured 20% +0.05/+0.20/-0.44 (96) | 2R 36% +0.00/-0.01/-0.49 (96) | hold 20% +0.06/+0.23/-0.51 (96) |
+  L2 lower-chart break, tight stop  fill  76% | stop 17.8 | measured 17% +0.05/+0.20/-0.48 (96) | 2R 36% +0.01/-0.06/-0.47 (96) | hold 17% +0.07/+0.26/-0.48 (96) |
+  L3 lower-chart wick close         fill  81% | stop  8.6 | measured 10% +0.09/+0.26/-0.63 (104) | 2R 37% -0.11/-0.17/-0.40 (104) | hold 10% +0.16/+0.33/-0.78 (104) |
+  L4 lower-chart CHoCH              fill  24% | stop 25.0 | measured 24% +0.04/+0.27/+0.27 (35) | 2R 34% -0.08/-0.14/+0.24 (35) | hold 24% -0.02/+0.24/+0.27 (35) |
+
+== bull flag on 4m, entry on 1m, pole >= 0.30 ATR — 1676 flags (0.51 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 45.7 | measured 38% +0.15/+0.25/-0.18 (67) | 2R 43% +0.12/+0.14/+0.03 (67) | hold 38% +0.15/+0.27/-0.18 (67) |
+  L1 lower-chart break, flag stop   fill  76% | stop 22.1 | measured 20% +0.06/+0.26/-0.54 (86) | 2R 36% +0.01/+0.01/-0.48 (86) | hold 20% +0.07/+0.29/-0.54 (86) |
+  L2 lower-chart break, tight stop  fill  76% | stop 18.2 | measured 17% +0.07/+0.26/-0.50 (86) | 2R 36% -0.00/-0.04/-0.42 (86) | hold 17% +0.08/+0.31/-0.50 (86) |
+  L3 lower-chart wick close         fill  81% | stop  8.7 | measured 10% +0.11/+0.34/-0.70 (94) | 2R 37% -0.09/-0.17/-0.38 (94) | hold 10% +0.18/+0.41/-0.70 (94) |
+  L4 lower-chart CHoCH              fill  24% | stop 25.1 | measured 24% +0.05/+0.22/+0.31 (34) | 2R 35% -0.07/-0.13/+0.28 (34) | hold 24% -0.01/+0.20/+0.31 (34) |
+
+== bull flag on 4m, entry on 2m, pole >= 0.00 ATR — 1764 flags (0.53 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 45.0 | measured 38% +0.15/+0.23/-0.22 (77) | 2R 42% +0.12/+0.12/-0.05 (77) | hold 38% +0.15/+0.26/-0.27 (77) |
+  L1 lower-chart break, flag stop   fill  60% | stop 26.3 | measured 25% +0.12/+0.21/+0.07 (77) | 2R 37% +0.02/+0.06/-0.04 (77) | hold 25% +0.12/+0.26/+0.01 (77) |
+  L2 lower-chart break, tight stop  fill  60% | stop 23.8 | measured 23% +0.14/+0.19/+0.01 (77) | 2R 38% +0.03/+0.08/-0.14 (77) | hold 23% +0.15/+0.25/-0.08 (77) |
+  L3 lower-chart wick close         fill  66% | stop 11.6 | measured 12% +0.17/-0.13/-0.18 (85) | 2R 36% -0.10/-0.12/-0.27 (85) | hold 12% +0.18/-0.03/-0.18 (85) |
+  L4 lower-chart CHoCH              fill   6% | stop 33.3 | measured 30% +0.64/-0.36/-0.55 (6) | 2R 39% +0.37/-0.34/-0.05 (6) | hold 30% +0.51/-0.37/-0.55 (6) |
+
+== bull flag on 4m, entry on 2m, pole >= 0.30 ATR — 1676 flags (0.51 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 45.7 | measured 38% +0.15/+0.25/-0.18 (67) | 2R 43% +0.12/+0.14/+0.03 (67) | hold 38% +0.15/+0.27/-0.18 (67) |
+  L1 lower-chart break, flag stop   fill  61% | stop 26.8 | measured 24% +0.12/+0.23/+0.02 (71) | 2R 37% +0.01/+0.09/-0.07 (71) | hold 24% +0.11/+0.28/+0.02 (71) |
+  L2 lower-chart break, tight stop  fill  61% | stop 24.4 | measured 22% +0.14/+0.22/-0.07 (71) | 2R 38% +0.02/+0.11/-0.23 (71) | hold 22% +0.14/+0.28/-0.07 (71) |
+  L3 lower-chart wick close         fill  67% | stop 11.8 | measured 12% +0.21/-0.10/-0.09 (78) | 2R 36% -0.09/-0.13/-0.22 (78) | hold 12% +0.22/+0.00/-0.09 (78) |
+  L4 lower-chart CHoCH              fill   6% | stop 33.4 | measured 30% +0.64/-0.32/-0.55 (6) | 2R 40% +0.37/-0.30/-0.05 (6) | hold 30% +0.51/-0.33/-0.55 (6) |
+
+== bull flag on 5m, entry on 1m, pole >= 0.00 ATR — 1565 flags (0.47 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 49.1 | measured 43% +0.22/+0.26/-0.01 (64) | 2R 46% +0.13/+0.21/+0.05 (64) | hold 42% +0.23/+0.27/-0.08 (64) |
+  L1 lower-chart break, flag stop   fill  81% | stop 21.7 | measured 23% +0.28/+0.35/-0.08 (90) | 2R 38% +0.05/+0.02/-0.15 (90) | hold 23% +0.30/+0.36/-0.16 (90) |
+  L2 lower-chart break, tight stop  fill  81% | stop 17.2 | measured 19% +0.28/+0.28/-0.13 (90) | 2R 37% -0.00/-0.02/-0.16 (90) | hold 19% +0.34/+0.32/-0.13 (90) |
+  L3 lower-chart wick close         fill  85% | stop  8.1 | measured  8% +0.01/+0.02/-0.71 (95) | 2R 35% -0.18/-0.26/-0.21 (95) | hold  8% +0.17/+0.04/-0.87 (95) |
+  L4 lower-chart CHoCH              fill  31% | stop 24.8 | measured 22% +0.07/+0.06/+0.24 (35) | 2R 33% -0.06/-0.22/+0.10 (35) | hold 22% +0.07/-0.02/+0.24 (35) |
+
+== bull flag on 5m, entry on 1m, pole >= 0.30 ATR — 1521 flags (0.46 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 49.9 | measured 43% +0.23/+0.26/-0.07 (61) | 2R 46% +0.13/+0.21/+0.02 (61) | hold 43% +0.23/+0.27/-0.07 (61) |
+  L1 lower-chart break, flag stop   fill  82% | stop 22.1 | measured 23% +0.29/+0.35/-0.23 (87) | 2R 38% +0.07/+0.02/-0.18 (87) | hold 23% +0.32/+0.36/-0.23 (87) |
+  L2 lower-chart break, tight stop  fill  82% | stop 17.5 | measured 19% +0.30/+0.27/-0.20 (87) | 2R 37% -0.01/-0.02/-0.15 (87) | hold 19% +0.36/+0.30/-0.20 (87) |
+  L3 lower-chart wick close         fill  85% | stop  8.2 | measured  8% +0.02/+0.05/-0.84 (90) | 2R 35% -0.18/-0.25/-0.22 (90) | hold  8% +0.19/+0.06/-0.84 (90) |
+  L4 lower-chart CHoCH              fill  31% | stop 24.9 | measured 22% +0.07/+0.09/+0.33 (33) | 2R 34% -0.06/-0.20/+0.18 (33) | hold 22% +0.07/-0.00/+0.33 (33) |
+
+== bull flag on 5m, entry on 2m, pole >= 0.00 ATR — 1565 flags (0.47 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 49.1 | measured 43% +0.22/+0.26/-0.01 (64) | 2R 46% +0.13/+0.21/+0.05 (64) | hold 42% +0.23/+0.27/-0.08 (64) |
+  L1 lower-chart break, flag stop   fill  67% | stop 26.0 | measured 27% +0.28/+0.30/+0.09 (72) | 2R 39% +0.08/+0.05/-0.01 (72) | hold 27% +0.29/+0.31/+0.02 (72) |
+  L2 lower-chart break, tight stop  fill  67% | stop 22.9 | measured 24% +0.30/+0.30/+0.07 (72) | 2R 39% +0.10/+0.10/-0.08 (72) | hold 24% +0.32/+0.32/-0.03 (72) |
+  L3 lower-chart wick close         fill  72% | stop 11.3 | measured 12% +0.28/-0.13/-0.33 (80) | 2R 37% +0.01/-0.23/-0.28 (80) | hold 12% +0.30/-0.08/-0.33 (80) |
+  L4 lower-chart CHoCH              fill  11% | stop 32.9 | measured 28% +0.09/-0.13/+0.38 (14) | 2R 35% -0.08/+0.01/-0.16 (14) | hold 28% +0.04/-0.13/+0.38 (14) |
+
+== bull flag on 5m, entry on 2m, pole >= 0.30 ATR — 1521 flags (0.46 a day)
+  H  pole-top stop (higher chart)   fill  60% | stop 49.9 | measured 43% +0.23/+0.26/-0.07 (61) | 2R 46% +0.13/+0.21/+0.02 (61) | hold 43% +0.23/+0.27/-0.07 (61) |
+  L1 lower-chart break, flag stop   fill  67% | stop 26.3 | measured 27% +0.28/+0.31/-0.03 (69) | 2R 39% +0.08/+0.07/-0.05 (69) | hold 27% +0.29/+0.32/-0.03 (69) |
+  L2 lower-chart break, tight stop  fill  67% | stop 23.0 | measured 24% +0.31/+0.32/-0.08 (69) | 2R 40% +0.09/+0.12/-0.12 (69) | hold 24% +0.32/+0.34/-0.08 (69) |
+  L3 lower-chart wick close         fill  72% | stop 11.4 | measured 12% +0.31/-0.13/-0.27 (75) | 2R 37% +0.02/-0.22/-0.21 (75) | hold 12% +0.33/-0.08/-0.27 (75) |
+  L4 lower-chart CHoCH              fill  11% | stop 33.1 | measured 28% +0.09/-0.10/+0.38 (14) | 2R 36% -0.08/+0.04/-0.16 (14) | hold 28% +0.04/-0.10/+0.38 (14) |
+
+== bull flag on 15m, entry on 1m, pole >= 0.00 ATR — 715 flags (0.22 a day)
+  H  pole-top stop (higher chart)   fill  49% | stop 65.2 | measured 51% +0.07/+0.21/+0.00 (19) | 2R 51% +0.04/+0.19/-0.01 (19) | hold 51% +0.07/+0.19/+0.00 (19) |
+  L1 lower-chart break, flag stop   fill  89% | stop 24.9 | measured 30% +0.09/+0.35/-0.18 (42) | 2R 39% -0.04/+0.06/-0.19 (42) | hold 30% +0.10/+0.35/-0.18 (42) |
+  L2 lower-chart break, tight stop  fill  89% | stop 14.5 | measured 17% +0.03/+0.24/-0.26 (42) | 2R 34% -0.12/-0.09/-0.30 (42) | hold 17% +0.03/+0.24/-0.26 (42) |
+  L3 lower-chart wick close         fill  90% | stop  6.8 | measured  9% -0.02/+0.13/-0.63 (44) | 2R 33% -0.31/-0.26/-0.77 (44) | hold  9% -0.01/+0.13/-0.63 (44) |
+  L4 lower-chart CHoCH              fill  48% | stop 21.5 | measured 27% -0.03/+0.06/-0.37 (26) | 2R 39% -0.08/+0.04/+0.47 (26) | hold 27% -0.03/+0.04/-0.37 (26) |
+
+== bull flag on 15m, entry on 1m, pole >= 0.30 ATR — 714 flags (0.22 a day)
+  H  pole-top stop (higher chart)   fill  49% | stop 65.2 | measured 51% +0.07/+0.21/+0.00 (19) | 2R 51% +0.04/+0.19/-0.01 (19) | hold 51% +0.07/+0.19/+0.00 (19) |
+  L1 lower-chart break, flag stop   fill  89% | stop 24.9 | measured 30% +0.09/+0.35/-0.18 (42) | 2R 39% -0.04/+0.06/-0.19 (42) | hold 30% +0.10/+0.35/-0.18 (42) |
+  L2 lower-chart break, tight stop  fill  89% | stop 14.5 | measured 17% +0.03/+0.24/-0.26 (42) | 2R 34% -0.12/-0.09/-0.30 (42) | hold 17% +0.03/+0.24/-0.26 (42) |
+  L3 lower-chart wick close         fill  91% | stop  6.8 | measured  9% -0.02/+0.13/-0.63 (44) | 2R 33% -0.31/-0.26/-0.77 (44) | hold  9% -0.01/+0.13/-0.63 (44) |
+  L4 lower-chart CHoCH              fill  48% | stop 21.5 | measured 27% -0.03/+0.06/-0.37 (26) | 2R 39% -0.08/+0.04/+0.47 (26) | hold 27% -0.03/+0.04/-0.37 (26) |
+
+== bull flag on 15m, entry on 2m, pole >= 0.00 ATR — 715 flags (0.22 a day)
+  H  pole-top stop (higher chart)   fill  49% | stop 65.2 | measured 51% +0.07/+0.21/+0.00 (19) | 2R 51% +0.04/+0.19/-0.01 (19) | hold 51% +0.07/+0.19/+0.00 (19) |
+  L1 lower-chart break, flag stop   fill  80% | stop 28.1 | measured 32% +0.03/+0.21/+0.02 (38) | 2R 39% -0.06/+0.05/+0.11 (38) | hold 32% +0.03/+0.21/+0.02 (38) |
+  L2 lower-chart break, tight stop  fill  80% | stop 19.6 | measured 23% -0.00/+0.09/-0.13 (38) | 2R 35% -0.02/-0.13/-0.03 (38) | hold 23% -0.00/+0.09/-0.13 (38) |
+  L3 lower-chart wick close         fill  84% | stop  9.3 | measured 13% +0.06/-0.06/+0.09 (37) | 2R 38% -0.22/+0.01/+0.35 (37) | hold 13% +0.06/-0.06/+0.09 (37) |
+  L4 lower-chart CHoCH              fill  29% | stop 28.9 | measured 36% +0.11/+0.11/-0.71 (13) | 2R 45% +0.18/+0.21/-0.48 (13) | hold 36% +0.11/+0.11/-0.71 (13) |
+
+== bull flag on 15m, entry on 2m, pole >= 0.30 ATR — 714 flags (0.22 a day)
+  H  pole-top stop (higher chart)   fill  49% | stop 65.2 | measured 51% +0.07/+0.21/+0.00 (19) | 2R 51% +0.04/+0.19/-0.01 (19) | hold 51% +0.07/+0.19/+0.00 (19) |
+  L1 lower-chart break, flag stop   fill  80% | stop 28.1 | measured 32% +0.03/+0.21/+0.02 (38) | 2R 39% -0.06/+0.05/+0.11 (38) | hold 32% +0.03/+0.21/+0.02 (38) |
+  L2 lower-chart break, tight stop  fill  80% | stop 19.6 | measured 23% -0.00/+0.09/-0.13 (38) | 2R 35% -0.02/-0.13/-0.03 (38) | hold 23% -0.00/+0.09/-0.13 (38) |
+  L3 lower-chart wick close         fill  84% | stop  9.3 | measured 13% +0.06/-0.06/+0.09 (37) | 2R 38% -0.22/+0.01/+0.35 (37) | hold 13% +0.06/-0.06/+0.09 (37) |
+  L4 lower-chart CHoCH              fill  29% | stop 28.9 | measured 36% +0.11/+0.11/-0.71 (13) | 2R 45% +0.18/+0.21/-0.48 (13) | hold 36% +0.11/+0.11/-0.71 (13) |
+
+== bear flag on 3m, entry on 1m, pole >= 0.00 ATR — 2352 flags (0.71 a day)
+  H  pole-top stop (higher chart)   fill  55% | stop 58.7 | measured 30% -0.00/+0.08/-0.09 (85) | 2R 37% -0.04/+0.11/-0.07 (85) | hold 27% +0.02/+0.00/-0.07 (85) |
+  L1 lower-chart break, flag stop   fill  66% | stop 25.8 | measured 15% +0.03/-0.01/-0.32 (96) | 2R 34% -0.04/-0.04/-0.36 (96) | hold 15% +0.03/-0.05/-0.42 (96) |
+  L2 lower-chart break, tight stop  fill  66% | stop 23.0 | measured 13% +0.05/-0.08/-0.46 (96) | 2R 34% -0.05/-0.03/-0.40 (96) | hold 12% +0.06/-0.12/-0.56 (96) |
+  L3 lower-chart wick close         fill  70% | stop 11.2 | measured  6% -0.10/-0.41/-0.63 (107) | 2R 35% -0.11/-0.23/-0.13 (107) | hold  6% -0.10/-0.37/-0.62 (107) |
+  L4 lower-chart CHoCH              fill  14% | stop 34.2 | measured 19% +0.17/-0.02/-0.44 (29) | 2R 31% -0.13/-0.09/-0.29 (29) | hold 19% +0.21/-0.09/-0.29 (29) |
+
+== bear flag on 3m, entry on 1m, pole >= 0.30 ATR — 2305 flags (0.70 a day)
+  H  pole-top stop (higher chart)   fill  55% | stop 59.5 | measured 30% +0.01/+0.07/-0.10 (81) | 2R 37% -0.03/+0.11/-0.05 (81) | hold 28% +0.04/-0.02/-0.05 (81) |
+  L1 lower-chart break, flag stop   fill  66% | stop 26.1 | measured 15% +0.05/-0.01/-0.35 (92) | 2R 34% -0.04/-0.02/-0.39 (92) | hold 15% +0.06/-0.05/-0.43 (92) |
+  L2 lower-chart break, tight stop  fill  66% | stop 23.2 | measured 13% +0.07/-0.08/-0.50 (92) | 2R 35% -0.04/-0.01/-0.43 (92) | hold 13% +0.08/-0.12/-0.57 (92) |
+  L3 lower-chart wick close         fill  70% | stop 11.2 | measured  6% -0.07/-0.40/-0.59 (102) | 2R 35% -0.10/-0.22/-0.10 (102) | hold  6% -0.08/-0.35/-0.57 (102) |
+  L4 lower-chart CHoCH              fill  14% | stop 34.6 | measured 19% +0.18/-0.04/-0.35 (26) | 2R 31% -0.13/-0.11/-0.19 (26) | hold 19% +0.21/-0.11/-0.19 (26) |
+
+== bear flag on 3m, entry on 2m, pole >= 0.00 ATR — 2352 flags (0.71 a day)
+  H  pole-top stop (higher chart)   fill  55% | stop 58.7 | measured 30% -0.00/+0.08/-0.09 (85) | 2R 37% -0.04/+0.11/-0.07 (85) | hold 27% +0.02/+0.00/-0.07 (85) |
+  L1 lower-chart break, flag stop   fill  49% | stop 33.8 | measured 19% +0.07/+0.07/-0.24 (71) | 2R 34% -0.05/-0.04/-0.25 (71) | hold 18% +0.09/+0.00/-0.29 (71) |
+  L2 lower-chart break, tight stop  fill  49% | stop 32.0 | measured 18% +0.05/+0.08/-0.22 (71) | 2R 34% -0.06/-0.01/-0.22 (71) | hold 18% +0.08/+0.00/-0.26 (71) |
+  L3 lower-chart wick close         fill  54% | stop 15.4 | measured 12% +0.29/+0.25/-0.14 (86) | 2R 36% -0.07/-0.02/-0.03 (86) | hold 11% +0.34/+0.22/-0.29 (86) |
+  L4 lower-chart CHoCH              fill   2% | stop 42.9 | measured 16% -0.23/-0.54/-0.72 (8) | 2R 39% -0.05/+0.51/-0.70 (8) | hold 16% -0.47/-0.45/-0.72 (8) |
+
+== bear flag on 3m, entry on 2m, pole >= 0.30 ATR — 2305 flags (0.70 a day)
+  H  pole-top stop (higher chart)   fill  55% | stop 59.5 | measured 30% +0.01/+0.07/-0.10 (81) | 2R 37% -0.03/+0.11/-0.05 (81) | hold 28% +0.04/-0.02/-0.05 (81) |
+  L1 lower-chart break, flag stop   fill  49% | stop 34.1 | measured 19% +0.09/+0.07/-0.29 (68) | 2R 34% -0.04/-0.03/-0.26 (68) | hold 19% +0.11/+0.01/-0.30 (68) |
+  L2 lower-chart break, tight stop  fill  49% | stop 32.4 | measured 18% +0.08/+0.08/-0.26 (68) | 2R 34% -0.05/+0.00/-0.22 (68) | hold 18% +0.10/+0.01/-0.26 (68) |
+  L3 lower-chart wick close         fill  54% | stop 15.5 | measured 12% +0.32/+0.27/-0.16 (82) | 2R 37% -0.06/-0.01/-0.04 (82) | hold 11% +0.37/+0.23/-0.29 (82) |
+  L4 lower-chart CHoCH              fill   2% | stop 42.9 | measured 16% -0.23/-0.54/-0.65 (7) | 2R 40% -0.05/+0.51/-0.63 (7) | hold 16% -0.47/-0.45/-0.65 (7) |
+
+== bear flag on 4m, entry on 1m, pole >= 0.00 ATR — 1803 flags (0.54 a day)
+  H  pole-top stop (higher chart)   fill  54% | stop 64.7 | measured 33% +0.09/+0.01/+0.06 (64) | 2R 39% +0.02/+0.07/+0.11 (64) | hold 32% +0.09/+0.05/-0.02 (64) |
+  L1 lower-chart break, flag stop   fill  73% | stop 26.1 | measured 16% -0.05/+0.11/-0.07 (92) | 2R 34% -0.06/-0.03/-0.07 (92) | hold 16% -0.08/+0.09/-0.16 (92) |
+  L2 lower-chart break, tight stop  fill  73% | stop 22.7 | measured 14% -0.02/+0.08/-0.03 (92) | 2R 35% -0.04/-0.03/+0.01 (92) | hold 14% -0.04/+0.08/-0.11 (92) |
+  L3 lower-chart wick close         fill  77% | stop 11.0 | measured  7% -0.12/-0.14/-0.19 (99) | 2R 37% -0.02/-0.16/-0.06 (99) | hold  7% -0.21/-0.10/-0.24 (99) |
+  L4 lower-chart CHoCH              fill  23% | stop 33.5 | measured 17% -0.12/-0.29/-0.18 (40) | 2R 31% -0.12/-0.20/-0.11 (40) | hold 17% -0.09/-0.33/-0.17 (40) |
+
+== bear flag on 4m, entry on 1m, pole >= 0.30 ATR — 1789 flags (0.54 a day)
+  H  pole-top stop (higher chart)   fill  54% | stop 64.9 | measured 33% +0.09/+0.01/+0.10 (62) | 2R 39% +0.02/+0.08/+0.15 (62) | hold 32% +0.10/+0.05/+0.01 (62) |
+  L1 lower-chart break, flag stop   fill  74% | stop 26.2 | measured 16% -0.04/+0.10/-0.03 (89) | 2R 34% -0.06/-0.03/-0.10 (89) | hold 16% -0.07/+0.08/-0.12 (89) |
+  L2 lower-chart break, tight stop  fill  74% | stop 22.8 | measured 14% -0.01/+0.07/+0.02 (89) | 2R 35% -0.04/-0.04/-0.01 (89) | hold 14% -0.03/+0.07/-0.07 (89) |
+  L3 lower-chart wick close         fill  77% | stop 11.1 | measured  7% -0.12/-0.16/-0.14 (96) | 2R 38% -0.02/-0.16/-0.03 (96) | hold  7% -0.20/-0.12/-0.19 (96) |
+  L4 lower-chart CHoCH              fill  24% | stop 33.5 | measured 17% -0.12/-0.29/-0.13 (38) | 2R 31% -0.12/-0.20/-0.05 (38) | hold 17% -0.09/-0.33/-0.11 (38) |
+
+== bear flag on 4m, entry on 2m, pole >= 0.00 ATR — 1803 flags (0.54 a day)
+  H  pole-top stop (higher chart)   fill  54% | stop 64.7 | measured 33% +0.09/+0.01/+0.06 (64) | 2R 39% +0.02/+0.07/+0.11 (64) | hold 32% +0.09/+0.05/-0.02 (64) |
+  L1 lower-chart break, flag stop   fill  56% | stop 33.5 | measured 19% +0.04/-0.07/-0.17 (72) | 2R 35% -0.02/-0.03/-0.03 (72) | hold 19% +0.04/-0.08/-0.22 (72) |
+  L2 lower-chart break, tight stop  fill  56% | stop 30.9 | measured 18% +0.07/-0.05/-0.25 (72) | 2R 35% -0.03/-0.04/-0.02 (72) | hold 18% +0.06/-0.07/-0.31 (72) |
+  L3 lower-chart wick close         fill  61% | stop 15.3 | measured 10% +0.19/-0.00/-0.26 (73) | 2R 36% -0.06/-0.12/+0.17 (73) | hold 10% +0.18/+0.04/-0.34 (73) |
+  L4 lower-chart CHoCH              fill   6% | stop 42.8 | measured 26% -0.12/-0.32/+0.25 (13) | 2R 39% +0.10/+0.00/+0.34 (13) | hold 26% -0.09/-0.37/+0.25 (13) |
+
+== bear flag on 4m, entry on 2m, pole >= 0.30 ATR — 1789 flags (0.54 a day)
+  H  pole-top stop (higher chart)   fill  54% | stop 64.9 | measured 33% +0.09/+0.01/+0.10 (62) | 2R 39% +0.02/+0.08/+0.15 (62) | hold 32% +0.10/+0.05/+0.01 (62) |
+  L1 lower-chart break, flag stop   fill  56% | stop 33.6 | measured 19% +0.04/-0.06/-0.15 (71) | 2R 35% -0.02/-0.03/-0.01 (71) | hold 19% +0.04/-0.07/-0.21 (71) |
+  L2 lower-chart break, tight stop  fill  56% | stop 31.0 | measured 18% +0.07/-0.05/-0.24 (71) | 2R 35% -0.03/-0.04/-0.01 (71) | hold 18% +0.07/-0.06/-0.29 (71) |
+  L3 lower-chart wick close         fill  62% | stop 15.4 | measured 10% +0.20/+0.00/-0.23 (71) | 2R 36% -0.06/-0.12/+0.16 (71) | hold 10% +0.19/+0.05/-0.31 (71) |
+  L4 lower-chart CHoCH              fill   6% | stop 42.8 | measured 26% -0.12/-0.32/+0.25 (13) | 2R 39% +0.10/+0.00/+0.34 (13) | hold 26% -0.09/-0.37/+0.25 (13) |
+
+== bear flag on 5m, entry on 1m, pole >= 0.00 ATR — 1504 flags (0.45 a day)
+  H  pole-top stop (higher chart)   fill  53% | stop 71.3 | measured 34% +0.08/-0.04/-0.25 (53) | 2R 39% +0.06/+0.05/-0.16 (53) | hold 33% +0.08/-0.04/-0.24 (53) |
+  L1 lower-chart break, flag stop   fill  77% | stop 26.7 | measured 15% -0.07/-0.21/-0.41 (88) | 2R 34% -0.03/-0.07/-0.21 (88) | hold 14% -0.06/-0.21/-0.41 (88) |
+  L2 lower-chart break, tight stop  fill  77% | stop 22.7 | measured 11% -0.12/-0.26/-0.43 (88) | 2R 34% -0.06/-0.08/-0.25 (88) | hold 11% -0.10/-0.24/-0.43 (88) |
+  L3 lower-chart wick close         fill  80% | stop 11.0 | measured  6% -0.34/-0.35/-0.24 (90) | 2R 36% -0.08/-0.14/-0.15 (90) | hold  6% -0.39/-0.35/-0.24 (90) |
+  L4 lower-chart CHoCH              fill  30% | stop 32.8 | measured 17% -0.30/-0.09/+0.24 (49) | 2R 31% -0.15/-0.22/+0.09 (49) | hold 17% -0.30/-0.07/+0.23 (49) |
+
+== bear flag on 5m, entry on 1m, pole >= 0.30 ATR — 1496 flags (0.45 a day)
+  H  pole-top stop (higher chart)   fill  53% | stop 71.7 | measured 34% +0.09/-0.04/-0.20 (50) | 2R 40% +0.06/+0.05/-0.10 (50) | hold 33% +0.09/-0.04/-0.19 (50) |
+  L1 lower-chart break, flag stop   fill  77% | stop 26.7 | measured 15% -0.07/-0.21/-0.38 (85) | 2R 34% -0.03/-0.07/-0.20 (85) | hold 15% -0.06/-0.21/-0.38 (85) |
+  L2 lower-chart break, tight stop  fill  77% | stop 22.7 | measured 11% -0.12/-0.26/-0.40 (85) | 2R 34% -0.05/-0.08/-0.24 (85) | hold 11% -0.10/-0.24/-0.40 (85) |
+  L3 lower-chart wick close         fill  80% | stop 11.0 | measured  6% -0.34/-0.35/-0.19 (87) | 2R 36% -0.08/-0.14/-0.13 (87) | hold  6% -0.39/-0.35/-0.19 (87) |
+  L4 lower-chart CHoCH              fill  30% | stop 32.9 | measured 17% -0.30/-0.09/+0.33 (46) | 2R 31% -0.15/-0.22/+0.11 (46) | hold 17% -0.30/-0.07/+0.33 (46) |
+
+== bear flag on 5m, entry on 2m, pole >= 0.00 ATR — 1504 flags (0.45 a day)
+  H  pole-top stop (higher chart)   fill  53% | stop 71.3 | measured 34% +0.08/-0.04/-0.25 (53) | 2R 39% +0.06/+0.05/-0.16 (53) | hold 33% +0.08/-0.04/-0.24 (53) |
+  L1 lower-chart break, flag stop   fill  62% | stop 33.8 | measured 18% -0.06/-0.13/-0.27 (78) | 2R 34% -0.03/-0.06/-0.15 (78) | hold 18% -0.06/-0.11/-0.27 (78) |
+  L2 lower-chart break, tight stop  fill  62% | stop 30.8 | measured 16% -0.06/-0.12/-0.35 (78) | 2R 34% -0.04/-0.08/-0.14 (78) | hold 16% -0.06/-0.11/-0.35 (78) |
+  L3 lower-chart wick close         fill  67% | stop 14.9 | measured 10% -0.22/+0.00/-0.38 (77) | 2R 36% -0.05/-0.10/+0.14 (77) | hold 10% -0.22/+0.04/-0.38 (77) |
+  L4 lower-chart CHoCH              fill  12% | stop 42.8 | measured 30% +0.13/+0.12/+0.76 (22) | 2R 39% +0.06/-0.08/+0.59 (22) | hold 30% +0.10/+0.18/+0.76 (22) |
+
+== bear flag on 5m, entry on 2m, pole >= 0.30 ATR — 1496 flags (0.45 a day)
+  H  pole-top stop (higher chart)   fill  53% | stop 71.7 | measured 34% +0.09/-0.04/-0.20 (50) | 2R 40% +0.06/+0.05/-0.10 (50) | hold 33% +0.09/-0.04/-0.19 (50) |
+  L1 lower-chart break, flag stop   fill  62% | stop 33.9 | measured 18% -0.06/-0.13/-0.23 (75) | 2R 34% -0.03/-0.06/-0.10 (75) | hold 18% -0.06/-0.11/-0.23 (75) |
+  L2 lower-chart break, tight stop  fill  62% | stop 30.8 | measured 16% -0.05/-0.12/-0.31 (75) | 2R 34% -0.04/-0.08/-0.14 (75) | hold 16% -0.06/-0.11/-0.31 (75) |
+  L3 lower-chart wick close         fill  67% | stop 14.9 | measured 10% -0.22/+0.00/-0.34 (74) | 2R 36% -0.05/-0.10/+0.16 (74) | hold 10% -0.22/+0.04/-0.34 (74) |
+  L4 lower-chart CHoCH              fill  12% | stop 42.8 | measured 30% +0.13/+0.12/+0.76 (22) | 2R 39% +0.06/-0.08/+0.59 (22) | hold 30% +0.10/+0.18/+0.76 (22) |
+
+== bear flag on 15m, entry on 1m, pole >= 0.00 ATR — 550 flags (0.17 a day)
+  H  pole-top stop (higher chart)   fill  44% | stop 105.0 | measured 41% -0.14/+0.08/-0.25 (20) | 2R 43% -0.12/+0.08/-0.15 (20) | hold 41% -0.15/+0.07/-0.25 (20) |
+  L1 lower-chart break, flag stop   fill  89% | stop 31.6 | measured 23% -0.03/-0.29/-0.03 (44) | 2R 38% +0.01/-0.03/+0.05 (44) | hold 23% -0.03/-0.29/-0.03 (44) |
+  L2 lower-chart break, tight stop  fill  89% | stop 20.5 | measured 14% -0.06/-0.37/+0.30 (44) | 2R 37% +0.03/-0.03/+0.11 (44) | hold 14% -0.06/-0.37/+0.30 (44) |
+  L3 lower-chart wick close         fill  89% | stop  9.6 | measured  7% -0.32/-0.46/-0.51 (44) | 2R 37% -0.11/-0.16/+0.11 (44) | hold  7% -0.32/-0.46/-0.51 (44) |
+  L4 lower-chart CHoCH              fill  52% | stop 29.6 | measured 21% -0.08/-0.06/-0.10 (29) | 2R 33% -0.04/-0.17/-0.03 (29) | hold 21% -0.13/-0.06/-0.10 (29) |
+
+== bear flag on 15m, entry on 1m, pole >= 0.30 ATR — 550 flags (0.17 a day)
+  H  pole-top stop (higher chart)   fill  44% | stop 105.0 | measured 41% -0.14/+0.08/-0.25 (20) | 2R 43% -0.12/+0.08/-0.15 (20) | hold 41% -0.15/+0.07/-0.25 (20) |
+  L1 lower-chart break, flag stop   fill  89% | stop 31.6 | measured 23% -0.03/-0.29/-0.03 (44) | 2R 38% +0.01/-0.03/+0.05 (44) | hold 23% -0.03/-0.29/-0.03 (44) |
+  L2 lower-chart break, tight stop  fill  89% | stop 20.5 | measured 14% -0.06/-0.37/+0.30 (44) | 2R 37% +0.03/-0.03/+0.11 (44) | hold 14% -0.06/-0.37/+0.30 (44) |
+  L3 lower-chart wick close         fill  89% | stop  9.6 | measured  7% -0.32/-0.46/-0.51 (44) | 2R 37% -0.11/-0.16/+0.11 (44) | hold  7% -0.32/-0.46/-0.51 (44) |
+  L4 lower-chart CHoCH              fill  52% | stop 29.6 | measured 21% -0.08/-0.06/-0.10 (29) | 2R 33% -0.04/-0.17/-0.03 (29) | hold 21% -0.13/-0.06/-0.10 (29) |
+
+== bear flag on 15m, entry on 2m, pole >= 0.00 ATR — 550 flags (0.17 a day)
+  H  pole-top stop (higher chart)   fill  44% | stop 105.0 | measured 41% -0.14/+0.08/-0.25 (20) | 2R 43% -0.12/+0.08/-0.15 (20) | hold 41% -0.15/+0.07/-0.25 (20) |
+  L1 lower-chart break, flag stop   fill  81% | stop 36.9 | measured 25% +0.03/-0.07/-0.18 (41) | 2R 37% +0.02/+0.02/+0.02 (41) | hold 25% +0.03/-0.07/-0.18 (41) |
+  L2 lower-chart break, tight stop  fill  81% | stop 28.0 | measured 18% +0.02/-0.07/-0.20 (41) | 2R 34% -0.01/-0.13/+0.01 (41) | hold 18% +0.02/-0.07/-0.20 (41) |
+  L3 lower-chart wick close         fill  82% | stop 13.1 | measured  8% -0.40/-0.20/-0.84 (41) | 2R 34% -0.17/-0.08/-0.22 (41) | hold  8% -0.40/-0.20/-0.84 (41) |
+  L4 lower-chart CHoCH              fill  35% | stop 38.7 | measured 31% +0.22/+0.13/+0.04 (22) | 2R 37% +0.02/-0.07/+0.21 (22) | hold 31% +0.19/+0.13/+0.04 (22) |
+
+== bear flag on 15m, entry on 2m, pole >= 0.30 ATR — 550 flags (0.17 a day)
+  H  pole-top stop (higher chart)   fill  44% | stop 105.0 | measured 41% -0.14/+0.08/-0.25 (20) | 2R 43% -0.12/+0.08/-0.15 (20) | hold 41% -0.15/+0.07/-0.25 (20) |
+  L1 lower-chart break, flag stop   fill  81% | stop 36.9 | measured 25% +0.03/-0.07/-0.18 (41) | 2R 37% +0.02/+0.02/+0.02 (41) | hold 25% +0.03/-0.07/-0.18 (41) |
+  L2 lower-chart break, tight stop  fill  81% | stop 28.0 | measured 18% +0.02/-0.07/-0.20 (41) | 2R 34% -0.01/-0.13/+0.01 (41) | hold 18% +0.02/-0.07/-0.20 (41) |
+  L3 lower-chart wick close         fill  82% | stop 13.1 | measured  8% -0.40/-0.20/-0.84 (41) | 2R 34% -0.17/-0.08/-0.22 (41) | hold  8% -0.40/-0.20/-0.84 (41) |
+  L4 lower-chart CHoCH              fill  35% | stop 38.7 | measured 31% +0.22/+0.13/+0.04 (22) | 2R 37% +0.02/-0.07/+0.21 (22) | hold 31% +0.19/+0.13/+0.04 (22) |

@@ -1,0 +1,2 @@
+flag5_k.csv: 541 trades, mean +6.67 NQ pts net of 2 pts at today's cost-to-range (in-era points)
+flagmix_k.csv: 4727 trades, mean +0.13 NQ pts net of 2 pts at today's cost-to-range (in-era points)

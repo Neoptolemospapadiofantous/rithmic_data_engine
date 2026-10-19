@@ -1,0 +1,80 @@
+Flag optimisation — NQ. 2304 detectors x 450 = 1036800 configs. IS 2010-07 → 2020-12 (8.7 yrs), OOS 2021-01 → 2026-10 (4.4 yrs, no data 2026-03-20 → 09-18).
+pts = net NQ-equivalent points per trade at today's range. Selection uses IS only.
+
+==================== Asia — 58959 configs with IS n >= 120, 21 pass the robust rule
+  does IS ranking carry forward?  all eligible / top 5% / top 1% by IS t / robust picks / top 20 robust:
+                                        58959 configs: OOS positive  22.0%, mean OOS  -2.48 pts/trade
+                                         2947 configs: OOS positive  26.3%, mean OOS  -1.92 pts/trade
+                                          589 configs: OOS positive  23.1%, mean OOS  -1.86 pts/trade
+                                           21 configs: OOS positive   4.8%, mean OOS  -1.55 pts/trade
+                                           20 configs: OOS positive   5.0%, mean OOS  -1.51 pts/trade
+  top robust picks (IS t)                                                    IS: /yr  pts   PF    t  |  OOS: /yr  pts   PF    t
+  15m pole 3>=0.10 flag 2<=0.6 rt0.5 vol with+st.55 full  bull measured    16  +2.99 1.24  +1.4 |    15  -0.56 0.96  -0.3
+  15m pole 3>=0.10 flag 2<=0.6 rt1.0 vol with+st.55 full  bull measured    17  +3.07 1.25  +1.4 |    15  -0.56 0.96  -0.3
+  15m pole 3>=0.10 flag 2<=0.6 rt1.0 vol with+st.55 full  bull 1.5R        17  +3.66 1.29  +1.2 |    15  -0.34 0.97  -0.4
+  15m pole 3>=0.10 flag 2<=0.6 rt0.5 vol with+st.55 full  bull 1.5R        17  +3.51 1.27  +1.1 |    15  -0.34 0.97  -0.4
+  15m pole 3>=0.10 flag 2<=0.6 rt1.0 vol with+st.55 full  bull 3R          16  +2.17 1.16  +1.1 |    15  +0.90 1.07  +0.2
+  15m pole 4>=0.10 flag 2<=0.8 rt1.0 vol with+st.55 full  bull 1.5R        30  +1.87 1.14  +1.0 |    26  -0.82 0.94  -0.7
+  15m pole 4>=0.10 flag 2<=0.8 rt1.0 vol with+st.55 full  bull 3R          29  +1.23 1.09  +0.9 |    25  -1.09 0.92  -0.8
+  15m pole 4>=0.10 flag 2<=0.8 rt1.0 vol with+st.55 full  bull measured    29  +0.93 1.07  +0.8 |    26  -1.64 0.88  -1.1
+  15m pole 4>=0.10 flag 2<=0.8 rt0.5 vol with+st.55 full  bull 3R          28  +0.59 1.04  +0.8 |    24  -0.60 0.96  -0.6
+  15m pole 6>=0.10 flag 2<=0.6 rt1.0 vol with+st.55 full  bull measured    33  +0.72 1.06  +0.7 |    32  -0.36 0.97  -0.4
+  15m pole 4>=0.10 flag 2<=0.8 rt1.0 vol with+st.55 full  bull 2R          29  +1.01 1.07  +0.7 |    25  -1.53 0.89  -0.9
+  15m pole 4>=0.10 flag 2<=0.8 rt0.5 vol with+st.55 full  bull measured    28  +0.22 1.02  +0.7 |    25  -1.19 0.91  -0.9
+  15m pole 4>=0.10 flag 2<=0.6 rt0.5 vol with+st.55 full  bull measured    25  +0.49 1.04  +0.6 |    22  -4.66 0.70  -1.8
+  15m pole 4>=0.10 flag 2<=0.6 rt0.5 vol with+st.55 full  bull 3R          24  +0.38 1.03  +0.5 |    21  -4.62 0.70  -1.7
+  15m pole 4>=0.10 flag 2<=0.6 rt1.0 vol with+st.55 full  bull measured    25  +0.33 1.03  +0.5 |    22  -4.65 0.70  -1.8
+
+==================== London — 89456 configs with IS n >= 120, 2469 pass the robust rule
+  does IS ranking carry forward?  all eligible / top 5% / top 1% by IS t / robust picks / top 20 robust:
+                                        89456 configs: OOS positive  15.1%, mean OOS  -3.87 pts/trade
+                                         4472 configs: OOS positive   9.1%, mean OOS  -4.43 pts/trade
+                                          894 configs: OOS positive   4.7%, mean OOS  -4.73 pts/trade
+                                         2469 configs: OOS positive   5.8%, mean OOS  -4.86 pts/trade
+                                           20 configs: OOS positive   0.0%, mean OOS  -4.20 pts/trade
+  top robust picks (IS t)                                                    IS: /yr  pts   PF    t  |  OOS: /yr  pts   PF    t
+   3m pole 6>=0.10 flag 5<=0.8 rt1.0     with+st.40 full  bull 3R          40  +4.23 1.24  +2.7 |    38  -8.43 0.59  -2.6
+   3m pole 6>=0.10 flag 5<=0.8 rt0.5     with+st.40 full  bull 3R          38  +3.98 1.22  +2.6 |    35  -9.22 0.56  -2.8
+   3m pole 8>=0.10 flag 2<=0.4 rt1.0     with+st.40 2h    bull 3R          32  +6.09 1.43  +2.5 |    36  -2.27 0.85  -1.1
+   3m pole 8>=0.10 flag 2<=0.4 rt0.5     with+st.40 2h    bull 3R          32  +6.09 1.43  +2.5 |    36  -2.27 0.85  -1.1
+   3m pole 8>=0.15 flag 5<=0.8 rt1.0 vol any        2h    bull 1R          16  +7.39 1.49  +2.5 |    16  -5.38 0.73  -0.9
+  10m pole 6>=0.10 flag 2<=0.8 rt1.0 vol with+st.40 2h    bull 1R          17  +6.55 1.49  +2.5 |    13  -5.11 0.70  -1.1
+  10m pole 6>=0.10 flag 2<=0.8 rt1.0 vol with       2h    bull 3R          17  +8.40 1.53  +2.5 |    14  -5.84 0.67  -1.8
+   3m pole 8>=0.15 flag 5<=0.8 rt1.0 vol with       2h    bull 1R          15  +7.37 1.49  +2.4 |    14  -3.73 0.80  -0.5
+  10m pole 6>=0.10 flag 2<=0.8 rt1.0 vol any        2h    bull 3R          18  +8.09 1.50  +2.4 |    15  -6.28 0.65  -1.9
+   3m pole 8>=0.10 flag 2<=0.4 rt1.0     with+st.55 2h    bull 3R          28  +6.38 1.45  +2.4 |    29  -1.70 0.89  -0.8
+   3m pole 8>=0.10 flag 2<=0.4 rt0.5     with+st.55 2h    bull 3R          28  +6.38 1.45  +2.4 |    29  -1.70 0.89  -0.8
+  10m pole 6>=0.10 flag 2<=0.8 rt1.0 vol with       2h    bull 1R          18  +5.84 1.43  +2.4 |    14  -4.90 0.71  -1.1
+   3m pole 8>=0.10 flag 2<=0.4 rt0.5 vol with+st.40 2h    bull 3R          28  +5.98 1.42  +2.4 |    30  -2.78 0.81  -1.6
+   3m pole 8>=0.10 flag 2<=0.4 rt1.0 vol with+st.40 2h    bull 3R          28  +5.98 1.42  +2.4 |    30  -2.78 0.81  -1.6
+   3m pole 8>=0.15 flag 5<=0.8 rt0.5 vol with       2h    bull 1R          15  +7.06 1.48  +2.4 |    14  -3.15 0.83  -0.4
+
+==================== NY — 188378 configs with IS n >= 120, 85977 pass the robust rule
+  does IS ranking carry forward?  all eligible / top 5% / top 1% by IS t / robust picks / top 20 robust:
+                                       188378 configs: OOS positive  58.3%, mean OOS  +1.10 pts/trade
+                                         9418 configs: OOS positive  81.7%, mean OOS  +4.46 pts/trade
+                                         1883 configs: OOS positive  80.0%, mean OOS  +4.36 pts/trade
+                                        85977 configs: OOS positive  70.1%, mean OOS  +2.48 pts/trade
+                                           20 configs: OOS positive  85.0%, mean OOS  +4.57 pts/trade
+  top robust picks (IS t)                                                    IS: /yr  pts   PF    t  |  OOS: /yr  pts   PF    t
+  10m pole 3>=0.20 flag 2<=0.8 rt0.5     with+st.55 2h    bull 1R          18 +28.54 2.70  +5.6 |    22  +4.95 1.17  +0.1
+  10m pole 3>=0.10 flag 2<=0.8 rt0.5     with+st.55 2h    bull 1R          22 +25.20 2.50  +5.5 |    24  +5.77 1.22  +0.5
+  10m pole 3>=0.10 flag 2<=0.8 rt0.5     with+st.70 2h    bull 1R          18 +27.15 2.65  +5.5 |    19  +8.06 1.31  +0.5
+   3m pole 8>=0.15 flag 5<=0.8 rt0.5 vol with+st.70 2h    bull 1.5R        24 +27.64 2.36  +5.5 |    27  +7.16 1.26  +0.5
+  10m pole 3>=0.10 flag 2<=0.8 rt0.5     with+st.55 2h    bull measured    21 +27.72 2.60  +5.4 |    24  +5.51 1.19  +0.7
+  10m pole 3>=0.20 flag 2<=0.8 rt0.5     with+st.55 2h    bull measured    18 +31.33 2.77  +5.4 |    22  +3.57 1.11  -0.0
+  10m pole 3>=0.10 flag 2<=0.8 rt0.5     with+st.70 2h    bull measured    17 +29.94 2.77  +5.3 |    19  +5.92 1.20  +0.3
+  10m pole 3>=0.20 flag 2<=0.8 rt0.5     with+st.55 2h    bull 1.5R        18 +31.11 2.70  +5.3 |    22  -1.03 0.97  -0.6
+  10m pole 3>=0.20 flag 2<=0.8 rt0.5     with+st.70 2h    bull 1R          15 +29.97 2.81  +5.3 |    18  +6.94 1.25  -0.0
+  10m pole 3>=0.15 flag 2<=0.8 rt0.5     with+st.55 2h    bull 1R          21 +25.44 2.48  +5.3 |    24  +5.68 1.21  +0.4
+   3m pole 8>=0.15 flag 5<=0.8 rt0.5 vol with+st.70 2h    bull 1R          26 +21.12 2.15  +5.2 |    29  +2.29 1.09  -0.1
+  10m pole 3>=0.10 flag 2<=0.8 rt0.5     with+st.55 2h    bull 1.5R        21 +27.15 2.48  +5.2 |    24  +0.86 1.03  +0.1
+   3m pole 8>=0.15 flag 5<=0.8 rt1.0 vol with+st.70 2h    bull 1.5R        25 +25.08 2.18  +5.2 |    28  +9.31 1.35  +0.9
+  10m pole 3>=0.10 flag 2<=0.8 rt0.5     with+st.70 2h    bull 1.5R        17 +29.38 2.62  +5.2 |    19  -0.03 1.00  -0.3
+   3m pole 8>=0.10 flag 5<=0.8 rt0.5 vol with+st.70 2h    bull 1.5R        26 +25.64 2.27  +5.2 |    28  +7.52 1.28  +0.6
+  best robust pick with >= 0.5 a day:
+   3m pole 3>=0.15 flag 2<=0.6 rt1.0 vol any        full  both measured   148  +5.73 1.21  +2.8 |   163  -1.60 0.95  -0.3
+  best robust pick with >= 1.0 a day:
+   3m pole 3>=0.10 flag 2<=0.8 rt1.0 vol any        full  both 3R         306  +3.46 1.11  +1.6 |   325  +1.34 1.04  +0.7
+  reference flag5_trend (adopted):
+   5m pole 6>=0.20 flag 5<=0.6 rt1.0     with+st.55 full  both 1.5R        37 +12.53 1.41  +2.8 |    47  +7.97 1.26  +1.5

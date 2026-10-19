@@ -1,0 +1,193 @@
+TopOne 50K with the NY wick flags (flag_wickentry_full.csv) — trail vs no trail. Evals started on every NY day 20100722 → 20261015 (3800 days).
+
+== 4m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    0.3          9        |    0.3            188          |       -902          17 of 17    |    -911 /    -992 /    -595
+  $  500 |    6.6         14        |    2.7             54          |       +107          14 of 17    |    -908 /   +1880 /    -647
+  $  750 |   11.6         12        |    4.4             39          |       -409          13 of 17    |    -850 /    -169 /    +858
+  $ 1000 |   14.2         11        |    4.8             39          |        -88          11 of 17    |    -831 /    +668 /    +989
+  $ 1500 |   16.3          9        |    7.1             37          |      +1688          10 of 17    |    -852 /   +4635 /   +4281
+
+== 4m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   10.5         14        |    4.1             68          |      +1372           8 of 16    |    +298 /   +2312 /   +5400
+  $  500 |   20.8         10        |    7.3             52          |      +2776           5 of 17    |   +1318 /   +4763 /   +3375
+  $  750 |   22.4          8        |    6.9             45          |      +2863           5 of 17    |   +1385 /   +4686 /   +4050
+  $ 1000 |   22.1          7        |    6.3             46          |      +2863           5 of 17    |   +1385 /   +4910 /   +3375
+  $ 1500 |   23.6          7        |    5.7             44          |      +2805           5 of 16    |   +1385 /   +4278 /   +6750
+
+== 5m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    0.7         17        |    0.0              0          |       -866          17 of 17    |    -866 /    -970 /    -552
+  $  500 |    6.7         13        |    2.3             77          |       -271          14 of 17    |    -831 /    +501 /     -66
+  $  750 |   11.0         12        |    3.1             45          |       +262          12 of 17    |    -831 /   +1636 /   +1055
+  $ 1000 |   13.5         11        |    4.4             45          |       +231          13 of 17    |    -831 /   +1479 /   +1264
+  $ 1500 |   15.2         10        |    5.4             43          |      +1193          11 of 17    |    -831 /   +3052 /   +4725
+
+== 5m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    8.4         14        |    3.0             65          |       +465          11 of 17    |    +282 /    +861 /    +104
+  $  500 |   18.0          9        |    6.7             48          |      +1570           8 of 17    |    +361 /   +2780 /   +3375
+  $  750 |   19.4          8        |    6.4             51          |      +1522           7 of 17    |    +361 /   +2646 /   +3375
+  $ 1000 |   19.3          7        |    5.5             50          |      +1346           7 of 17    |    +373 /   +2128 /   +3375
+  $ 1500 |   20.6          6        |    5.7             49          |      +1424           8 of 17    |    +373 /   +2350 /   +3375
+
+== 4m + 5m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    4.9         13        |    0.7             44          |       -904          17 of 17    |    -953 /    -918 /    -638
+  $  500 |   14.2         10        |    4.1             36          |       -113          13 of 17    |    -856 /   +1297 /    -996
+  $  750 |   16.3          9        |    3.3             27          |      +1359          10 of 17    |    -827 /   +5116 /     -77
+  $ 1000 |   18.2          8        |    4.0             28          |      +1812           9 of 17    |    -906 /   +5600 /   +2679
+  $ 1500 |   19.2          7        |    4.0             27          |      +2554           9 of 17    |    -848 /   +6920 /   +4767
+
+== 4m + 5m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   22.8         10        |    7.9             42          |      +3485           6 of 17    |   +1813 /   +5804 /   +4050
+  $  500 |   26.1          7        |    6.5             35          |      +3908           6 of 17    |   +1832 /   +6975 /   +4050
+  $  750 |   26.4          6        |    5.7             31          |      +3982           6 of 17    |   +1822 /   +6975 /   +4725
+  $ 1000 |   26.4          5        |    5.3             33          |      +4062           6 of 17    |   +1822 /   +7200 /   +4725
+  $ 1500 |   26.8          5        |    4.8             30          |      +3845           6 of 17    |   +1822 /   +6585 /   +4725
+
+== 2m + 3m + 4m + 5m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   15.1         12        |    2.5             43          |       -615          15 of 17    |   -1214 /    +335 /    -774
+  $  500 |   20.8          7        |    3.5             29          |       +675          10 of 17    |    -761 /   +3092 /    -120
+  $  750 |   22.8          6        |    3.4             26          |      +2449           9 of 17    |    -429 /   +5896 /   +5060
+  $ 1000 |   23.1          5        |    3.1             24          |      +2952           9 of 17    |    -430 /   +6310 /   +8100
+  $ 1500 |   24.4          5        |    3.8             23          |      +3131           9 of 17    |    -430 /   +6592 /   +8775
+
+== 2m + 3m + 4m + 5m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   31.3          6        |   10.1             30          |      +6414           3 of 17    |   +4315 /   +9900 /   +5400
+  $  500 |   31.5          4        |    7.2             27          |      +6456           3 of 17    |   +3945 /  +10350 /   +6075
+  $  750 |   31.4          3        |    6.7             26          |      +6456           3 of 17    |   +3795 /  +10800 /   +5400
+  $ 1000 |   30.2          3        |    6.6             26          |      +6456           3 of 17    |   +3795 /  +10575 /   +6075
+  $ 1500 |   31.0          3        |    6.2             26          |      +6456           3 of 17    |   +3795 /  +10575 /   +6075
+
+== BULL ONLY 2m + 3m + 4m + 5m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    5.7         12        |    0.9             54          |       -295          15 of 17    |   -1000 /    +878 /    -638
+  $  500 |   12.4         10        |    4.1             43          |       +113          14 of 17    |    -903 /   +2057 /   -1143
+  $  750 |   16.5          9        |    4.4             45          |       +150          14 of 17    |    -919 /   +2139 /   -1006
+  $ 1000 |   16.4          8        |    3.7             46          |       +100          14 of 17    |    -919 /   +2099 /   -1314
+  $ 1500 |   17.2          7        |    3.9             45          |       +244          13 of 17    |    -919 /   +2479 /   -1228
+
+== BULL ONLY 2m + 3m + 4m + 5m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   31.3          9        |   12.5             50          |      +4590           1 of 16    |   +3659 /   +5850 /   +5400
+  $  500 |   32.9          6        |   10.2             45          |      +4555           1 of 17    |   +3654 /   +6300 /   +3375
+  $  750 |   32.8          6        |    8.9             44          |      +4496           1 of 17    |   +3543 /   +6525 /   +2700
+  $ 1000 |   32.3          6        |    8.8             45          |      +4491           1 of 17    |   +3534 /   +6300 /   +3375
+  $ 1500 |   33.0          6        |    8.5             44          |      +4491           1 of 17    |   +3534 /   +6300 /   +3375
+
+== BULL ONLY 4m + 5m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    1.4         15        |    0.6             53          |       -816          16 of 17    |    -920 /    -720 /    -638
+  $  500 |    5.2         11        |    1.2             37          |       -606          16 of 17    |    -920 /     -78 /    -774
+  $  750 |    8.1         11        |    1.7             36          |       -805          16 of 17    |    -925 /    -513 /   -1143
+  $ 1000 |   10.8         11        |    2.6             42          |        -62          13 of 17    |    -587 /   +1142 /   -1313
+  $ 1500 |   12.0         10        |    1.9             37          |       +630          12 of 17    |    -925 /   +3704 /   -1596
+
+== BULL ONLY 4m + 5m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   14.2         11        |    7.1             72          |      +2451           4 of 17    |   +1330 /   +4050 /   +2700
+  $  500 |   20.0          9        |    6.7             62          |      +2444           6 of 17    |   +1016 /   +4500 /   +2700
+  $  750 |   23.1          8        |    7.4             61          |      +2444           6 of 17    |   +1016 /   +4500 /   +2700
+  $ 1000 |   23.4          7        |    6.4             62          |      +2523           6 of 17    |   +1016 /   +4500 /   +3375
+  $ 1500 |   23.1          7        |    6.3             60          |      +2523           6 of 17    |   +1016 /   +4500 /   +3375
+
+== BULL ONLY 4m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    0.1         19        |    0.0              0          |       -902          17 of 17    |    -911 /    -992 /    -595
+  $  500 |    2.4         16        |    0.5             86          |       -916          17 of 17    |    -911 /   -1015 /    -638
+  $  750 |    6.1         12        |    1.1             43          |       -567          15 of 17    |    -911 /      +6 /    -742
+  $ 1000 |    6.9         12        |    1.1             43          |       -824          16 of 17    |    -911 /    -751 /    -647
+  $ 1500 |    7.8         11        |    1.5             49          |       -124          14 of 17    |    -911 /   +1230 /    -647
+
+== BULL ONLY 4m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    5.1         14        |    2.1             89          |       +809           8 of 16    |    -626 /   +2648 /   +2700
+  $  500 |   12.7         10        |    4.3             72          |      +1632           6 of 16    |    +541 /   +2865 /   +4050
+  $  750 |   16.0          9        |    5.3             67          |      +1626           6 of 17    |    +561 /   +3090 /   +2025
+  $ 1000 |   17.0          9        |    5.6             70          |      +1531           6 of 17    |    +392 /   +3076 /   +2025
+  $ 1500 |   18.1          8        |    6.3             72          |      +1655           6 of 16    |    +392 /   +3150 /   +4050
+
+== BULL ONLY 5m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    0.0          0        |    0.0              0          |       -907          17 of 17    |    -911 /    -992 /    -638
+  $  500 |    1.2         12        |    0.6            126          |       -791          16 of 17    |    -911 /    -648 /    -680
+  $  750 |    4.9         12        |    1.7             67          |       -549          14 of 17    |    -923 /     +88 /    -774
+  $ 1000 |    6.7         12        |    2.5             66          |       -543          13 of 17    |    -923 /    +165 /    -964
+  $ 1500 |    8.0         12        |    2.9             67          |       -489          12 of 17    |    -923 /    +408 /   -1228
+
+== BULL ONLY 5m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    3.6         15        |    1.2            100          |       +307          11 of 17    |    -306 /   +1499 /    -510
+  $  500 |   12.7         10        |    4.3             85          |      +1477           6 of 17    |    +541 /   +2700 /   +2025
+  $  750 |   15.5          9        |    4.2             82          |      +1484           6 of 17    |    +553 /   +2700 /   +2025
+  $ 1000 |   16.2          8        |    4.7             85          |      +1585           6 of 16    |    +569 /   +2700 /   +4050
+  $ 1500 |   17.5          8        |    4.4             88          |      +1585           6 of 16    |    +569 /   +2700 /   +4050
+
+== BULL ONLY 4m + 5m, entries before 14:00, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |    0.7         15        |    0.0              0          |       -898          17 of 17    |    -911 /    -981 /    -595
+  $  500 |    4.3         12        |    0.9             36          |       -843          16 of 17    |    -920 /    -749 /    -774
+  $  750 |    6.2          9        |    1.2             34          |       -933          16 of 17    |    -920 /    -882 /   -1143
+  $ 1000 |    9.3          9        |    2.0             39          |       -763          15 of 17    |    -763 /    -609 /   -1228
+  $ 1500 |   10.6          9        |    2.0             38          |       -375          15 of 17    |    -920 /    +791 /   -1417
+
+== BULL ONLY 4m + 5m, entries before 14:00, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   13.3         11        |    7.0             78          |      +2332           4 of 16    |   +1146 /   +3825 /   +4050
+  $  500 |   20.4          9        |    8.5             69          |      +2126           6 of 17    |    +866 /   +3825 /   +2700
+  $  750 |   23.1          8        |    8.3             65          |      +2259           6 of 16    |    +866 /   +3825 /   +5400
+  $ 1000 |   23.7          7        |    8.0             65          |      +2206           6 of 17    |    +866 /   +4050 /   +2700
+  $ 1500 |   23.5          7        |    7.8             64          |      +2206           6 of 17    |    +866 /   +4050 /   +2700
+
+== MAIN PLAN ONLY (book F + weakness long), TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   18.2         14        |   10.4             40          |      +3907           5 of 17    |   +2160 /   +6086 /   +5232
+  $  500 |   43.4          9        |   17.6             22          |     +11892           1 of 17    |   +8833 /  +16170 /  +12825
+  $  750 |   44.0          5        |   14.7             17          |     +19000           0 of 17    |  +17139 /  +23400 /  +14175
+  $ 1000 |   42.4          4        |   13.5             16          |     +19561           0 of 17    |  +17598 /  +24075 /  +14850
+  $ 1500 |   44.4          3        |   13.3             15          |     +20084           1 of 17    |  +17986 /  +24750 /  +15525
+
+== MAIN PLAN ONLY (book F + weakness long), NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   18.2         14        |   10.4             40          |      +3907           5 of 17    |   +2160 /   +6086 /   +5232
+  $  500 |   43.4          9        |   17.6             22          |     +11892           1 of 17    |   +8833 /  +16170 /  +12825
+  $  750 |   44.0          5        |   14.7             17          |     +19000           0 of 17    |  +17139 /  +23400 /  +14175
+  $ 1000 |   42.4          4        |   13.5             16          |     +19561           0 of 17    |  +17598 /  +24075 /  +14850
+  $ 1500 |   44.4          3        |   13.3             15          |     +20084           1 of 17    |  +17986 /  +24750 /  +15525
+
+== MAIN PLAN + bull 4m + 5m, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   22.9         13        |   10.9             36          |      +2951           6 of 17    |   +1084 /   +6701 /    +106
+  $  500 |   40.6          7        |   14.6             21          |     +13012           0 of 17    |  +12042 /  +14753 /  +12150
+  $  750 |   42.3          5        |   14.0             17          |     +18621           0 of 17    |  +17023 /  +22725 /  +13500
+  $ 1000 |   40.6          4        |   12.0             15          |     +19091           0 of 17    |  +17462 /  +23400 /  +13500
+  $ 1500 |   43.1          3        |   12.0             15          |     +19678           1 of 17    |  +17670 /  +24300 /  +14850
+
+== MAIN PLAN + bull 4m + 5m, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   34.8         11        |   18.0             32          |     +10756           1 of 17    |   +7956 /  +15615 /   +8775
+  $  500 |   40.2          6        |   14.8             20          |     +16471           0 of 17    |  +15212 /  +20025 /  +11475
+  $  750 |   41.7          4        |   12.4             17          |     +17996           0 of 17    |  +16593 /  +21825 /  +12825
+  $ 1000 |   39.5          3        |   11.2             15          |     +18552           0 of 17    |  +17043 /  +22500 /  +13500
+  $ 1500 |   41.7          3        |   11.4             15          |     +19170           1 of 17    |  +17161 /  +23850 /  +14175
+
+== MAIN PLAN + bull 4m + 5m before 14:00, TRAIL (previous bar after +1R)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   23.5         14        |   11.3             36          |      +3073           6 of 17    |   +1475 /   +5543 /   +2855
+  $  500 |   41.9          7        |   15.4             21          |     +12453           0 of 17    |   +9413 /  +17114 /  +12150
+  $  750 |   43.0          5        |   14.3             17          |     +18536           0 of 17    |  +17012 /  +22725 /  +12825
+  $ 1000 |   41.0          4        |   12.8             16          |     +19006           0 of 17    |  +17451 /  +23175 /  +13500
+  $ 1500 |   43.3          3        |   12.3             15          |     +19677           1 of 17    |  +17668 /  +24300 /  +14850
+
+== MAIN PLAN + bull 4m + 5m before 14:00, NO TRAIL (measured move)
+  risk  | eval pass %  median days | reach 1st payout %  median days | one account chain: $ per year  losing years | by era 2010-18 / 2019-24 / 2025-26 ($/yr)
+  $  250 |   34.1         11        |   18.8             32          |     +10036           1 of 17    |   +6506 /  +15750 /   +8775
+  $  500 |   40.6          6        |   15.1             20          |     +16622           0 of 17    |  +15348 /  +20250 /  +11475
+  $  750 |   42.0          4        |   12.6             17          |     +18010           0 of 17    |  +16619 /  +21600 /  +13500
+  $ 1000 |   39.9          3        |   11.6             16          |     +18555           1 of 17    |  +17048 /  +22500 /  +13500
+  $ 1500 |   41.9          3        |   11.4             15          |     +19279           1 of 17    |  +17366 /  +23850 /  +14175

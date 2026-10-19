@@ -1,0 +1,10 @@
+Structural flags (swing pole, consolidating flag, breakout of the flag) — NQ NY 3/4/5m, one at a time, <= 5 a day, 2 pts cost, 3315 days.
+Columns: trades/day | win % | pts per trade (R) | pts 2010-18 / 2019-24 / 2025-26 (n) | fair control pts.
+  10:00 dir      10:00-12:00  1.5R            0.89/day | 43.0% |  +2.08 (+0.020R) |  +3.62 /  +1.90 /  -7.26 (238) | control  +0.59
+  10:00 dir      10:00-12:00  measured move   0.76/day | 32.5% |  +5.72 (+0.112R) |  +6.65 /  +7.64 /  -8.72 (214) | control  +2.50
+  10:00 dir      10:00-15:00  1.5R            1.55/day | 42.4% |  +0.81 (-0.003R) |  +1.51 /  +1.03 /  -5.13 (397) | control  +0.12
+  10:00 dir      10:00-15:00  measured move   1.28/day | 32.2% |  +3.18 (+0.055R) |  +3.64 /  +4.28 /  -5.21 (341) | control  +0.88
+  any dir        10:00-12:00  1.5R            1.39/day | 41.2% |  -0.30 (-0.022R) |  +0.64 /  -0.52 /  -5.88 (349) | control  -1.94
+  any dir        10:00-12:00  measured move   1.19/day | 30.8% |  +2.90 (+0.052R) |  +4.10 /  +3.24 /  -7.08 (308) | control  -0.67
+  any dir        10:00-15:00  1.5R            2.61/day | 40.8% |  -1.31 (-0.043R) |  -1.05 /  -0.92 /  -5.18 (641) | control  -2.10
+  any dir        10:00-15:00  measured move   2.13/day | 30.7% |  +0.61 (-0.003R) |  +0.99 /  +1.29 /  -5.47 (544) | control  -1.60

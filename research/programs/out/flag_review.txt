@@ -1,0 +1,163 @@
+Flag review — NY 2/3/4/5m structural flags, bull + bear, NQ 2010-07 → 2026-10: 80909 flags. R after 2 pts cost; P = pole-top stop entry, T2 = 2m trigger.
+
+== A1. Core flags (context on, pole >= 4x bar, 3-5m) by year — n | avg R for P and T2 entries
+  year |        bull P         bull T2 |        bear P         bear T2
+  2010 |   48 -0.536   71 -0.433 |   42 -0.154  100 -0.620 |
+  2011 |  212 -0.015  240 +0.137 |  223 -0.039  253 -0.139 |
+  2012 |  181 +0.462  211 +0.473 |  231 +0.009  226 +0.210 |
+  2013 |  228 +0.022  238 -0.160 |  163 -0.082  203 -0.097 |
+  2014 |  241 +0.108  214 -0.100 |  179 +0.133  198 -0.200 |
+  2015 |  156 +0.101  163 +0.375 |  163 +0.002  178 -0.100 |
+  2016 |  199 +0.466  207 +0.136 |  196 +0.365  220 -0.176 |
+  2017 |  210 +0.282  208 +0.330 |  168 -0.222  162 -0.252 |
+  2018 |  266 +0.322  258 +0.590 |  234 +0.185  191 +1.103 |
+  2019 |  227 +0.243  200 +0.030 |  166 -0.340  201 -0.115 |
+  2020 |  198 +0.138  188 +0.241 |  130 -0.086  153 -0.390 |
+  2021 |  185 +0.077  187 +0.263 |  155 -0.120  143 -0.223 |
+  2022 |  152 +0.250  161 +0.438 |  244 +0.241  225 +0.161 |
+  2023 |  234 +0.637  207 +0.466 |  162 -0.032  144 -0.487 |
+  2024 |  190 -0.017  186 -0.042 |  270 +0.203  206 +0.540 |
+  2025 |  191 -0.160  180 -0.141 |  174 -0.079  180 -0.213 |
+  2026 |   42 -0.317   41 +0.330 |   22 +0.190   39 -0.245 |
+
+== A2. Core flags by regime known at the entry — avg R (n) per period 2010-18 | 2019-24 | 2025-26, entry T2
+  -- bull
+  VIX < 15                       | +0.167 ( 863) | +0.151 ( 291) | +0.834 (  13)
+  VIX 15-20                      | +0.367 ( 610) | +0.328 ( 412) | -0.284 ( 157)
+  VIX 20-25                      | -0.105 ( 226) | -0.182 ( 199) | +0.107 (  34)
+  VIX >= 25                      | +0.068 ( 111) | +0.515 ( 227) | +1.070 (  17)
+  ATR pct < 0.33                 | -0.190 ( 357) | +0.394 ( 403) | +0.588 (  47)
+  ATR pct 0.33-0.67              | +0.240 ( 749) | +0.132 ( 370) | -0.312 (  56)
+  ATR pct >= 0.67                | +0.342 ( 704) | +0.146 ( 356) | -0.187 ( 118)
+  prior close with SMA50 trend   | +0.198 (1251) | +0.246 ( 790) | -0.188 ( 160)
+  prior close against SMA50      | +0.186 ( 559) | +0.194 ( 339) | +0.299 (  61)
+  gap with the flag              | +0.330 ( 875) | +0.416 ( 572) | +0.048 (  94)
+  no gap                         | -0.088 ( 309) | -0.201 ( 173) | -0.017 (  28)
+  gap against                    | +0.145 ( 626) | +0.147 ( 384) | -0.161 (  99)
+  before 11:00                   | +0.106 ( 668) | +0.474 ( 437) | +0.206 (  96)
+  11:00-12:30                    | +0.344 ( 641) | +0.209 ( 433) | -0.223 (  77)
+  after 12:30                    | +0.122 ( 501) | -0.146 ( 259) | -0.302 (  48)
+  pole >= 0.40 ATR               | +0.238 (1450) | +0.346 ( 883) | -0.011 ( 173)
+  pole < 0.40 ATR                | +0.019 ( 360) | -0.187 ( 246) | -0.207 (  48)
+  range so far < 0.6 ATR         | +0.204 ( 386) | +0.354 ( 272) | +0.045 (  57)
+  range so far >= 0.6 ATR        | +0.192 (1424) | +0.191 ( 857) | -0.088 ( 164)
+  -- bear
+  VIX < 15                       | -0.116 ( 766) | +0.046 ( 262) | -0.821 (  16)
+  VIX 15-20                      | +0.281 ( 679) | -0.029 ( 397) | -0.154 ( 176)
+  VIX 20-25                      | -0.254 ( 179) | -0.136 ( 195) | -0.308 (  12)
+  VIX >= 25                      | -0.483 ( 107) | -0.052 ( 218) | -0.264 (  15)
+  ATR pct < 0.33                 | -0.117 ( 414) | -0.065 ( 346) | +0.110 (  51)
+  ATR pct 0.33-0.67              | +0.004 ( 689) | -0.313 ( 306) | -0.454 (  69)
+  ATR pct >= 0.67                | +0.080 ( 628) | +0.192 ( 420) | -0.225 (  99)
+  prior close with SMA50 trend   | +0.174 ( 466) | -0.036 ( 322) | -0.020 (  72)
+  prior close against SMA50      | -0.061 (1265) | -0.034 ( 750) | -0.317 ( 147)
+  gap with the flag              | +0.228 ( 572) | +0.048 ( 397) | -0.150 (  79)
+  no gap                         | +0.109 ( 343) | -0.117 ( 181) | +0.313 (  36)
+  gap against                    | -0.200 ( 816) | -0.072 ( 494) | -0.456 ( 104)
+  before 11:00                   | +0.144 ( 559) | +0.213 ( 354) | -0.390 (  71)
+  11:00-12:30                    | +0.006 ( 689) | -0.209 ( 395) | -0.036 (  79)
+  after 12:30                    | -0.166 ( 483) | -0.094 ( 323) | -0.254 (  69)
+  pole >= 0.40 ATR               | +0.007 (1627) | +0.013 ( 996) | -0.264 ( 191)
+  pole < 0.40 ATR                | -0.069 ( 104) | -0.668 (  76) | +0.086 (  28)
+  range so far < 0.6 ATR         | -0.067 ( 192) | -0.096 ( 107) | +0.467 (  25)
+  range so far >= 0.6 ATR        | +0.011 (1539) | -0.028 ( 965) | -0.307 ( 194)
+
+== B. Order flow (aggressor volume; flow days only) — core flags, entry P and T2: avg R (n) by tercile of the trend-side buy share
+  bull pole buy share   (cuts 0.510 0.519):  low P +0.175 (214) T2 +0.404 (182)  mid P +0.074 (204) T2 +0.083 (200)  high P +0.294 (197) T2 +0.007 (193)
+  bull flag buy share   (cuts 0.475 0.492):  low P +0.326 (170) T2 +0.295 (217)  mid P +0.334 (204) T2 +0.187 (199)  high P -0.054 (241) T2 -0.060 (159)
+  bear pole buy share   (cuts 0.509 0.517):  low P -0.138 (208) T2 -0.009 (181)  mid P +0.209 (211) T2 -0.047 (174)  high P +0.164 (192) T2 +0.064 (199)
+  bear flag buy share   (cuts 0.480 0.495):  low P +0.158 (169) T2 -0.207 (214)  mid P +0.060 (214) T2 +0.304 (189)  high P +0.032 (228) T2 -0.066 (151)
+  (14995 flags on flow days)
+
+== C. Walk-forward model: logistic regression on all 16 features (except order flow), refit each year on all earlier years, predicts P(R > 0) for entry T2.
+   Per test year: mean R of all flags | of the model's top 30 % | of the core rule; then totals per period.
+  -- bull
+    2013  all -0.167 (1292) | model top 30% -0.289 ( 451) | core rule -0.160 (238)
+    2014  all -0.134 (1242) | model top 30% -0.080 ( 250) | core rule -0.100 (214)
+    2015  all +0.111 (1064) | model top 30% -0.217 ( 208) | core rule +0.375 (163)
+    2016  all -0.165 (1187) | model top 30% -0.121 ( 395) | core rule +0.136 (207)
+    2017  all +0.138 (1396) | model top 30% -0.128 ( 364) | core rule +0.330 (208)
+    2018  all +0.041 (1208) | model top 30% +0.055 ( 333) | core rule +0.590 (258)
+    2019  all +0.055 (1154) | model top 30% -0.095 ( 408) | core rule +0.030 (200)
+    2020  all -0.062 (1274) | model top 30% +0.011 ( 571) | core rule +0.241 (188)
+    2021  all +0.199 (1099) | model top 30% +0.217 ( 416) | core rule +0.263 (187)
+    2022  all -0.021 (1058) | model top 30% -0.076 ( 293) | core rule +0.438 (161)
+    2023  all +0.154 (1102) | model top 30% +0.476 ( 510) | core rule +0.466 (207)
+    2024  all -0.020 (1068) | model top 30% +0.278 ( 296) | core rule -0.042 (186)
+    2025  all -0.195 (1081) | model top 30% -0.324 ( 306) | core rule -0.141 (180)
+    2026  all -0.143 ( 232) | model top 30% -0.029 (  32) | core rule +0.330 ( 41)
+    weights (fitted on 2010-2025, standardised): pole / avg bar +0.07; pole / ATR -0.02; pole bars -0.03; pole speed (ATR per bar) +0.02; pullback share +0.07; flag vol / pole vol -0.03; above 09:30 open -0.07; above VWAP -0.08; path straightness +0.15; minutes after 09:30 +0.02; gap / ATR (trend side +) +0.09; range so far / ATR -0.00; VIX (prior close) +0.02; ATR percentile (250d) -0.08; prior close vs SMA50 (trend side +) -0.01; day of week +0.01;
+    2013-18  all -0.030 | model top 30% -0.136 (2001) | core rule +0.194 (1288)
+    2019-24  all +0.049 | model top 30% +0.145 (2494) | core rule +0.230 (1129)
+    2025-26  all -0.186 | model top 30% -0.296 (338) | core rule -0.054 (221)
+  -- bear
+    2013  all -0.195 ( 967) | model top 30% -0.156 ( 252) | core rule -0.097 (203)
+    2014  all +0.018 ( 863) | model top 30% +0.272 ( 224) | core rule -0.200 (198)
+    2015  all +0.042 ( 879) | model top 30% -0.171 ( 319) | core rule -0.100 (178)
+    2016  all -0.242 (1116) | model top 30% -0.209 ( 351) | core rule -0.176 (220)
+    2017  all -0.246 ( 794) | model top 30% -0.130 ( 136) | core rule -0.252 (162)
+    2018  all +0.299 ( 898) | model top 30% +0.303 ( 300) | core rule +1.103 (191)
+    2019  all -0.097 ( 900) | model top 30% -0.028 ( 222) | core rule -0.115 (201)
+    2020  all -0.230 ( 814) | model top 30% -0.283 ( 150) | core rule -0.390 (153)
+    2021  all -0.146 ( 798) | model top 30% -0.234 ( 179) | core rule -0.223 (143)
+    2022  all -0.081 (1128) | model top 30% +0.160 ( 388) | core rule +0.161 (225)
+    2023  all -0.398 ( 865) | model top 30% -0.491 ( 268) | core rule -0.487 (144)
+    2024  all +0.194 ( 937) | model top 30% +0.202 ( 293) | core rule +0.540 (206)
+    2025  all -0.241 ( 756) | model top 30% -0.232 ( 269) | core rule -0.213 (180)
+    2026  all +0.078 ( 195) | model top 30% -0.151 (  79) | core rule -0.245 ( 39)
+    weights (fitted on 2010-2025, standardised): pole / avg bar -0.02; pole / ATR +0.01; pole bars -0.00; pole speed (ATR per bar) +0.03; pullback share +0.07; flag vol / pole vol -0.06; above 09:30 open -0.06; above VWAP +0.01; path straightness +0.05; minutes after 09:30 +0.06; gap / ATR (trend side +) +0.02; range so far / ATR +0.04; VIX (prior close) -0.05; ATR percentile (250d) +0.04; prior close vs SMA50 (trend side +) +0.06; day of week +0.07;
+    2013-18  all -0.060 | model top 30% -0.021 (1582) | core rule +0.047 (1152)
+    2019-24  all -0.118 | model top 30% -0.067 (1500) | core rule -0.035 (1072)
+    2025-26  all -0.176 | model top 30% -0.213 (348) | core rule -0.219 (219)
+
+== D. One trade a day: the first qualifying flag of each session (bull or bear, 3-5m; entry T2, else P). Share of sessions with a trade | avg R per period 2010-18 / 2019-24 / 2025-26 | win %
+  core rule, both sides                          days with a trade  63% /  60% /  61% | avg R +0.158 / +0.290 / +0.002 | win 26%
+  core rule, bull only                           days with a trade  33% /  32% /  32% | avg R +0.259 / +0.412 / -0.209 | win 29%
+  core + before 12:30 + pole >= 0.4 ATR, both    days with a trade  52% /  48% /  49% | avg R +0.194 / +0.349 / -0.053 | win 26%
+  loose: pole >= 3x, above open + VWAP, both     days with a trade  99% /  99% / 100% | avg R +0.090 / +0.152 / +0.032 | win 26%
+  loosest: any structural flag 3-5m, both        days with a trade 100% / 100% / 100% | avg R +0.094 / +0.152 / +0.068 | win 26%
+
+== E. Up to N trades a day — first N qualifying flags of the session, >= 15 min apart (entry T2, else P). Trades a day | avg R per trade 2010-18 / 2019-24 / 2025-26 | R per day 2019-24 / 2025-26 | days with >= 3 | win %
+  N=3 core rule, both sides, 3-5m                1.26/day | +0.083 / +0.147 / -0.128 | per day +0.18R / -0.15R | >=3 on 23% of days | win 24%
+  N=3 loose: pole >= 3x, above open + VWAP, 3-5m 2.72/day | +0.040 / +0.066 / -0.053 | per day +0.18R / -0.14R | >=3 on 80% of days | win 24%
+  N=3 loose, 2-5m                                2.90/day | +0.019 / +0.046 / -0.055 | per day +0.13R / -0.16R | >=3 on 92% of days | win 25%
+  N=3 loose, 2-5m, before 12:30                  2.64/day | +0.025 / +0.070 / -0.009 | per day +0.19R / -0.02R | >=3 on 74% of days | win 25%
+  N=3 loose, 2-5m, pole >= 0.3 ATR               2.68/day | +0.045 / +0.081 / -0.072 | per day +0.22R / -0.19R | >=3 on 79% of days | win 25%
+  N=3 loosest: any structural flag 2-5m          2.98/day | +0.037 / +0.052 / -0.072 | per day +0.15R / -0.21R | >=3 on 99% of days | win 25%
+  N=5 core rule, both sides, 3-5m                1.43/day | +0.085 / +0.116 / -0.177 | per day +0.16R / -0.23R | >=3 on 23% of days | win 24%
+  N=5 loose: pole >= 3x, above open + VWAP, 3-5m 3.72/day | +0.009 / +0.016 / -0.119 | per day +0.06R / -0.42R | >=3 on 80% of days | win 24%
+  N=5 loose, 2-5m                                4.38/day | -0.005 / -0.018 / -0.085 | per day -0.08R / -0.36R | >=3 on 92% of days | win 24%
+  N=5 loose, 2-5m, before 12:30                  3.37/day | +0.035 / +0.021 / -0.020 | per day +0.07R / -0.06R | >=3 on 74% of days | win 24%
+  N=5 loose, 2-5m, pole >= 0.3 ATR               3.75/day | +0.019 / +0.013 / -0.082 | per day +0.05R / -0.29R | >=3 on 79% of days | win 24%
+  N=5 loosest: any structural flag 2-5m          4.85/day | +0.008 / -0.004 / -0.089 | per day -0.02R / -0.43R | >=3 on 99% of days | win 24%
+
+== F. Daily stop rules — one position at a time, next flag only after the last trade closed (entry T2, else P), at most 5 a day.
+   trades a day | avg R per trade 2010-18 / 2019-24 / 2025-26 | R per day 2010-18 / 2019-24 / 2025-26 | % green days | worst day | days with >= 3 trades
+  -- pool: loose 3-5m (pole >= 3x, above open + VWAP)
+  first flag only                                                0.99/day | +0.093 / +0.152 / +0.028 | +0.09 / +0.15 / +0.03 R/day | green 26% | worst -1.2R | >=3 on  0%
+  up to 3, no stop                                               2.14/day | +0.047 / +0.052 / -0.116 | +0.10 / +0.11 / -0.24 R/day | green 42% | worst -3.6R | >=3 on 41%
+  up to 5, no stop                                               2.36/day | +0.019 / +0.032 / -0.089 | +0.04 / +0.07 / -0.20 R/day | green 42% | worst -5.7R | >=3 on 41%
+  up to 5, stop after a win                                      2.05/day | +0.020 / +0.041 / -0.064 | +0.04 / +0.08 / -0.13 R/day | green 44% | worst -5.7R | >=3 on 30%
+  up to 5, stop after 2 losses                                   1.85/day | +0.080 / +0.097 / -0.073 | +0.15 / +0.18 / -0.13 R/day | green 39% | worst -2.4R | >=3 on 11%
+  up to 5, stop after a win or 2 losses                          1.60/day | +0.089 / +0.112 / -0.026 | +0.14 / +0.18 / -0.04 R/day | green 39% | worst -2.4R | >=3 on  0%
+  up to 5, stop at day +1R or -2R                                1.60/day | +0.089 / +0.111 / -0.026 | +0.14 / +0.18 / -0.04 R/day | green 39% | worst -2.4R | >=3 on  0%
+  up to 5, stop at day +2R or -2R                                1.64/day | +0.083 / +0.104 / -0.017 | +0.14 / +0.17 / -0.03 R/day | green 39% | worst -2.4R | >=3 on  2%
+  up to 3, stop after a win or 2 losses                          1.60/day | +0.089 / +0.112 / -0.026 | +0.14 / +0.18 / -0.04 R/day | green 39% | worst -2.4R | >=3 on  0%
+  up to 5, stop after a win, extra trades before 12:30           1.55/day | +0.070 / +0.117 / -0.004 | +0.11 / +0.18 / -0.01 R/day | green 37% | worst -5.5R | >=3 on 11%
+  first flag + extras only if strict (12:30, 0.4 ATR, gap)       1.19/day | +0.104 / +0.115 / +0.009 | +0.13 / +0.14 / +0.01 R/day | green 29% | worst -4.3R | >=3 on  3%
+  first flag + strict extras, stop after a win                   1.16/day | +0.108 / +0.125 / +0.016 | +0.12 / +0.15 / +0.02 R/day | green 29% | worst -4.3R | >=3 on  2%
+  after a loss: next only if before 12:30, stop after win or 3 losses 1.53/day | +0.080 / +0.118 / -0.010 | +0.12 / +0.18 / -0.01 R/day | green 37% | worst -3.5R | >=3 on 11%
+  -- pool: loose 2-5m
+  first flag only                                                1.00/day | +0.068 / +0.016 / +0.026 | +0.07 / +0.02 / +0.03 R/day | green 26% | worst -1.2R | >=3 on  0%
+  up to 3, no stop                                               2.48/day | +0.017 / +0.008 / -0.143 | +0.04 / +0.02 / -0.34 R/day | green 46% | worst -3.6R | >=3 on 62%
+  up to 5, no stop                                               3.02/day | -0.004 / -0.023 / -0.125 | -0.01 / -0.07 / -0.35 R/day | green 44% | worst -5.8R | >=3 on 62%
+  up to 5, stop after a win                                      2.41/day | +0.005 / -0.037 / -0.130 | +0.01 / -0.09 / -0.30 R/day | green 50% | worst -5.8R | >=3 on 41%
+  up to 5, stop after 2 losses                                   2.09/day | +0.030 / +0.028 / -0.101 | +0.06 / +0.06 / -0.20 R/day | green 39% | worst -2.4R | >=3 on 20%
+  up to 5, stop after a win or 2 losses                          1.68/day | +0.041 / +0.029 / -0.068 | +0.07 / +0.05 / -0.11 R/day | green 41% | worst -2.4R | >=3 on  0%
+  up to 5, stop at day +1R or -2R                                1.69/day | +0.044 / +0.028 / -0.074 | +0.07 / +0.05 / -0.12 R/day | green 40% | worst -2.5R | >=3 on  1%
+  up to 5, stop at day +2R or -2R                                1.77/day | +0.038 / +0.022 / -0.085 | +0.07 / +0.04 / -0.15 R/day | green 39% | worst -2.6R | >=3 on  5%
+  up to 3, stop after a win or 2 losses                          1.68/day | +0.041 / +0.029 / -0.068 | +0.07 / +0.05 / -0.11 R/day | green 41% | worst -2.4R | >=3 on  0%
+  up to 5, stop after a win, extra trades before 12:30           1.87/day | +0.052 / +0.014 / -0.087 | +0.10 / +0.03 / -0.16 R/day | green 43% | worst -5.7R | >=3 on 23%
+  first flag + extras only if strict (12:30, 0.4 ATR, gap)       1.32/day | +0.072 / +0.030 / -0.011 | +0.10 / +0.04 / -0.01 R/day | green 30% | worst -5.3R | >=3 on  7%
+  first flag + strict extras, stop after a win                   1.24/day | +0.057 / +0.036 / -0.009 | +0.07 / +0.05 / -0.01 R/day | green 30% | worst -5.3R | >=3 on  4%
+  after a loss: next only if before 12:30, stop after win or 3 losses 1.78/day | +0.063 / +0.036 / -0.078 | +0.11 / +0.07 / -0.13 R/day | green 43% | worst -3.5R | >=3 on 23%

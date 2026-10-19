@@ -1,0 +1,42 @@
+Structural flags with a pullback entry — NQ NY 3/4/5m, 10:00 direction, one at a time, <= 5 a day, 2 pts cost, 3315 days.
+Columns: trades/day | filled % of breakouts | win % | pts per trade (R) | pts 2010-18 / 2019-24 / 2025-26 (n) | avg stop (pts at today's range).
+
+== flag pullback <= 50 %% of the pole, 10:00-12:00, target 1.5R
+  E0 breakout close                     0.89/day | filled 100.0% | 43.0% |  +2.08 (+0.020R) |  +3.62 /  +1.90 /  -7.26 (238) | stop  56.1 pts
+  E1 limit at the flag edge (retest)    0.86/day | filled  73.0% | 43.3% |  +1.60 (+0.018R) |  +2.33 /  +2.22 /  -6.45 (224) | stop  42.7 pts
+  E2 limit halfway back                 0.88/day | filled  85.4% | 42.6% |  +1.11 (+0.008R) |  +2.24 /  +1.51 /  -8.48 (231) | stop  48.8 pts
+  E3 1-min pullback, then resume        0.54/day | filled  56.9% | 45.5% |  +6.02 (+0.071R) |  +4.73 / +10.42 /  -6.16 (146) | stop  78.6 pts
+
+== flag pullback <= 50 %% of the pole, 10:00-12:00, target measured move
+  E0 breakout close                     0.76/day | filled 100.0% | 32.5% |  +5.72 (+0.112R) |  +6.65 /  +7.64 /  -8.72 (214) | stop  55.6 pts
+  E1 limit at the flag edge (retest)    0.73/day | filled  74.0% | 27.9% |  +5.78 (+0.160R) |  +6.70 /  +7.20 /  -7.03 (196) | stop  42.6 pts
+  E2 limit halfway back                 0.75/day | filled  86.2% | 30.3% |  +6.06 (+0.132R) |  +7.51 /  +6.88 /  -6.96 (207) | stop  48.8 pts
+  E3 1-min pullback, then resume        0.51/day | filled  57.2% | 40.4% |  +6.50 (+0.104R) |  +5.03 / +12.15 /  -9.75 (143) | stop  78.8 pts
+
+== flag pullback <= 50 %% of the pole, 10:00-15:00, target 1.5R
+  E0 breakout close                     1.55/day | filled 100.0% | 42.4% |  +0.81 (-0.003R) |  +1.51 /  +1.03 /  -5.13 (397) | stop  50.5 pts
+  E1 limit at the flag edge (retest)    1.54/day | filled  74.5% | 43.1% |  +1.05 (+0.005R) |  +1.83 /  +1.31 /  -5.80 (385) | stop  38.1 pts
+  E2 limit halfway back                 1.56/day | filled  86.8% | 42.3% |  +0.36 (-0.011R) |  +0.80 /  +0.84 /  -5.17 (394) | stop  43.8 pts
+  E3 1-min pullback, then resume        0.92/day | filled  57.2% | 44.5% |  +3.75 (+0.033R) |  +2.68 /  +6.41 /  -2.36 (242) | stop  71.0 pts
+
+== flag pullback <= 50 %% of the pole, 10:00-15:00, target measured move
+  E0 breakout close                     1.28/day | filled 100.0% | 32.2% |  +3.18 (+0.055R) |  +3.64 /  +4.28 /  -5.21 (341) | stop  50.5 pts
+  E1 limit at the flag edge (retest)    1.24/day | filled  75.3% | 27.8% |  +3.64 (+0.094R) |  +4.74 /  +4.25 /  -6.90 (320) | stop  38.3 pts
+  E2 limit halfway back                 1.26/day | filled  87.0% | 30.3% |  +3.87 (+0.076R) |  +4.91 /  +4.34 /  -5.41 (330) | stop  44.1 pts
+  E3 1-min pullback, then resume        0.85/day | filled  57.0% | 40.3% |  +4.35 (+0.063R) |  +3.16 /  +7.60 /  -3.59 (223) | stop  71.9 pts
+
+== NO pullback-depth rule, 10:00-12:00, target 1.5R
+  E0 breakout close                     0.99/day | filled 100.0% | 42.6% |  +1.48 (+0.014R) |  +1.98 /  +2.77 /  -7.85 (269) | stop  58.3 pts
+  E1 limit at the flag edge (retest)    0.97/day | filled  73.3% | 43.2% |  +1.46 (+0.019R) |  +1.52 /  +2.99 /  -6.48 (253) | stop  45.0 pts
+
+== NO pullback-depth rule, 10:00-12:00, target measured move
+  E0 breakout close                     0.84/day | filled 100.0% | 33.0% |  +5.12 (+0.101R) |  +5.65 /  +7.62 /  -9.52 (237) | stop  58.1 pts
+  E1 limit at the flag edge (retest)    0.81/day | filled  74.2% | 28.8% |  +5.20 (+0.148R) |  +5.19 /  +7.53 /  -5.83 (220) | stop  45.2 pts
+
+== NO pullback-depth rule, 10:00-15:00, target 1.5R
+  E0 breakout close                     1.72/day | filled 100.0% | 41.8% |  -0.01 (-0.015R) |  +0.18 /  +0.81 /  -5.40 (444) | stop  52.7 pts
+  E1 limit at the flag edge (retest)    1.73/day | filled  74.9% | 43.0% |  +0.83 (+0.006R) |  +1.33 /  +1.27 /  -4.93 (436) | stop  40.4 pts
+
+== NO pullback-depth rule, 10:00-15:00, target measured move
+  E0 breakout close                     1.41/day | filled 100.0% | 32.6% |  +2.30 (+0.037R) |  +2.77 /  +3.25 /  -5.32 (379) | stop  53.0 pts
+  E1 limit at the flag edge (retest)    1.38/day | filled  75.8% | 28.7% |  +3.36 (+0.086R) |  +4.04 /  +3.86 /  -3.75 (359) | stop  40.8 pts

@@ -1,0 +1,16 @@
+NQ NY 1-5m flags with the day as one stream (<= 5 a day, one at a time), 1.5R to 15:55, 2 pts cost — loosening ladder. 3315 days.
+Per level: trades/day | win % 2010-18 / 2019-24 / 2025-26 | net pts/trade all years / 2025-26 | control win % and pts (random timing).
+
+== no gap filter
+  L0 current (st .55, open+VWAP, pole 6 >= .20, flag 5 <= .6)  0.68/day | WR 42.8 / 43.8 / 44.6 | pts +2.94 /  +4.52 | same-context control WR 38.7 pts  -7.75 | any-time with-the-day control  +6.49
+  L1 straightness >= 0.40                                     0.79/day | WR 42.9 / 43.7 / 41.8 | pts +3.03 /  +1.68 | same-context control WR 40.0 pts  -5.12 | any-time with-the-day control  +3.75
+  L2 + pole >= 0.15, flag <= 0.7                              1.28/day | WR 41.8 / 43.1 / 39.3 | pts +1.19 /  -2.09 | same-context control WR 37.4 pts  -8.88 | any-time with-the-day control  +2.39
+  L3 + no VWAP condition                                      1.29/day | WR 41.8 / 43.1 / 39.6 | pts +1.20 /  -1.80 | same-context control WR 38.1 pts  -7.71 | any-time with-the-day control  +2.24
+  L4 + short shape (pole 4, flag 3)                           1.45/day | WR 43.2 / 41.5 / 39.1 | pts +0.34 /  -4.16 | same-context control WR 37.5 pts  -8.05 | any-time with-the-day control  +2.49
+
+== with gap agrees
+  L0 current (st .55, open+VWAP, pole 6 >= .20, flag 5 <= .6)  0.32/day | WR 46.3 / 50.6 / 44.9 | pts +9.42 /  +3.68 | same-context control WR 41.5 pts  -4.45 | any-time with-the-day control  +8.23
+  L1 straightness >= 0.40                                     0.38/day | WR 46.7 / 49.0 / 41.7 | pts +8.89 /  +0.63 | same-context control WR 41.8 pts  -2.89 | any-time with-the-day control  +5.25
+  L2 + pole >= 0.15, flag <= 0.7                              0.61/day | WR 44.0 / 46.6 / 39.9 | pts +5.15 /  +1.28 | same-context control WR 38.6 pts  -7.65 | any-time with-the-day control  +3.65
+  L3 + no VWAP condition                                      0.61/day | WR 44.0 / 46.7 / 40.5 | pts +5.18 /  +1.95 | same-context control WR 39.6 pts  -5.93 | any-time with-the-day control  +3.42
+  L4 + short shape (pole 4, flag 3)                           0.68/day | WR 45.0 / 45.0 / 38.7 | pts +3.70 /  -6.05 | same-context control WR 38.2 pts  -7.81 | any-time with-the-day control  +2.57

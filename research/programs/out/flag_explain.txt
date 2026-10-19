@@ -1,0 +1,25 @@
+NQ 20260212, 5-minute chart. ATR (14-day average daily range) = 410.0 pts.
+Step 0 — direction: 09:30 open 25346.25, price at 10:00 25208.25 → DOWN (look for BEAR flags) day.
+
+  bar   time         open      high       low     close   role
+    1   09:40-09:45  25359.50  25389.25  25304.00  25308.25   POLE
+    2   09:45-09:50  25309.00  25323.75  25240.00  25251.50   POLE
+    3   09:50-09:55  25251.25  25292.00  25235.25  25274.00   POLE
+    4   09:55-10:00  25273.25  25274.50  25186.25  25208.25   POLE
+    5   10:00-10:05  25208.25  25251.50  25178.25  25200.25   POLE
+    6   10:05-10:10  25201.00  25241.50  25169.75  25194.50   POLE
+    7   10:10-10:15  25194.00  25234.25  25178.50  25232.75   FLAG
+    8   10:15-10:20  25232.50  25246.00  25201.50  25203.00   FLAG
+    9   10:20-10:25  25203.25  25260.25  25194.00  25225.50   FLAG
+   10   10:25-10:30  25226.00  25248.00  25210.25  25232.25   FLAG
+   11   10:30-10:35  25232.50  25253.75  25177.00  25177.00   FLAG
+   12   10:35-10:40  25177.50  25188.25  25125.25  25134.00   BREAKOUT
+
+Step 1 — POLE (bars 1-6): close of bar 6 − open of bar 1 = 25194.50 − 25359.50 = -165.00 pts = 0.40 ATR  → need >= 0.20 ATR (82.0 pts): YES
+Step 2 — FLAG (bars 7-11): high 25260.25, low 25177.00, range 83.25 pts = 0.50 x the pole → need <= 0.6: YES
+Step 3 — BREAKOUT (bar 12): close 25134.00 below the flag low 25177.00: YES
+Step 4 — STRONG BREAKOUT BAR: close sits at 86 % of the bar's range toward the trade → need >= 70 %: YES
+Step 5 — same direction as 10:00 and after 10:00: YES
+
+TRADE: SELL at 25134.00. Stop 1 tick beyond the flag = 25260.50 (risk 126.50 pts = 0.31 ATR). Target 1.5R = 24944.25. Flat by 15:55 if neither is hit.
+RESULT: exit 24944.25 at 11:07 → +189.75 pts (+1.50R) before costs.

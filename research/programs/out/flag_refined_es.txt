@@ -1,0 +1,72 @@
+Refined flag rule ladder — ES NY, 10:00 direction, entries 10:00-15:00, 1.5R to 15:55, <= 3 a day, 2 pts cost. 3347 days.
+Per rung and side: trades/day | win % | pts/trade (and R) | pts 2010-18 / 2019-24 / 2025-26 (n) | controls (20 random draws, same direction and stop): flag-day = random minutes on the SAME days (hindsight: those days trended), ANY-day = random days + random minutes after 10:00 (fair).
+
+== R0 10:00 direction, 3-5m, pole >= .20, flag <= .6
+  bull   0.20/day | 46.2% |  +4.91 (+0.064R) |  +4.37 /  +7.88 /  -7.16 ( 57) | flag-day control +12.55 | ANY-day control  +3.21
+  bear   0.14/day | 40.7% |  -0.62 (-0.017R) |  +1.35 /  -2.67 /  -4.55 ( 30) | flag-day control +17.60 | ANY-day control  -3.22
+  both   0.33/day | 44.0% |  +2.67 (+0.031R) |  +3.06 /  +3.85 /  -6.26 ( 87) | flag-day control +14.61 | ANY-day control  +0.07
+
+== R1 + minimum stop 0.05 ATR
+  bull   0.20/day | 46.2% |  +4.91 (+0.064R) |  +4.37 /  +7.88 /  -7.16 ( 57) | flag-day control +11.33 | ANY-day control  +2.97
+  bear   0.14/day | 40.7% |  -0.62 (-0.017R) |  +1.35 /  -2.67 /  -4.55 ( 30) | flag-day control +17.33 | ANY-day control  -4.28
+  both   0.33/day | 44.0% |  +2.67 (+0.031R) |  +3.06 /  +3.85 /  -6.26 ( 87) | flag-day control +13.78 | ANY-day control  -0.61
+
+== R2 + strong breakout bar
+  bull   0.17/day | 45.3% |  +3.90 (+0.045R) |  +4.30 /  +4.71 /  -2.41 ( 49) | flag-day control +12.80 | ANY-day control  +4.05
+  bear   0.12/day | 40.9% |  +0.24 (-0.013R) |  +2.66 /  -2.88 /  +0.36 ( 28) | flag-day control +18.64 | ANY-day control  -2.92
+  both   0.29/day | 43.4% |  +2.37 (+0.021R) |  +3.58 /  +1.67 /  -1.40 ( 77) | flag-day control +15.24 | ANY-day control  +0.63
+
+== R3 + flag up to 0.8 x pole
+  bull   0.24/day | 45.4% |  +3.31 (+0.043R) |  +3.45 /  +5.52 /  -8.56 ( 71) | flag-day control +10.72 | ANY-day control  +2.48
+  bear   0.21/day | 41.5% |  +0.08 (-0.013R) |  -0.06 /  -0.82 /  +5.08 ( 61) | flag-day control +18.70 | ANY-day control  -2.97
+  both   0.46/day | 43.6% |  +1.81 (+0.017R) |  +1.75 /  +2.73 /  -2.26 (132) | flag-day control +14.41 | ANY-day control  -0.23
+
+== R4 R2 + 15-min chart
+  bull   0.19/day | 45.6% |  +3.20 (+0.034R) |  +4.19 /  +3.07 /  -1.50 ( 56) | flag-day control +15.92 | ANY-day control  +2.65
+  bear   0.13/day | 41.1% |  +0.60 (-0.012R) |  +4.67 /  -3.50 /  -5.81 ( 30) | flag-day control +21.27 | ANY-day control  -2.50
+  both   0.31/day | 43.8% |  +2.17 (+0.016R) |  +4.39 /  +0.56 /  -3.00 ( 86) | flag-day control +18.07 | ANY-day control  +0.08
+
+== R5 R2 with NO ATR rules (no minimum pole, no stop cap)
+  bull   0.25/day | 44.3% |  +2.00 (+0.013R) |  +1.61 /  +3.47 /  -2.91 ( 81) | flag-day control  +9.77 | ANY-day control  +1.56
+  bear   0.15/day | 41.3% |  +2.22 (-0.007R) |  +1.13 /  +4.88 /  -6.01 ( 34) | flag-day control +16.79 | ANY-day control  -3.53
+  both   0.39/day | 43.1% |  +2.08 (+0.005R) |  +1.42 /  +3.98 /  -3.83 (115) | flag-day control +12.42 | ANY-day control  -0.95
+
+== R6 R0 with NO ATR rules (no strong-bar rule either)
+  bull   0.30/day | 45.2% |  +3.10 (+0.034R) |  +2.44 /  +5.40 /  -4.06 ( 99) | flag-day control  +9.07 | ANY-day control  +2.06
+  bear   0.17/day | 40.4% |  +0.85 (-0.028R) |  -0.85 /  +4.70 / -10.04 ( 37) | flag-day control +14.98 | ANY-day control  -2.60
+  both   0.46/day | 43.5% |  +2.29 (+0.012R) |  +1.15 /  +5.16 /  -5.69 (136) | flag-day control +11.25 | ANY-day control  -0.21
+
+== R7 R6 with up to 5 a day
+  bull   0.30/day | 45.2% |  +3.10 (+0.034R) |  +2.44 /  +5.40 /  -4.06 ( 99) | flag-day control  +9.45 | ANY-day control  +2.48
+  bear   0.17/day | 40.3% |  +0.69 (-0.032R) |  -0.85 /  +4.28 / -10.04 ( 37) | flag-day control +15.69 | ANY-day control  -2.76
+  both   0.46/day | 43.4% |  +2.23 (+0.010R) |  +1.15 /  +5.01 /  -5.69 (136) | flag-day control +11.76 | ANY-day control  -0.06
+
+== R8 R7 + 2-min chart
+  bull   0.44/day | 44.5% |  +1.82 (+0.031R) |  +1.64 /  +3.73 /  -5.54 (155) | flag-day control  +6.53 | ANY-day control  +1.03
+  bear   0.27/day | 39.9% |  -0.98 (-0.048R) |  -2.39 /  +4.50 / -20.69 ( 67) | flag-day control  +9.24 | ANY-day control  -3.18
+  both   0.71/day | 42.8% |  +0.75 (+0.001R) |  -0.07 /  +4.00 / -10.11 (222) | flag-day control  +7.59 | ANY-day control  -1.05
+
+== R9 R7 + 2-min and 1-min charts
+  bull   0.70/day | 43.0% |  +0.54 (-0.007R) |  -0.73 /  +2.26 /  -1.76 (237) | flag-day control  +3.15 | ANY-day control  +0.73
+  bear   0.49/day | 39.2% |  -1.45 (-0.076R) |  -2.28 /  +0.92 /  -8.82 (122) | flag-day control  +4.09 | ANY-day control  -3.12
+  both   1.19/day | 41.5% |  -0.28 (-0.035R) |  -1.43 /  +1.74 /  -4.16 (359) | flag-day control  +3.55 | ANY-day control  -1.18
+
+== R10 R9 + 15-min chart
+  bull   0.71/day | 43.5% |  +0.84 (-0.000R) |  -0.41 /  +2.45 /  -1.07 (237) | flag-day control  +3.40 | ANY-day control  +1.07
+  bear   0.49/day | 39.6% |  -0.86 (-0.072R) |  -1.79 /  +1.72 /  -8.62 (123) | flag-day control  +5.10 | ANY-day control  -2.77
+  both   1.20/day | 41.9% |  +0.14 (-0.030R) |  -1.03 /  +2.17 /  -3.65 (360) | flag-day control  +4.12 | ANY-day control  -0.83
+
+== R11 R9 with overlapping trades (one open per chart)
+  bull   0.97/day | 43.3% |  +1.44 (-0.001R) |  +0.99 /  +3.12 /  -4.08 (336) | flag-day control  +2.90 | ANY-day control  +1.21
+  bear   0.61/day | 39.9% |  -0.31 (-0.055R) |  -1.88 /  +2.24 /  -4.07 (139) | flag-day control  +3.92 | ANY-day control  -3.22
+  both   1.58/day | 42.0% |  +0.76 (-0.022R) |  -0.24 /  +2.80 /  -4.08 (475) | flag-day control  +3.33 | ANY-day control  -0.97
+
+== R12 R7 with entries 10:00-12:00 only
+  bull   0.14/day | 47.3% |  +8.40 (+0.108R) |  +8.29 / +11.23 /  -3.76 ( 48) | flag-day control +11.34 | ANY-day control  +2.76
+  bear   0.08/day | 39.7% |  -1.22 (-0.051R) |  -2.54 /  +4.68 / -27.17 ( 15) | flag-day control  +2.81 | ANY-day control  -3.32
+  both   0.22/day | 44.6% |  +4.99 (+0.051R) |  +3.87 /  +9.16 /  -9.33 ( 63) | flag-day control  +8.31 | ANY-day control  -0.25
+
+== R13 R7 with entries 10:00-13:00 only
+  bull   0.20/day | 45.7% |  +4.90 (+0.071R) |  +3.98 /  +7.66 /  -2.55 ( 69) | flag-day control  +9.06 | ANY-day control  +2.93
+  bear   0.11/day | 39.6% |  -1.30 (-0.050R) |  +1.98 /  -3.48 / -16.51 ( 22) | flag-day control  +9.40 | ANY-day control  -2.98
+  both   0.31/day | 43.5% |  +2.65 (+0.027R) |  +3.18 /  +3.81 /  -5.93 ( 91) | flag-day control  +9.19 | ANY-day control  -0.03

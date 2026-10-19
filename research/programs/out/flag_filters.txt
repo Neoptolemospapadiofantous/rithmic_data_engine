@@ -1,0 +1,155 @@
+Flag filters for a higher win rate — NQ 13.2 yrs, base = flags WITH the session's day on a straight path, 1.5R to session end.
+WR = win rate (net > 0 after 2 pts). Columns: WR 2010-18 / 2019-24 / 2025-26 | trades/day | net pts 2019-26 | control WR 2019-26 (random timing, same filter) .
+✓ = raises WR by >= 2 points in BOTH 2010-18 and 2019-24.
+
+== NY 1m — base: WR 40.2 / 42.8 / 32.3  | 0.23/day | pts  -2.9 | control WR 38.1
+     first third of the session       41.2 / 43.7 / 36.4  | 0.17/day | pts  -2.2 | control 40%
+     middle third                     39.0 / 43.6 /  9.1  | 0.04/day | pts  -3.3 | control 40%
+     straightness >= 0.70             38.9 / 43.0 / 32.0  | 0.17/day | pts  -3.0 | control 41%
+     session move >= 0.5 ATR          41.8 / 39.7 / 37.3  | 0.16/day | pts  -3.9 | control 37%
+     pole >= 0.30 ATR                 38.3 / 39.1 / 33.3  | 0.07/day | pts  -7.3 | control n/a
+     flag <= 0.4 x pole               38.5 / 37.8 / 50.0  | 0.07/day | pts  -6.1 | control n/a
+     pullback <= 38 % of pole         41.7 / 43.1 / 32.8  | 0.20/day | pts  -2.7 | control n/a
+     flag volume < pole volume        39.5 / 43.0 / 29.1  | 0.19/day | pts  -3.0 | control n/a
+     breakout volume > 1.5x flag      41.5 / 38.7 / 26.7  | 0.10/day | pts  -6.7 | control n/a
+     prior day agrees                 40.7 / 40.2 / 27.8  | 0.10/day | pts  -7.4 | control 39%
+   ✓ gap agrees                       49.2 / 48.9 / 37.5  | 0.10/day | pts  +5.1 | control 38%
+     60-min EMA on the trade's side   40.2 / 42.8 / 32.3  | 0.23/day | pts  -2.9 | control 40%
+     within 0.3 ATR of VWAP           33.9 / 50.6 / 20.0  | 0.06/day | pts  +4.2 | control 35%
+     VIX >= 20                        31.9 / 35.2 / 38.1  | 0.06/day | pts  -6.1 | control 40%
+     VIX < 20                         42.0 / 46.9 / 29.5  | 0.17/day | pts  -1.2 | control 37%
+     first flag of the session        40.8 / 40.2 / 34.8  | 0.17/day | pts  -5.4 | control n/a
+
+== NY 2m — base: WR 42.5 / 39.5 / 50.0  | 0.27/day | pts  -2.3 | control WR 41.1
+     first third of the session       42.5 / 36.3 / 52.4  | 0.19/day | pts  -5.4 | control 32%
+     middle third                     44.0 / 45.6 / 43.8  | 0.06/day | pts  +2.8 | control 48%
+     last third                       39.1 / 47.7 /  nan  | 0.03/day | pts  +6.6 | control 43%
+     straightness >= 0.70             40.2 / 41.8 / 46.8  | 0.20/day | pts  +0.6 | control 47%
+     session move >= 0.5 ATR          41.5 / 43.7 / 50.0  | 0.20/day | pts  +2.2 | control 44%
+     pole >= 0.30 ATR                 40.9 / 39.5 / 39.3  | 0.13/day | pts  -6.6 | control n/a
+     flag <= 0.4 x pole               46.8 / 41.5 / 43.8  | 0.07/day | pts  -1.6 | control n/a
+     pullback <= 38 % of pole         44.1 / 39.0 / 50.0  | 0.24/day | pts  -3.6 | control n/a
+     flag volume < pole volume        42.5 / 40.9 / 45.3  | 0.23/day | pts  -1.7 | control n/a
+     breakout volume > 1.5x flag      44.7 / 36.5 / 57.1  | 0.10/day | pts  -7.4 | control n/a
+     prior day agrees                 40.2 / 38.3 / 47.6  | 0.12/day | pts  -4.7 | control 47%
+     gap agrees                       43.8 / 42.8 / 41.9  | 0.13/day | pts  -1.6 | control 41%
+     60-min EMA on the trade's side   42.5 / 39.5 / 50.0  | 0.27/day | pts  -2.3 | control 39%
+     within 0.3 ATR of VWAP           43.2 / 36.5 / 47.4  | 0.07/day | pts  -3.5 | control 43%
+     VIX >= 20                        33.3 / 35.9 / 29.4  | 0.07/day | pts -12.4 | control 34%
+     VIX < 20                         44.2 / 42.0 / 57.4  | 0.20/day | pts  +4.0 | control 46%
+     first flag of the session        43.3 / 39.3 / 49.1  | 0.21/day | pts  -2.4 | control n/a
+
+== NY 3m — base: WR 45.7 / 45.8 / 41.7  | 0.23/day | pts  +7.8 | control WR 44.3
+     first third of the session       46.5 / 50.3 / 48.1  | 0.14/day | pts +15.3 | control 39%
+     middle third                     43.9 / 40.5 / 40.0  | 0.06/day | pts  -2.3 | control 47%
+     last third                       45.7 / 32.3 /  nan  | 0.03/day | pts  -9.3 | control 49%
+     straightness >= 0.70             44.5 / 47.1 / 45.0  | 0.18/day | pts  +9.7 | control 49%
+     session move >= 0.5 ATR          46.0 / 48.8 / 39.5  | 0.17/day | pts +11.7 | control 47%
+   ✓ pole >= 0.30 ATR                 48.0 / 50.4 / 42.9  | 0.13/day | pts +12.2 | control n/a
+     flag <= 0.4 x pole               46.7 / 42.4 /  nan  | 0.06/day | pts  +5.0 | control n/a
+     pullback <= 38 % of pole         45.0 / 45.1 / 39.5  | 0.20/day | pts  +6.8 | control n/a
+     flag volume < pole volume        46.6 / 46.6 / 40.5  | 0.20/day | pts  +8.4 | control n/a
+   ✓ breakout volume > 1.5x flag      52.1 / 50.7 / 45.5  | 0.07/day | pts +12.1 | control n/a
+     prior day agrees                 45.3 / 41.7 / 50.0  | 0.11/day | pts  +1.9 | control 45%
+     gap agrees                       51.4 / 46.7 / 41.2  | 0.11/day | pts +11.1 | control 44%
+     60-min EMA on the trade's side   45.7 / 45.8 / 41.7  | 0.23/day | pts  +7.8 | control 44%
+     within 0.3 ATR of VWAP           49.0 / 47.4 / 46.2  | 0.06/day | pts  +9.8 | control 45%
+     VIX >= 20                        39.7 / 40.9 / 30.0  | 0.06/day | pts  +5.3 | control 45%
+     VIX < 20                         47.0 / 49.4 / 44.7  | 0.16/day | pts  +9.5 | control 44%
+     first flag of the session        48.4 / 46.9 / 39.5  | 0.19/day | pts  +9.1 | control n/a
+   ★ best pair (picked on 2010-18): pole >= 0.30 ATR + breakout volume > 1.5x flag → WR 54.1 / 50.0 /  nan | 0.04/day | pts 2019-26  +9.3 | control 44.3%
+
+== NY 4m — base: WR 49.0 / 46.0 / 26.2  | 0.20/day | pts  +4.3 | control WR 42.3
+   ✓ first third of the session       52.9 / 50.0 / 24.0  | 0.11/day | pts +11.4 | control 30%
+     middle third                     50.9 / 39.8 / 28.6  | 0.06/day | pts  -5.3 | control 45%
+     straightness >= 0.70             51.7 / 45.1 / 21.9  | 0.15/day | pts  +3.4 | control 42%
+     session move >= 0.5 ATR          48.7 / 48.0 / 26.7  | 0.16/day | pts  +7.7 | control 44%
+   ✓ pole >= 0.30 ATR                 54.0 / 48.7 / 28.6  | 0.13/day | pts  +8.6 | control n/a
+     flag <= 0.4 x pole               48.3 / 52.5 /  nan  | 0.05/day | pts +16.3 | control n/a
+     pullback <= 38 % of pole         49.7 / 46.6 / 23.7  | 0.18/day | pts  +4.1 | control n/a
+     flag volume < pole volume        49.4 / 46.6 / 27.8  | 0.18/day | pts  +6.1 | control n/a
+     breakout volume > 1.5x flag      49.3 / 55.6 /  nan  | 0.06/day | pts +14.6 | control n/a
+     prior day agrees                 53.2 / 43.2 / 33.3  | 0.10/day | pts  +1.4 | control 38%
+     gap agrees                       50.2 / 49.6 / 26.3  | 0.11/day | pts  +4.4 | control 43%
+     60-min EMA on the trade's side   49.0 / 46.0 / 26.2  | 0.20/day | pts  +4.3 | control 42%
+     within 0.3 ATR of VWAP           39.7 / 42.4 / 33.3  | 0.04/day | pts  -3.3 | control 40%
+     VIX >= 20                        33.3 / 43.8 /  nan  | 0.05/day | pts  +4.1 | control 52%
+     VIX < 20                         52.3 / 47.5 / 22.9  | 0.15/day | pts  +4.5 | control 37%
+     first flag of the session        47.9 / 45.2 / 28.2  | 0.17/day | pts  +2.7 | control n/a
+   ★ best pair (picked on 2010-18): first third of the session + pole >= 0.30 ATR → WR 53.1 / 51.4 / 22.2 | 0.09/day | pts 2019-26 +13.3 | control 30.5%
+
+== NY 5m — base: WR 52.3 / 53.7 / 43.9  | 0.19/day | pts +12.6 | control WR 49.8
+   ✓ first third of the session       55.5 / 57.3 / 50.0  | 0.09/day | pts +19.0 | control 47%
+     middle third                     52.0 / 51.4 / 35.7  | 0.08/day | pts  +9.5 | control 51%
+     straightness >= 0.70             52.6 / 51.8 / 35.5  | 0.15/day | pts  +6.2 | control 56%
+     session move >= 0.5 ATR          53.5 / 53.7 / 38.2  | 0.16/day | pts +11.6 | control 53%
+     pole >= 0.30 ATR                 54.6 / 54.8 / 43.3  | 0.13/day | pts +14.8 | control n/a
+   ✓ flag <= 0.4 x pole               57.8 / 57.5 /  nan  | 0.05/day | pts +24.5 | control n/a
+     pullback <= 38 % of pole         54.5 / 55.6 / 37.5  | 0.17/day | pts +13.5 | control n/a
+     flag volume < pole volume        51.7 / 53.1 / 45.0  | 0.18/day | pts +11.9 | control n/a
+     breakout volume > 1.5x flag      50.8 / 52.0 /  nan  | 0.05/day | pts +14.4 | control n/a
+     prior day agrees                 55.1 / 52.5 / 53.8  | 0.09/day | pts +13.7 | control 48%
+   ✓ gap agrees                       55.0 / 58.6 / 56.5  | 0.10/day | pts +18.1 | control 54%
+     60-min EMA on the trade's side   52.3 / 53.7 / 43.9  | 0.19/day | pts +12.6 | control 51%
+     within 0.3 ATR of VWAP           44.0 / 53.1 / 64.3  | 0.03/day | pts +14.9 | control 49%
+     VIX >= 20                        50.0 / 57.3 / 46.2  | 0.05/day | pts +16.4 | control 51%
+     VIX < 20                         52.9 / 51.2 / 42.9  | 0.14/day | pts +10.1 | control 49%
+     first flag of the session        53.1 / 54.2 / 44.1  | 0.15/day | pts +16.3 | control n/a
+   ★ best pair (picked on 2010-18): flag <= 0.4 x pole + gap agrees → WR 63.0 / 68.4 /  nan | 0.03/day | pts 2019-26 +34.2 | control 53.9%
+
+== NY 15m — base: WR 52.1 / 52.7 / 50.0  | 0.10/day | pts +10.0 | control WR 64.2
+   ✓ middle third                     57.3 / 57.0 / 61.1  | 0.07/day | pts +15.5 | control 67%
+     straightness >= 0.70             52.9 / 49.0 / 38.1  | 0.08/day | pts  +3.0 | control 61%
+     session move >= 0.5 ATR          52.3 / 52.6 / 46.2  | 0.09/day | pts  +9.6 | control 62%
+     pole >= 0.30 ATR                 52.7 / 54.5 / 50.0  | 0.09/day | pts +11.9 | control n/a
+     flag <= 0.4 x pole               48.9 / 56.4 / 57.1  | 0.03/day | pts +11.7 | control n/a
+     pullback <= 38 % of pole         53.3 / 55.8 / 53.8  | 0.09/day | pts +13.6 | control n/a
+     flag volume < pole volume        52.1 / 52.7 / 50.0  | 0.10/day | pts +10.0 | control n/a
+   ✓ prior day agrees                 58.7 / 54.7 / 41.2  | 0.05/day | pts +12.6 | control 66%
+   ✓ gap agrees                       54.8 / 55.1 / 55.0  | 0.06/day | pts +10.5 | control 63%
+     60-min EMA on the trade's side   52.1 / 52.7 / 50.0  | 0.10/day | pts +10.0 | control 64%
+     VIX < 20                         51.8 / 51.2 / 45.8  | 0.07/day | pts +12.0 | control 66%
+     first flag of the session        51.8 / 51.9 / 50.0  | 0.08/day | pts  +9.5 | control n/a
+   ★ best pair (picked on 2010-18): middle third + prior day agrees → WR 64.9 / 58.3 / 58.3 | 0.04/day | pts 2019-26 +20.1 | control 68.8%
+
+== London 2m — base: WR 34.6 / 37.9 / 21.4  | 0.05/day | pts -10.7 | control WR 38.9
+     first third of the session       35.6 / 41.9 /  nan  | 0.03/day | pts -15.9 | control 34%
+     straightness >= 0.70             35.5 / 40.0 / 15.4  | 0.04/day | pts  -9.6 | control 31%
+     pullback <= 38 % of pole         35.6 / 38.5 / 23.1  | 0.04/day | pts -11.0 | control n/a
+     flag volume < pole volume        36.8 / 38.2 /  9.1  | 0.04/day | pts -11.2 | control n/a
+     60-min EMA on the trade's side   34.6 / 37.9 / 21.4  | 0.05/day | pts -10.7 | control 35%
+     first flag of the session        34.2 / 38.8 / 25.0  | 0.04/day | pts  -7.5 | control n/a
+
+== London 3m — base: WR 37.6 / 50.0 / 10.0  | 0.05/day | pts  +3.7 | control WR 40.5
+   ✓ first third of the session       40.4 / 52.6 /  nan  | 0.03/day | pts  +8.1 | control 38%
+     straightness >= 0.70             34.2 / 50.9 / 10.0  | 0.04/day | pts  +3.4 | control 42%
+     pullback <= 38 % of pole         34.9 / 50.9 /  nan  | 0.04/day | pts  +4.6 | control n/a
+     flag volume < pole volume        33.8 / 50.9 /  nan  | 0.04/day | pts  +7.3 | control n/a
+     60-min EMA on the trade's side   37.6 / 50.0 / 10.0  | 0.05/day | pts  +3.7 | control 44%
+     within 0.3 ATR of VWAP           37.0 / 53.8 /  nan  | 0.03/day | pts  +9.7 | control 41%
+     VIX < 20                         31.9 / 51.4 /  nan  | 0.03/day | pts  +9.1 | control 47%
+     first flag of the session        40.2 / 50.0 /  nan  | 0.04/day | pts  +4.0 | control n/a
+
+== London 4m — base: WR 42.1 / 39.5 / 50.0  | 0.06/day | pts  -6.9 | control WR 42.0
+     first third of the session       40.6 / 34.9 /  nan  | 0.03/day | pts -14.1 | control 43%
+     straightness >= 0.70             43.2 / 42.6 / 54.5  | 0.05/day | pts  -3.9 | control 44%
+     session move >= 0.5 ATR          35.4 / 41.2 /  nan  | 0.03/day | pts  -7.7 | control 32%
+     pullback <= 38 % of pole         42.0 / 40.0 / 40.0  | 0.05/day | pts  -6.8 | control n/a
+     flag volume < pole volume        41.0 / 42.6 /  nan  | 0.05/day | pts  -3.1 | control n/a
+   ✓ prior day agrees                 45.0 / 54.3 /  nan  | 0.03/day | pts  +9.2 | control 62%
+     60-min EMA on the trade's side   42.1 / 39.5 / 50.0  | 0.06/day | pts  -6.9 | control 45%
+     within 0.3 ATR of VWAP           44.0 / 38.3 /  nan  | 0.04/day | pts  -5.3 | control 44%
+     VIX < 20                         42.4 / 40.5 /  nan  | 0.04/day | pts  -3.5 | control 45%
+     first flag of the session        42.0 / 38.2 / 45.5  | 0.05/day | pts  -9.1 | control n/a
+
+== London 5m — base: WR 39.8 / 34.2 / 60.0  | 0.06/day | pts  -2.4 | control WR 41.7
+     first third of the session       44.6 / 31.7 /  nan  | 0.03/day | pts  -7.5 | control 48%
+     straightness >= 0.70             40.5 / 38.6 /  nan  | 0.04/day | pts  +4.7 | control 50%
+     pullback <= 38 % of pole         38.0 / 34.2 /  nan  | 0.05/day | pts  -1.8 | control n/a
+     flag volume < pole volume        39.3 / 33.3 /  nan  | 0.05/day | pts  -2.8 | control n/a
+     breakout volume > 1.5x flag      38.7 / 39.5 /  nan  | 0.03/day | pts  +0.8 | control n/a
+     prior day agrees                 40.7 / 42.9 /  nan  | 0.03/day | pts +12.7 | control 46%
+     60-min EMA on the trade's side   39.8 / 34.2 /  nan  | 0.06/day | pts  -2.4 | control 41%
+     within 0.3 ATR of VWAP           38.2 / 32.2 /  nan  | 0.04/day | pts  -5.2 | control 42%
+     VIX < 20                         34.9 / 37.5 /  nan  | 0.04/day | pts  -0.5 | control 50%
+     first flag of the session        40.9 / 35.8 /  nan  | 0.05/day | pts  -1.1 | control n/a

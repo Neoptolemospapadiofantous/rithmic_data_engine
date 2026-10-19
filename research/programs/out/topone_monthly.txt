@@ -1,0 +1,83 @@
+cost 2 pts, stops 0 pts worse, fractional micros
+TopOne 50K, 5 evals bought each month (trading days 1/5/9/13/17), real plan trades. Per month of purchases, months 2010-08 → 2025-04.
+
+  eval$ fund$ | passes of 5: mean  0   1   >=2  >=3 (% of months) | funded w/ payout in 3 mo | payouts 3 mo  6 mo | net 6 mo after fees: mean  median  losing%  | net 2010-18 / 2019-22 / 2023-25
+    500   500 | 2.35  17.6 17.6 64.8 46.0            | 1.34                     |  +4975  +9343 |   +8474    -293   51.7   |  +5991  +9500 +15585
+    500   750 | 2.35  17.6 17.6 64.8 46.0            | 1.10                     |  +4609  +8649 |   +7780    -425   52.3   |  +5388  +8585 +14943
+    500  1000 | 2.35  17.6 17.6 64.8 46.0            | 0.92                     |  +4110  +7990 |   +7122    -425   59.1   |  +6036  +5861 +13161
+    750   500 | 2.28  15.3 18.8 65.9 43.8            | 1.33                     |  +4643  +8801 |   +7946    +736   43.2   |  +6289  +7743 +14210
+    750   750 | 2.28  15.3 18.8 65.9 43.8            | 1.11                     |  +4596  +8633 |   +7777    +358   46.0   |  +5860  +7623 +14889
+    750  1000 | 2.28  15.3 18.8 65.9 43.8            | 1.00                     |  +4338  +8368 |   +7512    +358   49.4   |  +6248  +6371 +13984
+   1000   500 | 2.16  14.2 21.0 64.8 40.9            | 1.31                     |  +4528  +8453 |   +7618    +736   40.3   |  +6605  +7685 +11126
+   1000   750 | 2.16  14.2 21.0 64.8 40.9            | 1.07                     |  +4400  +8147 |   +7313    +547   44.3   |  +6157  +6973 +12022
+   1000  1000 | 2.16  14.2 21.0 64.8 40.9            | 0.97                     |  +4177  +7986 |   +7152    +358   48.9   |  +6624  +6002 +11011
+   1500   500 | 2.28  11.4 19.9 68.8 43.8            | 1.39                     |  +4947  +9393 |   +8536   +1642   40.3   |  +6998  +9595 +12213
+   1500   750 | 2.28  11.4 19.9 68.8 43.8            | 1.17                     |  +4811  +8973 |   +8116    +736   40.3   |  +6384  +8967 +12843
+   1500  1000 | 2.28  11.4 19.9 68.8 43.8            | 1.03                     |  +4508  +8601 |   +7745    +547   46.6   |  +6734  +8189 +10594
+
+
+######## CONTINUOUS OPERATION — buy up to 5 evals a month while active accounts < cap; eval $85, activation $189; per calendar year
+  rule      cap  eval$ fund$ | net / yr: mean  median  worst   losing yrs | evals/yr  passes/yr  payouts/yr | max cash out | 2011-18 / 2019-22 / 2023-25 mean
+  (cons = funded consistency rule: largest day <= that share of the cycle's profit; the pasted payout rules list none, the published Elite Access rules say 40 %)
+  cons  0%    5   1000   500 |   +94433   +94500  +67810    0 of 15  |    1.9       1.0       70.3 |     -992    |  +88131 / +101925 / +101250
+  cons  0%    5   1000   750 |  +101023  +101250  +65119    0 of 15  |    1.5       0.8       75.2 |     -992    |  +95256 / +108338 / +106650
+  cons  0%   10   1000   500 |  +184100  +190350  +88428    0 of 15  |    4.5       2.5      137.3 |     -992    | +167325 / +203850 / +202500
+  cons  0%   10   1000   750 |  +197509  +202500  +85828    0 of 15  |    4.8       2.3      147.1 |     -992    | +182172 / +216675 / +212850
+      years: 2011 +86k 2012 +177k 2013 +202k 2014 +216k 2015 +176k 2016 +198k 2017 +193k 2018 +209k 2019 +198k 2020 +200k 2021 +236k 2022 +232k 2023 +207k 2024 +230k 2025 +202k
+  cons  0%   20   1000   500 |  +351934  +378000  +86605    0 of 15  |    9.3       4.5      262.5 |     -992    | +304658 / +406688 / +405000
+  cons  0%   20   1000   750 |  +377935  +400950  +86166    0 of 15  |    8.9       4.4      281.5 |     -992    | +332315 / +432675 / +426600
+  cons 40%    5   1000   500 |   +31632   +27000  +13500    0 of 15  |    1.2       0.7       23.6 |    -1266    |  +28091 /  +33750 /  +38250
+  cons 40%    5   1000   750 |   +32521   +31050  +16660    0 of 15  |    1.3       0.7       24.3 |    -1266    |  +28914 /  +35438 /  +38250
+  cons 40%   10   1000   500 |   +62154   +55350  +18451    0 of 15  |    3.1       1.7       46.5 |    -1606    |  +54271 /  +67500 /  +76050
+  cons 40%   10   1000   750 |   +63944   +64800  +16656    0 of 15  |    3.8       1.9       47.9 |    -1606    |  +55770 /  +70875 /  +76500
+      years: 2011 +17k 2012 +76k 2013 +40k 2014 +70k 2015 +65k 2016 +40k 2017 +57k 2018 +81k 2019 +68k 2020 +54k 2021 +94k 2022 +68k 2023 +40k 2024 +135k 2025 +54k
+  cons 40%   20   1000   500 |  +120552  +110700  +15447    0 of 15  |    6.6       3.0       90.1 |    -1606    | +101498 / +135000 / +152100
+  cons 40%   20   1000   750 |  +124338  +116217  +15447    0 of 15  |    7.0       3.3       93.0 |    -1606    | +104883 / +141750 / +153000
+
+
+######## OPERATION STRESS — 10 accounts, eval $1,000 / funded $750, own $500 daily stop, 2011-2025 (14.4 yrs), $ per year
+  base: 40 %% consistency, payout any time            +66570
+  no consistency                                     +205274
+  one payout a week per account                       +66570
+  one payout every 2 weeks                            +66289
+  one payout a month                                  +63105
+  max $3,000 paid a month per account                 +66570
+  account closed after $6,000 lifetime payouts        +37466
+  account closed after $12,000 lifetime payouts       +55681
+  account closed after 4 payouts                      +37466
+  every 2 weeks + closed after $6,000                 +37459
+
+  2025-01 → 2026-10-16 only (299 trading days, data gap 2026-03-20 → 09-18):
+  base: 40 %% consistency, payout any time            +35303 total
+  no consistency                                     +170402 total
+  one payout a week per account                       +35303 total
+  one payout every 2 weeks                            +35303 total
+  one payout a month                                  +35303 total
+  max $3,000 paid a month per account                 +35303 total
+  account closed after $6,000 lifetime payouts        +34878 total
+  account closed after $12,000 lifetime payouts       +35303 total
+  account closed after 4 payouts                      +34878 total
+  every 2 weeks + closed after $6,000                 +34878 total
+
+  bootstrap — 2,000 synthetic years of days drawn from 2019-2026 ($ per year):
+  base: 40 %% consistency, payout any time         P5    -1941  P25   +12663  median   +29166  P75   +49057  losing  7.4 %
+  no consistency                                   P5   +13058  P25   +51191  median   +89212  P75  +129323  losing  1.1 %
+  one payout every 2 weeks                         P5    -1725  P25   +13079  median   +28911  P75   +49095  losing  7.2 %
+  every 2 weeks + closed after $6,000              P5    -2130  P25   +11748  median   +26437  P75   +41070  losing  7.7 %
+
+
+######## OPTIMISATION — 400 settings, ranked on 2011-2018 only (40 % consistency, cap 10). $ per year (2025-26 = total)
+  eval$ fund$ own-stop buys/mo | 2011-18 (chosen on) | 2019-25 (unseen) | 2025-26 total | bootstrap 2019-26: P5  median  losing%
+   1500  1250     $250    8     |     +63892          |     +65572       |     +41421    |    -4569   +35196   8.0
+    750  1250     $250    8     |     +63892          |     +62260       |     +40515    |    -6374   +34299  11.2
+   1000  1250     $250    8     |     +63892          |     +65540       |     +44840    |    -5806   +33667   9.8
+   2000  1250     $250    8     |     +63892          |     +65406       |     +29532    |    -3624   +33659   9.2
+   1000  1000     $250    8     |     +63537          |     +63557       |     +44840    |    -4947   +35952   9.2
+   2000  1000     $250    8     |     +63537          |     +63223       |     +29532    |    -3597   +35545   8.0
+    750  1000     $250    8     |     +63537          |     +60302       |     +40515    |    -5664   +37132   9.2
+   1500  1000     $250    8     |     +63537          |     +63390       |     +41421    |    -3323   +37103   7.6
+    500  1250     $250    8     |     +63512          |     +57826       |      +7079    |    -8252   +31403  12.8
+    500  1000     $250    8     |     +63335          |     +56651       |      +7353    |    -6720   +34623  12.0
+  ... current plan (eval $1,000, funded $750, own stop $500, 5 a month):
+   1000   750     $500    5     |     +58692          |     +62488       |     +35303    |     -186   +30544   5.4
+  2019-25 per year: median of all 400 settings +53397, median of the top-20 picked on 2011-18 +60356

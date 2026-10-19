@@ -1,0 +1,43 @@
+TopOne 50K stress — book F + weakness long + 5m flag with the day, eval $1,000 / funded $1,000 risk, one copy-traded account chain,
+183 twelve-month windows started each month 20100722 → 20251001.
+
+  variant                                                        mean $/yr   median      P10    worst  losing  1st pay d cash needed
+  base (published Elite Access rules)                               +4655    +4430    +1576     -516    1.6%         53       -3490
+  drawdown never locks (trails forever)                             -1993    -2204    -4785    -5681   77.0%         77       -5681
+  lock only at +$3,000                                              +4586    +4465    +1282     -551    2.2%         54       -3490
+  consistency 30 %                                                  +2880    +2751     +380    -2140    7.7%         79       -3490
+  consistency 20 %                                                  +1319    +1087     -502    -2818   16.9%        118       -3490
+  no consistency rule                                              +14060   +14258    +7736    +2716    0.0%         32       -3490
+  payout cap $1,000                                                 +2856    +2665     +725    -1018    4.4%         53       -3490
+  payout cap $2,500                                                 +8300    +8030    +3565     +384    0.0%         53       -3490
+  split 80 % (live account)                                         +4050    +3830    +1276     -666    1.6%         53       -3490
+  10 profitable days per payout                                     +4016    +3787    +1282     -790    2.7%         61       -3490
+  daily pause at $500                                               +5140    +4738    +2178     -999    1.1%         47       -2349
+  whole micros only (floor, min 1)                                  +3811    +3653     +639    -3763    6.0%         59       -3763
+  every stop fills 4 pts worse                                      +2950    +2646     -453    -3616   17.5%         70       -4029
+  cost 6 pts + stops 4 pts worse                                    +2136    +1939    -1573    -3308   27.3%         79       -3462
+  worst case: no lock, cons 20 %, cap $1k, 80 %, cost 6, slip 4     -3803    -3819    -4911    -5751  100.0%        142       -5751
+
+  calendar years (base, start in January):
+    2011    +4843  (cash low  -228, first payout day 39)
+    2012    +6382  (cash low  -368, first payout day 71)
+    2013    +1401  (cash low  -851, first payout day 71)
+    2014    +3563  (cash low  -487, first payout day 32)
+    2015    +1954  (cash low  -746, first payout day 98)
+    2016    +2178  (cash low  -522, first payout day 54)
+    2017    +2492  (cash low -1558, first payout day 118)
+    2018    +6522  (cash low  -228, first payout day 48)
+    2019    +3772  (cash low -1628, first payout day 90)
+    2020    +4101  (cash low -1299, first payout day 74)
+    2021    +8998  (cash low  -452, first payout day 54)
+    2022    +5780  (cash low  -970, first payout day 49)
+    2023    +3752  (cash low  -298, first payout day 84)
+    2024   +11698  (cash low  -452, first payout day 72)
+    2025    +3493  (cash low  -557, first payout day 55)
+    2026 YTD (to 10-16, no data 03-20 → 09-18)    +1052
+
+  bootstrap 5,000 years of days drawn from 2019-26 — base (published Elite Access rules):
+    P5 +1436  P25 +3926  median +6018  P75 +7802  P95 +10502  | losing 1.9 %
+
+  bootstrap 5,000 years of days drawn from 2019-26 — worst case: no lock, cons 20 %, cap $1k, 80 %, cost 6, slip 4:
+    P5 -5163  P25 -4631  median -4253  P75 -3854  P95 -3159  | losing 100.0 %

@@ -1,0 +1,74 @@
+Flag / market-structure matrix — NQ 2010-07 → 2026-10, 3 sessions × 6 charts × 2 sides × 7 setups × 6 exits. Points at today's range, net of 2 pts.
+A cell PASSES when net > 0 in 2010-18, 2019-24 AND 2025-26 (≥ 20 trades), beats its random control by ≥ 2 pts, and has ≥ 100 trades.
+
+==================== Asia
+  0 of 504 cells pass.
+  Top 12 cells by 2010-18 net (selection on the first era only — the later columns are the test):
+  Asia 15m bull BOS-dir   2R   0.20/day stop 62.6 | win 47.3% | net  +1.28 | eras  +5.27  -0.74  -1.95 (76) | ctrl  -0.72
+  Asia 15m bull BOS-any   2R   0.22/day stop 61.7 | win 46.2% | net  +0.94 | eras  +5.27  -1.46  -1.65 (87) | ctrl  +1.04
+  Asia 15m bull BOS-dir   1R   0.20/day stop 62.6 | win 49.2% | net  +1.79 | eras  +4.79  +0.97  -3.80 (76) | ctrl  -0.86
+  Asia 15m bull BOS-any   END  0.22/day stop 61.7 | win 46.2% | net  +0.81 | eras  +4.65  -1.45  -0.89 (87) | ctrl  +2.28
+  Asia 15m bull BOS-dir   END  0.20/day stop 62.6 | win 47.3% | net  +1.12 | eras  +4.50  -0.73  -0.98 (76) | ctrl  -0.56
+  Asia 15m bull BOS-any   1R   0.22/day stop 61.7 | win 48.7% | net  +1.47 | eras  +4.43  +0.49  -3.21 (87) | ctrl  +0.38
+  Asia 15m bull CHOCH-any END  0.22/day stop 56.3 | win 47.7% | net  +1.07 | eras  +2.98  +0.05  -0.38 (73) | ctrl  +1.72
+  Asia 15m bull CHOCH-any 2R   0.22/day stop 56.3 | win 48.1% | net  +0.55 | eras  +2.92  -0.46  -2.59 (73) | ctrl  +1.68
+  Asia  5m bull CHOCH-dir END  0.58/day stop 34.1 | win 40.7% | net  +1.93 | eras  +2.53  +1.34  +2.00 (183) | ctrl  +0.96
+  Asia  2m bull CHOCH-any END  1.58/day stop 24.2 | win 31.8% | net  +1.31 | eras  +2.47  +1.13  -3.24 (499) | ctrl  +0.23
+  Asia 15m bull BOS-dir   T20  0.20/day stop 62.6 | win 61.4% | net  +0.04 | eras  +2.15  -0.66  -3.37 (76) | ctrl  -2.52
+  Asia 15m bull BOS-any   T20  0.22/day stop 61.7 | win 60.9% | net  -0.21 | eras  +1.85  -0.77  -4.04 (87) | ctrl  -0.12
+  Setup summary (mean over charts and sides, best exit per setup, net pts | edge vs control):
+    WICK4      7.11 trades/day (all charts) | best exit 2R   -2.15 pts | vs control -0.25
+    WICK3      8.14 trades/day (all charts) | best exit 2R   -2.11 pts | vs control -0.24
+    WICK2      8.56 trades/day (all charts) | best exit 2R   -2.11 pts | vs control -0.25
+    BOS-dir   10.90 trades/day (all charts) | best exit END  -2.22 pts | vs control -0.69
+    BOS-any   12.82 trades/day (all charts) | best exit END  -2.02 pts | vs control -0.53
+    CHOCH-dir 10.99 trades/day (all charts) | best exit END  -2.26 pts | vs control -0.58
+    CHOCH-any 13.81 trades/day (all charts) | best exit END  -1.51 pts | vs control +0.18
+
+==================== London
+  0 of 504 cells pass.
+  Top 12 cells by 2010-18 net (selection on the first era only — the later columns are the test):
+  London  5m bull BOS-any   2R   0.65/day stop 52.1 | win 40.5% | net  -1.47 | eras  +1.79  -3.72  -7.96 (185) | ctrl  -0.89
+  London  5m bull BOS-any   END  0.65/day stop 52.1 | win 37.7% | net  -1.82 | eras  +1.79  -4.66  -7.19 (185) | ctrl  -0.81
+  London  5m bull BOS-dir   2R   0.55/day stop 53.1 | win 40.8% | net  -1.47 | eras  +1.67  -3.22  -9.39 (159) | ctrl  -0.34
+  London  5m bull CHOCH-any END  0.69/day stop 49.3 | win 39.7% | net  -0.55 | eras  +1.50  -1.62  -6.68 (211) | ctrl  -0.99
+  London  5m bull BOS-dir   END  0.55/day stop 53.1 | win 37.9% | net  -1.97 | eras  +1.14  -4.15  -7.61 (159) | ctrl  +0.03
+  London  5m bull CHOCH-any 2R   0.69/day stop 49.3 | win 41.7% | net  -0.76 | eras  +1.03  -1.25  -8.15 (211) | ctrl  -1.03
+  London  3m bull CHOCH-any END  1.03/day stop 40.0 | win 34.5% | net  -0.89 | eras  +0.99  -2.09  -5.91 (298) | ctrl  -0.42
+  London  5m bull CHOCH-any 1R   0.69/day stop 49.3 | win 50.9% | net  -0.08 | eras  +0.92  +0.02  -5.89 (211) | ctrl  -1.58
+  London  5m bull CHOCH-dir END  0.45/day stop 47.1 | win 39.0% | net  -0.88 | eras  +0.89  -0.70  -9.01 (160) | ctrl  -0.27
+  London  3m bull CHOCH-any 2R   1.03/day stop 40.0 | win 39.3% | net  -0.50 | eras  +0.32  -0.27  -6.31 (298) | ctrl  -0.62
+  London  1m bull BOS-any   END  1.94/day stop 26.5 | win 25.0% | net  -1.16 | eras  +0.24  -2.32  -3.17 (567) | ctrl  -1.30
+  London  5m bull BOS-any   1R   0.65/day stop 52.1 | win 48.0% | net  -1.94 | eras  +0.24  -3.19  -7.63 (185) | ctrl  -1.54
+  Setup summary (mean over charts and sides, best exit per setup, net pts | edge vs control):
+    WICK4      6.57 trades/day (all charts) | best exit 1R   -2.29 pts | vs control -0.15
+    WICK3      7.59 trades/day (all charts) | best exit 1R   -2.30 pts | vs control -0.15
+    WICK2      7.92 trades/day (all charts) | best exit 1R   -2.30 pts | vs control -0.16
+    BOS-dir    9.65 trades/day (all charts) | best exit T15  -2.67 pts | vs control -0.52
+    BOS-any   11.38 trades/day (all charts) | best exit 1R   -2.42 pts | vs control -0.30
+    CHOCH-dir  9.50 trades/day (all charts) | best exit 1R   -2.39 pts | vs control -0.32
+    CHOCH-any 12.22 trades/day (all charts) | best exit 1R   -1.73 pts | vs control +0.49
+
+==================== NY
+  14 of 504 cells pass.
+  Top 12 cells by 2010-18 net (selection on the first era only — the later columns are the test):
+  NY 15m bull CHOCH-any 1R   0.09/day stop 141.5 | win 53.3% | net  +1.31 | eras +17.78 -16.34  +1.60 (20) | ctrl  +6.29
+  NY 15m bull CHOCH-any END  0.09/day stop 141.5 | win 52.2% | net  -0.18 | eras +16.82 -19.41  +6.70 (20) | ctrl  +6.67
+  NY 15m bull CHOCH-any 2R   0.09/day stop 141.5 | win 52.6% | net  +0.42 | eras +16.68 -17.91  +6.70 (20) | ctrl  +5.62
+  NY  5m bull CHOCH-dir 2R   0.43/day stop 80.3 | win 49.2% | net  +7.07 | eras  +9.16  +5.29  +2.98 (117) | ctrl  -1.17  PASS
+  NY  5m bull CHOCH-dir END  0.43/day stop 80.3 | win 47.9% | net  +7.25 | eras  +8.68  +5.05  +9.27 (117) | ctrl  -0.25  PASS
+  NY 15m bear BOS-any   END  0.08/day stop 163.9 | win 48.0% | net  +7.72 | eras  +7.59 +10.68  -6.84 (22) | ctrl  +0.41
+  NY  5m bull CHOCH-dir 1R   0.43/day stop 80.3 | win 53.8% | net  +4.24 | eras  +6.64  +2.49  -1.90 (117) | ctrl  -1.84
+  NY 15m bear BOS-dir   END  0.07/day stop 169.5 | win 47.0% | net  +4.97 | eras  +5.54  +6.07  -3.81 (19) | ctrl  +0.34
+  NY  5m bull CHOCH-any 2R   0.62/day stop 91.2 | win 46.1% | net  +3.26 | eras  +5.34  +1.87  -2.55 (185) | ctrl  +0.76
+  NY  5m bull CHOCH-any END  0.62/day stop 91.2 | win 45.2% | net  +3.34 | eras  +4.95  +1.71  +1.40 (185) | ctrl  +1.15  PASS
+  NY 15m bear BOS-any   2R   0.08/day stop 163.9 | win 48.0% | net  +5.19 | eras  +4.84  +7.88  -6.84 (22) | ctrl  -1.36
+  NY  4m bull CHOCH-any END  0.75/day stop 84.8 | win 43.7% | net  +3.66 | eras  +4.82  +2.24  +3.03 (208) | ctrl  +2.10
+  Setup summary (mean over charts and sides, best exit per setup, net pts | edge vs control):
+    WICK4      5.69 trades/day (all charts) | best exit END  +0.97 pts | vs control +2.24
+    WICK3      7.92 trades/day (all charts) | best exit END  +0.60 pts | vs control +1.98
+    WICK2      8.97 trades/day (all charts) | best exit END  +0.71 pts | vs control +2.30
+    BOS-dir    9.25 trades/day (all charts) | best exit END  +0.20 pts | vs control +1.50
+    BOS-any   10.92 trades/day (all charts) | best exit END  -0.22 pts | vs control +0.74
+    CHOCH-dir  9.12 trades/day (all charts) | best exit END  +0.69 pts | vs control +1.47
+    CHOCH-any 11.53 trades/day (all charts) | best exit END  -0.80 pts | vs control -0.15

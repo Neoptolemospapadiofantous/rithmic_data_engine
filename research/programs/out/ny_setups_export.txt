@@ -1,0 +1,13 @@
+NY setups export — 17102 trades, 2010-07 → 2026-10. Net = points after cost (2 × ATR/320), R = net / risk.
+  Wick flag 2m bull   1782 trades | win 14.1% | net  +1.08 pts | +0.106R | 2025-26  -2.37 (130)
+  Wick flag 2m bear   1745 trades | win 10.7% | net  +0.61 pts | -0.095R | 2025-26  +5.94 (117)
+  Wick flag 3m bull   1453 trades | win 15.2% | net  +0.95 pts | +0.169R | 2025-26  -5.84 (111)
+  Wick flag 3m bear   1228 trades | win 12.2% | net  +1.50 pts | -0.148R | 2025-26  +6.59 (96)
+  Wick flag 4m bull   1172 trades | win 19.1% | net  +3.33 pts | +0.254R | 2025-26  +9.62 (91)
+  Wick flag 4m bear    986 trades | win 14.0% | net  +0.99 pts | +0.019R | 2025-26  -2.74 (75)
+  Wick flag 5m bull    991 trades | win 18.7% | net  +2.73 pts | +0.172R | 2025-26  +7.81 (95)
+  Wick flag 5m bear    845 trades | win 14.3% | net  -0.34 pts | -0.141R | 2025-26 +15.22 (60)
+  CHoCH     4m bull   2000 trades | win 34.2% | net  +2.32 pts | +0.086R | 2025-26 +10.12 (153)
+  CHoCH     4m bear   1868 trades | win 26.6% | net  +1.19 pts | +0.024R | 2025-26  +8.31 (144)
+  CHoCH     5m bull   1569 trades | win 36.6% | net  +2.58 pts | +0.115R | 2025-26 +10.44 (132)
+  CHoCH     5m bear   1463 trades | win 27.1% | net  +0.05 pts | -0.025R | 2025-26  -1.93 (116)

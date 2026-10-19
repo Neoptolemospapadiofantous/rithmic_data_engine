@@ -1,0 +1,79 @@
+Flag optimisation — every choice, NY 1-5m bull + bear, 122719 flag candidates, 32400 configurations. R after 2 pts cost.
+Selection on 2010-18 (1771 days); test 2019-24 (1285 days); holdout 2025-26 (259 days).
+
+== Does the 2010-18 ranking carry forward? (configs with >= 150 trades 2010-18)
+  top 100.0% (20910 configs): 2019-24 positive  77.7%, mean +0.147R | 2025-26 positive  26.0%, mean -0.135R
+  top  10.0% ( 2091 configs): 2019-24 positive  96.7%, mean +0.315R | 2025-26 positive  30.1%, mean -0.108R
+  top   5.0% ( 1045 configs): 2019-24 positive  97.3%, mean +0.319R | 2025-26 positive  41.1%, mean -0.046R
+  top   1.0% (  209 configs): 2019-24 positive  98.6%, mean +0.309R | 2025-26 positive  58.4%, mean +0.072R
+
+== Top 25 by 2010-18 (the later columns are the test)
+  1m bear F2 channel pole>=5x bar >=0.40 ATR vol E3 wick close         hold  | 2010-18   264 +0.961 ( 9%) | 2019-24   139 +0.702 | 2025-26   27 +0.557 | 0.13/day
+  5m bull F2 any     pole>=5x bar >=0.30 ATR vol E3 wick close         hold  | 2010-18   175 +0.904 (22%) | 2019-24    99 +0.183 | 2025-26   22 +0.071 | 0.09/day
+  5m bull F2 any     pole>=5x bar >=0.30 ATR vol E3 wick close         T1.5  | 2010-18   175 +0.897 (22%) | 2019-24    99 +0.183 | 2025-26   22 +0.071 | 0.09/day
+  5m bull F2 any     pole>=5x bar >=0.00 ATR vol E3 wick close         hold  | 2010-18   176 +0.891 (22%) | 2019-24    99 +0.183 | 2025-26   24 +0.164 | 0.09/day
+  5m bull F2 any     pole>=5x bar >=0.00 ATR vol E3 wick close         T1.5  | 2010-18   176 +0.884 (22%) | 2019-24    99 +0.183 | 2025-26   24 +0.164 | 0.09/day
+  5m bull F2 any     pole>=5x bar >=0.30 ATR vol E3 wick close         T1.0  | 2010-18   175 +0.884 (22%) | 2019-24    99 +0.173 | 2025-26   22 +0.071 | 0.09/day
+  5m bull F2 any     pole>=5x bar >=0.00 ATR vol E3 wick close         T1.0  | 2010-18   176 +0.872 (22%) | 2019-24    99 +0.173 | 2025-26   24 +0.164 | 0.09/day
+  5m bull F2 channel pole>=5x bar >=0.30 ATR vol E3 wick close         T1.0  | 2010-18   151 +0.846 (21%) | 2019-24    79 +0.237 | 2025-26   14 +0.347 | 0.07/day
+  5m bull F2 any     pole>=5x bar >=0.40 ATR vol E3 wick close         hold  | 2010-18   173 +0.842 (21%) | 2019-24    97 +0.210 | 2025-26   21 +0.131 | 0.09/day
+  5m bull F2 any     pole>=5x bar >=0.40 ATR vol E3 wick close         T1.5  | 2010-18   173 +0.835 (21%) | 2019-24    97 +0.210 | 2025-26   21 +0.131 | 0.09/day
+  5m bull F2 channel pole>=5x bar >=0.00 ATR vol E3 wick close         T1.0  | 2010-18   152 +0.832 (20%) | 2019-24    79 +0.237 | 2025-26   16 +0.452 | 0.07/day
+  5m bull F2 any     pole>=5x bar >=0.40 ATR vol E3 wick close         T1.0  | 2010-18   173 +0.822 (21%) | 2019-24    97 +0.200 | 2025-26   21 +0.131 | 0.09/day
+  5m bull F2 channel pole>=5x bar >=0.30 ATR vol E3 wick close         T1.5  | 2010-18   151 +0.821 (21%) | 2019-24    79 +0.249 | 2025-26   14 +0.347 | 0.07/day
+  5m bull F2 channel pole>=5x bar >=0.30 ATR vol E3 wick close         hold  | 2010-18   151 +0.821 (21%) | 2019-24    79 +0.249 | 2025-26   14 +0.347 | 0.07/day
+  5m bull F2 any     pole>=5x bar >=0.30 ATR     E3 wick close         hold  | 2010-18   196 +0.819 (22%) | 2019-24   109 +0.127 | 2025-26   23 +0.365 | 0.10/day
+  5m bull F2 any     pole>=5x bar >=0.30 ATR     E3 wick close         T1.5  | 2010-18   196 +0.813 (22%) | 2019-24   109 +0.127 | 2025-26   23 +0.365 | 0.10/day
+  5m bull F2 any     pole>=5x bar >=0.00 ATR     E3 wick close         hold  | 2010-18   197 +0.809 (22%) | 2019-24   109 +0.127 | 2025-26   25 +0.431 | 0.10/day
+  5m bull F2 channel pole>=5x bar >=0.00 ATR vol E3 wick close         hold  | 2010-18   152 +0.807 (20%) | 2019-24    79 +0.249 | 2025-26   16 +0.452 | 0.07/day
+  5m bull F2 channel pole>=5x bar >=0.00 ATR vol E3 wick close         T1.5  | 2010-18   152 +0.807 (20%) | 2019-24    79 +0.249 | 2025-26   16 +0.452 | 0.07/day
+  5m bull F2 any     pole>=5x bar >=0.00 ATR     E3 wick close         T1.5  | 2010-18   197 +0.802 (22%) | 2019-24   109 +0.127 | 2025-26   25 +0.431 | 0.10/day
+  5m bull F2 any     pole>=5x bar >=0.30 ATR     E3 wick close         T1.0  | 2010-18   196 +0.802 (22%) | 2019-24   109 +0.118 | 2025-26   23 +0.365 | 0.10/day
+  1m bear F2 any     pole>=5x bar >=0.40 ATR vol E3 wick close         hold  | 2010-18   338 +0.792 ( 9%) | 2019-24   185 +0.693 | 2025-26   40 +0.003 | 0.17/day
+  5m bull F2 any     pole>=5x bar >=0.00 ATR     E3 wick close         T1.0  | 2010-18   197 +0.791 (22%) | 2019-24   109 +0.118 | 2025-26   25 +0.431 | 0.10/day
+  1m bear F2 channel pole>=5x bar >=0.40 ATR vol E3 wick close         T1.5  | 2010-18   264 +0.778 (10%) | 2019-24   139 +0.808 | 2025-26   27 +0.291 | 0.13/day
+  1m bear F4 channel pole>=5x bar >=0.40 ATR     E3 wick close         T1.0  | 2010-18   350 +0.767 (13%) | 2019-24   190 +0.396 | 2025-26   44 -0.258 | 0.18/day
+
+== Best 2010-18 config per chart × side (>= 150 trades 2010-18)
+  1m bull F2 channel pole>=5x bar >=0.30 ATR     E2 pole-top stop      hold  | 2010-18   315 +0.561 (27%) | 2019-24   201 +0.578 | 2025-26   35 -0.549 | 0.17/day
+  1m bear F2 channel pole>=5x bar >=0.40 ATR vol E3 wick close         hold  | 2010-18   264 +0.961 ( 9%) | 2019-24   139 +0.702 | 2025-26   27 +0.557 | 0.13/day
+  2m bull F3 channel pole>=4x bar >=0.40 ATR vol E7 channel-line close hold  | 2010-18   504 +0.514 (25%) | 2019-24   300 +0.438 | 2025-26   61 -0.242 | 0.26/day
+  2m bear F4 channel pole>=5x bar >=0.40 ATR vol E3 wick close         hold  | 2010-18   287 +0.306 (10%) | 2019-24   167 +0.533 | 2025-26   29 -1.124 | 0.15/day
+  3m bull F2 channel pole>=5x bar >=0.40 ATR vol E7 channel-line close T0.5  | 2010-18   276 +0.733 (29%) | 2019-24   165 +0.486 | 2025-26   34 +0.011 | 0.14/day
+  3m bear F4 any     pole>=4x bar >=0.40 ATR vol E3 wick close         T1.5  | 2010-18   355 +0.396 (14%) | 2019-24   208 -0.109 | 2025-26   44 -0.555 | 0.18/day
+  4m bull F3 any     pole>=5x bar >=0.00 ATR     E3 wick close         T1.0  | 2010-18   237 +0.623 (23%) | 2019-24   129 +0.029 | 2025-26   24 -0.294 | 0.12/day
+  4m bear F3 channel pole>=5x bar >=0.30 ATR     E2 pole-top stop      T1.0  | 2010-18   173 +0.219 (38%) | 2019-24   126 +0.028 | 2025-26   18 -0.002 | 0.10/day
+  5m bull F2 any     pole>=5x bar >=0.30 ATR vol E3 wick close         hold  | 2010-18   175 +0.904 (22%) | 2019-24    99 +0.183 | 2025-26   22 +0.071 | 0.09/day
+  5m bear F4 any     pole>=4x bar >=0.40 ATR     E1 flag-high close    hold  | 2010-18   198 +0.229 (45%) | 2019-24   146 +0.010 | 2025-26   23 -0.214 | 0.11/day
+
+== Each choice on its own: mean 2019-24 R of the configs that use it, minus the mean of all configs (positive = the choice helps out of sample)
+  chart 1m                     -0.018 (2025-26 -0.173)  [4380 configs]
+  chart 2m                     +0.042 (2025-26 -0.074)  [4330 configs]
+  chart 3m                     +0.018 (2025-26 -0.267)  [4270 configs]
+  chart 4m                     +0.001 (2025-26 -0.137)  [4050 configs]
+  chart 5m                     -0.048 (2025-26 -0.013)  [3880 configs]
+  bull                         +0.114 (2025-26 -0.211)  [10550 configs]
+  bear                         -0.116 (2025-26 -0.058)  [10360 configs]
+  flag length 2                -0.006 (2025-26 -0.171)  [7090 configs]
+  flag length 3                +0.008 (2025-26 -0.114)  [6965 configs]
+  flag length 4                -0.002 (2025-26 -0.119)  [6855 configs]
+  shape any                    -0.005 (2025-26 -0.135)  [10570 configs]
+  shape channel                +0.008 (2025-26 -0.133)  [10255 configs]
+  shape pennant                -0.317 (2025-26 -0.301)  [85 configs]
+  pole >= 3x bar               -0.036 (2025-26 -0.178)  [7275 configs]
+  pole >= 4x bar               -0.014 (2025-26 -0.142)  [7210 configs]
+  pole >= 5x bar               +0.057 (2025-26 -0.079)  [6425 configs]
+  pole >= 0.00 ATR             -0.040 (2025-26 -0.162)  [7045 configs]
+  pole >= 0.30 ATR             -0.016 (2025-26 -0.130)  [6955 configs]
+  pole >= 0.40 ATR             +0.057 (2025-26 -0.113)  [6910 configs]
+  flag volume filter           +0.015 (2025-26 -0.156)  [10340 configs]
+  no volume filter             -0.015 (2025-26 -0.114)  [10570 configs]
+  E1 flag-high close           -0.005 (2025-26 -0.165)  [4835 configs]
+  E2 pole-top stop             +0.036 (2025-26 -0.154)  [5225 configs]
+  E3 wick close                -0.007 (2025-26 -0.090)  [5410 configs]
+  E7 channel-line close        -0.023 (2025-26 -0.136)  [5440 configs]
+  exit T0.5                    -0.057 (2025-26 -0.074)  [4182 configs]
+  exit T1.0                    +0.019 (2025-26 -0.155)  [4182 configs]
+  exit T1.5                    +0.047 (2025-26 -0.149)  [4182 configs]
+  exit hold                    +0.042 (2025-26 -0.147)  [4182 configs]
+  exit BE+T1                   -0.051 (2025-26 -0.151)  [4182 configs]

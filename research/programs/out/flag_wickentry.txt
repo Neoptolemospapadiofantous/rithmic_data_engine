@@ -1,0 +1,150 @@
+Structural flags entered on the rejection wick — NQ 2010-07 → 2026-10, session direction on a straight path.
+Cells: trades/day | win % | net pts per trade (raw NQ points, 2 pts cost scaled to the day) (R) | 2025-26 pts (n) | same-context random control pts.
+
+######## exit trail previous bar after +1R
+== NY 1m
+   B breakout close                0.53/day | 46.3% |   -1.07 (-0.059R) | 2025-26   +2.10 (105) | control   -4.55
+   W1 wick candle close            1.83/day | 32.3% |   -0.62 (-0.209R) | 2025-26   -2.01 (426) | control   -1.68
+   W2 break of the wick candle     1.16/day | 44.5% |   +0.21 (+0.010R) | 2025-26   +0.21 (276) | control   -2.08
+== NY 2m
+   B breakout close                0.32/day | 46.8% |   -1.13 (-0.041R) | 2025-26   -3.50 ( 58) | control   -5.72
+   W1 wick candle close            1.24/day | 34.1% |   -0.15 (-0.122R) | 2025-26   +0.67 (289) | control   -2.20
+   W2 break of the wick candle     0.85/day | 43.0% |   +0.19 (-0.058R) | 2025-26   +2.78 (196) | control   -2.93
+== NY 3m
+   B breakout close                0.24/day | 51.9% |   +2.53 (+0.045R) | 2025-26  +17.20 ( 45) | control   -6.99
+   W1 wick candle close            0.96/day | 34.0% |   -0.07 (-0.108R) | 2025-26   -1.29 (242) | control   -2.54
+   W2 break of the wick candle     0.65/day | 42.9% |   +0.31 (-0.043R) | 2025-26   -0.33 (166) | control   -3.23
+== NY 4m
+   B breakout close                0.20/day | 51.9% |   +2.76 (+0.055R) | 2025-26   -5.72 ( 39) | control   -7.32
+   W1 wick candle close            0.78/day | 36.1% |   +0.06 (-0.067R) | 2025-26   -1.67 (193) | control   -2.65
+   W2 break of the wick candle     0.54/day | 44.5% |   +0.72 (-0.020R) | 2025-26   +0.55 (125) | control   -3.65
+== NY 5m
+   B breakout close                0.17/day | 52.6% |   +3.78 (+0.078R) | 2025-26   +8.99 ( 36) | control   -8.18
+   W1 wick candle close            0.65/day | 35.0% |   -0.01 (-0.078R) | 2025-26   +0.31 (188) | control   -3.32
+   W2 break of the wick candle     0.45/day | 42.2% |   +0.35 (-0.067R) | 2025-26   +2.30 (130) | control   -4.02
+== NY 15m
+   B breakout close                0.06/day | 52.6% |   +2.00 (+0.041R) | 2025-26  -24.89 ( 16) | control  -11.06
+   W1 wick candle close            0.26/day | 38.2% |   +0.08 (-0.009R) | 2025-26  -12.22 ( 66) | control   -4.32
+   W2 break of the wick candle     0.18/day | 46.2% |   +1.75 (+0.024R) | 2025-26   -7.78 ( 46) | control   -6.93
+== London 1m
+   B breakout close                0.59/day | 42.0% |   -1.44 (-0.181R) | 2025-26   -2.93 (189) | control   -3.27
+   W1 wick candle close            2.12/day | 27.7% |   -0.91 (-0.474R) | 2025-26   -2.22 (628) | control   -1.22
+   W2 break of the wick candle     1.29/day | 40.5% |   -0.42 (-0.151R) | 2025-26   -1.72 (394) | control   -1.62
+== London 2m
+   B breakout close                0.37/day | 46.1% |   -0.91 (-0.073R) | 2025-26   -1.46 ( 99) | control   -3.89
+   W1 wick candle close            1.52/day | 28.5% |   -0.82 (-0.324R) | 2025-26   -2.86 (370) | control   -1.56
+   W2 break of the wick candle     0.96/day | 39.4% |   -0.60 (-0.158R) | 2025-26   -2.41 (247) | control   -1.93
+== London 3m
+   B breakout close                0.26/day | 48.5% |   -0.27 (-0.018R) | 2025-26   +2.77 ( 63) | control   -5.29
+   W1 wick candle close            1.14/day | 28.5% |   -0.96 (-0.298R) | 2025-26   -1.96 (303) | control   -1.86
+   W2 break of the wick candle     0.73/day | 37.4% |   -0.96 (-0.185R) | 2025-26   -1.88 (205) | control   -2.36
+== London 4m
+   B breakout close                0.20/day | 47.3% |   -1.58 (-0.046R) | 2025-26   -1.90 ( 45) | control   -4.77
+   W1 wick candle close            0.90/day | 28.7% |   -0.85 (-0.308R) | 2025-26   -3.17 (201) | control   -1.95
+   W2 break of the wick candle     0.57/day | 37.7% |   -0.81 (-0.192R) | 2025-26   -4.12 (143) | control   -2.63
+== London 5m
+   B breakout close                0.17/day | 47.5% |   +0.15 (-0.049R) | 2025-26   +1.16 ( 35) | control   -5.49
+   W1 wick candle close            0.73/day | 28.0% |   -1.16 (-0.312R) | 2025-26   -3.93 (195) | control   -2.21
+   W2 break of the wick candle     0.48/day | 36.2% |   -1.49 (-0.224R) | 2025-26   -7.02 (136) | control   -2.81
+== London 15m
+   B breakout close                0.06/day | 54.5% |   +0.85 (+0.057R) | 2025-26  -13.08 ( 17) | control   -9.70
+   W1 wick candle close            0.22/day | 28.6% |   -0.38 (-0.177R) | 2025-26   +3.85 ( 53) | control   -3.72
+   W2 break of the wick candle     0.14/day | 37.7% |   +0.48 (-0.076R) | 2025-26   +6.64 ( 36) | control   -4.32
+== Asia 1m
+   B breakout close                0.55/day | 43.0% |   -1.40 (-0.210R) | 2025-26   -4.04 (212) | control   -2.30
+   W1 wick candle close            1.85/day | 24.9% |   -1.14 (-0.688R) | 2025-26   -2.46 (687) | control   -1.07
+   W2 break of the wick candle     1.15/day | 35.9% |   -0.83 (-0.327R) | 2025-26   -1.71 (466) | control   -1.29
+== Asia 2m
+   B breakout close                0.40/day | 44.1% |   -0.86 (-0.145R) | 2025-26   -2.26 (125) | control   -2.84
+   W1 wick candle close            1.63/day | 26.7% |   -1.00 (-0.489R) | 2025-26   -2.25 (479) | control   -1.24
+   W2 break of the wick candle     1.01/day | 36.5% |   -0.89 (-0.267R) | 2025-26   -2.48 (324) | control   -1.54
+== Asia 3m
+   B breakout close                0.33/day | 43.6% |   -1.49 (-0.132R) | 2025-26   -1.44 ( 96) | control   -3.30
+   W1 wick candle close            1.34/day | 27.3% |   -0.91 (-0.422R) | 2025-26   -1.14 (336) | control   -1.45
+   W2 break of the wick candle     0.84/day | 35.3% |   -1.00 (-0.277R) | 2025-26   -0.14 (223) | control   -1.75
+== Asia 4m
+   B breakout close                0.26/day | 44.5% |   -1.36 (-0.147R) | 2025-26   -5.45 ( 68) | control   -3.69
+   W1 wick candle close            1.09/day | 26.9% |   -1.00 (-0.435R) | 2025-26   -2.03 (264) | control   -1.62
+   W2 break of the wick candle     0.68/day | 35.9% |   -1.02 (-0.277R) | 2025-26   -2.59 (181) | control   -1.93
+== Asia 5m
+   B breakout close                0.21/day | 44.2% |   -0.04 (-0.086R) | 2025-26   +3.47 ( 64) | control   -4.54
+   W1 wick candle close            0.92/day | 29.1% |   -0.65 (-0.325R) | 2025-26   -1.92 (266) | control   -1.71
+   W2 break of the wick candle     0.58/day | 37.3% |   -0.73 (-0.223R) | 2025-26   -1.93 (187) | control   -2.20
+== Asia 15m
+   B breakout close                0.08/day | 43.3% |   -3.12 (-0.182R) | 2025-26   -2.91 ( 27) | control   -6.34
+   W1 wick candle close            0.36/day | 30.7% |   -0.89 (-0.254R) | 2025-26   -0.88 ( 95) | control   -2.79
+   W2 break of the wick candle     0.24/day | 38.5% |   -1.25 (-0.174R) | 2025-26   -1.85 ( 72) | control   -3.98
+
+######## exit measured move
+== NY 1m
+   B breakout close                0.50/day | 28.1% |   -1.36 (-0.010R) | 2025-26   -4.02 (101) | control   -5.97
+   W1 wick candle close            1.65/day | 10.3% |   -0.28 (-0.133R) | 2025-26   +0.01 (387) | control   -2.24
+   W2 break of the wick candle     1.04/day | 16.1% |   +0.73 (+0.060R) | 2025-26   +3.52 (256) | control   -3.18
+== NY 2m
+   B breakout close                0.31/day | 32.9% |   +0.60 (+0.068R) | 2025-26  -13.45 ( 57) | control   -7.88
+   W1 wick candle close            1.06/day | 12.4% |   +0.85 (+0.006R) | 2025-26   +1.57 (247) | control   -3.07
+   W2 break of the wick candle     0.74/day | 17.4% |   +1.60 (+0.080R) | 2025-26   +2.94 (169) | control   -3.87
+== NY 3m
+   B breakout close                0.23/day | 38.0% |   +6.38 (+0.144R) | 2025-26   +8.00 ( 43) | control   -8.03
+   W1 wick candle close            0.81/day | 13.8% |   +1.20 (+0.024R) | 2025-26   -0.08 (207) | control   -3.20
+   W2 break of the wick candle     0.56/day | 19.3% |   +2.03 (+0.096R) | 2025-26   -0.20 (139) | control   -4.77
+== NY 4m
+   B breakout close                0.19/day | 39.8% |   +5.51 (+0.126R) | 2025-26   -6.28 ( 39) | control   -9.21
+   W1 wick candle close            0.65/day | 16.8% |   +2.26 (+0.147R) | 2025-26   +4.04 (166) | control   -3.38
+   W2 break of the wick candle     0.47/day | 22.3% |   +3.40 (+0.177R) | 2025-26   +8.72 (111) | control   -4.97
+== NY 5m
+   B breakout close                0.16/day | 42.9% |   +4.80 (+0.132R) | 2025-26   -6.62 ( 36) | control   -9.63
+   W1 wick candle close            0.55/day | 16.7% |   +1.32 (+0.028R) | 2025-26  +10.68 (155) | control   -3.76
+   W2 break of the wick candle     0.40/day | 22.1% |   +2.33 (+0.053R) | 2025-26  +18.01 (110) | control   -5.14
+== NY 15m
+   B breakout close                0.06/day | 48.8% |   +1.85 (+0.040R) | 2025-26  -23.12 ( 16) | control  -12.20
+   W1 wick candle close            0.24/day | 29.4% |   +2.22 (+0.087R) | 2025-26  -13.45 ( 62) | control   -5.41
+   W2 break of the wick candle     0.17/day | 36.5% |   +3.52 (+0.082R) | 2025-26  -11.27 ( 44) | control   -7.23
+== London 1m
+   B breakout close                0.56/day | 27.0% |   -1.88 (-0.198R) | 2025-26   -3.83 (182) | control   -3.75
+   W1 wick candle close            1.94/day |  9.7% |   -1.10 (-0.555R) | 2025-26   -1.98 (581) | control   -1.63
+   W2 break of the wick candle     1.18/day | 15.7% |   -0.79 (-0.244R) | 2025-26   -1.99 (357) | control   -2.14
+== London 2m
+   B breakout close                0.36/day | 29.8% |   -1.27 (-0.085R) | 2025-26   -3.50 ( 95) | control   -4.81
+   W1 wick candle close            1.32/day | 10.9% |   -1.04 (-0.380R) | 2025-26   -4.10 (322) | control   -2.14
+   W2 break of the wick candle     0.86/day | 15.7% |   -0.96 (-0.227R) | 2025-26   -4.25 (225) | control   -2.83
+== London 3m
+   B breakout close                0.25/day | 32.3% |   -1.22 (-0.071R) | 2025-26   -3.75 ( 63) | control   -5.60
+   W1 wick candle close            0.99/day | 11.6% |   -1.26 (-0.331R) | 2025-26   -3.97 (254) | control   -2.34
+   W2 break of the wick candle     0.65/day | 16.7% |   -1.36 (-0.207R) | 2025-26   -4.86 (182) | control   -3.34
+== London 4m
+   B breakout close                0.20/day | 32.4% |   -2.05 (-0.084R) | 2025-26   -1.66 ( 45) | control   -5.97
+   W1 wick candle close            0.77/day | 11.6% |   -1.19 (-0.342R) | 2025-26   -5.46 (178) | control   -2.64
+   W2 break of the wick candle     0.51/day | 16.2% |   -1.60 (-0.251R) | 2025-26   -9.67 (129) | control   -3.85
+== London 5m
+   B breakout close                0.17/day | 35.1% |   -0.52 (-0.062R) | 2025-26   +0.85 ( 35) | control   -6.94
+   W1 wick candle close            0.63/day | 12.2% |   -1.55 (-0.302R) | 2025-26   -6.68 (170) | control   -2.81
+   W2 break of the wick candle     0.42/day | 17.1% |   -2.00 (-0.214R) | 2025-26  -10.30 (119) | control   -3.97
+== London 15m
+   B breakout close                0.06/day | 50.0% |   +1.42 (+0.080R) | 2025-26   -7.73 ( 17) | control   -7.91
+   W1 wick candle close            0.20/day | 19.9% |   -0.84 (-0.217R) | 2025-26   +1.77 ( 48) | control   -4.25
+   W2 break of the wick candle     0.13/day | 27.0% |   -0.40 (-0.143R) | 2025-26   +3.59 ( 35) | control   -6.30
+== Asia 1m
+   B breakout close                0.53/day | 28.6% |   -1.00 (-0.183R) | 2025-26   -2.85 (205) | control   -2.67
+   W1 wick candle close            1.73/day |  9.8% |   -1.29 (-0.740R) | 2025-26   -2.12 (631) | control   -1.37
+   W2 break of the wick candle     1.06/day | 15.5% |   -0.88 (-0.352R) | 2025-26   -1.09 (430) | control   -1.67
+== Asia 2m
+   B breakout close                0.39/day | 28.2% |   -1.33 (-0.169R) | 2025-26   -4.66 (118) | control   -3.40
+   W1 wick candle close            1.44/day | 10.4% |   -1.01 (-0.530R) | 2025-26   -1.59 (429) | control   -1.65
+   W2 break of the wick candle     0.90/day | 15.1% |   -0.93 (-0.316R) | 2025-26   -1.29 (285) | control   -2.06
+== Asia 3m
+   B breakout close                0.32/day | 28.2% |   -1.74 (-0.157R) | 2025-26   -3.16 ( 92) | control   -4.05
+   W1 wick candle close            1.15/day | 10.7% |   -0.98 (-0.458R) | 2025-26   -0.55 (291) | control   -1.81
+   W2 break of the wick candle     0.74/day | 15.4% |   -0.93 (-0.278R) | 2025-26   +1.62 (195) | control   -2.07
+== Asia 4m
+   B breakout close                0.25/day | 28.2% |   -2.35 (-0.253R) | 2025-26   -8.45 ( 65) | control   -4.40
+   W1 wick candle close            0.93/day | 11.4% |   -0.95 (-0.424R) | 2025-26   -2.49 (228) | control   -1.95
+   W2 break of the wick candle     0.60/day | 16.3% |   -1.01 (-0.287R) | 2025-26   -3.08 (155) | control   -2.57
+== Asia 5m
+   B breakout close                0.20/day | 31.0% |   -0.81 (-0.140R) | 2025-26   +4.17 ( 62) | control   -4.92
+   W1 wick candle close            0.79/day | 12.3% |   -0.77 (-0.358R) | 2025-26   -1.67 (222) | control   -2.15
+   W2 break of the wick candle     0.52/day | 17.1% |   -0.99 (-0.266R) | 2025-26   -1.63 (159) | control   -2.79
+== Asia 15m
+   B breakout close                0.08/day | 39.8% |   -2.28 (-0.162R) | 2025-26   -1.35 ( 27) | control   -6.61
+   W1 wick candle close            0.31/day | 20.5% |   -0.79 (-0.246R) | 2025-26   +2.78 ( 82) | control   -3.03
+   W2 break of the wick candle     0.22/day | 27.5% |   -1.15 (-0.190R) | 2025-26   +3.20 ( 64) | control   -3.66

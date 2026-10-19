@@ -1,0 +1,89 @@
+Wick-break flag optimisation — NQ NY, chosen on 2010-18, read on 2019-24 and 2025-26. R = net R per trade; /day = trades a day.
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 991, R +0.187
+
+== BULL flags, 2m — 12115 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=3x · pull 20-50% · wick>=50% · fill<=1 bars · +st.55 · to 11:30 · up>=50% · MM x0.75 |  0.23 +0.506  3.8 |  0.22 +0.302 24.2% |   58 +0.109
+  pole>=3x · pull 20-50% · wick>=50% · fill<=1 bars · +st.55 · to 11:30 · up>=60% · MM x0.75 |  0.17 +0.595  3.8 |  0.19 +0.406 25.8% |   50 +0.037
+  pole>=3x · pull 20-50% · wick>=50% · fill<=2 bars · +st.55 · to 11:30 · up>=60% · MM x0.75 |  0.19 +0.554  3.8 |  0.21 +0.345 24.9% |   55 -0.050
+  pole>=3x · pull 20-50% · wick>=50% · fill<=3 bars · +st.55 · to 11:30 · up>=60% · MM x0.75 |  0.19 +0.547  3.8 |  0.21 +0.356 25.1% |   55 -0.050
+  pole>=3x · pull 20-50% · wick>=50% · fill<=1 bars · +st.55 · to 11:30 · up>=50% · MM x1 |  0.23 +0.582  3.7 |  0.22 +0.391 20.6% |   58 +0.175
+  pole>=3x · pull 20-50% · wick>=50% · fill<=2 bars · +st.55 · to 11:30 · up>=50% · MM x0.75 |  0.25 +0.467  3.7 |  0.23 +0.261 23.6% |   63 +0.027
+  2019-24 R: median of the top-20 by 2010-18 = +0.360, median of all passing settings = +0.438
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 757, R +0.226
+
+== BULL flags, 3m — 8458 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=4x · pull 10-60% · wick>=40% · fill<=3 bars · +st.55 · to 13:00 · up>=60% · MM x1 |  0.25 +0.567  4.0 |  0.25 +0.358 20.2% |   64 -0.293
+  pole>=3x · pull 10-60% · wick>=40% · fill<=3 bars · +st.55 · to 13:00 · up>=60% · MM x1 |  0.34 +0.447  3.8 |  0.37 +0.268 20.5% |  108 -0.167
+  pole>=4x · pull 10-60% · wick>=40% · fill<=2 bars · +st.55 · to 13:00 · up>=60% · MM x1 |  0.24 +0.527  3.6 |  0.25 +0.367 20.4% |   63 -0.281
+  pole>=4x · pull 15-50% · wick>=40% · fill<=3 bars · +st.55 · to 13:00 · up>=60% · MM x1 |  0.22 +0.540  3.6 |  0.21 +0.368 19.8% |   59 -0.337
+  pole>=3x · pull 10-60% · wick>=40% · fill<=3 bars · +st.55 · to 13:00 · up>=60% · MM x0.75 |  0.34 +0.369  3.6 |  0.37 +0.227 23.1% |  108 -0.031
+  pole>=3x · pull 10-60% · wick>=40% · fill<=2 bars · +st.55 · to 13:00 · up>=60% · MM x1 |  0.33 +0.423  3.6 |  0.37 +0.285 20.8% |  105 -0.141
+  2019-24 R: median of the top-20 by 2010-18 = +0.314, median of all passing settings = +0.328
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 676, R +0.222
+
+== BULL flags, 4m — 7489 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=5x · pull 15-50% · wick>=40% · fill<=3 bars · +st.55 · to 11:30 · up>=60% · MM x0.75 |  0.08 +0.847  3.3 |  0.07 +0.092 18.7% |   20 +1.011
+  pole>=5x · pull 15-50% · wick>=40% · fill<=2 bars · +st.55 · to 11:30 · up>=60% · MM x0.75 |  0.08 +0.844  3.3 |  0.07 +0.092 18.7% |   20 +1.011
+  pole>=5x · pull 15-50% · wick>=40% · fill<=3 bars · none · to 11:30 · up>=60% · MM x0.75 |  0.11 +0.661  3.2 |  0.10 -0.126 16.2% |   27 +0.728
+  pole>=3x · pull 15-50% · wick>=40% · fill<=3 bars · +st.55 · to 11:30 · up>=60% · MM x0.75 |  0.18 +0.451  3.2 |  0.17 +0.140 23.1% |   53 +0.643
+  pole>=5x · pull 15-50% · wick>=40% · fill<=3 bars · +st.40 · to 11:30 · up>=60% · MM x0.75 |  0.09 +0.731  3.2 |  0.09 -0.024 17.0% |   26 +0.530
+  pole>=3x · pull 15-50% · wick>=40% · fill<=2 bars · +st.55 · to 11:30 · up>=60% · MM x0.75 |  0.18 +0.445  3.1 |  0.17 +0.124 22.7% |   53 +0.643
+  2019-24 R: median of the top-20 by 2010-18 = +0.000, median of all passing settings = +0.106
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 572, R +0.209
+
+== BULL flags, 5m — 2026 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=5x · pull 10-60% · wick>=40% · fill<=2 bars · +st.70 · to 13:00 · up>=50% · MM x1 |  0.07 +0.693  2.6 |  0.08 -0.164 19.8% |   25 +0.821
+  pole>=5x · pull 10-60% · wick>=40% · fill<=2 bars · +st.70 · to 13:00 · up>=50% · MM x1.5 |  0.07 +0.702  2.6 |  0.08 -0.148 19.8% |   25 +0.789
+  pole>=5x · pull 10-60% · wick>=40% · fill<=2 bars · +st.70 · to 15:25 · up>=60% · MM x1 |  0.08 +0.597  2.6 |  0.09 -0.043 23.9% |   26 +0.950
+  pole>=5x · pull 10-60% · wick>=40% · fill<=3 bars · +st.70 · to 13:00 · up>=50% · MM x1 |  0.07 +0.674  2.6 |  0.08 -0.150 20.6% |   25 +0.821
+  pole>=5x · pull 10-60% · wick>=40% · fill<=2 bars · +st.70 · to 15:25 · up>=60% · MM x1.5 |  0.08 +0.605  2.6 |  0.09 +0.001 23.9% |   26 +0.919
+  pole>=5x · pull 10-60% · wick>=40% · fill<=3 bars · +st.70 · to 13:00 · up>=50% · MM x1.5 |  0.07 +0.683  2.6 |  0.08 -0.133 20.6% |   25 +0.789
+  2019-24 R: median of the top-20 by 2010-18 = +0.001, median of all passing settings = +0.222
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 977, R +0.039
+
+== BEAR flags, 2m — 8582 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=3x · pull 25-45% · wick>=40% · fill<=1 bars · none · to 13:00 · up>=70% · MM x1 |  0.22 +0.487  3.0 |  0.29 +0.005 15.3% |   69 +0.189
+  pole>=6x · pull 25-45% · wick>=40% · fill<=2 bars · +st.40 · to 13:00 · up>=60% · MM x0.75 |  0.08 +0.817  3.0 |  0.06 -0.151 12.2% |    8 +1.937
+  pole>=6x · pull 25-45% · wick>=40% · fill<=3 bars · +st.40 · to 13:00 · up>=60% · MM x0.75 |  0.09 +0.805  2.9 |  0.06 -0.161 12.0% |    8 +1.937
+  pole>=5x · pull 25-45% · wick>=40% · fill<=1 bars · +st.40 · to 13:00 · up>=60% · MM x0.75 |  0.14 +0.576  2.9 |  0.12 -0.028 14.8% |   22 +0.615
+  pole>=5x · pull 25-45% · wick>=40% · fill<=2 bars · +st.40 · to 13:00 · up>=60% · MM x0.75 |  0.15 +0.551  2.9 |  0.13 -0.027 14.8% |   23 +0.833
+  pole>=6x · pull 25-45% · wick>=40% · fill<=1 bars · +st.40 · to 13:00 · up>=60% · MM x0.75 |  0.08 +0.830  2.9 |  0.06 -0.204 11.7% |    7 +1.411
+  2019-24 R: median of the top-20 by 2010-18 = -0.145, median of all passing settings = +0.013
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 725, R -0.029
+
+== BEAR flags, 3m — 3084 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=3x · pull 10-60% · wick>=50% · fill<=1 bars · +st.70 · to 11:30 · up>=50% · trail |  0.10 +0.413  2.9 |  0.09 +0.330 49.6% |   32 +0.240
+  pole>=3x · pull 10-60% · wick>=50% · fill<=3 bars · +st.70 · to 11:30 · up>=50% · trail |  0.10 +0.383  2.8 |  0.09 +0.336 50.8% |   34 +0.264
+  pole>=4x · pull 25-45% · wick>=40% · fill<=1 bars · +st.70 · to 15:25 · up>=60% · trail |  0.10 +0.341  2.8 |  0.09 +0.030 45.9% |   35 +0.085
+  pole>=4x · pull 25-45% · wick>=40% · fill<=1 bars · +st.70 · to 15:25 · up>=50% · trail |  0.12 +0.309  2.8 |  0.11 +0.052 47.4% |   37 +0.023
+  pole>=3x · pull 20-50% · wick>=50% · fill<=1 bars · +st.70 · to 11:30 · up>=50% · trail |  0.08 +0.432  2.7 |  0.08 +0.306 50.0% |   28 +0.363
+  pole>=3x · pull 20-50% · wick>=50% · fill<=3 bars · +st.70 · to 11:30 · up>=50% · trail |  0.09 +0.418  2.7 |  0.08 +0.314 51.0% |   29 +0.314
+  2019-24 R: median of the top-20 by 2010-18 = +0.245, median of all passing settings = +0.019
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 600, R +0.044
+
+== BEAR flags, 4m — 909 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=4x · pull 10-60% · wick>=40% · fill<=3 bars · +st.55 · to 13:00 · up>=70% · trail |  0.11 +0.185  1.9 |  0.12 -0.005 42.4% |   26 -0.096
+  pole>=4x · pull 25-45% · wick>=40% · fill<=3 bars · +st.55 · to 13:00 · up>=70% · trail |  0.07 +0.219  1.9 |  0.08 -0.048 39.4% |   19 -0.219
+  pole>=4x · pull 10-60% · wick>=40% · fill<=3 bars · +st.55 · to 15:25 · up>=70% · trail |  0.15 +0.160  1.8 |  0.16 +0.051 44.7% |   42 -0.036
+  pole>=4x · pull 10-60% · wick>=40% · fill<=2 bars · +st.55 · to 13:00 · up>=70% · trail |  0.11 +0.174  1.8 |  0.12 -0.005 42.4% |   26 -0.096
+  pole>=4x · pull 15-50% · wick>=40% · fill<=3 bars · +st.55 · to 15:25 · up>=70% · trail |  0.13 +0.166  1.8 |  0.14 +0.060 44.9% |   39 -0.041
+  pole>=4x · pull 15-50% · wick>=40% · fill<=3 bars · +st.55 · to 13:00 · up>=70% · trail |  0.10 +0.171  1.7 |  0.11 -0.038 41.7% |   26 -0.096
+  2019-24 R: median of the top-20 by 2010-18 = -0.007, median of all passing settings = +0.042
+  [reference = the current rule (pole>=4x, pull 15-50, wick>=50, fill<=2, +st.55, to 15:25, up>=60, MM x1)] all years n 523, R -0.223
+
+== BEAR flags, 5m — 69 settings pass the 2010-18 screen
+  setting (pole · pullback · wick · fill · context · last entry · pole bars · exit) | 2010-18: /day  R    t   | 2019-24: /day   R    win% | 2025-26: n    R
+  pole>=3x · pull 20-50% · wick>=60% · fill<=3 bars · +st.70 · to 15:25 · up>=50% · trail |  0.07 +0.163  1.2 |  0.07 -0.333 31.8% |   23 -0.220
+  pole>=3x · pull 20-50% · wick>=60% · fill<=2 bars · +st.70 · to 15:25 · up>=50% · trail |  0.07 +0.163  1.2 |  0.07 -0.316 32.6% |   23 -0.220
+  pole>=6x · pull 10-60% · wick>=50% · fill<=1 bars · +st.55 · to 15:25 · up>=50% · trail |  0.07 +0.129  1.0 |  0.05 -0.116 41.7% |   17 +0.391
+  pole>=6x · pull 10-60% · wick>=50% · fill<=1 bars · +st.40 · to 15:25 · up>=60% · trail |  0.09 +0.108  0.9 |  0.05 -0.191 38.8% |   17 +0.321
+  pole>=3x · pull 20-50% · wick>=60% · fill<=1 bars · +st.40 · to 15:25 · up>=70% · trail |  0.07 +0.120  0.9 |  0.07 -0.162 32.2% |   23 +0.116
+  pole>=6x · pull 10-60% · wick>=50% · fill<=1 bars · +st.40 · to 15:25 · up>=50% · trail |  0.09 +0.094  0.9 |  0.06 -0.154 40.8% |   18 +0.311
+  2019-24 R: median of the top-20 by 2010-18 = -0.162, median of all passing settings = -0.132
