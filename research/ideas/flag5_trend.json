@@ -1,0 +1,33 @@
+{
+  "id": "flag5_trend",
+  "name": "5-min flag with the day on a straight NY session",
+  "why": "Founder 2026-10-19 flag optimisation: on a straight trend day the institutions repositioning pause (the flag) and resume; a flag that breaks WITH the day is them adding, against the day is noise. The walk-forward of 108 flag settings found only the with-the-day 5-min flag positive in every era (+0.137 R OOS). Pre-registered in research/preregistered/2026-10-19_flag_context_wfo.md.",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "m": [
+      0.1,
+      0.2,
+      0.3
+    ],
+    "rr": [
+      1.5,
+      2
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "09:45",
+    "to": "15:00",
+    "when": "!rollwin && abs(px-open)/max(hod-lod,1) >= 0.55 && (((cl(5,7) - cl(5,13)) >= m*atr && lag(5, hh(5,5)) - lag(5, ll(5,5)) <= 0.6*(cl(5,7) - cl(5,13)) && cl(5,1) > lag(5, hh(5,5)) && px > open && px > vwap) || ((cl(5,7) - cl(5,13)) <= -m*atr && lag(5, hh(5,5)) - lag(5, ll(5,5)) <= -0.6*(cl(5,7) - cl(5,13)) && cl(5,1) < lag(5, ll(5,5)) && px < open && px < vwap))",
+    "dir": "((cl(5,7) - cl(5,13)) >= m*atr && lag(5, hh(5,5)) - lag(5, ll(5,5)) <= 0.6*(cl(5,7) - cl(5,13)) && cl(5,1) > lag(5, hh(5,5)) && px > open && px > vwap) - ((cl(5,7) - cl(5,13)) <= -m*atr && lag(5, hh(5,5)) - lag(5, ll(5,5)) <= -0.6*(cl(5,7) - cl(5,13)) && cl(5,1) < lag(5, ll(5,5)) && px < open && px < vwap)"
+  },
+  "max_trades": 2,
+  "stop": "max(px - lag(5, ll(5,5)), lag(5, hh(5,5)) - px) + 0.25",
+  "target": "rr",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

@@ -1,0 +1,17 @@
+flags over 180 settings, NY, 2010-07 → 2026-10: 368859 trade rows
+
+== A. Day context (net R per trade; median over settings, and share of settings where WITH+STRAIGHT beats AGAINST)
+  5m WITH + STRAIGHT  median net R by era +0.052 / -0.018 / +0.178 | trades 71868 over 108 settings
+  5m WITH the day     median net R by era -0.204 / -0.043 / -0.091 | trades 32490 over 108 settings
+  5m AGAINST the day  median net R by era -0.250 / +0.090 / -0.079 | trades 19452 over 108 settings
+  5m: WITH+STRAIGHT beats AGAINST in 81/93 settings (87 %)
+  1m WITH + STRAIGHT  median net R by era -0.157 / -0.040 / -0.028 | trades 128244 over 72 settings
+  1m WITH the day     median net R by era -0.223 / -0.052 / +0.036 | trades 66864 over 72 settings
+  1m AGAINST the day  median net R by era -0.164 / -0.063 / +0.064 | trades 49941 over 72 settings
+  1m: WITH+STRAIGHT beats AGAINST in 28/72 settings (39 %)
+
+== B. Walk-forward: each month trade the setting (× context) best over the previous 24 months (>= 30 trades)
+  5m all            OOS 332 trades net +0.056 R (t 0.82), 2.79 pts | eras 2010-18 +0.039 (165) · 2019-22 -0.034 (119) · 2023-26 +0.339 (48) | most picked: pole 6≥0.3 flag 5≤0.4 1.5R (28 mo); pole 8≥0.3 flag 5≤0.4 1.5R (23 mo)
+  5m with+straight  OOS 323 trades net +0.137 R (t 1.99), 3.66 pts | eras 2010-18 +0.174 (151) · 2019-22 +0.013 (123) · 2023-26 +0.334 (49) | most picked: pole 6≥0.2 flag 5≤0.6 2R (21 mo); pole 4≥0.1 flag 3≤0.4 2R (20 mo)
+  1m all            OOS 1480 trades net -0.012 R (t -0.33), 0.42 pts | eras 2010-18 -0.255 (157) · 2019-22 +0.047 (991) · 2023-26 -0.071 (332) | most picked: pole 20≥0.2 flag 5≤0.6 2R (37 mo); pole 10≥0.3 flag 5≤0.4 1.5R (15 mo)
+  1m with+straight  OOS 828 trades net -0.044 R (t -0.93), 0.21 pts | eras 2010-18 -0.038 (219) · 2019-22 -0.040 (436) · 2023-26 -0.059 (173) | most picked: pole 10≥0.3 flag 5≤0.4 1.5R (20 mo); pole 10≥0.3 flag 3≤0.6 2R (15 mo)
