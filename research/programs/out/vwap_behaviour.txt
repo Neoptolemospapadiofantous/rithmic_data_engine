@@ -1,0 +1,14 @@
+2019-26: 1398 days | 5-min closes cross VWAP 6.2 times a day | <= 1 cross 7.6% of days | >= 8 crosses 32.3% | no cross at all after 10:30 15.5%
+2010-18: 754 days | 5-min closes cross VWAP 6.1 times a day | <= 1 cross 5.8% of days | >= 8 crosses 31.8% | no cross at all after 10:30 18.3%
+
+price vs VWAP at 10:30 (distance in ATR) -> rest of the day
+  < 0.10     | 2010-18 n  492: touches VWAP again 94.7%, closes on the same side of VWAP 51.0%, move to close away from VWAP -0.017 ATR | 2019-26 n  998: touches VWAP again 95.1%, closes on the same side of VWAP 54.6%, move to close away from VWAP -0.001 ATR
+  0.10-0.25  | 2010-18 n  218: touches VWAP again 83.0%, closes on the same side of VWAP 60.1%, move to close away from VWAP -0.032 ATR | 2019-26 n  341: touches VWAP again 85.9%, closes on the same side of VWAP 54.0%, move to close away from VWAP -0.053 ATR
+  0.25-0.50  | 2010-18 n   43: touches VWAP again 67.4%, closes on the same side of VWAP 53.5%, move to close away from VWAP +0.016 ATR | 2019-26 n   53: touches VWAP again 66.0%, closes on the same side of VWAP 77.4%, move to close away from VWAP +0.129 ATR
+  > 0.50     | 2010-18 n    1: touches VWAP again  0.0%, closes on the same side of VWAP 100.0%, move to close away from VWAP +0.882 ATR | 2019-26 n    6: touches VWAP again 50.0%, closes on the same side of VWAP 100.0%, move to close away from VWAP +0.565 ATR
+
+price vs VWAP at 12:00 (distance in ATR) -> rest of the day
+  < 0.10     | 2010-18 n  301: touches VWAP again 70.4%, closes on the same side of VWAP 62.1%, move to close away from VWAP +0.001 ATR | 2019-26 n  717: touches VWAP again 72.0%, closes on the same side of VWAP 62.6%, move to close away from VWAP -0.010 ATR
+  0.10-0.25  | 2010-18 n  294: touches VWAP again 34.7%, closes on the same side of VWAP 85.7%, move to close away from VWAP +0.009 ATR | 2019-26 n  477: touches VWAP again 29.1%, closes on the same side of VWAP 82.8%, move to close away from VWAP +0.006 ATR
+  0.25-0.50  | 2010-18 n  125: touches VWAP again 14.4%, closes on the same side of VWAP 92.0%, move to close away from VWAP -0.027 ATR | 2019-26 n  158: touches VWAP again 17.1%, closes on the same side of VWAP 91.1%, move to close away from VWAP -0.022 ATR
+  > 0.50     | 2010-18 n   34: touches VWAP again  8.8%, closes on the same side of VWAP 100.0%, move to close away from VWAP +0.009 ATR | 2019-26 n   46: touches VWAP again 13.0%, closes on the same side of VWAP 91.3%, move to close away from VWAP -0.065 ATR
