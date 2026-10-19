@@ -11,3 +11,8 @@ B = mom_dir_30_ema20 (the original). NQ New York 2010-07 → 2024-12, cost 1.6 p
 3. SCALING OUT: half the position at +1R, the rest break-even and hold — vs all held (same entries).
 4. CASCADE AGREEMENT: the plan's direction (first cascade check / gap retest) already set and agreeing at entry → 2 units, else
    1 (and: agreeing only). Same adoption test as 2.
+
+## Results — pointer (catalogue clean-up 2026-10-19 — appended note; the rules above are unchanged)
+Numbers in `research/programs/out/momadd.txt` (the program `momadd`, reproduced 2026-10-19): VWAP rule when the plan direction AGREES +0.249 R/trade
+(298), DISAGREES +0.103 R (81), no plan direction yet −0.001 R (321) → adopted on paper as mom_dir_45_vwap_plan. RTH-delta and VIX / scaling add-ons
+not adopted (see momadd.txt).

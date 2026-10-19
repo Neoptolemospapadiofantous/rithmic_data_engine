@@ -132,7 +132,7 @@ Tests that are not edge_lab ideas (sweeps, payout simulations, execution and reg
 checks that the Plan page flags the momentum entries the paper engine takes (2026-10-17: 12 of 13; the one miss is 2026-09-22,
 when the engine's ATR still spanned the March–September data gap).
 
-## Ledger — 2026-10-17 (every file in research/preregistered/2026-10-17_*; verdict in one line)
+## Ledger — 2026-10-17 (16 of the 30 files in research/preregistered/2026-10-17_*; the other 14 are in the backfill section at the end; verdict in one line)
 | Pre-registration | Verdict |
 |---|---|
 | regime_optimize | 9,408 regime rules, walk-forward + shuffles: FAIL all sessions — only "trending by 10:30 in the gap direction" (= the cascade) carries |
@@ -144,7 +144,7 @@ when the engine's ATR still spanned the March–September data gap).
 | momentum_round2 | NQ New York only (ES and the night sessions fail); the frozen exit kept |
 | momentum_optimize | 12,000 settings: walk-forward +0.168 vs +0.079 but a narrow spike → not adopted |
 | momentum_entries | straightness (not size) + PULLBACK entries; best = 45-min momentum + VWAP pullback (+0.118 R, all eras) |
-| momentum_addons | VWAP rule only when the plan direction agrees: +0.249 R vs −0.001 → adopted on paper (mom_dir_45_vwap_plan); order flow / VIX sizing / scaling out not adopted |
+| momentum_addons | VWAP rule only when the plan direction agrees: +0.249 R vs +0.103 R when the plan disagrees (−0.001 = no plan direction yet; research/programs/out/momadd.txt) → adopted on paper (mom_dir_45_vwap_plan); order flow / VIX sizing / scaling out not adopted |
 Engine replays of every year (label `mom_hist`, 2010-07 → 2026-03, the fleet's real costs) confirm the momentum ranking:
 mom_dir_45_vwap_plan > mom_dir_45_vwap > mom_dir_45_dip > mom_dir_30_ema20 / _any; all lose a little or break even in 2010-18.
 
@@ -201,6 +201,11 @@ Engine all-year replays (label `mom_hist`) now also hold `so_cascade_2r_nofomc`,
 | Trade every day, take the P&L and stop, blown accounts allowed (2026-10-18_prop_daily_stop; payout_sim on the book trade lists) | daily profit / loss stops never win; best per account: the plain 2R book at 3 MNQ on a 50K plan — Select Daily 50K $1,801 / account (test 2023-05 → 2026-10), Topstep 50K 5 MNQ $2,237; ~⅓ of evals pass, most accounts blow within 60 sessions after payouts; the 0.5R high-win book and the Asia cascade pay less |
 | Book ablation (2026-10-18_book_ablation; leave-one-out × points × prop EV) | keep the weakness long (without it 2025–26 +21 → +4, drawdown up), the cascade and the gap retest (each removal −⅓ prop EV); drop the 10:00 gap and momentum rules from the book (redundant behind the 09:50 cascade: EV +7–13 % on all three plans without them, points unchanged) |
 | Daily trend scalp, 1–3 trades of 10–30 points (2026-10-18_trend_scalp): side-of-open + path, 1-min momentum, and the confirmed entries with fixed 10–30 pt exits | all FAIL — the best open-side form (30 / 30, VWAP pullback) fails controls 2023–26 (2023–24 −1.44 pts/session); momentum forms fail the halves; the confirmed entries lose with fixed small targets (best −0.47 pts/session) — the edge needs ATR-sized exits |
+
+## Ledger — 2026-10-19 (research/preregistered/2026-10-19_*; the Vest plan, NQ behaviour, models)
+
+| Pre-registration | Verdict |
+|---|---|
 | Trend-day pullback: 09:50 cascade side, then 5-min pullbacks to VWAP / EMA 20, ≤ 3/day (2026-10-19_trend_day_pullback) | FAIL controls (+1.98 OOS, direction 73 %), 2023–26 −6.44; as an add to F 2010–18 down and pts/DD 0.0121 → 0.0096; Vest $50 pass 63 % → 34 % (faster, 14 vs 24 days) — the trend day is already in F's first entry |
 | Globex EMA follow: EMA 9/20/50 stack (5 or 15 min), pullback to 5-min EMA 20, 18:05–09:20, ≤ 3/day (2026-10-19_globex_ema_follow) | FAIL at SCREEN — all 8 variants lose, walk-forward −0.57 pts/trade on 2,066, gross +0.43 = coin flip; EMA following is closed overnight too |
 | Globex EMA follow with no target, trail after +1R, ≤ 3 or 1 per night (follow-up, 2026-10-19_globex_ema_follow) | FAIL at SCREEN (−0.26 / −0.43 pts/trade); Vest $150/trade first-pullback version passes 25 % at $158 per pass vs F 63 % at $64 — passes by variance |
@@ -257,6 +262,91 @@ Engine all-year replays (label `mom_hist`) now also hold `so_cascade_2r_nofomc`,
 | NQ leads ES / quarterly-rebalance close (2026-10-18_follow_and_quad_close) | nq_es_follow FAIL at CONTROLS; quad_close NOT TESTABLE — the NQ.c.0 cache has no RTH bars on quarterly expiry Fridays (calendar roll keeps the expired contract to Sunday) |
 | NY sizing book (description, same file): 2 units when gap and momentum agree, 1 gap-only, half after a straight fortnight | beats flat size in every period: 2010–18 +1,300 vs +792, 2019–24 +7,079 vs +4,811, 2025–26 +2,432 vs +919 (groups from earlier findings on those years — consistent, not clean) |
 
+
+## Backfilled 2026-10-19 — pre-registrations that had no ledger row (from research/catalogue/ledger_and_preregs.md)
+
+The 2026-10-16 files and 16 of the 2026-10-17 / 10-18 files were never given rows above. One row per separately judged test, generated
+from the catalogue (verdict as written in each file; the file is authoritative).
+
+| study (file) | result |
+|---|---|
+| Does the cascade work in the first 2 h of Asia / Tokyo / London / NY? (2026-10-16_cascade_all_sessions.md) | FAIL — asia_2h passes gates (+4.32, 304) but not validated (holdout −1.47/−0.64); others fail; NY 11:30 exit +2.17 FAIL controls |
+| Cascade re-entry (≤ 2 trades/day) better than base? (2026-10-16_cascade_refinements.md) | FAIL — +3.62 vs base +4.80 pts/trade, 3,511 trades |
+| Cascade pyramid (add a unit at +1R)? (2026-10-16_cascade_refinements.md) | FAIL — +4.62/trade, random-day control 76 % |
+| Cascade trail after +1R instead of 2R target? (2026-10-16_cascade_refinements.md) | FAIL — +2.56 vs +4.80 |
+| First cascade check at 09:45 / 09:55 / 10:00 instead of 09:50? (2026-10-16_cascade_refinements.md) | FAIL — +3.57 / +4.42 / +3.98, all positive; 09:50 stays |
+| 2 units on calm (VIX < 20) days for the cascade? (2026-10-16_cascade_refinements.md) | FAIL — per unit +1.02/+7.42/+10.29 vs flat +1.04/+7.70/+8.56; better only 2023–26 |
+| Does cascade_gap_agree replicate on ES? (2026-10-16_confirm_gap.md) | PASS — +1.97 ES pts/trade (854, t 3.69) vs ES cascade +1.10; eras all positive |
+| Fade the move on options-expiry Fridays (pinning)? (2026-10-16_confirm_gap.md) | FAIL — screen: 26 trades, −2.48 pts/trade |
+| Skip opex days in the cascade? (2026-10-16_confirm_gap.md) | NOT ADOPTED — +4.50 without opex; opex days alone +16.36 on 41 |
+| VWAP thesis exit on cascade_gap_agree? (2026-10-16_confirm_gap.md) | ADOPTED — PASS: +10.05 vs +8.59, max DD 508 vs 1,152 → paper so_cascade_2r_gapagree_vwap |
+| Double size on gap-agree days speeds Flex/Daily 50K payout? (2026-10-16_confirm_gap.md) | NOT ADOPTED — Flex 17.8 vs 16.0 wks (slower); Daily ~2–4 wks faster but +1 eval |
+| Cascade stronger on big-tech earnings reaction mornings? (2026-10-16_earnings_mornings.md) | FAIL — +7.04 on 217 (t 1.2), controls 74/33/63 %; CPI not testable |
+| Cascade only when VVIX ≥ 100? (2026-10-16_free_macro_filters.md) | FAIL — +9.35 on 816 vs complement +2.51; FAIL controls; sizing hypothesis only |
+| Cascade only after a ≥ 7 bp 10-year yield move? (2026-10-16_free_macro_filters.md) | FAIL — +5.56 on 371 vs complement +4.91; FAIL controls |
+| Weak-day long only when the 10-year yield fell? (2026-10-16_free_macro_filters.md) | NOT ADOPTED — PASS gates +29.80 on 209, but complement +27.49 |
+| Weak-day long only after dollar ≥ +0.3 %? (2026-10-16_free_macro_filters.md) | FAIL — +16.25 on 65 vs complement +22.36; FAIL controls |
+| Frozen-setting holdout of every winner (choose 2010–18/2010–22, test later)? (2026-10-16_frozen_holdout.md) | DESCRIPTION — so_cascade holdout +6.89 / +10.03 (t ≈ 2.4); weak_day +21.22 / +67.15; ema_cross_vwap no dev edge |
+| ORB15 / overnight / prior-day box sweep or break with order flow? (2026-10-16_liquidity_boxes.md) | FAIL — all 6 fail (−6.14 … +3.57); price-only 2010–26 −2.5 … +2.4 |
+| 10 more liquidity boxes × sweep/break with order flow (2023–26)? (2026-10-16_liquidity_boxes_all.md) | FAIL — nothing passes; best 100-pt band break +12.4 (333, dir 99 %), Asia sweep +10.4 (dir 96 %) |
+| 2,800-variant cascade grid beats the current setting in both frozen holdouts? (2026-10-16_mega_grid.md) | NOT ADOPTED — WF +4.08 (FAIL controls) vs 54-variant +4.80; holdout B pick +7.64 < current +8.66; every variant positive |
+| Weak-day grid (IBS/VIX/stop/target, exits 12/14/15:55) beats current setting? (2026-10-16_mega_grid.md) | NOT ADOPTED — 15:55 WF +8.05 PASS; pick VIX ≥ 25 better/trade but less total; 12:00/14:00 FAIL |
+| Cascade only when ES agrees? (2026-10-16_new_angles.md) | FAIL — +4.35 vs removed +4.94 |
+| Cascade only when RTH rvol ≥ 1.2? (2026-10-16_new_angles.md) | FAIL — +4.55 vs removed +4.92 |
+| Cascade only when open move agrees with the gap (cascade_gap_agree)? (2026-10-16_new_angles.md) | PASS — +8.59 (897); holdouts +16.35 / +14.32; complement +3.35 → paper sizing candidate, not a filter |
+| Cascade only when yesterday closed at the extreme in trade direction? (2026-10-16_new_angles.md) | FAIL — +1.20; complement passes +7.49 (opposite of prediction) → paper so_cascade_2r_notext |
+| Afternoon drive from 12:00 anchor (pm_drive)? (2026-10-16_new_angles.md) | FAIL — −0.65 pts/trade |
+| 14:00 exhaustion fade of > 1 ATR days? (2026-10-16_new_angles.md) | FAIL — +4.49 on 125, FAIL controls |
+| Flow-flip exit on orb5_of / orb15_of / so_cascade? (2026-10-16_orb_order_flow.md) | FAIL — +6.52/+5.99/+4.87 vs +5.49/+4.09/+4.80; fired ≈ 20 trades, one era |
+| ORB-5/15 break only when range-window flow agrees? (2026-10-16_orb_order_flow.md) | FAIL — +7.28 (404) / +6.37 (350); controls 96/96/82 % and 86/85/76 % |
+| ORB-5 break after resting liquidity pulled on far side? (2026-10-16_orb_order_flow.md) | FAIL — +6.52 (400), every year positive; controls 96/58/70 %; L2 not entitled live |
+| Absorption fade at the 15-min range edge? (2026-10-16_orb_order_flow.md) | FAIL — −2.34 on 69, screen |
+| Cascade meta model with flow/book inputs beats plain meta? (2026-10-16_orb_order_flow.md) | FAIL — +7.98 vs +8.22; shuffled labels 92 % |
+| CTA trigger: close crossing 50/100/200-day MA, enter 18:00 or 09:30? (2026-10-16_owned_data_ideas.md) | FAIL — 18:00 +7.37 (214) FAIL controls; 09:30 −1.11 FAIL screen |
+| Reverse a failed (stopped) 09:50 cascade signal? (2026-10-16_owned_data_ideas.md) | FAIL — +5.47 on 255, direction 92 %, 2023–26 −5.05 |
+| Trade NQ toward ES on intraday NQ–ES divergence? (2026-10-16_owned_data_ideas.md) | FAIL — −2.44 on 343, screen |
+| BTC weekend move predicts NQ Monday / Sunday night? (2026-10-16_owned_data_ideas.md) | FAIL — Monday +8.09 (86) FAIL controls; Sunday −3.05 FAIL WF |
+| The NQ cascade on BTC / ETH 1m (10 bp cost)? (2026-10-16_owned_data_ideas.md) | FAIL — −2.93 / −3.11 bp, FAIL walk-forward |
+| 4 MNQ on high-ATR days (vol_regime_sizing) in payout sim? (2026-10-16_owned_data_ideas.md) | FAIL — payout months 26 % vs fixed 2 MNQ 49 %; evals/yr 2.3 vs 0.4 |
+| 9 candle/chart patterns standalone and in cascade direction? (2026-10-16_patterns_and_conditions.md) | FAIL — pat_3bar (+2.51) and pat_double_casc (+3.15) pass gates but not validated in holdout; rest fail |
+| Condition matrix: 4 families × 7 conditions (VIX, VVIX, SMA50, FOMC)? (2026-10-16_patterns_and_conditions.md) | FAIL — no combination validated; plain cascade fails 99.8 % bar (day 96 %); VIX<20 cascade best-looking |
+| Is cascade_gap_agree robust to gap threshold 0.05–0.3 ATR? (2026-10-16_round3.md) | PASS — +8.97 / +8.59 / +9.10 / +7.47, all > +4.80 ("REAL") |
+| Cascade only when the open move broke the overnight range? (2026-10-16_round3.md) | FAIL — +4.58, complement +4.96 |
+| Weak-day long only after gap down (or gap up)? (2026-10-16_round3.md) | FAIL — gap-down +13.98 (208), gap-up +5.56, both FAIL controls |
+| Limit entries 1 tick better (paper forward twin)? (2026-10-16_round3.md) | OPEN — paper twin so_cascade_2r_lim1 from 10-19; ≥ 40 signals rule |
+| Account mix: 1 Flex vs 2 Flex vs Flex+Daily (resampled)? (2026-10-16_round3.md) | DESCRIPTION — 2 accounts double money not frequency; Flex+Daily 4.5 paid months/yr, $7,106 |
+| Worst case of cascade + VWAP/stall at 8 MNQ? (2026-10-16_round3.md) | DESCRIPTION — max DD $15,547; worst day −$2,882; $2k DD ~12×/yr |
+| Cascade only in VIX backwardation (vts ≥ 1)? (2026-10-16_vix_term_structure.md) | FAIL — −1.75 on 144, FAIL WF — hypothesis backwards |
+| Cascade only in contango (vts < 1)? (2026-10-16_vix_term_structure.md) | FAIL — +5.13 vs +4.80; random day 97 % (need 99) |
+| Weak-day long gated by term structure instead of VIX ≥ 20? (2026-10-16_vix_term_structure.md) | FAIL — +25.59 on 222, direction 94 %; 2024 −912 |
+| VWAP hold on trend days / VWAP reclaim? (2026-10-16_vwap_ema.md) | FAIL — −0.21 (716) FAIL WF / −0.52 (1,736) FAIL screen |
+| 5-min EMA20 pullback with 60-min trend (ema_pullback_htf)? (2026-10-16_vwap_ema.md) | FAIL — +2.12 on 1,669, FAIL controls |
+| EMA9×21 cross in day direction (ema_cross_vwap)? (2026-10-16_vwap_ema.md) | PASS — +6.79 (956) PASS gates but NOT validated by frozen holdout (no edge pre-2019) |
+| Cascade only when 60-min EMA trend agrees? (2026-10-16_vwap_ema.md) | FAIL — +3.67 < +4.80, FAIL controls |
+| Thesis exits make the weak-day long prop-safe? (2026-10-16_weak_day_fixes.md) | FAIL — vwap +1.36, open +2.31 vs base +13.20; stall +14.01 timing 97 % |
+| Meta take/skip on the weak-day long? (2026-10-16_weak_day_fixes.md) | FAIL — +20.19 vs +19.02; random skip 62 %, shuffled 79 % |
+| Break → box → go at OR15 / prior day / overnight levels? (2026-10-17_break_box.md) | FAIL — bb_or +0.73 (281) controls, bb_pd +0.31 screen, bb_on +2.87 controls |
+| Break → box → go only on the gap's side? (2026-10-17_break_box.md) | PASS — bb_on_gap +7.31 (127, PF 1.53); holdout 22 trades +8.02 t 0.4 → forward candidate (1 of 6) |
+| Stop trading for the day at a $ profit lock (25K plans)? (2026-10-17_daily_lock.md) | NOT ADOPTED — NQ 2 micros $8,044/yr → $100 lock $1,521, $500 lock $6,840 |
+| Does a 12:00 "any move" cascade check let it trade every day? (2026-10-17_daily_trade.md) | NO RESULT — no Results in file; data/edge_lab/reports/cascade_noon.md says PASS; 12:00-trade judgement (2) not recorded |
+| A trade every day: 10:05 forced direction / 11:35 no-cascade fallbacks? (2026-10-18_daily_trade.md) | FAIL — daily_1005 +4.52 FAIL controls; quiet_1135 −0.00 / +0.11 / +2.72 |
+| Day-engine map + pre-registered T1–T5 (meta+flow, EMA14, 2nd-leg box, trade cap, full engine) (2026-10-17_day_engine_plan.md) | NO RESULT — §1 is a map of earlier results; T1–T5 have no results in this file |
+| After a 10:00 direction, do fleet-style entries beat a market entry? (2026-10-17_direction_first.md) | NO RESULT — no Results in file; reports: dir_market PASS, the 6 entries FAIL (controls/screen) — cited in day_engine_plan |
+| Gap direction + fleet entries (breakout / OR retest) beat gap market entry? (2026-10-17_direction_sources.md) | PASS — gap_or_retest +9.03 (1,220), gap_breakout +7.43; holdout retest +7.15 t 0.6, breakout +1.01 collapsed |
+| Weak-day direction without VIX + fleet entries? (2026-10-17_direction_sources.md) | FAIL — every entry fails; wk_market +1.92, 2010–18 −5.5 |
+| Does fleet consensus (many roots same side) carry an edge? (2026-10-17_fleet_consensus.md) | FAIL — best of 192 cells t 1.85 (bar 3.3); RTH follow +4.70; fades negative |
+| Weak-day long rule on ES? (2026-10-17_more_trades.md) | PASS — +3.38 ES pts/trade (690), eras −0.18 / +5.05 / +9.71 |
+| Take both cascade and gap retest when they agree (25K plans)? (2026-10-17_more_trades.md) | ADOPTED — NQ: Flex paid $2,781 → $3,957/$3,492, blown 53 → 46/49 %; NQ+ES not adopted |
+| Fades on no-direction days (range / VWAP / open)? (2026-10-17_no_direction_mr.md) | FAIL — all six FAIL screen: −1.96 / −4.27 / −6.52; every era negative |
+| 1-min tape regime switches EMA pullback (trend) / VWAP fade (revert) per session? (2026-10-17_regime_switch.md) | FAIL — all 9 FAIL; NY gated −0.08 vs ungated +0.08 |
+| Runner exit (vwap_run) on trending-tape days for cascade / gap retest? (2026-10-17_regime_trail.md) | NOT ADOPTED — cascade +5.58 vs +4.99 in-sample but holdout +13.35 vs +14.20; retest worse |
+| 1–5 min tape autocorrelation as a filter on 16 strategy families? (2026-10-17_tape_filter_all.md) | FAIL — no fail became a pass; five passes became fails (cascade 4.80 → 3.04) |
+| Skip the 09:50 cascade check on 10:00 release days (JOLTS, ISM)? (2026-10-17_test_f_news10.md) | NOT ADOPTED — +2.11 / +13.86 / −4.71 by era; holdout −26.4 (13) — rule not met, watch item |
+| Gap retest robust to OR5/OR30 and gap threshold 0.05–0.3? (2026-10-17_tests_c_d_e.md) | PASS — gor_or5 +7.35, gor_or30 +8.49, gor_gap +7.86 — ROBUST |
+| Cumulative delta agreeing as a filter on cascade / gap retest (2023–26)? (2026-10-17_tests_c_d_e.md) | OPEN — casc_flow +18.50 vs twin +14.99; gor_flow +14.18 vs +13.57 — one era, forward candidate |
+| Trade NQ in the leading direction vs ES at 10:30 (ldr_es)? (2026-10-17_tests_c_d_e.md) | FAIL — +2.85, random day 66 % |
+| Claude (sonnet-5) as discretionary ORB trend / MR trader on 240 days? (2026-10-18_llm_judge.md) | NO RESULT — STOPPED during pilot (~12 days); snapshot gap bug found; no verdict |
+| Model-zoo validation: which of 14 dashboard models carry OOS signal? (2026-10-18_zoo_study.md) | NO RESULT — "## Results (appended after the run)" with nothing after it |
 ## Known limits
 - 1-minute OHLC only (no queue position); cost is a fixed real round trip per contract in every year.
 - The continuous contract is not back-adjusted (see `rollwin`). NQ has no data 2026-03-20 … 2026-09-18.

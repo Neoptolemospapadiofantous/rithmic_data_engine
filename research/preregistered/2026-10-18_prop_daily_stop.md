@@ -59,3 +59,7 @@ risk-based size ($R per 0.35 ATR stop), 2 pt cost, breach checked at each trade'
   months (66/yr — too slow at this size). Pairs are close to independent (both fail vs independent: cascade + Asia 13.1 vs 12.2 %,
   cascade + 10:00 11.7 vs 9.1 %, retest + Asia 11.4 vs 9.5 %, gap10 + Asia 10.5 vs 4.5 %). The fleet's other strategies are not
   candidates unless they pass edge_lab — a zero-edge strategy passes this evaluation ~13 % of the time (the coin-flip control).
+
+## Correction (catalogue clean-up 2026-10-19 — appended note; the rules above are unchanged)
+The "One VALIDATED strategy per account" line lists the Asia cascade as validated. It is not: `2026-10-16_cascade_all_sessions.md` — cascade_asia_2h
+passes the gates but its holdout is negative (−1.47 / −0.64), and every later overnight-direction study failed (2026-10-19_behavior_per_session).

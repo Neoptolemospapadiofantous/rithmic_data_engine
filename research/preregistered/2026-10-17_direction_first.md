@@ -16,3 +16,8 @@ fleet-style entry IN THAT DIRECTION make money, and does it beat simply entering
 - Verdicts: each through edge_lab's five gates on 2010-07 → 2024-12; 2025+ held back. A family "adds value" only if it
   PASSES and its walk-forward pts/trade beats dir_market's. 7 ideas × 2 variants are counted in the registry.
 - 2026-10-17 fix before any result was used: dir_trend60 first compared the bar's close with a 60-minute high that INCLUDED that bar (never true, 0 trades); now the 60 minutes before it (lag 5).
+
+## Results — pointer (catalogue clean-up 2026-10-19 — appended note; the rules above are unchanged)
+Never written into this file. edge_lab reports: dir_market **PASS**; dir_vwap_pb, dir_ema_pb, dir_breakout, dir_or_retest, dir_trend60 **FAIL at
+CONTROLS**; dir_fib38 **FAIL at SCREEN**. Only the market entry in the direction passes — the same reading as every later entry-timing study
+(2026-10-19_entry_timeframes).

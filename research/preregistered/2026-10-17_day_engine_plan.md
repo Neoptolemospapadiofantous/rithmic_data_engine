@@ -38,3 +38,7 @@ entries, mean reversion.
 - T5 The full day engine, assembled from the parts that PASS (open direction ± flow, gap retest, box_go, meta skip), simulated on the
   25K plans against today's plan: trades/day, winning days, eval pass/blown, first payout, paid/yr.
 Each runs on 2010-07 → 2024-12 (2023-03 → for order flow); the 2025+ holdout is judged once for any PASS.
+
+## Results — pointer (catalogue clean-up 2026-10-19 — appended note; the rules above are unchanged)
+T2 (dir_ema14): **FAIL at CONTROLS** (data/edge_lab/reports/dir_ema14.md). T1, T3, T4, T5 were never run — no report exists; the questions were
+taken up by later files (meta/flow: 2026-10-18_feature_study, 2026-10-18_rithmic_direction; trade cap / engine: 2026-10-18_multi_trade_day book F).

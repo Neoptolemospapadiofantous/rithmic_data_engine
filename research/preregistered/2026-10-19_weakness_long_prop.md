@@ -24,3 +24,7 @@ MNQ (Vest perps allow fractional size; a CME micro account could not size this).
   passes**. The VWAP exit's 2026-10-16 PASS was on `cascade_gap_agree` (gap-agreeing days only), not on the book's cascade.
 - Asia open drive (20:20 ET, k 0.1, stop 0.2 ATR, 2R) as a third Vest piece: +0.30 / +0.14 / +6.26 pts/trade; Vest $40 75.3 → 75.2 %,
   $50 66.6 → 57.4 % → **not for Vest** (≈ 0 points, more chances to hit the daily limit).
+
+## Clarification (catalogue clean-up 2026-10-19 — appended note; the rules above are unchanged)
+"No exit rule passes" applies to the book's rebuilt cascade (0.25 / 0.30 ATR re-checks). The exit PASSes recorded on 2026-10-16 / 10-18 for the
+`so_cascade` spec (vwap_stall) and `gap_or_retest` (open_run) still stand for those specs; they were never adopted into book F.

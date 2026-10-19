@@ -32,3 +32,7 @@ together also holds. Likely why (not measured): the 10:00 rules mostly fire on d
 one-position book they are redundant, while standalone they remain the confirmed 10:00 rules (and the Plan page's "Today" read).
 The EV gains are 7–13 % on a test period that overlaps the confirmation years — a simplification, not a new edge.
 Book from here: weakness long 09:30 · cascade 09:50 / 10:30 / 11:00 / 11:30 · gap retest; 2R, 0.35 ATR, 1 trade a day.
+
+## Note (catalogue clean-up 2026-10-19 — appended note; the rules above are unchanged)
+Superseded the same day by `2026-10-18_multi_trade_day.md` book **F** (cascade + gap retest + 10:00 gap rule side by side), which is the book every
+later file uses. This file's one-trade-a-day book (weakness long + cascade + gap retest, gap rule dropped) is history, not the plan.
