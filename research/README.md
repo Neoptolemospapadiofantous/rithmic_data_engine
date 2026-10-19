@@ -263,6 +263,8 @@ Engine all-year replays (label `mom_hist`) now also hold `so_cascade_2r_nofomc`,
 | NY sizing book (description, same file): 2 units when gap and momentum agree, 1 gap-only, half after a straight fortnight | beats flat size in every period: 2010–18 +1,300 vs +792, 2019–24 +7,079 vs +4,811, 2025–26 +2,432 vs +919 (groups from earlier findings on those years — consistent, not clean) |
 
 
+| EMA 9 / 14 cross event study and 5-min setups with 1-min entries (2026-10-19_ema_9_14_cross_study; research/programs/ema_cross_study.cpp, mtf_entry_study.cpp) | the 9/14 cross carries no direction on any chart / session / context (moves ≈ 0, negative after cost); 5-min NY momentum setups have a small gross edge (+0.05 R, all eras) that costs eat at a 5-min stop; given room (ny5_cont_close, hold to 15:55) +1.39 pts/trade but FAIL controls — random entry times on the same days earn the same: the edge is the day, not the 5-min / 1-min timing |
+
 ## Backfilled 2026-10-19 — pre-registrations that had no ledger row (from research/catalogue/ledger_and_preregs.md)
 
 The 2026-10-16 files and 16 of the 2026-10-17 / 10-18 files were never given rows above. One row per separately judged test, generated

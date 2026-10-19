@@ -25,6 +25,8 @@ Never run a replay or rebuild `build/` 09:25–16:05 ET on a weekday (these prog
 | `behavior3` | research/preregistered/2026-10-19_behavior_part3.md | 2026-10-19 behaviour part 3 + order flow: pullback depth, gap fills, sweeps of yesterday's high/low, round numbers, afternoon, early volume, aggressor delta / divergence / absorption / book imbalance (2023+). |
 | `target_by_range` | research/preregistered/2026-10-19_attack_behaviour.md | 2026-10-19: book trades re-simulated on 1m bars with targets by the predicted NQ range (1.5 / 2 / 3R) vs 2R everywhere. |
 | `behavior_sessions` | research/preregistered/2026-10-19_behavior_per_session.md | 2026-10-19: every behaviour test (VWAP, straightness, pullbacks, prior-session levels, round numbers, second half, RVOL, order flow) for Asia, London and NY separately. |
+| `ema_cross_study` | research/preregistered/2026-10-19_ema_9_14_cross_study.md | 2026-10-19: what NQ does after an EMA 9/14 cross on the 1 / 5 / 15-min chart, by session and context. |
+| `mtf_entry_study` | research/preregistered/2026-10-19_ema_9_14_cross_study.md | 2026-10-19: 5-min setups with 1-min entries (market / midpoint limit / pullback limit / dip-then-resume), stop beyond the 5-min bar, 2R, 60 min; argv 0 / 1 / 2 = 1 pt / no cost / scaled cost. |
 | `awk_20261019/` | research/preregistered/2026-10-19_vest_funded.md and the other 2026-10-19 studies | the Vest eval / funded / portfolio simulators and the session-behaviour scripts (awk), with their saved outputs in out/ |
 | `book3` | — | #include "research/meta.hpp" |
 | `both` | research/preregistered/2026-10-17_more_trades.md | 2026-10-17 pre-registered A (research/preregistered/2026-10-17_more_trades.md): take both the cascade and the gap retest |

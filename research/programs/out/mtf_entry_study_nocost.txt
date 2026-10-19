@@ -1,0 +1,75 @@
+5-min setups, 1-min entries — NQ 2010-07-01 → 2026-10-16. Net R per trade (stop beyond the 5-min bar, 2R, 60-min exit, minus 1 pt). Eras 2010-18 / 2019-22 / 2023-26.
+
+== NY — S1 EMA 9/14 cross (5m)
+  E0 market at 5m close           743/yr fill  99.4% | net +0.009 R (t  +0.7) | eras +0.010 -0.012 +0.031 | win 36.6%
+  E1 limit at 5m midpoint         551/yr fill  73.7% | net -0.090 R (t  -6.2) | eras -0.114 -0.088 -0.031 | win 30.7%
+  E2 limit 0.02 ATR better        553/yr fill  74.0% | net -0.047 R (t  -3.3) | eras -0.070 -0.012 -0.030 | win 34.0%
+  E3 1m dip-then-resume           365/yr fill  48.9% | net -0.019 R (t  -1.2) | eras -0.039 -0.006 +0.016 | win 39.5%
+  random direction (E0)           726/yr fill  97.1% | net -0.042 R (t  -3.3) | eras -0.019 -0.084 -0.046 | win 33.6%
+
+== NY — S2 strong 5m bar
+  E0 market at 5m close          2364/yr fill 100.0% | net +0.028 R (t  +4.4) | eras +0.029 +0.021 +0.034 | win 40.6%  POSITIVE ALL ERAS
+  E1 limit at 5m midpoint        1283/yr fill  54.3% | net +0.020 R (t  +2.1) | eras +0.030 +0.008 +0.011 | win 34.7%  POSITIVE ALL ERAS
+  E2 limit 0.02 ATR better       2016/yr fill  85.3% | net +0.010 R (t  +1.4) | eras +0.008 +0.021 +0.002 | win 38.4%
+  E3 1m dip-then-resume          1192/yr fill  50.4% | net +0.029 R (t  +3.8) | eras +0.033 +0.027 +0.022 | win 45.7%  POSITIVE ALL ERAS
+  random direction (E0)          2259/yr fill  95.5% | net -0.043 R (t  -6.3) | eras -0.016 -0.061 -0.085 | win 35.2%
+
+== NY — S3 5m close beyond prior bar
+  E0 market at 5m close          6261/yr fill 100.0% | net -0.003 R (t  -0.8) | eras -0.009 -0.011 +0.019 | win 36.5%
+  E1 limit at 5m midpoint        4384/yr fill  70.0% | net -0.023 R (t  -4.4) | eras -0.029 -0.024 -0.008 | win 32.9%
+  E2 limit 0.02 ATR better       5006/yr fill  80.0% | net -0.033 R (t  -7.0) | eras -0.046 -0.022 -0.015 | win 34.4%
+  E3 1m dip-then-resume          3068/yr fill  49.0% | net +0.013 R (t  +2.4) | eras +0.007 +0.021 +0.015 | win 41.7%  POSITIVE ALL ERAS
+  random direction (E0)          6050/yr fill  96.6% | net -0.036 R (t  -8.3) | eras -0.018 -0.042 -0.069 | win 33.9%
+
+== NY — S4 S3 + straight session, with its move
+  E0 market at 5m close          1982/yr fill 100.0% | net +0.046 R (t  +6.3) | eras +0.046 +0.042 +0.052 | win 38.6%  POSITIVE ALL ERAS
+  E1 limit at 5m midpoint        1339/yr fill  67.6% | net +0.004 R (t  +0.4) | eras +0.006 -0.005 +0.010 | win 33.9%
+  E2 limit 0.02 ATR better       1574/yr fill  79.4% | net +0.010 R (t  +1.2) | eras -0.003 +0.015 +0.033 | win 36.3%
+  E3 1m dip-then-resume           975/yr fill  49.2% | net +0.051 R (t  +5.6) | eras +0.046 +0.050 +0.064 | win 43.9%  POSITIVE ALL ERAS
+  random direction (E0)          1918/yr fill  96.8% | net -0.033 R (t  -4.3) | eras -0.032 -0.031 -0.036 | win 34.2%
+
+== London — S1 EMA 9/14 cross (5m)
+  E0 market at 5m close           898/yr fill  98.3% | net -0.017 R (t  -1.5) | eras -0.015 +0.008 -0.051 | win 35.0%
+  E1 limit at 5m midpoint         695/yr fill  76.1% | net -0.128 R (t -10.1) | eras -0.136 -0.090 -0.155 | win 29.4%
+  E2 limit 0.02 ATR better        476/yr fill  52.1% | net -0.131 R (t  -8.7) | eras -0.144 -0.090 -0.148 | win 30.4%
+  E3 1m dip-then-resume           433/yr fill  47.5% | net -0.025 R (t  -1.7) | eras -0.040 +0.009 -0.035 | win 36.9%
+  random direction (E0)           846/yr fill  92.7% | net -0.030 R (t  -2.5) | eras -0.001 -0.051 -0.066 | win 33.5%
+
+== London — S2 strong 5m bar
+  E0 market at 5m close           663/yr fill 100.0% | net -0.024 R (t  -2.2) | eras -0.052 +0.007 +0.008 | win 39.1%
+  E1 limit at 5m midpoint         321/yr fill  48.5% | net -0.017 R (t  -0.9) | eras -0.055 -0.030 +0.111 | win 34.2%
+  E2 limit 0.02 ATR better        529/yr fill  79.7% | net -0.034 R (t  -2.5) | eras -0.080 +0.010 +0.032 | win 37.2%
+  E3 1m dip-then-resume           309/yr fill  46.6% | net -0.016 R (t  -1.1) | eras -0.053 +0.029 +0.017 | win 42.1%
+  random direction (E0)           607/yr fill  91.5% | net -0.050 R (t  -3.9) | eras -0.009 -0.079 -0.115 | win 35.3%
+
+== London — S3 5m close beyond prior bar
+  E0 market at 5m close          7110/yr fill  99.9% | net -0.026 R (t  -6.6) | eras -0.042 -0.006 -0.012 | win 34.8%
+  E1 limit at 5m midpoint        5131/yr fill  72.1% | net -0.064 R (t -13.4) | eras -0.086 -0.044 -0.036 | win 31.6%
+  E2 limit 0.02 ATR better       4336/yr fill  60.9% | net -0.105 R (t -20.8) | eras -0.137 -0.069 -0.073 | win 31.0%
+  E3 1m dip-then-resume          3400/yr fill  47.8% | net -0.017 R (t  -3.3) | eras -0.035 +0.014 -0.017 | win 38.0%
+  random direction (E0)          6565/yr fill  92.3% | net -0.024 R (t  -5.7) | eras -0.017 -0.014 -0.050 | win 33.9%
+
+== Asia — S1 EMA 9/14 cross (5m)
+  E0 market at 5m close           916/yr fill  97.6% | net -0.040 R (t  -3.7) | eras -0.070 -0.010 -0.030 | win 34.4%
+  E1 limit at 5m midpoint         720/yr fill  76.7% | net -0.146 R (t -11.8) | eras -0.177 -0.123 -0.127 | win 29.0%
+  E2 limit 0.02 ATR better        321/yr fill  34.2% | net -0.105 R (t  -5.7) | eras -0.122 -0.090 -0.097 | win 31.6%
+  E3 1m dip-then-resume           430/yr fill  45.8% | net -0.038 R (t  -2.6) | eras -0.069 +0.014 -0.060 | win 37.7%
+  random direction (E0)           848/yr fill  90.3% | net -0.013 R (t  -1.1) | eras -0.017 -0.013 -0.008 | win 34.2%
+
+== Asia — S2 strong 5m bar
+  E0 market at 5m close           299/yr fill 100.0% | net -0.007 R (t  -0.4) | eras -0.044 +0.015 +0.030 | win 41.2%
+  E1 limit at 5m midpoint         137/yr fill  45.7% | net +0.041 R (t  +1.4) | eras +0.010 +0.067 +0.059 | win 37.7%
+  E2 limit 0.02 ATR better        235/yr fill  78.8% | net -0.001 R (t  -0.1) | eras -0.037 +0.034 +0.006 | win 40.6%
+  E3 1m dip-then-resume           138/yr fill  46.4% | net +0.017 R (t  +0.9) | eras -0.008 +0.037 +0.029 | win 45.2%
+  random direction (E0)           275/yr fill  91.9% | net -0.017 R (t  -0.9) | eras +0.049 -0.007 -0.158 | win 37.5%
+
+== Asia — S3 5m close beyond prior bar
+  E0 market at 5m close          7596/yr fill  99.8% | net -0.034 R (t  -9.0) | eras -0.058 -0.026 -0.006 | win 34.9%
+  E1 limit at 5m midpoint        5554/yr fill  73.0% | net -0.076 R (t -16.8) | eras -0.121 -0.045 -0.047 | win 31.4%
+  E2 limit 0.02 ATR better       3144/yr fill  41.3% | net -0.110 R (t -18.6) | eras -0.157 -0.066 -0.092 | win 31.1%
+  E3 1m dip-then-resume          3510/yr fill  46.1% | net -0.021 R (t  -4.1) | eras -0.061 -0.003 +0.014 | win 38.4%
+  random direction (E0)          6885/yr fill  90.4% | net -0.004 R (t  -1.0) | eras -0.014 +0.009 -0.006 | win 34.8%
+
+== Inside a NY 5-min bar
+  first minute's direction = the bar's close direction:   64.6% (n 204553) | eras 64.0 65.0 65.6 %
+  after 2 minutes, the bar keeps going that way to its close: 46.9% (n 208518) | eras 45.0 48.7 49.2 %; move minute 2 -> close -0.0008 ATR

@@ -1,0 +1,30 @@
+{
+  "id": "ny5_cont",
+  "name": "NY 5-min trend continuation: close beyond the prior 5-min bar on a straight session, with its move",
+  "why": "Founder 2026-10-19 (5-min setup, 1-min entry study): on a straight NY session the institutions repositioning keep pushing; each new 5-min high (low) in the session direction is them adding, and short-term faders are forced to cover. The 5-min study showed a small era-stable gross edge (+0.05 R) that a 5-min-bar stop cannot pay costs on; this gives each trade more room. Pre-registered in research/preregistered/2026-10-19_ema_9_14_cross_study.md.",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "rr": [
+      2,
+      3,
+      4
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "09:35",
+    "to": "14:30",
+    "when": "!rollwin && abs(px-open)/max(hod-lod,1) >= 0.55 && ((cl(5,1) > hi(5,2) && px > open) || (cl(5,1) < lo(5,2) && px < open))",
+    "dir": "(cl(5,1) > hi(5,2) && px > open) - (cl(5,1) < lo(5,2) && px < open)"
+  },
+  "max_trades": 3,
+  "stop": "max(px - lo(5,1), hi(5,1) - px) + 0.25",
+  "target": "rr",
+  "max_bars": 60,
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

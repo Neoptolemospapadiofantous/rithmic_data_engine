@@ -1,0 +1,151 @@
+EMA 9/14 cross event study — NQ 1m 2010-07-01 → 2026-10-16. Moves in the day's ATR, signed in the cross's direction; net = minus 1 NQ pt. CONSISTENT = same sign in all eras (2010-18 / 2019-22 / 2023-26) and |t| >= 2.
+
+== 1-min chart, Asia session
+  baselines (60 min, ATR): random direction +0.000 | last bar's direction -0.000
+  all crosses                                    5867/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.000 +120 -0.000 | 60m net -0.016 (t -47.5, eras -0.026 -0.006 -0.005) CONSISTENT | win60 48.0% | MFE60 0.07 MAE60 -0.07
+  up crosses                                     2930/yr | +5 -0.000 +15 +0.000 +30 +0.001 +60 +0.003 +120 +0.005 | 60m net -0.013 (t -27.2, eras -0.023 -0.002 -0.002) CONSISTENT | win60 50.4% | MFE60 0.07 MAE60 -0.07
+  down crosses                                   2937/yr | +5 -0.001 +15 -0.001 +30 -0.002 +60 -0.004 +120 -0.006 | 60m net -0.019 (t -39.8, eras -0.029 -0.010 -0.007) CONSISTENT | win60 45.6% | MFE60 0.07 MAE60 -0.07
+  cross WITH the session's move                  2953/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.001 +120 -0.002 | 60m net -0.016 (t -35.1, eras -0.027 -0.008 -0.002) CONSISTENT | win60 47.2% | MFE60 0.07 MAE60 -0.07
+  cross AGAINST the session's move               2914/yr | +5 -0.000 +15 -0.000 +30 +0.000 +60 +0.000 +120 +0.001 | 60m net -0.015 (t -32.0, eras -0.025 -0.004 -0.007) CONSISTENT | win60 48.8% | MFE60 0.07 MAE60 -0.07
+  on the VWAP side of the cross                  3177/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.000 +120 +0.001 | 60m net -0.015 (t -34.5, eras -0.026 -0.007 -0.002) CONSISTENT | win60 47.2% | MFE60 0.07 MAE60 -0.07
+  against VWAP                                   2690/yr | +5 -0.000 +15 -0.001 +30 -0.000 +60 -0.001 +120 -0.002 | 60m net -0.016 (t -32.6, eras -0.026 -0.006 -0.008) CONSISTENT | win60 49.0% | MFE60 0.07 MAE60 -0.07
+  session path straight (>= 0.55)                2112/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.001 +120 -0.001 | 60m net -0.016 (t -29.2, eras -0.027 -0.007 -0.005) CONSISTENT | win60 47.5% | MFE60 0.07 MAE60 -0.07
+  choppy (>= 3 crosses in last 60 min)           3448/yr | +5 -0.001 +15 -0.000 +30 -0.000 +60 +0.000 +120 +0.000 | 60m net -0.014 (t -32.7, eras -0.025 -0.006 -0.004) CONSISTENT | win60 48.4% | MFE60 0.07 MAE60 -0.07
+  clean (no other cross in 60 min)                398/yr | +5 +0.001 +15 +0.000 +30 -0.000 +60 -0.000 +120 +0.001 | 60m net -0.018 (t -14.1, eras -0.028 -0.005 -0.006) CONSISTENT | win60 48.4% | MFE60 0.07 MAE60 -0.07
+  EMA14 sloping the cross's way                  5322/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.001 +120 -0.001 | 60m net -0.016 (t -45.2, eras -0.026 -0.006 -0.005) CONSISTENT | win60 48.0% | MFE60 0.07 MAE60 -0.07
+  EMA14 sloping against                           545/yr | +5 -0.001 +15 -0.001 +30 -0.000 +60 +0.001 +120 +0.001 | 60m net -0.015 (t -14.6, eras -0.025 -0.006 -0.000) CONSISTENT | win60 48.1% | MFE60 0.07 MAE60 -0.07
+  with move + VWAP side + straight               1124/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.000 +120 +0.001 | 60m net -0.015 (t -20.2, eras -0.027 -0.008 +0.002) | win60 46.9% | MFE60 0.07 MAE60 -0.07
+
+== 1-min chart, London session
+  baselines (60 min, ATR): random direction -0.000 | last bar's direction -0.000
+  all crosses                                    4598/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.000 +120 -0.001 | 60m net -0.017 (t -25.6, eras -0.026 -0.007 -0.004) CONSISTENT | win60 48.8% | MFE60 0.12 MAE60 -0.12
+  up crosses                                     2297/yr | +5 -0.001 +15 -0.000 +30 +0.001 +60 +0.003 +120 +0.005 | 60m net -0.014 (t -15.0, eras -0.022 -0.005 -0.003) CONSISTENT | win60 51.2% | MFE60 0.12 MAE60 -0.12
+  down crosses                                   2302/yr | +5 -0.001 +15 -0.002 +30 -0.002 +60 -0.003 +120 -0.006 | 60m net -0.020 (t -21.2, eras -0.030 -0.009 -0.006) CONSISTENT | win60 46.4% | MFE60 0.12 MAE60 -0.12
+  cross WITH the session's move                  2376/yr | +5 -0.001 +15 -0.002 +30 -0.002 +60 -0.001 +120 -0.002 | 60m net -0.018 (t -19.4, eras -0.027 -0.008 -0.006) CONSISTENT | win60 47.8% | MFE60 0.12 MAE60 -0.12
+  cross AGAINST the session's move               2222/yr | +5 -0.001 +15 -0.000 +30 +0.000 +60 +0.001 +120 +0.001 | 60m net -0.016 (t -16.8, eras -0.026 -0.006 -0.003) CONSISTENT | win60 49.8% | MFE60 0.12 MAE60 -0.12
+  on the VWAP side of the cross                  2604/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 +0.000 +120 +0.000 | 60m net -0.016 (t -19.0, eras -0.025 -0.009 -0.001) CONSISTENT | win60 48.1% | MFE60 0.12 MAE60 -0.12
+  against VWAP                                   1995/yr | +5 -0.001 +15 -0.001 +30 -0.000 +60 -0.001 +120 -0.002 | 60m net -0.017 (t -17.2, eras -0.028 -0.003 -0.008) CONSISTENT | win60 49.6% | MFE60 0.12 MAE60 -0.12
+  session path straight (>= 0.55)                1517/yr | +5 -0.001 +15 -0.002 +30 -0.001 +60 -0.000 +120 -0.001 | 60m net -0.017 (t -14.6, eras -0.027 -0.007 -0.004) CONSISTENT | win60 48.3% | MFE60 0.12 MAE60 -0.12
+  choppy (>= 3 crosses in last 60 min)           3051/yr | +5 -0.001 +15 -0.001 +30 -0.000 +60 +0.000 +120 +0.000 | 60m net -0.016 (t -20.7, eras -0.026 -0.006 -0.004) CONSISTENT | win60 48.8% | MFE60 0.12 MAE60 -0.12
+  clean (no other cross in 60 min)                139/yr | +5 -0.001 +15 +0.001 +30 +0.003 +60 +0.006 +120 +0.011 | 60m net -0.011 (t -2.7, eras -0.022 -0.000 +0.003) | win60 50.5% | MFE60 0.12 MAE60 -0.12
+  EMA14 sloping the cross's way                  4181/yr | +5 -0.001 +15 -0.001 +30 -0.000 +60 +0.000 +120 -0.000 | 60m net -0.016 (t -23.8, eras -0.026 -0.007 -0.003) CONSISTENT | win60 48.8% | MFE60 0.12 MAE60 -0.12
+  EMA14 sloping against                           418/yr | +5 -0.000 +15 -0.002 +30 -0.004 +60 -0.005 +120 -0.003 | 60m net -0.021 (t -9.9, eras -0.030 -0.006 -0.016) CONSISTENT | win60 48.1% | MFE60 0.12 MAE60 -0.12
+  with move + VWAP side + straight                842/yr | +5 -0.001 +15 -0.002 +30 -0.002 +60 -0.001 +120 -0.003 | 60m net -0.018 (t -11.5, eras -0.026 -0.013 -0.000) CONSISTENT | win60 46.6% | MFE60 0.12 MAE60 -0.12
+
+== 1-min chart, NY session
+  baselines (60 min, ATR): random direction +0.001 | last bar's direction +0.001
+  all crosses                                    3810/yr | +5 -0.000 +15 -0.000 +30 +0.000 +60 +0.000 +120 +0.001 | 60m net -0.017 (t -16.5, eras -0.027 -0.006 -0.003) CONSISTENT | win60 49.4% | MFE60 0.18 MAE60 -0.18
+  up crosses                                     1911/yr | +5 +0.000 +15 +0.001 +30 +0.003 +60 +0.004 +120 +0.009 | 60m net -0.013 (t -9.0, eras -0.024 +0.002 +0.001) | win60 53.6% | MFE60 0.17 MAE60 -0.18
+  down crosses                                   1899/yr | +5 -0.001 +15 -0.002 +30 -0.002 +60 -0.004 +120 -0.008 | 60m net -0.020 (t -14.4, eras -0.029 -0.013 -0.007) CONSISTENT | win60 45.1% | MFE60 0.18 MAE60 -0.17
+  cross WITH the session's move                  1981/yr | +5 -0.001 +15 -0.000 +30 +0.003 +60 +0.002 +120 +0.005 | 60m net -0.015 (t -10.4, eras -0.027 -0.005 +0.005) | win60 50.6% | MFE60 0.18 MAE60 -0.18
+  cross AGAINST the session's move               1829/yr | +5 +0.000 +15 -0.001 +30 -0.002 +60 -0.002 +120 -0.004 | 60m net -0.018 (t -13.1, eras -0.026 -0.006 -0.011) CONSISTENT | win60 48.1% | MFE60 0.17 MAE60 -0.17
+  on the VWAP side of the cross                  2135/yr | +5 +0.000 +15 +0.001 +30 +0.004 +60 +0.004 +120 +0.006 | 60m net -0.012 (t -8.8, eras -0.023 +0.000 +0.001) | win60 50.4% | MFE60 0.19 MAE60 -0.18
+  against VWAP                                   1675/yr | +5 -0.001 +15 -0.002 +30 -0.004 +60 -0.005 +120 -0.006 | 60m net -0.022 (t -15.5, eras -0.031 -0.014 -0.008) CONSISTENT | win60 48.0% | MFE60 0.16 MAE60 -0.17
+  session path straight (>= 0.55)                1413/yr | +5 -0.000 +15 -0.000 +30 +0.001 +60 +0.001 +120 +0.000 | 60m net -0.016 (t -10.1, eras -0.027 -0.005 -0.002) CONSISTENT | win60 49.4% | MFE60 0.17 MAE60 -0.17
+  choppy (>= 3 crosses in last 60 min)           2491/yr | +5 -0.000 +15 +0.001 +30 +0.002 +60 +0.002 +120 +0.003 | 60m net -0.015 (t -12.2, eras -0.024 -0.004 -0.004) CONSISTENT | win60 49.7% | MFE60 0.18 MAE60 -0.18
+  clean (no other cross in 60 min)                121/yr | +5 -0.001 +15 -0.006 +30 -0.014 +60 -0.019 +120 -0.028 | 60m net -0.035 (t -6.3, eras -0.043 -0.034 -0.018) CONSISTENT | win60 43.8% | MFE60 0.16 MAE60 -0.19
+  EMA14 sloping the cross's way                  3475/yr | +5 -0.000 +15 -0.001 +30 +0.000 +60 -0.000 +120 -0.000 | 60m net -0.017 (t -16.3, eras -0.027 -0.007 -0.003) CONSISTENT | win60 49.2% | MFE60 0.18 MAE60 -0.18
+  EMA14 sloping against                           335/yr | +5 +0.001 +15 +0.002 +30 +0.004 +60 +0.005 +120 +0.006 | 60m net -0.012 (t -3.5, eras -0.024 +0.004 +0.001) | win60 50.7% | MFE60 0.18 MAE60 -0.17
+  NY 09:30-10:30                                  725/yr | +5 +0.000 +15 +0.001 +30 +0.002 +60 +0.001 +120 +0.000 | 60m net -0.016 (t -5.2, eras -0.025 -0.003 -0.005) CONSISTENT | win60 49.9% | MFE60 0.25 MAE60 -0.24
+  NY 10:30-12:00                                  998/yr | +5 -0.000 +15 +0.001 +30 +0.001 +60 +0.002 +120 +0.002 | 60m net -0.015 (t -7.6, eras -0.024 -0.004 -0.003) CONSISTENT | win60 49.4% | MFE60 0.18 MAE60 -0.18
+  NY 12:00-15:00                                 2087/yr | +5 -0.001 +15 -0.001 +30 -0.000 +60 -0.001 +120 -0.000 | 60m net -0.018 (t -15.0, eras -0.028 -0.008 -0.002) CONSISTENT | win60 49.2% | MFE60 0.15 MAE60 -0.16
+  with move + VWAP side + straight                761/yr | +5 -0.000 +15 +0.002 +30 +0.007 +60 +0.009 +120 +0.012 | 60m net -0.008 (t -3.6, eras -0.021 +0.006 +0.009) | win60 52.2% | MFE60 0.18 MAE60 -0.17
+
+== 5-min chart, Asia session
+  baselines (60 min, ATR): random direction -0.000 | last bar's direction -0.000
+  all crosses                                    1109/yr | +5 -0.000 +15 -0.001 +30 -0.001 +60 -0.001 +120 -0.000 | 60m net -0.016 (t -20.8, eras -0.026 -0.007 -0.006) CONSISTENT | win60 47.9% | MFE60 0.07 MAE60 -0.07
+  up crosses                                      555/yr | +5 -0.000 +15 -0.000 +30 +0.000 +60 +0.001 +120 +0.004 | 60m net -0.014 (t -12.9, eras -0.023 -0.005 -0.005) CONSISTENT | win60 50.0% | MFE60 0.07 MAE60 -0.07
+  down crosses                                    554/yr | +5 -0.001 +15 -0.001 +30 -0.002 +60 -0.003 +120 -0.005 | 60m net -0.019 (t -16.5, eras -0.029 -0.009 -0.007) CONSISTENT | win60 45.8% | MFE60 0.07 MAE60 -0.07
+  cross WITH the session's move                   615/yr | +5 -0.000 +15 -0.001 +30 -0.001 +60 -0.002 +120 -0.000 | 60m net -0.018 (t -16.4, eras -0.027 -0.010 -0.006) CONSISTENT | win60 47.5% | MFE60 0.07 MAE60 -0.07
+  cross AGAINST the session's move                495/yr | +5 -0.000 +15 -0.000 +30 +0.000 +60 +0.001 +120 -0.000 | 60m net -0.014 (t -12.8, eras -0.024 -0.004 -0.006) CONSISTENT | win60 48.3% | MFE60 0.07 MAE60 -0.07
+  on the VWAP side of the cross                   786/yr | +5 -0.001 +15 -0.001 +30 -0.001 +60 -0.001 +120 +0.002 | 60m net -0.016 (t -17.3, eras -0.026 -0.008 -0.005) CONSISTENT | win60 47.8% | MFE60 0.07 MAE60 -0.07
+  against VWAP                                    323/yr | +5 +0.000 +15 -0.000 +30 -0.001 +60 -0.001 +120 -0.006 | 60m net -0.015 (t -11.6, eras -0.025 -0.006 -0.009) CONSISTENT | win60 48.0% | MFE60 0.07 MAE60 -0.07
+  session path straight (>= 0.55)                 330/yr | +5 +0.000 +15 -0.001 +30 -0.001 +60 -0.003 +120 +0.000 | 60m net -0.018 (t -13.2, eras -0.027 -0.009 -0.010) CONSISTENT | win60 47.2% | MFE60 0.07 MAE60 -0.07
+  choppy (>= 3 crosses in last 60 min)             52/yr | +5 -0.001 +15 -0.003 +30 -0.002 +60 -0.000 +120 +0.001 | 60m net -0.014 (t -4.4, eras -0.023 -0.014 +0.001) | win60 47.3% | MFE60 0.07 MAE60 -0.07
+  clean (no other cross in 60 min)                604/yr | +5 -0.000 +15 -0.001 +30 -0.002 +60 -0.002 +120 -0.002 | 60m net -0.018 (t -17.3, eras -0.027 -0.009 -0.007) CONSISTENT | win60 47.6% | MFE60 0.07 MAE60 -0.07
+  EMA14 sloping the cross's way                  1012/yr | +5 -0.000 +15 -0.001 +30 -0.001 +60 -0.001 +120 -0.001 | 60m net -0.016 (t -19.8, eras -0.026 -0.007 -0.007) CONSISTENT | win60 47.8% | MFE60 0.07 MAE60 -0.07
+  EMA14 sloping against                            97/yr | +5 -0.001 +15 -0.000 +30 -0.000 +60 +0.000 +120 +0.003 | 60m net -0.015 (t -6.3, eras -0.026 -0.005 -0.003) CONSISTENT | win60 48.2% | MFE60 0.07 MAE60 -0.06
+  with move + VWAP side + straight                224/yr | +5 -0.000 +15 -0.001 +30 -0.001 +60 -0.003 +120 +0.003 | 60m net -0.018 (t -10.6, eras -0.027 -0.008 -0.009) CONSISTENT | win60 47.0% | MFE60 0.07 MAE60 -0.07
+
+== 5-min chart, London session
+  baselines (60 min, ATR): random direction +0.001 | last bar's direction +0.001
+  all crosses                                     928/yr | +5 -0.000 +15 -0.000 +30 +0.000 +60 -0.001 +120 -0.001 | 60m net -0.017 (t -11.7, eras -0.028 -0.004 -0.008) CONSISTENT | win60 48.4% | MFE60 0.12 MAE60 -0.12
+  up crosses                                      461/yr | +5 +0.001 +15 +0.001 +30 +0.002 +60 +0.002 +120 +0.004 | 60m net -0.014 (t -6.8, eras -0.024 -0.003 -0.002) CONSISTENT | win60 51.0% | MFE60 0.12 MAE60 -0.12
+  down crosses                                    467/yr | +5 -0.001 +15 -0.002 +30 -0.002 +60 -0.004 +120 -0.006 | 60m net -0.020 (t -9.7, eras -0.032 -0.004 -0.012) CONSISTENT | win60 45.7% | MFE60 0.12 MAE60 -0.12
+  cross WITH the session's move                   546/yr | +5 -0.000 +15 -0.001 +30 +0.000 +60 -0.002 +120 -0.001 | 60m net -0.018 (t -9.6, eras -0.031 -0.004 -0.004) CONSISTENT | win60 48.0% | MFE60 0.12 MAE60 -0.12
+  cross AGAINST the session's move                382/yr | +5 -0.000 +15 +0.000 +30 +0.000 +60 +0.001 +120 -0.000 | 60m net -0.016 (t -6.7, eras -0.024 -0.003 -0.012) CONSISTENT | win60 48.9% | MFE60 0.12 MAE60 -0.12
+  on the VWAP side of the cross                   718/yr | +5 -0.001 +15 -0.001 +30 +0.000 +60 -0.001 +120 -0.001 | 60m net -0.017 (t -10.5, eras -0.029 -0.002 -0.006) CONSISTENT | win60 48.2% | MFE60 0.12 MAE60 -0.12
+  against VWAP                                    209/yr | +5 +0.001 +15 +0.000 +30 -0.000 +60 -0.002 +120 -0.001 | 60m net -0.018 (t -5.2, eras -0.024 -0.008 -0.014) CONSISTENT | win60 48.8% | MFE60 0.13 MAE60 -0.13
+  session path straight (>= 0.55)                 233/yr | +5 -0.000 +15 +0.001 +30 +0.001 +60 -0.003 +120 -0.005 | 60m net -0.020 (t -6.3, eras -0.032 -0.002 -0.013) CONSISTENT | win60 47.4% | MFE60 0.13 MAE60 -0.13
+  choppy (>= 3 crosses in last 60 min)             50/yr | +5 +0.000 +15 +0.001 +30 +0.004 +60 +0.006 +120 -0.003 | 60m net -0.009 (t -1.6, eras -0.020 -0.002 +0.005) | win60 51.1% | MFE60 0.12 MAE60 -0.11
+  clean (no other cross in 60 min)                446/yr | +5 -0.000 +15 -0.001 +30 -0.002 +60 -0.004 +120 -0.002 | 60m net -0.020 (t -9.7, eras -0.031 -0.008 -0.009) CONSISTENT | win60 47.4% | MFE60 0.12 MAE60 -0.12
+  EMA14 sloping the cross's way                   847/yr | +5 -0.000 +15 -0.000 +30 -0.000 +60 -0.002 +120 -0.002 | 60m net -0.018 (t -11.5, eras -0.029 -0.003 -0.010) CONSISTENT | win60 48.2% | MFE60 0.12 MAE60 -0.12
+  EMA14 sloping against                            80/yr | +5 +0.000 +15 -0.000 +30 +0.005 +60 +0.005 +120 +0.012 | 60m net -0.011 (t -2.3, eras -0.021 -0.012 +0.012) | win60 49.7% | MFE60 0.13 MAE60 -0.12
+  with move + VWAP side + straight                172/yr | +5 -0.001 +15 +0.001 +30 +0.003 +60 -0.000 +120 -0.002 | 60m net -0.017 (t -4.8, eras -0.029 -0.002 -0.004) CONSISTENT | win60 47.6% | MFE60 0.13 MAE60 -0.12
+
+== 5-min chart, NY session
+  baselines (60 min, ATR): random direction -0.001 | last bar's direction +0.002
+  all crosses                                     748/yr | +5 +0.001 +15 +0.002 +30 +0.004 +60 +0.004 +120 +0.008 | 60m net -0.012 (t -5.3, eras -0.022 -0.001 +0.000) | win60 49.5% | MFE60 0.19 MAE60 -0.18
+  up crosses                                      379/yr | +5 +0.001 +15 +0.003 +30 +0.006 +60 +0.008 +120 +0.015 | 60m net -0.008 (t -2.8, eras -0.015 -0.004 +0.002) | win60 53.6% | MFE60 0.18 MAE60 -0.18
+  down crosses                                    369/yr | +5 +0.001 +15 +0.001 +30 +0.002 +60 +0.001 +120 +0.000 | 60m net -0.016 (t -4.6, eras -0.029 +0.002 -0.001) | win60 45.2% | MFE60 0.20 MAE60 -0.18
+  cross WITH the session's move                   452/yr | +5 +0.002 +15 +0.002 +30 +0.003 +60 +0.005 +120 +0.009 | 60m net -0.011 (t -3.4, eras -0.023 -0.001 +0.008) | win60 50.1% | MFE60 0.20 MAE60 -0.19
+  cross AGAINST the session's move                297/yr | +5 -0.001 +15 +0.002 +30 +0.005 +60 +0.003 +120 +0.005 | 60m net -0.014 (t -4.4, eras -0.021 -0.001 -0.011) CONSISTENT | win60 48.5% | MFE60 0.17 MAE60 -0.16
+  on the VWAP side of the cross                   550/yr | +5 +0.002 +15 +0.003 +30 +0.005 +60 +0.006 +120 +0.008 | 60m net -0.010 (t -3.7, eras -0.021 +0.005 +0.000) | win60 50.3% | MFE60 0.20 MAE60 -0.19
+  against VWAP                                    198/yr | +5 -0.001 +15 +0.001 +30 +0.001 +60 -0.000 +120 +0.007 | 60m net -0.017 (t -4.5, eras -0.023 -0.017 +0.001) | win60 47.0% | MFE60 0.16 MAE60 -0.15
+  session path straight (>= 0.55)                 199/yr | +5 +0.004 +15 +0.004 +30 +0.009 +60 +0.010 +120 +0.020 | 60m net -0.006 (t -1.3, eras -0.021 +0.006 +0.015) | win60 49.8% | MFE60 0.20 MAE60 -0.19
+  choppy (>= 3 crosses in last 60 min)             42/yr | +5 +0.003 +15 -0.005 +30 +0.002 +60 +0.001 +120 -0.006 | 60m net -0.016 (t -1.7, eras -0.030 +0.011 -0.007) | win60 49.4% | MFE60 0.19 MAE60 -0.18
+  clean (no other cross in 60 min)                366/yr | +5 +0.000 +15 +0.002 +30 +0.004 +60 +0.004 +120 +0.009 | 60m net -0.012 (t -3.8, eras -0.026 +0.003 +0.005) | win60 49.0% | MFE60 0.19 MAE60 -0.18
+  EMA14 sloping the cross's way                   685/yr | +5 +0.001 +15 +0.002 +30 +0.004 +60 +0.004 +120 +0.007 | 60m net -0.012 (t -5.1, eras -0.022 -0.001 -0.001) CONSISTENT | win60 49.4% | MFE60 0.19 MAE60 -0.18
+  EMA14 sloping against                            64/yr | +5 +0.003 +15 +0.002 +30 +0.004 +60 +0.006 +120 +0.012 | 60m net -0.011 (t -1.4, eras -0.021 -0.005 +0.011) | win60 49.8% | MFE60 0.19 MAE60 -0.18
+  NY 09:30-10:30                                  190/yr | +5 +0.003 +15 +0.005 +30 +0.005 +60 +0.008 +120 +0.011 | 60m net -0.009 (t -1.5, eras -0.025 +0.008 +0.013) | win60 50.5% | MFE60 0.25 MAE60 -0.24
+  NY 10:30-12:00                                  171/yr | +5 -0.000 +15 +0.002 +30 +0.007 +60 +0.007 +120 +0.008 | 60m net -0.009 (t -2.0, eras -0.013 -0.001 -0.008) | win60 49.9% | MFE60 0.19 MAE60 -0.17
+  NY 12:00-15:00                                  387/yr | +5 +0.000 +15 +0.001 +30 +0.002 +60 +0.001 +120 +0.006 | 60m net -0.015 (t -5.6, eras -0.025 -0.005 -0.002) CONSISTENT | win60 48.7% | MFE60 0.16 MAE60 -0.15
+  with move + VWAP side + straight                138/yr | +5 +0.006 +15 +0.006 +30 +0.011 +60 +0.017 +120 +0.027 | 60m net +0.001 (t +0.2, eras -0.015 +0.024 +0.015) | win60 52.0% | MFE60 0.22 MAE60 -0.20
+
+== 15-min chart, Asia session
+  baselines (60 min, ATR): random direction +0.001 | last bar's direction -0.003
+  all crosses                                     310/yr | +5 -0.001 +15 -0.000 +30 -0.002 +60 -0.003 +120 -0.003 | 60m net -0.018 (t -11.2, eras -0.028 -0.012 -0.002) CONSISTENT | win60 47.4% | MFE60 0.07 MAE60 -0.08
+  up crosses                                      154/yr | +5 -0.001 +15 -0.002 +30 -0.002 +60 -0.001 +120 +0.000 | 60m net -0.016 (t -7.6, eras -0.026 -0.008 -0.003) CONSISTENT | win60 49.4% | MFE60 0.07 MAE60 -0.08
+  down crosses                                    156/yr | +5 +0.000 +15 +0.001 +30 -0.001 +60 -0.004 +120 -0.006 | 60m net -0.019 (t -8.2, eras -0.030 -0.015 -0.001) CONSISTENT | win60 45.4% | MFE60 0.08 MAE60 -0.07
+  cross WITH the session's move                   210/yr | +5 +0.000 +15 -0.000 +30 -0.001 +60 -0.002 +120 -0.003 | 60m net -0.018 (t -9.0, eras -0.026 -0.014 -0.002) CONSISTENT | win60 47.3% | MFE60 0.07 MAE60 -0.07
+  cross AGAINST the session's move                100/yr | +5 -0.002 +15 -0.001 +30 -0.002 +60 -0.003 +120 -0.003 | 60m net -0.018 (t -6.7, eras -0.032 -0.008 -0.003) CONSISTENT | win60 47.5% | MFE60 0.07 MAE60 -0.08
+  on the VWAP side of the cross                   282/yr | +5 -0.001 +15 -0.001 +30 -0.002 +60 -0.002 +120 -0.002 | 60m net -0.018 (t -10.5, eras -0.028 -0.012 -0.002) CONSISTENT | win60 47.3% | MFE60 0.07 MAE60 -0.07
+  against VWAP                                     28/yr | +5 +0.000 +15 +0.003 +30 +0.001 +60 -0.005 +120 -0.011 | 60m net -0.020 (t -4.1, eras -0.030 -0.016 -0.004) CONSISTENT | win60 47.8% | MFE60 0.08 MAE60 -0.08
+  session path straight (>= 0.55)                  86/yr | +5 +0.000 +15 -0.002 +30 -0.004 +60 -0.004 +120 -0.006 | 60m net -0.020 (t -6.8, eras -0.027 -0.021 -0.000) CONSISTENT | win60 47.2% | MFE60 0.07 MAE60 -0.08
+  clean (no other cross in 60 min)                253/yr | +5 -0.000 +15 +0.000 +30 -0.001 +60 -0.002 +120 -0.003 | 60m net -0.017 (t -9.7, eras -0.027 -0.012 -0.002) CONSISTENT | win60 47.5% | MFE60 0.07 MAE60 -0.07
+  EMA14 sloping the cross's way                   286/yr | +5 -0.001 +15 -0.000 +30 -0.002 +60 -0.003 +120 -0.003 | 60m net -0.018 (t -10.8, eras -0.028 -0.012 -0.003) CONSISTENT | win60 47.0% | MFE60 0.07 MAE60 -0.08
+  EMA14 sloping against                            24/yr | +5 +0.000 +15 +0.000 +30 -0.000 +60 +0.001 +120 +0.003 | 60m net -0.015 (t -2.9, eras -0.027 -0.008 +0.008) | win60 52.2% | MFE60 0.07 MAE60 -0.07
+  with move + VWAP side + straight                 79/yr | +5 -0.000 +15 -0.002 +30 -0.003 +60 -0.003 +120 -0.006 | 60m net -0.020 (t -6.3, eras -0.027 -0.019 -0.002) CONSISTENT | win60 47.4% | MFE60 0.07 MAE60 -0.08
+
+== 15-min chart, London session
+  baselines (60 min, ATR): random direction -0.001 | last bar's direction -0.001
+  all crosses                                     329/yr | +5 -0.002 +15 -0.001 +30 -0.001 +60 -0.005 +120 -0.003 | 60m net -0.022 (t -8.5, eras -0.032 -0.014 -0.006) CONSISTENT | win60 47.5% | MFE60 0.13 MAE60 -0.13
+  up crosses                                      162/yr | +5 -0.001 +15 +0.000 +30 +0.001 +60 +0.002 +120 +0.008 | 60m net -0.015 (t -4.0, eras -0.022 -0.002 -0.012) CONSISTENT | win60 50.0% | MFE60 0.12 MAE60 -0.12
+  down crosses                                    167/yr | +5 -0.003 +15 -0.002 +30 -0.003 +60 -0.012 +120 -0.014 | 60m net -0.029 (t -8.1, eras -0.041 -0.025 +0.000) | win60 45.1% | MFE60 0.13 MAE60 -0.13
+  cross WITH the session's move                   250/yr | +5 -0.002 +15 -0.001 +30 -0.002 +60 -0.006 +120 -0.004 | 60m net -0.023 (t -8.0, eras -0.033 -0.009 -0.012) CONSISTENT | win60 46.8% | MFE60 0.12 MAE60 -0.12
+  cross AGAINST the session's move                 79/yr | +5 -0.001 +15 -0.000 +30 +0.003 +60 -0.003 +120 -0.000 | 60m net -0.019 (t -3.3, eras -0.027 -0.027 +0.016) | win60 49.6% | MFE60 0.14 MAE60 -0.14
+  on the VWAP side of the cross                   316/yr | +5 -0.002 +15 -0.001 +30 -0.001 +60 -0.005 +120 -0.003 | 60m net -0.022 (t -8.3, eras -0.032 -0.014 -0.006) CONSISTENT | win60 47.4% | MFE60 0.13 MAE60 -0.13
+  against VWAP                                     13/yr | +5 +0.004 +15 -0.002 +30 -0.012 +60 -0.003 +120 -0.005 | 60m net -0.020 (t -1.8, eras -0.027 -0.016 -0.005) | win60 49.3% | MFE60 0.11 MAE60 -0.11
+  session path straight (>= 0.55)                  78/yr | +5 -0.001 +15 -0.000 +30 -0.002 +60 -0.006 +120 -0.012 | 60m net -0.022 (t -4.4, eras -0.027 -0.021 -0.008) CONSISTENT | win60 45.7% | MFE60 0.12 MAE60 -0.12
+  clean (no other cross in 60 min)                244/yr | +5 -0.002 +15 -0.002 +30 -0.002 +60 -0.005 +120 -0.004 | 60m net -0.022 (t -7.3, eras -0.032 -0.019 -0.000) CONSISTENT | win60 47.4% | MFE60 0.12 MAE60 -0.13
+  EMA14 sloping the cross's way                   301/yr | +5 -0.002 +15 -0.001 +30 -0.002 +60 -0.005 +120 -0.003 | 60m net -0.022 (t -8.2, eras -0.031 -0.018 -0.004) CONSISTENT | win60 47.5% | MFE60 0.12 MAE60 -0.13
+  EMA14 sloping against                            28/yr | +5 -0.001 +15 +0.000 +30 +0.006 +60 -0.006 +120 -0.008 | 60m net -0.022 (t -2.3, eras -0.044 +0.028 -0.024) | win60 47.1% | MFE60 0.13 MAE60 -0.13
+  with move + VWAP side + straight                 76/yr | +5 -0.001 +15 -0.000 +30 -0.001 +60 -0.005 +120 -0.011 | 60m net -0.021 (t -4.3, eras -0.026 -0.019 -0.009) CONSISTENT | win60 45.7% | MFE60 0.12 MAE60 -0.12
+
+== 15-min chart, NY session
+  baselines (60 min, ATR): random direction +0.000 | last bar's direction +0.002
+  all crosses                                     266/yr | +5 +0.001 +15 +0.004 +30 +0.003 +60 +0.008 +120 +0.010 | 60m net -0.009 (t -2.2, eras -0.017 -0.004 +0.008) | win60 49.4% | MFE60 0.20 MAE60 -0.19
+  up crosses                                      137/yr | +5 -0.001 +15 +0.001 +30 +0.001 +60 +0.003 +120 +0.014 | 60m net -0.013 (t -2.6, eras -0.018 -0.009 -0.005) CONSISTENT | win60 52.2% | MFE60 0.18 MAE60 -0.18
+  down crosses                                    129/yr | +5 +0.003 +15 +0.007 +30 +0.006 +60 +0.012 +120 +0.007 | 60m net -0.004 (t -0.7, eras -0.016 +0.001 +0.022) | win60 46.4% | MFE60 0.23 MAE60 -0.19
+  cross WITH the session's move                   211/yr | +5 +0.001 +15 +0.004 +30 +0.003 +60 +0.009 +120 +0.013 | 60m net -0.007 (t -1.6, eras -0.020 +0.002 +0.015) | win60 50.0% | MFE60 0.21 MAE60 -0.19
+  cross AGAINST the session's move                 55/yr | +5 -0.000 +15 +0.004 +30 +0.004 +60 +0.002 +120 -0.001 | 60m net -0.015 (t -2.0, eras -0.007 -0.028 -0.020) | win60 46.8% | MFE60 0.17 MAE60 -0.16
+  on the VWAP side of the cross                   254/yr | +5 +0.001 +15 +0.004 +30 +0.003 +60 +0.007 +120 +0.010 | 60m net -0.009 (t -2.2, eras -0.018 -0.004 +0.008) | win60 49.4% | MFE60 0.20 MAE60 -0.19
+  against VWAP                                     12/yr | +5 +0.008 +15 +0.008 +30 +0.002 +60 +0.011 +120 +0.014 | 60m net -0.004 (t -0.3, eras -0.011 -0.007 +0.017) | win60 49.5% | MFE60 0.18 MAE60 -0.17
+  session path straight (>= 0.55)                  68/yr | +5 +0.006 +15 +0.011 +30 +0.007 +60 +0.012 +120 +0.012 | 60m net -0.004 (t -0.4, eras -0.020 +0.001 +0.029) | win60 50.7% | MFE60 0.25 MAE60 -0.22
+  clean (no other cross in 60 min)                196/yr | +5 +0.002 +15 +0.006 +30 +0.007 +60 +0.012 +120 +0.016 | 60m net -0.005 (t -1.0, eras -0.012 -0.006 +0.016) | win60 49.5% | MFE60 0.21 MAE60 -0.18
+  EMA14 sloping the cross's way                   242/yr | +5 +0.001 +15 +0.005 +30 +0.005 +60 +0.010 +120 +0.013 | 60m net -0.007 (t -1.6, eras -0.013 -0.006 +0.009) | win60 49.3% | MFE60 0.21 MAE60 -0.19
+  EMA14 sloping against                            25/yr | +5 -0.001 +15 -0.005 +30 -0.009 +60 -0.012 +120 -0.018 | 60m net -0.028 (t -2.2, eras -0.056 +0.008 +0.001) | win60 50.1% | MFE60 0.19 MAE60 -0.19
+  NY 09:30-10:30                                   89/yr | +5 +0.003 +15 +0.006 +30 +0.005 +60 +0.012 +120 +0.017 | 60m net -0.005 (t -0.6, eras -0.015 +0.003 +0.015) | win60 52.0% | MFE60 0.26 MAE60 -0.24
+  NY 10:30-12:00                                   66/yr | +5 +0.000 +15 +0.000 +30 +0.001 +60 +0.003 +120 -0.002 | 60m net -0.014 (t -2.0, eras -0.026 -0.007 +0.014) | win60 49.2% | MFE60 0.18 MAE60 -0.17
+  NY 12:00-15:00                                  111/yr | +5 +0.000 +15 +0.005 +30 +0.003 +60 +0.007 +120 +0.013 | 60m net -0.009 (t -1.7, eras -0.013 -0.008 -0.001) | win60 47.4% | MFE60 0.17 MAE60 -0.16
+  with move + VWAP side + straight                 68/yr | +5 +0.006 +15 +0.011 +30 +0.008 +60 +0.013 +120 +0.012 | 60m net -0.003 (t -0.4, eras -0.020 +0.002 +0.029) | win60 50.9% | MFE60 0.25 MAE60 -0.22
