@@ -1,0 +1,23 @@
+{
+  "id": "pd_hold",
+  "name": "PDH/PDL break that holds 30 min",
+  "why": "A break of yesterday's high/low that holds 30 minutes means the other side's stops are gone and new participants accept the price; trapped faders cover. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_gaps_and_holds.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {},
+  "scan": {
+    "tf": 5,
+    "from": "10:00",
+    "to": "13:00",
+    "when": "!rollwin && open < ph && open > pl && ((ll(1,30) > ph) || (hh(1,30) < pl))",
+    "dir": "(ll(1,30) > ph) - (hh(1,30) < pl)"
+  },
+  "max_trades": 1,
+  "stop": "0.35*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

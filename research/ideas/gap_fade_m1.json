@@ -1,0 +1,22 @@
+{
+  "id": "gap_fade_m1",
+  "name": "gap_fade_m1",
+  "why": "Small overnight gaps are mostly inventory imbalance from thin trading; at the cash open market makers and arbitrage pull price back to the prior settlement. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_gaps_and_holds.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {},
+  "checks": [
+    {
+      "at": "09:31",
+      "when": "!rollwin && abs(gap) >= 0.1 && abs(gap) < 0.25",
+      "dir": "-sign(gap)"
+    }
+  ],
+  "stop": "1*abs(gap)*atr",
+  "target": "1.00",
+  "flat": "10:30",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}
