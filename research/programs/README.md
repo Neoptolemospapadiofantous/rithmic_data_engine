@@ -23,6 +23,7 @@ Never run a replay or rebuild `build/` 09:25–16:05 ET on a weekday (these prog
 | `session_model` | research/preregistered/2026-10-19_session_model.md | 2026-10-19 session model: does what is known at a session's open predict the Asia / London / NY session's direction, size and trend? |
 | `intraday_models` | research/preregistered/2026-10-19_intraday_models.md | 2026-10-19 intraday models: A) predict the NY RTH range at 09:30; B) at 09:50 / 10:30 predict the move to 15:55 and compare with "go with the move". |
 | `behavior3` | research/preregistered/2026-10-19_behavior_part3.md | 2026-10-19 behaviour part 3 + order flow: pullback depth, gap fills, sweeps of yesterday's high/low, round numbers, afternoon, early volume, aggressor delta / divergence / absorption / book imbalance (2023+). |
+| `target_by_range` | research/preregistered/2026-10-19_attack_behaviour.md | 2026-10-19: book trades re-simulated on 1m bars with targets by the predicted NQ range (1.5 / 2 / 3R) vs 2R everywhere. |
 | `awk_20261019/` | research/preregistered/2026-10-19_vest_funded.md and the other 2026-10-19 studies | the Vest eval / funded / portfolio simulators and the session-behaviour scripts (awk), with their saved outputs in out/ |
 | `book3` | — | #include "research/meta.hpp" |
 | `both` | research/preregistered/2026-10-17_more_trades.md | 2026-10-17 pre-registered A (research/preregistered/2026-10-17_more_trades.md): take both the cascade and the gap retest |

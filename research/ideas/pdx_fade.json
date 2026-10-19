@@ -1,0 +1,32 @@
+{
+  "id": "pdx_fade",
+  "name": "Fade the first break of yesterday high / low",
+  "why": "Most first breaks of yesterday's high/low (83 %) come back inside within 30 minutes: the break runs the resting stops above/below the level and the initiators unload into them. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_attack_behaviour.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "stopk": [
+      0.15,
+      0.25
+    ],
+    "rr": [
+      1,
+      2
+    ]
+  },
+  "scan": {
+    "tf": 1,
+    "from": "09:35",
+    "to": "15:00",
+    "when": "!rollwin && open < ph && open > pl && ((hi(1,1) > ph && lag(1, hod) <= ph) || (lo(1,1) < pl && lag(1, lod) >= pl))",
+    "dir": "-((hi(1,1) > ph && lag(1, hod) <= ph) - (lo(1,1) < pl && lag(1, lod) >= pl))"
+  },
+  "max_trades": 2,
+  "stop": "stopk*atr",
+  "target": "rr",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}
