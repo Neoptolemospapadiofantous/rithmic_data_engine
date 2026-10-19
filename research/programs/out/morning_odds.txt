@@ -1,0 +1,8 @@
+10:00 straight + moved >= 0.25 ATR   | 10-18 n 179 trend 52.5% chop 24.0% closes that side 83.2% | 19-26 n 128 trend 52.3% chop 18.8% closes that side 78.9%
+10:00 straight, small move           | 10-18 n 610 trend 47.0% chop 18.7% closes that side 68.9% | 19-26 n 587 trend 50.3% chop 19.4% closes that side 68.1%
+10:00 middle (0.30-0.55)             | 10-18 n 581 trend 41.5% chop 22.5% closes that side 62.3% | 19-26 n 516 trend 45.5% chop 20.0% closes that side 59.3%
+10:00 choppy (< 0.30)                | 10-18 n 679 trend 40.1% chop 21.1% closes that side 48.6% | 19-26 n 554 trend 42.4% chop 20.9% closes that side 53.2%
+10:30 straight + moved >= 0.25 ATR   | 10-18 n 368 trend 57.3% chop 16.6% closes that side 87.0% | 19-26 n 302 trend 58.3% chop 15.6% closes that side 83.8%
+10:30 straight, small move           | 10-18 n 385 trend 46.0% chop 21.8% closes that side 70.1% | 19-26 n 416 trend 51.7% chop 20.2% closes that side 77.4%
+10:30 middle (0.30-0.55)             | 10-18 n 657 trend 40.3% chop 21.6% closes that side 69.7% | 19-26 n 510 trend 43.1% chop 22.4% closes that side 66.7%
+10:30 choppy (< 0.30)                | 10-18 n 642 trend 37.7% chop 22.6% closes that side 55.3% | 19-26 n 557 trend 39.7% chop 20.1% closes that side 61.0%

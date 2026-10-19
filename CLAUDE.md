@@ -36,8 +36,8 @@ Agent prompts live in `scripts/fleet_agents.json`.
 A StarNet crew (`~/starnet`, :8787, user unit `starnet`, via `starnet-adapter` :8099 → claude-bridge) researches
 this repo from a **read-only clone** and never touches live trading. **Budgeted to the WEEKLY Claude limit**
 (2026-10-01, founder: mix models + slower — every 2 h at 50 calls/h on Opus had spent the whole week in ~21 h):
-routine agents on **Sonnet 5**, judgment on **Opus 5.5**, a cycle every **4 hours**, adapter caps 40 calls/h and
-250/day. Times are Cyprus:
+routine agents on **Sonnet 5**, judgment on **Opus 5.5**, a cycle every **4 hours**, adapter caps 80 calls/h and
+400/day (raised 2026-10-18 when the desk resumed — 40/h could not finish a cycle). Times are Cyprus:
 
 | When | Who (model) | What |
 |---|---|---|
@@ -60,7 +60,7 @@ switched off when you resume.
 The desk works toward ONE StarNet goal (set 2026-09-30): find a strategy that passes the Tradeify evaluation on 1 NQ and prove it on paper (≥20 forward trades / 3+ sessions, SKEPTIC ROBUST, PROPDESK >50% to +$3,000 before breaching −$500 daily / $1,000 trailing / 30% consistency, ≤5 trades/day). Night Shift is steered to it. Going live stays the founder's decision: the desk only proposes. The `desk` label is research
 only (the live paper fleet is `tradeify`); `desk_replay.sh` deletes and re-writes rows of that label
 for the ids it replays and nothing else. Uncommitted work in this checkout is invisible to the crew.
-Jobs live in StarNet (`/api/cron`) and fire only while its scheduler is ARMED (`GET /api/cron` → `enabled: true`, `health.lastTickAt` recent; arm with `POST /api/cron/arm {"enabled":true}`). The adapter caps StarNet at 40 calls per rolling hour and 250/day, 4 in flight, and backs off 15 min
+Jobs live in StarNet (`/api/cron`) and fire only while its scheduler is ARMED (`GET /api/cron` → `enabled: true`, `health.lastTickAt` recent; arm with `POST /api/cron/arm {"enabled":true}`). The adapter caps StarNet at 80 calls per rolling hour and 400/day, 4 in flight, and backs off 15 min
 after a subscription-limit error. Findings are not auto-applied — triage them in a session here.
 
 ## Stack

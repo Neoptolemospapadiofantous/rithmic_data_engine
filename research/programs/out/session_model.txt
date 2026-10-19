@@ -1,0 +1,22 @@
+NQ session model — 9924 session rows, 20100722 → 20261015. Walk-forward by year 2014–2024 (fit on all earlier years), 2025–26 one look.
+
+================ Asia 18:00-03:00 ================
+  2014-18            n 1037 | direction hit 57.1% (ridge 55.1%, always-up 56.9%) | corr pred/actual +0.036 | trend share: top fifth 46.4% vs bottom fifth 42.5% (all 44.0%) | trade top-half |pred|: 441, +0.0379 ATR/trade (t +2.40)
+  2019-24            n 1285 | direction hit 52.0% (ridge 52.9%, always-up 54.2%) | corr pred/actual +0.032 | trend share: top fifth 46.7% vs bottom fifth 44.0% (all 45.1%) | trade top-half |pred|: 652, +0.0187 ATR/trade (t +1.45)
+  2025-26 (holdout)  n  259 | direction hit 45.6% (ridge 51.4%, always-up 51.7%) | corr pred/actual -0.123 | trend share: top fifth 56.9% vs bottom fifth 39.2% (all 47.1%) | trade top-half |pred|: 134, -0.0133 ATR/trade (t -0.41)
+  move model, top features by gain: prev NY move 12%, VIX/VIX3M 11%, week so far 9%, gap (open vs prev close) 8%, VIX 1d change 6%, ES same pre-move 6%
+  trend model, top features by gain: prev NY range 13%, week so far 11%, e5 7%, e20 6%, VIX 1d change 6%, ES same pre-move 6%
+
+================ London 03:00-09:30 ================
+  2014-18            n 1037 | direction hit 50.1% (ridge 50.8%, always-up 51.4%) | corr pred/actual -0.034 | trend share: top fifth 47.8% vs bottom fifth 40.1% (all 41.8%) | trade top-half |pred|: 502, -0.0017 ATR/trade (t -0.12)
+  2019-24            n 1285 | direction hit 49.4% (ridge 50.8%, always-up 51.4%) | corr pred/actual -0.013 | trend share: top fifth 44.7% vs bottom fifth 44.0% (all 44.8%) | trade top-half |pred|: 664, -0.0057 ATR/trade (t -0.40)
+  2025-26 (holdout)  n  259 | direction hit 50.2% (ridge 51.7%, always-up 49.8%) | corr pred/actual -0.151 | trend share: top fifth 47.1% vs bottom fifth 37.3% (all 39.8%) | trade top-half |pred|: 120, -0.0600 ATR/trade (t -1.77)
+  move model, top features by gain: prev NY range 14%, open vs overnight high 8%, VIX 7%, open vs overnight low 6%, Asia range 5%, e20 5%
+  trend model, top features by gain: week so far 13%, open vs prev NY low 7%, open vs overnight high 7%, VIX 6%, r5 6%, VIX/VIX3M 6%
+
+================ NY 09:30-16:00 ================
+  2014-18            n 1037 | direction hit 49.2% (ridge 53.9%, always-up 54.5%) | corr pred/actual +0.015 | trend share: top fifth 45.4% vs bottom fifth 44.4% (all 45.5%) | trade top-half |pred|: 512, +0.0010 ATR/trade (t +0.03)
+  2019-24            n 1285 | direction hit 51.7% (ridge 53.6%, always-up 54.9%) | corr pred/actual +0.028 | trend share: top fifth 55.6% vs bottom fifth 45.1% (all 50.6%) | trade top-half |pred|: 616, +0.0109 ATR/trade (t +0.39)
+  2025-26 (holdout)  n  259 | direction hit 56.0% (ridge 58.3%, always-up 54.4%) | corr pred/actual +0.155 | trend share: top fifth 51.0% vs bottom fifth 37.3% (all 50.6%) | trade top-half |pred|: 117, +0.1081 ATR/trade (t +1.76)
+  move model, top features by gain: e20 11%, Asia move 7%, London range 6%, r5 5%, VIX/VIX3M 5%, open vs prev NY high 5%
+  trend model, top features by gain: r20 10%, p20 8%, Asia range 7%, prev NY close loc 6%, open vs overnight low 6%, open vs overnight high 6%

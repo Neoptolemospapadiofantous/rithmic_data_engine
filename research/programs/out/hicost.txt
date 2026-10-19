@@ -1,0 +1,39 @@
+===== cost 10
+FW   $50  claim 500  | 2019-25    8155/yr losing 23/82  | 2010-18    4974/yr losing 22/89  | avg +6564
+FW   $50  claim 750  | 2019-25    7334/yr losing 25/82  | 2010-18    3575/yr losing 26/89  | avg +5454
+FW   $75  claim 500  | 2019-25    3506/yr losing 39/82  | 2010-18    4129/yr losing 39/89  | avg +3817
+FW   $75  claim 750  | 2019-25    1877/yr losing 46/82  | 2010-18    1622/yr losing 47/89  | avg +1749
+B1W  $50  claim 500  | 2019-25    3448/yr losing 37/82  | 2010-18     492/yr losing 41/89  | avg +1970
+B1W  $50  claim 750  | 2019-25    2576/yr losing 45/82  | 2010-18    -220/yr losing 55/89  | avg +1178
+B1W  $75  claim 500  | 2019-25    6018/yr losing 34/82  | 2010-18    2568/yr losing 37/89  | avg +4293
+B1W  $75  claim 750  | 2019-25    5396/yr losing 35/82  | 2010-18    1174/yr losing 39/89  | avg +3285
+C    $50  claim 500  | 2019-25    2469/yr losing 41/82  | 2010-18    1465/yr losing 44/89  | avg +1967
+C    $50  claim 750  | 2019-25    1977/yr losing 47/82  | 2010-18     395/yr losing 57/89  | avg +1186
+C    $75  claim 500  | 2019-25    5309/yr losing 34/82  | 2010-18    3837/yr losing 29/89  | avg +4573
+C    $75  claim 750  | 2019-25    4534/yr losing 40/82  | 2010-18    2682/yr losing 31/89  | avg +3608
+===== cost 15
+FW   $50  claim 500  | 2019-25    5056/yr losing 40/82  | 2010-18    1336/yr losing 43/89  | avg +3196
+FW   $50  claim 750  | 2019-25    4391/yr losing 39/82  | 2010-18     442/yr losing 42/89  | avg +2416
+FW   $75  claim 500  | 2019-25    1547/yr losing 47/82  | 2010-18     321/yr losing 50/89  | avg +934
+FW   $75  claim 750  | 2019-25    -157/yr losing 52/82  | 2010-18   -1085/yr losing 58/89  | avg -621
+B1W  $50  claim 500  | 2019-25    1119/yr losing 51/82  | 2010-18   -1296/yr losing 59/89  | avg -88
+B1W  $50  claim 750  | 2019-25     721/yr losing 54/82  | 2010-18   -1558/yr losing 61/89  | avg -418
+B1W  $75  claim 500  | 2019-25    3004/yr losing 43/82  | 2010-18    -909/yr losing 54/89  | avg +1047
+B1W  $75  claim 750  | 2019-25    2077/yr losing 47/82  | 2010-18   -1246/yr losing 51/89  | avg +415
+C    $50  claim 500  | 2019-25     834/yr losing 46/82  | 2010-18    -558/yr losing 62/89  | avg +138
+C    $50  claim 750  | 2019-25     434/yr losing 50/82  | 2010-18   -1085/yr losing 67/89  | avg -325
+C    $75  claim 500  | 2019-25    2890/yr losing 45/82  | 2010-18    1104/yr losing 47/89  | avg +1997
+C    $75  claim 750  | 2019-25    1807/yr losing 45/82  | 2010-18      65/yr losing 56/89  | avg +936
+===== cost 20
+FW   $50  claim 500  | 2019-25    2438/yr losing 48/82  | 2010-18   -1148/yr losing 60/89  | avg +645
+FW   $50  claim 750  | 2019-25    1683/yr losing 48/82  | 2010-18   -1757/yr losing 60/89  | avg -37
+FW   $75  claim 500  | 2019-25   -1147/yr losing 48/82  | 2010-18   -2839/yr losing 65/89  | avg -1993
+FW   $75  claim 750  | 2019-25   -1619/yr losing 51/82  | 2010-18   -3703/yr losing 70/89  | avg -2661
+B1W  $50  claim 500  | 2019-25    -723/yr losing 54/82  | 2010-18   -3073/yr losing 82/89  | avg -1898
+B1W  $50  claim 750  | 2019-25   -1128/yr losing 57/82  | 2010-18   -3284/yr losing 77/89  | avg -2206
+B1W  $75  claim 500  | 2019-25     842/yr losing 51/82  | 2010-18   -2928/yr losing 67/89  | avg -1043
+B1W  $75  claim 750  | 2019-25     199/yr losing 53/82  | 2010-18   -3513/yr losing 70/89  | avg -1657
+C    $50  claim 500  | 2019-25    -357/yr losing 52/82  | 2010-18   -1914/yr losing 67/89  | avg -1135
+C    $50  claim 750  | 2019-25    -978/yr losing 59/82  | 2010-18   -2162/yr losing 70/89  | avg -1570
+C    $75  claim 500  | 2019-25     468/yr losing 46/82  | 2010-18   -2263/yr losing 64/89  | avg -897
+C    $75  claim 750  | 2019-25    -229/yr losing 53/82  | 2010-18   -2536/yr losing 64/89  | avg -1382

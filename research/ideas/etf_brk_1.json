@@ -1,0 +1,23 @@
+{
+  "id": "etf_brk_1",
+  "name": "etf_brk_1",
+  "why": "The 09:50 cascade direction is institutional repositioning that continues; entering on a confirming bar (or after a pullback) on the TF chart avoids buying the local top of the first leg. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_entry_timeframes.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {},
+  "scan": {
+    "tf": 1,
+    "from": "09:51",
+    "to": "10:45",
+    "when": "(((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open)) > 0 && cl(1,1) > hi(1,2)) || (((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open)) < 0 && cl(1,1) < lo(1,2))",
+    "dir": "((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open))"
+  },
+  "max_trades": 1,
+  "stop": "0.35*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

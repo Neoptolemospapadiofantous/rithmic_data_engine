@@ -1,0 +1,8 @@
+1 Asia (prior NY H/L)  2010-18 | n 1691 (+ 466 opened outside) | inside 22.2% | ONE side 68.1% (up 39.3 / dn 28.8) | BOTH  9.7% || after 1st break: closes beyond 49.8% | back inside 44.6% | beyond other side  5.6%
+1 Asia (prior NY H/L)  2019-26 | n 1408 (+ 473 opened outside) | inside 20.7% | ONE side 71.7% (up 40.6 / dn 31.1) | BOTH  7.5% || after 1st break: closes beyond 49.2% | back inside 46.2% | beyond other side  4.6%
+2 London (Asia H/L)    2010-18 | n 2156 (+   3 opened outside) | inside  1.7% | ONE side 57.6% (up 32.3 / dn 25.3) | BOTH 40.7% || after 1st break: closes beyond 49.2% | back inside 32.3% | beyond other side 18.5%
+2 London (Asia H/L)    2019-26 | n 1880 (+   4 opened outside) | inside  2.8% | ONE side 59.6% (up 32.8 / dn 26.9) | BOTH 37.6% || after 1st break: closes beyond 50.8% | back inside 30.0% | beyond other side 19.1%
+3 NY (overnight H/L)   2010-18 | n 2371 (+ 179 opened outside) | inside 43.0% | ONE side 55.5% (up 32.4 / dn 23.0) | BOTH  1.5% || after 1st break: closes beyond 51.0% | back inside 47.8% | beyond other side  1.2%
+3 NY (overnight H/L)   2019-26 | n 2076 (+ 149 opened outside) | inside 39.4% | ONE side 58.9% (up 35.3 / dn 23.7) | BOTH  1.7% || after 1st break: closes beyond 52.2% | back inside 46.2% | beyond other side  1.6%
+4 NY (prior NY H/L)    2010-18 | n  831 (+1718 opened outside) | inside 24.5% | ONE side 66.3% (up 33.6 / dn 32.7) | BOTH  9.1% || after 1st break: closes beyond 48.5% | back inside 45.3% | beyond other side  6.2%
+4 NY (prior NY H/L)    2019-26 | n  648 (+1577 opened outside) | inside 21.1% | ONE side 67.3% (up 35.5 / dn 31.8) | BOTH 11.6% || after 1st break: closes beyond 49.9% | back inside 43.4% | beyond other side  6.7%

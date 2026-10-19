@@ -1,0 +1,36 @@
+{
+  "id": "london_fade",
+  "name": "Fade the London first hour (03:00→04:00 ET)",
+  "why": "European cash desks and stop runs push the first London hour too far in thin NQ liquidity; with no US flow until 08:30 the move is not backed by the participants who set the day’s direction, and early London momentum traders unwind before New York. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_london_fade.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "k": [
+      0.1,
+      0.15,
+      0.2
+    ],
+    "stopk": [
+      0.15,
+      0.25
+    ],
+    "rr": [
+      1,
+      2
+    ]
+  },
+  "checks": [
+    {
+      "at": "04:00",
+      "when": "abs(px - at(3,0)) > k*atr",
+      "dir": "-sign(px - at(3,0))"
+    }
+  ],
+  "stop": "stopk*atr",
+  "target": "rr",
+  "flat": "09:25",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

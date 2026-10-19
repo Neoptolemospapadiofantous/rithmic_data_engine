@@ -1,0 +1,36 @@
+{
+  "id": "trend_day_pb",
+  "name": "Confirmed trend day (09:50), pullback to VWAP / EMA20, max 3/day",
+  "why": "On a day the open already moved >0.25 ATR by 09:50, institutions repositioning keep buying (selling) dips to VWAP/EMA as they work large orders through the day; short-term faders who sold the first leg are forced to cover on the pullback hold. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_trend_day_pullback.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "lvl": [
+      0,
+      1
+    ],
+    "p": [
+      0,
+      0.55
+    ],
+    "stopk": [
+      0.25,
+      0.35
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "09:55",
+    "to": "13:55",
+    "when": "!rollwin && ((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open)) != 0 && (px-open)*((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open)) > 0 && abs(px-open)/max(hod-lod,1) >= p && ((((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open)) > 0 && lo(5,1) <= ((lvl == 0)*vwap + (lvl == 1)*ema(5,20)) + 0.05*atr && cl(5,1) > ((lvl == 0)*vwap + (lvl == 1)*ema(5,20))) || (((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open)) < 0 && hi(5,1) >= ((lvl == 0)*vwap + (lvl == 1)*ema(5,20)) - 0.05*atr && cl(5,1) < ((lvl == 0)*vwap + (lvl == 1)*ema(5,20))))",
+    "dir": "((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open))"
+  },
+  "max_trades": 3,
+  "stop": "stopk*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

@@ -1,0 +1,36 @@
+{
+  "id": "flag1m_gx",
+  "name": "1-min flag after a good move, flag1m_gx",
+  "why": "After a fast straight 1-min move, late participants who missed it wait for a shallow pause and pile in on the break; trapped counter-trend scalpers who faded the pause cover. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_flag_1m.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "N": [
+      15,
+      30
+    ],
+    "m": [
+      0.3,
+      0.5
+    ],
+    "stopk": [
+      0.1,
+      0.15
+    ]
+  },
+  "scan": {
+    "tf": 1,
+    "from": "19:00",
+    "to": "09:00",
+    "when": "!rollwin && (((lag(6, cl(1,1)) - lag(6+N, cl(1,1))) >= m*atr && lag(6, er(1,N)) >= 0.5 && lag(1, hh(1,5) - ll(1,5)) < 0.4*abs((lag(6, cl(1,1)) - lag(6+N, cl(1,1)))) && cl(1,1) > lag(1, hh(1,5))) || ((lag(6, cl(1,1)) - lag(6+N, cl(1,1))) <= -m*atr && lag(6, er(1,N)) >= 0.5 && lag(1, hh(1,5) - ll(1,5)) < 0.4*abs((lag(6, cl(1,1)) - lag(6+N, cl(1,1)))) && cl(1,1) < lag(1, ll(1,5))))",
+    "dir": "((lag(6, cl(1,1)) - lag(6+N, cl(1,1))) >= m*atr && lag(6, er(1,N)) >= 0.5 && lag(1, hh(1,5) - ll(1,5)) < 0.4*abs((lag(6, cl(1,1)) - lag(6+N, cl(1,1)))) && cl(1,1) > lag(1, hh(1,5))) - ((lag(6, cl(1,1)) - lag(6+N, cl(1,1))) <= -m*atr && lag(6, er(1,N)) >= 0.5 && lag(1, hh(1,5) - ll(1,5)) < 0.4*abs((lag(6, cl(1,1)) - lag(6+N, cl(1,1)))) && cl(1,1) < lag(1, ll(1,5)))"
+  },
+  "max_trades": 3,
+  "stop": "stopk*atr",
+  "target": "2",
+  "flat": "09:25",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}

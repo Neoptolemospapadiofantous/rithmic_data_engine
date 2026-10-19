@@ -1,0 +1,19 @@
+NQ intraday models — 3308 days. Walk-forward by year 2014–2024, 2025–26 one look. ATR units.
+
+== A. NY range at 09:30 (range / ATR)
+  2014-18            n 1037 | corr pred/actual +0.449 (ridge +0.502) | actual range by predicted fifth: 0.74 0.89 1.03 1.10 1.40
+  2019-24            n 1285 | corr pred/actual +0.417 (ridge +0.416) | actual range by predicted fifth: 0.81 0.91 0.96 1.11 1.30
+  2025-26 (holdout)  n  259 | corr pred/actual +0.524 (ridge +0.500) | actual range by predicted fifth: 0.71 0.97 0.96 1.17 1.54
+  range model top features by gain: London range 26%, open vs prev NY high 21%, Asia range 12%, r5 10%, VIX 1d change 6%, e20 3%, prev NY range 3%
+
+== B. Direction after the open, from 09:50 to 15:55 (move in ATR; trades after 1 pt cost)
+  2014-18            n 1037 | hit 49.9% (ridge 50.6%) corr +0.033 || (i) go with the move:  331 +0.0450 (t +1.20) | (ii) model direction:  468 +0.0191 (t +0.65) | (iii) move + model agrees:  164 +0.0419 (t +0.78), ridge agrees:  188 +0.0112
+  2019-24            n 1285 | hit 53.6% (ridge 55.6%) corr +0.062 || (i) go with the move:  392 +0.0372 (t +1.05) | (ii) model direction:  653 +0.0424 (t +1.64) | (iii) move + model agrees:  282 +0.0697 (t +1.72), ridge agrees:  303 +0.0645
+  2025-26 (holdout)  n  259 | hit 52.9% (ridge 53.7%) corr +0.098 || (i) go with the move:   90 +0.1386 (t +1.85) | (ii) model direction:  141 +0.0154 (t +0.23) | (iii) move + model agrees:   58 +0.2049 (t +2.14), ridge agrees:   70 +0.1299
+  direction model top features by gain: VIX/VIX3M 10%, prev NY move 8%, last 15 min move 7%, price vs overnight low 7%, overnight range 7%, e20 6%, r20 6%
+
+== B. Direction after the open, from 10:30 to 15:55 (move in ATR; trades after 1 pt cost)
+  2014-18            n 1037 | hit 51.8% (ridge 49.9%) corr -0.000 || (i) go with the move:  463 -0.0050 (t -0.16) | (ii) model direction:  495 -0.0079 (t -0.30) | (iii) move + model agrees:  226 +0.0306 (t +0.71), ridge agrees:  182 -0.0146
+  2019-24            n 1285 | hit 51.3% (ridge 53.8%) corr +0.033 || (i) go with the move:  623 +0.0243 (t +1.04) | (ii) model direction:  618 +0.0223 (t +0.94) | (iii) move + model agrees:  340 +0.0370 (t +1.19), ridge agrees:  362 +0.0221
+  2025-26 (holdout)  n  259 | hit 52.1% (ridge 55.2%) corr +0.059 || (i) go with the move:  151 +0.0582 (t +1.19) | (ii) model direction:  132 +0.0204 (t +0.35) | (iii) move + model agrees:  109 +0.0743 (t +1.26), ridge agrees:  109 +0.0603
+  direction model top features by gain: gap 9%, prev NY move 9%, e20 9%, VIX/VIX3M 7%, range so far 7%, overnight range 6%, 20-min efficiency 6%

@@ -1,0 +1,37 @@
+{
+  "id": "gx_ema_run",
+  "name": "Globex EMA stack follow, EMA20 pullback, no target, trail after +1R, max 3/day",
+  "why": "Overnight NQ is thin and driven by slow flows (Asia/Europe index hedging, futures roll of global books) that keep pushing one way for hours; EMA-stack trend-followers and CTAs add on each pullback, and thin overnight liquidity means faders get run over. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_globex_ema_follow.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {
+    "tf": [
+      5,
+      15
+    ],
+    "stopk": [
+      0.25,
+      0.35
+    ],
+    "trail_r": [
+      1,
+      2
+    ]
+  },
+  "scan": {
+    "tf": 5,
+    "from": "18:05",
+    "to": "09:20",
+    "when": "(((ema(tf,9) > ema(tf,20) && ema(tf,20) > ema(tf,50))) && lo(5,1) <= ema(5,20) + 0.05*atr && cl(5,1) > ema(5,20)) || (((ema(tf,9) < ema(tf,20) && ema(tf,20) < ema(tf,50))) && hi(5,1) >= ema(5,20) - 0.05*atr && cl(5,1) < ema(5,20))",
+    "dir": "((ema(tf,9) > ema(tf,20) && ema(tf,20) > ema(tf,50))) - ((ema(tf,9) < ema(tf,20) && ema(tf,20) < ema(tf,50)))"
+  },
+  "max_trades": 3,
+  "stop": "stopk*atr",
+  "target": "0",
+  "flat": "09:25",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400,
+  "trail_r": "trail_r"
+}

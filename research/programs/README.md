@@ -20,6 +20,9 @@ Never run a replay or rebuild `build/` 09:25–16:05 ET on a weekday (these prog
 |---|---|---|
 | `behavior2` | — | 2026-10-17 behaviour map, part 2: intraday structure, volatility, cross-market, news days (real BLS / FOMC dates). |
 | `behavior` | — | 2026-10-17 "how does NQ behave": a descriptive map of NQ 1-minute bars 2010-07 → 2026-10. |
+| `session_model` | research/preregistered/2026-10-19_session_model.md | 2026-10-19 session model: does what is known at a session's open predict the Asia / London / NY session's direction, size and trend? |
+| `intraday_models` | research/preregistered/2026-10-19_intraday_models.md | 2026-10-19 intraday models: A) predict the NY RTH range at 09:30; B) at 09:50 / 10:30 predict the move to 15:55 and compare with "go with the move". |
+| `awk_20261019/` | research/preregistered/2026-10-19_vest_funded.md and the other 2026-10-19 studies | the Vest eval / funded / portfolio simulators and the session-behaviour scripts (awk), with their saved outputs in out/ |
 | `book3` | — | #include "research/meta.hpp" |
 | `both` | research/preregistered/2026-10-17_more_trades.md | 2026-10-17 pre-registered A (research/preregistered/2026-10-17_more_trades.md): take both the cascade and the gap retest |
 | `calm` | — | Calm-day sizing: the cascade's walk-forward trades at 2 units when the prior VIX close < 20, else 1 — vs flat 1 unit. |

@@ -1,0 +1,22 @@
+== B. DAILY by weekday (RTH): mean move ATR, up %, range/ATR, trend days %, chop days %
+  Mon 2010-18 n  395 | move -0.003 | up 53.4% | range 0.58 | trend 41.5% | chop 25.1%
+  Mon 2019-26 n  340 | move +0.064 | up 62.6% | range 0.55 | trend 47.1% | chop 21.8%
+  Tue 2010-18 n  429 | move +0.025 | up 53.1% | range 0.61 | trend 41.3% | chop 21.0%
+  Tue 2019-26 n  376 | move +0.037 | up 60.1% | range 0.58 | trend 47.3% | chop 18.6%
+  Wed 2010-18 n  429 | move -0.002 | up 49.0% | range 0.68 | trend 42.7% | chop 19.8%
+  Wed 2019-26 n  373 | move +0.016 | up 53.4% | range 0.72 | trend 45.6% | chop 25.5%
+  Thu 2010-18 n  419 | move +0.025 | up 55.8% | range 0.63 | trend 43.2% | chop 21.2%
+  Thu 2019-26 n  365 | move -0.036 | up 51.2% | range 0.66 | trend 47.1% | chop 17.3%
+  Fri 2010-18 n  382 | move +0.009 | up 55.2% | range 0.51 | trend 50.0% | chop 18.1%
+  Fri 2019-26 n  331 | move +0.017 | up 56.2% | range 0.50 | trend 45.9% | chop 16.6%
+== A. WEEKLY
+  2019-26 weeks 361 | range 2.39 daily ATR | open->close +0.158 ATR, up 57.1% | trend weeks 59.3% | chop weeks 13.3%
+     week HIGH set on: Mon 19% Tue 13% Wed 17% Thu 22% Fri 29% | week LOW set on: Mon 27% Tue 17% Wed 17% Thu 18% Fri 21%
+     Monday moved >= 0.3 ATR (114 weeks): Tue->Fri continued 50.9%, week closed on Monday's side 62.3%
+     Mon+Tue moved >= 0.5 ATR (175 weeks): Wed->Fri continued 57.1%
+     after a trend week (201): next week same direction 49.3%
+  2010-18 weeks 412 | range 2.34 daily ATR | open->close +0.257 ATR, up 58.3% | trend weeks 58.0% | chop weeks 14.6%
+     week HIGH set on: Mon 17% Tue 18% Wed 14% Thu 20% Fri 30% | week LOW set on: Mon 30% Tue 21% Wed 14% Thu 17% Fri 18%
+     Monday moved >= 0.3 ATR (116 weeks): Tue->Fri continued 42.2%, week closed on Monday's side 54.3%
+     Mon+Tue moved >= 0.5 ATR (190 weeks): Wed->Fri continued 51.6%
+     after a trend week (225): next week same direction 54.7%

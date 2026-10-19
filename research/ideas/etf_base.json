@@ -1,0 +1,22 @@
+{
+  "id": "etf_base",
+  "name": "cascade 09:50 market entry",
+  "why": "The 09:50 cascade direction is institutional repositioning that continues; entering on a confirming bar (or after a pullback) on the TF chart avoids buying the local top of the first leg. Pre-registered 2026-10-19 (research/preregistered/2026-10-19_entry_timeframes.md).",
+  "symbol": "NQ",
+  "confirm": "ES",
+  "to": "2024-12-31",
+  "params": {},
+  "checks": [
+    {
+      "at": "09:50",
+      "when": "((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open)) != 0",
+      "dir": "((abs(at(9,50)-open) > 0.25*atr)*sign(at(9,50)-open))"
+    }
+  ],
+  "stop": "0.35*atr",
+  "target": "2",
+  "flat": "15:55",
+  "min_trades": 100,
+  "control_pct": 0.99,
+  "control_seeds": 400
+}
