@@ -35,7 +35,7 @@ int main() {
         for (size_t k = k0 + 1; k < n && std::isnan(px); ++k) { if (Lw[k] <= st) { px = st; break; } if (Hh[k] >= tg) { px = tg; break; } if (TM[k] >= 1315) { px = O[k]; break; } }
         if (std::isnan(px)) px = Cc[n - 1]; return (px - e - cost) / (e - st); };
       // chart bars on the 09:30 grid
-      auto bars = [&](int tf) { std::vector<FB> b; for (size_t k = 0; k < n; ++k) { if ((TM[k] - 930) % tf == 0 || b.empty()) b.push_back({O[k], Hh[k], Lw[k], Cc[k], V[k], (int)k, (int)k}); else { FB& z = b.back(); z.h = std::max(z.h, Hh[k]); z.l = std::min(z.l, Lw[k]); z.c = Cc[k]; z.v += V[k]; z.k = k; } } return b; };
+      auto bars = [&](int tf) { std::vector<FB> b; for (size_t k = 0; k < n; ++k) { if (b.empty() || (TM[k] - 930) / tf != (TM[b.back().k0] - 930) / tf) b.push_back({O[k], Hh[k], Lw[k], Cc[k], V[k], (int)k, (int)k}); else { FB& z = b.back(); z.h = std::max(z.h, Hh[k]); z.l = std::min(z.l, Lw[k]); z.c = Cc[k]; z.v += V[k]; z.k = k; } } return b; };
       // the page's detect(): returns per flag {pole-start first minute, top first minute, flag bar index q, ...}
       struct Det { int kPole, kTop, q, l, h; double H, L, M, ar; };
       auto detect = [&](const std::vector<FB>& b, int tf, bool inner) { std::vector<Det> out; int busy = -1;

@@ -1,0 +1,143 @@
+TAKE-rule optimization — NQ NY 3/4/5m flags with the page's rules, 2010-07 → 2026-10, 3311 days, 9638 flags (+ 14583 on 1-2m, section 6 only). R after 2 pts cost, flat 15:55,
+one position at a time per day. Cells: avg R (trades) 2010-18 | 2019-24 | 2025-26 · win rate · flag R minus its random-timing control · trades a year.
+
+== 1. BULL — fixed rules (for reference; chosen with hindsight) and the WALK-FORWARD rule
+  all flags                                    +0.247 ( 802) | +0.284 ( 565) | -0.070 (129) · win 28% · vs control +0.218 [114/yr]
+  1st pullback                                 +0.240 ( 705) | +0.352 ( 490) | -0.126 (108) · win 28% · vs control +0.282 [99/yr]
+  1st pullback + before 12:30 (TAKE draft)     +0.232 ( 644) | +0.395 ( 431) | -0.149 ( 98) · win 28% · vs control +0.316 [89/yr]
+  WALK-FORWARD rule (2013 on)                  +0.393 ( 105) | +0.896 (  78) | +0.394 ( 11) · win 36% · vs control +0.439 [15/yr]
+    1st pullback, same years (2013 on)         +0.252 ( 503) | +0.352 ( 490) | -0.126 (108) · win 29% · vs control +0.256 [84/yr]
+  rules chosen:
+    2013+: 1st pullback + pole broke a level + gap with it + before 12:30
+    2014+: 1st pullback + pole broke a level + pole >= 5x bar + before 12:30 + 4/5m chart
+    2015+: 1st pullback + pole broke a level + gap with it + before 12:30
+    2016+: gap with it + before 12:30 + <= 1 smaller 1m flag
+    2017+: 1st pullback + gap with it + before 12:30 + <= 1 smaller 1m flag
+    2018+: 1st pullback + pole broke a level + gap with it + before 12:30 + <= 1 smaller 1m flag
+    2021+: 1st pullback + pole broke a level + gap with it + pole >= 5x bar + 4/5m chart
+
+== 2. BULL exits — 1st-pullback flags, the page's entry
+  measured move (the page)                     +0.240 ( 705) | +0.352 ( 490) | -0.126 (108) · win 28% · vs control +0.282 [99/yr]
+  1.5R target                                  +0.028 ( 792) | +0.088 ( 549) | +0.011 (121) · win 45% · vs control +0.102 [111/yr]
+  2R target                                    +0.089 ( 765) | +0.105 ( 536) | -0.041 (113) · win 39% · vs control +0.107 [108/yr]
+  3R target                                    +0.147 ( 730) | +0.212 ( 506) | +0.036 (109) · win 33% · vs control +0.171 [102/yr]
+  measured move + break-even at +1R            +0.143 ( 741) | +0.239 ( 516) | -0.210 (113) · win 18% · vs control +0.171 [104/yr]
+  2R + break-even at +1R                       +0.001 ( 793) | +0.066 ( 555) | -0.086 (118) · win 28% · vs control +0.053 [112/yr]
+
+== 3. BULL entries — 1st-pullback flags, measured-move target
+  2m trigger, else pole-top stop (the page)    +0.240 ( 705) | +0.352 ( 490) | -0.126 (108) · win 28% · vs control +0.282 [99/yr]
+  pole-top stop order only                     +0.303 ( 476) | +0.299 ( 351) | -0.128 ( 74) · win 39% · vs control +0.089 [69/yr]
+  2m trigger only                              +0.258 ( 584) | +0.349 ( 378) | -0.131 ( 82) · win 25% · vs control +0.288 [79/yr]
+  limit halfway into the flag                  -0.204 ( 868) | -0.176 ( 622) | -0.504 (131) · win 13% · vs control -0.199 [123/yr]
+
+== 1. BEAR — fixed rules (for reference; chosen with hindsight) and the WALK-FORWARD rule
+  all flags                                    +0.110 ( 807) | +0.007 ( 513) | +0.120 ( 99) · win 22% · vs control +0.198 [108/yr]
+  1st pullback                                 +0.037 ( 651) | +0.090 ( 420) | +0.038 ( 84) · win 22% · vs control +0.302 [88/yr]
+  1st pb + down day + <= 1 box (TAKE draft)    +5.146 (   3) | -1.045 (   2) | -1.025 (  2) · win 43% · vs control +1.820 [1/yr]
+  WALK-FORWARD rule (2013 on)                  +0.195 (  78) | +1.140 (  20) | -0.167 (  4) · win 25% · vs control +0.610 [8/yr]
+    1st pullback, same years (2013 on)         +0.102 ( 452) | +0.090 ( 420) | +0.038 ( 84) · win 22% · vs control +0.342 [73/yr]
+  rules chosen:
+    2013+: gap with it + before 12:30
+    2014+: pole broke a level + before 12:30 + <= 1 smaller 1m flag
+    2018+: gap with it + <= 1 smaller 1m flag
+    2019+: pole broke a level + down day
+    2020+: pole broke a level + before 12:30 + down day
+    2022+: gap with it + before 12:30 + <= 1 smaller 1m flag
+    2023+: 1st pullback + down day
+    2024+: 1st pullback + before 12:30 + down day
+
+== 2. BEAR exits — 1st-pullback flags, the page's entry
+  measured move (the page)                     +0.037 ( 651) | +0.090 ( 420) | +0.038 ( 84) · win 22% · vs control +0.302 [88/yr]
+  1.5R target                                  -0.103 ( 743) | +0.008 ( 480) | +0.049 ( 96) · win 40% · vs control +0.061 [100/yr]
+  2R target                                    -0.114 ( 715) | +0.044 ( 462) | +0.091 ( 94) · win 34% · vs control +0.067 [97/yr]
+  3R target                                    -0.100 ( 693) | +0.118 ( 442) | +0.013 ( 88) · win 27% · vs control +0.129 [93/yr]
+  measured move + break-even at +1R            -0.005 ( 699) | +0.067 ( 448) | -0.058 ( 89) · win 12% · vs control +0.209 [94/yr]
+  2R + break-even at +1R                       -0.086 ( 752) | +0.053 ( 487) | -0.047 ( 99) · win 25% · vs control +0.058 [102/yr]
+
+== 3. BEAR entries — 1st-pullback flags, measured-move target
+  2m trigger, else pole-top stop (the page)    +0.037 ( 651) | +0.090 ( 420) | +0.038 ( 84) · win 22% · vs control +0.302 [88/yr]
+  pole-top stop order only                     -0.037 ( 424) | +0.195 ( 299) | +0.161 ( 54) · win 32% · vs control +0.104 [59/yr]
+  2m trigger only                              +0.143 ( 514) | +0.010 ( 330) | -0.072 ( 67) · win 19% · vs control +0.358 [69/yr]
+  limit halfway into the flag                  -0.401 ( 825) | -0.304 ( 570) | -0.308 (109) · win 10% · vs control -0.117 [114/yr]
+
+== 4. Flag slope at entry (mid-point slope, pole lengths per chart bar; down = against the pole, the textbook flag) — 1st-pullback flags
+  bull down  (< -0.03 pole/bar)                +0.141 ( 317) | +0.297 ( 246) | -0.099 ( 51) · win 26% · vs control +0.304 [47/yr]
+  bull flat  (-0.03 .. +0.03)                  +0.357 ( 487) | +0.327 ( 324) | -0.141 ( 70) · win 30% · vs control +0.257 [67/yr]
+  bull up    (> +0.03, drifts with the pole)   +0.363 (  96) | +0.117 (  71) | -0.611 ( 13) · win 34% · vs control +0.098 [14/yr]
+  bull up, TAKE rule only                      +0.911 (  14) | +0.508 (  12) | -0.749 (  2) · win 46% · vs control +0.356 [2/yr]
+  bear down  (< -0.03 pole/bar)                +0.076 ( 366) | -0.109 ( 241) | -0.325 ( 41) · win 18% · vs control +0.269 [49/yr]
+  bear flat  (-0.03 .. +0.03)                  -0.009 ( 386) | +0.232 ( 258) | +0.275 ( 50) · win 24% · vs control +0.230 [53/yr]
+  bear up    (> +0.03, drifts with the pole)   +0.049 ( 104) | -0.061 (  67) | -0.342 ( 15) · win 27% · vs control +0.251 [14/yr]
+  bear up, TAKE rule only                      +nan (   0) | +nan (   0) | +nan (  0) · win  0% · vs control +nan [0/yr]
+  bull TAKE rule, slope <= +0.03               +0.658 ( 110) | +1.074 (  92) | +0.537 ( 10) · win 37% · vs control +0.485 [16/yr]
+  bull TAKE rule, slope > +0.03                +0.911 (  14) | +0.508 (  12) | -0.749 (  2) · win 46% · vs control +0.356 [2/yr]
+
+== 5. Stop size in units of the round-trip cost (cost share of 1R = 1 / ratio) — the page's entry and exit
+  bull 1st pb, risk < 6x cost (cost > 17 % of R) +2.419 (   5) | -0.646 (   8) | -1.186 (  2) · win 20% · vs control -0.365 [1/yr]
+  bull 1st pb, risk 6-10x cost                 +0.355 ( 107) | +0.248 (  92) | -0.036 ( 16) · win 22% · vs control +0.257 [16/yr]
+  bull 1st pb, risk 10-15x cost                +0.285 ( 279) | +0.259 ( 175) | -0.228 ( 38) · win 25% · vs control +0.159 [37/yr]
+  bull 1st pb, risk >= 15x cost (cost < 7 % of R) +0.278 ( 442) | +0.530 ( 283) | -0.214 ( 66) · win 33% · vs control +0.335 [60/yr]
+  bear 1st pb, risk < 6x cost (cost > 17 % of R) -1.220 (   1) | +nan (   0) | +nan (  0) · win  0% · vs control +0.000 [0/yr]
+  bear 1st pb, risk 6-10x cost                 -0.443 (  43) | -0.469 (  43) | -0.684 (  6) · win 10% · vs control -0.031 [7/yr]
+  bear 1st pb, risk 10-15x cost                +0.012 ( 159) | -0.239 ( 106) | -0.374 ( 14) · win 14% · vs control +0.324 [21/yr]
+  bear 1st pb, risk >= 15x cost (cost < 7 % of R) +0.101 ( 509) | +0.247 ( 316) | +0.104 ( 69) · win 25% · vs control +0.292 [68/yr]
+  bull TAKE rule, risk < 6x cost (cost > 17 % of R) +nan (   0) | +nan (   0) | +nan (  0) · win  0% · vs control +nan [0/yr]
+  bull TAKE rule, risk 6-10x cost              +0.625 (  21) | +3.627 (  11) | +nan (  0) · win 38% · vs control +0.978 [2/yr]
+  bull TAKE rule, risk 10-15x cost             +0.406 (  42) | +1.321 (  33) | +0.970 (  6) · win 31% · vs control +0.538 [6/yr]
+  bull TAKE rule, risk >= 15x cost (cost < 7 % of R) +0.734 (  59) | +0.383 (  59) | -0.424 (  6) · win 42% · vs control +0.217 [9/yr]
+
+== 6. Edge by chart — avg R (trades) 2010-18 | 2019-24 | 2025-26 · win · vs its random-timing twin · per year; then avg points and $ at 1 MNQ per trade (all years | 2025-26)
+  BULL 1m, all flags                           +0.026 ( 901) | +0.126 ( 629) | -0.227 (141) · win 27% · vs control +0.046 [127/yr]
+                                                 points/trade -0.05 (all) | -3.00 (2025-26)  ≈ $-0 | $-6 per trade at 1 MNQ
+  BULL 1m, 1st pullback                        -0.018 ( 485) | +0.129 ( 348) | -0.343 ( 79) · win 25% · vs control +0.203 [69/yr]
+                                                 points/trade -0.86 (all) | -8.66 (2025-26)  ≈ $-2 | $-17 per trade at 1 MNQ
+  BULL 2m, all flags                           +0.177 ( 573) | +0.291 ( 399) | -0.402 ( 81) · win 31% · vs control +0.091 [80/yr]
+                                                 points/trade +2.17 (all) | -9.94 (2025-26)  ≈ $+4 | $-20 per trade at 1 MNQ
+  BULL 2m, 1st pullback                        +0.161 ( 403) | +0.341 ( 284) | -0.524 ( 55) · win 30% · vs control +0.202 [56/yr]
+                                                 points/trade +1.82 (all) | -16.90 (2025-26)  ≈ $+4 | $-34 per trade at 1 MNQ
+  BULL 3m, all flags                           +0.227 ( 649) | +0.304 ( 430) | -0.309 ( 98) · win 27% · vs control +0.174 [90/yr]
+                                                 points/trade +2.79 (all) | -2.14 (2025-26)  ≈ $+6 | $-4 per trade at 1 MNQ
+  BULL 3m, 1st pullback                        +0.283 ( 508) | +0.386 ( 333) | -0.257 ( 71) · win 28% · vs control +0.310 [69/yr]
+                                                 points/trade +3.73 (all) | +0.43 (2025-26)  ≈ $+7 | $+1 per trade at 1 MNQ
+  BULL 4m, all flags                           +0.239 ( 565) | +0.344 ( 390) | +0.008 ( 84) · win 29% · vs control +0.194 [79/yr]
+                                                 points/trade +4.28 (all) | +10.93 (2025-26)  ≈ $+9 | $+22 per trade at 1 MNQ
+  BULL 4m, 1st pullback                        +0.270 ( 467) | +0.400 ( 324) | -0.136 ( 69) · win 29% · vs control +0.225 [65/yr]
+                                                 points/trade +4.09 (all) | +5.27 (2025-26)  ≈ $+8 | $+11 per trade at 1 MNQ
+  BULL 4m, TAKE rule                           +0.800 (  79) | +1.008 (  67) | +0.260 ( 10) · win 37% · vs control +0.431 [12/yr]
+                                                 points/trade +8.23 (all) | +12.98 (2025-26)  ≈ $+16 | $+26 per trade at 1 MNQ
+  BULL 5m, all flags                           +0.318 ( 527) | +0.318 ( 347) | +0.192 ( 73) · win 30% · vs control +0.189 [72/yr]
+                                                 points/trade +4.53 (all) | +17.70 (2025-26)  ≈ $+9 | $+35 per trade at 1 MNQ
+  BULL 5m, 1st pullback                        +0.340 ( 453) | +0.395 ( 307) | +0.058 ( 60) · win 30% · vs control +0.227 [62/yr]
+                                                 points/trade +4.71 (all) | +13.94 (2025-26)  ≈ $+9 | $+28 per trade at 1 MNQ
+  BULL 5m, TAKE rule                           +0.681 (  89) | +1.212 (  76) | +0.109 (  7) · win 41% · vs control +0.526 [13/yr]
+                                                 points/trade +12.45 (all) | +16.20 (2025-26)  ≈ $+25 | $+32 per trade at 1 MNQ
+  BEAR 1m, all flags                           -0.103 (1040) | +0.008 ( 701) | -0.016 (152) · win 24% · vs control +0.049 [144/yr]
+                                                 points/trade -0.51 (all) | +0.26 (2025-26)  ≈ $-1 | $+1 per trade at 1 MNQ
+  BEAR 1m, 1st pullback                        -0.113 ( 500) | +0.179 ( 359) | +0.034 ( 68) · win 25% · vs control +0.381 [71/yr]
+                                                 points/trade +0.40 (all) | -2.71 (2025-26)  ≈ $+1 | $-5 per trade at 1 MNQ
+  BEAR 1m, 1st pb + stop >= 15x cost           -0.023 ( 374) | +0.048 ( 238) | -0.180 ( 52) · win 26% · vs control +0.376 [51/yr]
+                                                 points/trade -0.75 (all) | -7.24 (2025-26)  ≈ $-1 | $-14 per trade at 1 MNQ
+  BEAR 2m, all flags                           -0.033 ( 588) | +0.057 ( 407) | +0.232 ( 79) · win 27% · vs control +0.052 [82/yr]
+                                                 points/trade +3.00 (all) | +24.29 (2025-26)  ≈ $+6 | $+49 per trade at 1 MNQ
+  BEAR 2m, 1st pullback                        -0.043 ( 387) | +0.133 ( 280) | +0.438 ( 50) · win 28% · vs control +0.273 [55/yr]
+                                                 points/trade +5.10 (all) | +36.15 (2025-26)  ≈ $+10 | $+72 per trade at 1 MNQ
+  BEAR 2m, 1st pb + stop >= 15x cost           -0.040 ( 360) | +0.163 ( 244) | +0.437 ( 45) · win 29% · vs control +0.279 [49/yr]
+                                                 points/trade +5.71 (all) | +38.28 (2025-26)  ≈ $+11 | $+77 per trade at 1 MNQ
+  BEAR 3m, all flags                           +0.120 ( 667) | +0.087 ( 430) | -0.096 ( 81) · win 22% · vs control +0.183 [90/yr]
+                                                 points/trade +2.94 (all) | +2.25 (2025-26)  ≈ $+6 | $+4 per trade at 1 MNQ
+  BEAR 3m, 1st pullback                        +0.077 ( 462) | +0.197 ( 315) | +0.134 ( 62) · win 23% · vs control +0.356 [64/yr]
+                                                 points/trade +4.76 (all) | +13.46 (2025-26)  ≈ $+10 | $+27 per trade at 1 MNQ
+  BEAR 3m, 1st pb + stop >= 15x cost           +0.004 ( 363) | +0.289 ( 233) | +0.241 ( 51) · win 25% · vs control +0.287 [49/yr]
+                                                 points/trade +5.87 (all) | +19.54 (2025-26)  ≈ $+12 | $+39 per trade at 1 MNQ
+  BEAR 4m, all flags                           +0.078 ( 563) | -0.057 ( 357) | -0.048 ( 68) · win 22% · vs control +0.095 [75/yr]
+                                                 points/trade +2.52 (all) | +11.07 (2025-26)  ≈ $+5 | $+22 per trade at 1 MNQ
+  BEAR 4m, 1st pullback                        +0.066 ( 435) | -0.017 ( 284) | -0.126 ( 55) · win 22% · vs control +0.207 [59/yr]
+                                                 points/trade +2.31 (all) | +8.63 (2025-26)  ≈ $+5 | $+17 per trade at 1 MNQ
+  BEAR 4m, 1st pb + stop >= 15x cost           +0.116 ( 320) | +0.178 ( 208) | +0.027 ( 43) · win 25% · vs control +0.223 [43/yr]
+                                                 points/trade +4.29 (all) | +15.94 (2025-26)  ≈ $+9 | $+32 per trade at 1 MNQ
+  BEAR 5m, all flags                           +0.050 ( 494) | -0.081 ( 315) | -0.179 ( 67) · win 22% · vs control +0.036 [67/yr]
+                                                 points/trade +1.86 (all) | +1.95 (2025-26)  ≈ $+4 | $+4 per trade at 1 MNQ
+  BEAR 5m, 1st pullback                        -0.007 ( 408) | -0.081 ( 260) | -0.365 ( 56) · win 21% · vs control +0.065 [55/yr]
+                                                 points/trade +1.10 (all) | -6.64 (2025-26)  ≈ $+2 | $-13 per trade at 1 MNQ
+  BEAR 5m, 1st pb + stop >= 15x cost           +0.120 ( 304) | +0.151 ( 182) | -0.378 ( 44) · win 24% · vs control +0.106 [40/yr]
+                                                 points/trade +2.68 (all) | -7.43 (2025-26)  ≈ $+5 | $-15 per trade at 1 MNQ

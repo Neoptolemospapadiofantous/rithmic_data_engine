@@ -1,12 +1,12 @@
-Flags with smaller 1m flags inside the pole — NQ NY 2010-07 → 2026-10, 3315 days. 9648 3/4/5m flags (page rules); 1m flags for the count: 1.39 researched + 6.28 inner a day per side.
+Flags with smaller 1m flags inside the pole — NQ NY 2010-07 → 2026-10, 3315 days. 9649 3/4/5m flags (page rules); 1m flags for the count: 1.39 researched + 6.28 inner a day per side.
 R after 2 pts cost (2m trigger, else pole-top stop; target pole top + pole; flat 13:15). Cells: avg R (trades) 2010-18 | 2019-24 | 2025-26; NaN R = never entered.
 
 == BULL flags, all
   ALL                                      +0.242 (2518) | +0.316 (1619) | -0.095 (332)   pole 0.59 ATR
   0 smaller 1m flags in the pole           +1.166 (  59) | +0.059 (  34) | -0.164 ( 12)   pole 0.58 ATR
   1                                        +0.254 ( 158) | -0.005 ( 105) | -0.314 ( 27)   pole 0.62 ATR
-  2                                        -0.063 ( 269) | +0.563 ( 211) | +0.463 ( 48)   pole 0.60 ATR
-  3+                                       +0.255 (2032) | +0.308 (1269) | -0.177 (245)   pole 0.58 ATR
+  2                                        -0.066 ( 270) | +0.563 ( 211) | +0.463 ( 48)   pole 0.60 ATR
+  3+                                       +0.256 (2031) | +0.308 (1269) | -0.177 (245)   pole 0.58 ATR
   0-1                                      +0.502 ( 217) | +0.010 ( 139) | -0.268 ( 39)   pole 0.61 ATR
   2+                                       +0.218 (2301) | +0.344 (1480) | -0.072 (293)   pole 0.59 ATR
 
@@ -14,18 +14,18 @@ R after 2 pts cost (2m trigger, else pole-top stop; target pole top + pole; flat
   ALL                                      +0.342 (1431) | +0.434 ( 964) | -0.083 (200)   pole 0.62 ATR
   0 smaller 1m flags in the pole           +1.170 (  53) | +0.057 (  30) | +0.291 (  8)   pole 0.60 ATR
   1                                        +0.350 ( 130) | +0.042 (  83) | -0.268 ( 20)   pole 0.65 ATR
-  2                                        +0.056 ( 205) | +0.706 ( 154) | +1.106 ( 31)   pole 0.62 ATR
-  3+                                       +0.356 (1043) | +0.436 ( 697) | -0.339 (141)   pole 0.61 ATR
+  2                                        +0.051 ( 206) | +0.706 ( 154) | +1.106 ( 31)   pole 0.62 ATR
+  3+                                       +0.357 (1042) | +0.436 ( 697) | -0.339 (141)   pole 0.61 ATR
   0-1                                      +0.587 ( 183) | +0.046 ( 113) | -0.108 ( 28)   pole 0.63 ATR
   2+                                       +0.306 (1248) | +0.485 ( 851) | -0.078 (172)   pole 0.61 ATR
 
 == BEAR flags, all
-  ALL                                      +0.094 (2446) | -0.002 (1543) | -0.037 (301)   pole 0.77 ATR
-  0 smaller 1m flags in the pole           +0.081 (  60) | -0.006 (  34) | +0.977 (  7)   pole 0.77 ATR
+  ALL                                      +0.098 (2447) | -0.002 (1543) | -0.037 (301)   pole 0.77 ATR
+  0 smaller 1m flags in the pole           +0.225 (  61) | -0.006 (  34) | +0.977 (  7)   pole 0.76 ATR
   1                                        +0.478 ( 148) | +0.494 ( 101) | +0.123 ( 32)   pole 0.74 ATR
-  2                                        +0.134 ( 302) | +0.245 ( 207) | +0.590 ( 28)   pole 0.73 ATR
-  3+                                       +0.059 (1936) | -0.087 (1201) | -0.164 (234)   pole 0.77 ATR
-  0-1                                      +0.363 ( 208) | +0.368 ( 135) | +0.276 ( 39)   pole 0.75 ATR
+  2                                        +0.138 ( 301) | +0.245 ( 207) | +0.590 ( 28)   pole 0.73 ATR
+  3+                                       +0.058 (1937) | -0.087 (1201) | -0.164 (234)   pole 0.77 ATR
+  0-1                                      +0.404 ( 209) | +0.368 ( 135) | +0.276 ( 39)   pole 0.75 ATR
   2+                                       +0.069 (2238) | -0.038 (1408) | -0.084 (262)   pole 0.77 ATR
 
 == BEAR flags, 1st pullback only (the page's main check)
@@ -45,16 +45,16 @@ R after 2 pts cost (2m trigger, else pole-top stop; target pole top + pole; flat
   0-1 smaller 1m flags                     +0.524 ( 123) | -0.204 (  59) | +0.272 ( 21)   pole 0.79 ATR
   2+                                       +0.261 (1200) | +0.539 ( 692) | -0.033 (158)   pole 0.75 ATR
   -- bear, pole < 0.70 ATR
-  0-1 smaller 1m flags                     +0.630 ( 111) | +0.336 (  85) | +0.244 (  9)   pole 0.52 ATR
-  2+                                       +0.062 (1082) | +0.002 ( 710) | +0.028 ( 97)   pole 0.54 ATR
+  0-1 smaller 1m flags                     +0.703 ( 112) | +0.336 (  85) | +0.244 (  9)   pole 0.52 ATR
+  2+                                       +0.062 (1082) | -0.019 ( 707) | +0.028 ( 97)   pole 0.54 ATR
   -- bear, pole >= 0.70 ATR
   0-1 smaller 1m flags                     +0.059 (  97) | +0.422 (  50) | +0.285 ( 30)   pole 1.01 ATR
-  2+                                       +0.076 (1156) | -0.078 ( 698) | -0.149 (165)   pole 0.99 ATR
+  2+                                       +0.076 (1156) | -0.057 ( 701) | -0.149 (165)   pole 0.99 ATR
 
 == By chart (bull + bear): 0-1 vs 2+
-  3m 0-1                                   +0.412 ( 276) | +0.292 ( 179) | -0.085 ( 49)   pole 0.63 ATR
-  3m 2+                                    +0.124 (1686) | +0.130 (1052) | -0.210 (199)   pole 0.61 ATR
+  3m 0-1                                   +0.442 ( 277) | +0.292 ( 179) | -0.085 ( 49)   pole 0.63 ATR
+  3m 2+                                    +0.125 (1685) | +0.130 (1052) | -0.210 (199)   pole 0.61 ATR
   4m 0-1                                   +0.574 ( 100) | +0.083 (  67) | +0.115 ( 19)   pole 0.73 ATR
-  4m 2+                                    +0.136 (1495) | +0.157 ( 970) | +0.014 (186)   pole 0.69 ATR
+  4m 2+                                    +0.136 (1496) | +0.157 ( 970) | +0.014 (186)   pole 0.69 ATR
   5m 0-1                                   +0.274 (  49) | -0.237 (  28) | +0.227 ( 10)   pole 0.85 ATR
   5m 2+                                    +0.179 (1358) | +0.192 ( 866) | -0.023 (170)   pole 0.75 ATR

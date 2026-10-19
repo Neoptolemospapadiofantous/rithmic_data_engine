@@ -1,0 +1,83 @@
+Intraday box fades — NQ NY 1/3/5m, 2010-07 → 2026-10, 3311 days, 246941 trades. R after 2 pts cost (ATR-scaled), flat 15:55, one at a time per chart.
+Cells: avg R (trades) 2010-18 | 2019-24 | 2025-26 · win · box trade minus its random-timing twin (same day, direction, stop, target) · trades a year.
+
+== 3m, middle target, stop 0.5h  (MAIN CELL)
+  all                                            -0.060 ( 9437) | -0.053 ( 6956) | +0.000 (1293) · win 50% · vs twin +0.092 [1346/yr]
+  chop day at entry (path < 0.30)                -0.065 ( 2869) | -0.054 ( 2063) | +0.019 ( 313) · win 50% · vs twin +0.050 [399/yr]
+  middle (0.30-0.55)                             -0.026 ( 2523) | -0.020 ( 1837) | +0.023 ( 363) · win 52% · vs twin +0.099 [359/yr]
+  trend day (>= 0.55)                            -0.078 ( 4045) | -0.072 ( 3056) | -0.023 ( 617) · win 49% · vs twin +0.116 [587/yr]
+  fade WITH the day's side (buy dips on up days) -0.016 ( 3489) | +0.018 ( 2474) | +0.076 ( 468) · win 53% · vs twin +0.044 [489/yr]
+  fade AGAINST the day's side                    -0.086 ( 5948) | -0.092 ( 4482) | -0.043 ( 825) · win 49% · vs twin +0.120 [857/yr]
+  trend day + with the day                       +0.009 (  889) | +0.119 (  642) | +0.088 ( 135) · win 56% · vs twin +0.027 [127/yr]
+
+== 3m, opposite edge −0.1h, stop 0.5h
+  all                                            -0.091 ( 6364) | -0.059 ( 4685) | -0.059 ( 891) · win 36% · vs twin +0.135 [909/yr]
+  chop day at entry (path < 0.30)                -0.067 ( 1920) | -0.027 ( 1334) | +0.025 ( 216) · win 37% · vs twin +0.096 [264/yr]
+  middle (0.30-0.55)                             -0.058 ( 1619) | -0.050 ( 1201) | -0.091 ( 237) · win 36% · vs twin +0.106 [233/yr]
+  trend day (>= 0.55)                            -0.127 ( 2825) | -0.083 ( 2150) | -0.083 ( 438) · win 35% · vs twin +0.177 [412/yr]
+  fade WITH the day's side (buy dips on up days) -0.029 ( 2272) | +0.039 ( 1509) | +0.007 ( 288) · win 38% · vs twin +0.035 [310/yr]
+  fade AGAINST the day's side                    -0.126 ( 4092) | -0.105 ( 3176) | -0.090 ( 603) · win 34% · vs twin +0.187 [599/yr]
+  trend day + with the day                       +0.023 (  551) | +0.193 (  339) | +0.072 (  84) · win 42% · vs twin -0.019 [74/yr]
+
+== 3m, middle target, stop 0.3h
+  all                                            -0.060 (11314) | -0.077 ( 8449) | -0.023 (1594) · win 39% · vs twin +0.125 [1625/yr]
+  chop day at entry (path < 0.30)                -0.064 ( 3457) | -0.078 ( 2484) | -0.027 ( 404) · win 39% · vs twin +0.078 [483/yr]
+  middle (0.30-0.55)                             -0.000 ( 3033) | -0.057 ( 2239) | +0.001 ( 443) · win 40% · vs twin +0.134 [435/yr]
+  trend day (>= 0.55)                            -0.094 ( 4824) | -0.089 ( 3726) | -0.036 ( 747) · win 38% · vs twin +0.153 [708/yr]
+  fade WITH the day's side (buy dips on up days) +0.026 ( 4155) | +0.012 ( 2953) | +0.016 ( 572) · win 42% · vs twin +0.090 [585/yr]
+  fade AGAINST the day's side                    -0.110 ( 7159) | -0.125 ( 5496) | -0.045 (1022) · win 37% · vs twin +0.145 [1041/yr]
+  trend day + with the day                       +0.059 ( 1048) | +0.140 (  761) | -0.010 ( 154) · win 45% · vs twin +0.079 [149/yr]
+
+== 1m, middle target, stop 0.5h
+  all                                            -0.054 (32367) | -0.079 (22986) | -0.067 (4508) · win 52% · vs twin +0.074 [4556/yr]
+  chop day at entry (path < 0.30)                -0.054 ( 9858) | -0.071 ( 6883) | -0.021 (1137) · win 52% · vs twin +0.066 [1361/yr]
+  middle (0.30-0.55)                             -0.051 ( 8885) | -0.070 ( 6338) | -0.073 (1313) · win 52% · vs twin +0.063 [1259/yr]
+  trend day (>= 0.55)                            -0.055 (13624) | -0.091 ( 9765) | -0.088 (2058) · win 52% · vs twin +0.086 [1937/yr]
+  fade WITH the day's side (buy dips on up days) -0.011 (13746) | -0.046 ( 9507) | -0.020 (1902) · win 54% · vs twin +0.049 [1915/yr]
+  fade AGAINST the day's side                    -0.085 (18621) | -0.103 (13479) | -0.101 (2606) · win 51% · vs twin +0.091 [2641/yr]
+  trend day + with the day                       +0.052 ( 4548) | -0.000 ( 3065) | -0.040 ( 682) · win 57% · vs twin +0.059 [631/yr]
+
+== 1m, opposite edge −0.1h, stop 0.5h
+  all                                            -0.066 (20958) | -0.087 (15341) | -0.055 (2941) · win 37% · vs twin +0.091 [2987/yr]
+  chop day at entry (path < 0.30)                -0.062 ( 6416) | -0.074 ( 4582) | +0.025 ( 718) · win 37% · vs twin +0.080 [892/yr]
+  middle (0.30-0.55)                             -0.040 ( 5744) | -0.069 ( 4157) | -0.016 ( 844) · win 37% · vs twin +0.084 [818/yr]
+  trend day (>= 0.55)                            -0.085 ( 8798) | -0.108 ( 6602) | -0.121 (1379) · win 36% · vs twin +0.103 [1277/yr]
+  fade WITH the day's side (buy dips on up days) -0.012 ( 8669) | -0.051 ( 6049) | +0.058 (1170) · win 39% · vs twin +0.027 [1209/yr]
+  fade AGAINST the day's side                    -0.104 (12289) | -0.111 ( 9292) | -0.130 (1771) · win 35% · vs twin +0.134 [1777/yr]
+  trend day + with the day                       +0.064 ( 2757) | +0.014 ( 1860) | -0.036 ( 412) · win 41% · vs twin +0.008 [383/yr]
+
+== 1m, middle target, stop 0.3h
+  all                                            -0.038 (36690) | -0.114 (26893) | -0.098 (5308) · win 42% · vs twin +0.134 [5243/yr]
+  chop day at entry (path < 0.30)                -0.027 (11255) | -0.106 ( 8042) | -0.076 (1312) · win 42% · vs twin +0.128 [1569/yr]
+  middle (0.30-0.55)                             -0.039 (10127) | -0.096 ( 7427) | -0.093 (1542) · win 42% · vs twin +0.125 [1453/yr]
+  trend day (>= 0.55)                            -0.047 (15308) | -0.130 (11424) | -0.113 (2454) · win 41% · vs twin +0.144 [2221/yr]
+  fade WITH the day's side (buy dips on up days) +0.023 (15560) | -0.082 (11096) | -0.033 (2275) · win 44% · vs twin +0.116 [2202/yr]
+  fade AGAINST the day's side                    -0.083 (21130) | -0.136 (15797) | -0.146 (3033) · win 40% · vs twin +0.147 [3041/yr]
+  trend day + with the day                       +0.097 ( 5106) | -0.022 ( 3557) | -0.025 ( 844) · win 46% · vs twin +0.143 [724/yr]
+
+== 5m, middle target, stop 0.5h
+  all                                            -0.040 ( 5103) | -0.062 ( 3702) | +0.002 ( 747) · win 50% · vs twin +0.144 [727/yr]
+  chop day at entry (path < 0.30)                -0.011 ( 1550) | -0.051 ( 1076) | +0.037 ( 177) · win 51% · vs twin +0.117 [213/yr]
+  middle (0.30-0.55)                             -0.039 ( 1358) | -0.025 (  970) | +0.028 ( 215) · win 51% · vs twin +0.122 [194/yr]
+  trend day (>= 0.55)                            -0.062 ( 2195) | -0.091 ( 1656) | -0.030 ( 355) · win 49% · vs twin +0.175 [320/yr]
+  fade WITH the day's side (buy dips on up days) +0.012 ( 1712) | +0.002 ( 1207) | +0.134 ( 245) · win 53% · vs twin +0.077 [241/yr]
+  fade AGAINST the day's side                    -0.067 ( 3391) | -0.093 ( 2495) | -0.062 ( 502) · win 48% · vs twin +0.177 [486/yr]
+  trend day + with the day                       +0.110 (  363) | +0.152 (  253) | -0.069 (  50) · win 58% · vs twin +0.077 [51/yr]
+
+== 5m, opposite edge −0.1h, stop 0.5h
+  all                                            -0.060 ( 3687) | -0.066 ( 2747) | -0.002 ( 555) · win 37% · vs twin +0.222 [532/yr]
+  chop day at entry (path < 0.30)                -0.010 ( 1070) | -0.022 (  763) | +0.115 ( 129) · win 39% · vs twin +0.192 [149/yr]
+  middle (0.30-0.55)                             -0.062 (  945) | -0.020 (  708) | -0.034 ( 148) · win 38% · vs twin +0.184 [137/yr]
+  trend day (>= 0.55)                            -0.091 ( 1672) | -0.117 ( 1276) | -0.040 ( 278) · win 36% · vs twin +0.261 [246/yr]
+  fade WITH the day's side (buy dips on up days) +0.016 ( 1168) | +0.027 (  818) | +0.084 ( 161) · win 40% · vs twin +0.116 [163/yr]
+  fade AGAINST the day's side                    -0.096 ( 2519) | -0.105 ( 1929) | -0.038 ( 394) · win 36% · vs twin +0.268 [369/yr]
+  trend day + with the day                       +0.169 (  223) | +0.110 (  147) | -0.150 (  29) · win 44% · vs twin +0.052 [30/yr]
+
+== 5m, middle target, stop 0.3h
+  all                                            -0.047 ( 6038) | -0.059 ( 4491) | -0.020 ( 896) · win 39% · vs twin +0.179 [870/yr]
+  chop day at entry (path < 0.30)                -0.003 ( 1829) | -0.051 ( 1285) | +0.059 ( 230) · win 40% · vs twin +0.157 [255/yr]
+  middle (0.30-0.55)                             -0.001 ( 1595) | -0.048 ( 1162) | +0.068 ( 238) · win 40% · vs twin +0.170 [228/yr]
+  trend day (>= 0.55)                            -0.106 ( 2614) | -0.071 ( 2044) | -0.111 ( 428) · win 37% · vs twin +0.198 [387/yr]
+  fade WITH the day's side (buy dips on up days) +0.018 ( 1996) | +0.048 ( 1437) | +0.099 ( 290) · win 42% · vs twin +0.118 [283/yr]
+  fade AGAINST the day's side                    -0.079 ( 4042) | -0.110 ( 3054) | -0.077 ( 606) · win 37% · vs twin +0.208 [586/yr]
+  trend day + with the day                       +0.086 (  413) | +0.296 (  305) | -0.160 (  56) · win 47% · vs twin +0.114 [59/yr]

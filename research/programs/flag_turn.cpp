@@ -25,7 +25,7 @@ int main() {
   if (!load_raw("data/edge_lab/cache", "NQ", s, err)) { fprintf(stderr, "%s\n", err.c_str()); return 1; }
   build_days(s, fomc, vix);
   std::mt19937 rng(20261020); std::vector<Row> rows; long nDays = 0;
-  for (auto& d : s.days) { if (!d.ok || d.rollwin || !(d.atr > 0) || d.date > 20261016) continue; std::vector<int> I; for (int i = d.b0; i < d.b1; ++i) { int tm = tday_min(s.t[i]); if (tm >= 930 && tm < 1600) I.push_back(i); } if (I.size() < 370) continue;
+  for (auto& d : s.days) { if (!d.ok || d.rollwin || !(d.atr > 0) || d.date > 20261016) continue; std::vector<int> I; for (int i = d.b0; i < d.b1; ++i) { int tm = tday_min(s.t[i]); if (tm >= 930 && tm < 1320) I.push_back(i); } if (I.size() < 370) continue;
     nDays++; const double A = d.atr, cost = 2 * A / 320.0; const size_t n = I.size(); const int era = d.date < 20190101 ? 0 : d.date < 20250101 ? 1 : 2;
     for (int side = 1; side >= -1; side -= 2) {
       std::vector<double> O(n), Hh(n), Lw(n), Cc(n), V(n), ext(n); std::vector<int> TM(n), ctxK(n), extK(n);
@@ -40,9 +40,9 @@ int main() {
           const bool turn = !open && c > vw && hiSince > lod && (c - lod) / (hiSince - lod) >= 0.55 && (c - lod) / A >= 0.3;
           ctxK[k] = open ? 1 : turn ? 2 : 0; ext[k] = (c - lod) / A; extK[k] = lk; } }
       auto exitR = [&](size_t k0, double e, double st, double tg, bool fillMin) -> double { double px = NAN; if (fillMin && Lw[k0] <= st) px = st;
-        for (size_t k = k0 + 1; k < n && std::isnan(px); ++k) { if (Lw[k] <= st) { px = st; break; } if (Hh[k] >= tg) { px = tg; break; } if (TM[k] >= 1555) { px = O[k]; break; } }
+        for (size_t k = k0 + 1; k < n && std::isnan(px); ++k) { if (Lw[k] <= st) { px = st; break; } if (Hh[k] >= tg) { px = tg; break; } if (TM[k] >= 1315) { px = O[k]; break; } }
         if (std::isnan(px)) px = Cc[n - 1]; return (px - e - cost) / (e - st); };
-      for (int tf = 3; tf <= 5; ++tf) { std::vector<FB> b; for (size_t k = 0; k < n; ++k) { if ((TM[k] - 930) % tf == 0 || b.empty()) b.push_back({O[k], Hh[k], Lw[k], Cc[k], V[k], (int)k, (int)k}); else { FB& z = b.back(); z.h = std::max(z.h, Hh[k]); z.l = std::min(z.l, Lw[k]); z.c = Cc[k]; z.v += V[k]; z.k = k; } }
+      for (int tf = 3; tf <= 5; ++tf) { std::vector<FB> b; for (size_t k = 0; k < n; ++k) { if (b.empty() || (TM[k] - 930) / tf != (TM[b.back().k0] - 930) / tf) b.push_back({O[k], Hh[k], Lw[k], Cc[k], V[k], (int)k, (int)k}); else { FB& z = b.back(); z.h = std::max(z.h, Hh[k]); z.l = std::min(z.l, Lw[k]); z.c = Cc[k]; z.v += V[k]; z.k = k; } }
         for (int want = 1; want <= 2; ++want) { int busy = -1; std::vector<std::pair<int, int>> reg;   // (kq, extreme index at registration)
           for (int q = 6; q < (int)b.size(); ++q) { if (q <= busy) continue; const int minute = (TM[b[q].k0] - 930) + tf; if (minute < 15 || minute >= 270) continue;
             const int h = q - 2; const double H = b[h].h; if (b[h + 1].h > H || b[q].h > H) continue;
@@ -55,7 +55,7 @@ int main() {
             r.ctx = want == 1 ? 0 : ext[kq] >= 0.8 ? 3 : ext[kq] >= 0.5 ? 1 : 2;
             int c = 0; for (auto& [rk, ek] : reg) if (rk > extK[kq]) c++; r.pbno = c + 1; reg.push_back({(int)kq, extK[kq]});
             double flo = fl0, hbl = 1e18, p2h = NAN, b2h = -1e18, Rp = NAN, eUsed = NAN, sUsed = NAN; bool lowerHigh = false; int nb = 0;
-            for (size_t kk = kq + 1; kk < n; ++kk) { const int t2 = TM[kk]; if (t2 >= 1500) break;
+            for (size_t kk = kq + 1; kk < n; ++kk) { const int t2 = TM[kk]; if (t2 >= 1260) break;
               if (std::isnan(Rp) && Hh[kk] > H) { Rp = exitR(kk, H + 0.25, std::min(flo, hbl) - 0.25, H + M, true); if (std::isnan(eUsed)) { eUsed = H + 0.25; sUsed = std::min(flo, hbl) - 0.25; } }
               b2h = std::max(b2h, Hh[kk]); hbl = std::min(hbl, Lw[kk]);
               if ((t2 + 1 - 930) % 2 == 0) { const double c2 = Cc[kk]; if (!std::isnan(p2h) && b2h <= H && std::isnan(r.R)) { if (b2h < p2h) lowerHigh = true; const double fln = std::min(flo, hbl); if (lowerHigh && c2 > p2h && c2 - fln > 0.5) { r.R = exitR(kk, c2, fln - 0.25, H + M, false); eUsed = c2; sUsed = fln - 0.25; } } p2h = b2h; b2h = -1e18; }
@@ -63,7 +63,7 @@ int main() {
             if (std::isnan(r.R)) r.R = Rp;
             busy = q + nb;
             // control: same context, random minute 10:00-14:00 this day, the flag's own risk and reward in points
-            if (!std::isnan(r.R)) { const double risk = eUsed - sUsed, rew = H + M - eUsed; std::vector<size_t> pool; for (size_t k = 0; k < n; ++k) if (TM[k] >= 1000 && TM[k] < 1400 && ctxK[k] == want && (want == 1 || ext[k] >= (r.ctx == 3 ? 0.8 : r.ctx == 1 ? 0.5 : 0.3))) pool.push_back(k);
+            if (!std::isnan(r.R)) { const double risk = eUsed - sUsed, rew = H + M - eUsed; std::vector<size_t> pool; for (size_t k = 0; k < n; ++k) if (TM[k] >= 960 && TM[k] < 1200 && ctxK[k] == want && (want == 1 || ext[k] >= (r.ctx == 3 ? 0.8 : r.ctx == 1 ? 0.5 : 0.3))) pool.push_back(k);
               if (!pool.empty() && risk > 0) { double sm = 0; for (int z = 0; z < 20; ++z) { size_t k = pool[rng() % pool.size()]; sm += exitR(k, Cc[k], Cc[k] - risk, Cc[k] + rew, false); } r.ctl = sm / 20; } }
             rows.push_back(r); } } } } }
   printf("Flags after the turn — NQ NY 3/4/5m, 2010-07 → 2026-10, %ld days, %zu flags. R after 2 pts cost (2m trigger, else pole-top stop; target pole top + pole; flat 15:55).\n", nDays, rows.size());

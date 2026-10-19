@@ -33,7 +33,7 @@ int main() {
         int state = 0, npause = 0; double L = 0, H = 0, sumImp = 0; int nImp = 0; size_t kL = 0; double trig = 0, pLow = 0; double bo = 0, bh = -1e18, bl = 1e18, sumR = 0; int nb = 0; size_t busyK = 0;
         for (size_t k = 0; k < n; ++k) { const int tm = TM[k];
           // the armed buy stop works inside the bar, minute by minute
-          if (state == 2 && k > busyK && Hh[k] >= trig && tm >= 945 && tm < 1400) {
+          if (state == 2 && k > busyK && Hh[k] >= trig && tm >= 945 && tm < 1200) {   // tday_min: 945 = 09:45, 1200 = 14:00
             const double e = trig, st = pLow - 0.25, risk = e - st, M = H - L; T t{}; t.tf = tf; t.side = side; t.ki = ki; t.era = era;
             t.ctx = e > so && e > vw[k] && hiS[k] > loS[k] && (e - so) / (hiS[k] - loS[k]) >= 0.55;
             double top = std::max(H, Hh[k]); for (size_t kk = k; kk < n && TM[kk] < tm + 60; ++kk) top = std::max(top, Hh[kk]);
