@@ -12,6 +12,8 @@ P=research/programs; O=$P/out; T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 LIST=(
   "regopt|data/edge_lab/cache 200" "regcal|" "reentry|" "reentry_pay|" "perm|$O/mtf_ldn.csv" "emastop|" "emaexit|" "openreg|" "emasweep|"
   "emamtf|" "emamom|" "mom2|" "momopt|" "momx|" "momadd|" "sprint|" "sprint3|" "sprint4|" "evalspeed|" "payfast|" "planchk|"
+  "session_model|" "intraday_models|" "behavior_sessions|" "behavior3|research/programs/inputs_20261019/cascade_2r.trades.csv"
+  "target_by_range|research/programs/out/intraday_range_pred.csv research/programs/inputs_20261019/cascade_2r.trades.csv research/programs/inputs_20261019/gap_retest_2r.trades.csv research/programs/inputs_20261019/gap_rule_1000_2r.trades.csv"
 )
 want=("$@"); same=0; diff_n=0; fail=0
 for row in "${LIST[@]}"; do n="${row%%|*}"; a="${row#*|}"

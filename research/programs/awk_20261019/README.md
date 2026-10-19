@@ -14,3 +14,5 @@ edge_lab cache), `sessions_all.csv` (one RTH date per line), the NQ 1m cache (`d
 | `dyn2.awk` | room-based sizing (eval MODE=eval / funded MODE=fund) with a size floor RMIN |
 | `port4.awk` | portfolio of 10 accounts: eval ER, funded RF, claim T keep B, refill MAXB/day, 12-month windows |
 | `sess.awk`, `week.awk`, `bookweek.awk`, `levels.awk`, `ctx.awk`, `gex.awk` | session table, weekly/weekday profile, book by weekday, pre-session levels, multi-day context, VIX-regime ranges |
+| `port5.awk` / `port6.awk` / `port_cont.awk` | port4 + SLOTS (accounts) / + WILD (evals only on listed dates) / one continuous run printing net per month |
+| `overnight.awk` / `weakbook.awk` / `streaks.awk` | overnight holds O1–O3 / the weakness × VIX book W1–W3 / book streaks + equity-curve filter |
