@@ -1,0 +1,92 @@
+NQ behaviour part 3 — 3315 sessions 20100722 → 20261015, ATR units. 'robust' = same sign in all eras (2010-18 / 2019-22 / 2023-26) and |t| >= 2. Book minutes: 1058329
+
+== 2a. Cascade trades: how far against before the result (MAE in R, R = 0.35 ATR)
+  winners: MAE (R)                                           n  1169 mean   +0.362 t +46.33 | eras   +0.358   +0.364   +0.368 (n 605/313/251)  robust
+  2R winners: MAE (R)                                        n   443 mean   +0.293 t +24.68 | eras   +0.293   +0.314   +0.265 (n 276/101/66)  robust
+  losers: MAE (R)                                            n  1411 mean   +0.945 t +237.24 | eras   +0.942   +0.962   +0.931 (n 773/349/289)  robust
+  winners that went more than 0.5R against first              28.9% (n  1169) | eras  28.6%  28.1%  30.7% (n 605/313/251)
+  winners that went more than 0.75R against first             11.6% (n  1169) | eras  12.1%  10.2%  12.4% (n 605/313/251)
+
+== 2b. Trend days (|C-O| >= 0.5 range): deepest pullback after 10:00 against the day's direction (ATR), and when it ended
+  deepest pullback after 10:00 on trend days                 n  1592 mean   +0.489 atr t +82.57 | eras   +0.488   +0.489   +0.492 (n 811/441/340)  robust
+  when it ended (hour from 09:30): 09:30 17.2%  10:30 20.2%  11:30 12.1%  12:30 12.6%  13:30 11.5%  14:30 13.9%  15:30 12.4%  
+
+== 3. Gap fills (gap = 09:30 open - prior RTH close; filled = RTH touches the prior close)
+  gap UP 0.10-0.25 ATR, VIX <20: filled (median 11 min)       73.7% (n   338) | eras  75.5%  67.9%  72.8% (n 204/53/81)
+     ... filled by 10:00                                      53.6% (n   338) | eras  54.4%  45.3%  56.8% (n 204/53/81)
+  gap UP 0.10-0.25 ATR, VIX >=20: filled (median 8 min)       75.5% (n   110) | eras  75.6%  79.3%  54.5% (n 41/58/11)
+     ... filled by 10:00                                      50.9% (n   110) | eras  56.1%  48.3%  45.5% (n 41/58/11)
+  gap UP 0.25-0.50 ATR, VIX <20: filled (median 41 min)       54.2% (n   415) | eras  53.1%  51.4%  60.5% (n 260/74/81)
+     ... filled by 10:00                                      20.5% (n   415) | eras  21.2%  16.2%  22.2% (n 260/74/81)
+  gap UP 0.25-0.50 ATR, VIX >=20: filled (median 39 min)      53.6% (n   153) | eras  60.4%  55.2%  27.8% (n 48/87/18)
+     ... filled by 10:00                                      20.3% (n   153) | eras  25.0%  19.5%  11.1% (n 48/87/18)
+  gap UP 0.50-1.00 ATR, VIX <20: filled (median 85 min)       30.9% (n   275) | eras  28.6%  27.3%  38.4% (n 147/55/73)
+     ... filled by 10:00                                       4.0% (n   275) | eras   4.1%   1.8%   5.5% (n 147/55/73)
+  gap UP 0.50-1.00 ATR, VIX >=20: filled (median 116 min)     32.6% (n   129) | eras  27.8%  36.2%  35.3% (n 54/58/17)
+     ... filled by 10:00                                       3.1% (n   129) | eras   3.7%   3.4%   0.0% (n 54/58/17)
+  gap UP > 1.00 ATR, VIX <20: filled (median 191 min)         14.9% (n    67) | eras   8.8%  22.2%  20.8% (n 34/9/24)
+     ... filled by 10:00                                       0.0% (n    67) | eras   0.0%   0.0%   0.0% (n 34/9/24)
+  gap UP > 1.00 ATR, VIX >=20: filled (median 221 min)        12.0% (n    25) | eras   9.1%   0.0%  28.6% (n 11/7/7)
+     ... filled by 10:00                                       0.0% (n    25) | eras   0.0%   0.0%   0.0% (n 11/7/7)
+  gap DOWN 0.10-0.25 ATR, VIX <20: filled (median 13 min)     74.8% (n   258) | eras  77.1%  75.0%  69.2% (n 157/36/65)
+     ... filled by 10:00                                      47.7% (n   258) | eras  49.0%  52.8%  41.5% (n 157/36/65)
+  gap DOWN 0.10-0.25 ATR, VIX >=20: filled (median 10 min)    86.1% (n   101) | eras  79.5%  90.0%  91.7% (n 39/50/12)
+     ... filled by 10:00                                      63.4% (n   101) | eras  56.4%  68.0%  66.7% (n 39/50/12)
+  gap DOWN 0.25-0.50 ATR, VIX <20: filled (median 40 min)     61.8% (n   283) | eras  62.1%  66.0%  57.4% (n 169/53/61)
+     ... filled by 10:00                                      25.1% (n   283) | eras  24.9%  30.2%  21.3% (n 169/53/61)
+  gap DOWN 0.25-0.50 ATR, VIX >=20: filled (median 43 min)    58.2% (n    98) | eras  70.0%  51.0%  58.8% (n 30/51/17)
+     ... filled by 10:00                                      24.5% (n    98) | eras  30.0%  19.6%  29.4% (n 30/51/17)
+  gap DOWN 0.50-1.00 ATR, VIX <20: filled (median 117 min)    38.9% (n   203) | eras  42.7%  36.8%  31.2% (n 117/38/48)
+     ... filled by 10:00                                       3.4% (n   203) | eras   5.1%   2.6%   0.0% (n 117/38/48)
+  gap DOWN 0.50-1.00 ATR, VIX >=20: filled (median 141 min)   34.8% (n    89) | eras  41.9%  29.8%  36.4% (n 31/47/11)
+     ... filled by 10:00                                       3.4% (n    89) | eras   6.5%   2.1%   0.0% (n 31/47/11)
+  gap DOWN > 1.00 ATR, VIX <20: filled (median 211 min)       14.1% (n    71) | eras  13.5%  13.3%  15.8% (n 37/15/19)
+     ... filled by 10:00                                       1.4% (n    71) | eras   2.7%   0.0%   0.0% (n 37/15/19)
+  gap DOWN > 1.00 ATR, VIX >=20: filled (median 155 min)      23.7% (n    38) | eras  14.3%  29.4%  28.6% (n 14/17/7)
+     ... filled by 10:00                                       0.0% (n    38) | eras   0.0%   0.0%   0.0% (n 14/17/7)
+
+== 4. Yesterday's high / low taken in RTH (from an open inside): back through within 30 min = sweep, else hold
+ yesterday's HIGH
+     taken, then back through within 30 min (sweep)           83.5% (n  1007) | eras  83.8%  84.3%  81.8% (n 562/242/203)
+     sweep: day still closes beyond the level                 51.6% (n   841) | eras  51.4%  51.5%  52.4% (n 471/204/166)
+     hold (no close back within 30 min): closes beyond        79.5% (n   166) | eras  73.6%  89.5%  83.8% (n 91/38/37)
+ yesterday's LOW
+     taken, then back through within 30 min (sweep)           82.7% (n   937) | eras  82.7%  81.7%  84.2% (n 508/246/183)
+     sweep: day still closes beyond the level                 42.7% (n   775) | eras  40.5%  44.8%  46.1% (n 420/201/154)
+     hold (no close back within 30 min): closes beyond        67.9% (n   162) | eras  62.5%  71.1%  79.3% (n 88/45/29)
+
+== 5. Round numbers: first RTH touch, next 30 min — through by 0.15 ATR first (vs rejected by 0.15 ATR first)
+  levels at x00 (every 100 pts): broke through                50.8% (n  3406) | eras  51.3%  51.3%  50.1% (n 712/1284/1410)
+  levels at x50 (every 100 pts): broke through                48.5% (n  3427) | eras  50.1%  48.4%  47.7% (n 676/1288/1463)
+  levels at x25 (every 100 pts): broke through                46.5% (n  3491) | eras  46.2%  46.3%  46.7% (n 718/1282/1491)
+
+== 6. The afternoon after a trend morning (12:00 straight >= 0.55 and >= 0.4 ATR from the open), in the morning's direction
+  12:00 -> 14:00                                             n  1149 mean   -0.000 atr t  -0.04 | eras   -0.006   +0.005   +0.007 (n 605/304/240)
+  14:00 -> 15:55                                             n  1149 mean   +0.013 atr t  +1.42 | eras   +0.013   +0.025   -0.000 (n 605/304/240)
+  afternoon gives back >= half the morning move               16.6% (n  1149) | eras  17.4%  15.8%  15.8% (n 605/304/240)
+
+== 7. Early volume: RVOL = 09:30-09:45 volume / mean of the prior 20 days; trend-day rate by RVOL fifth
+  RVOL fifth 1 (0.03-0.79): trend day                         48.4% (n   659) | eras  45.4%  56.9%  52.1% (n 447/116/96)
+     ... and 10:30 straight + moved: trend day                62.4% (n   197) | eras  58.8%  67.5%  73.1% (n 131/40/26)
+  RVOL fifth 2 (0.79-0.92): trend day                         47.6% (n   659) | eras  46.0%  52.2%  45.7% (n 328/180/151)
+     ... and 10:30 straight + moved: trend day                58.6% (n   237) | eras  59.5%  56.7%  59.3% (n 116/67/54)
+  RVOL fifth 3 (0.92-1.04): trend day                         46.9% (n   659) | eras  43.5%  49.8%  48.8% (n 276/221/162)
+     ... and 10:30 straight + moved: trend day                58.6% (n   237) | eras  60.0%  54.3%  62.1% (n 90/81/66)
+  RVOL fifth 4 (1.04-1.22): trend day                         47.3% (n   659) | eras  42.7%  52.0%  50.3% (n 300/200/159)
+     ... and 10:30 straight + moved: trend day                60.8% (n   265) | eras  52.6%  72.7%  61.1% (n 116/77/72)
+  RVOL fifth 5 (1.22-4.90): trend day                         49.9% (n   659) | eras  50.0%  47.5%  52.5% (n 400/141/118)
+     ... and 10:30 straight + moved: trend day                62.3% (n   292) | eras  63.2%  60.7%  61.4% (n 174/61/57)
+
+== 8. Order flow, 2023-03 -> 2026 (aggressor delta = buy - sell volume; book imbalance = (bid - ask)/(bid + ask) within 10 bp)
+  a. delta 09:30-10:00 (share of volume) vs 10:00 -> 15:55 move: corr +0.032, same direction 53.5% (n 645)
+  b. 10:00 move >= 0.1 ATR, delta AGREES: rest of day in its direction n   402 mean   +0.064 atr t  +2.09 | eras     +nan     +nan   +0.064 (n 0/0/402)
+     delta DISAGREES: rest of day in the move's direction    n    71 mean   -0.073 atr t  -0.72 | eras     +nan     +nan   -0.073 (n 0/0/71)
+  c. new high/low at 10:30 WITH delta divergence: reversal to 15:55 n    43 mean   +0.020 atr t  +0.20 | eras     +nan     +nan   +0.020 (n 0/0/43)
+     new high/low at 10:30 without divergence: reversal to 15:55 n   267 mean   -0.055 atr t  -1.80 | eras     +nan     +nan   -0.055 (n 0/0/267)
+  d. PDH/PDL first touch, heavy aggression INTO it, not through: reversed 0.25 ATR first  66.7% (n    15) | eras   nan%   nan%  66.7% (n 0/0/15)
+     all other first touches: reversed 0.25 ATR first         36.2% (n   229) | eras   nan%   nan%  36.2% (n 0/0/229)
+  e. book imbalance 09:25-09:30 vs the day (open -> close): corr +0.029 (n 639)
+     imbalance sign = direction of 09:30 -> 10:00             50.4% (n   639) | eras   nan%   nan%  50.4% (n 0/0/639)
+     imbalance sign = direction of the day                    53.4% (n   639) | eras   nan%   nan%  53.4% (n 0/0/639)
+  f. cascade trades, delta since 09:30 AGREES with the trade: net R n   458 mean   +0.167 t  +2.99 | eras     +nan     +nan   +0.167 (n 0/0/458)
+     delta DISAGREES: net R                                  n    55 mean   +0.036 t  +0.23 | eras     +nan     +nan   +0.036 (n 0/0/55)
