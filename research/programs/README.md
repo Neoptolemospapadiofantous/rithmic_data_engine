@@ -28,6 +28,7 @@ Never run a replay or rebuild `build/` 09:25–16:05 ET on a weekday (these prog
 | `ema_cross_study` | research/preregistered/2026-10-19_ema_9_14_cross_study.md | 2026-10-19: what NQ does after an EMA 9/14 cross on the 1 / 5 / 15-min chart, by session and context. |
 | `mtf_entry_study` | research/preregistered/2026-10-19_ema_9_14_cross_study.md | 2026-10-19: 5-min setups with 1-min entries (market / midpoint limit / pullback limit / dip-then-resume), stop beyond the 5-min bar, 2R, 60 min; argv 0 / 1 / 2 = 1 pt / no cost / scaled cost. |
 | `volume_shock_study` | research/preregistered/2026-10-19_volume_shocks.md | 2026-10-19: overnight minutes with 5 / 10 / 20× normal volume — what NQ does next (+3 … +120 min, to the open, give-back), by session. |
+| `orderflow_hf` | research/preregistered/2026-10-19_orderflow_5_a_day.md | 2026-10-19: order-flow events that fire 5+ a day in NY (delta bursts, absorption, book imbalance, delta divergence), 0.05 ATR stop, 1R / 2R, 15 min. |
 | `awk_20261019/` | research/preregistered/2026-10-19_vest_funded.md and the other 2026-10-19 studies | the Vest eval / funded / portfolio simulators and the session-behaviour scripts (awk), with their saved outputs in out/ |
 | `book3` | — | #include "research/meta.hpp" |
 | `both` | research/preregistered/2026-10-17_more_trades.md | 2026-10-17 pre-registered A (research/preregistered/2026-10-17_more_trades.md): take both the cascade and the gap retest |

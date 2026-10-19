@@ -1,0 +1,17 @@
+Order-flow events, NY 09:35-15:30, NQ 2023-03 → 2026-03-19 (641 days). Stop 0.05 ATR (~15 pts today), 15-min exit, net of 1 pt. Halves 2023-03→2024-08 / 2024-09→2026-03.
+  A delta burst z1.5 (follow)          target 1R |  26.2 a day | win 49.2% | net  -1.08 pts (-0.090 R, t -10.3) | halves  -0.93 /  -1.24
+  A delta burst z1.5 (follow)          target 2R |  26.2 a day | win 37.0% | net  -1.15 pts (-0.093 R, t  -8.5) | halves  -0.90 /  -1.42
+  A delta burst z2 (follow)            target 1R |  16.2 a day | win 48.5% | net  -1.33 pts (-0.105 R, t -10.0) | halves  -1.06 /  -1.63
+  A delta burst z2 (follow)            target 2R |  16.2 a day | win 36.1% | net  -1.43 pts (-0.116 R, t  -8.3) | halves  -1.17 /  -1.71
+  A delta burst z3 (follow)            target 1R |   6.1 a day | win 47.9% | net  -1.50 pts (-0.115 R, t  -6.9) | halves  -1.06 /  -1.97
+  A delta burst z3 (follow)            target 2R |   6.1 a day | win 36.5% | net  -1.31 pts (-0.107 R, t  -4.7) | halves  -1.02 /  -1.63
+  B absorption (fade)                  target 1R |   0.0 a day | win 55.6% | net  -0.89 pts (-0.080 R, t  -0.3) | halves  +2.27 /  -2.48
+  B absorption (fade)                  target 2R |   0.0 a day | win 44.4% | net  -3.47 pts (-0.330 R, t  -1.1) | halves  -5.46 /  -2.48
+  C book imbalance >= 0.2 (follow)     target 1R |   1.4 a day | win 49.6% | net  -0.85 pts (-0.060 R, t  -1.7) | halves  -0.50 /  -0.90
+  C book imbalance >= 0.2 (follow)     target 2R |   1.4 a day | win 36.9% | net  -1.17 pts (-0.086 R, t  -1.9) | halves  -1.62 /  -1.11
+  C book imbalance >= 0.3 (follow)     target 1R |   0.5 a day | win 50.8% | net  -0.27 pts (-0.024 R, t  -0.3) | halves  -5.62 /  -0.14
+  C book imbalance >= 0.3 (follow)     target 2R |   0.5 a day | win 35.5% | net  -0.65 pts (-0.060 R, t  -0.6) | halves -10.74 /  -0.42
+  D delta divergence 15m (fade)        target 1R |   6.9 a day | win 49.5% | net  -0.97 pts (-0.078 R, t  -4.7) | halves  -0.97 /  -0.97
+  D delta divergence 15m (fade)        target 2R |   6.9 a day | win 37.4% | net  -0.99 pts (-0.081 R, t  -3.7) | halves  -1.01 /  -0.98
+  E delta burst z2 WITH the day        target 1R |   9.1 a day | win 48.5% | net  -1.38 pts (-0.108 R, t  -7.9) | halves  -1.05 /  -1.75
+  E delta burst z2 WITH the day        target 2R |   9.1 a day | win 36.2% | net  -1.51 pts (-0.124 R, t  -6.7) | halves  -1.26 /  -1.78
