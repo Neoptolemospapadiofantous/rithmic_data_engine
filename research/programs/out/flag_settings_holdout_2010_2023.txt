@@ -1,0 +1,7 @@
+HOLDOUT 2010-07 → 2023-09, NY, net of 1 NQ pt (points then were 1,800–16,000, so points are smaller than today):
+  5m bull  pole 6 >= 0.15 ATR, flag 5 <= 0.6, 1R                 n   712 (54/yr) win 51.8% PF 1.05 net 0.48 pts | 2010-18 -0.35 (430) · 2019-23 1.74 (282)
+  5m bull  pole 6 >= 0.2 ATR,  flag 5 <= 0.6, 1R                 n   596 (45/yr) win 51.5% PF 1.03 net 0.25 pts | 2010-18 -0.24 (369) · 2019-23 1.04 (227)
+  5m both  pole 6 >= 0.2 ATR,  flag 5 <= 0.6, 1R                 n   955 (72/yr) win 51.2% PF 1.05 net 0.56 pts | 2010-18 0.02 (593) · 2019-23 1.45 (362)
+  1m bull  pole 10 >= 0.3 ATR, flag 3 <= 0.5, 1.5R               n   692 (52/yr) win 42.3% PF 0.97 net -0.26 pts | 2010-18 -1.26 (440) · 2019-23 1.47 (252)
+  1m bull  pole 10 >= 0.3 ATR, flag 3 <= 0.5, 2R                 n   692 (52/yr) win 38.0% PF 1.04 net 0.45 pts | 2010-18 -0.64 (440) · 2019-23 2.36 (252)
+  5m bear  pole 6 >= 0.2 ATR,  flag 5 <= 0.6, 1R (for comparison) n   359 (27/yr) win 50.7% PF 1.09 net 1.08 pts | 2010-18 0.44 (224) · 2019-23 2.13 (135)

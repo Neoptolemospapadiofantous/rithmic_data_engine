@@ -1,0 +1,47 @@
+sweep_1_ny.json bull: 648 cells with n>=100; robust (both halves + >=75% of neighbours positive): 44
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.5x pole, target 1.5R | n 148 (49/yr) win 46% PF 1.45 net +11.25 pts | halves 3.61 / 16.03 | neighbours 100% positive, avg 6.79
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.5x pole, target 2R | n 148 (49/yr) win 38% PF 1.44 net +12.17 pts | halves 7.84 / 14.88 | neighbours 100% positive, avg 6.43
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.4x pole, target 1.5R | n 123 (41/yr) win 46% PF 1.46 net +9.50 pts | halves 5.15 / 11.92 | neighbours 75% positive, avg 6.10
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.4x pole, target 1R | n 123 (41/yr) win 58% PF 1.46 net +7.70 pts | halves 5.30 / 9.03 | neighbours 100% positive, avg 5.61
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.4x pole, target 2R | n 123 (41/yr) win 36% PF 1.32 net +7.80 pts | halves 8.63 / 7.34 | neighbours 75% positive, avg 5.31
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.6x pole, target 2R | n 155 (52/yr) win 39% PF 1.52 net +14.18 pts | halves 9.67 / 17.19 | neighbours 100% positive, avg 5.28
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.5x pole, target measured | n 148 (49/yr) win 32% PF 1.38 net +11.03 pts | halves 8.80 / 12.42 | neighbours 100% positive, avg 5.28
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.4x pole, target measured | n 123 (41/yr) win 29% PF 1.26 net +6.72 pts | halves 10.64 / 4.53 | neighbours 75% positive, avg 5.26
+sweep_1_ny.json bear: 620 cells with n>=100; robust (both halves + >=75% of neighbours positive): 11
+  pole 10 bars >= 0.3 ATR, flag 5 bars <= 0.5x pole, target 2R | n 102 (34/yr) win 42% PF 1.27 net +8.41 pts | halves 14.68 / 1.89 | neighbours 100% positive, avg 2.76
+  pole 10 bars >= 0.2 ATR, flag 3 bars <= 0.6x pole, target 2R | n 584 (195/yr) win 36% PF 1.07 net +1.76 pts | halves 1.83 / 1.70 | neighbours 100% positive, avg 0.82
+  pole 10 bars >= 0.2 ATR, flag 3 bars <= 0.6x pole, target measured | n 584 (195/yr) win 36% PF 1.03 net +0.86 pts | halves 1.54 / 0.22 | neighbours 80% positive, avg 0.63
+  pole 10 bars >= 0.15 ATR, flag 3 bars <= 0.6x pole, target measured | n 876 (292/yr) win 37% PF 1.03 net +0.72 pts | halves 0.61 / 0.83 | neighbours 100% positive, avg 0.59
+  pole 10 bars >= 0.15 ATR, flag 3 bars <= 0.6x pole, target 2R | n 876 (292/yr) win 36% PF 1.06 net +1.31 pts | halves 0.28 / 2.32 | neighbours 80% positive, avg 0.52
+  pole 10 bars >= 0.15 ATR, flag 3 bars <= 0.5x pole, target measured | n 716 (239/yr) win 35% PF 1.02 net +0.41 pts | halves 0.62 / 0.20 | neighbours 83% positive, avg 0.44
+  pole 20 bars >= 0.3 ATR, flag 5 bars <= 0.6x pole, target 1.5R | n 226 (75/yr) win 42% PF 1.09 net +2.59 pts | halves 0.56 / 4.39 | neighbours 83% positive, avg 0.34
+  pole 10 bars >= 0.1 ATR, flag 3 bars <= 0.6x pole, target measured | n 1224 (408/yr) win 37% PF 1.02 net +0.37 pts | halves 0.15 / 0.60 | neighbours 100% positive, avg 0.32
+sweep_1_ny.json both: 720 cells with n>=100; robust (both halves + >=75% of neighbours positive): 26
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.4x pole, target 1R | n 273 (91/yr) win 56% PF 1.20 net +3.76 pts | halves 3.99 / 3.60 | neighbours 80% positive, avg 3.35
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.4x pole, target 1.5R | n 273 (91/yr) win 43% PF 1.14 net +3.26 pts | halves 2.06 / 4.13 | neighbours 80% positive, avg 3.32
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.5x pole, target 2R | n 366 (122/yr) win 37% PF 1.17 net +4.95 pts | halves 1.52 / 7.61 | neighbours 80% positive, avg 3.28
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.5x pole, target 1.5R | n 366 (122/yr) win 44% PF 1.17 net +4.53 pts | halves 1.27 / 7.06 | neighbours 80% positive, avg 3.02
+  pole 10 bars >= 0.3 ATR, flag 5 bars <= 0.4x pole, target 1.5R | n 116 (39/yr) win 47% PF 1.35 net +8.41 pts | halves 13.34 / 2.54 | neighbours 75% positive, avg 2.62
+  pole 10 bars >= 0.2 ATR, flag 3 bars <= 0.6x pole, target 2R | n 1141 (380/yr) win 36% PF 1.14 net +3.26 pts | halves 0.89 / 5.28 | neighbours 100% positive, avg 2.58
+  pole 10 bars >= 0.3 ATR, flag 3 bars <= 0.6x pole, target 2R | n 393 (131/yr) win 37% PF 1.20 net +5.98 pts | halves 1.97 / 9.21 | neighbours 75% positive, avg 2.56
+  pole 10 bars >= 0.2 ATR, flag 3 bars <= 0.5x pole, target 2R | n 1004 (335/yr) win 36% PF 1.12 net +2.81 pts | halves 0.42 / 4.88 | neighbours 100% positive, avg 2.45
+sweep_5_ny.json bull: 328 cells with n>=100; robust (both halves + >=75% of neighbours positive): 37
+  pole 6 bars >= 0.15 ATR, flag 5 bars <= 0.6x pole, target 1R | n 146 (49/yr) win 56% PF 1.47 net +8.87 pts | halves 9.68 / 7.86 | neighbours 100% positive, avg 10.45
+  pole 6 bars >= 0.1 ATR, flag 5 bars <= 0.6x pole, target 1R | n 156 (52/yr) win 58% PF 1.50 net +9.15 pts | halves 10.71 / 7.41 | neighbours 100% positive, avg 9.88
+  pole 6 bars >= 0.2 ATR, flag 5 bars <= 0.6x pole, target 1R | n 118 (39/yr) win 58% PF 1.49 net +10.08 pts | halves 10.03 / 10.15 | neighbours 100% positive, avg 9.73
+  pole 6 bars >= 0.15 ATR, flag 5 bars <= 0.6x pole, target measured | n 146 (49/yr) win 47% PF 1.38 net +8.79 pts | halves 9.44 / 7.97 | neighbours 83% positive, avg 9.49
+  pole 8 bars >= 0.2 ATR, flag 5 bars <= 0.6x pole, target 1R | n 147 (49/yr) win 58% PF 1.46 net +8.57 pts | halves 8.64 / 8.47 | neighbours 100% positive, avg 8.82
+  pole 6 bars >= 0.2 ATR, flag 5 bars <= 0.6x pole, target measured | n 118 (39/yr) win 49% PF 1.42 net +10.35 pts | halves 10.41 / 10.27 | neighbours 100% positive, avg 8.71
+  pole 6 bars >= 0.1 ATR, flag 5 bars <= 0.6x pole, target measured | n 156 (52/yr) win 48% PF 1.40 net +8.83 pts | halves 9.55 / 8.04 | neighbours 80% positive, avg 8.65
+  pole 6 bars >= 0.15 ATR, flag 5 bars <= 0.6x pole, target 1.5R | n 146 (49/yr) win 49% PF 1.27 net +6.32 pts | halves 8.06 / 4.14 | neighbours 100% positive, avg 8.62
+sweep_5_ny.json bear: 220 cells with n>=100; robust (both halves + >=75% of neighbours positive): 1
+  pole 8 bars >= 0.3 ATR, flag 2 bars <= 0.5x pole, target 1R | n 218 (73/yr) win 50% PF 1.08 net +2.59 pts | halves 3.63 / 1.27 | neighbours 80% positive, avg 2.01
+sweep_5_ny.json both: 404 cells with n>=100; robust (both halves + >=75% of neighbours positive): 22
+  pole 4 bars >= 0.1 ATR, flag 5 bars <= 0.6x pole, target 1R | n 110 (37/yr) win 58% PF 1.79 net +14.45 pts | halves 8.38 / 22.29 | neighbours 75% positive, avg 8.49
+  pole 6 bars >= 0.2 ATR, flag 5 bars <= 0.6x pole, target 1R | n 186 (62/yr) win 54% PF 1.34 net +8.05 pts | halves 7.66 / 8.64 | neighbours 83% positive, avg 7.81
+  pole 6 bars >= 0.3 ATR, flag 5 bars <= 0.6x pole, target 1R | n 121 (40/yr) win 55% PF 1.50 net +12.59 pts | halves 9.89 / 16.30 | neighbours 75% positive, avg 7.51
+  pole 6 bars >= 0.2 ATR, flag 5 bars <= 0.6x pole, target 1.5R | n 186 (62/yr) win 47% PF 1.28 net +7.71 pts | halves 10.41 / 3.73 | neighbours 83% positive, avg 7.12
+  pole 4 bars >= 0.1 ATR, flag 5 bars <= 0.6x pole, target measured | n 110 (37/yr) win 48% PF 1.59 net +13.56 pts | halves 10.74 / 17.20 | neighbours 75% positive, avg 7.08
+  pole 6 bars >= 0.15 ATR, flag 5 bars <= 0.6x pole, target 1R | n 219 (73/yr) win 53% PF 1.29 net +6.59 pts | halves 7.50 / 5.36 | neighbours 83% positive, avg 7.01
+  pole 6 bars >= 0.2 ATR, flag 5 bars <= 0.6x pole, target measured | n 186 (62/yr) win 45% PF 1.30 net +8.33 pts | halves 9.57 / 6.49 | neighbours 83% positive, avg 6.82
+  pole 6 bars >= 0.3 ATR, flag 5 bars <= 0.6x pole, target 1.5R | n 121 (40/yr) win 48% PF 1.45 net +13.21 pts | halves 14.31 / 11.69 | neighbours 75% positive, avg 6.64
