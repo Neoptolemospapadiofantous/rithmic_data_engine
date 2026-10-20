@@ -1,0 +1,20 @@
+NY bull 3-5m, all flags            low buy share (sellers)    n  199  avg +0.378R  win 31%
+NY bull 3-5m, all flags            mid                        n  199  avg +0.236R  win 26%
+NY bull 3-5m, all flags            high buy share (buyers)    n  200  avg -0.110R  win 24%
+NY bull 3-5m, all flags            FILTER: low+mid (drop high) n  398  avg +0.307R  win 28%
+   cuts 0.476 / 0.493
+NY bull 3-5m, 1st pullback         low buy share (sellers)    n  160  avg +0.386R  win 31%
+NY bull 3-5m, 1st pullback         mid                        n  160  avg +0.246R  win 27%
+NY bull 3-5m, 1st pullback         high buy share (buyers)    n  161  avg -0.028R  win 25%
+NY bull 3-5m, 1st pullback         FILTER: low+mid (drop high) n  320  avg +0.316R  win 29%
+   cuts 0.476 / 0.493
+NY bull 4/5m TAKE                  low buy share (sellers)    n   20  avg +1.903R  win 50%
+NY bull 4/5m TAKE                  mid                        n   20  avg +0.640R  win 30%
+NY bull 4/5m TAKE                  high buy share (buyers)    n   20  avg +0.713R  win 30%
+NY bull 4/5m TAKE                  FILTER: low+mid (drop high) n   40  avg +1.272R  win 40%
+   cuts 0.473 / 0.490
+NY bear 3-5m, all flags            low buy share (sellers)    n  189  avg +0.018R  win 23%
+NY bear 3-5m, all flags            mid                        n  190  avg +0.084R  win 28%
+NY bear 3-5m, all flags            high buy share (buyers)    n  190  avg +0.039R  win 26%
+NY bear 3-5m, all flags            FILTER: low+mid (drop high) n  379  avg +0.051R  win 25%
+   cuts 0.481 / 0.496

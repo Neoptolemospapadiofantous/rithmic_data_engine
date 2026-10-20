@@ -1,0 +1,35 @@
+Book + TAKE on a Vest $5k account — started on the first trading day of each month 2016-01 … 2026-09. Since 2016: book F 3197 trades, book first-trade 2068, TAKE 235 (+60-min filter 225).
+Overlap: 235 TAKE trades, 235 on a book-F day (100%), 235 of those with a book trade in the same direction.
+Daily R correlation, book F vs TAKE (all days 2016-26): +0.215
+
+R a year (trades):
+  book F                             16  -1.4R(315) 17 +20.8R(304) 18 +35.1R(319) 19 +30.1R(322) 20 +33.8R(290) 21 +97.0R(308) 22 +47.2R(334) 23 +22.7R(305) 24 +96.6R(303) 25 +27.9R(321) 26 +10.5R( 76)
+  book first trade                   16  -4.9R(205) 17  +5.8R(196) 18 +23.6R(206) 19 +17.0R(202) 20  +6.2R(200) 21 +51.7R(198) 22 +20.8R(212) 23  +7.1R(200) 24 +60.9R(201) 25  +7.1R(199) 26  +7.4R( 49)
+  TAKE                               16 +43.2R( 26) 17 +10.2R( 18) 18 +54.0R( 31) 19  +8.8R( 30) 20 +58.6R( 23) 21 +14.3R( 27) 22 +18.4R( 18) 23 +31.2R( 21) 24 +28.4R( 24) 25  +3.4R( 17) 26  +0.0R(  0)
+  TAKE + 60-min filter               16 +43.2R( 26) 17 +10.2R( 18) 18 +56.2R( 29) 19 +10.9R( 28) 20 +59.7R( 22) 21 +13.7R( 25) 22 +18.4R( 18) 23 +32.3R( 20) 24 +26.9R( 23) 25  +4.5R( 16) 26  +0.0R(  0)
+  book F + TAKE                      16 +41.8R(341) 17 +31.1R(322) 18 +89.1R(350) 19 +38.9R(352) 20 +92.4R(313) 21 +111.3R(335) 22 +65.6R(352) 23 +53.9R(326) 24 +125.0R(327) 25 +31.2R(338) 26 +10.5R( 76)
+  book first + TAKE                  16 +38.3R(231) 17 +16.0R(214) 18 +77.5R(237) 19 +25.8R(232) 20 +64.8R(223) 21 +66.0R(225) 22 +39.2R(230) 23 +38.4R(221) 24 +89.3R(225) 25 +10.4R(216) 26  +7.4R( 49)
+
+================ BOOK FIRST TRADE + TAKE — 432 parameter sets, ranked on starts 2016-21, judged on starts 2022-26 ================
+  baseline  book $50 · TAKE $50 · max open ∞ · cushion off · daily stop none                       | 2016-21: pass  64% fail  36%  24d | 2022-26: pass  69% fail  25%  40d · worst day $-165
+  #1        book $30 · TAKE $40 · max open 2 · cushion ×1.5 from +$250 · daily stop −$100 day     | 2016-21: pass  86% fail  14%  65d | 2022-26: pass  69% fail  10%  59d · worst day $-115
+  #2        book $30 · TAKE $40 · max open 2 · cushion ×1.5 from +$250 · daily stop first win       | 2016-21: pass  86% fail  14%  73d | 2022-26: pass  75% fail   4%  64d · worst day $-115
+  #3        book $30 · TAKE $40 · max open 2 · cushion ×1.5 from +$250 · daily stop none            | 2016-21: pass  86% fail  14%  65d | 2022-26: pass  69% fail  10%  59d · worst day $-115
+  #4        book $30 · TAKE $40 · max open 2 · cushion off · daily stop −$100 day                  | 2016-21: pass  86% fail  14%  70d | 2022-26: pass  69% fail  10%  59d · worst day $-115
+  #5        book $30 · TAKE $40 · max open 2 · cushion off · daily stop none                         | 2016-21: pass  86% fail  14%  70d | 2022-26: pass  69% fail  10%  59d · worst day $-115
+  #6        book $30 · TAKE $40 · max open 2 · cushion off · daily stop first win                    | 2016-21: pass  86% fail  14%  71d | 2022-26: pass  75% fail   4%  68d · worst day $-115
+  #7        book $30 · TAKE $50 · max open 1 · cushion off · daily stop first win                    | 2016-21: pass  82% fail  18% 160d | 2022-26: pass  73% fail   0% 134d · worst day $-85
+  #8        book $30 · TAKE $40 · max open 1 · cushion off · daily stop first win                    | 2016-21: pass  82% fail  18% 160d | 2022-26: pass  73% fail   0% 143d · worst day $-74
+  2022-26 score (pass − fail): top-20 sets by 2016-21 average +62.8 · median of all 432 sets +42.3 · best possible +75.0
+
+================ BOOK F + TAKE — 432 parameter sets, ranked on starts 2016-21, judged on starts 2022-26 ================
+  baseline  book $50 · TAKE $50 · max open ∞ · cushion off · daily stop none                       | 2016-21: pass  57% fail  43%  17d | 2022-26: pass  71% fail  25%  20d · worst day $-258
+  #1        book $30 · TAKE $40 · max open 1 · cushion off · daily stop first win                    | 2016-21: pass  79% fail  21% 203d | 2022-26: pass  75% fail   0% 122d · worst day $-74
+  #2        book $30 · TAKE $75 · max open 1 · cushion ×1.5 from +$150 · daily stop first win       | 2016-21: pass  79% fail  21% 141d | 2022-26: pass  73% fail   0%  86d · worst day $-112
+  #3        book $30 · TAKE $75 · max open 1 · cushion off · daily stop first win                    | 2016-21: pass  79% fail  21% 203d | 2022-26: pass  75% fail   0% 101d · worst day $-112
+  #4        book $30 · TAKE $75 · max open 1 · cushion ×1.5 from +$250 · daily stop first win       | 2016-21: pass  79% fail  21% 155d | 2022-26: pass  73% fail   0%  88d · worst day $-112
+  #5        book $30 · TAKE $50 · max open 1 · cushion ×1.5 from +$250 · daily stop first win       | 2016-21: pass  79% fail  21% 155d | 2022-26: pass  73% fail   0%  91d · worst day $-94
+  #6        book $30 · TAKE $50 · max open 1 · cushion ×1.5 from +$150 · daily stop first win       | 2016-21: pass  79% fail  21% 141d | 2022-26: pass  75% fail   0%  91d · worst day $-98
+  #7        book $30 · TAKE $50 · max open 1 · cushion off · daily stop first win                    | 2016-21: pass  79% fail  21% 203d | 2022-26: pass  75% fail   0% 114d · worst day $-85
+  #8        book $30 · TAKE $100 · max open 1 · cushion off · daily stop first win                   | 2016-21: pass  79% fail  21% 203d | 2022-26: pass  75% fail   0%  88d · worst day $-138
+  2022-26 score (pass − fail): top-20 sets by 2016-21 average +74.1 · median of all 432 sets +55.8 · best possible +80.8
