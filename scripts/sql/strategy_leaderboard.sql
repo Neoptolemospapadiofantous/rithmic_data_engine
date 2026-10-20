@@ -185,6 +185,7 @@ WITH bounds AS (
             AND COALESCE(j.p->>'overlay', '') NOT LIKE 'lv\_%'                 -- level overlays: paper only (2026-10-11)
             AND COALESCE((j.p->>'rb_stop_range')::boolean, false) = false        -- range-side stop: paper only (2026-10-14)
             AND COALESCE((j.p->>'be_r')::float, 0) = 0                           -- R-based break-even: paper only (2026-10-17)
+            AND COALESCE(j.p->>'mode', '') <> 'flag_take'                        -- absolute measured-move target: paper only (2026-10-20)
             AND COALESCE((j.p->>'hold_days')::int, 1) <= 1                       -- multi-session holds: paper only (2026-10-11)
             AND COALESCE((j.p->>'hold_exit_ibs_min')::float, 0) = 0
             AND COALESCE((j.p->>'hold_exit_up_close')::boolean, false) = false

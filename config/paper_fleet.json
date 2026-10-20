@@ -127172,6 +127172,62 @@
         "pd_stop_atr": 0.25,
         "pd_source": "mom"
       }
+    },
+    {
+      "id": "sig_flag_take_4m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "_comment": "2026-10-20 TAKE bull flag on the 4m chart (founder: build the sig_flag_take signal). The dashboard /flags page TAKE rule: 1st pullback, pole broke a level, gap up > 0.1 ATR, pole >= 5x bar; entry 2m trigger or first tick above the pole top; stop flag low; target pole top + pole (absolute, paper only). Research flag_take_opt.cpp (validated vs the page by scripts/flag_parity.sh; engine replay 2024 matched all 24 research entries). Walk-forward +0.39 / +0.90 / +0.39R.",
+        "mode": "flag_take",
+        "ft_tf": 4,
+        "ft_take": true,
+        "tf_min": 1,
+        "win_start": 930,
+        "win_end": 1555,
+        "session_open_hour": 9,
+        "session_open_min": 30,
+        "sl_points": 1000,
+        "trail_step": 50000,
+        "trail_be_trigger": 50000.0,
+        "trail_delay_secs": 0,
+        "max_daily_trades": 3,
+        "eod_flatten_hour": 15,
+        "eod_flatten_min": 55,
+        "last_entry_hour": 24,
+        "allow_shorts": false,
+        "family": "flags",
+        "publish_signals": true,
+        "signal_role": "MOMENTUM — TAKE bull flag 4m (measured move)"
+      }
+    },
+    {
+      "id": "sig_flag_take_5m",
+      "engine": "trend",
+      "enabled": true,
+      "params": {
+        "_comment": "2026-10-20 TAKE bull flag on the 5m chart — see sig_flag_take_4m.",
+        "mode": "flag_take",
+        "ft_tf": 5,
+        "ft_take": true,
+        "tf_min": 1,
+        "win_start": 930,
+        "win_end": 1555,
+        "session_open_hour": 9,
+        "session_open_min": 30,
+        "sl_points": 1000,
+        "trail_step": 50000,
+        "trail_be_trigger": 50000.0,
+        "trail_delay_secs": 0,
+        "max_daily_trades": 3,
+        "eod_flatten_hour": 15,
+        "eod_flatten_min": 55,
+        "last_entry_hour": 24,
+        "allow_shorts": false,
+        "family": "flags",
+        "publish_signals": true,
+        "signal_role": "MOMENTUM — TAKE bull flag 5m (measured move)"
+      }
     }
   ]
 }

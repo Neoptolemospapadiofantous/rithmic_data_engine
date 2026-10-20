@@ -185,6 +185,14 @@ inline std::string entry_message(const std::string& id, int dir, double entry, d
     char tp[48] = "";
     if (cfg.take_profit_pts() > 0) std::snprintf(tp, sizeof tp, " · target +%.2f pts", cfg.take_profit_pts());
     char m[480];
+    if (t1 == t2 && std::fabs(t1 - entry) > 1e-9) {             // one strategy target (flag_take's measured move), no BE / trail
+        std::snprintf(m, sizeof m,
+            "%s %s — %s · 1 contract · entry %.2f · stop %.2f (1R %.2f pts = $%.0f on 1 %s) · TARGET %.2f (+%.2f pts, %.1fR)\n"
+            "BRACKET: stop %.2f pts · target %.2f pts · no break-even, no trail · flat 15:55 ET",
+            dir > 0 ? "🟢 LONG / BUY" : "🔴 SHORT / SELL", cfg.symbol.c_str(), id.c_str(), entry, stop, risk, risk * cfg.point_value,
+            cfg.symbol.c_str(), t1, dir * (t1 - entry), risk > 0 ? dir * (t1 - entry) / risk : 0.0, risk, dir * (t1 - entry));
+        return m;
+    }
     std::snprintf(m, sizeof m,
         "%s %s — %s · 1 contract · entry %.2f · stop %.2f (1R %.2f pts = $%.0f on 1 %s) · T1 %.2f · T2 %.2f\n"
         "BRACKET: stop %.2f pts · auto-breakeven at +%.2f → entry %+.2f · trail %.2f pts%s%s",
@@ -238,7 +246,9 @@ private:
             if (risk <= 0) { risk = cfg.sl_points; stop_ = entry_ - dir * risk; }
             risk_ = risk; notified_stop_ = stop_;
             best_ = entry_;
-            const double t1 = entry_ + dir * risk, t2 = entry_ + 2 * dir * risk;
+            // a strategy target (flag_take's measured move) replaces the generic 1R / 2R levels
+            const double stt = b.strategy_target();
+            const double t1 = stt > 0.0 ? stt : entry_ + dir * risk, t2 = stt > 0.0 ? stt : entry_ + 2 * dir * risk;
             signal_id_ = sink_->insert_signal(id_, b.entry_time_us() > 0 ? b.entry_time_us() : now_us, dir, entry_, stop_, risk, t1, t2,
                                               checks_json(snap ? *snap : st, h));
             sink_->notify(entry_message(id_, dir, entry_, stop_, risk, t1, t2, cfg));

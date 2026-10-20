@@ -373,6 +373,49 @@ int main() {
         auto pm = run_pd("mom", 20005, up_small, sd);
         CHECK(pm.size() == 1 && pm[0].sig == OrbSignal::BUY && pm[0].why == "path_dir_long",
               "path_dir mom: no gap, but a straight 45-minute rise above VWAP and the open on a straight path → LONG once");
+
+        // flag_take (2026-10-20, research/programs/flag_take_opt.cpp, the /flags page's TAKE rule): yesterday RTH flat at 20000, ATR 100,
+        // overnight at 20030, today opens 20030 (gap +0.3 ATR). 5-minute chart from 09:30: six drift bars, a three-bar pole to 20090
+        // (pole low 20029 → M 61, ≈ 6.9× the average bar, through the overnight high), two flag bars (low 20076, pullback 23 %),
+        // registered at the 10:24 close. Then either the first tick above the pole top or the 2m trigger enters.
+        auto run_ft = [&](int variant, double& tgt, double& hint, double gap_open, bool second_flag) {
+            TrendConfig tc; tc.mode = "flag_take"; tc.tf_min = 1; tc.win_start = 930; tc.win_end = 1555; tc.ft_tf = 5;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out; tgt = hint = 0;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); if (g == OrbSignal::BUY) { tgt = s.take_target_px(); hint = s.take_stop_hint(); (void)s.take_stop_dist(); } });
+            s.reset_session();
+            for (int mm = 9 * 60 + 30; mm < 16 * 60; ++mm) bar1(s, -1, mm / 60, mm % 60, 20000, 20000.25, 19999.75, 20000, 0.5);
+            s.reset_session(); s.set_day_atr(100.0);
+            for (int mm = 8 * 60 + 30; mm < 9 * 60 + 30; ++mm) bar1(s, 0, mm / 60, mm % 60, gap_open, gap_open + 0.25, gap_open - 0.25, gap_open, 0.5);
+            const double d = gap_open - 20030;
+            auto feed5 = [&](int idx, double o, double hi, double lo, double c) {
+                const int m0 = 9 * 60 + 30 + 5 * idx;
+                bar1(s, 0, m0 / 60, m0 % 60, o + d, o + d, lo + d, lo + d, 0.5);
+                bar1(s, 0, (m0 + 1) / 60, (m0 + 1) % 60, lo + d, hi + d, lo + d, hi + d, 0.5);
+                bar1(s, 0, (m0 + 2) / 60, (m0 + 2) % 60, hi + d, hi + d, c + d, c + d, 0.5);
+                for (int j = 3; j < 5; ++j) bar1(s, 0, (m0 + j) / 60, (m0 + j) % 60, c + d, c + d, c + d, c + d, 0.5);
+            };
+            for (int i = 0; i < 6; ++i) feed5(i, 20030 + 2 * i, 20033 + 2 * i, 20029 + 2 * i, 20032 + 2 * i);
+            feed5(6, 20042, 20060, 20041, 20058); feed5(7, 20058, 20075, 20056, 20073); feed5(8, 20073, 20090, 20071, 20088);
+            feed5(9, 20088, 20089, 20078, 20080); feed5(10, 20080, 20084, 20076, 20082);
+            if (second_flag) return out;                                 // registration only
+            auto m1 = [&](int m, double o, double hi, double lo, double c) { bar1(s, 0, 10, m, o + d, hi + d, lo + d, c + d, 0.5); };
+            if (variant == 0) { m1(25, 20082, 20091, 20081, 20090.5); m1(26, 20090.5, 20092, 20090, 20091); }       // pole-top break
+            else { m1(25, 20082, 20085, 20081, 20083); m1(26, 20083, 20083, 20080, 20081); m1(27, 20081, 20082.5, 20080.5, 20081);
+                   m1(28, 20081, 20083.5, 20080.5, 20083); m1(29, 20083, 20084.5, 20082.75, 20084); m1(30, 20084, 20084, 20083, 20083.5); }
+            return out;
+        };
+        double ft_tgt, ft_hint;
+        auto ft0 = run_ft(0, ft_tgt, ft_hint, 20030, false);
+        CHECK(ft0.size() == 1 && ft0[0].sig == OrbSignal::BUY && ft0[0].why == "flag_take_pole_top" && std::fabs(ft0[0].px - 20090.25) < 1e-9
+              && std::fabs(ft_tgt - 20151.0) < 1e-9 && std::fabs(ft_hint - 20075.75) < 1e-9,
+              "flag_take: TAKE flag, the first tick above the pole top → LONG @ top + 1 tick, stop flag low − 1 tick, target top + pole");
+        auto ft1 = run_ft(1, ft_tgt, ft_hint, 20030, false);
+        CHECK(ft1.size() == 1 && ft1[0].why == "flag_take_2m" && std::fabs(ft1[0].px - 20084.0) < 1e-9 && std::fabs(ft_tgt - 20151.0) < 1e-9
+              && std::fabs(ft_hint - 20075.75) < 1e-9,
+              "flag_take: a lower 2m high, then a 2m close above the previous 2m high under the top → LONG at that 2m close (10:29)");
+        auto ft2 = run_ft(0, ft_tgt, ft_hint, 20003, false);
+        CHECK(ft2.empty(), "flag_take: the same flag without a gap up (> 0.1 ATR) is not TAKE → no entry");
+
         auto lost = run_mom(rise, false, 1, -50.0, sd);
         CHECK(lost.size() == 1, "mom_dir: after a losing trade (notify_trade_filled with P&L < 0) no more entries that day");
         auto won = run_mom(rise, false, 1, 50.0, sd);

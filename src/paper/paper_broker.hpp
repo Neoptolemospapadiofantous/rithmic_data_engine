@@ -65,6 +65,9 @@ public:
     // Per-trade stop DISTANCE for the NEXT entry (TrendStrategy::take_stop_dist, drive_stop_atr); 0 = sl_points.
     // Mirrors OrderManager's desired_sl_dist: stop at fill ∓ distance, R-multiple target = tp_r × distance.
     void set_stop_dist(double d) { stop_dist_ = d; }
+    // Absolute target price for the NEXT entry (TrendStrategy::take_target_px — flag_take's pole top + pole); 0 = none. A resting
+    // limit like lv_target: fills AT the price on the touch. Ignored unless it lies beyond the fill in the trade's direction.
+    void set_target_px(double px) { target_next_ = px; }
 
     void set_relative_costs(double commission_pct, double slippage_bps) { commission_pct_ = commission_pct; slip_bps_ = slippage_bps; }
 
@@ -125,6 +128,7 @@ public:
     void set_regime(const paper::RegimeState* r) { regime_ = r; }
     void set_levels(const paper::LevelState* l) { levels_ = l; }
     double level_target() const { return lv_target_px_; }
+    double strategy_target() const { return st_target_px_; }
 
     void log_signal(int dir, const std::string& reason, const std::string& blocked) {
         if (!store_) return;
@@ -237,6 +241,11 @@ public:
             }
         }
 
+        // 5c0. Strategy target (set_target_px): a resting limit at the strategy's absolute target.
+        if (st_target_px_ > 0.0) {
+            const bool hit = (pos_dir_ > 0) ? (t.price >= st_target_px_) : (t.price <= st_target_px_);
+            if (hit) { exit_position(st_target_px_, t.ts_micros, "target"); return; }
+        }
         // 5c. Level target (lv_target, paper_levels.hpp): a resting limit at the level found at entry —
         //     fills AT the level on the touch, like the fixed take-profit above.
         if (lv_target_px_ > 0.0) {
@@ -317,7 +326,8 @@ public:
 
     // ── Resume an open position loaded from paper_positions ──────────────────
     void resume_position(int dir, int qty, double entry, double stop,
-                         int64_t entry_time_us) {
+                         int64_t entry_time_us, double target = 0.0) {
+        st_target_px_  = target > 0.0 && dir * (target - entry) > 0.0 ? target : 0.0;   // set_target_px of the resumed leg
         pos_dir_       = dir;
         qty_           = qty;
         placed_stop_   = stop;
@@ -384,7 +394,7 @@ public:
         p.entry_price    = entry_price_;
         p.entry_time_us  = entry_time_us_;
         p.stop_price     = stop_price_;
-        p.target_price   = 0.0;
+        p.target_price   = st_target_px_;
         p.unrealized_pnl = unrealized(last_price);
         return p;
     }
@@ -399,6 +409,7 @@ private:
         r_dist_        = stop_dist_; stop_dist_ = 0.0;
         stop_price_    = snap(fill - dir * (r_dist_ > 0.0 ? r_dist_ : cfg_.sl_points), dir);
         apply_level_exits(dir, fill);
+        st_target_px_ = (target_next_ > 0.0 && dir * (target_next_ - fill) > 0.0) ? target_next_ : 0.0; target_next_ = 0.0;
         if (stop_hint_ > 0.0) {                    // strategy's structural stop (range_break rb_stop_range): only tightens sl_points
             const double dist = dir * (fill - stop_hint_);
             if (dist >= 4.0 * tick_size_ && dist < cfg_.sl_points) stop_price_ = snap(stop_hint_, dir);
@@ -495,7 +506,7 @@ private:
         p.entry_price    = entry_price_;
         p.entry_time_us  = entry_time_us_;
         p.stop_price     = stop_price_;
-        p.target_price   = 0.0;
+        p.target_price   = st_target_px_;
         p.unrealized_pnl = unreal;
         store_->save_position(p);
     }
@@ -545,6 +556,7 @@ private:
     const paper::RegimeState* regime_ = nullptr;  // session-shape gate, shared by the whole fleet (host-owned)
     const paper::LevelState*  levels_ = nullptr;  // price levels, shared by the whole fleet (host-owned, paper_levels.hpp)
     double lv_target_px_ = 0.0;
+    double target_next_ = 0.0, st_target_px_ = 0.0;   // set_target_px: next entry / open position
     double stop_dist_ = 0.0, r_dist_ = 0.0;        // per-trade stop distance: next entry / open position (set_stop_dist)
     double stop_hint_ = 0.0;                      // structural stop for the next entry (set_stop_hint)                   // level target of the open position (0 = none)
     double atr() const {                          // session_stats ATR14, else the level engine's own session ranges

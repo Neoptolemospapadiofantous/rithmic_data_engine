@@ -3997,9 +3997,9 @@ int main(int argc, char* argv[]) {
     {
         std::ifstream cf(config_path);
         const std::string text((std::istreambuf_iterator<char>(cf)), std::istreambuf_iterator<char>());
-        for (const char* k : {"\"lv_room_atr\"", "\"lv_near_atr\"", "\"lv_target\"", "\"lv_stop\"", "\"rb_stop_range\"", "\"entry_limit_ticks\"", "\"be_r\""})
+        for (const char* k : {"\"lv_room_atr\"", "\"lv_near_atr\"", "\"lv_target\"", "\"lv_stop\"", "\"rb_stop_range\"", "\"entry_limit_ticks\"", "\"be_r\"", "\"ft_tf\""})
             if (text.find(k) != std::string::npos) {
-                std::fprintf(stderr, "FATAL: config carries %s — level overlays / the range-side stop / limit entries / R-based break-even (be_r) are paper-only (not implemented live)\n", k);
+                std::fprintf(stderr, "FATAL: config carries %s — level overlays / the range-side stop / limit entries / R-based break-even (be_r) / flag_take (ft_tf) are paper-only (not implemented live)\n", k);
                 return 2;
             }
     }
@@ -4121,6 +4121,11 @@ int main(int argc, char* argv[]) {
     int exit_code = 0;
     if (orb_cfg.engine == "trend") {
         const TrendConfig tcfg = TrendConfig::from_json_string(read_text_file(config_path));
+        // flag_take hands the paper broker an ABSOLUTE target (take_target_px) — the live OrderManager has no such bracket.
+        if (tcfg.mode == "flag_take") {
+            std::fprintf(stderr, "FATAL: trend mode 'flag_take' is paper-only (its measured-move target is not implemented live)\n");
+            return 2;
+        }
         // No ES reference feed live (rs_continuation). The book (bbo) is only on the pg feed.
         if (tcfg.mode == "rs_continuation") {
             std::fprintf(stderr, "FATAL: trend mode 'rs_continuation' needs the ES reference feed the live "

@@ -165,6 +165,18 @@ struct TrendConfig {
     // window for the gap source; this mode does not know the roll calendar.
     std::string pd_source = "gap"; int pd_at = 1000, pd_mom_window = 45;
     double pd_min_eff = 0.55, pd_gap_min_atr = 0.1, pd_mom_eff = 0.3, pd_stop_atr = 0.25;
+    // flag_take (2026-10-20, founder: "build the sig_flag_take signal"; research/programs/flag_take_opt.cpp, validated against the
+    // dashboard /flags page by scripts/flag_parity.sh): the /flags page's TAKE flag, BULL only, on an ft_tf-minute chart built from
+    // 09:30 (not the engine's tf grid — 4m bars would be off the research grid). Flag = pole top with 2 bars of no new high, pole =
+    // lowest low of the 2-15 bars before it, >= 4x the session's average chart bar, pullback 15-50 %, registered at the 2nd flag bar's
+    // close 09:45-14:00 with the session context (above the 09:30 open and VWAP, straightness from the open >= 0.55); TAKE (ft_take)
+    // = also 1st pullback since the low of day, pole broke a level (prior RTH high / low, overnight high / low, the 09:30-10:00 range
+    // after 10:00, a round 100), gap up > 0.1 day ATR, pole >= 5x bar. Entry: the 2m trigger (a lower 2m high inside the flag, then a
+    // 2m close above the previous 2m high, under the pole top) at that close, or the first tick above the pole top (a stop order),
+    // whichever comes first; stop = the flag low so far − 1 tick (absolute, take_stop_hint); target = pole top + pole (absolute,
+    // take_target_px — PAPER ONLY, the executor refuses this mode). Research: walk-forward +0.39 / +0.90 / +0.39R (2013-18 / 2019-24 /
+    // 2025-26), ≈ 12-13 a year per chart. Use tf_min 1, sl_points well above any flag stop, no trail, flat 15:55.
+    int ft_tf = 5; bool ft_take = true;
     // noise_momentum (Zarattini/Aziz/Barbon 2024 noise-area intraday momentum; ledger L1, BK1): every nm_check_min minutes
     // after the RTH open, bands = max/min(09:30 open, prior RTH close) × (1 ± σ(m)), σ(m) = mean |close(m)/open − 1| at
     // that minute of the session over the last nm_days sessions. Flat: close above the upper band → long, below the
@@ -442,6 +454,7 @@ struct TrendConfig {
         c.pd_source = jstr(t, "pd_source", c.pd_source); c.pd_at = jint(t, "pd_at", c.pd_at); c.pd_mom_window = jint(t, "pd_mom_window", c.pd_mom_window);
         c.pd_min_eff = jdbl(t, "pd_min_eff", c.pd_min_eff); c.pd_gap_min_atr = jdbl(t, "pd_gap_min_atr", c.pd_gap_min_atr);
         c.pd_mom_eff = jdbl(t, "pd_mom_eff", c.pd_mom_eff); c.pd_stop_atr = jdbl(t, "pd_stop_atr", c.pd_stop_atr);
+        c.ft_tf = jint(t, "ft_tf", c.ft_tf); c.ft_take = jbool(t, "ft_take", c.ft_take);
         c.lf_delta_min = jdbl(t, "lf_delta_min", c.lf_delta_min); c.lf_stop_atr = jdbl(t, "lf_stop_atr", c.lf_stop_atr);
         c.round_step = jdbl(t, "round_step", c.round_step);
         c.drive_gap_agree = jdbl(t, "drive_gap_agree", c.drive_gap_agree);
@@ -632,6 +645,7 @@ public:
         bg_n_ = 0; bg_done_ = false;
         mom_halt_ = false; mp_dir_ = 0; mp_orn_ = 0; mp_gr_done_ = false;
         pd_done_ = false;
+        ft_reset();
         drive_dir_ = 0; drive_done_ = false; late_armed_ = false; drive_late_i_ = 0; gap_ = 0.0; gap_done_ = false; tod_done_ = false; reenter_dir_ = 0;
         eod_emitted_ = false; entry_ts_ = 0; pos_dir_ = 0;
         td_dir_ = 0; td_done_ = false; vwap_side_ok_ = vwap_side_n_ = 0; fb_dir_ = 0; fb_age_ = 0; cum_delta_ = 0.0; delta_hist_.clear();
@@ -755,6 +769,8 @@ public:
     double take_stop_hint() { const double h = stop_hint_; stop_hint_ = 0.0; return h; }
     // Per-trade stop DISTANCE of the last entry signal (drive_stop_atr); consumed once, 0 = the config's sl_points.
     double take_stop_dist() { const double d = stop_dist_; stop_dist_ = 0.0; return d; }
+    // Absolute target price of the entry signal just emitted (flag_take: pole top + pole; 0 = none / the broker's tp settings); consumed once.
+    double take_target_px() { const double x = target_px_; target_px_ = 0.0; return x; }
     double orb_high() const { return 0.0; }
     double orb_low()  const { return 0.0; }
     bool   orb_set()  const { return false; }
@@ -859,6 +875,7 @@ public:
             if (sess_.in_position && az_pos_dir_ != 0 && !az_exit_sent_) az_check_exit(t.price);
         }
         if (tc_.mode == "trend_confirm" && sess_.in_position && tcf_dir_ != 0 && !tcf_exit_sent_) tcf_check_exit(t.price);
+        if (tc_.mode == "flag_take") ft_on_tick(t, mod);
     }
 
 private:
@@ -902,6 +919,96 @@ private:
             if (dir < 0 && htf_close_ >= htf_ema_) return false;
         }
         return true;
+    }
+
+    // ── flag_take (see TrendConfig::ft_tf) — mirrors bot/frontend/src/lib/flags.ts detect() + research flag_take_opt.cpp ──
+    static constexpr int kFtOpen = 9 * 60 + 30;
+    void ft_reset() {
+        ft_m1_.clear(); ft_bars_.clear(); ft_pv_ = ft_vv_ = 0; ft_hi_ = -1e18; ft_lo_ = 1e18; ft_or_h_ = -1e18; ft_or_l_ = 1e18; ft_lod_ = 1e18; ft_lod_bar_ = 0;
+        ft_reg_.clear(); ft_follow_ = ft_armed_ = false; target_px_ = 0.0;
+    }
+    void ft_on_m1(const Bar& b) {
+        const int mm = b.mod - kFtOpen;                              // minutes after 09:30
+        if (mm < 0 || b.mod >= 16 * 60) return;
+        const int tf = std::max(1, tc_.ft_tf);
+        if (!ft_m1_.empty() && mm <= ft_m1_.back().m0) ft_reset();   // a new day's 09:30 (a late previous-day bar must never seed it)
+        ft_m1_.push_back({b.o, b.h, b.l, b.c, b.v, mm});
+        ft_pv_ += (b.h + b.l + b.c) / 3.0 * b.v; ft_vv_ += b.v; ft_hi_ = std::max(ft_hi_, b.h); ft_lo_ = std::min(ft_lo_, b.l);
+        if (mm < 30) { ft_or_h_ = std::max(ft_or_h_, b.h); ft_or_l_ = std::min(ft_or_l_, b.l); }
+        if (ft_bars_.empty() || ft_bars_.back().m0 / tf != mm / tf) ft_bars_.push_back({b.o, b.h, b.l, b.c, b.v, mm / tf * tf});
+        else { FtBar& z = ft_bars_.back(); z.h = std::max(z.h, b.h); z.l = std::min(z.l, b.l); z.c = b.c; z.v += b.v; }
+        const bool chartClose = mm % tf == tf - 1;
+        const bool followedBefore = ft_follow_;
+        // the flag being followed: the 2m trigger (research loop) and the chart-close bookkeeping
+        if (ft_follow_ && b.h > ft_H_) { ft_follow_ = false; ft_armed_ = false; }   // broke out this minute (an armed flag entered on the tick)
+        else if (ft_follow_) {
+            ft_b2h_ = std::max(ft_b2h_, b.h); ft_hbl_ = std::min(ft_hbl_, b.l);
+            if (ft_armed_ && mm >= 330) ft_armed_ = false;            // no 2m trigger after 15:00 (research)
+            if (mm % 2 == 1) {                                        // a 2m bar closed
+                if (ft_armed_ && ft_p2_ok_ && ft_b2h_ <= ft_H_) {
+                    if (ft_b2h_ < ft_p2h_) ft_lh_ = true;
+                    const double fln = std::min(ft_flo_, ft_hbl_);
+                    if (ft_lh_ && b.c > ft_p2h_ && b.c - fln > 0.5) ft_enter(b.c, fln - 0.25, "flag_take_2m");
+                }
+                ft_p2h_ = ft_b2h_; ft_p2_ok_ = true; ft_b2h_ = -1e18;
+            }
+            if (chartClose) {
+                ++ft_nb_; ft_flo_ = std::min(ft_flo_, ft_hbl_); ft_hbl_ = 1e18;
+                if (b.c < ft_H_ - 0.5 * ft_M_ || ft_nb_ >= 12) { ft_follow_ = false; ft_armed_ = false; }
+            }
+        }
+        if (!chartClose) return;
+        // registration at the chart bar's close (the page's detect(): q = the bar that just closed)
+        const int q = (int)ft_bars_.size() - 1;
+        if (ft_bars_[q].l < ft_lod_) { ft_lod_ = ft_bars_[q].l; ft_lod_bar_ = q; }
+        if (q < 6 || followedBefore) return;
+        const int minute = ft_bars_[q].m0 + tf; if (minute < 15 || minute >= 270) return;   // 09:45-14:00
+        const int h = q - 2; const double H = ft_bars_[h].h;
+        if (ft_bars_[h + 1].h > H || ft_bars_[q].h > H) return;
+        int l = -1; double L = 1e18; for (int r = std::max(0, h - 15); r <= h - 2; ++r) if (ft_bars_[r].l < L) { L = ft_bars_[r].l; l = r; }
+        if (l < 0) return;
+        for (int r = l; r <= h; ++r) if (ft_bars_[r].l < L) return;
+        double ar = 0; for (int r = 0; r <= q; ++r) ar += ft_bars_[r].h - ft_bars_[r].l; ar /= q + 1;
+        const double M = H - L; if (M < 4 * ar) return;
+        const double fl0 = std::min(ft_bars_[h + 1].l, ft_bars_[q].l), pull = (H - fl0) / M; if (pull < 0.15 || pull > 0.5) return;
+        const double so = ft_m1_.front().o, vw = ft_vv_ > 0 ? ft_pv_ / ft_vv_ : b.c;
+        if (!(b.c > so && b.c > vw && ft_hi_ > ft_lo_ && (b.c - so) / (ft_hi_ - ft_lo_) >= 0.55)) return;
+        int pb = 1; for (int rq : ft_reg_) if (rq > ft_lod_bar_) ++pb; ft_reg_.push_back(q);
+        // follow it (busy) whatever its features — the page and the research do
+        ft_follow_ = true; ft_H_ = H; ft_M_ = M; ft_flo_ = fl0; ft_hbl_ = 1e18; ft_nb_ = 0; ft_p2_ok_ = false; ft_b2h_ = -1e18; ft_lh_ = false;
+        bool broke = std::floor(H / 100.0) * 100.0 > L;
+        auto lvl = [&](double x) { if (x > L && x <= H) broke = true; };
+        if (have_prev_) { lvl(prev_hi_); lvl(prev_lo_); }
+        if (on_hi_ > on_lo_) { lvl(on_hi_); lvl(on_lo_); }
+        if (minute >= 30 && ft_or_h_ > ft_or_l_) { lvl(ft_or_h_); lvl(ft_or_l_); }
+        const bool gapUp = have_prev_ && day_atr_ > 0 && (so - prev_close_) / day_atr_ > 0.1;
+        const bool take = pb == 1 && broke && gapUp && M >= 5 * ar;
+        LOG("[TREND flag_take] %s %dm flag registered %02d:%02d · pole %.2f→%.2f (%.1f pts, %.1f× bar) · pullback #%d · broke %d · gap %+.2f ATR → %s",
+            ft_stamp().c_str(), tf, (kFtOpen + minute) / 60, (kFtOpen + minute) % 60, L, H, M, M / ar, pb, (int)broke, day_atr_ > 0 && have_prev_ ? (so - prev_close_) / day_atr_ : 0.0,
+            take ? "TAKE — armed" : tc_.ft_take ? "not TAKE" : "armed");
+        ft_armed_ = (take || !tc_.ft_take) && !sess_.in_position;
+    }
+    // pole-top break = a buy-stop one tick above the pole top: the first tick through it enters
+    // ET "YYYY-MM-DD HH:MM" of the last tick (log lines of flag_take, so a replay can be matched to the research trade by trade)
+    std::string ft_stamp() const {
+        time_t tt = (time_t)(last_ts_ / 1'000'000LL); struct tm g; gmtime_r(&tt, &g);
+        time_t et = tt - (time_t)us_et_offset(g) * 3600; struct tm e; gmtime_r(&et, &e);
+        char buf[32]; std::snprintf(buf, sizeof buf, "%04d-%02d-%02d %02d:%02d", e.tm_year + 1900, e.tm_mon + 1, e.tm_mday, e.tm_hour, e.tm_min);
+        return buf;
+    }
+    void ft_on_tick(const OrbTick& t, int mod) {
+        if (!ft_armed_ || !ft_follow_ || t.price <= ft_H_) return;
+        if (mod - kFtOpen >= 330) { ft_armed_ = false; return; }
+        ft_enter(ft_H_ + 0.25, std::min({ft_flo_, ft_hbl_, m1_.l}) - 0.25, "flag_take_pole_top");
+    }
+    void ft_enter(double px, double stop, const char* why) {
+        ft_armed_ = false;
+        if (!(px - stop > 0.25)) return;
+        int eh, em; to_et(last_ts_, eh, em);
+        if (!can_enter(eh * 100 + em, +1)) return;
+        stop_dist_ = px - stop; stop_hint_ = stop; target_px_ = ft_H_ + ft_M_;
+        LOG("[TREND flag_take] %s ENTRY %s @%.2f stop %.2f (%.2f pts) target %.2f (pole top %.2f + pole %.2f)", ft_stamp().c_str(), why, px, stop, px - stop, target_px_, ft_H_, ft_M_);
+        emit(OrbSignal::BUY, px, why);
     }
 
     // 1-minute bar completed
@@ -956,6 +1063,7 @@ private:
         if (tc_.mode == "trend_day") recognise_trend_day(b, hhmm);
         // minute-driven modes
         if (tc_.mode == "gap_go") mode_gap(b, hhmm);
+        else if (tc_.mode == "flag_take") ft_on_m1(b);
         else if (tc_.mode == "tod_momentum") mode_tod(b, hhmm);
         else if (tc_.mode == "rs_continuation") mode_rs(b, hhmm);
     }
@@ -2583,6 +2691,14 @@ private:
     int64_t rth_open_ts_ = 0;                                     // first print of today's anchor session
     double on_open_ = 0.0;                                       // first print at/after 18:00 ET of the current session
     double stop_hint_ = 0.0;                                     // structural stop of the last entry signal (0 = none)
+    double target_px_ = 0.0;                                     // absolute target of the last entry signal (0 = none) — flag_take
+    // flag_take state (RTH 1-minute bars from 09:30, the ft_tf chart on the 09:30 grid, the flag being followed)
+    struct FtBar { double o = 0, h = 0, l = 0, c = 0, v = 0; int m0 = 0; };
+    std::vector<FtBar> ft_m1_, ft_bars_;
+    double ft_pv_ = 0, ft_vv_ = 0, ft_hi_ = 0, ft_lo_ = 0, ft_or_h_ = 0, ft_or_l_ = 0, ft_lod_ = 0;
+    int ft_lod_bar_ = 0; std::vector<int> ft_reg_;
+    bool ft_follow_ = false, ft_armed_ = false, ft_lh_ = false;  // following a registered flag (busy) / a TAKE flag waiting for its entry
+    double ft_H_ = 0, ft_M_ = 0, ft_flo_ = 0, ft_hbl_ = 0, ft_p2h_ = 0, ft_b2h_ = 0; int ft_nb_ = 0, ft_nb2_ = 0; bool ft_p2_ok_ = false, ft_arm2_ = true;
     std::map<int, double> vp_cur_; double vp_poc_ = 0, vp_vah_ = 0, vp_val_ = 0; bool vp_ready_ = false; bool vp_used_long_ = false, vp_used_short_ = false; int vp_dir_ = 0;
     int squeeze_count_ = 0; int st_dir_ = 0; double st_up_ = 0, st_dn_ = 0; int reenter_dir_ = 0;
     std::deque<double> ref_closes_;

@@ -822,6 +822,30 @@ TEST(stop_dist_sets_stop_and_scales_tp_r) {
     ASSERT_NEAR(b.stop_price(), 20000.25 - 15.0, 1e-9);
 }
 
+// set_target_px (2026-10-20, flag_take): an absolute strategy target — a resting limit filled AT the price, exit reason "target";
+// the structural stop (set_stop_hint) is the flag low; the next entry has no target unless given one again.
+TEST(strategy_target_px_fills_at_target) {
+    FakeStore store;
+    OrbConfig cfg = make_cfg(); cfg.sl_points = 1000; cfg.trail_be_trigger = 50000; cfg.trail_step = 50000;
+    auto b = make_broker(store, cfg);
+    b.on_tick(tick(et_ts(10, 0), 20090.0));
+    b.set_stop_dist(14.5); b.set_stop_hint(20075.75); b.set_target_px(20151.0);
+    b.on_signal(OrbSignal::BUY, 20090.25, "flag_take_pole_top");
+    b.on_tick(tick(et_ts(10, 0, 1), 20090.25));                 // entry @ 20090.50 (1 tick slippage)
+    ASSERT_NEAR(b.stop_price(), 20075.75, 1e-9);               // the flag low − 1 tick, not fill − 14.5
+    ASSERT_NEAR(b.strategy_target(), 20151.0, 1e-9);
+    b.on_tick(tick(et_ts(10, 5, 0), 20150.75));                 // just short
+    ASSERT(b.in_position());
+    b.on_tick(tick(et_ts(10, 5, 1), 20151.50));                 // through → fills AT 20151
+    ASSERT(!b.in_position());
+    ASSERT_STREQ(store.trades[0].exit_reason, "target");
+    ASSERT_NEAR(store.trades[0].exit_price, 20151.0, 1e-9);
+    b.on_tick(tick(et_ts(10, 6, 0), 20150.0));
+    b.on_signal(OrbSignal::BUY, 20150.0, "next");               // no target given → none
+    b.on_tick(tick(et_ts(10, 6, 1), 20150.0));
+    ASSERT_NEAR(b.strategy_target(), 0.0, 1e-9);
+}
+
 // be_r (2026-10-17, mom_dir): break-even when MFE ≥ be_r × this trade's stop distance, not the flat trail_be_trigger
 TEST(be_r_moves_stop_at_one_r) {
     FakeStore store;

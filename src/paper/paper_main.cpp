@@ -375,7 +375,7 @@ int main(int argc, char** argv) {
             TrendStrategy* ts = r->trend.get();
             r->trend->set_signal_callback(
                 [brk, ts](OrbSignal sig, double px, const std::string& reason) {
-                    if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) { brk->set_stop_hint(ts->take_stop_hint()); brk->set_stop_dist(ts->take_stop_dist()); }
+                    if (sig == OrbSignal::BUY || sig == OrbSignal::SELL) { brk->set_stop_hint(ts->take_stop_hint()); brk->set_stop_dist(ts->take_stop_dist()); brk->set_target_px(ts->take_target_px()); }
                     brk->on_signal(sig, px, reason);
                 });
             // Manual-signal dashboard: live runs only (a replay writes trades, never live state/signals).
@@ -449,7 +449,7 @@ int main(int argc, char** argv) {
         if (auto p = db->load_position(fs.id)) {
             if (r->broker) {                      // orb + trend share the plain broker
                 r->broker->resume_position(p->direction, p->qty, p->entry_price,
-                                           p->stop_price, p->entry_time_us);
+                                           p->stop_price, p->entry_time_us, p->target_price);
                 if (r->trend)
                     r->trend->seed_open_position(
                         p->direction > 0 ? OrbSignal::BUY : OrbSignal::SELL,
