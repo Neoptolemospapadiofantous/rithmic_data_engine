@@ -1,0 +1,69 @@
+Per-chart rules and flag grades, walk-forward — NQ NY flags (page rules), 3311 days. Test years 2013-2026 only (2013-18 | 2019-24 | 2025-26).
+R after 2 pts × ATR/320, page entry and measured-move exit, one position at a time per chart; per year = over the 13.8 test years.
+
+================ BULL ================
+== reference (fixed rules, test years)
+  all flags, 1-5m                                +0.233 (2273) | +0.260 (2195) | -0.168 (477) · win 29% · 358/yr · 2025-26 +1.6 pts/trade, -0.152R at a fixed 1.5-pt cost
+  1st pullback, 3-5m                             +0.324 (1005) | +0.393 ( 964) | -0.120 (200) · win 29% · 157/yr · 2025-26 +6.2 pts/trade, -0.105R at a fixed 1.5-pt cost
+  TAKE rule (4/5m, fixed)                        +1.077 ( 117) | +1.117 ( 143) | +0.198 ( 17) · win 42% · 20/yr · 2025-26 +14.3 pts/trade, +0.208R at a fixed 1.5-pt cost
+== A. per-chart walk-forward rule
+  1m chart, its own walk-forward rule            +0.178 ( 202) | +0.517 (  75) | -0.399 ( 14) · win 30% · 21/yr · 2025-26 -11.6 pts/trade, -0.384R at a fixed 1.5-pt cost
+      rule from 2021 on: 1st pullback + gap with it + pole >= 5x bar
+      rule in 2026:      gap with it + pole >= 5x bar + <= 1 smaller 1m flag
+  2m chart, its own walk-forward rule            +0.641 ( 108) | +0.707 ( 142) | -0.102 ( 14) · win 41% · 19/yr · 2025-26 -7.0 pts/trade, -0.092R at a fixed 1.5-pt cost
+      rule from 2021 on: gap with it + before 12:30
+      rule in 2026:      gap with it + pole >= 5x bar + before 12:30
+  3m chart, its own walk-forward rule            +0.494 (  99) | +0.723 (  29) | -1.051 (  5) · win 35% · 10/yr · 2025-26 -37.3 pts/trade, -1.045R at a fixed 1.5-pt cost
+      rule from 2021 on: 1st pullback + pole broke a level + gap with it + before 12:30 + <= 1 smaller 1m flag
+      rule in 2026:      1st pullback + pole broke a level + gap with it + <= 1 smaller 1m flag
+  4m chart, its own walk-forward rule            +0.567 (  95) | +1.008 (  67) | +0.260 ( 10) · win 35% · 12/yr · 2025-26 +13.0 pts/trade, +0.269R at a fixed 1.5-pt cost
+      rule from 2021 on: 1st pullback + gap with it + pole >= 5x bar
+      rule in 2026:      1st pullback + gap with it + pole >= 5x bar
+  5m chart, its own walk-forward rule            +0.502 ( 124) | +1.113 (  90) | +0.109 (  7) · win 38% · 16/yr · 2025-26 +16.2 pts/trade, +0.121R at a fixed 1.5-pt cost
+      rule from 2021 on: 1st pullback + pole broke a level + gap with it + pole >= 5x bar
+      rule in 2026:      1st pullback + pole broke a level + gap with it + pole >= 5x bar
+  ALL charts' walk-forward rules together        +0.430 ( 628) | +0.813 ( 403) | -0.178 ( 50) · win 36% · 78/yr · 2025-26 -4.1 pts/trade, -0.167R at a fixed 1.5-pt cost
+    3-5m charts' rules together                  +0.519 ( 318) | +1.014 ( 186) | -0.086 ( 22) · win 36% · 38/yr · 2025-26 +2.6 pts/trade, -0.077R at a fixed 1.5-pt cost
+== B. grades A/B/C from the checklist (weights + cut points learned on earlier years), 2-5m
+      2026 weights: 1st pullback +0.14 · pole broke a level -0.00 · gap with it +0.35 · pole >= 5x bar +0.20 · before 12:30 +0.19 · <= 1 smaller 1m flag -0.04 · cuts 0.34 / 0.55
+  grade A (top third of scores)                  +0.523 ( 642) | +0.606 ( 575) | +0.028 (110) · win 34% · 96/yr · 2025-26 +4.2 pts/trade, +0.045R at a fixed 1.5-pt cost
+  grade B                                        +0.305 ( 628) | +0.259 ( 651) | -0.314 (129) · win 29% · 102/yr · 2025-26 -15.0 pts/trade, -0.301R at a fixed 1.5-pt cost
+  grade C (bottom third)                         +0.072 ( 701) | +0.097 ( 621) | -0.263 (145) · win 26% · 106/yr · 2025-26 +12.6 pts/trade, -0.248R at a fixed 1.5-pt cost
+  grades A + B                                   +0.415 (1270) | +0.422 (1226) | -0.157 (239) · win 31% · 198/yr · 2025-26 -6.2 pts/trade, -0.142R at a fixed 1.5-pt cost
+    grade A on 2m                                +0.365 ( 162) | +0.556 ( 138) | -0.132 ( 26) · win 35% · 24/yr · 2025-26 -3.2 pts/trade, -0.114R at a fixed 1.5-pt cost
+    grade A on 3m                                +0.386 ( 169) | +0.539 ( 156) | -0.136 ( 32) · win 31% · 26/yr · 2025-26 -0.5 pts/trade, -0.121R at a fixed 1.5-pt cost
+    grade A on 4m                                +0.644 ( 156) | +0.633 ( 143) | +0.106 ( 28) · win 35% · 24/yr · 2025-26 +6.7 pts/trade, +0.125R at a fixed 1.5-pt cost
+    grade A on 5m                                +0.716 ( 155) | +0.702 ( 138) | +0.328 ( 24) · win 36% · 23/yr · 2025-26 +15.5 pts/trade, +0.345R at a fixed 1.5-pt cost
+
+================ BEAR ================
+== reference (fixed rules, test years)
+  all flags, 1-5m                                +0.019 (2278) | +0.009 (2210) | -0.016 (447) · win 24% · 358/yr · 2025-26 +6.8 pts/trade, -0.004R at a fixed 1.5-pt cost
+  1st pullback, 3-5m                             +0.130 ( 876) | +0.042 ( 859) | -0.110 (173) · win 23% · 138/yr · 2025-26 +5.4 pts/trade, -0.099R at a fixed 1.5-pt cost
+== A. per-chart walk-forward rule
+  1m chart, its own walk-forward rule            +0.035 ( 154) | -0.186 (  75) | +0.943 ( 16) · win 24% · 18/yr · 2025-26 +26.6 pts/trade, +0.958R at a fixed 1.5-pt cost
+      rule from 2021 on: 1st pullback + pole broke a level + gap with it + pole >= 5x bar
+      rule in 2026:      before 12:30 + down day
+  2m chart, its own walk-forward rule            +0.414 (  56) | +0.594 (  27) | -0.187 (  5) · win 34% · 6/yr · 2025-26 -14.5 pts/trade, -0.164R at a fixed 1.5-pt cost
+      rule from 2021 on: pole broke a level + gap with it + pole >= 5x bar + before 12:30 + <= 1 smaller 1m flag
+      rule in 2026:      1st pullback + pole broke a level + gap with it + pole >= 5x bar + before 12:30 + <= 1 smaller 1m flag
+  3m chart, its own walk-forward rule            +0.207 (  83) | +0.497 (  28) | -0.412 (  7) · win 25% · 9/yr · 2025-26 -36.3 pts/trade, -0.408R at a fixed 1.5-pt cost
+      rule from 2021 on: gap with it + before 12:30 + <= 1 smaller 1m flag
+      rule in 2026:      gap with it + before 12:30 + <= 1 smaller 1m flag
+  4m chart, its own walk-forward rule            +0.451 (  73) | +0.157 (  19) | +0.697 (  2) · win 28% · 7/yr · 2025-26 +33.9 pts/trade, +0.706R at a fixed 1.5-pt cost
+      rule from 2021 on: pole broke a level + before 12:30 + <= 1 smaller 1m flag
+      rule in 2026:      before 12:30 + down day
+  5m chart, its own walk-forward rule            +0.347 (  87) | +0.018 (  79) | -0.387 ( 15) · win 24% · 13/yr · 2025-26 -18.6 pts/trade, -0.371R at a fixed 1.5-pt cost
+      rule from 2021 on: 1st pullback + gap with it + pole >= 5x bar
+      rule in 2026:      pole broke a level + down day
+  ALL charts' walk-forward rules together        +0.240 ( 453) | +0.089 ( 228) | +0.153 ( 45) · win 26% · 53/yr · 2025-26 -2.5 pts/trade, +0.167R at a fixed 1.5-pt cost
+    3-5m charts' rules together                  +0.330 ( 243) | +0.145 ( 126) | -0.304 ( 24) · win 25% · 28/yr · 2025-26 -19.4 pts/trade, -0.292R at a fixed 1.5-pt cost
+== B. grades A/B/C from the checklist (weights + cut points learned on earlier years), 2-5m
+      2026 weights: 1st pullback +0.06 · pole broke a level +0.06 · gap with it +0.20 · pole >= 5x bar -0.02 · before 12:30 +0.05 · <= 1 smaller 1m flag +0.16 · down day +0.67 · cuts 0.15 / 0.29
+  grade A (top third of scores)                  +0.148 ( 577) | +0.038 ( 552) | +0.215 (120) · win 25% · 91/yr · 2025-26 +19.5 pts/trade, +0.228R at a fixed 1.5-pt cost
+  grade B                                        +0.017 ( 595) | -0.073 ( 522) | -0.253 ( 86) · win 22% · 87/yr · 2025-26 -9.2 pts/trade, -0.239R at a fixed 1.5-pt cost
+  grade C (bottom third)                         -0.001 ( 675) | +0.019 ( 632) | -0.182 (141) · win 22% · 105/yr · 2025-26 +9.1 pts/trade, -0.172R at a fixed 1.5-pt cost
+  grades A + B                                   +0.081 (1172) | -0.016 (1074) | +0.020 (206) · win 24% · 178/yr · 2025-26 +7.5 pts/trade, +0.033R at a fixed 1.5-pt cost
+    grade A on 2m                                +0.000 ( 204) | +0.118 ( 154) | +0.142 ( 36) · win 28% · 29/yr · 2025-26 +23.4 pts/trade, +0.156R at a fixed 1.5-pt cost
+    grade A on 3m                                +0.157 ( 169) | +0.058 ( 160) | +0.214 ( 35) · win 22% · 26/yr · 2025-26 +7.1 pts/trade, +0.224R at a fixed 1.5-pt cost
+    grade A on 4m                                +0.399 ( 112) | -0.032 ( 129) | +0.478 ( 27) · win 26% · 19/yr · 2025-26 +37.9 pts/trade, +0.492R at a fixed 1.5-pt cost
+    grade A on 5m                                +0.154 (  92) | -0.024 ( 109) | +0.015 ( 22) · win 24% · 16/yr · 2025-26 +10.4 pts/trade, +0.029R at a fixed 1.5-pt cost
