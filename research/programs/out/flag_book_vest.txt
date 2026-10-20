@@ -1,0 +1,45 @@
+Book + TAKE on a Vest $5k account — started on the first trading day of each month 2016-01 … 2026-09. Since 2016: book F 3197 trades, book first-trade 2068, TAKE 235 (+60-min filter 225).
+Overlap: 235 TAKE trades, 235 on a book-F day (100%), 235 of those with a book trade in the same direction.
+Daily R correlation, book F vs TAKE (all days 2016-26): +0.215
+
+R a year (trades):
+  book F                             16  -1.4R(315) 17 +20.8R(304) 18 +35.1R(319) 19 +30.1R(322) 20 +33.8R(290) 21 +97.0R(308) 22 +47.2R(334) 23 +22.7R(305) 24 +96.6R(303) 25 +27.9R(321) 26 +10.5R( 76)
+  book first trade                   16  -4.9R(205) 17  +5.8R(196) 18 +23.6R(206) 19 +17.0R(202) 20  +6.2R(200) 21 +51.7R(198) 22 +20.8R(212) 23  +7.1R(200) 24 +60.9R(201) 25  +7.1R(199) 26  +7.4R( 49)
+  TAKE                               16 +43.2R( 26) 17 +10.2R( 18) 18 +54.0R( 31) 19  +8.8R( 30) 20 +58.6R( 23) 21 +14.3R( 27) 22 +18.4R( 18) 23 +31.2R( 21) 24 +28.4R( 24) 25  +3.4R( 17) 26  +0.0R(  0)
+  TAKE + 60-min filter               16 +43.2R( 26) 17 +10.2R( 18) 18 +56.2R( 29) 19 +10.9R( 28) 20 +59.7R( 22) 21 +13.7R( 25) 22 +18.4R( 18) 23 +32.3R( 20) 24 +26.9R( 23) 25  +4.5R( 16) 26  +0.0R(  0)
+  book F + TAKE                      16 +41.8R(341) 17 +31.1R(322) 18 +89.1R(350) 19 +38.9R(352) 20 +92.4R(313) 21 +111.3R(335) 22 +65.6R(352) 23 +53.9R(326) 24 +125.0R(327) 25 +31.2R(338) 26 +10.5R( 76)
+  book first + TAKE                  16 +38.3R(231) 17 +16.0R(214) 18 +77.5R(237) 19 +25.8R(232) 20 +64.8R(223) 21 +66.0R(225) 22 +39.2R(230) 23 +38.4R(221) 24 +89.3R(225) 25 +10.4R(216) 26  +7.4R( 49)
+
+Vest $5k (static $300 DD, $150 daily, +$500), started each month 2016-01 … 2026-09:
+  book F                             $ 50 no-stop     pass  65% · fail  34% · open   2% · median days to pass  25 · ~$ 1946 a year unlimited · worst day $-150 (20160819)
+  book first trade                   $ 50 no-stop     pass  62% · fail  34% · open   4% · median days to pass  58 · ~$  938 a year unlimited · worst day $-56 (20170516)
+  TAKE                               $ 50 no-stop     pass  73% · fail  11% · open  15% · median days to pass  67 · ~$ 1252 a year unlimited · worst day $-159 (20191011)
+  TAKE + 60-min filter               $ 50 no-stop     pass  71% · fail  12% · open  17% · median days to pass  67 · ~$ 1277 a year unlimited · worst day $-111 (20180813)
+  book F + TAKE                      $ 50 no-stop     pass  63% · fail  35% · open   2% · median days to pass  20 · ~$ 3198 a year unlimited · worst day $-258 (20161227)
+  book first + TAKE                  $ 50 no-stop     pass  66% · fail  31% · open   2% · median days to pass  30 · ~$ 2190 a year unlimited · worst day $-165 (20191011)
+  book first + TAKE + 60-min         $ 50 no-stop     pass  67% · fail  31% · open   2% · median days to pass  30 · ~$ 2215 a year unlimited · worst day $-165 (20161227)
+
+  book F                             $ 50 daily-stop  pass  65% · fail  33% · open   2% · median days to pass  25 · ~$ 1946 a year unlimited · worst day $-150 (20160819)
+  book first trade                   $ 50 daily-stop  pass  62% · fail  34% · open   4% · median days to pass  58 · ~$  938 a year unlimited · worst day $-56 (20170516)
+  TAKE                               $ 50 daily-stop  pass  73% · fail  11% · open  15% · median days to pass  67 · ~$ 1252 a year unlimited · worst day $-159 (20191011)
+  TAKE + 60-min filter               $ 50 daily-stop  pass  71% · fail  12% · open  17% · median days to pass  67 · ~$ 1277 a year unlimited · worst day $-111 (20180813)
+  book F + TAKE                      $ 50 daily-stop  pass  64% · fail  35% · open   2% · median days to pass  20 · ~$ 3198 a year unlimited · worst day $-258 (20161227)
+  book first + TAKE                  $ 50 daily-stop  pass  67% · fail  31% · open   2% · median days to pass  32 · ~$ 2190 a year unlimited · worst day $-165 (20191011)
+  book first + TAKE + 60-min         $ 50 daily-stop  pass  68% · fail  30% · open   2% · median days to pass  32 · ~$ 2215 a year unlimited · worst day $-165 (20161227)
+
+  book F                             $100 no-stop     pass  55% · fail  44% · open   1% · median days to pass   6 · ~$ 3893 a year unlimited · worst day $-293 (20170119)
+  book first trade                   $100 no-stop     pass  49% · fail  50% · open   1% · median days to pass  14 · ~$ 1876 a year unlimited · worst day $-110 (20170508)
+  TAKE                               $100 no-stop     pass  62% · fail  32% · open   6% · median days to pass  27 · ~$ 2504 a year unlimited · worst day $-317 (20191011)
+  TAKE + 60-min filter               $100 no-stop     pass  62% · fail  32% · open   6% · median days to pass  27 · ~$ 2554 a year unlimited · worst day $-223 (20180813)
+  book F + TAKE                      $100 no-stop     pass  52% · fail  47% · open   1% · median days to pass   5 · ~$ 6396 a year unlimited · worst day $-384 (20200423)
+  book first + TAKE                  $100 no-stop     pass  53% · fail  46% · open   1% · median days to pass  12 · ~$ 4380 a year unlimited · worst day $-331 (20191011)
+  book first + TAKE + 60-min         $100 no-stop     pass  52% · fail  47% · open   1% · median days to pass  11 · ~$ 4431 a year unlimited · worst day $-330 (20161227)
+
+  book F                             $100 daily-stop  pass  55% · fail  44% · open   1% · median days to pass   6 · ~$ 3893 a year unlimited · worst day $-293 (20170119)
+  book first trade                   $100 daily-stop  pass  49% · fail  50% · open   1% · median days to pass  14 · ~$ 1876 a year unlimited · worst day $-110 (20170508)
+  TAKE                               $100 daily-stop  pass  62% · fail  32% · open   6% · median days to pass  27 · ~$ 2504 a year unlimited · worst day $-317 (20191011)
+  TAKE + 60-min filter               $100 daily-stop  pass  62% · fail  32% · open   6% · median days to pass  27 · ~$ 2554 a year unlimited · worst day $-223 (20180813)
+  book F + TAKE                      $100 daily-stop  pass  53% · fail  46% · open   1% · median days to pass   5 · ~$ 6396 a year unlimited · worst day $-384 (20200423)
+  book first + TAKE                  $100 daily-stop  pass  53% · fail  46% · open   1% · median days to pass  12 · ~$ 4380 a year unlimited · worst day $-331 (20191011)
+  book first + TAKE + 60-min         $100 daily-stop  pass  52% · fail  47% · open   1% · median days to pass  11 · ~$ 4431 a year unlimited · worst day $-330 (20161227)
+
