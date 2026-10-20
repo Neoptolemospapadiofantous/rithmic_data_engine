@@ -1,0 +1,298 @@
+Flag SHAPE — NQ, 3315 days, 139296 trades. R after a FIXED 1.5-pt cost. Cells: R (trades) 2016-20 | 2021-24 | 2025-26. Tercile cuts from 2010-15.
+
+######## NY BEAR 1m
+      ALL                                      -0.281 ( 2607) | -0.085 ( 2179) | -0.068 ( 637) · 502/yr
+    tight (flag height / pole) (cuts 0.263 / 0.371)
+      low third                                -0.325 (  794) | -0.047 (  698) | -0.076 ( 171) · 154/yr
+      mid third                                -0.294 (  962) | -0.133 (  826) | -0.052 ( 230) · 187/yr
+      high third                               -0.228 (  851) | -0.064 (  655) | -0.078 ( 236) · 161/yr
+    compress (flag bar / pole bar range) (cuts 0.731 / 0.894)
+      low third                                -0.327 (  797) | -0.119 (  630) | -0.010 ( 167) · 148/yr
+      mid third                                -0.310 (  913) | -0.036 (  851) | -0.104 ( 239) · 185/yr
+      high third                               -0.212 (  897) | -0.113 (  698) | -0.073 ( 231) · 169/yr
+    orderly (R² of the flag line) (cuts 0.193 / 0.923)
+      low third                                -0.297 (  758) | -0.099 (  621) | -0.038 ( 185) · 145/yr
+      mid third                                -0.243 (  863) | -0.123 (  716) | -0.239 ( 210) · 166/yr
+      high third                               -0.304 (  986) | -0.042 (  842) | +0.057 ( 242) · 192/yr
+    drift (slope with the pole per bar) (cuts -0.010 / 0.014)
+      low third                                -0.246 (  907) | -0.093 (  699) | -0.116 ( 183) · 166/yr
+      mid third                                -0.324 (  813) | -0.143 (  736) | +0.018 ( 224) · 164/yr
+      high third                               -0.279 (  887) | -0.019 (  744) | -0.114 ( 230) · 172/yr
+    flag bars before entry (cuts 3.000 / 5.000)
+      low third                                -0.331 (  899) | -0.041 (  744) | +0.055 ( 221) · 173/yr
+      mid third                                -0.208 (  811) | -0.117 (  712) | -0.302 ( 194) · 159/yr
+      high third                               -0.298 (  897) | -0.098 (  723) | +0.014 ( 222) · 171/yr
+    bodies (|c−o| / range) (cuts 0.408 / 0.538)
+      low third                                -0.236 ( 1064) | -0.087 ( 1080) | -0.050 ( 302) · 226/yr
+      mid third                                -0.334 (  878) | -0.067 (  694) | -0.221 ( 178) · 162/yr
+      high third                               -0.285 (  665) | -0.109 (  405) | +0.071 ( 157) · 114/yr
+    volume dry-up (flag / pole volume) (cuts 0.624 / 0.833)
+      low third                                -0.325 (  641) | -0.151 (  429) | +0.056 ( 132) · 111/yr
+      mid third                                -0.292 ( 1056) | -0.121 ( 1065) | -0.184 ( 250) · 220/yr
+      high third                               -0.238 (  910) | +0.013 (  685) | -0.019 ( 255) · 171/yr
+    WALK-FORWARD grade A (shape + context): -0.237 (  889) | -0.067 (  759) | -0.149 ( 257) · 176/yr
+      2026 top weights: pole broke a level +0.18 · before 12:30 (NY) +0.17 · pole >= 5x bar +0.14 · 1st pullback +0.13 · 60-min move with it > 0.1 ATR +0.10 · tight (flag height / pole) HIGH +0.08 · 
+
+######## NY BEAR 2m
+      ALL                                      -0.249 ( 1493) | -0.049 ( 1234) | +0.053 ( 330) · 283/yr
+    tight (flag height / pole) (cuts 0.262 / 0.370)
+      low third                                -0.273 (  457) | +0.041 (  379) | -0.282 (  89) · 86/yr
+      mid third                                -0.272 (  546) | -0.179 (  466) | +0.286 ( 126) · 105/yr
+      high third                               -0.199 (  490) | +0.019 (  389) | +0.056 ( 115) · 92/yr
+    compress (flag bar / pole bar range) (cuts 0.729 / 0.881)
+      low third                                -0.261 (  480) | -0.031 (  391) | -0.372 (  85) · 89/yr
+      mid third                                -0.220 (  504) | +0.026 (  463) | +0.146 ( 115) · 100/yr
+      high third                               -0.265 (  509) | -0.158 (  380) | +0.248 ( 130) · 94/yr
+    orderly (R² of the flag line) (cuts 0.218 / 0.964)
+      low third                                -0.166 (  427) | +0.025 (  388) | +0.004 (  89) · 84/yr
+      mid third                                -0.283 (  494) | +0.063 (  405) | +0.060 ( 112) · 94/yr
+      high third                               -0.281 (  572) | -0.217 (  441) | +0.081 ( 129) · 106/yr
+    drift (slope with the pole per bar) (cuts -0.012 / 0.013)
+      low third                                -0.310 (  515) | -0.159 (  368) | -0.048 (  81) · 89/yr
+      mid third                                -0.224 (  466) | +0.037 (  421) | +0.076 ( 103) · 92/yr
+      high third                               -0.209 (  512) | -0.039 (  445) | +0.093 ( 146) · 102/yr
+    flag bars before entry (cuts 3.000 / 5.000)
+      low third                                -0.273 (  538) | -0.215 (  406) | +0.113 ( 123) · 99/yr
+      mid third                                -0.269 (  485) | -0.061 (  378) | -0.034 (  99) · 89/yr
+      high third                               -0.200 (  470) | +0.111 (  450) | +0.065 ( 108) · 95/yr
+    bodies (|c−o| / range) (cuts 0.393 / 0.519)
+      low third                                -0.224 (  577) | -0.105 (  512) | -0.166 ( 145) · 114/yr
+      mid third                                -0.237 (  481) | +0.091 (  426) | +0.164 ( 114) · 95/yr
+      high third                               -0.293 (  435) | -0.152 (  296) | +0.322 (  71) · 74/yr
+    volume dry-up (flag / pole volume) (cuts 0.617 / 0.802)
+      low third                                -0.291 (  352) | -0.027 (  225) | -0.218 (  54) · 58/yr
+      mid third                                -0.195 (  574) | -0.058 (  577) | -0.071 ( 154) · 121/yr
+      high third                               -0.277 (  567) | -0.048 (  432) | +0.330 ( 122) · 104/yr
+    WALK-FORWARD grade A (shape + context): -0.169 (  528) | +0.100 (  446) | +0.147 ( 115) · 101/yr
+      2026 top weights: 60-min move with it > 0.1 ATR +0.19 · pole broke a level +0.18 · before 12:30 (NY) +0.17 · pole >= 5x bar +0.14 · flag bars before entry HIGH +0.12 · 1st pullback +0.10 · 
+
+######## NY BEAR 3-5m
+      ALL                                      -0.128 (  953) | +0.107 (  753) | -0.096 ( 216) · 178/yr
+    tight (flag height / pole) (cuts 0.223 / 0.305)
+      low third                                -0.035 (  271) | +0.070 (  254) | -0.008 (  56) · 54/yr
+      mid third                                -0.212 (  323) | +0.495 (  273) | -0.114 (  90) · 64/yr
+      high third                               -0.122 (  359) | -0.319 (  226) | -0.143 (  70) · 61/yr
+    compress (flag bar / pole bar range) (cuts 0.693 / 0.827)
+      low third                                -0.268 (  236) | +0.398 (  210) | +0.085 (  43) · 45/yr
+      mid third                                +0.006 (  281) | -0.018 (  248) | +0.110 (  72) · 56/yr
+      high third                               -0.139 (  436) | +0.005 (  295) | -0.320 ( 101) · 77/yr
+    orderly (R² of the flag line) (cuts 0.688 / 0.947)
+      low third                                -0.254 (  301) | +0.303 (  269) | -0.179 (  90) · 61/yr
+      mid third                                +0.083 (  283) | -0.153 (  219) | -0.277 (  60) · 52/yr
+      high third                               -0.187 (  369) | +0.124 (  265) | +0.182 (  66) · 65/yr
+    drift (slope with the pole per bar) (cuts -0.040 / -0.011)
+      low third                                -0.065 (  357) | -0.185 (  213) | -0.315 (  63) · 59/yr
+      mid third                                -0.337 (  286) | +0.141 (  252) | -0.019 (  70) · 56/yr
+      high third                               -0.007 (  310) | +0.295 (  288) | +0.005 (  83) · 63/yr
+    flag bars before entry (cuts 3.000 / 5.000)
+      low third                                -0.077 (  209) | -0.022 (  155) | +0.324 (  41) · 38/yr
+      mid third                                -0.126 (  464) | +0.276 (  385) | -0.313 ( 114) · 89/yr
+      high third                               -0.169 (  280) | -0.103 (  213) | +0.027 (  61) · 51/yr
+    bodies (|c−o| / range) (cuts 0.393 / 0.508)
+      low third                                -0.253 (  332) | +0.013 (  285) | +0.050 (  68) · 63/yr
+      mid third                                -0.054 (  293) | +0.056 (  239) | -0.177 (  77) · 56/yr
+      high third                               -0.068 (  328) | +0.279 (  229) | -0.147 (  71) · 58/yr
+    volume dry-up (flag / pole volume) (cuts 0.612 / 0.777)
+      low third                                -0.310 (  154) | +0.478 (  134) | -0.270 (  18) · 28/yr
+      mid third                                -0.070 (  347) | +0.088 (  356) | -0.261 (  98) · 74/yr
+      high third                               -0.110 (  452) | -0.055 (  263) | +0.097 ( 100) · 75/yr
+    WALK-FORWARD grade A (shape + context): -0.111 (  315) | +0.180 (  288) | +0.091 (  70) · 62/yr
+      2026 top weights: gap with it (NY) +0.35 · pole broke a level +0.31 · drift (slope with the pole per bar) HIGH +0.21 · tight (flag height / pole) LOW +0.15 · volume dry-up (flag / pole volume) LOW +0.12 · orderly (R² of the flag line) HIGH +0.11 · 
+
+######## NY BULL 1m
+      ALL                                      -0.258 ( 3081) | -0.060 ( 2393) | -0.112 ( 674) · 569/yr
+    tight (flag height / pole) (cuts 0.250 / 0.364)
+      low third                                -0.175 ( 1070) | -0.081 (  797) | -0.149 ( 241) · 195/yr
+      mid third                                -0.289 ( 1092) | -0.027 (  850) | -0.018 ( 248) · 203/yr
+      high third                               -0.318 (  919) | -0.075 (  746) | -0.189 ( 185) · 171/yr
+    compress (flag bar / pole bar range) (cuts 0.694 / 0.854)
+      low third                                -0.351 ( 1036) | -0.101 (  689) | -0.161 ( 209) · 179/yr
+      mid third                                -0.224 ( 1098) | -0.042 (  964) | -0.077 ( 248) · 214/yr
+      high third                               -0.195 (  947) | -0.046 (  740) | -0.104 ( 217) · 176/yr
+    orderly (R² of the flag line) (cuts 0.182 / 0.857)
+      low third                                -0.309 (  911) | -0.011 (  696) | -0.023 ( 173) · 165/yr
+      mid third                                -0.259 ( 1025) | +0.021 (  730) | -0.276 ( 220) · 183/yr
+      high third                               -0.216 ( 1145) | -0.157 (  967) | -0.039 ( 281) · 222/yr
+    drift (slope with the pole per bar) (cuts -0.008 / 0.015)
+      low third                                -0.172 ( 1047) | -0.156 (  795) | -0.146 ( 198) · 189/yr
+      mid third                                -0.271 ( 1026) | +0.059 (  820) | -0.122 ( 220) · 191/yr
+      high third                               -0.334 ( 1008) | -0.089 (  778) | -0.078 ( 256) · 189/yr
+    flag bars before entry (cuts 3.000 / 5.000)
+      low third                                -0.288 (  963) | -0.131 (  783) | -0.099 ( 230) · 183/yr
+      mid third                                -0.256 (  965) | -0.160 (  737) | -0.122 ( 199) · 176/yr
+      high third                               -0.234 ( 1153) | +0.087 (  873) | -0.117 ( 245) · 210/yr
+    bodies (|c−o| / range) (cuts 0.389 / 0.515)
+      low third                                -0.278 ( 1156) | -0.072 ( 1000) | -0.209 ( 303) · 228/yr
+      mid third                                -0.236 ( 1055) | -0.042 (  820) | -0.171 ( 221) · 194/yr
+      high third                               -0.258 (  870) | -0.066 (  573) | +0.171 ( 150) · 148/yr
+    volume dry-up (flag / pole volume) (cuts 0.585 / 0.792)
+      low third                                -0.351 (  780) | -0.010 (  469) | -0.163 ( 130) · 128/yr
+      mid third                                -0.289 ( 1301) | -0.077 ( 1212) | -0.151 ( 295) · 260/yr
+      high third                               -0.145 ( 1000) | -0.065 (  712) | -0.040 ( 249) · 182/yr
+    WALK-FORWARD grade A (shape + context): -0.170 ( 1049) | +0.012 (  838) | -0.113 ( 261) · 199/yr
+      2026 top weights: pole >= 5x bar +0.22 · before 12:30 (NY) +0.17 · gap with it (NY) +0.13 · pole broke a level +0.11 · bodies (|c−o| / range) MID +0.11 · flag bars before entry HIGH +0.11 · 
+
+######## NY BULL 2m
+      ALL                                      -0.066 ( 1706) | +0.089 ( 1383) | -0.052 ( 363) · 320/yr
+    tight (flag height / pole) (cuts 0.250 / 0.357)
+      low third                                -0.039 (  597) | +0.246 (  458) | -0.180 ( 145) · 111/yr
+      mid third                                -0.139 (  614) | -0.000 (  479) | -0.090 ( 121) · 112/yr
+      high third                               -0.007 (  495) | +0.025 (  446) | +0.188 (  97) · 96/yr
+    compress (flag bar / pole bar range) (cuts 0.684 / 0.821)
+      low third                                +0.004 (  586) | +0.123 (  397) | -0.259 ( 122) · 102/yr
+      mid third                                -0.081 (  556) | +0.143 (  465) | +0.166 ( 110) · 105/yr
+      high third                               -0.124 (  564) | +0.016 (  521) | -0.042 ( 131) · 113/yr
+    orderly (R² of the flag line) (cuts 0.180 / 0.923)
+      low third                                -0.094 (  502) | +0.089 (  396) | -0.129 (  97) · 92/yr
+      mid third                                +0.019 (  584) | +0.054 (  488) | -0.019 ( 122) · 111/yr
+      high third                               -0.123 (  620) | +0.124 (  499) | -0.027 ( 144) · 117/yr
+    drift (slope with the pole per bar) (cuts -0.007 / 0.013)
+      low third                                -0.038 (  626) | +0.149 (  450) | +0.114 ( 119) · 111/yr
+      mid third                                -0.065 (  554) | +0.077 (  451) | -0.221 ( 121) · 104/yr
+      high third                               -0.101 (  526) | +0.046 (  482) | -0.046 ( 123) · 105/yr
+    flag bars before entry (cuts 3.000 / 5.000)
+      low third                                -0.115 (  549) | +0.098 (  426) | +0.008 ( 127) · 102/yr
+      mid third                                -0.028 (  518) | +0.104 (  453) | -0.168 ( 116) · 101/yr
+      high third                               -0.055 (  639) | +0.069 (  504) | -0.003 ( 120) · 117/yr
+    bodies (|c−o| / range) (cuts 0.378 / 0.500)
+      low third                                -0.166 (  625) | +0.153 (  547) | -0.251 ( 141) · 122/yr
+      mid third                                -0.018 (  580) | +0.087 (  490) | +0.084 ( 121) · 110/yr
+      high third                               +0.004 (  501) | -0.007 (  346) | +0.064 ( 101) · 88/yr
+    volume dry-up (flag / pole volume) (cuts 0.579 / 0.749)
+      low third                                -0.149 (  442) | +0.218 (  242) | -0.206 (  63) · 69/yr
+      mid third                                +0.019 (  685) | +0.055 (  639) | +0.020 ( 166) · 138/yr
+      high third                               -0.103 (  579) | +0.072 (  502) | -0.068 ( 134) · 112/yr
+    WALK-FORWARD grade A (shape + context): +0.073 (  611) | +0.196 (  480) | +0.022 ( 135) · 114/yr
+      2026 top weights: pole >= 5x bar +0.27 · pole broke a level +0.25 · gap with it (NY) +0.23 · before 12:30 (NY) +0.23 · 1st pullback +0.15 · volume dry-up (flag / pole volume) MID +0.12 · 
+
+######## NY BULL 3-5m
+      ALL                                      +0.192 ( 1070) | +0.318 (  762) | -0.047 ( 255) · 193/yr
+    tight (flag height / pole) (cuts 0.195 / 0.273)
+      low third                                +0.393 (  343) | +0.307 (  235) | -0.263 (  72) · 60/yr
+      mid third                                +0.275 (  356) | +0.320 (  260) | -0.136 (  83) · 65/yr
+      high third                               -0.073 (  371) | +0.324 (  267) | +0.183 ( 100) · 68/yr
+    compress (flag bar / pole bar range) (cuts 0.628 / 0.744)
+      low third                                -0.140 (  294) | -0.042 (  177) | +0.219 (  56) · 49/yr
+      mid third                                +0.156 (  353) | +0.578 (  236) | -0.565 (  87) · 63/yr
+      high third                               +0.453 (  423) | +0.324 (  349) | +0.223 ( 112) · 82/yr
+    orderly (R² of the flag line) (cuts 0.605 / 0.923)
+      low third                                +0.277 (  373) | +0.501 (  246) | -0.024 (  91) · 66/yr
+      mid third                                +0.044 (  319) | +0.227 (  232) | -0.400 (  73) · 58/yr
+      high third                               +0.233 (  378) | +0.232 (  284) | +0.214 (  91) · 70/yr
+    drift (slope with the pole per bar) (cuts -0.030 / -0.004)
+      low third                                +0.012 (  368) | +0.298 (  288) | +0.122 (  96) · 70/yr
+      mid third                                +0.385 (  372) | +0.415 (  224) | -0.164 (  76) · 62/yr
+      high third                               +0.176 (  330) | +0.253 (  250) | -0.135 (  83) · 61/yr
+    flag bars before entry (cuts 3.000 / 4.000)
+      low third                                +0.322 (  193) | +0.193 (  139) | -0.040 (  48) · 35/yr
+      mid third                                +0.233 (  272) | +0.471 (  232) | -0.191 (  72) · 53/yr
+      high third                               +0.132 (  605) | +0.271 (  391) | +0.028 ( 135) · 105/yr
+    bodies (|c−o| / range) (cuts 0.367 / 0.487)
+      low third                                +0.091 (  347) | +0.185 (  258) | -0.069 (  92) · 65/yr
+      mid third                                +0.343 (  378) | +0.486 (  263) | -0.263 (  87) · 67/yr
+      high third                               +0.128 (  345) | +0.275 (  241) | +0.227 (  76) · 61/yr
+    volume dry-up (flag / pole volume) (cuts 0.517 / 0.662)
+      low third                                -0.287 (  184) | +0.333 (   66) | -0.553 (  12) · 24/yr
+      mid third                                +0.290 (  426) | +0.370 (  306) | -0.004 ( 114) · 78/yr
+      high third                               +0.293 (  460) | +0.274 (  390) | -0.038 ( 129) · 91/yr
+    WALK-FORWARD grade A (shape + context): +0.241 (  361) | +0.397 (  260) | -0.198 (  88) · 66/yr
+      2026 top weights: 60-min move with it > 0.1 ATR +0.55 · pole broke a level +0.42 · gap with it (NY) +0.39 · pole >= 5x bar +0.31 · 1st pullback +0.28 · before 12:30 (NY) +0.26 · 
+
+######## ASIA+LONDON BEAR 1-2m
+      ALL                                      -0.673 (13605) | -0.241 (11303) | -0.188 (3302) · 2612/yr
+    tight (flag height / pole) (cuts 0.259 / 0.387)
+      low third                                -0.848 ( 4002) | -0.324 ( 3062) | -0.201 ( 886) · 736/yr
+      mid third                                -0.592 ( 5180) | -0.207 ( 4752) | -0.180 (1395) · 1049/yr
+      high third                               -0.609 ( 4423) | -0.213 ( 3489) | -0.186 (1021) · 827/yr
+    compress (flag bar / pole bar range) (cuts 0.533 / 0.833)
+      low third                                -1.035 ( 2635) | -0.357 ( 1240) | -0.280 ( 377) · 394/yr
+      mid third                                -0.631 ( 6023) | -0.244 ( 5761) | -0.189 (1580) · 1237/yr
+      high third                               -0.531 ( 4947) | -0.202 ( 4302) | -0.160 (1345) · 981/yr
+    orderly (R² of the flag line) (cuts 0.203 / 0.900)
+      low third                                -0.652 ( 4210) | -0.164 ( 3225) | -0.146 ( 828) · 765/yr
+      mid third                                -0.625 ( 4330) | -0.253 ( 3517) | -0.179 (1073) · 826/yr
+      high third                               -0.731 ( 5065) | -0.286 ( 4561) | -0.218 (1401) · 1021/yr
+    drift (slope with the pole per bar) (cuts -0.005 / 0.028)
+      low third                                -0.628 ( 5025) | -0.261 ( 4505) | -0.249 (1280) · 1001/yr
+      mid third                                -0.650 ( 4716) | -0.211 ( 3929) | -0.199 (1121) · 904/yr
+      high third                               -0.759 ( 3864) | -0.249 ( 2869) | -0.087 ( 901) · 707/yr
+    flag bars before entry (cuts 3.000 / 5.000)
+      low third                                -0.788 ( 4788) | -0.310 ( 4022) | -0.221 (1179) · 925/yr
+      mid third                                -0.653 ( 4419) | -0.228 ( 3577) | -0.186 (1088) · 841/yr
+      high third                               -0.568 ( 4398) | -0.178 ( 3704) | -0.151 (1035) · 846/yr
+    bodies (|c−o| / range) (cuts 0.390 / 0.583)
+      low third                                -0.681 ( 4257) | -0.278 ( 4020) | -0.213 (1194) · 877/yr
+      mid third                                -0.573 ( 5416) | -0.189 ( 5012) | -0.178 (1505) · 1105/yr
+      high third                               -0.800 ( 3932) | -0.288 ( 2271) | -0.163 ( 603) · 630/yr
+    volume dry-up (flag / pole volume) (cuts 0.477 / 0.840)
+      low third                                -0.922 ( 3436) | -0.345 ( 2203) | -0.281 ( 623) · 580/yr
+      mid third                                -0.589 ( 5959) | -0.209 ( 5929) | -0.217 (1719) · 1260/yr
+      high third                               -0.588 ( 4210) | -0.228 ( 3171) | -0.074 ( 960) · 772/yr
+    WALK-FORWARD grade A (shape + context): -0.455 ( 4960) | -0.151 ( 4672) | -0.126 (1432) · 1024/yr
+      2026 top weights: pole broke a level +0.35 · compress (flag bar / pole bar range) MID +0.22 · 60-min move with it > 0.1 ATR +0.22 · volume dry-up (flag / pole volume) MID +0.18 · compress (flag bar / pole bar range) HIGH +0.17 · flag bars before entry HIGH +0.14 · 
+
+######## ASIA+LONDON BULL 1-2m
+      ALL                                      -0.709 (17687) | -0.293 (13573) | -0.225 (3982) · 3263/yr
+    tight (flag height / pole) (cuts 0.250 / 0.400)
+      low third                                -0.813 ( 4495) | -0.332 ( 3463) | -0.319 (1147) · 843/yr
+      mid third                                -0.704 ( 7775) | -0.292 ( 6339) | -0.170 (1750) · 1469/yr
+      high third                               -0.630 ( 5417) | -0.260 ( 3771) | -0.214 (1085) · 951/yr
+    compress (flag bar / pole bar range) (cuts 0.528 / 0.811)
+      low third                                -1.019 ( 3843) | -0.367 ( 1671) | -0.235 ( 527) · 559/yr
+      mid third                                -0.653 ( 7710) | -0.311 ( 6818) | -0.246 (1967) · 1527/yr
+      high third                               -0.586 ( 6134) | -0.246 ( 5084) | -0.193 (1488) · 1176/yr
+    orderly (R² of the flag line) (cuts 0.174 / 0.871)
+      low third                                -0.690 ( 5259) | -0.223 ( 3629) | -0.170 (1014) · 917/yr
+      mid third                                -0.646 ( 6064) | -0.287 ( 4489) | -0.165 (1329) · 1100/yr
+      high third                               -0.786 ( 6364) | -0.346 ( 5455) | -0.307 (1639) · 1246/yr
+    drift (slope with the pole per bar) (cuts -0.002 / 0.029)
+      low third                                -0.660 ( 6897) | -0.317 ( 5749) | -0.245 (1695) · 1328/yr
+      mid third                                -0.686 ( 6030) | -0.223 ( 4557) | -0.193 (1334) · 1104/yr
+      high third                               -0.810 ( 4760) | -0.351 ( 3267) | -0.232 ( 953) · 831/yr
+    flag bars before entry (cuts 3.000 / 5.000)
+      low third                                -0.842 ( 5715) | -0.358 ( 4637) | -0.314 (1370) · 1085/yr
+      mid third                                -0.748 ( 5694) | -0.311 ( 4390) | -0.240 (1264) · 1051/yr
+      high third                               -0.553 ( 6278) | -0.211 ( 4546) | -0.120 (1348) · 1127/yr
+    bodies (|c−o| / range) (cuts 0.375 / 0.567)
+      low third                                -0.765 ( 5193) | -0.318 ( 4284) | -0.185 (1262) · 994/yr
+      mid third                                -0.617 ( 7291) | -0.265 ( 6268) | -0.231 (1862) · 1428/yr
+      high third                               -0.783 ( 5203) | -0.316 ( 3021) | -0.268 ( 858) · 841/yr
+    volume dry-up (flag / pole volume) (cuts 0.472 / 0.815)
+      low third                                -0.877 ( 4739) | -0.368 ( 2784) | -0.204 ( 808) · 771/yr
+      mid third                                -0.648 ( 7585) | -0.284 ( 6937) | -0.265 (2031) · 1533/yr
+      high third                               -0.648 ( 5363) | -0.256 ( 3852) | -0.169 (1143) · 959/yr
+    WALK-FORWARD grade A (shape + context): -0.485 ( 6139) | -0.218 ( 5423) | -0.201 (1592) · 1218/yr
+      2026 top weights: pole broke a level +0.34 · flag bars before entry HIGH +0.20 · compress (flag bar / pole bar range) HIGH +0.17 · 1st pullback +0.16 · compress (flag bar / pole bar range) MID +0.15 · 60-min move with it > 0.1 ATR +0.13 · 
+
+######## ASIA+LONDON 3-5m (both sides)
+      ALL                                      -0.547 ( 7567) | -0.223 ( 6375) | -0.158 (1634) · 1442/yr
+    tight (flag height / pole) (cuts 0.250 / 0.355)
+      low third                                -0.509 ( 2695) | -0.137 ( 2266) | -0.066 ( 634) · 518/yr
+      mid third                                -0.594 ( 2671) | -0.320 ( 2286) | -0.079 ( 557) · 511/yr
+      high third                               -0.537 ( 2201) | -0.206 ( 1823) | -0.389 ( 443) · 414/yr
+    compress (flag bar / pole bar range) (cuts 0.677 / 0.911)
+      low third                                -0.668 ( 2316) | -0.286 ( 1650) | +0.011 ( 429) · 407/yr
+      mid third                                -0.530 ( 2799) | -0.278 ( 2736) | -0.219 ( 681) · 576/yr
+      high third                               -0.452 ( 2452) | -0.094 ( 1989) | -0.217 ( 524) · 460/yr
+    orderly (R² of the flag line) (cuts 0.481 / 0.923)
+      low third                                -0.644 ( 2158) | -0.234 ( 1684) | +0.177 ( 448) · 397/yr
+      mid third                                -0.564 ( 2558) | -0.266 ( 2232) | -0.309 ( 560) · 495/yr
+      high third                               -0.458 ( 2851) | -0.176 ( 2459) | -0.263 ( 626) · 550/yr
+    drift (slope with the pole per bar) (cuts -0.034 / 0.002)
+      low third                                -0.625 ( 2571) | -0.290 ( 2128) | -0.525 ( 545) · 486/yr
+      mid third                                -0.538 ( 2755) | -0.265 ( 2250) | +0.047 ( 575) · 517/yr
+      high third                               -0.469 ( 2241) | -0.103 ( 1997) | +0.002 ( 514) · 440/yr
+    flag bars before entry (cuts 3.000 / 4.000)
+      low third                                -0.428 ( 1705) | -0.170 ( 1430) | -0.266 ( 365) · 324/yr
+      mid third                                -0.535 ( 1961) | -0.096 ( 1775) | -0.131 ( 428) · 386/yr
+      high third                               -0.605 ( 3901) | -0.317 ( 3170) | -0.125 ( 841) · 733/yr
+    bodies (|c−o| / range) (cuts 0.417 / 0.571)
+      low third                                -0.499 ( 3295) | -0.223 ( 3124) | -0.151 ( 825) · 671/yr
+      mid third                                -0.625 ( 2707) | -0.280 ( 2232) | -0.198 ( 579) · 511/yr
+      high third                               -0.513 ( 1565) | -0.095 ( 1019) | -0.081 ( 230) · 261/yr
+    volume dry-up (flag / pole volume) (cuts 0.580 / 0.928)
+      low third                                -0.663 ( 1843) | -0.343 ( 1197) | +0.416 ( 286) · 308/yr
+      mid third                                -0.549 ( 3154) | -0.251 ( 3122) | -0.328 ( 844) · 659/yr
+      high third                               -0.462 ( 2570) | -0.109 ( 2056) | -0.200 ( 504) · 475/yr
+    WALK-FORWARD grade A (shape + context): -0.468 ( 2806) | -0.144 ( 2686) | -0.152 ( 718) · 575/yr
+      2026 top weights: pole broke a level +0.25 · compress (flag bar / pole bar range) HIGH +0.16 · volume dry-up (flag / pole volume) HIGH +0.14 · flag bars before entry LOW +0.10 · bodies (|c−o| / range) LOW +0.10 · orderly (R² of the flag line) HIGH +0.08 · 

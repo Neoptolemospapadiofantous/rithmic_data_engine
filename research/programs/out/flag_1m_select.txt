@@ -1,0 +1,176 @@
+1-MINUTE flag selection — NQ, 3315 days, 72273 1m flag trades. R after a FIXED 1.5-pt cost (ATR-scaled cost in brackets where shown).
+Cells: R (trades) 2016-20 | 2021-24 | 2025-26 · trades a year over the 10.8 test years.
+
+######## 1m BULL NY
+    ALL 1m flags                                       -0.274 ( 2567) | -0.080 ( 2062) | -0.106 ( 564) [ATR-cost 2025-26 -0.132] · win 28% · 481/yr
+  traits alone (with):
+    1st pullback                                       -0.191 (  865) | -0.065 (  653) | -0.024 ( 212) [ATR-cost 2025-26 -0.045] · win 26% · 160/yr
+    pole >= 5x bar                                     -0.051 (  323) | +0.239 (  252) | -0.053 (  79) [ATR-cost 2025-26 -0.070] · win 27% · 61/yr
+    pole broke a level                                 -0.264 ( 1679) | -0.061 ( 1623) | -0.103 ( 502) [ATR-cost 2025-26 -0.129] · win 27% · 352/yr
+    gap with it (NY)                                   -0.197 ( 1232) | +0.005 (  900) | +0.037 ( 236) [ATR-cost 2025-26 +0.013] · win 30% · 219/yr
+    before 12:30 (NY)                                  -0.224 ( 1850) | -0.069 ( 1460) | -0.058 ( 423) [ATR-cost 2025-26 -0.082] · win 27% · 346/yr
+    60-min move > 0.1 ATR                              -0.237 ( 1485) | -0.030 ( 1253) | -0.156 ( 354) [ATR-cost 2025-26 -0.178] · win 27% · 286/yr
+    60-min move > 0.3 ATR                              -0.149 (  487) | -0.006 (  443) | -0.268 ( 136) [ATR-cost 2025-26 -0.284] · win 26% · 99/yr
+    beyond the 15m EMA20                               -0.272 ( 2287) | -0.095 ( 1852) | -0.138 ( 518) [ATR-cost 2025-26 -0.163] · win 28% · 431/yr
+    beyond the prior close                             -0.275 ( 1972) | -0.079 ( 1569) | -0.100 ( 414) [ATR-cost 2025-26 -0.127] · win 28% · 366/yr
+    flag low near VWAP                                 -0.279 ( 1194) | -0.132 (  906) | -0.013 ( 268) [ATR-cost 2025-26 -0.042] · win 28% · 219/yr
+    researched tier (not inner)                        +0.021 (  546) | +0.049 (  423) | -0.206 ( 141) [ATR-cost 2025-26 -0.227] · win 27% · 103/yr
+    stop >= 10x cost                                   -0.001 (  258) | -0.061 ( 1096) | -0.097 ( 437) [ATR-cost 2025-26 -0.123] · win 28% · 166/yr
+    stop >= 20x cost                                   -0.109 (   30) | +0.068 (  255) | -0.055 ( 200) [ATR-cost 2025-26 -0.078] · win 30% · 45/yr
+    pole >= 0.15 ATR                                   -0.171 ( 1717) | -0.037 ( 1463) | -0.070 ( 419) [ATR-cost 2025-26 -0.088] · win 27% · 333/yr
+    pole >= 0.25 ATR                                   -0.176 (  819) | +0.046 (  721) | -0.128 ( 231) [ATR-cost 2025-26 -0.142] · win 26% · 164/yr
+    shallow pullback (<= 30 %)                         -0.215 ( 1444) | -0.100 ( 1105) | -0.133 ( 321) [ATR-cost 2025-26 -0.161] · win 24% · 266/yr
+    5m trend agrees (rising 5m EMA20)                  -0.264 ( 2320) | -0.049 ( 1866) | -0.139 ( 508) [ATR-cost 2025-26 -0.165] · win 28% · 435/yr
+      rule from 2021: 1st pullback + before 12:30 (NY) + stop >= 10x cost (train +0.118R)
+      rule from 2022: flag low near VWAP + stop >= 10x cost + pole >= 0.15 ATR (train +0.277R)
+      rule from 2023: 1st pullback + gap with it (NY) + stop >= 10x cost (train +0.279R)
+      rule from 2024: pole >= 5x bar + beyond the prior close + stop >= 10x cost (train +0.336R)
+      rule from 2025: pole >= 5x bar + before 12:30 (NY) + stop >= 10x cost (train +0.219R)
+      rule from 2026: gap with it (NY) + flag low near VWAP + researched tier (not inner) (train +0.188R)
+    (1) WALK-FORWARD best rule (<= 3 traits)           +nan (    0) | -0.012 (  333) | -0.011 (  58) [ATR-cost 2025-26 -0.028] · win 28% · 36/yr
+      2026 trait weights (top 5): stop >= 10x cost +0.35 · stop >= 20x cost +0.31 · pole >= 0.15 ATR +0.24 · pole >= 5x bar +0.22 · researched tier (not inner) +0.20 · 
+    (2) grade A (top third of scores)                  -0.111 (  840) | -0.001 ( 1017) | -0.139 ( 351) [ATR-cost 2025-26 -0.160] · win 27% · 204/yr
+        grade B                                        -0.272 ( 1029) | -0.073 (  574) | +0.098 ( 149) [ATR-cost 2025-26 +0.066] · win 28% · 162/yr
+        grade C                                        -0.407 (  986) | -0.181 (  601) | -0.387 ( 107) [ATR-cost 2025-26 -0.417] · win 28% · 157/yr
+        top 10 % of scores                             +0.058 (  332) | +0.087 (  468) | -0.058 ( 194) [ATR-cost 2025-26 -0.076] · win 28% · 92/yr
+
+######## 1m BULL ASIA
+    ALL 1m flags                                       -0.858 ( 5619) | -0.352 ( 4459) | -0.220 (1275) [ATR-cost 2025-26 -0.275] · win 27% · 1051/yr
+  traits alone (with):
+    1st pullback                                       -0.650 ( 1035) | -0.274 (  913) | -0.061 ( 246) [ATR-cost 2025-26 -0.104] · win 27% · 203/yr
+    pole >= 5x bar                                     -0.730 ( 2037) | -0.259 ( 1349) | -0.105 ( 340) [ATR-cost 2025-26 -0.144] · win 27% · 345/yr
+    pole broke a level                                 -0.521 (  915) | -0.197 ( 1054) | -0.329 ( 374) [ATR-cost 2025-26 -0.389] · win 29% · 217/yr
+    60-min move > 0.1 ATR                              -0.554 ( 1217) | -0.308 (  679) | -0.293 ( 257) [ATR-cost 2025-26 -0.318] · win 27% · 199/yr
+    60-min move > 0.3 ATR                              -0.479 (   81) | -0.239 (   29) | -0.438 (  22) [ATR-cost 2025-26 -0.449] · win 20% · 12/yr
+    beyond the 15m EMA20                               -0.854 ( 5140) | -0.354 ( 4108) | -0.235 (1189) [ATR-cost 2025-26 -0.289] · win 28% · 966/yr
+    beyond the prior close                             -0.861 ( 4555) | -0.350 ( 3693) | -0.224 (1084) [ATR-cost 2025-26 -0.277] · win 27% · 864/yr
+    flag low near VWAP                                 -0.899 ( 4114) | -0.368 ( 3563) | -0.200 ( 899) [ATR-cost 2025-26 -0.265] · win 28% · 794/yr
+    researched tier (not inner)                        -0.714 ( 1636) | -0.323 ( 1223) | -0.266 ( 352) [ATR-cost 2025-26 -0.312] · win 26% · 297/yr
+    stop >= 10x cost                                   +0.125 (   77) | -0.090 (  138) | -0.194 ( 142) [ATR-cost 2025-26 -0.247] · win 29% · 33/yr
+    stop >= 20x cost                                   +0.356 (   13) | -0.162 (   10) | +0.052 (  13) [ATR-cost 2025-26 +0.006] · win 33% · 3/yr
+    pole >= 0.15 ATR                                   -0.234 (  431) | -0.114 (  179) | +0.118 (  98) [ATR-cost 2025-26 +0.100] · win 26% · 66/yr
+    pole >= 0.25 ATR                                   -0.135 (  103) | +0.072 (   31) | +0.007 (  13) [ATR-cost 2025-26 -0.002] · win 25% · 14/yr
+    shallow pullback (<= 30 %)                         -0.961 ( 2826) | -0.371 ( 2054) | -0.212 ( 645) [ATR-cost 2025-26 -0.273] · win 24% · 512/yr
+    5m trend agrees (rising 5m EMA20)                  -0.825 ( 4648) | -0.352 ( 3806) | -0.210 (1091) [ATR-cost 2025-26 -0.260] · win 28% · 884/yr
+      rule from 2025: pole broke a level + 60-min move > 0.1 ATR + pole >= 0.15 ATR (train +0.030R)
+      rule from 2026: pole >= 5x bar + stop >= 10x cost + 5m trend agrees (rising 5m EMA20) (train +0.081R)
+    (1) WALK-FORWARD best rule (<= 3 traits)           +nan (    0) | +nan (    0) | -0.274 (  40) [ATR-cost 2025-26 -0.293] · win 20% · 4/yr
+      2026 trait weights (top 5): stop >= 10x cost +0.69 · pole >= 0.25 ATR +0.67 · pole >= 0.15 ATR +0.56 · pole broke a level +0.40 · 1st pullback +0.20 · 
+    (2) grade A (top third of scores)                  -0.567 ( 1826) | -0.242 ( 1603) | -0.281 ( 566) [ATR-cost 2025-26 -0.326] · win 28% · 370/yr
+        grade B                                        -0.901 ( 1886) | -0.338 ( 1237) | -0.176 ( 449) [ATR-cost 2025-26 -0.230] · win 29% · 331/yr
+        grade C                                        -1.045 ( 2590) | -0.453 ( 2016) | -0.207 ( 373) [ATR-cost 2025-26 -0.282] · win 26% · 461/yr
+        top 10 % of scores                             -0.264 (  732) | -0.208 (  514) | -0.155 ( 269) [ATR-cost 2025-26 -0.197] · win 28% · 140/yr
+
+######## 1m BULL LONDON
+    ALL 1m flags                                       -0.708 ( 4249) | -0.283 ( 3266) | -0.390 ( 960) [ATR-cost 2025-26 -0.437] · win 28% · 785/yr
+  traits alone (with):
+    1st pullback                                       -0.495 (  224) | -0.312 (  255) | -0.377 (  61) [ATR-cost 2025-26 -0.409] · win 25% · 50/yr
+    pole >= 5x bar                                     -0.662 ( 1951) | -0.228 ( 1732) | -0.298 ( 425) [ATR-cost 2025-26 -0.340] · win 27% · 380/yr
+    pole broke a level                                 -0.479 (  737) | -0.183 (  966) | -0.435 ( 331) [ATR-cost 2025-26 -0.486] · win 28% · 188/yr
+    60-min move > 0.1 ATR                              -0.605 ( 1078) | -0.230 (  826) | -0.308 ( 240) [ATR-cost 2025-26 -0.335] · win 27% · 199/yr
+    60-min move > 0.3 ATR                              -0.422 (   87) | -0.281 (   57) | -0.322 (  22) [ATR-cost 2025-26 -0.343] · win 27% · 15/yr
+    beyond the 15m EMA20                               -0.695 ( 3700) | -0.265 ( 2937) | -0.375 ( 842) [ATR-cost 2025-26 -0.422] · win 28% · 692/yr
+    beyond the prior close                             -0.729 ( 3809) | -0.279 ( 2899) | -0.378 ( 881) [ATR-cost 2025-26 -0.426] · win 28% · 703/yr
+    flag low near VWAP                                 -0.732 ( 1975) | -0.311 ( 1587) | -0.408 ( 389) [ATR-cost 2025-26 -0.477] · win 28% · 366/yr
+    researched tier (not inner)                        -0.740 ( 1469) | -0.266 ( 1121) | -0.255 ( 334) [ATR-cost 2025-26 -0.294] · win 27% · 271/yr
+    stop >= 10x cost                                   +0.192 (   68) | -0.047 (  264) | -0.134 ( 172) [ATR-cost 2025-26 -0.180] · win 35% · 47/yr
+    stop >= 20x cost                                   +0.971 (    6) | -0.112 (   29) | +0.155 (  35) [ATR-cost 2025-26 +0.117] · win 46% · 6/yr
+    pole >= 0.15 ATR                                   -0.422 (  462) | +0.008 (  344) | -0.027 ( 111) [ATR-cost 2025-26 -0.046] · win 28% · 85/yr
+    pole >= 0.25 ATR                                   -0.062 (  103) | +0.254 (   74) | +0.138 (  20) [ATR-cost 2025-26 +0.119] · win 39% · 18/yr
+    shallow pullback (<= 30 %)                         -0.774 ( 1813) | -0.277 ( 1291) | -0.408 ( 403) [ATR-cost 2025-26 -0.463] · win 24% · 325/yr
+    5m trend agrees (rising 5m EMA20)                  -0.649 ( 3129) | -0.278 ( 2546) | -0.346 ( 728) [ATR-cost 2025-26 -0.393] · win 29% · 593/yr
+      rule from 2023: pole >= 5x bar + stop >= 10x cost + 5m trend agrees (rising 5m EMA20) (train +0.146R)
+      rule from 2024: stop >= 10x cost + pole >= 0.15 ATR (train +0.104R)
+      rule from 2025: pole broke a level + pole >= 0.25 ATR + 5m trend agrees (rising 5m EMA20) (train +0.049R)
+    (1) WALK-FORWARD best rule (<= 3 traits)           +nan (    0) | -0.329 (   63) | +0.138 (  20) [ATR-cost 2025-26 +0.119] · win 36% · 8/yr
+      2026 trait weights (top 5): stop >= 10x cost +0.63 · pole >= 0.25 ATR +0.49 · pole >= 0.15 ATR +0.35 · pole broke a level +0.33 · 1st pullback +0.21 · 
+    (2) grade A (top third of scores)                  -0.589 ( 1163) | -0.183 ( 1345) | -0.358 ( 441) [ATR-cost 2025-26 -0.402] · win 27% · 273/yr
+        grade B                                        -0.667 ( 1464) | -0.301 (  881) | -0.280 ( 216) [ATR-cost 2025-26 -0.326] · win 30% · 237/yr
+        grade C                                        -0.834 ( 2057) | -0.396 ( 1261) | -0.476 ( 386) [ATR-cost 2025-26 -0.529] · win 28% · 343/yr
+        top 10 % of scores                             -0.375 (  364) | -0.080 (  494) | -0.118 ( 201) [ATR-cost 2025-26 -0.158] · win 30% · 98/yr
+
+######## 1m BEAR NY
+    ALL 1m flags                                       -0.280 ( 2189) | -0.089 ( 1847) | -0.072 ( 542) [ATR-cost 2025-26 -0.088] · win 27% · 424/yr
+  traits alone (with):
+    1st pullback                                       -0.192 (  756) | +0.043 (  625) | -0.001 ( 170) [ATR-cost 2025-26 -0.015] · win 27% · 144/yr
+    pole >= 5x bar                                     -0.213 (  482) | +0.031 (  378) | -0.021 ( 109) [ATR-cost 2025-26 -0.032] · win 23% · 90/yr
+    pole broke a level                                 -0.273 ( 1635) | -0.053 ( 1537) | -0.056 ( 480) [ATR-cost 2025-26 -0.073] · win 27% · 338/yr
+    gap with it (NY)                                   -0.256 (  756) | -0.140 (  662) | -0.152 ( 159) [ATR-cost 2025-26 -0.175] · win 26% · 146/yr
+    before 12:30 (NY)                                  -0.256 ( 1578) | -0.050 ( 1322) | -0.029 ( 365) [ATR-cost 2025-26 -0.043] · win 27% · 302/yr
+    60-min move > 0.1 ATR                              -0.258 ( 1435) | -0.034 ( 1205) | -0.046 ( 378) [ATR-cost 2025-26 -0.060] · win 27% · 279/yr
+    60-min move > 0.3 ATR                              -0.254 (  645) | +0.004 (  496) | -0.191 ( 182) [ATR-cost 2025-26 -0.202] · win 25% · 122/yr
+    beyond the 15m EMA20                               -0.287 ( 1966) | -0.100 ( 1659) | -0.102 ( 496) [ATR-cost 2025-26 -0.119] · win 27% · 382/yr
+    beyond the prior close                             -0.290 ( 1530) | -0.121 ( 1352) | -0.090 ( 381) [ATR-cost 2025-26 -0.107] · win 26% · 302/yr
+    flag low near VWAP                                 -0.312 (  997) | -0.107 (  790) | -0.029 ( 230) [ATR-cost 2025-26 -0.046] · win 28% · 187/yr
+    researched tier (not inner)                        -0.223 (  590) | +0.027 (  477) | -0.004 ( 152) [ATR-cost 2025-26 -0.016] · win 24% · 113/yr
+    stop >= 10x cost                                   -0.157 (  403) | +0.020 ( 1292) | -0.082 ( 489) [ATR-cost 2025-26 -0.099] · win 28% · 202/yr
+    stop >= 20x cost                                   -0.171 (   65) | -0.096 (  353) | -0.170 ( 256) [ATR-cost 2025-26 -0.188] · win 27% · 62/yr
+    pole >= 0.15 ATR                                   -0.252 ( 1790) | -0.037 ( 1520) | -0.057 ( 454) [ATR-cost 2025-26 -0.069] · win 27% · 349/yr
+    pole >= 0.25 ATR                                   -0.213 ( 1044) | -0.002 (  850) | -0.113 ( 286) [ATR-cost 2025-26 -0.122] · win 25% · 202/yr
+    shallow pullback (<= 30 %)                         -0.279 (  984) | -0.088 (  836) | +0.007 ( 216) [ATR-cost 2025-26 -0.011] · win 23% · 189/yr
+    5m trend agrees (rising 5m EMA20)                  -0.288 ( 2032) | -0.070 ( 1714) | -0.079 ( 508) [ATR-cost 2025-26 -0.095] · win 27% · 394/yr
+      rule from 2021: before 12:30 (NY) + 60-min move > 0.3 ATR + stop >= 10x cost (train +0.098R)
+      rule from 2022: gap with it (NY) + before 12:30 (NY) + stop >= 10x cost (train +0.144R)
+      rule from 2023: 1st pullback + researched tier (not inner) + stop >= 10x cost (train +0.287R)
+      rule from 2026: pole >= 5x bar + researched tier (not inner) + stop >= 10x cost (train +0.135R)
+    (1) WALK-FORWARD best rule (<= 3 traits)           +nan (    0) | -0.063 (  343) | +0.105 (  63) [ATR-cost 2025-26 +0.095] · win 25% · 38/yr
+      2026 trait weights (top 5): stop >= 10x cost +0.37 · pole >= 0.15 ATR +0.22 · pole broke a level +0.18 · stop >= 20x cost +0.18 · before 12:30 (NY) +0.17 · 
+    (2) grade A (top third of scores)                  -0.212 (  801) | +0.051 ( 1000) | -0.068 ( 368) [ATR-cost 2025-26 -0.081] · win 27% · 201/yr
+        grade B                                        -0.285 (  848) | -0.161 (  499) | -0.011 ( 117) [ATR-cost 2025-26 -0.033] · win 27% · 136/yr
+        grade C                                        -0.347 (  757) | -0.319 (  472) | -0.075 (  81) [ATR-cost 2025-26 -0.094] · win 28% · 121/yr
+        top 10 % of scores                             -0.146 (  312) | +0.104 (  575) | -0.174 ( 192) [ATR-cost 2025-26 -0.186] · win 26% · 100/yr
+
+######## 1m BEAR ASIA
+    ALL 1m flags                                       -0.794 ( 4774) | -0.331 ( 3969) | -0.220 (1121) [ATR-cost 2025-26 -0.282] · win 28% · 913/yr
+  traits alone (with):
+    1st pullback                                       -0.692 (  966) | -0.348 (  846) | -0.237 ( 266) [ATR-cost 2025-26 -0.287] · win 25% · 192/yr
+    pole >= 5x bar                                     -0.699 ( 1945) | -0.214 ( 1364) | -0.095 ( 325) [ATR-cost 2025-26 -0.137] · win 27% · 336/yr
+    pole broke a level                                 -0.550 (  762) | -0.181 (  908) | +0.024 ( 381) [ATR-cost 2025-26 -0.027] · win 29% · 190/yr
+    60-min move > 0.1 ATR                              -0.562 ( 1148) | -0.236 (  752) | -0.125 ( 316) [ATR-cost 2025-26 -0.155] · win 27% · 205/yr
+    60-min move > 0.3 ATR                              -0.271 (  119) | -0.420 (   64) | -0.342 (  37) [ATR-cost 2025-26 -0.360] · win 24% · 20/yr
+    beyond the 15m EMA20                               -0.789 ( 4368) | -0.311 ( 3672) | -0.223 (1028) [ATR-cost 2025-26 -0.284] · win 28% · 840/yr
+    beyond the prior close                             -0.766 ( 3520) | -0.285 ( 3091) | -0.229 ( 871) [ATR-cost 2025-26 -0.289] · win 29% · 693/yr
+    flag low near VWAP                                 -0.850 ( 3631) | -0.361 ( 3204) | -0.188 ( 812) [ATR-cost 2025-26 -0.258] · win 28% · 708/yr
+    researched tier (not inner)                        -0.752 ( 1449) | -0.279 ( 1107) | -0.271 ( 298) [ATR-cost 2025-26 -0.317] · win 26% · 264/yr
+    stop >= 10x cost                                   -0.335 (  104) | -0.179 (  246) | -0.058 ( 280) [ATR-cost 2025-26 -0.100] · win 27% · 58/yr
+    stop >= 20x cost                                   -0.165 (   11) | -0.302 (   22) | -0.228 (  60) [ATR-cost 2025-26 -0.256] · win 25% · 9/yr
+    pole >= 0.15 ATR                                   -0.395 (  521) | -0.130 (  295) | -0.236 ( 177) [ATR-cost 2025-26 -0.258] · win 23% · 92/yr
+    pole >= 0.25 ATR                                   -0.261 (  136) | -0.248 (   68) | -0.001 (  38) [ATR-cost 2025-26 -0.018] · win 22% · 22/yr
+    shallow pullback (<= 30 %)                         -0.909 ( 2258) | -0.327 ( 1597) | -0.321 ( 490) [ATR-cost 2025-26 -0.394] · win 24% · 402/yr
+    5m trend agrees (rising 5m EMA20)                  -0.741 ( 3953) | -0.312 ( 3429) | -0.208 ( 983) [ATR-cost 2025-26 -0.267] · win 28% · 775/yr
+    (1) WALK-FORWARD best rule (<= 3 traits)           (0 trades)
+      2026 trait weights (top 5): stop >= 10x cost +0.61 · pole >= 0.25 ATR +0.53 · pole >= 0.15 ATR +0.44 · pole broke a level +0.42 · 60-min move > 0.3 ATR +0.41 · 
+    (2) grade A (top third of scores)                  -0.566 ( 1749) | -0.196 ( 1398) | -0.061 ( 583) [ATR-cost 2025-26 -0.107] · win 28% · 345/yr
+        grade B                                        -0.814 ( 1380) | -0.310 ( 1441) | -0.391 ( 285) [ATR-cost 2025-26 -0.454] · win 30% · 288/yr
+        grade C                                        -0.975 ( 2029) | -0.479 ( 1344) | -0.387 ( 308) [ATR-cost 2025-26 -0.477] · win 26% · 341/yr
+        top 10 % of scores                             -0.509 (  735) | -0.129 (  434) | -0.061 ( 291) [ATR-cost 2025-26 -0.095] · win 26% · 135/yr
+
+######## 1m BEAR LONDON
+    ALL 1m flags                                       -0.610 ( 3042) | -0.166 ( 2538) | -0.179 ( 755) [ATR-cost 2025-26 -0.223] · win 29% · 587/yr
+  traits alone (with):
+    1st pullback                                       -0.683 (  225) | -0.061 (  242) | +0.468 (  49) [ATR-cost 2025-26 +0.436] · win 26% · 48/yr
+    pole >= 5x bar                                     -0.497 ( 1699) | -0.115 ( 1566) | -0.127 ( 395) [ATR-cost 2025-26 -0.162] · win 29% · 339/yr
+    pole broke a level                                 -0.472 (  613) | -0.196 (  918) | -0.125 ( 313) [ATR-cost 2025-26 -0.166] · win 28% · 171/yr
+    60-min move > 0.1 ATR                              -0.428 ( 1039) | -0.170 (  876) | -0.145 ( 250) [ATR-cost 2025-26 -0.173] · win 28% · 200/yr
+    60-min move > 0.3 ATR                              -0.237 (  166) | +0.124 (  111) | -0.235 (  51) [ATR-cost 2025-26 -0.254] · win 30% · 30/yr
+    beyond the 15m EMA20                               -0.601 ( 2728) | -0.165 ( 2312) | -0.149 ( 675) [ATR-cost 2025-26 -0.192] · win 29% · 529/yr
+    beyond the prior close                             -0.586 ( 2565) | -0.168 ( 2244) | -0.198 ( 647) [ATR-cost 2025-26 -0.242] · win 29% · 505/yr
+    flag low near VWAP                                 -0.714 ( 1446) | -0.198 ( 1246) | -0.117 ( 306) [ATR-cost 2025-26 -0.175] · win 30% · 278/yr
+    researched tier (not inner)                        -0.460 ( 1019) | -0.179 (  984) | -0.138 ( 263) [ATR-cost 2025-26 -0.177] · win 29% · 210/yr
+    stop >= 10x cost                                   -0.212 (  103) | -0.061 (  399) | -0.011 ( 288) [ATR-cost 2025-26 -0.051] · win 32% · 73/yr
+    stop >= 20x cost                                   -0.300 (    7) | -0.060 (   46) | +0.239 (  62) [ATR-cost 2025-26 +0.214] · win 40% · 11/yr
+    pole >= 0.15 ATR                                   -0.328 (  659) | -0.111 (  557) | +0.018 ( 184) [ATR-cost 2025-26 -0.001] · win 28% · 130/yr
+    pole >= 0.25 ATR                                   -0.130 (  173) | +0.079 (  136) | +0.034 (  57) [ATR-cost 2025-26 +0.023] · win 32% · 34/yr
+    shallow pullback (<= 30 %)                         -0.594 ( 1225) | -0.178 (  922) | -0.114 ( 254) [ATR-cost 2025-26 -0.158] · win 26% · 222/yr
+    5m trend agrees (rising 5m EMA20)                  -0.562 ( 2300) | -0.156 ( 2046) | -0.165 ( 594) [ATR-cost 2025-26 -0.208] · win 29% · 457/yr
+      rule from 2021: beyond the 15m EMA20 + researched tier (not inner) + pole >= 0.25 ATR (train +0.003R)
+      rule from 2022: researched tier (not inner) + pole >= 0.25 ATR + 5m trend agrees (rising 5m EMA20) (train +0.004R)
+      rule from 2024: pole broke a level + 60-min move > 0.1 ATR + 60-min move > 0.3 ATR (train +0.060R)
+      rule from 2025: pole broke a level + 60-min move > 0.3 ATR + beyond the prior close (train +0.139R)
+      rule from 2026: researched tier (not inner) + pole >= 0.25 ATR + 5m trend agrees (rising 5m EMA20) (train +0.114R)
+    (1) WALK-FORWARD best rule (<= 3 traits)           +nan (    0) | +0.010 (   89) | -0.206 (  40) [ATR-cost 2025-26 -0.222] · win 29% · 12/yr
+      2026 trait weights (top 5): stop >= 20x cost +0.53 · stop >= 10x cost +0.50 · pole >= 0.25 ATR +0.42 · 60-min move > 0.3 ATR +0.35 · pole >= 0.15 ATR +0.26 · 
+    (2) grade A (top third of scores)                  -0.398 (  962) | -0.137 ( 1020) | -0.047 ( 358) [ATR-cost 2025-26 -0.083] · win 28% · 217/yr
+        grade B                                        -0.591 (  894) | -0.186 (  823) | -0.401 ( 171) [ATR-cost 2025-26 -0.441] · win 29% · 175/yr
+        grade C                                        -0.771 ( 1389) | -0.193 (  835) | -0.195 ( 269) [ATR-cost 2025-26 -0.251] · win 31% · 231/yr
+        top 10 % of scores                             -0.078 (  341) | -0.063 (  399) | -0.040 ( 191) [ATR-cost 2025-26 -0.067] · win 31% · 86/yr

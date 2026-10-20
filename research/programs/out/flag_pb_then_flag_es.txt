@@ -1,0 +1,70 @@
+Flags: pullback then flag — where the pole starts (fixed before the run) — ES, 3347 NY days, 10010 flags (3-5m, researched tier).
+Fixed cost 0.5 pts a round trip. Cells per period 2010-15 | 2016-20 | 2021-24 | 2025-26: avg R / win % / PF (trades). Twins = the same stop / target at a random minute in the hour after the flag (same day) and at the same clock time on a random other day.
+
+######## NY bull 3-5m
+    all                                            -0.21 28% 0.77 (1003) | -0.06 28% 0.93 (1029) | +0.17 29% 1.22 ( 873) | -0.03 30% 0.96 ( 291) | all -0.042R +0.2 pts · twins: same day -0.052, other day -0.168 · 190/yr
+    P0 first leg (pole starts at the low of day): yes +0.00 31% 1.00 ( 560) | +0.04 30% 1.05 ( 504) | +0.14 28% 1.17 ( 406) | +0.06 34% 1.09 ( 149) | all +0.054R +0.3 pts · twins: same day +0.059, other day -0.155 · 96/yr
+    P0 first leg (pole starts at the low of day): no -0.48 23% 0.50 ( 443) | -0.16 26% 0.82 ( 525) | +0.20 29% 1.25 ( 467) | -0.13 26% 0.84 ( 142) | all -0.140R +0.0 pts · twins: same day -0.165, other day -0.182 · 94/yr
+    P1 pullback then flag, shallow (< 38 %): yes   -0.20 33% 0.77 ( 145) | -0.40 24% 0.55 ( 200) | +0.15 27% 1.18 ( 143) | -0.39 17% 0.51 (  36) | all -0.197R -0.6 pts · twins: same day -0.161, other day -0.187 · 31/yr
+    P1 pullback then flag, shallow (< 38 %): no    -0.21 27% 0.77 ( 858) | +0.02 28% 1.03 ( 829) | +0.17 29% 1.22 ( 730) | +0.02 32% 1.03 ( 255) | all -0.011R +0.3 pts · twins: same day -0.030, other day -0.165 · 159/yr
+    P2 pullback then flag, medium (38-62 %): yes   -0.60 19% 0.41 ( 129) | -0.29 20% 0.70 ( 137) | +0.52 34% 1.70 ( 138) | -0.21 28% 0.74 (  29) | all -0.119R +0.0 pts · twins: same day -0.241, other day -0.142 · 26/yr
+    P2 pullback then flag, medium (38-62 %): no    -0.15 29% 0.83 ( 874) | -0.03 29% 0.97 ( 892) | +0.11 27% 1.13 ( 735) | -0.01 30% 0.98 ( 262) | all -0.030R +0.2 pts · twins: same day -0.022, other day -0.172 · 164/yr
+    P3 pullback then flag, deep (> 62 %): yes      -0.62 18% 0.38 ( 169) | +0.19 31% 1.23 ( 188) | +0.00 28% 1.00 ( 186) | +0.03 30% 1.04 (  77) | all -0.107R +0.5 pts · twins: same day -0.115, other day -0.206 · 37/yr
+    P3 pullback then flag, deep (> 62 %): no       -0.13 29% 0.86 ( 834) | -0.12 27% 0.86 ( 841) | +0.22 29% 1.28 ( 687) | -0.05 30% 0.93 ( 214) | all -0.026R +0.1 pts · twins: same day -0.036, other day -0.159 · 153/yr
+    T1 pole low touched VWAP: yes                  -0.18 27% 0.80 ( 815) | +0.04 29% 1.05 ( 790) | +0.17 29% 1.22 ( 690) | +0.03 31% 1.03 ( 245) | all +0.004R +0.3 pts · twins: same day -0.020, other day -0.169 · 151/yr
+    T1 pole low touched VWAP: no                   -0.35 29% 0.62 ( 188) | -0.40 23% 0.57 ( 239) | +0.17 28% 1.22 ( 183) | -0.33 22% 0.57 (  46) | all -0.219R -0.4 pts · twins: same day -0.173, other day -0.164 · 39/yr
+    T2 pole low touched EMA20: yes                 -0.22 27% 0.76 ( 812) | +0.01 28% 1.02 ( 772) | +0.17 29% 1.21 ( 635) | -0.04 30% 0.94 ( 242) | all -0.030R +0.3 pts · twins: same day -0.043, other day -0.170 · 146/yr
+    T2 pole low touched EMA20: no                  -0.16 31% 0.82 ( 191) | -0.28 26% 0.68 ( 257) | +0.18 27% 1.22 ( 238) | +0.03 31% 1.04 (  49) | all -0.081R -0.2 pts · twins: same day -0.081, other day -0.164 · 44/yr
+    N1 new pole made a new high of day: yes        -0.37 25% 0.61 ( 665) | -0.07 28% 0.92 ( 650) | +0.22 29% 1.28 ( 592) | -0.07 26% 0.91 ( 203) | all -0.082R +0.1 pts · twins: same day -0.101, other day -0.175 · 126/yr
+    N1 new pole made a new high of day: no         +0.11 33% 1.13 ( 338) | -0.05 28% 0.94 ( 379) | +0.06 27% 1.08 ( 281) | +0.06 39% 1.09 (  88) | all +0.036R +0.3 pts · twins: same day +0.045, other day -0.155 · 65/yr
+
+######## NY bull 3-5m, 1st pullback
+    all                                            -0.17 29% 0.81 ( 846) | +0.02 30% 1.02 ( 829) | +0.09 27% 1.12 ( 717) | -0.02 32% 0.97 ( 219) | all -0.023R +0.1 pts · twins: same day -0.034, other day -0.167 · 155/yr
+    P0 first leg (pole starts at the low of day): yes -0.03 30% 0.97 ( 532) | +0.08 30% 1.09 ( 472) | +0.07 27% 1.09 ( 374) | +0.07 34% 1.11 ( 134) | all +0.040R +0.2 pts · twins: same day +0.047, other day -0.159 · 90/yr
+    P0 first leg (pole starts at the low of day): no -0.41 25% 0.56 ( 314) | -0.05 29% 0.94 ( 357) | +0.12 27% 1.15 ( 343) | -0.16 27% 0.78 (  85) | all -0.109R +0.0 pts · twins: same day -0.144, other day -0.177 · 65/yr
+    P1 pullback then flag, shallow (< 38 %): yes   -0.16 37% 0.81 (  83) | -0.29 29% 0.65 ( 118) | -0.12 22% 0.86 ( 100) | -0.55 12% 0.31 (  25) | all -0.228R -0.9 pts · twins: same day -0.123, other day -0.171 · 19/yr
+    P1 pullback then flag, shallow (< 38 %): no    -0.17 28% 0.81 ( 763) | +0.07 30% 1.09 ( 711) | +0.13 28% 1.17 ( 617) | +0.05 34% 1.07 ( 194) | all +0.006R +0.3 pts · twins: same day -0.021, other day -0.166 · 136/yr
+    P2 pullback then flag, medium (38-62 %): yes   -0.42 24% 0.56 (  92) | -0.17 23% 0.81 (  99) | +0.34 31% 1.43 ( 100) | -0.06 33% 0.92 (  15) | all -0.075R +0.1 pts · twins: same day -0.269, other day -0.164 · 18/yr
+    P2 pullback then flag, medium (38-62 %): no    -0.14 29% 0.84 ( 754) | +0.05 31% 1.06 ( 730) | +0.06 27% 1.07 ( 617) | -0.02 31% 0.98 ( 204) | all -0.016R +0.1 pts · twins: same day -0.002, other day -0.167 · 137/yr
+    P3 pullback then flag, deep (> 62 %): yes      -0.54 19% 0.44 ( 139) | +0.23 34% 1.30 ( 140) | +0.13 29% 1.17 ( 143) | +0.01 33% 1.02 (  45) | all -0.049R +0.6 pts · twins: same day -0.077, other day -0.191 · 28/yr
+    P3 pullback then flag, deep (> 62 %): no       -0.09 30% 0.89 ( 707) | -0.02 29% 0.97 ( 689) | +0.09 27% 1.11 ( 574) | -0.03 31% 0.96 ( 174) | all -0.017R +0.0 pts · twins: same day -0.024, other day -0.162 · 128/yr
+    T1 pole low touched VWAP: yes                  -0.14 28% 0.84 ( 728) | +0.08 30% 1.10 ( 684) | +0.13 28% 1.17 ( 588) | +0.06 34% 1.08 ( 190) | all +0.020R +0.3 pts · twins: same day -0.007, other day -0.167 · 130/yr
+    T1 pole low touched VWAP: no                   -0.34 32% 0.62 ( 118) | -0.27 28% 0.68 ( 145) | -0.07 23% 0.91 ( 129) | -0.52 17% 0.32 (  29) | all -0.247R -0.7 pts · twins: same day -0.172, other day -0.165 · 25/yr
+    T2 pole low touched EMA20: yes                 -0.16 28% 0.82 ( 701) | +0.08 30% 1.10 ( 643) | +0.21 29% 1.27 ( 525) | -0.04 31% 0.95 ( 178) | all +0.021R +0.3 pts · twins: same day -0.016, other day -0.172 · 122/yr
+    T2 pole low touched EMA20: no                  -0.19 32% 0.78 ( 145) | -0.19 28% 0.77 ( 186) | -0.21 22% 0.75 ( 192) | +0.06 32% 1.09 (  41) | all -0.182R -0.7 pts · twins: same day -0.098, other day -0.149 · 34/yr
+    N1 new pole made a new high of day: yes        -0.32 26% 0.66 ( 531) | -0.00 30% 1.00 ( 506) | +0.14 27% 1.17 ( 482) | -0.06 27% 0.92 ( 147) | all -0.068R +0.1 pts · twins: same day -0.077, other day -0.170 · 99/yr
+    N1 new pole made a new high of day: no         +0.09 32% 1.10 ( 315) | +0.06 30% 1.07 ( 323) | +0.01 27% 1.02 ( 235) | +0.07 40% 1.11 (  72) | all +0.057R +0.2 pts · twins: same day +0.043, other day -0.162 · 56/yr
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x)
+    all                                            -0.19 32% 0.77 (  75) | +0.25 38% 1.34 ( 100) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.016R -0.4 pts · twins: same day +0.040, other day -0.176 · 18/yr
+    P0 first leg (pole starts at the low of day): yes -0.25 31% 0.71 (  51) | +0.14 38% 1.19 (  60) | -0.16 26% 0.80 (  68) | -0.49 25% 0.35 (  16) | all -0.116R -0.9 pts · twins: same day -0.074, other day -0.210 · 12/yr
+    P0 first leg (pole starts at the low of day): no -0.07 33% 0.91 (  24) | +0.40 38% 1.58 (  40) | +0.33 29% 1.41 (  35) | +0.24 29% 1.30 (   7) | all +0.260R +0.3 pts · twins: same day +0.250, other day -0.113 · 6/yr
+    P1 pullback then flag, shallow (< 38 %): yes   +0.07 67% 1.14 (   6) | +0.29 44% 1.51 (   9) | +0.10 21% 1.11 (  14) |   —          (  2) | all +0.067R +0.3 pts · twins: same day +0.260, other day +0.008 · 2/yr
+    P1 pullback then flag, shallow (< 38 %): no    -0.21 29% 0.75 (  69) | +0.24 37% 1.33 (  91) | -0.01 28% 0.99 (  89) | -0.19 29% 0.74 (  21) | all +0.010R -0.5 pts · twins: same day +0.015, other day -0.197 · 16/yr
+    P2 pullback then flag, medium (38-62 %): yes   -0.87 22% 0.18 (   9) | +0.08 25% 1.11 (  12) | +1.53 50% 3.77 (  10) |   —          (  1) | all +0.480R +1.3 pts · twins: same day +0.363, other day -0.072 · 2/yr
+    P2 pullback then flag, medium (38-62 %): no    -0.10 33% 0.88 (  66) | +0.27 40% 1.38 (  88) | -0.16 25% 0.81 (  93) | -0.60 23% 0.25 (  22) | all -0.039R -0.7 pts · twins: same day +0.002, other day -0.188 · 16/yr
+    P3 pullback then flag, deep (> 62 %): yes      +0.64 22% 1.97 (   9) | +0.65 42% 1.93 (  19) | -0.46 18% 0.49 (  11) |   —          (  4) | all +0.234R -0.4 pts · twins: same day +0.158, other day -0.233 · 3/yr
+    P3 pullback then flag, deep (> 62 %): no       -0.30 33% 0.64 (  66) | +0.15 37% 1.21 (  81) | +0.06 28% 1.08 (  92) | -0.17 26% 0.78 (  19) | all -0.020R -0.5 pts · twins: same day +0.020, other day -0.167 · 15/yr
+    T1 pole low touched VWAP: yes                  -0.23 27% 0.74 (  66) | +0.29 39% 1.41 (  88) | -0.06 28% 0.92 (  86) | -0.23 27% 0.69 (  22) | all +0.001R -0.5 pts · twins: same day -0.009, other day -0.172 · 16/yr
+    T1 pole low touched VWAP: no                   +0.09 67% 1.20 (   9) | -0.09 33% 0.88 (  12) | +0.35 24% 1.40 (  17) |   —          (  1) | all +0.120R -0.0 pts · twins: same day +0.372, other day -0.204 · 2/yr
+    T2 pole low touched EMA20: yes                 -0.11 30% 0.86 (  54) | +0.21 36% 1.28 (  74) | +0.07 28% 1.09 (  65) | -0.63 21% 0.21 (  19) | all +0.008R -0.5 pts · twins: same day +0.022, other day -0.145 · 13/yr
+    T2 pole low touched EMA20: no                  -0.39 38% 0.53 (  21) | +0.35 42% 1.56 (  26) | -0.09 26% 0.89 (  38) |   —          (  4) | all +0.036R -0.4 pts · twins: same day +0.084, other day -0.251 · 5/yr
+    N1 new pole made a new high of day: yes        -0.33 26% 0.61 (  46) | +0.47 45% 1.77 (  62) | +0.11 25% 1.14 (  53) | -0.07 29% 0.91 (  14) | all +0.108R -0.3 pts · twins: same day +0.178, other day -0.159 · 10/yr
+    N1 new pole made a new high of day: no         +0.04 41% 1.05 (  29) | -0.13 26% 0.86 (  38) | -0.10 30% 0.87 (  50) | -0.58 22% 0.21 (   9) | all -0.112R -0.7 pts · twins: same day -0.152, other day -0.200 · 8/yr
+
+######## NY bear 3-5m
+    all                                            -0.23 21% 0.76 (1040) | -0.14 21% 0.85 ( 918) | -0.14 22% 0.84 ( 761) | -0.26 19% 0.70 ( 240) | all -0.180R -0.5 pts · twins: same day -0.165, other day -0.186 · 176/yr
+    P0 first leg (pole starts at the low of day): yes -0.22 20% 0.78 ( 485) | -0.25 20% 0.74 ( 396) | -0.00 25% 1.00 ( 304) | -0.17 23% 0.79 (  93) | all -0.172R -0.4 pts · twins: same day -0.127, other day -0.174 · 76/yr
+    P0 first leg (pole starts at the low of day): no -0.24 23% 0.75 ( 555) | -0.06 21% 0.94 ( 522) | -0.23 21% 0.74 ( 457) | -0.31 17% 0.64 ( 147) | all -0.186R -0.6 pts · twins: same day -0.194, other day -0.195 · 100/yr
+    P1 pullback then flag, shallow (< 38 %): yes   -0.29 23% 0.70 ( 145) | +0.12 21% 1.14 ( 141) | -0.59 13% 0.37 ( 146) | +0.02 26% 1.02 (  43) | all -0.231R -1.1 pts · twins: same day -0.232, other day -0.250 · 28/yr
+    P1 pullback then flag, shallow (< 38 %): no    -0.22 21% 0.77 ( 895) | -0.19 21% 0.80 ( 777) | -0.03 25% 0.96 ( 615) | -0.32 18% 0.64 ( 197) | all -0.170R -0.4 pts · twins: same day -0.152, other day -0.174 · 148/yr
+    P2 pullback then flag, medium (38-62 %): yes   -0.40 17% 0.62 ( 182) | -0.03 21% 0.96 ( 201) | -0.32 21% 0.62 ( 142) | -0.37 15% 0.59 (  55) | all -0.251R -1.0 pts · twins: same day -0.194, other day -0.141 · 35/yr
+    P2 pullback then flag, medium (38-62 %): no    -0.19 22% 0.80 ( 858) | -0.17 21% 0.82 ( 717) | -0.09 23% 0.89 ( 619) | -0.23 21% 0.73 ( 185) | all -0.163R -0.4 pts · twins: same day -0.158, other day -0.197 · 142/yr
+    P3 pullback then flag, deep (> 62 %): yes      -0.08 26% 0.91 ( 228) | -0.23 22% 0.76 ( 180) | +0.17 27% 1.21 ( 169) | -0.54 12% 0.43 (  49) | all -0.092R +0.1 pts · twins: same day -0.167, other day -0.203 · 37/yr
+    P3 pullback then flag, deep (> 62 %): no       -0.27 20% 0.72 ( 812) | -0.12 20% 0.87 ( 738) | -0.22 21% 0.74 ( 592) | -0.19 21% 0.78 ( 191) | all -0.204R -0.7 pts · twins: same day -0.165, other day -0.181 · 139/yr
+    T1 pole low touched VWAP: yes                  -0.17 22% 0.82 ( 840) | -0.13 22% 0.85 ( 697) | -0.01 25% 0.99 ( 558) | -0.29 19% 0.66 ( 177) | all -0.128R -0.2 pts · twins: same day -0.130, other day -0.184 · 135/yr
+    T1 pole low touched VWAP: no                   -0.49 18% 0.52 ( 200) | -0.16 17% 0.83 ( 221) | -0.48 15% 0.47 ( 203) | -0.17 21% 0.80 (  63) | all -0.352R -1.5 pts · twins: same day -0.280, other day -0.194 · 41/yr
+    T2 pole low touched EMA20: yes                 -0.25 21% 0.74 ( 879) | -0.15 21% 0.84 ( 756) | -0.13 22% 0.84 ( 618) | -0.26 20% 0.70 ( 184) | all -0.190R -0.5 pts · twins: same day -0.169, other day -0.177 · 145/yr
+    T2 pole low touched EMA20: no                  -0.10 23% 0.90 ( 161) | -0.11 20% 0.88 ( 162) | -0.16 22% 0.81 ( 143) | -0.25 18% 0.70 (  56) | all -0.133R -0.7 pts · twins: same day -0.147, other day -0.227 · 31/yr
+    N1 new pole made a new high of day: yes        -0.26 21% 0.74 ( 776) | -0.14 20% 0.85 ( 682) | -0.20 21% 0.76 ( 578) | -0.17 20% 0.80 ( 177) | all -0.202R -0.6 pts · twins: same day -0.198, other day -0.197 · 132/yr
+    N1 new pole made a new high of day: no         -0.14 22% 0.85 ( 264) | -0.13 23% 0.86 ( 236) | +0.07 26% 1.09 ( 183) | -0.50 16% 0.44 (  63) | all -0.116R -0.3 pts · twins: same day -0.067, other day -0.154 · 44/yr

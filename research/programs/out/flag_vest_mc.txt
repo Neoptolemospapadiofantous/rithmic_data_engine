@@ -1,0 +1,31 @@
+Book + TAKE on a Vest $5k account — started on the first trading day of each month 2016-01 … 2026-09. Since 2016: book F 3197 trades, book first-trade 2068, TAKE 235 (+60-min filter 225).
+Overlap: 235 TAKE trades, 235 on a book-F day (100%), 235 of those with a book trade in the same direction.
+Daily R correlation, book F vs TAKE (all days 2016-26): +0.215
+
+R a year (trades):
+  book F                             16  -1.4R(315) 17 +20.8R(304) 18 +35.1R(319) 19 +30.1R(322) 20 +33.8R(290) 21 +97.0R(308) 22 +47.2R(334) 23 +22.7R(305) 24 +96.6R(303) 25 +27.9R(321) 26 +10.5R( 76)
+  book first trade                   16  -4.9R(205) 17  +5.8R(196) 18 +23.6R(206) 19 +17.0R(202) 20  +6.2R(200) 21 +51.7R(198) 22 +20.8R(212) 23  +7.1R(200) 24 +60.9R(201) 25  +7.1R(199) 26  +7.4R( 49)
+  TAKE                               16 +43.2R( 26) 17 +10.2R( 18) 18 +54.0R( 31) 19  +8.8R( 30) 20 +58.6R( 23) 21 +14.3R( 27) 22 +18.4R( 18) 23 +31.2R( 21) 24 +28.4R( 24) 25  +3.4R( 17) 26  +0.0R(  0)
+  TAKE + 60-min filter               16 +43.2R( 26) 17 +10.2R( 18) 18 +56.2R( 29) 19 +10.9R( 28) 20 +59.7R( 22) 21 +13.7R( 25) 22 +18.4R( 18) 23 +32.3R( 20) 24 +26.9R( 23) 25  +4.5R( 16) 26  +0.0R(  0)
+  book F + TAKE                      16 +41.8R(341) 17 +31.1R(322) 18 +89.1R(350) 19 +38.9R(352) 20 +92.4R(313) 21 +111.3R(335) 22 +65.6R(352) 23 +53.9R(326) 24 +125.0R(327) 25 +31.2R(338) 26 +10.5R( 76)
+  book first + TAKE                  16 +38.3R(231) 17 +16.0R(214) 18 +77.5R(237) 19 +25.8R(232) 20 +64.8R(223) 21 +66.0R(225) 22 +39.2R(230) 23 +38.4R(221) 24 +89.3R(225) 25 +10.4R(216) 26  +7.4R( 49)
+
+Monte Carlo, 20,000 evaluations per case (5-day blocks of real trading days, ≤ 250 days):
+ -- days drawn from 2016 on
+  PLAN: book first $30 + TAKE $40, max 2, first-win stop pass 80.3% · fail 17.4% · unresolved  2.3% · passed by 20/40/60/120 days  7/21/35/65% · median  67 days (p25 39, p75 107)
+    same, TAKE R halved                                pass 79.2% · fail 15.3% · unresolved  5.5% · passed by 20/40/60/120 days  2/11/23/56% · median  87 days (p25 55, p75 131)
+  baseline: book first $50 + TAKE $50, no cap, no stop pass 67.7% · fail 32.2% · unresolved  0.0% · passed by 20/40/60/120 days 22/43/55/66% · median  31 days (p25 17, p75 52)
+    same, TAKE R halved                                pass 70.2% · fail 29.7% · unresolved  0.1% · passed by 20/40/60/120 days 14/36/50/66% · median  39 days (p25 23, p75 65)
+  book F $30 + TAKE $40, 1 open, first-win stop        pass 66.7% · fail 21.0% · unresolved 12.2% · passed by 20/40/60/120 days  0/ 4/12/38% · median 108 days (p25 71, p75 158)
+    same, TAKE R halved                                pass 66.7% · fail 20.9% · unresolved 12.4% · passed by 20/40/60/120 days  0/ 4/12/38% · median 109 days (p25 71, p75 159)
+  book first trade alone $30                           pass 68.2% · fail 18.6% · unresolved 13.2% · passed by 20/40/60/120 days  0/ 4/11/38% · median 110 days (p25 73, p75 160)
+  TAKE alone $40                                       pass 74.2% · fail 12.4% · unresolved 13.5% · passed by 20/40/60/120 days  6/15/24/48% · median  91 days (p25 48, p75 147)
+ -- days drawn from 2022 on
+  PLAN: book first $30 + TAKE $40, max 2, first-win stop pass 87.0% · fail 10.1% · unresolved  2.9% · passed by 20/40/60/120 days  6/19/35/67% · median  73 days (p25 44, p75 115)
+    same, TAKE R halved                                pass 86.5% · fail  8.2% · unresolved  5.3% · passed by 20/40/60/120 days  1/ 9/23/59% · median  91 days (p25 59, p75 135)
+  baseline: book first $50 + TAKE $50, no cap, no stop pass 75.2% · fail 24.7% · unresolved  0.1% · passed by 20/40/60/120 days 18/41/55/72% · median  37 days (p25 21, p75 62)
+    same, TAKE R halved                                pass 78.3% · fail 21.5% · unresolved  0.3% · passed by 20/40/60/120 days 12/34/51/73% · median  46 days (p25 27, p75 73)
+  book F $30 + TAKE $40, 1 open, first-win stop        pass 82.8% · fail  8.2% · unresolved  9.0% · passed by 20/40/60/120 days  0/ 4/14/49% · median 105 days (p25 71, p75 151)
+    same, TAKE R halved                                pass 82.2% · fail  8.4% · unresolved  9.5% · passed by 20/40/60/120 days  0/ 4/13/48% · median 106 days (p25 72, p75 152)
+  book first trade alone $30                           pass 78.5% · fail  8.9% · unresolved 12.6% · passed by 20/40/60/120 days  0/ 3/11/43% · median 113 days (p25 76, p75 160)
+  TAKE alone $40                                       pass 65.7% · fail 11.9% · unresolved 22.4% · passed by 20/40/60/120 days  5/11/18/38% · median 105 days (p25 56, p75 162)

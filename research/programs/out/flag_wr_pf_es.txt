@@ -1,0 +1,104 @@
+Flags: three rules for win rate / PF, written before the run — ES, 3347 NY days, 10010 flags (3-5m, researched tier).
+Fixed cost 0.5 pts a round trip. Cells per period 2010-15 | 2016-20 | 2021-24 | 2025-26: avg R / win % / PF (trades). Twins = the same stop / target at a random minute in the hour after the flag (same day) and at the same clock time on a random other day.
+
+######## NY bull 3-5m
+  baseline
+    page entry (all)                               -0.21 28% 0.77 (1003) | -0.06 28% 0.93 (1029) | +0.17 29% 1.22 ( 873) | -0.03 30% 0.96 ( 291) | all -0.042R +0.2 pts · twins: same day -0.018, other day -0.172 · 190/yr
+  T1 retest entry (limit at the pole top after the break)
+    retest N=5                                     -0.19 31% 0.76 ( 521) | -0.04 33% 0.95 ( 556) | +0.02 33% 1.04 ( 526) | -0.17 29% 0.75 ( 201) | all -0.080R -0.0 pts · twins: same day +0.116, other day -0.122 · 107/yr
+    retest N=15 (pre-registered)                   -0.23 31% 0.72 ( 577) | -0.10 32% 0.87 ( 609) | +0.02 33% 1.03 ( 565) | -0.15 32% 0.78 ( 206) | all -0.109R -0.0 pts · twins: same day +0.094, other day -0.094 · 116/yr
+    retest N=30                                    -0.23 31% 0.71 ( 601) | -0.11 31% 0.85 ( 643) | +0.04 34% 1.06 ( 573) | -0.15 32% 0.78 ( 206) | all -0.107R -0.1 pts · twins: same day +0.062, other day -0.097 · 120/yr
+  T2 day type at 10:00 (flags registered from 10:00)
+    from 10:00, all                                -0.24 27% 0.74 ( 987) | -0.07 27% 0.92 (1004) | +0.18 29% 1.23 ( 868) | -0.04 30% 0.94 ( 287) | all -0.050R +0.1 pts · twins: same day -0.022, other day -0.175 · 187/yr
+    straight path with it                          -0.16 29% 0.82 ( 465) | -0.09 26% 0.89 ( 514) | +0.21 31% 1.28 ( 474) | -0.00 32% 0.99 ( 175) | all -0.016R +0.6 pts · twins: same day +0.045, other day -0.165 · 97/yr
+    no straight path with it                       -0.30 26% 0.68 ( 522) | -0.04 28% 0.95 ( 490) | +0.14 25% 1.17 ( 394) | -0.10 26% 0.87 ( 112) | all -0.086R -0.4 pts · twins: same day -0.094, other day -0.186 · 90/yr
+    straight path + gap with it                    -0.11 32% 0.87 ( 267) | -0.25 24% 0.73 ( 295) | +0.43 38% 1.64 ( 242) | +0.02 32% 1.02 (  92) | all +0.003R +0.3 pts · twins: same day +0.011, other day -0.186 · 53/yr
+  T3 fixed score: 60-min move with it + 1st pullback + broke a level (equal weights)
+    score 3                                        -0.15 29% 0.83 ( 803) | +0.05 30% 1.06 ( 782) | +0.10 27% 1.12 ( 674) | -0.01 33% 0.99 ( 203) | all -0.008R +0.2 pts · twins: same day +0.011, other day -0.167 · 147/yr
+    score 2                                        -0.41 22% 0.59 ( 168) | -0.24 23% 0.74 ( 190) | +0.37 33% 1.50 ( 159) | -0.21 22% 0.74 (  74) | all -0.121R +0.3 pts · twins: same day -0.105, other day -0.167 · 35/yr
+    score 0-1                                      -0.67 16% 0.37 (  32) | -0.95 12% 0.16 (  57) | +0.62 35% 1.85 (  40) | +0.60 36% 1.82 (  14) | all -0.296R -0.5 pts · twins: same day -0.151, other day -0.271 · 9/yr
+  T3 with order flow (flow days 2023-03+): + sellers in the flag
+    flow days, all                                 (3 trades)
+    score 4                                        (2 trades)
+    score 3                                        (1 trades)
+    score 0-2                                      (0 trades)
+  ALL three together
+    retest N=15 + straight path + score 3          -0.25 32% 0.68 ( 197) | -0.11 29% 0.86 ( 207) | +0.15 38% 1.23 ( 234) | -0.18 31% 0.74 (  85) | all -0.072R +0.2 pts · twins: same day +0.139, other day -0.047 · 43/yr
+    page entry + straight path + score 3           -0.13 30% 0.85 ( 376) | -0.01 28% 0.99 ( 381) | +0.18 31% 1.24 ( 363) | +0.06 35% 1.09 ( 113) | all +0.017R +0.6 pts · twins: same day +0.052, other day -0.166 · 73/yr
+
+######## NY bull 3-5m, 1st pullback
+  baseline
+    page entry (all)                               -0.17 29% 0.81 ( 846) | +0.02 30% 1.02 ( 829) | +0.09 27% 1.12 ( 717) | -0.02 32% 0.97 ( 219) | all -0.023R +0.1 pts · twins: same day -0.014, other day -0.174 · 155/yr
+  T1 retest entry (limit at the pole top after the break)
+    retest N=5                                     -0.14 32% 0.82 ( 410) | -0.04 33% 0.95 ( 399) | -0.03 31% 0.95 ( 425) | -0.19 29% 0.73 ( 148) | all -0.084R -0.2 pts · twins: same day +0.096, other day -0.131 · 82/yr
+    retest N=15 (pre-registered)                   -0.19 32% 0.76 ( 466) | -0.07 32% 0.90 ( 464) | -0.06 31% 0.92 ( 471) | -0.19 31% 0.72 ( 159) | all -0.115R -0.3 pts · twins: same day +0.074, other day -0.083 · 93/yr
+    retest N=30                                    -0.19 33% 0.75 ( 493) | -0.07 32% 0.90 ( 494) | -0.05 31% 0.94 ( 480) | -0.19 31% 0.72 ( 159) | all -0.114R -0.3 pts · twins: same day +0.044, other day -0.087 · 97/yr
+  T2 day type at 10:00 (flags registered from 10:00)
+    from 10:00, all                                -0.20 28% 0.78 ( 830) | +0.02 29% 1.02 ( 804) | +0.10 27% 1.13 ( 712) | -0.03 31% 0.96 ( 215) | all -0.033R +0.1 pts · twins: same day -0.019, other day -0.178 · 152/yr
+    straight path with it                          -0.12 30% 0.86 ( 393) | -0.01 28% 0.99 ( 396) | +0.18 31% 1.23 ( 379) | +0.02 34% 1.03 ( 119) | all +0.014R +0.6 pts · twins: same day +0.049, other day -0.170 · 77/yr
+    no straight path with it                       -0.26 27% 0.71 ( 437) | +0.04 30% 1.04 ( 408) | +0.02 23% 1.02 ( 333) | -0.09 27% 0.88 (  96) | all -0.081R -0.4 pts · twins: same day -0.088, other day -0.186 · 76/yr
+    straight path + gap with it                    -0.08 32% 0.90 ( 223) | -0.15 26% 0.82 ( 226) | +0.31 37% 1.46 ( 204) | +0.02 33% 1.02 (  69) | all +0.017R +0.3 pts · twins: same day +0.006, other day -0.172 · 43/yr
+  T3 fixed score: 60-min move with it + 1st pullback + broke a level (equal weights)
+    score 3                                        -0.15 29% 0.83 ( 803) | +0.05 30% 1.06 ( 782) | +0.10 27% 1.12 ( 674) | -0.01 33% 0.99 ( 203) | all -0.008R +0.2 pts · twins: same day +0.011, other day -0.167 · 147/yr
+    score 2                                        -0.50 19% 0.51 (  43) | -0.46 26% 0.52 (  46) | +0.06 28% 1.08 (  43) | -0.07 20% 0.91 (  15) | all -0.277R -0.6 pts · twins: same day -0.419, other day -0.285 · 9/yr
+    score 0-1                                      (2 trades)
+  T3 with order flow (flow days 2023-03+): + sellers in the flag
+    flow days, all                                 (3 trades)
+    score 4                                        (2 trades)
+    score 3                                        (1 trades)
+    score 0-2                                      (0 trades)
+  ALL three together
+    retest N=15 + straight path + score 3          -0.25 32% 0.68 ( 197) | -0.11 29% 0.86 ( 207) | +0.15 38% 1.23 ( 234) | -0.18 31% 0.74 (  85) | all -0.072R +0.2 pts · twins: same day +0.139, other day -0.047 · 43/yr
+    page entry + straight path + score 3           -0.13 30% 0.85 ( 376) | -0.01 28% 0.99 ( 381) | +0.18 31% 1.24 ( 363) | +0.06 35% 1.09 ( 113) | all +0.017R +0.6 pts · twins: same day +0.052, other day -0.166 · 73/yr
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x)
+  baseline
+    page entry (all)                               -0.19 32% 0.77 (  75) | +0.25 38% 1.34 ( 100) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.016R -0.4 pts · twins: same day -0.014, other day -0.125 · 18/yr
+  T1 retest entry (limit at the pole top after the break)
+    retest N=5                                     +0.09 39% 1.14 (  41) | -0.12 33% 0.83 (  39) | -0.30 28% 0.59 (  47) | -0.60 15% 0.22 (  13) | all -0.164R -1.9 pts · twins: same day +0.029, other day -0.158 · 8/yr
+    retest N=15 (pre-registered)                   +0.00 36% 1.00 (  44) | +0.08 43% 1.13 (  49) | -0.33 27% 0.56 (  56) | -0.55 24% 0.22 (  17) | all -0.146R -1.6 pts · twins: same day +0.057, other day +0.011 · 10/yr
+    retest N=30                                    -0.01 37% 0.99 (  46) | +0.13 45% 1.23 (  55) | -0.28 27% 0.63 (  59) | -0.55 24% 0.22 (  17) | all -0.106R -1.4 pts · twins: same day +0.038, other day -0.110 · 11/yr
+  T2 day type at 10:00 (flags registered from 10:00)
+    from 10:00, all                                -0.19 32% 0.77 (  75) | +0.25 38% 1.34 ( 100) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.016R -0.4 pts · twins: same day -0.014, other day -0.125 · 18/yr
+    straight path with it                          -0.13 41% 0.82 (  39) | +0.01 29% 1.01 (  51) | +0.00 31% 1.00 (  67) | -0.24 17% 0.74 (  12) | all -0.044R -0.7 pts · twins: same day -0.138, other day -0.095 · 10/yr
+    no straight path with it                       -0.25 22% 0.72 (  36) | +0.49 47% 1.84 (  49) | +0.02 19% 1.03 (  36) | -0.31 36% 0.49 (  11) | all +0.093R -0.2 pts · twins: same day +0.144, other day -0.163 · 8/yr
+    straight path + gap with it                    -0.13 41% 0.82 (  39) | +0.01 29% 1.01 (  51) | +0.00 31% 1.00 (  67) | -0.24 17% 0.74 (  12) | all -0.044R -0.7 pts · twins: same day -0.138, other day -0.095 · 10/yr
+  T3 fixed score: 60-min move with it + 1st pullback + broke a level (equal weights)
+    score 3                                        -0.16 33% 0.80 (  73) | +0.28 39% 1.39 (  98) | -0.03 26% 0.97 ( 102) | -0.23 27% 0.69 (  22) | all +0.026R -0.5 pts · twins: same day -0.006, other day -0.132 · 18/yr
+    score 2                                        (6 trades)
+    score 0-1                                      (0 trades)
+  T3 with order flow (flow days 2023-03+): + sellers in the flag
+    flow days, all                                 (0 trades)
+    score 4                                        (0 trades)
+    score 3                                        (0 trades)
+    score 0-2                                      (0 trades)
+  ALL three together
+    retest N=15 + straight path + score 3          +0.15 53% 1.29 (  19) | -0.42 29% 0.49 (  28) | -0.27 29% 0.63 (  35) | -0.78 12% 0.16 (   8) | all -0.274R -3.0 pts · twins: same day -0.092, other day +0.016 · 5/yr
+    page entry + straight path + score 3           -0.10 42% 0.86 (  38) | +0.03 30% 1.04 (  50) | -0.05 30% 0.93 (  66) | -0.16 18% 0.82 (  11) | all -0.046R -0.7 pts · twins: same day -0.143, other day -0.104 · 10/yr
+
+######## NY bear 3-5m
+  baseline
+    page entry (all)                               -0.23 21% 0.76 (1040) | -0.14 21% 0.85 ( 918) | -0.14 22% 0.84 ( 761) | -0.26 19% 0.70 ( 240) | all -0.180R -0.5 pts · twins: same day -0.171, other day -0.205 · 176/yr
+  T1 retest entry (limit at the pole top after the break)
+    retest N=5                                     -0.21 27% 0.75 ( 587) | -0.15 27% 0.81 ( 501) | -0.07 28% 0.91 ( 502) | -0.05 28% 0.93 ( 144) | all -0.137R -0.7 pts · twins: same day +0.004, other day -0.158 · 103/yr
+    retest N=15 (pre-registered)                   -0.17 27% 0.79 ( 630) | -0.20 26% 0.76 ( 544) | -0.08 28% 0.89 ( 517) | +0.03 30% 1.04 ( 146) | all -0.138R -0.7 pts · twins: same day +0.001, other day -0.148 · 109/yr
+    retest N=30                                    -0.17 27% 0.79 ( 658) | -0.21 25% 0.74 ( 558) | -0.08 28% 0.89 ( 528) | +0.05 32% 1.07 ( 155) | all -0.140R -0.6 pts · twins: same day -0.027, other day -0.148 · 113/yr
+  T2 day type at 10:00 (flags registered from 10:00)
+    from 10:00, all                                -0.22 21% 0.77 (1027) | -0.15 20% 0.83 ( 907) | -0.13 23% 0.85 ( 754) | -0.27 19% 0.69 ( 239) | all -0.181R -0.5 pts · twins: same day -0.171, other day -0.205 · 174/yr
+    straight path with it                          -0.20 21% 0.79 ( 428) | -0.31 19% 0.68 ( 412) | -0.03 23% 0.96 ( 306) | -0.53 14% 0.42 ( 143) | all -0.230R -1.0 pts · twins: same day -0.159, other day -0.169 · 77/yr
+    no straight path with it                       -0.24 21% 0.75 ( 599) | -0.03 21% 0.97 ( 495) | -0.19 23% 0.77 ( 448) | +0.12 26% 1.15 (  96) | all -0.142R -0.1 pts · twins: same day -0.181, other day -0.234 · 98/yr
+    straight path + gap with it                    -0.30 23% 0.67 ( 185) | -0.31 19% 0.67 ( 166) | +0.07 22% 1.08 ( 132) | -0.04 25% 0.95 (  51) | all -0.188R -0.2 pts · twins: same day -0.038, other day -0.154 · 32/yr
+  T3 fixed score: 60-min move with it + 1st pullback + broke a level (equal weights)
+    score 3                                        -0.19 21% 0.80 ( 807) | -0.23 20% 0.76 ( 675) | -0.17 21% 0.80 ( 548) | -0.29 20% 0.67 ( 178) | all -0.204R -0.6 pts · twins: same day -0.204, other day -0.215 · 131/yr
+    score 2                                        -0.40 20% 0.60 ( 185) | +0.10 21% 1.11 ( 193) | -0.17 21% 0.80 ( 176) | -0.11 18% 0.87 (  55) | all -0.148R -0.4 pts · twins: same day -0.100, other day -0.181 · 36/yr
+    score 0-1                                      -0.19 29% 0.78 (  48) | +0.10 24% 1.12 (  50) | +0.46 46% 1.78 (  37) | -0.76 14% 0.15 (   7) | all +0.052R -0.1 pts · twins: same day +0.040, other day -0.162 · 8/yr
+  T3 with order flow (flow days 2023-03+): + sellers in the flag
+    flow days, all                                 (6 trades)
+    score 4                                        (0 trades)
+    score 3                                        (5 trades)
+    score 0-2                                      (1 trades)
+  ALL three together
+    retest N=15 + straight path + score 3          -0.45 19% 0.48 ( 172) | -0.26 27% 0.68 ( 142) | +0.04 28% 1.05 ( 139) | -0.32 23% 0.60 (  52) | all -0.249R -1.0 pts · twins: same day +0.030, other day -0.086 · 30/yr
+    page entry + straight path + score 3           -0.25 19% 0.73 ( 319) | -0.37 20% 0.61 ( 290) | -0.00 23% 0.99 ( 226) | -0.57 14% 0.37 ( 104) | all -0.266R -1.1 pts · twins: same day -0.167, other day -0.177 · 56/yr
+
+Retest fill rate (flags whose pole top broke that then traded back through it):  retest N=5 59%  retest N=15 (pre-registered) 63%  retest N=30 66%  (one position at a time per chart, so fills / breaks is approximate)

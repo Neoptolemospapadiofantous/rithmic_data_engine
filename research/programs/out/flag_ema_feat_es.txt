@@ -1,0 +1,78 @@
+Flags × EMA features (fixed before the run) — ES, 3347 NY days, 10010 flags (3-5m, researched tier).
+Fixed cost 0.5 pts a round trip. Cells per period 2010-15 | 2016-20 | 2021-24 | 2025-26: avg R / win % / PF (trades). Twins = the same stop / target at a random minute in the hour after the flag (same day) and at the same clock time on a random other day.
+
+######## NY bull 3-5m
+    all                                            -0.21 28% 0.77 (1003) | -0.06 28% 0.93 (1029) | +0.17 29% 1.22 ( 873) | -0.03 30% 0.96 ( 291) | all -0.042R +0.2 pts · twins: same day -0.052, other day -0.168 · 190/yr
+    E1 close > EMA20: yes                          -0.21 28% 0.77 (1003) | -0.06 28% 0.93 (1027) | +0.17 29% 1.22 ( 872) | -0.03 30% 0.96 ( 290) | all -0.040R +0.2 pts · twins: same day -0.051, other day -0.169 · 190/yr
+    E1 close > EMA20: no                           (4 trades)
+    E2 close > EMA9: yes                           -0.21 28% 0.77 ( 948) | -0.08 28% 0.90 ( 950) | +0.16 28% 1.20 ( 788) | -0.07 29% 0.91 ( 275) | all -0.059R +0.1 pts · twins: same day -0.056, other day -0.162 · 176/yr
+    E2 close > EMA9: no                            -0.20 24% 0.80 (  55) | +0.21 28% 1.24 (  79) | +0.31 34% 1.42 (  85) | +0.55 44% 1.90 (  16) | all +0.175R +1.3 pts · twins: same day +0.000, other day -0.248 · 14/yr
+    E3 EMA9 > EMA20 (stacked): yes                 -0.21 28% 0.77 (1003) | -0.06 28% 0.93 (1026) | +0.17 29% 1.22 ( 873) | -0.03 30% 0.96 ( 291) | all -0.041R +0.2 pts · twins: same day -0.051, other day -0.169 · 190/yr
+    E3 EMA9 > EMA20 (stacked): no                  (3 trades)
+    E4 EMA20 rising (5 bars): yes                  -0.21 28% 0.77 (1003) | -0.06 28% 0.93 (1027) | +0.17 29% 1.22 ( 873) | -0.03 30% 0.96 ( 291) | all -0.041R +0.2 pts · twins: same day -0.051, other day -0.169 · 190/yr
+    E4 EMA20 rising (5 bars): no                   (2 trades)
+    E5 flag low stayed above EMA20: yes            -0.21 27% 0.76 ( 994) | -0.05 28% 0.94 (1018) | +0.17 29% 1.22 ( 859) | -0.03 30% 0.96 ( 284) | all -0.041R +0.2 pts · twins: same day -0.051, other day -0.169 · 188/yr
+    E5 flag low stayed above EMA20: no             +0.17 33% 1.21 (   9) | -0.62 27% 0.30 (  11) | +0.18 29% 1.24 (  14) | +0.05 43% 1.10 (   7) | all -0.060R -0.9 pts · twins: same day -0.082, other day -0.086 · 2/yr
+    E6 flag dipped to EMA20, closed above: yes     +0.17 33% 1.21 (   9) | -0.51 33% 0.39 (   9) | +0.28 31% 1.40 (  13) | +0.24 50% 1.66 (   6) | all +0.055R -0.4 pts · twins: same day -0.021, other day -0.114 · 2/yr
+    E6 flag dipped to EMA20, closed above: no      -0.21 27% 0.76 ( 994) | -0.06 28% 0.93 (1020) | +0.17 28% 1.21 ( 860) | -0.04 29% 0.95 ( 285) | all -0.043R +0.2 pts · twins: same day -0.052, other day -0.169 · 188/yr
+    E7 flag dipped to EMA9, closed above: yes      -0.25 27% 0.73 ( 241) | -0.09 27% 0.90 ( 248) | +0.09 28% 1.12 ( 258) | +0.18 33% 1.26 ( 102) | all -0.047R +0.2 pts · twins: same day -0.018, other day -0.150 · 51/yr
+    E7 flag dipped to EMA9, closed above: no       -0.20 28% 0.78 ( 762) | -0.05 28% 0.94 ( 781) | +0.20 29% 1.26 ( 615) | -0.14 28% 0.81 ( 189) | all -0.040R +0.1 pts · twins: same day -0.064, other day -0.175 · 140/yr
+    E8 close > 15m EMA20: yes                      -0.20 28% 0.78 ( 992) | -0.06 28% 0.93 (1029) | +0.16 29% 1.21 ( 869) | -0.02 30% 0.97 ( 288) | all -0.039R +0.2 pts · twins: same day -0.049, other day -0.170 · 189/yr
+    E8 close > 15m EMA20: no                       (18 trades)
+
+######## NY bull 3-5m, 1st pullback
+    all                                            -0.17 29% 0.81 ( 846) | +0.02 30% 1.02 ( 829) | +0.09 27% 1.12 ( 717) | -0.02 32% 0.97 ( 219) | all -0.023R +0.1 pts · twins: same day -0.034, other day -0.167 · 155/yr
+    E1 close > EMA20: yes                          -0.17 29% 0.81 ( 846) | +0.02 30% 1.02 ( 829) | +0.09 27% 1.12 ( 717) | -0.02 32% 0.97 ( 219) | all -0.023R +0.1 pts · twins: same day -0.034, other day -0.167 · 155/yr
+    E1 close > EMA20: no                           (0 trades)
+    E2 close > EMA9: yes                           -0.17 29% 0.81 ( 814) | -0.00 29% 1.00 ( 784) | +0.09 27% 1.11 ( 665) | -0.01 32% 0.98 ( 215) | all -0.035R +0.1 pts · twins: same day -0.038, other day -0.160 · 148/yr
+    E2 close > EMA9: no                            -0.04 28% 0.95 (  32) | +0.41 33% 1.50 (  45) | +0.20 31% 1.27 (  52) |   —          (  4) | all +0.196R +1.0 pts · twins: same day +0.053, other day -0.299 · 8/yr
+    E3 EMA9 > EMA20 (stacked): yes                 -0.17 29% 0.81 ( 846) | +0.02 30% 1.03 ( 828) | +0.09 27% 1.12 ( 717) | -0.02 32% 0.97 ( 219) | all -0.023R +0.1 pts · twins: same day -0.033, other day -0.167 · 155/yr
+    E3 EMA9 > EMA20 (stacked): no                  (1 trades)
+    E4 EMA20 rising (5 bars): yes                  -0.17 29% 0.81 ( 846) | +0.02 30% 1.03 ( 828) | +0.09 27% 1.12 ( 717) | -0.02 32% 0.97 ( 219) | all -0.023R +0.1 pts · twins: same day -0.033, other day -0.167 · 155/yr
+    E4 EMA20 rising (5 bars): no                   (1 trades)
+    E5 flag low stayed above EMA20: yes            -0.17 28% 0.80 ( 839) | +0.02 30% 1.03 ( 825) | +0.08 27% 1.10 ( 709) | -0.03 31% 0.96 ( 215) | all -0.029R +0.1 pts · twins: same day -0.035, other day -0.168 · 154/yr
+    E5 flag low stayed above EMA20: no             +0.58 43% 1.83 (   7) |   —          (  4) | +1.07 50% 3.05 (   8) |   —          (  4) | all +0.610R +2.2 pts · twins: same day +0.143, other day -0.097 · 1/yr
+    E6 flag dipped to EMA20, closed above: yes     +0.58 43% 1.83 (   7) |   —          (  4) | +1.07 50% 3.05 (   8) |   —          (  4) | all +0.610R +2.2 pts · twins: same day +0.143, other day -0.097 · 1/yr
+    E6 flag dipped to EMA20, closed above: no      -0.17 28% 0.80 ( 839) | +0.02 30% 1.03 ( 825) | +0.08 27% 1.10 ( 709) | -0.03 31% 0.96 ( 215) | all -0.029R +0.1 pts · twins: same day -0.035, other day -0.168 · 154/yr
+    E7 flag dipped to EMA9, closed above: yes      -0.16 29% 0.82 ( 196) | +0.07 29% 1.09 ( 197) | +0.09 28% 1.11 ( 210) | +0.26 37% 1.40 (  79) | all +0.034R +0.6 pts · twins: same day +0.024, other day -0.149 · 41/yr
+    E7 flag dipped to EMA9, closed above: no       -0.17 28% 0.81 ( 650) | +0.00 30% 1.00 ( 632) | +0.10 27% 1.12 ( 507) | -0.18 29% 0.77 ( 140) | all -0.043R -0.0 pts · twins: same day -0.054, other day -0.173 · 115/yr
+    E8 close > 15m EMA20: yes                      -0.16 29% 0.82 ( 838) | +0.02 30% 1.02 ( 829) | +0.09 27% 1.11 ( 713) | -0.01 32% 0.99 ( 217) | all -0.021R +0.1 pts · twins: same day -0.032, other day -0.167 · 155/yr
+    E8 close > 15m EMA20: no                       (14 trades)
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x)
+    all                                            -0.19 32% 0.77 (  75) | +0.25 38% 1.34 ( 100) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.016R -0.4 pts · twins: same day +0.040, other day -0.176 · 18/yr
+    E1 close > EMA20: yes                          -0.19 32% 0.77 (  75) | +0.25 38% 1.34 ( 100) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.016R -0.4 pts · twins: same day +0.040, other day -0.176 · 18/yr
+    E1 close > EMA20: no                           (0 trades)
+    E2 close > EMA9: yes                           -0.16 33% 0.80 (  73) | +0.27 39% 1.38 (  92) | +0.01 26% 1.02 (  95) | -0.23 27% 0.69 (  22) | all +0.032R -0.4 pts · twins: same day +0.046, other day -0.155 · 17/yr
+    E2 close > EMA9: no                            (19 trades)
+    E3 EMA9 > EMA20 (stacked): yes                 -0.19 32% 0.77 (  75) | +0.26 38% 1.36 (  99) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.020R -0.4 pts · twins: same day +0.044, other day -0.178 · 18/yr
+    E3 EMA9 > EMA20 (stacked): no                  (1 trades)
+    E4 EMA20 rising (5 bars): yes                  -0.19 32% 0.77 (  75) | +0.26 38% 1.36 (  99) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.020R -0.4 pts · twins: same day +0.044, other day -0.178 · 18/yr
+    E4 EMA20 rising (5 bars): no                   (1 trades)
+    E5 flag low stayed above EMA20: yes            -0.19 32% 0.77 (  75) | +0.27 39% 1.38 (  98) | +0.03 28% 1.04 ( 101) | -0.27 26% 0.65 (  23) | all +0.030R -0.3 pts · twins: same day +0.055, other day -0.182 · 18/yr
+    E5 flag low stayed above EMA20: no             (4 trades)
+    E6 flag dipped to EMA20, closed above: yes     (4 trades)
+    E6 flag dipped to EMA20, closed above: no      -0.19 32% 0.77 (  75) | +0.27 39% 1.38 (  98) | +0.03 28% 1.04 ( 101) | -0.27 26% 0.65 (  23) | all +0.030R -0.3 pts · twins: same day +0.055, other day -0.182 · 18/yr
+    E7 flag dipped to EMA9, closed above: yes      -0.19 31% 0.73 (  13) | -0.05 26% 0.94 (  19) | +0.22 31% 1.29 (  26) | -0.66 33% 0.10 (   6) | all -0.026R -0.5 pts · twins: same day -0.177, other day -0.134 · 4/yr
+    E7 flag dipped to EMA9, closed above: no       -0.19 32% 0.77 (  62) | +0.31 41% 1.46 (  81) | -0.06 26% 0.92 (  77) | -0.13 24% 0.83 (  17) | all +0.027R -0.4 pts · twins: same day +0.099, other day -0.187 · 14/yr
+    E8 close > 15m EMA20: yes                      -0.19 32% 0.77 (  75) | +0.25 38% 1.34 ( 100) | +0.01 27% 1.01 ( 103) | -0.27 26% 0.65 (  23) | all +0.016R -0.4 pts · twins: same day +0.040, other day -0.176 · 18/yr
+    E8 close > 15m EMA20: no                       (0 trades)
+
+######## NY bear 3-5m
+    all                                            -0.23 21% 0.76 (1040) | -0.14 21% 0.85 ( 918) | -0.14 22% 0.84 ( 761) | -0.26 19% 0.70 ( 240) | all -0.180R -0.5 pts · twins: same day -0.165, other day -0.186 · 176/yr
+    E1 close > EMA20: yes                          -0.23 21% 0.76 (1039) | -0.14 21% 0.85 ( 917) | -0.14 22% 0.84 ( 760) | -0.26 19% 0.70 ( 240) | all -0.180R -0.5 pts · twins: same day -0.165, other day -0.186 · 176/yr
+    E1 close > EMA20: no                           (3 trades)
+    E2 close > EMA9: yes                           -0.22 21% 0.77 ( 977) | -0.10 21% 0.89 ( 842) | -0.13 22% 0.84 ( 679) | -0.19 20% 0.77 ( 210) | all -0.157R -0.5 pts · twins: same day -0.157, other day -0.179 · 161/yr
+    E2 close > EMA9: no                            -0.39 19% 0.60 (  63) | -0.60 17% 0.38 (  76) | -0.17 23% 0.79 (  82) | -0.74 10% 0.24 (  30) | all -0.424R -1.0 pts · twins: same day -0.252, other day -0.264 · 15/yr
+    E3 EMA9 > EMA20 (stacked): yes                 -0.23 21% 0.76 (1040) | -0.14 21% 0.85 ( 916) | -0.14 22% 0.84 ( 761) | -0.26 19% 0.70 ( 240) | all -0.179R -0.5 pts · twins: same day -0.164, other day -0.186 · 176/yr
+    E3 EMA9 > EMA20 (stacked): no                  (2 trades)
+    E4 EMA20 rising (5 bars): yes                  -0.23 21% 0.76 (1040) | -0.14 21% 0.85 ( 916) | -0.14 22% 0.84 ( 761) | -0.26 19% 0.70 ( 240) | all -0.179R -0.5 pts · twins: same day -0.164, other day -0.186 · 176/yr
+    E4 EMA20 rising (5 bars): no                   (2 trades)
+    E5 flag low stayed above EMA20: yes            -0.22 21% 0.77 (1029) | -0.14 21% 0.85 ( 908) | -0.14 22% 0.83 ( 742) | -0.24 20% 0.72 ( 234) | all -0.178R -0.5 pts · twins: same day -0.161, other day -0.188 · 173/yr
+    E5 flag low stayed above EMA20: no             -0.66 18% 0.33 (  11) | -0.21 30% 0.73 (  10) | +0.04 37% 1.06 (  19) | -1.06  0% 0.00 (   6) | all -0.324R -0.5 pts · twins: same day -0.408, other day -0.054 · 3/yr
+    E6 flag dipped to EMA20, closed above: yes     -0.60 20% 0.37 (  10) | -0.43 22% 0.51 (   9) | +0.10 39% 1.16 (  18) | -1.06  0% 0.00 (   6) | all -0.333R -0.7 pts · twins: same day -0.422, other day -0.053 · 3/yr
+    E6 flag dipped to EMA20, closed above: no      -0.23 21% 0.77 (1030) | -0.14 21% 0.85 ( 909) | -0.14 22% 0.83 ( 743) | -0.24 20% 0.72 ( 234) | all -0.178R -0.5 pts · twins: same day -0.161, other day -0.188 · 174/yr
+    E7 flag dipped to EMA9, closed above: yes      -0.17 24% 0.81 ( 241) | -0.24 21% 0.74 ( 268) | -0.25 23% 0.70 ( 221) | -0.21 21% 0.75 (  92) | all -0.220R -0.9 pts · twins: same day -0.201, other day -0.178 · 49/yr
+    E7 flag dipped to EMA9, closed above: no       -0.25 20% 0.75 ( 799) | -0.10 21% 0.90 ( 650) | -0.09 22% 0.89 ( 540) | -0.29 18% 0.67 ( 148) | all -0.165R -0.4 pts · twins: same day -0.151, other day -0.189 · 127/yr
+    E8 close > 15m EMA20: yes                      -0.23 21% 0.76 (1039) | -0.14 21% 0.85 ( 918) | -0.14 22% 0.84 ( 761) | -0.26 19% 0.70 ( 240) | all -0.181R -0.5 pts · twins: same day -0.166, other day -0.186 · 176/yr
+    E8 close > 15m EMA20: no                       (1 trades)
