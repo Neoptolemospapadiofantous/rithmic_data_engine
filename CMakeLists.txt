@@ -348,6 +348,20 @@ target_link_libraries(test_hl_mm PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
 target_compile_features(test_hl_mm PRIVATE cxx_std_20)
 add_test(NAME hl_mm_tests COMMAND test_hl_mm)
 
+# mm_lab: the deterministic research judge for market-making ideas (src/dex/mm_lab.hpp; desk wrapper
+# scripts/starnet/desk_mm.sh). Reads archives + data/mm_gates params, writes cards and data/mm_lab/registry.jsonl.
+add_executable(mm_lab src/dex/mm_lab_main.cpp)
+target_include_directories(mm_lab PRIVATE src/)
+target_link_libraries(mm_lab PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
+target_compile_features(mm_lab PRIVATE cxx_std_20)
+target_compile_definitions(mm_lab PRIVATE MM_LAB_REPO="${CMAKE_SOURCE_DIR}")   # pinned registry + frozen boundaries
+
+add_executable(test_mm_lab tests/dex/test_mm_lab.cpp)
+target_include_directories(test_mm_lab PRIVATE src/)
+target_link_libraries(test_mm_lab PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
+target_compile_features(test_mm_lab PRIVATE cxx_std_20)
+add_test(NAME mm_lab_tests COMMAND test_mm_lab)
+
 # Lighter: public market-data recorder + the 24/7 paper market maker (no keys, no order path).
 add_executable(lighter_recorder src/dex/lighter_recorder_main.cpp)
 target_include_directories(lighter_recorder PRIVATE src/ ${Boost_INCLUDE_DIRS})

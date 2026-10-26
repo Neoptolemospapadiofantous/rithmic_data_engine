@@ -369,6 +369,18 @@ public:
     // `now`; returns when that transaction actually leaves (≥ now), e.g. the next free request slot of a shared,
     // batching rate limiter. Unset = sent immediately (every existing caller).
     void set_send_gate(std::function<int64_t(int64_t)> g) { gate_ = std::move(g); }
+    // Research overlay (mm_lab, 2026-10-26): per-side pulls and shifts decided OUTSIDE the simulator from causal features.
+    // The default Overlay changes nothing (every term is +0 / false), so a simulator that is never given one — the live
+    // quoter, mm_paper, every backtest — behaves exactly as before. set_overlay only stores it; the next requote (next
+    // book, or requote_now) applies it.
+    //   pull_bid / pull_ask  the side is not allowed to quote (a resting order is cancelled; noted as reason Halted)
+    //   fair_off             added to the fair price, in price units (e.g. a Hyperliquid-anchored fair minus our mid)
+    //   shift_ticks          both quotes move this many strategy ticks (positive = up)
+    //   widen_ticks          added to half_width_ticks on both sides (the sum is floored at 0)
+    struct Overlay { bool pull_bid = false, pull_ask = false; double fair_off = 0, shift_ticks = 0, widen_ticks = 0; };
+    void set_overlay(const Overlay& o) { ov_ = o; }
+    const Overlay& overlay() const { return ov_; }
+    void requote_now(int64_t now) { if (have_book_) requote(now); }
 
 private:
     struct Order {
@@ -442,14 +454,15 @@ private:
     double target_price_for(bool bid_side, double inv) const {
         const double mid = book_.mid(), tick = venue_tick(book_), st = strat_tick(book_);
         const double bb = book_.bids[0].px, ba = book_.asks[0].px;
-        const double fair = p_.fair == Fair::Micro ? book_.microprice() : mid;
+        const double fair = (p_.fair == Fair::Micro ? book_.microprice() : mid) + ov_.fair_off;
         const double inv_units = inv * mid / p_.order_usd;
-        const double centre = fair - p_.skew_ticks * inv_units * st;      // distances in strategy ticks …
+        const double centre = fair - p_.skew_ticks * inv_units * st + ov_.shift_ticks * st;   // distances in strategy ticks …
+        const double hw = std::max(0.0, p_.half_width_ticks + ov_.widen_ticks);
         if (bid_side) {
-            const double k = std::floor((centre - p_.half_width_ticks * st - bb) / tick + 1e-6);   // … rounded to the venue grid
+            const double k = std::floor((centre - hw * st - bb) / tick + 1e-6);   // … rounded to the venue grid
             return std::min(bb + k * tick, ba - tick);
         }
-        const double k = std::ceil((centre + p_.half_width_ticks * st - ba) / tick - 1e-6);
+        const double k = std::ceil((centre + hw * st - ba) / tick - 1e-6);
         return std::max(ba + k * tick, bb + tick);
     }
 
@@ -483,8 +496,9 @@ private:
             if (target <= 0) { note_reason(s, NoBook); continue; }
             const Gates g = gates_for(bid_side, r_.inv, now);
             const bool spread_ok = g.spread_ok, paused = g.paused, toxic = g.toxic, inv_ok = g.inv_ok;
-            const bool allowed = !halted_ && spread_ok && !paused && !toxic && inv_ok;
-            note_reason(s, halted_ ? Halted : !spread_ok ? SpreadNarrow : paused ? JumpPause : toxic ? ImbalancePull
+            const bool pulled = bid_side ? ov_.pull_bid : ov_.pull_ask;      // research overlay, after the strategy's gates
+            const bool allowed = !halted_ && !pulled && spread_ok && !paused && !toxic && inv_ok;
+            note_reason(s, halted_ || pulled ? Halted : !spread_ok ? SpreadNarrow : paused ? JumpPause : toxic ? ImbalancePull
                          : !inv_ok ? InvCap
                          : (o.live && !o.cancel_at && std::abs(o.px - target) > eps(target) &&
                             std::abs(o.px - target) <= p_.requote_ticks * st + eps(target)) ? Kept : Quoting);
@@ -552,6 +566,7 @@ private:
     std::array<int64_t, N_QUOTE_REASON> reason_n_[2] = {};
     void note_reason(int side, QuoteReason r) { reason_[side] = r; ++reason_n_[side][r]; }
     std::function<int64_t(int64_t)> gate_;
+    Overlay ov_;
     int64_t send_at(int64_t now) { return gate_ ? std::max(now, gate_(now)) : now; }
 };
 

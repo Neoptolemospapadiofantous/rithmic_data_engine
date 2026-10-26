@@ -1,0 +1,30 @@
+{"ideas":[
+ {"id":"mms_frozen_lighter","venue":"lighter","why":"sanity: the frozen setting judged as an idea must tie the baseline (delta 0) and FAIL the beat rule"},
+ {"id":"mms_size_11","venue":"lighter","size_usd":11,"why":"smaller quotes sit nearer the front of thin queues; the only non-negative cell of the 10-26 audit was $10 quotes"},
+ {"id":"mms_size_15","venue":"lighter","size_usd":15,"why":"size ladder between the venue minimum and $25"},
+ {"id":"mms_size_25","venue":"lighter","size_usd":25,"why":"size ladder: the G4 step-1 quote size"},
+ {"id":"mms_skew_0","venue":"lighter","params":{"skew_ticks":0},"why":"inventory lean ladder, 0 = frozen"},
+ {"id":"mms_skew_05","venue":"lighter","params":{"skew_ticks":0.5},"why":"lean against inventory so a filled side is less likely to fill again into a trend"},
+ {"id":"mms_skew_1","venue":"lighter","params":{"skew_ticks":1},"why":"stronger inventory lean"},
+ {"id":"mms_width_3","venue":"lighter","params":{"half_width_ticks":3},"why":"width ladder: closer quotes, more fills, more adverse selection"},
+ {"id":"mms_width_4","venue":"lighter","params":{"half_width_ticks":4},"why":"width ladder"},
+ {"id":"mms_width_5","venue":"lighter","params":{"half_width_ticks":5},"why":"width ladder, 5 = frozen"},
+ {"id":"mms_width_6","venue":"lighter","params":{"half_width_ticks":6},"why":"width ladder: further back, fewer and safer fills"},
+ {"id":"mms_hl_anchor_k05","venue":"lighter","fair":{"type":"hl_anchor","k":0.5},"why":"move half-way toward Hyperliquid's basis-adjusted price: if informed flow shows there first, our quotes step aside"},
+ {"id":"mms_hl_anchor_k1","venue":"lighter","fair":{"type":"hl_anchor","k":1},"why":"quote fully around Hyperliquid's basis-adjusted price"},
+ {"id":"mms_hl_beyond_quote","venue":"lighter","rules":[
+    {"when":[["hl_basis_ticks","<=","-half_width_ticks"]],"action":"pull_ask"},
+    {"when":[["hl_basis_ticks",">=","half_width_ticks"]],"action":"pull_bid"}],
+  "why":"when Hyperliquid's basis-adjusted price is already through our quote, the resting order is a free option for whoever arbitrages the two venues: pull it"},
+ {"id":"mms_flow_pull_05","venue":"lighter","rules":[
+    {"when":[["trade_flow_imbalance@5000",">",0.5]],"action":"pull_ask"},
+    {"when":[["trade_flow_imbalance@5000","<",-0.5]],"action":"pull_bid"}],
+  "why":"one-sided aggressive flow over 5 s is informed more often than not; step out of its way"},
+ {"id":"mms_flow_pull_08","venue":"lighter","rules":[
+    {"when":[["trade_flow_imbalance@5000",">",0.8]],"action":"pull_ask"},
+    {"when":[["trade_flow_imbalance@5000","<",-0.8]],"action":"pull_bid"}],
+  "why":"same, only on very one-sided flow"},
+ {"id":"mms_frozen_lighter_rl60","venue":"lighter","rate_limit":{"per_min":60,"accounts":1},"why":"the frozen setting under Lighter Standard's real 60 requests/min (one account, batching 15 tx/request)"},
+ {"id":"mms_frozen_extended","venue":"extended","why":"per-venue frozen on Extended (0 maker)"},
+ {"id":"mms_frozen_aster","venue":"aster","why":"per-venue frozen on Aster (0 maker)"}
+]}

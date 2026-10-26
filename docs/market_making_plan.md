@@ -85,6 +85,15 @@ Leverage is never used to reach a size: losses scale with position size, not mar
 
 ## 8. Decision log (append only)
 
+- 2026-10-26 — **Founder: "apply both now and build the HL shadow".** The frozen setting changes for paper: quote size
+  $100 → **$11** (the live pilot's size; on the mm_lab starter run the loss fell −$44.77 → −$4.47 and −4.37 → −3.30 bps
+  in-sample, and $10 quotes were the only non-negative cell on history) and **no 00:00 UTC flatten** — inventory is
+  carried and marked to mid instead (the flatten was accounting only: −$2.59 on 10-25; the live engine never had it).
+  Daily rows become mark-to-market rather than flat-to-flat. A third paper engine `paper_hl` quotes around a
+  Hyperliquid-anchored fair (k = 1; in-sample −0.94 bps vs −3.67 for the frozen setting on the same 15 coins) as a
+  SHADOW only. G2's day count restarts with the new setting; skew is not adopted (worse in-sample). Nothing here has
+  passed mm_lab or a holdout — these are cost cuts on paper, measured on future days.
+
 - 2026-10-26 — **The +0.5 bps edge was a simulator artefact.** An independent audit found four optimistic flaws in
   `hl::Simulator` (a trade through our price filled the whole order whatever its size; arrival was checked against a
   later book; the end-of-day close was free; no fills when the book ran over our quote). Fixed as `hl::FillModel`

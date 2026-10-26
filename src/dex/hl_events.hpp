@@ -27,6 +27,8 @@ namespace hl {
 struct Event {
     int64_t t_ms = 0;
     int64_t seq = 0;          // arrival order, the last tie-break
+    int64_t r_ms = 0;         // when WE received it (archive "r" / Tardis local_timestamp), ms; 0 = unknown. Cross-venue
+                              // features align on it (mm_lab); the simulator never reads it.
     bool is_book = false;
     Book book;
     Trade trade;
@@ -60,11 +62,13 @@ inline std::vector<Event> load_archive(const std::filesystem::path& file, int64_
     std::map<int, lighter::Book> lbooks;
     venue::extended::Book ebook;
     venue::paradex::Book pbook;
-    auto push_book = [&](hl::Book b) { Event e; e.t_ms = b.t_ms; e.seq = seq++; e.is_book = true; e.book = std::move(b); ev.push_back(std::move(e)); };
-    auto push_trades = [&](std::vector<hl::Trade> ts) { for (auto& t : ts) { t.coin.clear(); Event e; e.t_ms = t.t_ms; e.seq = seq++; e.trade = t; ev.push_back(std::move(e)); } };
+    int64_t r_ms = 0;
+    auto push_book = [&](hl::Book b) { Event e; e.t_ms = b.t_ms; e.seq = seq++; e.r_ms = r_ms; e.is_book = true; e.book = std::move(b); ev.push_back(std::move(e)); };
+    auto push_trades = [&](std::vector<hl::Trade> ts) { for (auto& t : ts) { t.coin.clear(); Event e; e.t_ms = t.t_ms; e.seq = seq++; e.r_ms = r_ms; e.trade = t; ev.push_back(std::move(e)); } };
     while (in.next(line)) {
         json j = json::parse(line, nullptr, false);
         if (j.is_discarded() || !j.is_object() || !j.contains("m")) { if (bad_lines) ++*bad_lines; continue; }
+        r_ms = j.contains("r") && j["r"].is_number() ? j["r"].get<int64_t>() / 1000 : 0;
         const json& m = j["m"];
         if (const std::string v = j.value("v", ""); !v.empty()) {
             if (j.value("snap", false)) continue;             // a venue's replay of trades from before the recorder listened
@@ -89,23 +93,23 @@ inline std::vector<Event> load_archive(const std::filesystem::path& file, int64_
             auto& lb = lbooks[mk];
             const auto r = lb.apply(m);
             if ((r == lighter::Book::Apply::Snapshot || r == lighter::Book::Apply::Delta) && lb.valid()) {
-                Event e; e.t_ms = lb.t_ms(); e.seq = seq++; e.is_book = true; e.book = lb.top(20);
+                Event e; e.t_ms = lb.t_ms(); e.seq = seq++; e.r_ms = r_ms; e.is_book = true; e.book = lb.top(20);
                 ev.push_back(std::move(e));
             }
             continue;
         }
         if (lighter::market_of(m, "trade") >= 0) {
-            for (auto& t : lighter::parse_trades(m)) { Event e; e.t_ms = t.t_ms; e.seq = seq++; e.trade = t; ev.push_back(std::move(e)); }
+            for (auto& t : lighter::parse_trades(m)) { Event e; e.t_ms = t.t_ms; e.seq = seq++; e.r_ms = r_ms; e.trade = t; ev.push_back(std::move(e)); }
             continue;
         }
         if (auto b = parse_book(m)) {
             b->coin.clear();
-            Event e; e.t_ms = b->t_ms; e.seq = seq++; e.is_book = true; e.book = std::move(*b);
+            Event e; e.t_ms = b->t_ms; e.seq = seq++; e.r_ms = r_ms; e.is_book = true; e.book = std::move(*b);
             ev.push_back(std::move(e));
         } else if (!j.value("snap", false)) {
             for (auto& t : parse_trades(m)) {
                 t.coin.clear();
-                Event e; e.t_ms = t.t_ms; e.seq = seq++; e.trade = t;
+                Event e; e.t_ms = t.t_ms; e.seq = seq++; e.r_ms = r_ms; e.trade = t;
                 ev.push_back(std::move(e));
             }
         }
@@ -147,11 +151,12 @@ inline double to_d(std::string_view v) { return v.empty() ? 0 : std::strtod(std:
 
 // book_snapshot_25: exchange,symbol,timestamp(µs),local_timestamp, then per level i:
 //   asks[i].price, asks[i].amount, bids[i].price, bids[i].amount  (empty once the book runs out)
-inline bool parse_tardis_book(const std::string& line, Book& b) {
+inline bool parse_tardis_book(const std::string& line, Book& b, int64_t* r_ms = nullptr) {
     auto f = split_csv(line);
     if (f.size() < 8 || f[2] == "timestamp") return false;
     b = Book{};
     b.t_ms = std::strtoll(std::string(f[2]).c_str(), nullptr, 10) / 1000;
+    if (r_ms) *r_ms = std::strtoll(std::string(f[3]).c_str(), nullptr, 10) / 1000;
     for (size_t i = 4; i + 3 < f.size(); i += 4) {
         const double ap = to_d(f[i]), as = to_d(f[i + 1]), bp = to_d(f[i + 2]), bs = to_d(f[i + 3]);
         if (ap > 0 && as > 0) b.asks.push_back({ap, as});
@@ -160,11 +165,12 @@ inline bool parse_tardis_book(const std::string& line, Book& b) {
     return true;
 }
 // trades: exchange,symbol,timestamp(µs),local_timestamp,id,side(buy|sell = the aggressor),price,amount
-inline bool parse_tardis_trade(const std::string& line, Trade& t) {
+inline bool parse_tardis_trade(const std::string& line, Trade& t, int64_t* r_ms = nullptr) {
     auto f = split_csv(line);
     if (f.size() < 8 || f[2] == "timestamp") return false;
     t = Trade{};
     t.t_ms = std::strtoll(std::string(f[2]).c_str(), nullptr, 10) / 1000;
+    if (r_ms) *r_ms = std::strtoll(std::string(f[3]).c_str(), nullptr, 10) / 1000;
     t.buy_aggr = f[5] == "buy";
     t.px = to_d(f[6]);
     t.sz = to_d(f[7]);
@@ -178,17 +184,19 @@ inline std::vector<Event> load_tardis(const std::filesystem::path& book_gz, cons
     {
         GzLines in(book_gz);
         Book b;
+        int64_t r = 0;
         while (in.next(line))
-            if (parse_tardis_book(line, b) && b.valid()) {
-                Event e; e.t_ms = b.t_ms; e.seq = seq++; e.is_book = true; e.book = std::move(b);
+            if (parse_tardis_book(line, b, &r) && b.valid()) {
+                Event e; e.t_ms = b.t_ms; e.seq = seq++; e.r_ms = r; e.is_book = true; e.book = std::move(b);
                 ev.push_back(std::move(e));
             }
     }
     {
         GzLines in(trades_gz);
         Trade t;
+        int64_t r = 0;
         while (in.next(line))
-            if (parse_tardis_trade(line, t)) { Event e; e.t_ms = t.t_ms; e.seq = seq++; e.trade = t; ev.push_back(std::move(e)); }
+            if (parse_tardis_trade(line, t, &r)) { Event e; e.t_ms = t.t_ms; e.seq = seq++; e.r_ms = r; e.trade = t; ev.push_back(std::move(e)); }
     }
     sort_events(ev);
     return ev;
