@@ -202,7 +202,29 @@ struct Params {
     TickRule strat_tick_rule = TickRule::Book;
     int      hl_sz_decimals  = 0;
     FillModel fills          = default_fill_model();
+    // Venue order-size rules (mm_paper since 2026-10-26; all 0 = continuous size order_usd / mid, the behaviour every
+    // backtest used). size_step: the size grid in coin (Lighter 10^−supported_size_decimals); min_base: the smallest
+    // size in coin (min_base_amount); min_quote_usd: the smallest notional (Lighter min_quote_amount × the gateway's
+    // 1.05 margin). The quote size is then rounded UP the way src/dex/live/market_spec.hpp size_quote does — see lot_qty.
+    double size_step     = 0;
+    double min_base      = 0;
+    double min_quote_usd = 0;
 };
+
+// Size of one quote in coin: order_usd at `mid`, rounded UP to the size grid and raised until it clears both minimums
+// (src/dex/live/market_spec.hpp smallest_valid / size_quote, in doubles: tests/dex/test_lighter.cpp checks they agree).
+// No cap here: the paper engine reports what a venue-legal order would have done; the live gateway refuses a market
+// whose smallest legal order exceeds its cap.
+inline double lot_qty(const Params& p, double mid) {
+    if (mid <= 0) return 0;
+    double q = p.order_usd / mid;
+    if (p.size_step <= 0) return std::max({q, p.min_base, p.min_quote_usd > 0 ? p.min_quote_usd / mid : 0.0});
+    auto up = [&](double x) { return std::ceil(x / p.size_step - 1e-9) * p.size_step; };
+    q = up(q);
+    if (p.min_base > 0 && q < p.min_base - p.size_step * 1e-9) q = up(p.min_base);
+    if (p.min_quote_usd > 0 && q * mid < p.min_quote_usd) q = up(p.min_quote_usd / mid);
+    return q;
+}
 
 struct Fill { int64_t t_ms; double px, qty; int side; double mid; bool taker = false; };   // side +1 bought, -1 sold; taker = a flatten
 
@@ -321,6 +343,23 @@ public:
                 r_.flat_pnl -= std::abs(r_.inv) * std::abs(mid - (r_.inv > 0 ? book_.bids[0].px : book_.asks[0].px));
         }
         return r_;
+    }
+    // A day boundary WITHOUT a flatten (mm_paper since 2026-10-26): returns the closing day's record exactly as finish()
+    // would (markouts for fills whose 60 s window the data covers; mtm / flat P&L there are cumulative since this
+    // simulator started — a caller wanting the day's P&L takes the difference of equity()), then starts a new day's
+    // record: fills, counters, volume, fees, markout sums, equity samples and reason counts restart, the drawdown peak
+    // is re-anchored at the current equity. The position, cash, resting orders, book, jump pause, halt and overlay all
+    // carry over, so equity() keeps running from the simulator's start. fills() is emptied (the caller drains first).
+    Result new_day() {
+        Result out = finish();
+        Result n;
+        n.cash = r_.cash; n.inv = r_.inv;
+        r_ = n;
+        fills_.clear();
+        if (mids_.size() > 1) mids_.erase(mids_.begin(), mids_.end() - 1);   // the last mid stays for the next markouts
+        peak_ = equity();
+        reason_n_[0] = {}; reason_n_[1] = {};
+        return out;
     }
     const std::vector<Fill>& fills() const { return fills_; }
     // Risk controls (mm_paper): a halted simulator cancels its quotes and places none until released.
@@ -472,8 +511,13 @@ private:
     struct Gates { bool spread_ok, paused, toxic, inv_ok; };
     Gates gates_for(bool bid_side, double inv, int64_t now) const {
         const double mid = book_.mid();
-        const double unit = p_.order_usd / mid;
-        const double cap_usd = p_.max_inv_units * p_.order_usd * (1 + 1e-9);   // cap in $ at the current mid
+        const double unit = lot_qty(p_, mid);
+        // Cap in $ at the current mid, counted in LOTS: with venue size rules the lot rounds UP (Lighter $11 → $11.00–11.11,
+        // BNB ~$14.8), so a cap of max_inv_units × order_usd would never admit the last lot. Without size rules (every
+        // backtest, the live quoter) this is exactly max_inv_units × order_usd, as before.
+        const bool sized = p_.size_step > 0 || p_.min_base > 0 || p_.min_quote_usd > 0;
+        const double lot_usd = sized ? std::max(p_.order_usd, unit * mid) : p_.order_usd;
+        const double cap_usd = p_.max_inv_units * lot_usd * (1 + 1e-9);
         const double st = strat_tick(book_);
         const bool spread_ok = (book_.asks[0].px - book_.bids[0].px) / st >= p_.min_spread_ticks - 1e-9;
         const bool paused = now < paused_until_;
@@ -487,7 +531,7 @@ private:
     // Keep one order on each side at the strategy's price (subject to the inventory cap).
     void requote(int64_t now) {
         const double mid = book_.mid();
-        const double unit = p_.order_usd / mid;
+        const double unit = lot_qty(p_, mid);
         const double st = strat_tick(book_);
         for (int s = 0; s < 2; ++s) {
             const bool bid_side = s == 0;

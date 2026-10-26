@@ -5,11 +5,17 @@
 // it reports. No orders exist anywhere: fills come from hl::Simulator's queue model.
 //
 // One hl::Simulator per market, all on the frozen setting (mm_robust's candidate). Controls, in order:
-//   * day roll at 00:00 UTC — every market flattened (taker), the day's row reported, fresh simulators;
-//     the same flat-to-flat day the backtests measured, so the paper days compare with them directly;
+//   * day roll at 00:00 UTC — since 2026-10-26 (founder, docs/market_making_plan.md §8) NOTHING is flattened: each
+//     market keeps its one simulator across days (inventory, cash and resting orders carry over) and the day's row is
+//     MARK-TO-MARKET: pnl = equity at the roll (cash + inventory × mid) − equity at the previous roll (or at the engine
+//     start / the market's first book). Fills, volume, markouts, drawdown and reason counts restart each day
+//     (hl::Simulator::new_day). Config::day_flatten (mm_paper --day-flatten) restores the old flat-to-flat day:
+//     every market flattened (taker), the day's row reported, fresh simulators;
+//   * optional Hyperliquid anchor (Config::hl_k > 0, label paper_hl): quotes centre on a Hyperliquid-anchored fair
+//     price through hl::Simulator::Overlay (HlAnchor below, the same rule as mm_lab's hl_anchor);
 //   * feed down — no message at all on the connection (mm_paper_main: 15 s, or disconnected) halts every
 //     market until the feed is back; a single market with no book change for `stale_ms` is pulled alone;
-//   * daily loss stop — portfolio equity for the day at or below −`daily_loss_usd` flattens and halts
+//   * daily loss stop — portfolio equity for the day (mark-to-market since the last roll) at or below −`daily_loss_usd` flattens and halts
 //     everything until the next day;
 //   * kill switch — while set (mm_paper_main: the file data/mm_paper/KILL), flatten and halt everything.
 //   * after a loss-stop or kill flatten, an order whose cancel is still in flight (cancel latency) can still fill:
@@ -44,21 +50,25 @@ namespace mmpaper {
 struct Config {
     hl::Params p;                                   // the setting every market runs …
     std::map<std::string, hl::Params> per_market;   // … unless this names the market (venue tick, HL size decimals)
-    double  daily_loss_usd = 150;   // ≈ 3× the worst holdout day at $100 quotes, 30 coins
+    double  daily_loss_usd = 16.5;  // $150 at $100 quotes (≈ 3× the worst holdout day, 30 coins) × 0.11 for $11 quotes (founder 2026-10-26)
     int64_t stale_ms = 120'000;     // a market with no book change this long is pulled. Lighter only sends a
                                     // book when it changes, so quiet markets are silent for tens of seconds;
                                     // a DEAD connection is caught by tick(feed_ok=false) instead
     int64_t reorder_ms = 250;       // live events are held this long (receive time) and released in backtest order
+    bool    day_flatten = false;    // true = the pre-2026-10-26 flat-to-flat day (taker flatten + fresh simulators at 00:00 UTC)
+    double  hl_k = 0;               // > 0: quote around the Hyperliquid-anchored fair, weight k (HlAnchor); 0 = own mid
 };
 
 // The frozen setting (mm_robust.cpp candidate, Lighter Standard): width 5, spread ≥ 4 ticks, imbalance
 // pull 0.6, 2 s pause after a 2-tick jump, keep queue place for a 1-tick change; 0 fees; 300 ms delay (200 ms
-// imposed by Lighter's Standard account + network; measured exchange→box lag here is 142 ms); $100 quotes,
-// cap 3. Ticks are HYPERLIQUID ticks (mm_paper_main sets strat_tick_rule + hl_sz_decimals + venue_tick per
-// market): that is the unit the setting was validated in — Lighter's own grid is up to 100× finer.
+// imposed by Lighter's Standard account + network; measured exchange→box lag here is 142 ms); $11 quotes
+// (2026-10-26, founder: the live pilot's size — was $100; mm_paper --order-usd overrides, and mm_paper rounds it UP
+// to each market's size grid / minimums), cap 3. Ticks are HYPERLIQUID ticks (mm_paper_main sets strat_tick_rule +
+// hl_sz_decimals + venue_tick per market): that is the unit the setting was validated in — Lighter's own grid is up
+// to 100× finer.
 inline hl::Params frozen_params() {
     hl::Params p;
-    p.order_usd = 100; p.max_inv_units = 3;
+    p.order_usd = 11; p.max_inv_units = 3;
     p.maker_fee_bps = 0; p.taker_fee_bps = 0; p.latency_ms = 300;   // 300 ms = the delay every backtest used
     p.cancels = hl::CancelModel::Pessimistic;
     p.half_width_ticks = 5; p.min_spread_ticks = 4; p.imb_pull = 0.6;
@@ -71,6 +81,108 @@ struct DayRow {
     std::string day, market;
     double pnl = 0, volume = 0, capture_bps = 0, mk10_bps = 0, max_dd = 0;
     int64_t fills = 0, flattens = 0;
+    double inv_end = 0, inv_usd_end = 0;   // position carried into the next day (0 with day_flatten); log only, not in Postgres
+};
+
+// ── Hyperliquid-anchored fair price (label paper_hl, 2026-10-26) ────────────────────────────────────────────────
+// The rule of mm_lab's fair {"type":"hl_anchor","k":k} (src/dex/mm_lab.hpp features + Runner::overlay), per market:
+//   raw   = (our mid − HL mid) / HL mid × 1e4 bps, from the newest Hyperliquid book RECEIVED at or before the venue
+//           event's exchange time (decision time = running max of the event times) — causal by construction: a
+//           Hyperliquid book received later can never move a decision about an earlier venue event;
+//   usable only while that HL book is ≤ kStaleMs old against the decision time;
+//   basis = trailing median of raw over 5 minutes of 1-second samples (one sample per second, taken on venue BOOK
+//           events), defined once ≥ 60 samples exist (the last median is kept while HL is unusable, like mm_lab);
+//   fair  = own mid + k × (implied − own mid), implied = mid × (1 − (raw − basis)/1e4)  → Overlay::fair_off.
+// While unusable (no HL market, no HL book yet, a stale HL book, < 60 samples) fair_off = 0: the frozen setting's own mid.
+// Guards (review 2026-10-26; paper_hl only, not in mm_lab): the anchor also switches off — own mid — when the 5-min
+// median basis itself exceeds ±kMaxBasisBps (the two venues are not quoting the same thing: a different contract, a
+// broken HL book, a delisting) or when the anchor would move the fair more than kMaxMoveBps from our mid in one step.
+// off_reason() names why it is off: no_hl_book, stale, warming, basis_too_wide, move_too_large ("" = active).
+class HlAnchor {
+public:
+    static constexpr int64_t kStaleMs = 5'000, kWindowS = 300;   // == mm_lab kHlStaleMs / kBasisWindowS
+    static constexpr int kMinSamples = 60;                       // == mm_lab kBasisMinSamples
+    static constexpr double kMaxBasisBps = 200, kMaxMoveBps = 200;
+    static constexpr size_t kMaxPending = 4096;                  // HL books not yet visible (≈ 35 min at fast l2Book)
+    // A Hyperliquid book's mid, at its RECEIVE time (wall clock ms). Calls arrive in receive order.
+    void push(int64_t recv_ms, double mid) {
+        if (mid <= 0) return;
+        pending_.push_back({recv_ms, mid});
+        while (pending_.size() > kMaxPending) pending_.pop_front();
+    }
+    // One venue event at exchange time t with our mid; is_book = a book event (only those take basis samples).
+    // Returns the overlay's fair_off for weight k (0 when unusable).
+    double step(int64_t t, double mid, bool is_book, double k) {
+        dec_t_ = std::max(dec_t_, t);
+        while (!pending_.empty() && pending_.front().first <= dec_t_) {
+            hl_r_ = pending_.front().first; hl_mid_ = pending_.front().second;
+            pending_.pop_front();
+        }
+        ok_ = hl_r_ >= 0 && mid > 0 && dec_t_ - hl_r_ <= kStaleMs;
+        raw_ = std::nan("");
+        if (ok_) {
+            raw_ = (mid - hl_mid_) / hl_mid_ * 1e4;
+            if (is_book && t / 1000 != basis_sec_) {
+                basis_sec_ = t / 1000;
+                basis_.push_back({basis_sec_, raw_});
+                while (!basis_.empty() && basis_.front().first <= basis_sec_ - kWindowS) basis_.pop_front();
+                if (static_cast<int>(basis_.size()) >= kMinSamples) {
+                    std::vector<double> v; v.reserve(basis_.size());
+                    for (const auto& x : basis_) v.push_back(x.second);
+                    std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
+                    med_ = v[v.size() / 2];
+                } else med_ = std::nan("");
+            }
+        }
+        active_ = false; off_ = 0;
+        if (hl_r_ < 0 || mid <= 0) { reason_ = "no_hl_book"; return 0; }
+        if (!ok_) { reason_ = "stale"; return 0; }
+        if (!std::isfinite(med_)) { reason_ = "warming"; return 0; }
+        if (std::abs(med_) > kMaxBasisBps) { reason_ = "basis_too_wide"; return 0; }
+        const double implied = mid * (1 - (raw_ - med_) / 1e4);
+        const double off = k * (implied - mid);
+        if (std::abs(off) / mid * 1e4 > kMaxMoveBps) { reason_ = "move_too_large"; return 0; }
+        active_ = true; reason_.clear(); off_ = off;
+        return off_;
+    }
+    const std::string& off_reason() const { return reason_; }
+    bool seen() const { return hl_r_ >= 0; }              // an HL book has become visible at least once
+    double hl_mid() const { return hl_r_ >= 0 ? hl_mid_ : 0; }
+    double basis_dev_bps() const { return active_ ? raw_ - med_ : std::nan(""); }   // raw − median (mm_lab hl_basis_bps)
+    double raw_bps() const { return raw_; }
+    double median_bps() const { return med_; }
+    bool active() const { return active_; }
+    double fair_off() const { return off_; }
+    int samples() const { return static_cast<int>(basis_.size()); }
+    size_t pending() const { return pending_.size(); }
+
+private:
+    std::deque<std::pair<int64_t, double>> pending_;      // (recv ms, mid), not yet visible to any decision
+    std::deque<std::pair<int64_t, double>> basis_;        // (second, raw bps)
+    int64_t dec_t_ = INT64_MIN, hl_r_ = -1, basis_sec_ = -1;
+    double hl_mid_ = 0, raw_ = std::nan(""), med_ = std::nan(""), off_ = 0;
+    bool ok_ = false, active_ = false;
+    std::string reason_ = "no_hl_book";
+};
+
+// Lighter exchange time − local receive time (ms) over the last minute of RECEIVE time (clock skew plus one-way
+// latency; normally negative). p50() = median of the samples in the window; NaN when there are none.
+class SkewWindow {
+public:
+    static constexpr int64_t kWindowMs = 60'000;
+    void add(int64_t recv_ms, int64_t exch_ms) { q_.push_back({recv_ms, exch_ms - recv_ms}); prune(recv_ms); }
+    double p50(int64_t now_ms) {
+        prune(now_ms);
+        if (q_.empty()) return std::nan("");
+        std::vector<int64_t> v; v.reserve(q_.size());
+        for (const auto& x : q_) v.push_back(x.second);
+        std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
+        return static_cast<double>(v[v.size() / 2]);
+    }
+    size_t n() const { return q_.size(); }
+private:
+    void prune(int64_t now) { while (!q_.empty() && q_.front().first <= now - kWindowMs) q_.pop_front(); }
+    std::deque<std::pair<int64_t, int64_t>> q_;
 };
 
 inline std::string utc_day(int64_t ms) {
@@ -155,7 +267,8 @@ inline nlohmann::json params_json(const hl::Params& p) {
             {"min_spread_ticks", p.min_spread_ticks}, {"imb_pull", p.imb_pull}, {"pause_move_ticks", p.pause_move_ticks}, {"pause_ms", p.pause_ms},
             {"requote_ticks", p.requote_ticks}, {"venue_tick", p.venue_tick},
             {"tick_rule", p.strat_tick_rule == hl::TickRule::Hyperliquid ? "hyperliquid" : "book"}, {"hl_sz_decimals", p.hl_sz_decimals},
-            {"fills", p.fills == hl::FillModel::Legacy ? "legacy" : p.fills == hl::FillModel::Full ? "full" : "nocross"}};
+            {"fills", p.fills == hl::FillModel::Legacy ? "legacy" : p.fills == hl::FillModel::Full ? "full" : "nocross"},
+            {"size_step", p.size_step}, {"min_base", p.min_base}, {"min_quote_usd", p.min_quote_usd}};
 }
 
 // {"quoting":n, "no_book":n, …} — every reason present, 0 included.
@@ -290,6 +403,11 @@ public:
         if (!b.valid()) return;
         roll_if_new_day(b.t_ms);
         Mkt& k = mkt(m);
+        if (c_.hl_k > 0) {                       // the anchor must be in place before on_book's requote
+            hl::Simulator::Overlay ov = k.sim->overlay();
+            ov.fair_off = anchors_[m].step(b.t_ms, b.mid(), true, c_.hl_k);
+            k.sim->set_overlay(ov);
+        }
         k.sim->on_book(b);
         k.last_book_recv_ms = recv_ms >= 0 ? recv_ms : b.t_ms;
         drain(m, k);
@@ -300,6 +418,11 @@ public:
         roll_if_new_day(t.t_ms);
         Mkt& k = mkt(m);
         k.sim->on_trade(t);
+        if (c_.hl_k > 0 && k.sim->has_book()) {  // mm_lab: a trade moves the decision clock; requote only on a change
+            hl::Simulator::Overlay ov = k.sim->overlay();
+            const double off = anchors_[m].step(t.t_ms, k.sim->last_book().mid(), false, c_.hl_k);
+            if (off != ov.fair_off) { ov.fair_off = off; k.sim->set_overlay(ov); k.sim->requote_now(t.t_ms); }
+        }
         drain(m, k);
         recheck_flat(m, k, t.t_ms);
         if (applied_fn_) applied_fn_(m, t.t_ms);
@@ -310,8 +433,17 @@ public:
     void on_applied(AppliedFn f) { applied_fn_ = std::move(f); }
     QuoteState quote_state(const std::string& m) const {
         auto it = mkts_.find(m);
-        return it == mkts_.end() ? QuoteState{} : quote_state_of(*it->second.sim);
+        if (it == mkts_.end()) return QuoteState{};
+        QuoteState q = quote_state_of(*it->second.sim);
+        q.equity -= it->second.day_base;          // the day's mark-to-market equity, like status.json and mm_paper_equity
+        return q;
     }
+    // A Hyperliquid book for market m (same coin name), at its receive time — the paper_hl anchor's input. Ignored
+    // unless Config::hl_k > 0. Never applied to a venue event whose exchange time is earlier than recv_ms (HlAnchor).
+    void push_hl(const std::string& m, int64_t recv_ms, double hl_mid) {
+        if (c_.hl_k > 0) anchors_[m].push(recv_ms, hl_mid);   // kept apart from the markets: an HL book never creates a venue market
+    }
+    const HlAnchor* anchor(const std::string& m) const { auto it = anchors_.find(m); return it == anchors_.end() ? nullptr : &it->second; }
     std::vector<std::string> markets() const { std::vector<std::string> v; for (const auto& [m, k] : mkts_) v.push_back(m); return v; }
     const hl::Params& params(const std::string& m) const { return params_for(m); }
     bool killed() const { return killed_; }
@@ -325,7 +457,14 @@ public:
             const QuoteState q = quote_state_of(s);
             const hl::Params& p = params_for(m);
             auto px = [](double v) { return v > 0 ? nlohmann::json(v) : nlohmann::json(nullptr); };
-            a.push_back({{"market", m}, {"equity", s.equity()}, {"inv", s.running().inv}, {"fills", s.running().fills}, {"halted", s.halted()},
+            auto fin = [](double v) { return std::isfinite(v) ? nlohmann::json(v) : nlohmann::json(nullptr); };
+            static const HlAnchor none;
+            const auto ai = anchors_.find(m);
+            const HlAnchor& an = ai == anchors_.end() ? none : ai->second;
+            a.push_back({{"market", m}, {"equity", s.equity() - k.day_base}, {"equity_total", s.equity()}, {"inv", s.running().inv}, {"fills", s.running().fills}, {"halted", s.halted()},
+                         {"hl_mid", px(an.hl_mid())}, {"hl_basis_bps", fin(an.basis_dev_bps())}, {"hl_anchor_active", an.active()},
+                         {"hl_fair_off", an.fair_off()}, {"hl_basis_samples", an.samples()}, {"hl_basis_median_bps", fin(an.median_bps())},
+                         {"hl_anchor_off_reason", c_.hl_k <= 0 ? nlohmann::json("disabled") : an.active() ? nlohmann::json(nullptr) : nlohmann::json(an.off_reason())},
                          {"stale", k.stale}, {"mid", px(q.mid)}, {"best_bid", px(q.best_bid)}, {"best_ask", px(q.best_ask)},
                          {"bid_px", px(q.bid_px)}, {"ask_px", px(q.ask_px)},
                          {"bid_reason", hl::reason_name(q.bid_reason)}, {"ask_reason", hl::reason_name(q.ask_reason)},
@@ -384,7 +523,9 @@ public:
         }
     }
 
-    double equity() const { double e = 0; for (const auto& [m, k] : mkts_) e += k.sim->equity(); return e; }
+    // The day so far, mark-to-market: Σ (equity now − equity at the last roll). With day_flatten the base is 0 (fresh simulators).
+    double equity() const { double e = 0; for (const auto& [m, k] : mkts_) e += k.sim->equity() - k.day_base; return e; }
+    double equity_total() const { double e = 0; for (const auto& [m, k] : mkts_) e += k.sim->equity(); return e; }   // since the engine started
     double gross_usd() const { double g = 0; for (const auto& [m, k] : mkts_) g += std::abs(k.sim->inventory_usd()); return g; }
     bool halted() const { return killed_ || loss_stop_; }
     const std::string& day() const { return day_; }
@@ -393,7 +534,7 @@ public:
     double inventory(const std::string& m) const { auto it = mkts_.find(m); return it == mkts_.end() ? 0 : it->second.sim->running().inv; }
     std::vector<Snap> snapshot() const {
         std::vector<Snap> v;
-        for (const auto& [m, k] : mkts_) v.push_back({m, k.sim->equity(), k.sim->running().inv, k.sim->running().fills, k.sim->halted()});
+        for (const auto& [m, k] : mkts_) v.push_back({m, k.sim->equity() - k.day_base, k.sim->running().inv, k.sim->running().fills, k.sim->halted()});
         return v;
     }
 
@@ -404,6 +545,7 @@ private:
         bool stale = false;
         int64_t last_book_recv_ms = 0;   // wall clock, receive time of the last book (stale check only)
         int64_t recheck_ms = 0;          // exchange time when in-flight cancels after a halt flatten have landed; 0 = none
+        double day_base = 0;             // simulator equity at the last day roll (0 at the start, and always with day_flatten)
     };
     int64_t cancel_latency(const std::string& m) const {
         const auto& p = params_for(m);
@@ -461,6 +603,34 @@ private:
         const std::string d = utc_day(t_ms);
         if (day_.empty()) { day_ = d; return; }
         if (d <= day_) return;
+        if (!c_.day_flatten) {
+            // Mark-to-market roll: no taker flatten, one simulator per market carries on (position, cash, orders).
+            for (auto& [m, k] : mkts_) {
+                drain(m, k);
+                const double eq = k.sim->equity();          // cash + inventory × the last book's mid
+                const auto r = k.sim->new_day();
+                DayRow row;
+                row.day = day_; row.market = m; row.pnl = eq - k.day_base; row.volume = r.volume_usd; row.fills = r.fills;
+                row.flattens = r.flattens; row.max_dd = r.max_dd;
+                row.capture_bps = r.volume_usd > 0 ? r.capture_bps_sum / r.volume_usd : 0;
+                row.mk10_bps = r.mk_weight > 0 ? r.mk10_bps_sum / r.mk_weight : 0;
+                row.inv_end = k.sim->running().inv; row.inv_usd_end = k.sim->inventory_usd();
+                if (day_fn_) day_fn_(row);
+                k.day_base = eq;
+                k.drained = 0;                               // new_day emptied fills()
+                k.recheck_ms = 0;
+            }
+            emit(t_ms, "day_roll", "", day_ + " closed; " + d + " opened (marked to market, inventory carried: $" +
+                 fmt_plain(gross_usd()) + " gross)");
+            day_ = d;
+            loss_stop_ = false;
+            // The loss stop ends with the day; the kill switch, a dead feed and a stale market keep their halt.
+            for (auto& [m, k] : mkts_) {
+                const bool h = killed_ || feed_down_ || k.stale;
+                if (k.sim->halted() != h) k.sim->set_halted(h, k.sim->last_book_ms());
+            }
+            return;
+        }
         for (auto& [m, k] : mkts_) {
             const int64_t last = k.sim->last_book_ms();
             k.sim->flatten_now(last > 0 ? std::min(last, t_ms) : t_ms);   // priced at the last book: stamped with its time
@@ -485,10 +655,12 @@ private:
 
     void emit(int64_t t, const std::string& kind, const std::string& m, const std::string& d) { if (event_fn_) event_fn_(t, kind, m, d); }
     static std::string fmt(double v) { char b[32]; std::snprintf(b, sizeof b, "$%.2f", v); return b; }
+    static std::string fmt_plain(double v) { char b[32]; std::snprintf(b, sizeof b, "%.2f", v); return b; }
 
     Config c_;
     Sequencer seq_;
     std::map<std::string, Mkt> mkts_;
+    std::map<std::string, HlAnchor> anchors_;   // paper_hl (Config::hl_k > 0): per market, market data only — survives every day roll
     std::string day_;
     bool killed_ = false, loss_stop_ = false, feed_down_ = false;
     FillFn fill_fn_;

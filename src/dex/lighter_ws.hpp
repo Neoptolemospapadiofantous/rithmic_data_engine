@@ -72,18 +72,27 @@ inline asio::awaitable<std::string> https_request(ssl::context& ctx, const std::
 
 inline asio::awaitable<std::string> https_get(ssl::context& ctx, const std::string& target) { co_return co_await https_request(ctx, HOST, target); }
 
-struct MarketInfo { int id = -1; int price_decimals = 0; };
+// size_decimals / min_base / min_quote: Lighter's order-size rules (supported_size_decimals, min_base_amount,
+// min_quote_amount; size_decimals −1 = not listed) — mm_paper rounds its paper quotes to them (hl::lot_qty).
+struct MarketInfo { int id = -1; int price_decimals = 0; int size_decimals = -1; double min_base = 0, min_quote = 0; };
 
-// symbol → {market_id, supported_price_decimals} for the requested symbols Lighter lists as active perps
+// symbol → {market_id, supported_price_decimals, size rules} for the requested symbols Lighter lists as active perps
 // (missing ones are left out). 10^-price_decimals is the venue's real tick (hl::Params::venue_tick).
 inline asio::awaitable<std::map<std::string, MarketInfo>> resolve_markets(ssl::context& ctx, const std::vector<std::string>& symbols) {
     const auto body = co_await https_get(ctx, "/api/v1/orderBooks");
     auto j = nlohmann::json::parse(body, nullptr, false);
     std::map<std::string, MarketInfo> all, out;
+    auto dec = [](const nlohmann::json& ob, const char* k) {
+        const auto it = ob.find(k);
+        if (it == ob.end()) return 0.0;
+        if (it->is_string()) return std::strtod(it->get_ref<const std::string&>().c_str(), nullptr);
+        return it->is_number() ? it->get<double>() : 0.0;
+    };
     if (j.is_object() && j.contains("order_books"))
         for (const auto& ob : j["order_books"])
             if (ob.value("market_type", "") == "perp" && ob.value("status", "") == "active")
-                all[ob.value("symbol", "")] = {ob.value("market_id", -1), ob.value("supported_price_decimals", 0)};
+                all[ob.value("symbol", "")] = {ob.value("market_id", -1), ob.value("supported_price_decimals", 0),
+                                               ob.value("supported_size_decimals", -1), dec(ob, "min_base_amount"), dec(ob, "min_quote_amount")};
     for (const auto& s : symbols) if (auto it = all.find(s); it != all.end()) out[s] = it->second;
     co_return out;
 }

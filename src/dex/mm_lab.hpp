@@ -221,7 +221,10 @@ inline std::optional<hl::Params> frozen_params(const Venue& v, const json& param
         q.maker_fee_bps = j.value("maker_bps", 1.5);
         q.taker_fee_bps = j.value("taker_bps", 4.5);
         q.latency_ms = j.value("latency_ms", int64_t{200});
-        q.order_usd = j.value("order_usd", 100.0);
+        // Judge-owned, NOT read from the params file: mm_gates.sh rewrote params_lighter.json at $11 on 2026-10-26 (the
+        // paper setting), and following it would silently move every later baseline and every idea without size_usd.
+        // The registry stays comparable only with one fixed default; ideas choose their size with size_usd.
+        q.order_usd = 100.0;
         q.max_inv_units = j.value("max_inv", 3);
         const auto& cj = j["coins"][coin];
         q.half_width_ticks = cj.value("half_width_ticks", 0.5);

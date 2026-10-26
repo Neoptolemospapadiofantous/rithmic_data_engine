@@ -8,7 +8,9 @@
 # Halt:    touch data/mm_paper/KILL   (flattens and halts every market; delete the file to resume)
 # Results: Postgres mm_paper_fills / mm_paper_equity / mm_paper_daily / mm_paper_events
 #
-# Same 24 markets as lighter-recorder-local; frozen setting in src/dex/mm_paper.hpp (mmpaper::frozen_params).
+# Same 24 markets as lighter-recorder-local; frozen setting in src/dex/mm_paper.hpp (mmpaper::frozen_params). Since
+# 2026-10-26: $11 quotes (--order-usd default, rounded up to Lighter's size grid/minimums) and inventory carried across
+# 00:00 UTC with mark-to-market daily rows (--day-flatten restores the old flat-to-flat day).
 # --tick-rule hl: the strategy's distances stay in HYPERLIQUID ticks (the unit the backtests validated; Lighter's
 # grid is up to 100× finer), orders round to Lighter's real grid. --latency-ms 300 = the backtests' delay.
 [Unit]

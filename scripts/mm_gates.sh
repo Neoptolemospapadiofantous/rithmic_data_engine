@@ -9,7 +9,7 @@
 #             mm_sim --daily's hours / max_gap_min / books), flat-to-flat replay (build/mm_sim --daily, Hyperliquid tick rule, Lighter grid)
 #             over those days: net bps and volume-weighted 10 s markout.
 # G2 Paper  — mm_paper_daily (label 'paper', the official 300 ms engine; the 220 ms shadow is 'paper_220'): complete paper days, cumulative P&L, positive-day share, mean day vs the backtest's
-#             95% range ($9..$68), loss stops. Only COMPLETE paper days count toward any G2 number (audit 2026-10-26); a day is
+#             95% range ($0.99..$7.48 at $11 quotes; $9..$68 at $100), loss stops. Only COMPLETE paper days count toward any G2 number (audit 2026-10-26); a day is
 #             complete when ALL of these hold, otherwise it is listed under excluded with its reasons:
 #               * no engine restart (a 'start' event) — the engine resets at every start, its row covers only the hours after it;
 #               * the engine ran ≥ 23.5 h of that UTC day (minute '_total' equity rows ≥ 1410);
@@ -21,6 +21,18 @@
 #                 never counted (decided 2026-10-26);
 #               * zero DB drops that day (data/mm_paper/db_drops_paper.json, the engine's persisted drop ledger; a day before
 #                 the ledger's `since` is unknown and therefore not complete).
+#             Since 2026-10-26 the engine no longer flattens at 00:00 UTC (docs/market_making_plan.md §8): mm_paper_daily.pnl
+#             is MARK-TO-MARKET (equity at the roll − equity at the previous roll, inventory carried). Nothing below needed
+#             flat-to-flat days: cumulative P&L, positive-day share and the mean day are sums/counts of daily rows, and MTM
+#             rows telescope to the running equity.
+# $11 re-base (founder 2026-10-26, proportional factor 0.11 = $11 / $100): the paper engine quotes $11 since that date,
+#             so every $ threshold that was set for $100 quotes is scaled by 0.11 — the backtest mean-day range $9..$68 →
+#             $0.99..$7.48, the G2 fail line −$300 → −$33 (and mm_paper's daily loss stop $150 → $16.50). Bps and share rules
+#             are size-free and unchanged. G1 replays the same $11 setting the paper engine runs: order_usd 11, rounded up
+#             per coin to Lighter's size grid and minimums (size_step = 10^−supported_size_decimals, min_base =
+#             min_base_amount, min_quote_usd = min_quote_amount × 1.05 — the live gateway's margin), from the same public
+#             /api/v1/orderBooks call. The proportional scaling is an assumption (fill rates are not linear in size); it is
+#             the founder's decision, to be revisited once complete $11 paper days exist.
 # G3 Pilot / G4 Scale — live; no data until Phase 4. Reported as pending with their criteria.
 # Numbers in RULES below are the plan's pass/fail thresholds; change them there and in the plan together.
 set -uo pipefail
@@ -30,11 +42,12 @@ OUT=data/mm_gates; mkdir -p "$OUT"
 ARCH=/media/theone/381C48C51C48803C/rithmic_dex/lighter
 TODAY=$(date -u +%F)
 STAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-BT_LOW=9; BT_HIGH=68                       # backtest holdout: 95% interval of the mean day, $
+BT_LOW=0.99; BT_HIGH=7.48                  # backtest holdout: 95% interval of the mean day, $ ($9..$68 at $100 quotes × 0.11)
 # RULES
 G1_DAYS=10; G1_NET_BPS=0.25; G1_MK10_PASS=-1.0; G1_MK10_FAIL=-1.5
 G1_MIN_HOURS=23.5; G1_MAX_GAP_MIN=15
-G2_DAYS=20; G2_POS_SHARE=0.55; G2_FAIL_CUM=-300; G2_FAIL_STOPS=2
+G1_ORDER_USD=11                            # the paper engine's quote size (mmpaper::frozen_params), was 100
+G2_DAYS=20; G2_POS_SHARE=0.55; G2_FAIL_CUM=-33; G2_FAIL_STOPS=2   # fail line −$300 at $100 quotes × 0.11
 G2_MIN_HOURS=23.5; G2_MAX_HALT_MIN=30
 
 log() { printf '[%s] [mm_gates] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
@@ -42,17 +55,22 @@ log() { printf '[%s] [mm_gates] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 # ── G1: Lighter archive, complete days only ─────────────────────────────────────────────────────────
 G1_JSON='{"days":0,"net_bps":null,"mk10_bps":null,"fills":0,"volume_usd":0,"pnl_usd":0,"status":"pending","daily":[]}'
 if [ -d "$ARCH" ] && [ -x build/mm_sim ]; then
-  # per-coin params: Lighter grid from supported_price_decimals, Hyperliquid szDecimals for the strategy tick
-  LM=$(curl -s -m 30 "https://mainnet.zklighter.elliot.ai/api/v1/orderBooks" | jq -c '[.order_books[]|select(.market_type=="perp" and .status=="active")|{symbol,supported_price_decimals}]' 2>/dev/null || echo '[]')
+  # per-coin params: Lighter grid from supported_price_decimals, Lighter size rules (supported_size_decimals,
+  # min_base_amount, min_quote_amount), Hyperliquid szDecimals for the strategy tick
+  LM=$(curl -s -m 30 "https://mainnet.zklighter.elliot.ai/api/v1/orderBooks" | jq -c '[.order_books[]|select(.market_type=="perp" and .status=="active")|{symbol,supported_price_decimals,supported_size_decimals,min_base_amount,min_quote_amount}]' 2>/dev/null || echo '[]')
   HL=$(curl -s -m 30 -X POST -H 'Content-Type: application/json' -d '{"type":"meta"}' https://api.hyperliquid.xyz/info | jq -c '[.universe[]|{name,szDecimals}]' 2>/dev/null || echo '[]')
   if [ "$LM" != "[]" ] && [ "$HL" != "[]" ]; then
-    jq -n --argjson lm "$LM" --argjson hl "$HL" --arg coins "$(ls "$ARCH" | paste -sd,)" '
+    jq -n --argjson lm "$LM" --argjson hl "$HL" --arg coins "$(ls "$ARCH" | paste -sd,)" --argjson ou "$G1_ORDER_USD" '
       ($lm | map({(.symbol): .supported_price_decimals}) | add) as $pd |
+      ($lm | map({(.symbol): .}) | add) as $ob |
       ($hl | map({(.name): .szDecimals}) | add) as $sz |
-      {venue:"lighter", maker_bps:0, taker_bps:0, latency_ms:300, order_usd:100, max_inv:3,
+      def num: if . == null then 0 else tonumber end;
+      {venue:"lighter", maker_bps:0, taker_bps:0, latency_ms:300, order_usd:$ou, max_inv:3,
        coins: ($coins | split(",") | map(select(($pd[.] != null) and ($sz[.] != null)) |
          {(.): {strategy:"frozen", half_width_ticks:5, min_spread_ticks:4, imb_pull:0.6, pause_move_ticks:2, pause_ms:2000,
-                requote_ticks:1, venue_tick: (pow(10; -($pd[.]))), tick_rule:"hyperliquid", hl_sz_decimals: $sz[.]}}) | add)}' \
+                requote_ticks:1, venue_tick: (pow(10; -($pd[.]))), tick_rule:"hyperliquid", hl_sz_decimals: $sz[.],
+                size_step: (if $ob[.].supported_size_decimals == null then 0 else pow(10; -($ob[.].supported_size_decimals)) end),
+                min_base: ($ob[.].min_base_amount | num), min_quote_usd: (($ob[.].min_quote_amount | num) * 1.05)}}) | add)}' \
       > "$OUT/params_lighter.json"
     # every recorded day; only COMPLETE days (≥ 23.5 h of books) count toward the gate — today is never complete,
     # it shows in the daily list as incomplete so the dashboard can draw it hollow

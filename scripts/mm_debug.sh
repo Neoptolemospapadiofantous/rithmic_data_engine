@@ -29,6 +29,9 @@
 #                                    3. halts the replay does not see: stale market / feed down / kill / loss stop / day roll;
 #                                    4. the replay flattens at T1 (taker, not counted in fills) — paper P&L is mark-to-mid;
 #                                    5. an engine restart inside the window resets the paper simulator (see events 'start').
+#                                  A window crossing 00:00 UTC is refused (since 2026-10-26 the engine carries inventory
+#                                  over the roll and its day equity restarts there; split the window at midnight). With
+#                                  inventory carried across days a flat T0 is rarer — the not-flat warning still applies.
 #   archive [venue]                per archive file (default: today's UTC files of every market of the venue, default
 #                                  lighter): lines, skipped zstd frames, Lighter sequence gaps, snapshots, books, trades,
 #                                  hours, longest book silence (build/archive_check). Options --day YYYY-MM-DD, --market M.
@@ -297,6 +300,12 @@ cmd_replay() {
   local t0 t1; t0=$(ms_of "$FROM") || die "bad --from"; t1=$(ms_of "$TO") || die "bad --to"
   [ -z "$t0" ] || [ -z "$t1" ] && die "bad --from/--to"
   local d0 d1; d0=$(date -u -d "@$((t0/1000))" +%F); d1=$(date -u -d "@$((t1/1000))" +%F)
+  # Since 2026-10-26 the engine carries inventory across 00:00 UTC and its per-day equity restarts at the roll, so a
+  # window crossing a roll mixes two days' baselines in the paper P&L (Δ minute equity) — refuse it; a window may END
+  # exactly at 00:00:00.000.
+  local d1x; d1x=$(date -u -d "@$(( (t1 - 1) / 1000 ))" +%F)
+  [ "$t1" -gt "$t0" ] || die "--to must be after --from"
+  [ "$d0" = "$d1x" ] || die "window $FROM → $TO crosses a 00:00 UTC day roll — split it at midnight (the paper engine's day equity restarts there)"
   local i0 i1; i0=$(iso_of_ms "$t0"); i1=$(iso_of_ms "$t1")
   TMPD=$(mktemp -d); local tmp=$TMPD           # removed by the EXIT trap, also when die() leaves early
   # The engine's own setting for this market: the exact hl::Params it publishes in status.json (markets[].params), else the
@@ -307,7 +316,7 @@ cmd_replay() {
     jq --arg m "$m" '(.markets[] | select(.market==$m) | .params) as $p |
       {venue:"lighter", maker_bps:$p.maker_fee_bps, taker_bps:$p.taker_fee_bps, latency_ms:$p.latency_ms, order_usd:$p.order_usd, max_inv:$p.max_inv_units,
        coins:{($m): ($p | {half_width_ticks, skew_ticks, fair, min_spread_ticks, imb_pull, pause_move_ticks, pause_ms, requote_ticks,
-                           venue_tick, tick_rule, hl_sz_decimals})}}' "$sf" > "$tmp/params.json"
+                           venue_tick, tick_rule, hl_sz_decimals} + {size_step: (.size_step // 0), min_base: (.min_base // 0), min_quote_usd: (.min_quote_usd // 0)})}}' "$sf" > "$tmp/params.json"
     src="$sf (markets[].params)"
     local p; p=$(jq -c --arg m "$m" '.markets[] | select(.market==$m) | .params' "$sf")
     [ "$(jq -r .cancels <<< "$p")" = optimistic ] && cfg=chosen/opt

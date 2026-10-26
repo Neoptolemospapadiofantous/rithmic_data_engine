@@ -4,8 +4,27 @@
 // program has no keys and no order path.
 //
 //   mm_paper --symbols A,B,C [--kill-file data/mm_paper/KILL] [--status data/mm_paper/status.json]
-//            [--daily-loss 150] [--latency-ms 300] [--tick-rule hl|book] [--label paper] [--reorder-ms 250] [--no-db]
-//            [--duration SECONDS]
+//            [--daily-loss 16.5] [--latency-ms 300] [--tick-rule hl|book] [--label paper] [--reorder-ms 250] [--no-db]
+//            [--duration SECONDS] [--order-usd 11] [--day-flatten] [--hl-anchor K]
+//
+// Since 2026-10-26 (founder, docs/market_making_plan.md §8):
+//   --order-usd  quote size in $ (default 11, was 100), rounded UP per market to Lighter's size grid and minimums
+//                (supported_size_decimals, min_base_amount, min_quote_amount × 1.05 — hl::lot_qty, the rule of
+//                src/dex/live/market_spec.hpp size_quote), so a paper order is never one Lighter would refuse as too small;
+//   no 00:00 UTC flatten — inventory and cash carry into the next UTC day and mm_paper_daily.pnl is MARK-TO-MARKET
+//                (equity at the roll − equity at the previous roll / engine start); --day-flatten restores the old
+//                flat-to-flat day. The loss stop and the kill switch still flatten. A RESTART still starts flat;
+//   --hl-anchor K  (label paper_hl) also reads Hyperliquid's public l2Book (wss://api.hyperliquid.xyz/ws, fast) for every
+//                market Hyperliquid lists and quotes around mmpaper::HlAnchor's fair price with weight K (causal: only
+//                HL books received at or before a venue event's exchange time); a market without a usable anchor quotes
+//                on its own mid. status.json gains per market hl_mid, hl_basis_bps, hl_anchor_active (+ hl_fair_off,
+//                hl_basis_samples, hl_basis_median_bps, hl_anchor_off_reason) and a top-level hl_feed block. The anchor is
+//                off (own mid) beyond a ±200 bps median basis or a > 200 bps fair move (mmpaper::HlAnchor);
+//   --daily-loss default $16.50 ($150 at $100 quotes × 0.11, founder 2026-10-26);
+//   a stop writes one 'position_discarded' event per market still holding inventory (inventory, mid, equity since the
+//                last roll) and a 'stop' summary; the 'start' event says the engine starts flat;
+//   status.json lighter_skew_ms_p50 (top level) and markets[].skew_ms_p50: Lighter book exchange time − local receive
+//                time, median over the last minute (mmpaper::SkewWindow).
 //
 // --label names this instance in every table (column `label`, default 'paper'): the official engine runs as 'paper'
 // at 300 ms; a shadow at the delay a server in Lighter's region would have runs as 'paper_220' beside it, so the
@@ -24,7 +43,9 @@
 // Event order: books and trades pass a 250 ms re-order buffer (--reorder-ms) and are applied in the backtest
 // loader's order (exchange time, trades before books) — see mm_paper.hpp.
 // Status file every 10 s: day, equity, gross inventory, halted, per-market state, DB drops (total + today). Touch the kill file to
-// flatten and halt everything; delete it to resume. A restart starts flat (paper positions are not carried).
+// flatten and halt everything; delete it to resume. A restart starts flat (paper positions are not carried across a
+// restart — only across a day roll). status.json `equity_usd` and markets[].equity are the DAY's mark-to-market equity
+// (as before); equity_total_usd / markets[].equity_total run from the engine start.
 //
 // Observability (2026-10-26; contract for the dashboard and scripts/mm_debug.sh):
 //   * mm_paper_quotes (migrations/20261026_mm_paper_quotes.sql, created IF NOT EXISTS): what each market quotes and why —
@@ -60,6 +81,8 @@
 #include <deque>
 #include <filesystem>
 #include <fstream>
+#include <functional>
+#include <memory>
 #include <map>
 #include <mutex>
 #include <sstream>
@@ -88,6 +111,7 @@ static std::string iso_ms(int64_t ms) {
     return o;
 }
 static std::string num(double v) { char b[40]; std::snprintf(b, sizeof b, "%.12g", v); return b; }
+static nlohmann::json nan_null(double v) { return std::isfinite(v) ? nlohmann::json(v) : nlohmann::json(nullptr); }
 
 // ── Postgres writer: statements with parameters, applied in order on its own thread ─────────────────
 // Each statement runs on its own (mm_paper_db.hpp run_batch): a failing statement is logged with its error and
@@ -343,10 +367,76 @@ CREATE TABLE IF NOT EXISTS mm_paper_quotes (ts TIMESTAMPTZ NOT NULL, label TEXT 
     std::thread th_;
 };
 
+// ── Hyperliquid public books for the paper_hl anchor (--hl-anchor) ─────────────────────────────────────────────────
+// One websocket to wss://api.hyperliquid.xyz/ws, l2Book (fast, ~0.55 s) per coin — the subscription hl_recorder uses;
+// public, no keys. Each book's mid goes to on_mid(coin, recv ms, mid); the anchor decides what is visible when.
+struct HlFeed {
+    bool connected = false;
+    int64_t books = 0, reconnects = 0, last_ms = 0;
+};
+using HlWs = boost::beast::websocket::stream<boost::beast::ssl_stream<boost::beast::tcp_stream>>;
+static asio::awaitable<void> hl_session(lighter::ssl::context& ctx, const std::vector<std::string>& coins, HlFeed& st,
+                                        const std::function<void(const std::string&, int64_t, double)>& on_mid) {
+    namespace beast = boost::beast;
+    namespace websocket = beast::websocket;
+    const std::string host = "api.hyperliquid.xyz";
+    auto ex = co_await asio::this_coro::executor;
+    asio::ip::tcp::resolver res(ex);
+    auto eps = co_await res.async_resolve(host, "443", asio::use_awaitable);
+    auto ws = std::make_shared<HlWs>(ex, ctx);
+    beast::get_lowest_layer(*ws).expires_after(std::chrono::seconds(15));
+    co_await beast::get_lowest_layer(*ws).async_connect(eps, asio::use_awaitable);
+    if (!SSL_set_tlsext_host_name(ws->next_layer().native_handle(), host.c_str())) throw std::runtime_error("SNI failed");
+    ws->next_layer().set_verify_callback(lighter::ssl::host_name_verification(host));
+    co_await ws->next_layer().async_handshake(lighter::ssl::stream_base::client, asio::use_awaitable);
+    beast::get_lowest_layer(*ws).expires_never();
+    websocket::stream_base::timeout to{};
+    to.handshake_timeout = std::chrono::seconds(15);
+    to.idle_timeout = std::chrono::seconds(60);
+    to.keep_alive_pings = true;
+    ws->set_option(to);
+    ws->read_message_max(64 << 20);
+    co_await ws->async_handshake(host, "/ws", asio::use_awaitable);
+    ws->text(true);
+    for (const auto& c : coins) {
+        json sub = {{"method", "subscribe"}, {"subscription", {{"type", "l2Book"}, {"coin", c}, {"fast", true}}}};
+        co_await ws->async_write(asio::buffer(sub.dump()), asio::use_awaitable);
+    }
+    st.connected = true;
+    logf("hyperliquid: connected, l2Book for %zu coins", coins.size());
+    auto alive = std::make_shared<std::atomic<bool>>(true);
+    asio::co_spawn(ex, [ws, alive]() -> asio::awaitable<void> {      // HL drops a connection silent for 60 s
+        try {
+            while (*alive) {
+                co_await lighter::sleep_s(30);
+                if (*alive) co_await ws->async_write(asio::buffer(std::string(R"({"method":"ping"})")), asio::use_awaitable);
+            }
+        } catch (const std::exception&) {}
+    }, asio::detached);
+    beast::flat_buffer buf;
+    try {
+        while (true) {
+            buf.clear();
+            co_await ws->async_read(buf, asio::use_awaitable);
+            const int64_t recv_ms = lighter::now_us() / 1000;
+            const json j = json::parse(beast::buffers_to_string(buf.data()), nullptr, false);
+            if (j.is_discarded() || !j.is_object()) continue;
+            const auto b = hl::parse_book(j);
+            if (!b || !b->valid()) continue;
+            ++st.books; st.last_ms = recv_ms;
+            on_mid(b->coin, recv_ms, b->mid());
+        }
+    } catch (...) {
+        *alive = false;
+        st.connected = false;
+        throw;
+    }
+}
+
 int main(int argc, char** argv) {
     std::vector<std::string> symbols;
     fs::path kill_file = "data/mm_paper/KILL", status_file = "data/mm_paper/status.json";
-    double daily_loss = 150;
+    double daily_loss = 16.5;            // $150 at $100 quotes × 0.11 for the $11 setting (founder 2026-10-26)
     int64_t latency_ms = 300;
     std::string label = "paper";
     bool tick_rule_hl = true;
@@ -354,6 +444,8 @@ int main(int argc, char** argv) {
     int duration_s = 0;
     int64_t reorder_ms = 250;
     fs::path env_file = ".env";
+    double order_usd = 11, hl_anchor = 0;
+    bool day_flatten = false;
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
         auto val = [&]() -> std::string { return i + 1 < argc ? argv[++i] : ""; };
@@ -368,12 +460,16 @@ int main(int argc, char** argv) {
         else if (a == "--reorder-ms") reorder_ms = std::atoll(val().c_str());
         else if (a == "--duration") duration_s = std::atoi(val().c_str());
         else if (a == "--env") env_file = val();
+        else if (a == "--order-usd") order_usd = std::atof(val().c_str());
+        else if (a == "--day-flatten") day_flatten = true;
+        else if (a == "--hl-anchor") hl_anchor = std::atof(val().c_str());
         else {
-            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE]\n");
+            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K]\n");
             return 2;
         }
     }
     if (symbols.empty()) { std::fprintf(stderr, "--symbols is required\n"); return 2; }
+    if (!(order_usd > 0) || !(hl_anchor >= 0)) { std::fprintf(stderr, "--order-usd must be > 0 and --hl-anchor >= 0\n"); return 2; }
     std::error_code ec;
     fs::create_directories(status_file.parent_path(), ec);
 
@@ -395,7 +491,10 @@ int main(int argc, char** argv) {
     pc.p.latency_ms = latency_ms;
     pc.daily_loss_usd = daily_loss;
     pc.reorder_ms = reorder_ms;
-    mmpaper::Portfolio pf(pc);          // per_market is filled once the markets are resolved (below), before any book
+    pc.p.order_usd = order_usd;
+    pc.day_flatten = day_flatten;
+    pc.hl_k = hl_anchor;
+    mmpaper::Portfolio pf(pc);         // per_market is filled once the markets are resolved (below), before any book
     int64_t fills = 0, events = 0;
     auto fill_fn = [&](const std::string& m, const hl::Fill& f, double inv) {
         ++fills;
@@ -411,7 +510,8 @@ int main(int argc, char** argv) {
                           {iso_ms(t), kind, m, d, label, label + ":" + run_id + ":e" + std::to_string(events)}, mmpaper::utc_day(t)});
     };
     auto day_fn = [&](const mmpaper::DayRow& r) {
-        logf("day %s %s: P&L %.2f, %lld fills, $%.0f traded", r.day.c_str(), r.market.c_str(), r.pnl, (long long)r.fills, r.volume);
+        logf("day %s %s: P&L %.2f (%s), %lld fills, $%.0f traded, carried %.8g ($%.2f)", r.day.c_str(), r.market.c_str(), r.pnl,
+             day_flatten ? "flat to flat" : "marked to market", (long long)r.fills, r.volume, r.inv_end, r.inv_usd_end);
         if (db) db->push({"INSERT INTO mm_paper_daily (day, market, pnl, volume, fills, flattens, capture_bps, mk10_bps, max_dd, label) "
                           "VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (label, day, market) DO UPDATE SET pnl = EXCLUDED.pnl, volume = EXCLUDED.volume, "
                           "fills = EXCLUDED.fills, flattens = EXCLUDED.flattens, capture_bps = EXCLUDED.capture_bps, mk10_bps = EXCLUDED.mk10_bps, max_dd = EXCLUDED.max_dd",
@@ -442,6 +542,10 @@ int main(int argc, char** argv) {
 
     std::map<int, std::pair<std::string, lighter::Book>> mk;   // market_id → (symbol, book)
     std::vector<int> id_list;
+    std::vector<std::string> hl_coins;      // --hl-anchor: markets Hyperliquid lists (anchor feed subscriptions)
+    HlFeed hl_feed;
+    std::map<std::string, mmpaper::SkewWindow> skew;   // Lighter book exchange time − receive time, per market
+    mmpaper::SkewWindow skew_all;
     int64_t books = 0, trades = 0, gaps = 0, reconnects = 0;
     bool connected = false, ever_connected = false;   // the feed cannot be "down" before its first connection
     int64_t last_msg_us = 0;
@@ -452,7 +556,12 @@ int main(int argc, char** argv) {
             if (it == mk.end()) return;
             const auto r = it->second.second.apply(m);
             if (r == lighter::Book::Apply::Gap) { ++gaps; throw std::runtime_error("sequence gap on " + it->second.first); }
-            if (it->second.second.valid()) { ++books; pf.push_book(it->second.first, it->second.second.top(20), recv / 1000); }
+            if (it->second.second.valid()) {
+                ++books;
+                hl::Book b = it->second.second.top(20);
+                if (b.t_ms > 0) { skew[it->second.first].add(recv / 1000, b.t_ms); skew_all.add(recv / 1000, b.t_ms); }
+                pf.push_book(it->second.first, std::move(b), recv / 1000);
+            }
         } else if (int tid = lighter::market_of(m, "trade"); tid >= 0) {
             auto it = mk.find(tid);
             if (it == mk.end()) return;
@@ -470,7 +579,7 @@ int main(int argc, char** argv) {
             catch (const std::exception& e) { logf("market lookup failed (%s) — retrying in 30 s", e.what()); failed = true; }
             if (failed || ids.empty()) co_await lighter::sleep_s(30);   // (no co_await inside a handler)
         }
-        if (tick_rule_hl) {
+        if (tick_rule_hl || hl_anchor > 0) {      // HL's coin list also decides which markets get an anchor
             for (int attempt = 0; attempt < 5 && hl_sz.empty(); ++attempt) {
                 bool failed = false;
                 try { hl_sz = co_await lighter::hyperliquid_sz_decimals(ctx); }
@@ -488,18 +597,49 @@ int main(int argc, char** argv) {
             auto hz = hl_sz.find(s);
             if (tick_rule_hl && hz != hl_sz.end()) { q.strat_tick_rule = hl::TickRule::Hyperliquid; q.hl_sz_decimals = hz->second; }
             else if (tick_rule_hl) logf("%s: not on Hyperliquid — distances in Lighter ticks for this market", s.c_str());
+            // Lighter's size rules: the quote is rounded UP to the size grid and clears min_base_amount and
+            // min_quote_amount × 1.05 (the live gateway's margin, src/dex/live/market_spec.hpp SizingRules).
+            if (info.size_decimals >= 0) q.size_step = std::pow(10.0, -info.size_decimals);
+            q.min_base = info.min_base;
+            q.min_quote_usd = info.min_quote * 1.05;
+            if (info.size_decimals < 0) logf("%s: Lighter lists no size grid — quote size stays continuous ($%.2f)", s.c_str(), q.order_usd);
             pc.per_market[s] = q;
-            logf("%s: market %d, Lighter grid %.*f, strategy tick %s", s.c_str(), info.id, info.price_decimals, q.venue_tick,
-                 q.strat_tick_rule == hl::TickRule::Hyperliquid ? ("Hyperliquid (szDecimals " + std::to_string(q.hl_sz_decimals) + ")").c_str() : "Lighter grid");
+            if (hl_anchor > 0 && hz != hl_sz.end()) hl_coins.push_back(s);
+            else if (hl_anchor > 0) logf("%s: no Hyperliquid market — quotes on its own mid (no anchor)", s.c_str());
+            logf("%s: market %d, Lighter grid %.*f, strategy tick %s, size grid %g, min %g coin / $%.2f", s.c_str(), info.id, info.price_decimals, q.venue_tick,
+                 q.strat_tick_rule == hl::TickRule::Hyperliquid ? ("Hyperliquid (szDecimals " + std::to_string(q.hl_sz_decimals) + ")").c_str() : "Lighter grid",
+                 q.size_step, q.min_base, q.min_quote_usd);
         }
         pf = mmpaper::Portfolio(pc);
         pf.on_fill(fill_fn); pf.on_event(event_fn); pf.on_day(day_fn); pf.on_applied(applied_fn);
         pf.tick(lighter::now_us() / 1000, false);
+        if (hl_anchor > 0 && !hl_coins.empty()) {
+            asio::co_spawn(co_await asio::this_coro::executor, [&]() -> asio::awaitable<void> {
+                int hb = 1;
+                while (true) {
+                    const auto t0 = std::chrono::steady_clock::now();
+                    std::string why;
+                    try { co_await hl_session(ctx, hl_coins, hl_feed, [&](const std::string& c, int64_t r, double mid) { pf.push_hl(c, r, mid); }); why = "closed"; }
+                    catch (const std::exception& e) { why = e.what(); }
+                    hl_feed.connected = false;
+                    if (std::chrono::steady_clock::now() - t0 > std::chrono::seconds(60)) hb = 1;
+                    ++hl_feed.reconnects;
+                    logf("hyperliquid: disconnected (%s) — reconnecting in %d s (anchored markets quote on their own mid while HL is stale)", why.c_str(), hb);
+                    co_await lighter::sleep_s(hb);
+                    hb = std::min(hb * 2, 60);
+                }
+            }, [](std::exception_ptr e) { if (e) try { std::rethrow_exception(e); } catch (const std::exception& x) { logf("hyperliquid task ended: %s", x.what()); } });
+        } else if (hl_anchor > 0) logf("--hl-anchor: no market has a Hyperliquid listing (or HL meta unavailable) — every market quotes on its own mid");
         if (db) db->push({"INSERT INTO mm_paper_events (ts, kind, market, detail, label, uid) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (uid) DO NOTHING",
                           {iso_ms(lighter::now_us() / 1000), "start", "", "paper engine started on " + std::to_string(ids.size()) + " Lighter markets (run " + run_id +
-                           ", " + std::to_string(latency_ms) + " ms)", label, label + ":" + run_id + ":start"}, mmpaper::utc_day(lighter::now_us() / 1000)});
-        logf("paper trading %zu Lighter markets (frozen setting, %s ticks, %lld ms delay, daily loss stop $%.0f)", ids.size(),
-             tick_rule_hl ? "Hyperliquid" : "Lighter", (long long)latency_ms, daily_loss);
+                           ", " + std::to_string(latency_ms) + " ms, $" + num(order_usd) + " quotes, " + (day_flatten ? "day flatten" : "inventory carried") +
+                           (hl_anchor > 0 ? ", HL anchor k=" + num(hl_anchor) + " on " + std::to_string(hl_coins.size()) + " markets" : std::string()) +
+                           "; starts FLAT — paper positions are not carried across a restart)",
+                           label, label + ":" + run_id + ":start"}, mmpaper::utc_day(lighter::now_us() / 1000)});
+        logf("paper trading %zu Lighter markets (frozen setting, $%.2f quotes, %s ticks, %lld ms delay, daily loss stop $%.2f, %s%s)", ids.size(),
+             order_usd, tick_rule_hl ? "Hyperliquid" : "Lighter", (long long)latency_ms, daily_loss,
+             day_flatten ? "flat at 00:00 UTC" : "inventory carried across 00:00 UTC (daily rows marked to market)",
+             hl_anchor > 0 ? (", Hyperliquid anchor k=" + num(hl_anchor) + " on " + std::to_string(hl_coins.size()) + " markets").c_str() : "");
         int backoff = 1;
         while (true) {
             const auto t0 = std::chrono::steady_clock::now();
@@ -559,7 +699,12 @@ int main(int argc, char** argv) {
                            {"db_dropped", db ? db->dropped_total() : 0}, {"db_dropped_today", db ? db->dropped_today() : 0},
                            {"db_errors", db ? db->errors() : 0}, {"db_retries", db ? db->retries() : 0}, {"db_queue", db ? db->queued() : 0},
                            {"reorder_ms", reorder_ms}, {"reorder_pending", pf.sequencer().pending()}, {"late_trades", pf.sequencer().late_trades()},
-                           {"quote_rows", quotes.rows()}, {"quote_keepalives", quotes.keepalives()}, {"markets", pf.market_status()}};
+                           {"quote_rows", quotes.rows()}, {"quote_keepalives", quotes.keepalives()}, {"markets", pf.market_status()},
+                           {"order_usd", order_usd}, {"day_flatten", day_flatten}, {"equity_total_usd", pf.equity_total()},
+                           {"hl_anchor_k", hl_anchor},
+                           {"lighter_skew_ms_p50", nan_null(skew_all.p50(now))},
+                           {"hl_feed", {{"enabled", hl_anchor > 0}, {"connected", hl_feed.connected}, {"books", hl_feed.books},
+                                        {"reconnects", hl_feed.reconnects}, {"last_ms", hl_feed.last_ms}, {"coins", hl_coins}}}};
                 mmpaper::Health h;
                 h.now_ms = now; h.started_ms = started_ms;
                 h.connected = connected; h.last_msg_ms = last_msg_us / 1000; h.books = books; h.trades = trades; h.gaps = gaps; h.reconnects = reconnects;
@@ -575,6 +720,11 @@ int main(int argc, char** argv) {
                           h.quote_conflicts = db->quote_conflicts(); h.quote_errors = db->quote_errors(); }
                 h.daily_loss_limit = daily_loss; h.worst_market_equity = worst; h.equity = pf.equity(); h.kill = kill; h.loss_stop = pf.loss_stopped();
                 st["components"] = mmpaper::components_json(h);
+                // Lighter book exchange time − local receive time, ms, median over the last minute (clock skew + one-way lag)
+                for (auto& mj : st["markets"]) {
+                    auto sk = skew.find(mj["market"].get<std::string>());
+                    mj["skew_ms_p50"] = sk == skew.end() ? json(nullptr) : nan_null(sk->second.p50(now));
+                }
                 const fs::path tmp = status_file.string() + ".tmp";
                 { std::ofstream(tmp) << st.dump(1); }
                 fs::rename(tmp, status_file, ec);
@@ -594,6 +744,24 @@ int main(int argc, char** argv) {
         limit.async_wait([&](const boost::system::error_code& e) { if (!e) { logf("--duration %d s reached — stopping", duration_s); ioc.stop(); } });
     }
     ioc.run();
+    // A restart starts flat: say so for every position this stop throws away (the day's P&L since the last roll is
+    // otherwise left as an unexplained jump between the minute equity rows and the next start).
+    {
+        const int64_t now = lighter::now_us() / 1000;
+        int n = 0; double gross = 0;
+        for (const auto& s : pf.snapshot()) {
+            if (std::abs(s.inv) < 1e-12) continue;
+            const auto q = pf.quote_state(s.market);
+            char d[256];
+            std::snprintf(d, sizeof d, "engine stopping: inventory %.8g (≈ $%.2f at mid %.10g) discarded, not carried to the next start; equity since the last roll %.4f",
+                          s.inv, s.inv * q.mid, q.mid, s.equity);
+            event_fn(now, "position_discarded", s.market, d);
+            ++n; gross += std::abs(s.inv * q.mid);
+        }
+        char d[160];
+        std::snprintf(d, sizeof d, "engine stopping (run %s): %d position(s) discarded, gross $%.2f; day equity %.4f", run_id.c_str(), n, gross, pf.equity());
+        event_fn(now, "stop", "", d);
+    }
     logf("final: equity %.2f, fills %lld, books %lld, trades %lld, gaps %lld, reconnects %lld",
          pf.equity(), (long long)fills, (long long)books, (long long)trades, (long long)gaps, (long long)reconnects);
     return 0;

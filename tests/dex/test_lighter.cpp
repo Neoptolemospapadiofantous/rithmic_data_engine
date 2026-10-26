@@ -3,6 +3,7 @@
     risk controls (src/dex/mm_paper.hpp), the live re-order buffer, the exchange-clock halt, the post-halt re-flatten
     and the DB write path's per-statement retry + persisted drop ledger (src/dex/mm_paper_db.hpp). No network, no DB.                                         */
 #include "dex/hl_events.hpp"
+#include "dex/live/market_spec.hpp"
 #include "dex/mm_paper.hpp"
 #include "dex/mm_paper_db.hpp"
 
@@ -162,12 +163,15 @@ TEST(halt_cancels_quotes_and_flatten_crosses_the_spread) {
 static mmpaper::Config cfg() {
     mmpaper::Config c; c.p = mmpaper::frozen_params(); c.p.latency_ms = 0; c.daily_loss_usd = 5; c.stale_ms = 10'000;
     c.p.min_spread_ticks = 0; c.p.imb_pull = 0; c.p.pause_move_ticks = 0; c.p.requote_ticks = 0; c.p.half_width_ticks = 0.5;
+    c.p.order_usd = 100;      // the arithmetic below was written for $100 quotes (the frozen setting is $11 since 2026-10-26)
     return c;
 }
 static const int64_t D1 = 1792886400000LL;   // 2026-10-25 00:00:00 UTC
 
+// --day-flatten: the pre-2026-10-26 flat-to-flat day (taker flatten at the roll, fresh simulators).
 TEST(portfolio_rolls_the_day_flat_and_reports_it) {
-    mmpaper::Portfolio pf(cfg());
+    mmpaper::Config c = cfg(); c.day_flatten = true;
+    mmpaper::Portfolio pf(c);
     std::vector<mmpaper::DayRow> rows;
     pf.on_day([&](const mmpaper::DayRow& r) { rows.push_back(r); });
     pf.book("AAVE", bk(D1 + 1000, 100, 101));
@@ -178,8 +182,271 @@ TEST(portfolio_rolls_the_day_flat_and_reports_it) {
     ASSERT_EQ(rows[0].day, std::string("2026-10-25"));
     ASSERT_EQ(rows[0].fills, int64_t{1});
     ASSERT_EQ(rows[0].flattens, int64_t{1});
+    ASSERT_NEAR(rows[0].pnl, 0.0, 1e-9);                        // flat to flat: bought at 100, sold at the 100 bid, 0 fees
     ASSERT_EQ(pf.day(), std::string("2026-10-26"));
     ASSERT_NEAR(pf.gross_usd(), 0.0, 1e-9);                     // fresh, flat simulators
+}
+
+// ── 2026-10-26: $11 quotes on Lighter's size grid, inventory carried across 00:00 UTC, the paper_hl anchor ──────────
+
+// The paper quote size follows the live gateway's rule (src/dex/live/market_spec.hpp size_quote): $11 rounded UP to
+// the size grid, never below min_base_amount or min_quote_amount × 1.05.
+TEST(quote_size_rounds_up_to_lighter_minimums) {
+    hl::Params p; p.order_usd = 11; p.size_step = 0.01; p.min_base = 0.01; p.min_quote_usd = 10.5;   // BNB-like
+    ASSERT_NEAR(hl::lot_qty(p, 1100), 0.01, 1e-12);            // exactly one step
+    ASSERT_NEAR(hl::lot_qty(p, 1300), 0.01, 1e-12);            // $11 = 0.00846 → up to the 0.01 grid (= min_base)
+    ASSERT_NEAR(hl::lot_qty(p, 500), 0.03, 1e-12);             // 0.022 → 0.03 ($15): up, never down
+    hl::Params q; q.order_usd = 5; q.size_step = 0.001; q.min_quote_usd = 10.5;
+    ASSERT_NEAR(hl::lot_qty(q, 100), 0.105, 1e-12);            // $5 is below Lighter's $10 × 1.05 minimum → 0.105 coin
+    hl::Params r; r.order_usd = 11; r.size_step = 0.001; r.min_base = 0.2;
+    ASSERT_NEAR(hl::lot_qty(r, 100), 0.2, 1e-12);              // below min_base → min_base
+    hl::Params none; none.order_usd = 11;
+    ASSERT_NEAR(hl::lot_qty(none, 123.4), 11 / 123.4, 1e-15);  // no rules = the old continuous size
+
+    // Same answers as the live gateway's integer sizing, on real Lighter specs (cap lifted: paper has none).
+    namespace lv = lighter::live;
+    lv::SizingRules rules; rules.cap_micro = int64_t{1'000'000} * lv::kMicro;
+    struct S { const char* sym; int sd, pd; const char* mb; const char* px; };
+    for (const S& s : {S{"BTC", 5, 1, "0.00007", "113456.7"}, S{"ETH", 4, 2, "0.0020", "4012.37"}, S{"SOL", 3, 3, "0.055", "201.123"},
+                       S{"BNB", 2, 4, "0.01", "1117.8765"}, S{"BNB", 2, 4, "0.01", "870.0001"}, S{"SOL", 3, 3, "0.055", "150.5"}}) {
+        const auto m = lv::MarketSpec::from_strings(s.sym, 1, s.sd, s.pd, s.mb, "10.000000");
+        const int64_t pxi = m.price_int(s.px);
+        const int64_t base = lv::size_quote(m, rules, pxi).base;
+        hl::Params h; h.order_usd = 11; h.size_step = std::pow(10.0, -s.sd); h.min_base = std::atof(s.mb); h.min_quote_usd = 10 * 1.05;
+        const double q2 = hl::lot_qty(h, std::atof(s.px));
+        ASSERT_EQ(static_cast<int64_t>(std::llround(q2 * std::pow(10.0, s.sd))), base);
+    }
+
+    // The simulator's resting order carries that size: a sweep through the bid fills exactly one lot.
+    hl::Params sp; sp.order_usd = 11; sp.size_step = 0.01; sp.min_base = 0.01; sp.min_quote_usd = 10.5;
+    sp.latency_ms = 0; sp.maker_fee_bps = 0; sp.half_width_ticks = 0.5;
+    hl::Simulator sim(sp);
+    sim.on_book(bk(D1 + 1000, 500, 501));
+    sim.on_trade({"", D1 + 1001, 499, 10, false});
+    ASSERT_NEAR(sim.running().inv, 0.03, 1e-12);
+}
+
+// Default since 2026-10-26: no flatten at 00:00 UTC — the position and cash carry over, the daily row is the day's
+// mark-to-market P&L (equity at the roll − equity at the previous roll), fills / volume restart per day.
+TEST(portfolio_carries_inventory_across_the_day_roll) {
+    mmpaper::Portfolio pf(cfg());
+    std::vector<mmpaper::DayRow> rows;
+    std::vector<hl::Fill> fills;
+    std::vector<std::string> kinds;
+    pf.on_day([&](const mmpaper::DayRow& r) { rows.push_back(r); });
+    pf.on_fill([&](const std::string&, const hl::Fill& f, double) { fills.push_back(f); });
+    pf.on_event([&](int64_t, const std::string& k, const std::string&, const std::string&) { kinds.push_back(k); });
+    pf.book("AAVE", bk(D1 + 1000, 100, 101));
+    pf.trade("AAVE", {"", D1 + 1001, 99, 1, false});           // our 100 bid swept: long q at 100
+    const double q = pf.inventory("AAVE");
+    ASSERT_NEAR(q, 100.0 / 100.5, 1e-9);
+    pf.book("AAVE", bk(D1 + 2000, 101, 102));                   // mid 101.5 before midnight
+    ASSERT_NEAR(pf.equity(), q * 1.5, 1e-9);
+
+    pf.book("AAVE", bk(D1 + 86'400'000 + 5, 103, 104));         // next UTC day: rolls at the last mid (101.5), then marks 103.5
+    ASSERT_EQ(rows.size(), size_t{1});
+    ASSERT_EQ(rows[0].day, std::string("2026-10-25"));
+    ASSERT_NEAR(rows[0].pnl, q * 1.5, 1e-9);                    // marked to market, not flattened
+    ASSERT_EQ(rows[0].fills, int64_t{1});
+    ASSERT_EQ(rows[0].flattens, int64_t{0});
+    ASSERT_NEAR(rows[0].inv_end, q, 1e-12);
+    ASSERT_EQ(pf.day(), std::string("2026-10-26"));
+    ASSERT_NEAR(pf.inventory("AAVE"), q, 1e-12);                // the position survived the roll
+    ASSERT_NEAR(pf.equity(), q * 2.0, 1e-9);                    // the new day starts from the roll's equity: 101.5 → 103.5
+    ASSERT_NEAR(pf.equity_total(), q * 3.5, 1e-9);
+    ASSERT_EQ(pf.snapshot()[0].fills, int64_t{0});              // per-day counters restart
+    for (const auto& f : fills) ASSERT(!f.taker);               // no taker flatten anywhere
+    ASSERT_EQ(fills.size(), size_t{1});
+    ASSERT(std::find(kinds.begin(), kinds.end(), "day_roll") != kinds.end());
+
+    pf.book("AAVE", bk(D1 + 2 * 86'400'000 + 5, 103, 104));     // a second roll: the row is the second day's delta only
+    ASSERT_EQ(rows.size(), size_t{2});
+    ASSERT_NEAR(rows[1].pnl, q * 2.0, 1e-9);
+    ASSERT_NEAR(rows[0].pnl + rows[1].pnl, pf.equity_total(), 1e-9);   // daily rows telescope to the running equity
+    ASSERT_NEAR(pf.equity(), 0.0, 1e-9);
+}
+
+// The loss stop still flattens and halts; the next day releases it and its base is the (flat) equity at the roll.
+TEST(portfolio_carry_loss_stop_still_flattens_and_releases_next_day) {
+    mmpaper::Portfolio pf(cfg());
+    std::vector<mmpaper::DayRow> rows;
+    pf.on_day([&](const mmpaper::DayRow& r) { rows.push_back(r); });
+    pf.book("AAVE", bk(D1 + 1000, 100, 101));
+    pf.trade("AAVE", {"", D1 + 1001, 99, 1, false});
+    pf.book("AAVE", bk(D1 + 2000, 90, 91));
+    pf.tick(D1 + 2001, false);
+    ASSERT(pf.loss_stopped());
+    ASSERT_NEAR(pf.gross_usd(), 0.0, 1e-9);
+    const double lost = pf.equity();
+    ASSERT(lost < -5);
+    pf.book("AAVE", bk(D1 + 86'400'000 + 1, 90, 91));
+    ASSERT(!pf.halted());
+    ASSERT_NEAR(rows[0].pnl, lost, 1e-9);
+    ASSERT_EQ(rows[0].flattens, int64_t{1});
+    ASSERT_NEAR(pf.equity(), 0.0, 1e-9);                        // flat: nothing moves the new day's equity
+    ASSERT(!pf.snapshot()[0].halted);                           // the market quotes again
+    pf.trade("AAVE", {"", D1 + 86'400'000 + 2, 89, 1, false}); // and fills again
+    ASSERT_EQ(pf.snapshot()[0].fills, int64_t{1});
+}
+
+// paper_hl: quotes centre on the Hyperliquid-anchored fair (k = 1) once 60 one-second basis samples exist.
+static mmpaper::Config hl_cfg() { mmpaper::Config c = cfg(); c.hl_k = 1; return c; }
+static void hl_warm(mmpaper::Portfolio& pf, const std::string& m, int64_t t0, int secs, double hl_mid) {
+    for (int s = 0; s < secs; ++s) {
+        const int64_t t = t0 + 1000LL * s;
+        pf.push_hl(m, t - 100, hl_mid);                         // received 100 ms before the venue book's exchange time
+        pf.book(m, bk(t, 100, 110));                            // own mid 105, spread 10 ticks
+    }
+}
+TEST(hl_anchor_shifts_quotes_toward_hyperliquid_and_turns_off_when_stale) {
+    mmpaper::Portfolio pf(hl_cfg());
+    const int64_t t0 = D1 + 10'000;
+    hl_warm(pf, "X", t0, 50, 105);
+    ASSERT(!pf.anchor("X")->active());                          // < 60 samples: own mid
+    ASSERT_NEAR(pf.quote_state("X").bid_px, 104, 1e-9);
+    ASSERT_NEAR(pf.quote_state("X").ask_px, 106, 1e-9);
+    hl_warm(pf, "X", t0 + 50'000, 20, 105);                     // 70 samples, basis median 0
+    ASSERT(pf.anchor("X")->active());
+    ASSERT_NEAR(pf.quote_state("X").bid_px, 104, 1e-9);         // HL agrees with our mid: same quotes
+    const int64_t t1 = t0 + 70'000;
+    pf.push_hl("X", t1 - 100, 107);                             // Hyperliquid moves up
+    pf.book("X", bk(t1, 100, 110));
+    pf.book("X", bk(t1 + 1, 100, 110));                         // the old quote's cancel has landed (latency 0): requoted
+    ASSERT_NEAR(pf.anchor("X")->hl_mid(), 107, 1e-12);
+    ASSERT(pf.anchor("X")->fair_off() > 1.9);                   // implied ≈ 106.96
+    ASSERT_NEAR(pf.quote_state("X").bid_px, 106, 1e-9);
+    ASSERT_NEAR(pf.quote_state("X").ask_px, 108, 1e-9);
+    pf.push_hl("X", t1 + 900, 103);                             // … and down
+    pf.book("X", bk(t1 + 1000, 100, 110));
+    pf.book("X", bk(t1 + 1001, 100, 110));
+    ASSERT(pf.anchor("X")->fair_off() < -1.9);
+    ASSERT_NEAR(pf.quote_state("X").bid_px, 102, 1e-9);
+    ASSERT_NEAR(pf.quote_state("X").ask_px, 104, 1e-9);
+    pf.book("X", bk(t1 + 7000, 100, 110));                      // HL book now 6.1 s old: anchor off, own mid
+    pf.book("X", bk(t1 + 7001, 100, 110));
+    ASSERT(!pf.anchor("X")->active());
+    ASSERT_NEAR(pf.quote_state("X").bid_px, 104, 1e-9);
+    ASSERT_NEAR(pf.quote_state("X").ask_px, 106, 1e-9);
+    const auto st = pf.market_status()[0];
+    ASSERT_NEAR(st["hl_mid"].get<double>(), 103, 1e-12);
+    ASSERT(st["hl_basis_bps"].is_null());
+    ASSERT(!st["hl_anchor_active"].get<bool>());
+
+    pf.book("Y", bk(t1 + 7000, 100, 110));                      // a market Hyperliquid does not list: own mid, no hl fields
+    for (const auto& m : pf.market_status()) if (m["market"] == "Y") {
+        ASSERT(m["hl_mid"].is_null()); ASSERT(!m["hl_anchor_active"].get<bool>());
+        ASSERT_NEAR(m["bid_px"].get<double>(), 104, 1e-9);
+    }
+    mmpaper::Portfolio off(cfg());                              // hl_k = 0 (paper, paper_220): HL books ignored
+    off.push_hl("X", t1 - 100, 107);
+    off.book("X", bk(t1, 100, 110));
+    ASSERT_NEAR(off.quote_state("X").bid_px, 104, 1e-9);
+}
+
+// Review 2026-10-26: the anchor switches off when the venues disagree too much — a 5-min median basis beyond ±200 bps,
+// or a fair moved more than 200 bps in one step — and says why.
+TEST(hl_anchor_guards_and_off_reason) {
+    const int64_t t0 = D1 + 10'000;
+    mmpaper::Portfolio wide(hl_cfg());
+    ASSERT(wide.anchor("X") == nullptr);
+    hl_warm(wide, "X", t0, 30, 105 / 1.03);                     // our mid ~300 bps above Hyperliquid, persistently
+    ASSERT_EQ(wide.anchor("X")->off_reason(), std::string("warming"));
+    hl_warm(wide, "X", t0 + 30'000, 40, 105 / 1.03);
+    ASSERT(!wide.anchor("X")->active());
+    ASSERT_EQ(wide.anchor("X")->off_reason(), std::string("basis_too_wide"));
+    ASSERT(wide.anchor("X")->median_bps() > 200);
+    wide.book("X", bk(t0 + 70'001, 100, 110));
+    ASSERT_NEAR(wide.quote_state("X").bid_px, 104, 1e-9);      // own mid
+    ASSERT_EQ(wide.market_status()[0]["hl_anchor_off_reason"].get<std::string>(), std::string("basis_too_wide"));
+
+    mmpaper::Portfolio jump(hl_cfg());
+    hl_warm(jump, "X", t0, 70, 105);                            // basis 0
+    ASSERT(jump.anchor("X")->active());
+    ASSERT(jump.market_status()[0]["hl_anchor_off_reason"].is_null());
+    const int64_t t1 = t0 + 70'000;
+    jump.push_hl("X", t1 - 100, 110);                           // HL 4.5 % away: the anchor would move the fair ~450 bps
+    jump.book("X", bk(t1, 100, 110));
+    jump.book("X", bk(t1 + 1, 100, 110));
+    ASSERT(!jump.anchor("X")->active());
+    ASSERT_EQ(jump.anchor("X")->off_reason(), std::string("move_too_large"));
+    ASSERT_NEAR(jump.anchor("X")->fair_off(), 0.0, 1e-12);
+    ASSERT_NEAR(jump.quote_state("X").bid_px, 104, 1e-9);
+    jump.push_hl("X", t1 + 900, 105.5);                         // ~48 bps: inside the guard, anchor back on
+    jump.book("X", bk(t1 + 1000, 100, 110));
+    ASSERT(jump.anchor("X")->active());
+    jump.book("X", bk(t1 + 7000, 100, 110));                    // HL book 6.1 s old
+    ASSERT_EQ(jump.anchor("X")->off_reason(), std::string("stale"));
+    mmpaper::Portfolio off(cfg());                              // anchor disabled (paper, paper_220)
+    off.book("X", bk(t1, 100, 110));
+    ASSERT_EQ(off.market_status()[0]["hl_anchor_off_reason"].get<std::string>(), std::string("disabled"));
+    mmpaper::Portfolio unlisted(hl_cfg());                      // enabled but no HL book ever
+    unlisted.book("Z", bk(t1, 100, 110));
+    ASSERT_EQ(unlisted.market_status()[0]["hl_anchor_off_reason"].get<std::string>(), std::string("no_hl_book"));
+}
+
+// Review 2026-10-26: with venue size rules the inventory cap counts LOTS (a $11 lot rounds up — BNB 0.02 ≈ $14.8), so
+// the third lot of max_inv_units 3 is admitted; without size rules the cap is exactly max_inv_units × order_usd.
+TEST(inventory_cap_counts_rounded_lots) {
+    hl::Params p; p.order_usd = 11; p.size_step = 0.01; p.min_base = 0.01; p.min_quote_usd = 10.5; p.max_inv_units = 3;
+    p.latency_ms = 0; p.maker_fee_bps = 0; p.half_width_ticks = 0.5;
+    hl::Simulator s(p);
+    int64_t t = D1 + 1000;
+    for (int i = 0; i < 3; ++i) {
+        s.on_book(bk(t, 741, 742)); ++t;
+        ASSERT(s.reason(true) != hl::InvCap);
+        s.on_trade({"", t, 740, 10, false}); ++t;               // through our 741 bid: one lot
+    }
+    ASSERT_NEAR(s.running().inv, 0.06, 1e-12);                  // three lots of 0.02 (≈ $44.5 > the old $33 cap)
+    s.on_book(bk(t, 741, 742));
+    ASSERT(s.reason(true) == hl::InvCap);                       // a 4th lot is refused
+    ASSERT(s.reason(false) != hl::InvCap);
+
+    hl::Params q = p; q.size_step = 0; q.min_base = 0; q.min_quote_usd = 0; q.order_usd = 100;   // no rules: old cap
+    hl::Simulator u(q);
+    for (int i = 0; i < 3; ++i) { u.on_book(bk(t, 741, 742)); ++t; u.on_trade({"", t, 740, 10, false}); ++t; }
+    u.on_book(bk(t, 741, 742));
+    ASSERT_NEAR(u.running().inv * 741.5, 300.0, 1e-6);
+    ASSERT(u.reason(true) == hl::InvCap);
+}
+
+TEST(skew_window_p50_over_the_last_minute) {
+    mmpaper::SkewWindow w;
+    ASSERT(std::isnan(w.p50(D1)));
+    w.add(D1 + 1000, D1 + 1000 - 150);                          // exchange stamp 150 ms before we received it
+    w.add(D1 + 2000, D1 + 2000 - 140);
+    w.add(D1 + 3000, D1 + 3000 - 500);                          // one slow message
+    ASSERT_NEAR(w.p50(D1 + 3000), -150.0, 1e-9);
+    ASSERT_EQ(w.n(), size_t{3});
+    ASSERT_NEAR(w.p50(D1 + 62'500), -500.0, 1e-9);              // the first two left the 60 s window
+    ASSERT(std::isnan(w.p50(D1 + 70'000)));
+}
+
+// Causality: a Hyperliquid book RECEIVED after a venue event's exchange time never affects that event, even when it
+// is already in hand when the event is applied (the re-order buffer applies venue events ~250 ms late).
+TEST(hl_anchor_is_causal) {
+    mmpaper::Portfolio pf(hl_cfg());
+    const int64_t t0 = D1 + 10'000;
+    hl_warm(pf, "X", t0, 70, 105);
+    const int64_t t1 = t0 + 70'000;
+    pf.push_hl("X", t1 + 50, 107);                              // received 50 ms AFTER the next venue book's exchange time …
+    pf.book("X", bk(t1, 100, 110));                             // … which is applied now: must not see it
+    ASSERT_NEAR(pf.anchor("X")->hl_mid(), 105, 1e-12);
+    ASSERT_NEAR(pf.quote_state("X").bid_px, 104, 1e-9);
+    pf.trade("X", {"", t1 + 40, 104.5, 0.001, true});           // a trade at t1+40 still precedes it
+    ASSERT_NEAR(pf.anchor("X")->hl_mid(), 105, 1e-12);
+    pf.trade("X", {"", t1 + 60, 104.5, 0.001, true});           // decision time passes its receive time: now visible,
+    ASSERT_NEAR(pf.anchor("X")->hl_mid(), 107, 1e-12);          // and the trade requotes on it
+    pf.book("X", bk(t1 + 61, 100, 110));                        // (the requoted order is placed once the old cancel lands)
+    ASSERT_NEAR(pf.quote_state("X").bid_px, 106, 1e-9);
+
+    // Through the re-order buffer: the venue book is applied 250 ms after it arrived, the HL book arrived in between.
+    mmpaper::Portfolio live(hl_cfg());
+    hl_warm(live, "X", t0, 70, 105);
+    live.push_book("X", bk(t1, 100, 110), t1 + 10);             // received 10 ms after its exchange time
+    live.push_hl("X", t1 + 100, 107);                           // HL book received while the venue book is held
+    live.pump(t1 + 300);                                        // released now
+    ASSERT_NEAR(live.anchor("X")->hl_mid(), 105, 1e-12);
+    ASSERT_NEAR(live.quote_state("X").bid_px, 104, 1e-9);
 }
 
 TEST(portfolio_loss_stop_flattens_and_halts_until_tomorrow) {
@@ -583,6 +850,14 @@ int main() {
     RUN(lighter_archive_replays_through_the_shared_loader);
     RUN(halt_cancels_quotes_and_flatten_crosses_the_spread);
     RUN(portfolio_rolls_the_day_flat_and_reports_it);
+    RUN(quote_size_rounds_up_to_lighter_minimums);
+    RUN(portfolio_carries_inventory_across_the_day_roll);
+    RUN(portfolio_carry_loss_stop_still_flattens_and_releases_next_day);
+    RUN(hl_anchor_shifts_quotes_toward_hyperliquid_and_turns_off_when_stale);
+    RUN(hl_anchor_is_causal);
+    RUN(hl_anchor_guards_and_off_reason);
+    RUN(inventory_cap_counts_rounded_lots);
+    RUN(skew_window_p50_over_the_last_minute);
     RUN(portfolio_loss_stop_flattens_and_halts_until_tomorrow);
     RUN(portfolio_per_market_params_override);
     RUN(portfolio_stale_feed_and_kill_switch);

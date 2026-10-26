@@ -85,6 +85,11 @@ Leverage is never used to reach a size: losses scale with position size, not mar
 
 ## 8. Decision log (append only)
 
+- 2026-10-26 — Gates re-based to the $11 setting (consequence of the decision below, proportional ×0.11): G2 mean-day
+  range +$9…+$68 → **+$0.99…+$7.48**, G2 fail line −$300 → **−$33**, paper daily loss stop $150 → **$16.50**; G1 replays at
+  $11 with Lighter's size grid/minimums. Paper day rows are mark-to-market (carried inventory); a restart day stays
+  excluded and a discarded carried position is now recorded as an event. Day count for G2 restarts on the new setting.
+
 - 2026-10-26 — **Founder: "apply both now and build the HL shadow".** The frozen setting changes for paper: quote size
   $100 → **$11** (the live pilot's size; on the mm_lab starter run the loss fell −$44.77 → −$4.47 and −4.37 → −3.30 bps
   in-sample, and $10 quotes were the only non-negative cell on history) and **no 00:00 UTC flatten** — inventory is

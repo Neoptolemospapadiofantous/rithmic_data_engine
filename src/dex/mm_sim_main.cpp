@@ -78,6 +78,9 @@ static std::vector<Config> configs_from_params(const fs::path& file, std::set<st
             q.venue_tick = cj.value("venue_tick", 0.0);
             q.strat_tick_rule = cj.value("tick_rule", "book") == "hyperliquid" ? hl::TickRule::Hyperliquid : hl::TickRule::Book;
             q.hl_sz_decimals = cj.value("hl_sz_decimals", 0);
+            q.size_step = cj.value("size_step", 0.0);           // venue size rules (mm_paper status.json params; 0 = continuous)
+            q.min_base = cj.value("min_base", 0.0);
+            q.min_quote_usd = cj.value("min_quote_usd", 0.0);
             c.per_coin[coin] = q;
             if (!opt) only.insert(coin);
         }
