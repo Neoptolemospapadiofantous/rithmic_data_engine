@@ -1,0 +1,9 @@
+[Unit]
+Description=StarNet MM desk cycle: sync research clone + judge MM ideas (mm_lab via desk_mm.sh)
+
+[Service]
+Type=oneshot
+ExecStart=%h/Desktop/rithmic_engine/scripts/starnet/mm_desk_cycle.sh
+Nice=10
+StandardOutput=append:%h/Desktop/rithmic_engine/data/logs/mm_desk_cycle.log
+StandardError=append:%h/Desktop/rithmic_engine/data/logs/mm_desk_cycle.log
