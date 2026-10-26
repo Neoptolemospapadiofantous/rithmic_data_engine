@@ -1,0 +1,18 @@
+# mm-gates.service + mm-gates.timer — the daily overview of the Lighter market-making plan (systemd USER units).
+# Runs scripts/mm_gates.sh at 00:10 UTC, right after the paper engine's day roll: recomputes the four stage
+# gates (docs/market_making_plan.md), writes data/mm_gates/gates.json + report.md, one Telegram line via grid-notify.
+#
+# Install once:
+#   cp deploy/mm-gates.service deploy/mm-gates.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now mm-gates.timer
+# Run now:  systemctl --user start mm-gates.service ; cat data/mm_gates/report.md
+[Unit]
+Description=Market-making stage gates: daily overview (paper + Lighter re-test)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/mm_gates.sh
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_gates.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_gates.log
+Nice=15

@@ -1,0 +1,37 @@
+# aster-recorder-local.service — 24/7 Aster (0 maker fee, Binance-shaped API) order-book + trade archive, the third
+# venue in the market-making plan (founder 2026-10-25: "lets set everything"). systemd USER unit, modeled on
+# lighter-recorder-local.service. Public data, no keys, no orders.
+#
+# Install once:
+#   mkdir -p /media/theone/381C48C51C48803C/rithmic_dex/aster
+#   cp deploy/aster-recorder-local.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now aster-recorder-local
+# Check:   tail -f data/logs/dex_recorder_aster.log ; scripts/lag_check.sh /media/theone/381C48C51C48803C/rithmic_dex/aster
+#
+# One combined-stream websocket (<sym>@depth20@100ms + <sym>@aggTrade per market; every depth message is a complete
+# 20-level snapshot, so a day file needs no synthetic opener). Aster lists every coin of the Lighter list except
+# GMX and APEX; the binary skips what the venue does not list and refuses a missing archive directory.
+[Unit]
+Description=Aster book/trade recorder (market-making research archive), 24/7
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/dex_recorder --venue aster --out /media/theone/381C48C51C48803C/rithmic_dex/aster --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,UNI,CRV,PYTH,ETHFI,SEI,2Z,HYPE,NEAR,ENA,WLD,SKR,PRL,ARB,SUI,ZRO,JUP,TAO,LTC,XMR,PUMP,FARTCOIN
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/dex_recorder_aster.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/dex_recorder_aster.log
+Restart=always
+RestartSec=60
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=15
+CPUWeight=50
+IOWeight=50
+OOMScoreAdjust=100
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

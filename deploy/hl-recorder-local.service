@@ -1,0 +1,41 @@
+# hl-recorder-local.service — 24/7 Hyperliquid order-book + trade archive for market-making research
+# (systemd USER unit, modeled on crypto-collector-local.service; founder 2026-10-25).
+#
+# Install once:
+#   mkdir -p /media/theone/381C48C51C48803C/rithmic_dex/hyperliquid
+#   cp deploy/hl-recorder-local.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now hl-recorder-local
+# Check:   systemctl --user status hl-recorder-local ; tail -f data/logs/hl_recorder.log
+# Stop:    systemctl --user stop hl-recorder-local
+# Replay:  build/mm_sim --dir /media/theone/381C48C51C48803C/rithmic_dex/hyperliquid --report data/mm_sim/report.md
+#
+# build/hl_recorder archives l2Book (fast, ~0.55 s) + trades for 30 Hyperliquid perps spread across
+# volume ranks 13-158 (picked 2026-10-25) to <out>/<COIN>/<UTC date>.jsonl.zst — ~335 MB/day measured.
+# Output is on the SECOND drive on purpose (the root disk is full); the binary refuses to start when
+# that directory is missing, so an unmounted drive never fills the root disk. No orders, no keys, no DB.
+[Unit]
+Description=Hyperliquid book/trade recorder (market-making research archive), 24/7
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/hl_recorder --out /media/theone/381C48C51C48803C/rithmic_dex/hyperliquid --coins kPEPE,AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,RENDER,REZ,SOPH,OP,CC,POL,WIF,EIGEN,BERA,BLUR,MERL,AZTEC,APE,ME,MELANIA,SNX,IMX,APEX,RSR,FOGO
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/hl_recorder.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/hl_recorder.log
+Restart=always
+RestartSec=60
+KillSignal=SIGTERM
+TimeoutStopSec=20
+# Research data: below the NQ collector and the crypto collector on every axis.
+Nice=15
+CPUWeight=50
+IOWeight=50
+OOMScoreAdjust=100
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

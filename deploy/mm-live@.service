@@ -1,0 +1,39 @@
+# mm-live@.service — the LIVE Lighter market maker (mainnet only; systemd USER template unit). NOT INSTALLED.
+# %i names the config: config/mm_live_%i.json (e.g. mm-live@aave → config/mm_live_aave.json, "mode": "live").
+#
+# Read docs/mm_live_runbook.md first. Install only after the probe has passed and the founder has armed mainnet:
+#   cp deploy/mm-live@.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user start mm-live@aave            # NOT enable — every start is a deliberate human act during the pilot
+# Check:  systemctl --user status mm-live@aave ; tail -f data/logs/mm_live_aave.log ; cat data/mm_live/status.json
+# Stop:   systemctl --user stop mm-live@aave       (SIGTERM: cancel-all, wait ≤ 10 s, dead-man abort, exit)
+#         then verify: pgrep -x mm_live  (empty)   — never pkill -f
+# Halt:   touch <state_dir>/KILL   (cancel all + flatten + sticky halt; deleting the file does NOT resume)
+#
+# ExecStartPre runs --check-config: config, key file (0600, outside git), arming file and the mainnet host/chain
+# pairing are validated before anything can open a socket. GODEBUG is set here AND re-exec'd by the binary if absent.
+[Unit]
+Description=Lighter live market maker (mainnet) — %i
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+Environment=GODEBUG=asyncpreemptoff=1
+ExecStartPre=/home/theone/Desktop/rithmic_engine/build/mm_live --config /home/theone/Desktop/rithmic_engine/config/mm_live_%i.json --mode live --check-config
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_live --config /home/theone/Desktop/rithmic_engine/config/mm_live_%i.json --mode live
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_live_%i.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_live_%i.log
+Restart=on-failure
+RestartSec=30
+KillSignal=SIGTERM
+TimeoutStopSec=30
+OOMScoreAdjust=100
+MemoryMax=512M
+Nice=0
+
+[Install]
+WantedBy=default.target

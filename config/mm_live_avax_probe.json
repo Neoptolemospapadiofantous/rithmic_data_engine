@@ -1,0 +1,19 @@
+{
+  "mode": "probe",
+  "host": "mainnet.zklighter.elliot.ai", "chain_id": 304,
+  "account_index": 764037, "api_key_index": 4,
+  "key_file": "/home/theone/.config/mm_live/lighter_mainnet_key.json",
+  "arming_file": "/home/theone/Desktop/rithmic_engine/data/mm_live/ARM_MAINNET",
+  "no_deploy_file": "/home/theone/Desktop/rithmic_engine/data/mm_live/NO_DEPLOY_MM",
+  "state_dir": "/home/theone/Desktop/rithmic_engine/data/mm_live/state",
+  "market": "AVAX",
+  "risk": {"quote_usd": 11, "max_order_usd": 12, "max_position_quotes": 1, "max_gross_usd": 12,
+           "daily_stop_usd": -1.5, "total_stop_usd": -2.5, "leverage": 5},
+  "engine": {
+    "market_spec": {"market_index": 9, "size_decimals": 2, "price_decimals": 4, "min_base": "0.70", "min_quote": "10"},
+    "hl_sz_decimals": 2,
+    "journal_dir": "/home/theone/Desktop/rithmic_engine/data/mm_live/journal",
+    "status_file": "/home/theone/Desktop/rithmic_engine/data/mm_live/status.json",
+    "max_collateral_usd": 10
+  }
+}

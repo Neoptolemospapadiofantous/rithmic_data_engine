@@ -1,0 +1,37 @@
+# paradex-recorder-local.service — 24/7 Paradex (Starknet appchain in AWS Tokyo; retail 0/0, API "Pro" maker 0.3 bps)
+# order-book + trade archive, the fourth venue in the market-making plan (founder 2026-10-25: "lets set
+# everything"). systemd USER unit, modeled on lighter-recorder-local.service. Public data, no keys, no orders.
+#
+# Install once:
+#   mkdir -p /media/theone/381C48C51C48803C/rithmic_dex/paradex
+#   cp deploy/paradex-recorder-local.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now paradex-recorder-local
+# Check:   tail -f data/logs/dex_recorder_paradex.log ; scripts/lag_check.sh /media/theone/381C48C51C48803C/rithmic_dex/paradex
+#
+# One websocket, JSON-RPC subscriptions to order_book.<M>.deltas + trades.<M>; channel data arrives as SBE binary
+# frames (required by Paradex since 2026-09-21) and is archived decoded (src/dex/venue_feeds.hpp). Paradex lists 23
+# of our coins as perps; the binary skips what the venue does not list and refuses a missing archive directory.
+[Unit]
+Description=Paradex book/trade recorder (market-making research archive), 24/7
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/dex_recorder --venue paradex --out /media/theone/381C48C51C48803C/rithmic_dex/paradex --symbols AAVE,BNB,ONDO,AVAX,CC,ENA,ETHFI,HYPE,JUP,LTC,NEAR,PUMP,PYTH,SUI,TAO,TRUMP,UNI,XMR,LINK,DOGE,ADA,XRP,SOL
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/dex_recorder_paradex.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/dex_recorder_paradex.log
+Restart=always
+RestartSec=60
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=15
+CPUWeight=50
+IOWeight=50
+OOMScoreAdjust=100
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

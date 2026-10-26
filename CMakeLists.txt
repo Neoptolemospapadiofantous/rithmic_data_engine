@@ -312,6 +312,79 @@ target_compile_features(test_crypto_collector PRIVATE cxx_std_20)
 target_link_libraries(test_crypto_collector PRIVATE pthread)
 add_test(NAME crypto_collector_tests COMMAND test_crypto_collector)
 
+# ── DEX market-making research (Hyperliquid books/trades recorder + queue-aware MM simulator) ──
+# Research only: no orders, no keys, no Postgres. Model in src/dex/hl_mm.hpp.
+add_executable(hl_recorder src/dex/hl_recorder_main.cpp)
+target_include_directories(hl_recorder PRIVATE src/ ${Boost_INCLUDE_DIRS})
+target_link_libraries(hl_recorder PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto ${ZSTD_LIBRARY} pthread)
+target_compile_definitions(hl_recorder PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(hl_recorder PRIVATE cxx_std_20)
+
+find_package(ZLIB REQUIRED)       # Tardis history is gzip CSV (src/dex/hl_events.hpp)
+add_executable(mm_sim src/dex/mm_sim_main.cpp)
+target_include_directories(mm_sim PRIVATE src/)
+target_link_libraries(mm_sim PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
+target_compile_features(mm_sim PRIVATE cxx_std_20)
+
+# Archive health per file (lines, skipped zstd frames, Lighter sequence gaps, book silences) — scripts/mm_debug.sh archive.
+add_executable(archive_check src/dex/archive_check_main.cpp)
+target_include_directories(archive_check PRIVATE src/)
+target_link_libraries(archive_check PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
+target_compile_features(archive_check PRIVATE cxx_std_20)
+
+add_executable(mm_opt src/dex/mm_opt_main.cpp)
+target_include_directories(mm_opt PRIVATE src/)
+target_link_libraries(mm_opt PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
+target_compile_features(mm_opt PRIVATE cxx_std_20)
+
+add_executable(mm_robust src/dex/mm_robust_main.cpp)
+target_include_directories(mm_robust PRIVATE src/)
+target_link_libraries(mm_robust PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
+target_compile_features(mm_robust PRIVATE cxx_std_20)
+
+add_executable(test_hl_mm tests/dex/test_hl_mm.cpp)
+target_include_directories(test_hl_mm PRIVATE src/)
+target_link_libraries(test_hl_mm PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
+target_compile_features(test_hl_mm PRIVATE cxx_std_20)
+add_test(NAME hl_mm_tests COMMAND test_hl_mm)
+
+# Lighter: public market-data recorder + the 24/7 paper market maker (no keys, no order path).
+add_executable(lighter_recorder src/dex/lighter_recorder_main.cpp)
+target_include_directories(lighter_recorder PRIVATE src/ ${Boost_INCLUDE_DIRS})
+target_link_libraries(lighter_recorder PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto ${ZSTD_LIBRARY} pthread)
+target_compile_definitions(lighter_recorder PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(lighter_recorder PRIVATE cxx_std_20)
+
+add_executable(mm_paper src/dex/mm_paper_main.cpp)
+target_include_directories(mm_paper PRIVATE src/ ${Boost_INCLUDE_DIRS} ${PostgreSQL_INCLUDE_DIRS})
+target_link_libraries(mm_paper PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto ${PostgreSQL_LIBRARIES} pthread)
+target_compile_definitions(mm_paper PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(mm_paper PRIVATE cxx_std_20)
+
+# The other zero-maker-fee venues (Extended, Aster, Paradex): one recorder binary, same archive shape and simulator.
+add_executable(dex_recorder src/dex/dex_recorder_main.cpp)
+target_include_directories(dex_recorder PRIVATE src/ ${Boost_INCLUDE_DIRS})
+target_link_libraries(dex_recorder PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto ${ZSTD_LIBRARY} pthread)
+target_compile_definitions(dex_recorder PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(dex_recorder PRIVATE cxx_std_20)
+
+add_executable(mm_regime src/dex/mm_regime_main.cpp)
+target_include_directories(mm_regime PRIVATE src/)
+target_link_libraries(mm_regime PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
+target_compile_features(mm_regime PRIVATE cxx_std_20)
+
+add_executable(test_venues tests/dex/test_venues.cpp)
+target_include_directories(test_venues PRIVATE src/)
+target_link_libraries(test_venues PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
+target_compile_features(test_venues PRIVATE cxx_std_20)
+add_test(NAME venues_tests COMMAND test_venues)
+
+add_executable(test_lighter tests/dex/test_lighter.cpp)
+target_include_directories(test_lighter PRIVATE src/)
+target_link_libraries(test_lighter PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
+target_compile_features(test_lighter PRIVATE cxx_std_20)
+add_test(NAME lighter_tests COMMAND test_lighter)
+
 # ── Databento history (DBN reader, MBO book, dbn_tool) ──────────────────────────
 # Header-only reader src/history/dbn.hpp + mbo_feed.hpp; dbn_tool loads bars / MBO minute stats into
 # Postgres; paper_engine --dbn-mbo replays MBO files directly (no ticks in Postgres).
@@ -374,3 +447,29 @@ target_link_libraries(test_edge_lab PRIVATE pthread)
 # synthetic market with a planted edge — validates the pipeline end to end (scripts/edge_lab_validate.sh)
 add_executable(synth_market tests/research/synth_market.cpp)
 target_compile_features(synth_market PRIVATE cxx_std_20)
+
+# Lighter live order gateway, OFFLINE core (src/dex/live/): signer wrapper over the pinned v1.1.6 .so (dlopen at
+# runtime from its absolute path, sha256-checked, allowlisted symbols only), config/network guard, sizing, nonces,
+# rate limiter + batcher, order state machine, risk limits, probe plan. Tests use a FakeExchange; no network.
+add_executable(test_lighter_gateway tests/dex/test_lighter_gateway.cpp)
+target_include_directories(test_lighter_gateway PRIVATE src/ tests/dex/)
+target_link_libraries(test_lighter_gateway PRIVATE OpenSSL::Crypto ${CMAKE_DL_LIBS} pthread)
+target_compile_features(test_lighter_gateway PRIVATE cxx_std_20)
+add_test(NAME lighter_gateway_tests COMMAND test_lighter_gateway)
+
+# Lighter live market maker (mm_live): engine + account stream + sender + reconciler + dead-man + journal on top of the
+# gateway core. Modes offline (in-process FakeVenue soak, no socket) / probe / live (mainnet only). Runbook:
+# docs/mm_live_runbook.md; unit deploy/mm-live@.service (NOT installed). Tests are offline (fake venue + a local TLS
+# server on 127.0.0.1); run them under env GODEBUG=asyncpreemptoff=1.
+add_executable(mm_live src/dex/mm_live_main.cpp)
+target_include_directories(mm_live PRIVATE src/ ${Boost_INCLUDE_DIRS})
+target_link_libraries(mm_live PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto ${ZSTD_LIBRARY} ${CMAKE_DL_LIBS} pthread)
+target_compile_definitions(mm_live PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(mm_live PRIVATE cxx_std_20)
+add_executable(test_mm_live tests/dex/test_mm_live.cpp)
+target_include_directories(test_mm_live PRIVATE src/ tests/dex/ ${Boost_INCLUDE_DIRS})
+target_link_libraries(test_mm_live PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto ${ZSTD_LIBRARY} ${CMAKE_DL_LIBS} pthread)
+target_compile_definitions(test_mm_live PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
+target_compile_features(test_mm_live PRIVATE cxx_std_20)
+add_dependencies(test_mm_live mm_live)   # the binary-level test runs ./mm_live next to it
+add_test(NAME mm_live_tests COMMAND ${CMAKE_COMMAND} -E env GODEBUG=asyncpreemptoff=1 $<TARGET_FILE:test_mm_live>)

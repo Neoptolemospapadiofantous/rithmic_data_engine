@@ -1,0 +1,37 @@
+# mm-paper-local.service — the 24/7 PAPER market maker on Lighter (Phase 1; systemd USER unit; founder
+# 2026-10-25). It has no keys and no order path: fills come from the queue model (src/dex/hl_mm.hpp).
+#
+# Install once:
+#   cp deploy/mm-paper-local.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now mm-paper-local
+# Check:   systemctl --user status mm-paper-local ; tail -f data/logs/mm_paper.log ; cat data/mm_paper/status.json
+# Halt:    touch data/mm_paper/KILL   (flattens and halts every market; delete the file to resume)
+# Results: Postgres mm_paper_fills / mm_paper_equity / mm_paper_daily / mm_paper_events
+#
+# Same 24 markets as lighter-recorder-local; frozen setting in src/dex/mm_paper.hpp (mmpaper::frozen_params).
+# --tick-rule hl: the strategy's distances stay in HYPERLIQUID ticks (the unit the backtests validated; Lighter's
+# grid is up to 100× finer), orders round to Lighter's real grid. --latency-ms 300 = the backtests' delay.
+[Unit]
+Description=Lighter paper market maker (no orders), 24/7
+After=network-online.target postgresql.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --tick-rule hl --latency-ms 300 --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper.log
+Restart=always
+RestartSec=30
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=10
+CPUWeight=100
+IOWeight=100
+OOMScoreAdjust=100
+MemoryMax=512M
+
+[Install]
+WantedBy=default.target

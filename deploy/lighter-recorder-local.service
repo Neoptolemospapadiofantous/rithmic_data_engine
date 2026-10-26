@@ -1,0 +1,36 @@
+# lighter-recorder-local.service — 24/7 Lighter order-book + trade archive (market-making research, Phase 1;
+# systemd USER unit, modeled on hl-recorder-local.service; founder 2026-10-25). Public data, no keys.
+#
+# Install once:
+#   mkdir -p /media/theone/381C48C51C48803C/rithmic_dex/lighter
+#   cp deploy/lighter-recorder-local.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now lighter-recorder-local
+# Check:   systemctl --user status lighter-recorder-local ; tail -f data/logs/lighter_recorder.log
+# Replay:  build/mm_sim / build/mm_robust --dir /media/theone/381C48C51C48803C/rithmic_dex/lighter
+#
+# The 24 Lighter perps that were also tested on Hyperliquid history (2026-10-25). Output on the SECOND drive;
+# the binary refuses to start when that directory is missing (an unmounted drive never fills the root disk).
+[Unit]
+Description=Lighter book/trade recorder (market-making research archive), 24/7
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/lighter_recorder --out /media/theone/381C48C51C48803C/rithmic_dex/lighter --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/lighter_recorder.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/lighter_recorder.log
+Restart=always
+RestartSec=60
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=15
+CPUWeight=50
+IOWeight=50
+OOMScoreAdjust=100
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target
