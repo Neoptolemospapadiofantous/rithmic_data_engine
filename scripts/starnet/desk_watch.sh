@@ -89,6 +89,18 @@ newest=$(find "$WORK/desk" -maxdepth 1 -name '20*.md' -printf '%T@\n' 2>/dev/nul
 age=$(( $(date +%s) - ${newest%.*} ))
 flag stale "$(( age > 18000 ? 1 : 0 ))" "no new desk file for $(( age / 3600 )) h — the loop is not producing"
 
+# the market-making desk (since 2026-10-26): mm-desk-cycle.timer runs desk_mm.sh every 4 h and writes …-MMLAB.md.
+# Checked only while that timer is enabled; 9 h without a judge report allows one missed cycle.
+if systemctl --user is-enabled --quiet mm-desk-cycle.timer 2>/dev/null; then
+  res=$(systemctl --user show mm-desk-cycle.service -p Result --value 2>/dev/null)
+  flag mm_cycle "$([[ -n "$res" && "$res" != success ]] && echo 1 || echo 0)" \
+       "the MM desk cycle failed (mm-desk-cycle.service Result=$res) — journalctl --user -u mm-desk-cycle"
+  mm_newest=$(find "$WORK/desk" -maxdepth 1 -name '20*-MMLAB.md' -printf '%T@\n' 2>/dev/null | sort -n | tail -1)
+  mm_age=$(( $(date +%s) - ${mm_newest%.*} ))
+  [[ -z "$mm_newest" ]] && mm_age=999999
+  flag mm_stale "$(( mm_age > 32400 ? 1 : 0 ))" "no new MM judge report (…-MMLAB.md) for $(( mm_age / 3600 )) h — the MM desk is not producing"
+fi
+
 # a scheduled run that lost its terminal in the last 2 h (runs.jsonl carries taintedBy)
 tainted=$(python3 - <<'PY'
 import json, os, time

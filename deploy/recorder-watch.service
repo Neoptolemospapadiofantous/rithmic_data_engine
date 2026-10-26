@@ -1,0 +1,20 @@
+# recorder-watch.service — one pass of scripts/recorder_watch.sh: alerts once (grid-notify → Telegram) when a DEX
+# recorder unit is enabled but not running, its status file is stale, its busiest market has had no book/trade
+# message for > 60 s, or it reports lines it could not archive. Fail-open; always exits 0. Driven by
+# recorder-watch.timer (every minute). systemd USER unit. NOT installed by default:
+#
+#   (first restart the recorders onto the 2026-10-26 binaries — older ones write no status file and would alert)
+#   cp deploy/recorder-watch.{service,timer} ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now recorder-watch.timer
+#   Check: scripts/recorder_watch.sh --dry-run ; tail data/logs/recorder_watch.log
+[Unit]
+Description=DEX recorder health check (status files + units → grid-notify)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/recorder_watch.sh
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/recorder_watch.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/recorder_watch.log
+TimeoutStartSec=50
+Nice=10

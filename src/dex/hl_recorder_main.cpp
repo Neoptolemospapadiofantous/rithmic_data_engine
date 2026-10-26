@@ -1,7 +1,11 @@
 // hl_recorder — archives Hyperliquid order books and trades for market-making research
 // (founder 2026-10-25). Research data only: no orders, no keys, no Postgres.
 //
-//   hl_recorder --out DIR --coins A,B,C [--duration SECONDS] [--verbose]
+//   hl_recorder --out DIR --coins A,B,C [--duration SECONDS] [--verbose] [--name NAME] [--status FILE] [--frame-seconds N]
+//
+// Since 2026-10-26: a health file (default data/recorder_status/<name>.json, name "hyperliquid"; recorder_status.hpp)
+// for scripts/recorder_watch.sh, and day files end their zstd frame every --frame-seconds (default 60, 0 = one frame
+// per run as before) so a kill loses at most ~2 s and damage at most one frame (zstd_daily.hpp).
 //
 // One websocket (wss://api.hyperliquid.xyz/ws, public, no auth), l2Book + trades subscriptions per
 // coin. Every message is archived raw to DIR/<COIN>/<UTC date>.jsonl.zst as
@@ -13,6 +17,7 @@
 // Logs go to stdout (the systemd unit appends them to data/logs/hl_recorder.log).
 
 #include "dex/hl_mm.hpp"
+#include "dex/recorder_status.hpp"
 #include "zstd_daily.hpp"
 
 #include <boost/asio.hpp>
@@ -63,10 +68,14 @@ struct Opts {
     std::vector<std::string> coins;
     int duration_s = 0;
     bool verbose = false;
+    std::string name = "hyperliquid";
+    std::filesystem::path status;
+    int frame_s = 60;
 };
 static Opts g_opt;
 static std::map<std::string, std::unique_ptr<ZstdDaily>> g_files;
 static std::atomic<int64_t> g_books{0}, g_trade_msgs{0}, g_snap_msgs{0}, g_other{0}, g_reconnects{0}, g_bytes{0};
+static std::unique_ptr<rec::Status> g_status;
 
 using WsStream = websocket::stream<beast::ssl_stream<beast::tcp_stream>>;
 
@@ -162,6 +171,8 @@ static asio::awaitable<void> session(ssl::context& ctx) {
             line += snap ? ",\"snap\":true,\"m\":" : ",\"snap\":false,\"m\":";
             line += msg; line += '}';
             f->second->write_line(line, recv);
+            g_status->set_connected(true);
+            if (!snap) g_status->on_msg(coin, ch == "trades" ? rec::Status::Kind::Trade : rec::Status::Kind::Book, recv);
         }
     } catch (...) {
         *alive = false;
@@ -178,6 +189,7 @@ static asio::awaitable<void> run_forever(ssl::context& ctx) {
         catch (const std::exception& e) { why = e.what(); }
         if (std::chrono::steady_clock::now() - t0 > std::chrono::seconds(60)) backoff = 1;
         ++g_reconnects;
+        g_status->on_reconnect();
         logf("disconnected (%s) — reconnecting in %d s", why.c_str(), backoff);
         co_await sleep_s(backoff);
         backoff = std::min(backoff * 2, 60);
@@ -190,7 +202,11 @@ static asio::awaitable<void> housekeeping() {
     while (true) {
         t.expires_after(std::chrono::seconds(2));
         co_await t.async_wait(use_awaitable);
-        for (auto& [c, f] : g_files) f->flush();
+        const int64_t now = now_us();
+        int64_t we = 0, dl = 0, fr = 0;
+        for (auto& [c, f] : g_files) { f->flush(now); we += f->write_errors(); dl += f->dropped_lines(); fr += f->frames(); }
+        g_status->set_writer_totals(we, dl, fr);
+        if (ticks % 2 == 0) g_status->write(g_opt.status, now);
         if (++ticks % (g_opt.duration_s > 0 && g_opt.duration_s < 300 ? 5 : 30) == 0)
             logf("summary: books=%lld trades=%lld replayed=%lld other=%lld bytes_in=%lld reconnects=%lld",
                  (long long)g_books, (long long)g_trade_msgs, (long long)g_snap_msgs, (long long)g_other,
@@ -208,8 +224,11 @@ int main(int argc, char** argv) {
         }
         else if (a == "--duration" && i + 1 < argc) g_opt.duration_s = std::atoi(argv[++i]);
         else if (a == "--verbose") g_opt.verbose = true;
+        else if (a == "--name" && i + 1 < argc) g_opt.name = argv[++i];
+        else if (a == "--status" && i + 1 < argc) g_opt.status = argv[++i];
+        else if (a == "--frame-seconds" && i + 1 < argc) g_opt.frame_s = std::atoi(argv[++i]);
         else {
-            std::fprintf(stderr, "usage: hl_recorder --out DIR --coins A,B,C [--duration S] [--verbose]\n"
+            std::fprintf(stderr, "usage: hl_recorder --out DIR --coins A,B,C [--duration S] [--verbose] [--name NAME] [--status FILE] [--frame-seconds N]\n"
                                  "  DIR must exist (an unmounted drive must never fill the root disk)\n");
             return 2;
         }
@@ -217,9 +236,18 @@ int main(int argc, char** argv) {
     if (g_opt.out.empty() || g_opt.coins.empty()) { std::fprintf(stderr, "--out and --coins are required\n"); return 2; }
     std::error_code ec;
     if (!std::filesystem::is_directory(g_opt.out, ec)) { logf("output dir %s does not exist — refusing", g_opt.out.c_str()); return 1; }
-    for (const auto& c : g_opt.coins)
+    if (g_opt.status.empty()) g_opt.status = std::filesystem::path("data/recorder_status") / (g_opt.name + ".json");
+    g_status = std::make_unique<rec::Status>(g_opt.name, now_us());
+    g_status->extra()["venue"] = "hyperliquid";
+    g_status->extra()["out"] = g_opt.out.string();
+    g_status->extra()["frame_seconds"] = g_opt.frame_s;
+    for (const auto& c : g_opt.coins) {
         g_files[c] = std::make_unique<ZstdDaily>(g_opt.out / c, [](const std::string& s) { logf("%s", s.c_str()); },
                                                 3);   // 30 streams: level 9 peaked at 326 MB, level 3 fits the unit's cap
+        g_files[c]->set_frame_seconds(g_opt.frame_s);
+        g_files[c]->set_sync(g_opt.frame_s > 0);
+        g_status->add_market(c);
+    }
     logf("hl_recorder starting: %zu coins → %s", g_opt.coins.size(), g_opt.out.c_str());
 
     asio::io_context ioc(1);
@@ -241,6 +269,8 @@ int main(int argc, char** argv) {
     }
     ioc.run();
     for (auto& [c, f] : g_files) f->close();
+    g_status->set_connected(false);
+    g_status->write(g_opt.status, now_us());
     logf("final: books=%lld trades=%lld replayed=%lld other=%lld bytes_in=%lld reconnects=%lld",
          (long long)g_books, (long long)g_trade_msgs, (long long)g_snap_msgs, (long long)g_other,
          (long long)g_bytes, (long long)g_reconnects);

@@ -8,6 +8,10 @@
 # Check:   systemctl --user status lighter-recorder-local ; tail -f data/logs/lighter_recorder.log
 # Replay:  build/mm_sim / build/mm_robust --dir /media/theone/381C48C51C48803C/rithmic_dex/lighter
 #
+# Since 2026-10-26 (defaults, no flag needed): market_stats lines in the day files, <out>/_meta/<date>.json daily
+# orderBookDetails snapshot, status file data/recorder_status/lighter.json (scripts/recorder_watch.sh), 60 s zstd
+# frames, and <out>/.lighter_recorder.lock against a second writer. A backup instance: lighter-recorder-backup.service.
+#
 # The 24 Lighter perps that were also tested on Hyperliquid history (2026-10-25). Output on the SECOND drive;
 # the binary refuses to start when that directory is missing (an unmounted drive never fills the root disk).
 [Unit]

@@ -399,6 +399,14 @@ target_link_libraries(test_lighter PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
 target_compile_features(test_lighter PRIVATE cxx_std_20)
 add_test(NAME lighter_tests COMMAND test_lighter)
 
+# Recording side of the DEX archive: market_stats parsing + loader skip, orderBookDetails snapshot/diff,
+# recorder status file, time-boxed zstd frames (2026-10-26).
+add_executable(test_recorder tests/dex/test_recorder.cpp)
+target_include_directories(test_recorder PRIVATE src/)
+target_link_libraries(test_recorder PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
+target_compile_features(test_recorder PRIVATE cxx_std_20)
+add_test(NAME recorder_tests COMMAND test_recorder)
+
 # ── Databento history (DBN reader, MBO book, dbn_tool) ──────────────────────────
 # Header-only reader src/history/dbn.hpp + mbo_feed.hpp; dbn_tool loads bars / MBO minute stats into
 # Postgres; paper_engine --dbn-mbo replays MBO files directly (no ticks in Postgres).

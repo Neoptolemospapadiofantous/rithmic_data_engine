@@ -27,6 +27,43 @@ ETHFI SEI 2Z GMX — the Lighter perps that were also tested on Hyperliquid hist
 All archives live on the second drive. The recorders refuse to start when the output directory is missing,
 so an unmounted drive can never fill the root disk.
 
+Recorder health (since 2026-10-26). Every recorder (lighter, hl, dex ×3) rewrites `data/recorder_status/<name>.json`
+every ~4 s (`src/dex/recorder_status.hpp`): per market the last message time, last book/trade time, counts, gaps and
+the longest silence; overall reconnects, sequence gaps, zstd write errors, lines it could not archive, frames
+written, and the busiest market with its age. Names: `lighter`, `hyperliquid`, `extended`, `aster`, `paradex`
+(`--name` overrides). `scripts/recorder_watch.sh` reads them; `deploy/recorder-watch.{service,timer}` runs it every
+minute (NOT installed). It alerts once through `grid-notify` when a unit is enabled but not active, a status file is
+missing or older than 60 s, the busiest market has had no book/trade message for more than 60 s, or lines were not
+archived; a "recovered" line follows when it clears; at most one message per 10 minutes. Fail-open.
+
+| Unit (not installed) | What |
+|---|---|
+| `lighter-recorder-backup` | second Lighter recorder, `--name lighter_backup`, own archive root (see "Backup recorder" below) |
+| `recorder-watch.timer` | the every-minute health check above |
+
+### Backup recorder (design, 2026-10-26 — not installed)
+Why: live P&L and fill measurement need the tape for every minute we quote. One recorder has single points of failure:
+the process (OOM, crash, a deploy restart — measured gap ≈ the restart time plus the first snapshot, a few seconds,
+but `RestartSec=60` makes an unplanned crash cost ~60 s), its websocket (a sequence gap forces a reconnect: the book
+is lost until the new snapshot), the machine and its network.
+- Same binary, second instance: `lighter_recorder --name lighter_backup --out <other root> --symbols <same list>`
+  (`deploy/lighter-recorder-backup.service`). `--name` gives it its own status file. `<out>/.lighter_recorder.lock`
+  (flock) makes a second recorder on the SAME root refuse to start — two writers on one day file would interleave
+  frames — so the backup must have its own root.
+- Level 1, same box: root on the main disk (`/home/theone/rithmic_dex_backup/lighter`, ~0.5 GB/day for 24 markets).
+  Covers process crashes and restarts (restart the two units at different times, never together). Does not cover
+  the box, its power or its network.
+- Level 2, two machines (the real backup): the same binary and unit on a second host with its own local root, ideally
+  on another network; copy its day files back nightly (rsync, read-only on the primary) into a separate directory,
+  e.g. `rithmic_dex/lighter_backup/`. Clocks: `r` is each box's own receive time; exchange timestamps (`timestamp`,
+  trade `timestamp`, the book nonce) are the same on both, and replay orders by exchange time.
+- Using it: the two copies are each self-consistent but are NOT merged line by line (nonces continue across both,
+  receive times differ). Pick per coin-day: `archive_check` both files (skipped_frames, seq_gaps, gaps_over,
+  max_gap_s) and replay the better one (`mm_sim --dir <that root>`). An automatic per-day chooser / gap-filler is not
+  built yet.
+- Unverified: whether Lighter limits public websocket connections or subscriptions per IP; two recorders from one IP
+  double our subscriptions (24 markets × 3 channels each).
+
 ## 3. Data sources
 
 ### Lighter (live) — `wss://mainnet.zklighter.elliot.ai/stream`
@@ -38,6 +75,21 @@ so an unmounted drive can never fill the root disk.
 - `subscribed/trade`: a replay of recent trades. It is ignored, because those trades happened before we listened.
   `update/trade`: new `trades` and `liquidation_trades`. `is_maker_ask: true` means the taker bought.
   Types `deleverage` and `market-settlement` are skipped.
+- `market_stats/<market_id>` (recorded since 2026-10-26, verified on the live mainnet stream that day): channel
+  `market_stats:<id>`, first `subscribed/market_stats` then `update/market_stats` about once per second, envelope
+  `timestamp` (ms), object `market_stats` with `mark_price`, `index_price`, `mid_price`, `best_bid_price`,
+  `best_ask_price`, `last_trade_price`, `funding_rate`, `current_funding_rate`, `funding_timestamp` (ms, on the hour —
+  funding is hourly), `open_interest`, `open_interest_usd`, `premium`, daily volume/range (decimal strings).
+  Archived in the same day file as books and trades; `hl_events.hpp` skips these lines for replay (mm_sim output
+  byte-identical with and without them — checked on BNB and GMX 2026-10-25) and returns them through
+  `load_archive(file, &bad, &stats)` / `hl::load_market_stats(file)` as `lighter::MarketStats`. `--no-stats` turns
+  them off. Cost: ~37 bytes/line compressed ≈ 3 MB per market-day, ~+20 % on the whole Lighter archive.
+- Market metadata: `GET /api/v1/orderBookDetails` (public) is saved at recorder start and every day at 00:05 UTC to
+  `<archive>/_meta/<UTC date>.json` (raw reply, ~400 KB, all markets; `src/dex/lighter_meta.hpp`). Each snapshot is
+  compared with the newest one already there; any change in a RECORDED market's `price_decimals`, `size_decimals`,
+  `supported_*_decimals`, `min_base_amount`, `min_quote_amount`, `status`, `maker_fee` or `taker_fee`, or a market
+  that appears/disappears, is logged as `meta change: BNB(25) price_decimals 4 → 3`. P&L and order sizing measured on
+  a day's archive must use that day's terms. `--no-meta` turns it off. `hl::list_days` ignores `_meta/`.
 - Keepalive: `{"type":"ping"}` every 60 s (the server closes after 2 minutes of client silence).
 - Lighter only sends a book when it changes. A quiet market can be silent for tens of seconds and still be valid.
 
@@ -58,6 +110,16 @@ One JSON object per line, zstd-compressed (`src/zstd_daily.hpp`, level 3), a new
 each Lighter day file is a full synthetic snapshot (`"synthetic": true`) rebuilt from the live book, so every
 file replays alone. A restart appends a new zstd frame; concatenated frames read as one stream. A file still
 being written ends in an unfinished frame; `ZstdLines` treats that as the end of data.
+
+Crash tolerance (since 2026-10-26): the recorders end the zstd frame every `--frame-seconds` (default 60; 0 = the old
+one frame per run) by the line's receive time and by the 2 s flush clock, with the frame checksum and an
+`fdatasync` at each frame end. A kill (even SIGKILL) loses at most the unflushed tail, ≤ 2 s (checked live: SIGKILL
+after 25 s, archive read back clean to the last second); a damaged byte costs at most its own ≤ 60 s frame instead of
+the rest of the run, and the checksum detects it. Size at level 3, re-writing a real day with a 2 s flush: Lighter
+BNB 2026-10-25 (busy) one frame 19.3 MB → 60 s frames 18.3 MB (−5 %; 10 s 17.6 MB); GMX (quiet) 577 KB → 618 KB
+(+7 %; 10 s +59 %, 300 s −2 %). 60 s is the chosen trade-off. Lines are whole within a frame; the reader resumes at
+the next frame header after any damage. A writer that cannot open its file or hits a short write counts
+`dropped_lines` / `write_errors` (status file) and starts a fresh frame.
 
 `src/dex/hl_events.hpp` loads any of the three layouts (Hyperliquid archive, Lighter archive, Tardis CSV) into
 one event list ordered by exchange time. At equal times trades come **before** the book, because a block's book
@@ -187,7 +249,10 @@ touch data/mm_paper/KILL          # flatten + halt every market (paper)
 rm data/mm_paper/KILL             # resume
 tail -f data/logs/mm_paper.log
 build/mm_robust --dir /media/theone/381C48C51C48803C/rithmic_dex/lighter   # re-test on Lighter's own books
-build/test_hl_mm && build/test_lighter
+build/test_hl_mm && build/test_lighter && build/test_recorder
+jq '{busiest,busiest_age_s,reconnects,gaps,dropped_lines}' data/recorder_status/lighter.json   # recorder health
+scripts/recorder_watch.sh --dry-run                                     # what the watch would alert on
+grep 'meta change' data/logs/lighter_recorder.log                       # a market's decimals/minimums changed
 ```
 
 ## 10. Not modelled, and open risks

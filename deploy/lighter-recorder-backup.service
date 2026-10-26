@@ -1,0 +1,38 @@
+# lighter-recorder-backup.service — a SECOND, independent Lighter recorder (same binary, same markets) writing to its
+# own archive root, so a crash, a reconnect gap or a damaged frame on the primary (lighter-recorder-local) can be
+# covered from the other copy. Design: docs/market_making_system.md §2/§3 "Backup recorder". NOT installed.
+#
+# Same machine (protects against a process crash / restart gap, NOT against this box or its network going down):
+#   mkdir -p /home/theone/rithmic_dex_backup/lighter          # main disk; ~0.5 GB/day for 24 markets incl. stats
+#   cp deploy/lighter-recorder-backup.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now lighter-recorder-backup
+#   add "lighter-recorder-backup=lighter_backup" to RECORDER_WATCH_UNITS (scripts/recorder_watch.sh)
+# Second machine (the real backup): copy the binary + this unit, change --out to a local dir there, keep --name.
+#
+# Never point it at the primary's --out: the recorder takes DIR/.lighter_recorder.lock and refuses a DIR another
+# recorder holds (two writers on one day file would interleave frames). The status file is
+# data/recorder_status/lighter_backup.json (from --name). Restart the two at different times, never together.
+[Unit]
+Description=Lighter book/trade recorder — BACKUP instance (own archive root)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/lighter_recorder --name lighter_backup --out /home/theone/rithmic_dex_backup/lighter --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/lighter_recorder_backup.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/lighter_recorder_backup.log
+Restart=always
+RestartSec=60
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=15
+CPUWeight=50
+IOWeight=50
+OOMScoreAdjust=100
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

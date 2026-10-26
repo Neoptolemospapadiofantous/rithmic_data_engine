@@ -54,7 +54,12 @@ inline void run_events(const std::vector<Event>& ev, Simulator& s) {
 // while the book is consistent; its own trade replay is dropped by lighter::parse_trades), or a dex_recorder
 // archive tagged "v": extended / aster / paradex (venue_feeds.hpp; Extended and Paradex books are rebuilt from
 // snapshot + deltas like Lighter's, every Aster depth20 message is a complete book).
-inline std::vector<Event> load_archive(const std::filesystem::path& file, int64_t* bad_lines = nullptr) {
+//
+// Lighter market_stats lines (recorded since 2026-10-26: mark/index price, funding, open interest) are never book or
+// trade events — the replay is byte-identical with or without them. Pass `stats` to collect them (file order, each
+// with its archive receive time); old archives simply yield none.
+inline std::vector<Event> load_archive(const std::filesystem::path& file, int64_t* bad_lines = nullptr,
+                                       std::vector<lighter::MarketStats>* stats = nullptr) {
     std::vector<Event> ev;
     ZstdLines in(file);
     std::string line;
@@ -87,6 +92,11 @@ inline std::vector<Event> load_archive(const std::filesystem::path& file, int64_
                     if ((r == venue::Apply::Snapshot || r == venue::Apply::Delta) && pbook.valid()) push_book(pbook.top(20));
                 } else push_trades(venue::paradex::parse_trades(m));
             } else if (bad_lines) ++*bad_lines;
+            continue;
+        }
+        if (lighter::is_market_stats(m)) {
+            if (stats)
+                for (auto& s : lighter::parse_market_stats(m)) { s.recv_us = j.value("r", int64_t{0}); stats->push_back(s); }
             continue;
         }
         if (const int mk = lighter::market_of(m, "order_book"); mk >= 0) {
@@ -231,8 +241,24 @@ inline std::vector<DayFile> list_days(const std::filesystem::path& dir) {
     return out;
 }
 
-inline std::vector<Event> load_day(const DayFile& d, int64_t* bad_lines = nullptr) {
-    return d.tardis ? load_tardis(d.a, d.b) : load_archive(d.a, bad_lines);
+inline std::vector<Event> load_day(const DayFile& d, int64_t* bad_lines = nullptr,
+                                   std::vector<lighter::MarketStats>* stats = nullptr) {
+    return d.tardis ? load_tardis(d.a, d.b) : load_archive(d.a, bad_lines, stats);
+}
+
+// Only the Lighter market_stats of one archive day file (funding / mark-price features), without building the book:
+// a line is JSON-parsed only when it names a market_stats channel.
+inline std::vector<lighter::MarketStats> load_market_stats(const std::filesystem::path& file) {
+    std::vector<lighter::MarketStats> out;
+    ZstdLines in(file);
+    std::string line;
+    while (in.next(line)) {
+        if (line.find("\"market_stats:") == std::string::npos) continue;
+        json j = json::parse(line, nullptr, false);
+        if (j.is_discarded() || !j.is_object() || !j.contains("m") || !lighter::is_market_stats(j["m"])) continue;
+        for (auto& s : lighter::parse_market_stats(j["m"])) { s.recv_us = j.value("r", int64_t{0}); out.push_back(s); }
+    }
+    return out;
 }
 
 }  // namespace hl

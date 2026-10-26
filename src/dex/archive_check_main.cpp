@@ -12,6 +12,7 @@
 //   seq_gaps        Lighter only: order-book updates whose begin_nonce did not follow the previous nonce (the book is
 //                   untrustworthy until the next snapshot; the loader drops it until then)
 //   snapshots       Lighter full-book messages (connect, reconnect, day-file header)
+//   stats           Lighter market_stats lines (mark/index/funding/OI, since 2026-10-26) — not replay events
 //   books / trades  events the replay loader (hl_events.hpp load_archive) produces — what mm_sim sees
 //   max_gap_s       longest silence between two consecutive book events; gaps_over = how many silences exceed --gap-s
 
@@ -57,7 +58,8 @@ int main(int argc, char** argv) {
             }
         }
         int64_t bad2 = 0;
-        const auto ev = hl::load_archive(f, &bad2);
+        std::vector<lighter::MarketStats> st;
+        const auto ev = hl::load_archive(f, &bad2, &st);
         int64_t books = 0, trades = 0, first = 0, last = 0, max_gap = 0, over = 0;
         for (const auto& e : ev) {
             if (!e.is_book) { ++trades; continue; }
@@ -71,6 +73,7 @@ int main(int argc, char** argv) {
         }
         o["lines"] = lines; o["bad_lines"] = bad; o["skipped_frames"] = in.skipped_frames(); o["corrupt"] = in.corrupt();
         o["seq_gaps"] = seq_gaps; o["snapshots"] = snapshots; o["books"] = books; o["trades"] = trades;
+        o["stats"] = static_cast<int64_t>(st.size());
         o["first_ms"] = first; o["last_ms"] = last; o["hours"] = first ? (last - first) / 3'600'000.0 : 0.0;
         o["max_gap_s"] = max_gap / 1000.0; o["gaps_over"] = over; o["gap_s"] = gap_s;
         std::printf("%s\n", o.dump().c_str());

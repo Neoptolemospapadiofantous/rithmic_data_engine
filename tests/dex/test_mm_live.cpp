@@ -1002,10 +1002,11 @@ struct LocalTlsServer {
     net_ssl::context ctx{net_ssl::context::tls_server};
     net_asio::ip::tcp::acceptor acc{ioc, {net_asio::ip::make_address("127.0.0.1"), 0}};
     std::thread th;
-    LocalTlsServer(const TestCert& c, bool ws, int conns) {
+    // reqs: HTTP requests served per connection before the server closes it (1 = a server without keep-alive)
+    LocalTlsServer(const TestCert& c, bool ws, int conns, int reqs = 1) {
         ctx.use_certificate_chain(net_asio::buffer(c.cert_pem));
         ctx.use_private_key(net_asio::buffer(c.key_pem), net_ssl::context::pem);
-        th = std::thread([this, ws, conns] {
+        th = std::thread([this, ws, conns, reqs] {
             for (int k = 0; k < conns; ++k) {
                 try {
                     net_asio::ip::tcp::socket sock(ioc);
@@ -1024,16 +1025,19 @@ struct LocalTlsServer {
                         }
                     }
                     net_beast::flat_buffer b;
-                    net_http::request<net_http::string_body> req;
-                    net_http::read(s, b, req);
-                    if (req.target() == "/slow") std::this_thread::sleep_for(std::chrono::milliseconds(800));
-                    json body = {{"code", 200}, {"method", std::string(req.method_string())}, {"target", std::string(req.target())},
-                                 {"body", req.body()}, {"auth", std::string(req[net_http::field::authorization])},
-                                 {"ctype", std::string(req[net_http::field::content_type])}};
-                    net_http::response<net_http::string_body> res{net_http::status::ok, 11};
-                    res.body() = body.dump();
-                    res.prepare_payload();
-                    net_http::write(s, res);
+                    for (int q = 0; q < reqs; ++q) {
+                        net_http::request<net_http::string_body> req;
+                        net_http::read(s, b, req);
+                        if (req.target() == "/slow") std::this_thread::sleep_for(std::chrono::milliseconds(800));
+                        json body = {{"code", 200}, {"method", std::string(req.method_string())}, {"target", std::string(req.target())},
+                                     {"body", req.body()}, {"auth", std::string(req[net_http::field::authorization])},
+                                     {"ctype", std::string(req[net_http::field::content_type])}, {"conn", k}, {"req", q}};
+                        net_http::response<net_http::string_body> res{net_http::status::ok, 11};
+                        res.keep_alive(q + 1 < reqs);
+                        res.body() = body.dump();
+                        res.prepare_payload();
+                        net_http::write(s, res);
+                    }
                     net_beast::error_code ec;
                     s.shutdown(ec);
                 } catch (...) {}
@@ -1080,6 +1084,32 @@ TEST(real_https_client_posts_forms_and_reports_timeouts_as_unknown) {
     ASSERT_EQ(n.status, 0);
     ASSERT(!n.sent);                                          // refused before writing → definitely not sent
     ASSERT(Sender::classify(n, 1).kind == SendTxResult::Kind::NotSent);
+}
+
+TEST(real_https_client_reuses_one_warm_connection_and_replaces_a_closed_one) {
+    TestCert c = make_cert();
+    {   // keep-alive server: three requests ride ONE TLS connection (the 2026-10-26 probe stall was a handshake per sendTx)
+        LocalTlsServer srv(c, false, 1, 3);
+        BeastHttps http(Endpoint{"127.0.0.1", srv.port(), "localhost", c.cert_pem, true});
+        for (int q = 0; q < 3; ++q) {
+            HttpRequest r; r.target = "/api/v1/x"; r.timeout_ms = 3'000;
+            HttpResponse resp = http.request(r);
+            ASSERT_EQ(resp.status, 200);
+            ASSERT_EQ(json::parse(resp.body)["req"].get<int>(), q);
+        }
+        ASSERT_EQ(http.connects(), 1);
+    }
+    {   // a server that closes after each answer: the client sees it, reconnects BEFORE writing, and nothing is UNKNOWN
+        LocalTlsServer srv(c, false, 3, 1);
+        BeastHttps http(Endpoint{"127.0.0.1", srv.port(), "localhost", c.cert_pem, true});
+        for (int q = 0; q < 3; ++q) {
+            HttpRequest r; r.target = "/api/v1/x"; r.timeout_ms = 3'000;
+            HttpResponse resp = http.request(r);
+            ASSERT_EQ(resp.status, 200);
+            ASSERT_EQ(json::parse(resp.body)["conn"].get<int>(), q);
+        }
+        ASSERT_EQ(http.connects(), 3);
+    }
 }
 
 TEST(real_websocket_client_round_trip) {

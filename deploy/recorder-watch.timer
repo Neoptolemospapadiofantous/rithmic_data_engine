@@ -1,0 +1,11 @@
+# recorder-watch.timer — runs recorder-watch.service every minute (see that file for install steps; NOT installed).
+[Unit]
+Description=Every-minute DEX recorder health check
+
+[Timer]
+OnCalendar=*:*:30
+AccuracySec=5s
+Persistent=false
+
+[Install]
+WantedBy=timers.target

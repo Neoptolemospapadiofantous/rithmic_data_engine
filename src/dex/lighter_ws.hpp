@@ -97,6 +97,10 @@ inline asio::awaitable<std::map<std::string, MarketInfo>> resolve_markets(ssl::c
     co_return out;
 }
 
+// Every market's details (decimals, minimum sizes, status, fees, margin fractions) — public, the daily
+// <archive>/_meta/<date>.json snapshot of lighter_recorder. Returned raw; lighter::meta_diff compares two.
+inline asio::awaitable<std::string> order_book_details(ssl::context& ctx) { co_return co_await https_get(ctx, "/api/v1/orderBookDetails"); }
+
 // Hyperliquid's size precision per coin (POST https://api.hyperliquid.xyz/info {"type":"meta"}): with the
 // price it defines HL's tick, the unit every backtest measured the strategy in (hl::TickRule::Hyperliquid).
 inline asio::awaitable<std::map<std::string, int>> hyperliquid_sz_decimals(ssl::context& ctx) {
@@ -141,10 +145,14 @@ inline asio::awaitable<void> sleep_s(int s) {
 // reconnect (e.g. on a nonce gap — a fresh connection brings fresh snapshots).
 using MsgFn = std::function<void(const nlohmann::json&, const std::string&, int64_t)>;
 
-inline asio::awaitable<void> session(ssl::context& ctx, const std::vector<int>& market_ids, MsgFn on_msg) {
+// `extra` = further per-market channel prefixes to subscribe as well (lighter_recorder adds "market_stats/").
+inline asio::awaitable<void> session(ssl::context& ctx, const std::vector<int>& market_ids, MsgFn on_msg,
+                                     std::vector<std::string> extra = {}) {
     auto ws = co_await ws_connect(ctx);
+    std::vector<std::string> prefixes{"order_book/", "trade/"};
+    prefixes.insert(prefixes.end(), extra.begin(), extra.end());
     for (int id : market_ids)
-        for (const char* ch : {"order_book/", "trade/"}) {
+        for (const auto& ch : prefixes) {
             const std::string sub = std::string(R"({"type":"subscribe","channel":")") + ch + std::to_string(id) + "\"}";
             co_await ws->async_write(asio::buffer(sub), use_awaitable);
         }

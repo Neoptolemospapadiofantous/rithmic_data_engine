@@ -6,8 +6,11 @@
     The single exception is loopback_test = true, which allows exactly 127.0.0.1 with a caller-supplied CA (the
     tests' local fake HTTPS/WS server); no config file can set it — only code can.
 
-    BeastHttps: one TLS connection per request, everything async on a private io_context driven by run_for(timeout),
-    so a stalled DNS/connect/read can never block past the deadline. `sent` is set immediately before the request is
+    BeastHttps: ONE warm TLS connection reused across requests (kept alive while the server allows it, replaced when
+    idle > 10 s or when a peek shows the server closed it — both checked BEFORE anything is written), everything
+    async on a private io_context driven by run_for(timeout), so a stalled DNS/connect/read can never block past the
+    deadline. A new connection per request cost ~160 ms (DNS + TCP + TLS) plus ~50 ms of TLS shutdown on every
+    sendTx, on the engine thread — the 2.9 s startup stall of the 2026-10-26 probe was several of those in one step. `sent` is set immediately before the request is
     written: a failure before that is a definite "not sent"; any failure after it (no answer, cut connection,
     timeout) leaves status 0 with sent = true → the caller treats the outcome as UNKNOWN.
 
@@ -34,6 +37,9 @@
 #include <mutex>
 #include <string>
 #include <thread>
+
+#include <cerrno>
+#include <sys/socket.h>
 
 namespace lighter::live {
 
@@ -73,6 +79,10 @@ inline std::shared_ptr<net_ssl::context> make_tls_context(const Endpoint& e) {
 
 class BeastHttps : public HttpClient {
 public:
+    // A warm connection idle longer than this is replaced before use: servers drop idle keep-alive connections,
+    // and a request written into one they already dropped would come back UNKNOWN for no reason.
+    static constexpr int kMaxIdleMs = 10'000;
+
     explicit BeastHttps(Endpoint e) : ep_(std::move(e)) {
         endpoint_guard(ep_);
         if (ep_.tls_name.empty()) ep_.tls_name = ep_.host;
@@ -82,44 +92,56 @@ public:
     HttpResponse request(const HttpRequest& r) override {
         HttpResponse out;
         out.sent = false;
-        bool got = false;
-        {
-            net_asio::io_context ioc;
-            net_asio::co_spawn(ioc, [&]() -> net_asio::awaitable<void> {
-                using net_asio::use_awaitable;
-                net_asio::ip::tcp::resolver res(ioc);
-                auto eps = co_await res.async_resolve(ep_.host, ep_.port, use_awaitable);
-                net_beast::ssl_stream<net_beast::tcp_stream> s(ioc, *ctx_);
-                co_await net_beast::get_lowest_layer(s).async_connect(eps, use_awaitable);
-                if (!SSL_set_tlsext_host_name(s.native_handle(), ep_.tls_name.c_str())) throw std::runtime_error("SNI failed");
-                s.set_verify_callback(net_ssl::host_name_verification(ep_.tls_name));
-                co_await s.async_handshake(net_ssl::stream_base::client, use_awaitable);
-                net_http::request<net_http::string_body> req{r.method == "POST" ? net_http::verb::post : net_http::verb::get, r.target, 11};
-                req.set(net_http::field::host, ep_.tls_name);
-                req.set(net_http::field::user_agent, "rithmic_engine-mm_live/1.0");
-                for (const auto& [k, v] : r.headers) req.set(k, v);
-                if (r.method == "POST") {
-                    req.set(net_http::field::content_type, r.content_type.empty() ? "application/x-www-form-urlencoded" : r.content_type);
-                    req.body() = r.body;
-                    req.prepare_payload();
-                }
-                out.sent = true;   // from here on, a missing answer is UNKNOWN, never "not sent"
-                co_await net_http::async_write(s, req, use_awaitable);
-                net_beast::flat_buffer buf;
-                net_http::response_parser<net_http::string_body> p;
-                p.body_limit(8u << 20);
-                co_await net_http::async_read(s, buf, p, use_awaitable);
-                out.status = int(p.get().result_int());
-                out.body = p.get().body();
-                got = true;
-                net_beast::error_code ec;
-                co_await s.async_shutdown(net_asio::redirect_error(use_awaitable, ec));
-            }, [&](std::exception_ptr e) {
-                if (!e) return;
-                try { std::rethrow_exception(e); } catch (const std::exception& x) { out.error = x.what(); }
-            });
-            ioc.run_for(std::chrono::milliseconds(r.timeout_ms));
+        bool got = false, keep = false;
+        if (s_ && (std::chrono::steady_clock::now() - last_used_ > std::chrono::milliseconds(kMaxIdleMs) || peer_closed()))
+            drop();
+        ioc_.restart();
+        net_asio::co_spawn(ioc_, [&]() -> net_asio::awaitable<void> {
+            using net_asio::use_awaitable;
+            if (!s_) {
+                auto eps = co_await resolver_.async_resolve(ep_.host, ep_.port, use_awaitable);
+                auto s = std::make_unique<Stream>(ioc_, *ctx_);
+                co_await net_beast::get_lowest_layer(*s).async_connect(eps, use_awaitable);
+                if (!SSL_set_tlsext_host_name(s->native_handle(), ep_.tls_name.c_str())) throw std::runtime_error("SNI failed");
+                s->set_verify_callback(net_ssl::host_name_verification(ep_.tls_name));
+                co_await s->async_handshake(net_ssl::stream_base::client, use_awaitable);
+                s_ = std::move(s);
+                ++connects_;
+            }
+            net_http::request<net_http::string_body> req{r.method == "POST" ? net_http::verb::post : net_http::verb::get, r.target, 11};
+            req.set(net_http::field::host, ep_.tls_name);
+            req.set(net_http::field::user_agent, "rithmic_engine-mm_live/1.0");
+            req.keep_alive(true);
+            for (const auto& [k, v] : r.headers) req.set(k, v);
+            if (r.method == "POST") {
+                req.set(net_http::field::content_type, r.content_type.empty() ? "application/x-www-form-urlencoded" : r.content_type);
+                req.body() = r.body;
+                req.prepare_payload();
+            }
+            out.sent = true;   // from here on, a missing answer is UNKNOWN, never "not sent"
+            co_await net_http::async_write(*s_, req, use_awaitable);
+            net_beast::flat_buffer buf;
+            net_http::response_parser<net_http::string_body> p;
+            p.body_limit(8u << 20);
+            co_await net_http::async_read(*s_, buf, p, use_awaitable);
+            out.status = int(p.get().result_int());
+            out.body = p.get().body();
+            keep = p.get().keep_alive();
+            got = true;
+        }, [&](std::exception_ptr e) {
+            if (!e) return;
+            try { std::rethrow_exception(e); } catch (const std::exception& x) { out.error = x.what(); }
+        });
+        ioc_.run_for(std::chrono::milliseconds(r.timeout_ms));
+        if (!ioc_.stopped()) {
+            // Deadline hit with an operation still pending: abort it (closing the socket / cancelling the lookup
+            // completes every pending op with an error) and let the coroutine finish before its locals go away.
+            resolver_.cancel();
+            if (s_) net_beast::get_lowest_layer(*s_).close();
+            ioc_.run_for(std::chrono::seconds(2));
         }
+        if (got && keep) last_used_ = std::chrono::steady_clock::now();
+        else drop();
         if (!got) {
             out.status = 0;
             if (out.error.empty()) out.error = "timeout after " + std::to_string(r.timeout_ms) + " ms";
@@ -127,9 +149,36 @@ public:
         return out;
     }
 
+    int64_t connects() const { return connects_; }   // TLS connections opened (1 per request = no reuse)
+
 private:
+    using Stream = net_beast::ssl_stream<net_beast::tcp_stream>;
+
+    // The server closed the warm connection while it sat idle: a non-blocking peek reads end-of-stream (0) or an
+    // error. Nothing has been written yet, so replacing it costs a handshake, never an UNKNOWN outcome.
+    bool peer_closed() {
+        auto& sock = net_beast::get_lowest_layer(*s_).socket();
+        if (!sock.is_open()) return true;
+        char c;
+        ssize_t n = ::recv(sock.native_handle(), &c, 1, MSG_PEEK | MSG_DONTWAIT);
+        if (n == 0) return true;
+        if (n < 0) return !(errno == EAGAIN || errno == EWOULDBLOCK);
+        return true;    // bytes on an idle HTTP/1.1 connection (e.g. the server's TLS close_notify): don't trust it
+    }
+    void drop() {
+        if (!s_) return;
+        net_beast::error_code ec;
+        net_beast::get_lowest_layer(*s_).socket().close(ec);   // no TLS close_notify wait: it cost ~50 ms a request
+        s_.reset();
+    }
+
     Endpoint ep_;
     std::shared_ptr<net_ssl::context> ctx_;
+    net_asio::io_context ioc_;
+    net_asio::ip::tcp::resolver resolver_{ioc_};
+    std::unique_ptr<Stream> s_;
+    std::chrono::steady_clock::time_point last_used_{};
+    int64_t connects_ = 0;
 };
 
 class BeastWs : public WsConn {

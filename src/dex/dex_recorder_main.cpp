@@ -3,6 +3,11 @@
 // Lighter is recorded, so each gets the same G1 re-test). Public data only: no keys, no orders.
 //
 //   dex_recorder --venue extended|aster|paradex --out DIR --symbols AAVE,BNB,… [--duration S] [--paradex-feed deltas|snapshot]
+//                [--name NAME] [--status FILE] [--frame-seconds N]
+//
+// Since 2026-10-26: a health file (default data/recorder_status/<name>.json, name = the venue; recorder_status.hpp)
+// for scripts/recorder_watch.sh, and day files end their zstd frame every --frame-seconds (default 60, 0 = one frame
+// per run as before) so a kill loses at most ~2 s and damage at most one frame (zstd_daily.hpp).
 //
 // --symbols are Hyperliquid coin names; the venue's market name is derived (AAVE-USD / AAVEUSDT / AAVE-USD-PERP)
 // and checked against the venue's market list at start (unknown ones are skipped with a log line). Every message
@@ -14,6 +19,7 @@
 // second drive, and refusing a missing DIR is what keeps an unmounted drive from filling the root disk.
 
 #include "dex/dex_ws.hpp"
+#include "dex/recorder_status.hpp"
 #include "dex/venue_feeds.hpp"
 #include "zstd_daily.hpp"
 
@@ -53,11 +59,12 @@ struct Market {
 
 static std::map<std::string, Market> g_mk;       // venue market name → state
 static int64_t g_books = 0, g_trades = 0, g_gaps = 0, g_reconnects = 0, g_other = 0;
+static std::unique_ptr<rec::Status> g_status;    // data/recorder_status/<name>.json (recorder_status.hpp)
 
 // One archived line; the venues that send deltas open a new day file with a synthetic snapshot of the book.
 // `extra` adds fields to the line ("snap":true marks a venue's replay of trades from before we listened — hl_events
 // drops those, as it does Hyperliquid's; filling a paper order with a trade that happened an hour ago is a lie).
-static void archive(Market& x, const std::string& m_json, int64_t recv, bool is_real_snapshot, const std::string& extra = "") {
+static void archive(Market& x, const std::string& m_json, int64_t recv, bool is_real_snapshot, bool is_trade, const std::string& extra = "") {
     const std::string day = ZstdDaily::utc_date(recv);
     if (day != x.day) {
         if (!x.day.empty() && !is_real_snapshot) {
@@ -69,11 +76,15 @@ static void archive(Market& x, const std::string& m_json, int64_t recv, bool is_
         x.day = day;
     }
     x.file->write_line("{\"r\":" + std::to_string(recv) + ",\"v\":\"" + g_venue + "\"" + extra + ",\"m\":" + m_json + "}", recv);
+    g_status->set_connected(true);
+    if (extra.find("\"snap\":true") == std::string::npos)
+        g_status->on_msg(x.coin, is_trade ? rec::Status::Kind::Trade : rec::Status::Kind::Book, recv);
 }
 
 static asio::awaitable<void> backoff_sleep(int& backoff, const std::chrono::steady_clock::time_point& t0, const std::string& who, const std::string& why) {
     if (std::chrono::steady_clock::now() - t0 > std::chrono::seconds(60)) backoff = 1;
     ++g_reconnects;
+    g_status->on_reconnect();
     logf("%s disconnected (%s) — reconnecting in %d s", who.c_str(), why.c_str(), backoff);
     co_await lighter::sleep_s(backoff);
     backoff = std::min(backoff * 2, 60);
@@ -133,11 +144,11 @@ static asio::awaitable<void> extended_stream(lighter::ssl::context& ctx, Market&
                     if (r == venue::Apply::Gap) { ++g_gaps; throw std::runtime_error("sequence gap"); }
                     if (r == venue::Apply::Ignored) { ++g_other; return; }
                     ++g_books;
-                    archive(x, raw, recv, r == venue::Apply::Snapshot);
+                    archive(x, raw, recv, r == venue::Apply::Snapshot, false);
                 } else {
                     if (!venue::extended::is_trades(m)) { ++g_other; return; }
                     ++g_trades;
-                    archive(x, raw, recv, false, first_trades ? ",\"snap\":true" : "");
+                    archive(x, raw, recv, false, true, first_trades ? ",\"snap\":true" : "");
                     first_trades = false;
                 }
             });
@@ -165,7 +176,7 @@ static asio::awaitable<void> aster_session(lighter::ssl::context& ctx) {
                 if (it == g_mk.end()) { ++g_other; return; }
                 const std::string e = m.contains("data") && m["data"].is_object() ? m["data"].value("e", "") : "";
                 if (e == "depthUpdate") ++g_books; else if (e == "aggTrade") ++g_trades; else { ++g_other; return; }
-                archive(it->second, raw, recv, true);          // every depth20 message is a complete snapshot
+                archive(it->second, raw, recv, true, e == "aggTrade");          // every depth20 message is a complete snapshot
             });
             why = "closed";
         } catch (const std::exception& e) { why = e.what(); }
@@ -205,10 +216,10 @@ static asio::awaitable<void> paradex_session(lighter::ssl::context& ctx, const s
                     if (r == venue::Apply::Gap) { ++g_gaps; throw std::runtime_error("sequence gap on " + x.market); }
                     if (r == venue::Apply::Ignored) { ++g_other; return; }
                     ++g_books;
-                    archive(x, m.dump(), recv, r == venue::Apply::Snapshot);
+                    archive(x, m.dump(), recv, r == venue::Apply::Snapshot, false);
                 } else if (c == "trades") {
                     ++g_trades;
-                    archive(x, m.dump(), recv, false);
+                    archive(x, m.dump(), recv, false, true);
                 } else ++g_other;
             });
             why = "closed";
@@ -221,21 +232,33 @@ int main(int argc, char** argv) {
     std::filesystem::path out;
     std::vector<std::string> coins;
     int duration_s = 0;
-    std::string feed = "deltas";
+    std::string feed = "deltas", name;
+    std::filesystem::path status_file;
+    int frame_s = 60;
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
         if (a == "--venue" && i + 1 < argc) g_venue = argv[++i];
+        else if (a == "--name" && i + 1 < argc) name = argv[++i];
+        else if (a == "--status" && i + 1 < argc) status_file = argv[++i];
+        else if (a == "--frame-seconds" && i + 1 < argc) frame_s = std::atoi(argv[++i]);
         else if (a == "--out" && i + 1 < argc) out = argv[++i];
         else if (a == "--symbols" && i + 1 < argc) { std::stringstream ss(argv[++i]); for (std::string s; std::getline(ss, s, ',');) if (!s.empty()) coins.push_back(s); }
         else if (a == "--duration" && i + 1 < argc) duration_s = std::atoi(argv[++i]);
         else if (a == "--paradex-feed" && i + 1 < argc) feed = argv[++i];
-        else { std::fprintf(stderr, "usage: dex_recorder --venue extended|aster|paradex --out DIR --symbols A,B,C [--duration S] [--paradex-feed deltas|snapshot]\n"); return 2; }
+        else { std::fprintf(stderr, "usage: dex_recorder --venue extended|aster|paradex --out DIR --symbols A,B,C [--duration S] [--paradex-feed deltas|snapshot]\n"
+                                    "                    [--name NAME] [--status FILE] [--frame-seconds N]\n"); return 2; }
     }
     if (g_venue != "extended" && g_venue != "aster" && g_venue != "paradex") { std::fprintf(stderr, "--venue must be extended, aster or paradex\n"); return 2; }
     if (out.empty() || coins.empty()) { std::fprintf(stderr, "--out and --symbols are required\n"); return 2; }
     if (feed != "deltas" && feed != "snapshot") { std::fprintf(stderr, "--paradex-feed must be deltas or snapshot\n"); return 2; }
     std::error_code ec;
     if (!std::filesystem::is_directory(out, ec)) { logf("output dir %s does not exist — refusing", out.c_str()); return 1; }
+    if (name.empty()) name = g_venue;
+    if (status_file.empty()) status_file = std::filesystem::path("data/recorder_status") / (name + ".json");
+    g_status = std::make_unique<rec::Status>(name, lighter::now_us());
+    g_status->extra()["venue"] = g_venue;
+    g_status->extra()["out"] = out.string();
+    g_status->extra()["frame_seconds"] = frame_s;
 
     asio::io_context ioc(1);
     lighter::ssl::context ctx(lighter::ssl::context::tls_client);
@@ -257,6 +280,9 @@ int main(int argc, char** argv) {
             Market x;
             x.coin = c; x.market = it->second.first; x.tick = it->second.second;
             x.file = std::make_unique<ZstdDaily>(out / c, [](const std::string& t) { logf("%s", t.c_str()); }, 3);
+            x.file->set_frame_seconds(frame_s);
+            x.file->set_sync(frame_s > 0);
+            g_status->add_market(c);
             meta[c] = {{"market", x.market}, {"tick", x.tick}};
             g_mk[x.market] = std::move(x);
         }
@@ -281,7 +307,11 @@ int main(int argc, char** argv) {
         for (int n = 1;; ++n) {
             t.expires_after(std::chrono::seconds(2));
             co_await t.async_wait(asio::use_awaitable);
-            for (auto& [m, x] : g_mk) x.file->flush();
+            const int64_t now = lighter::now_us();
+            int64_t we = 0, dl = 0, fr = 0;
+            for (auto& [m, x] : g_mk) { x.file->flush(now); we += x.file->write_errors(); dl += x.file->dropped_lines(); fr += x.file->frames(); }
+            g_status->set_writer_totals(we, dl, fr);
+            if (n % 2 == 0) g_status->write(status_file, now);
             if (n % 30 == 0) logf("summary: books=%lld trades=%lld gaps=%lld reconnects=%lld other=%lld", (long long)g_books, (long long)g_trades, (long long)g_gaps, (long long)g_reconnects, (long long)g_other);
         }
     }, asio::detached);
@@ -295,6 +325,8 @@ int main(int argc, char** argv) {
     }
     ioc.run();
     for (auto& [m, x] : g_mk) x.file->close();
+    g_status->set_connected(false);
+    g_status->write(status_file, lighter::now_us());
     logf("final: books=%lld trades=%lld gaps=%lld reconnects=%lld other=%lld", (long long)g_books, (long long)g_trades, (long long)g_gaps, (long long)g_reconnects, (long long)g_other);
     return 0;
 }
