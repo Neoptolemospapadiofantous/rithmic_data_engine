@@ -71,6 +71,17 @@ static std::vector<Variant> variants() {
     // 200 ms maker/cancel delay imposed by the venue (a nearby server cannot remove it); Premium (0 LIT staked) =
     // 0.4 bps maker / 2.8 bps taker, 0 ms maker/cancel delay — so only network time is left (a close server).
     add("lighter account", "Lighter Standard (0 fee, 200 ms)", [](hl::Params& p) { p.latency_ms = 200; });
+    // 2026-10-27: the live pilot quotes $11 — the one-at-a-time winners combined, at $11 (founder: "the strategy that
+    // goes live must be optimised"). Each combo is judged against "$11 alone", the same size.
+    auto at11 = [](hl::Params& p) { p.order_usd = 11; };
+    add("live $11", "$11 alone", at11);
+    add("live $11", "$11 + pause on 1-tick jumps", [&](hl::Params& p) { at11(p); p.pause_move_ticks = 1; });
+    add("live $11", "$11 + pause 4 s", [&](hl::Params& p) { at11(p); p.pause_ms = 4000; });
+    add("live $11", "$11 + spread >= 5", [&](hl::Params& p) { at11(p); p.min_spread_ticks = 5; });
+    add("live $11", "$11 + 1-tick pause 4 s", [&](hl::Params& p) { at11(p); p.pause_move_ticks = 1; p.pause_ms = 4000; });
+    add("live $11", "$11 + 1-tick pause + spread >= 5", [&](hl::Params& p) { at11(p); p.pause_move_ticks = 1; p.min_spread_ticks = 5; });
+    add("live $11", "$11 + 4 s pause + spread >= 5", [&](hl::Params& p) { at11(p); p.pause_ms = 4000; p.min_spread_ticks = 5; });
+    add("live $11", "$11 + all three", [&](hl::Params& p) { at11(p); p.pause_move_ticks = 1; p.pause_ms = 4000; p.min_spread_ticks = 5; });
     for (int64_t ms : {10, 50}) add("lighter account", "Lighter Premium (0.4 bps, " + std::to_string(ms) + " ms network)",
                                    [ms](hl::Params& p) { p.maker_fee_bps = 0.4; p.taker_fee_bps = 2.8; p.latency_ms = ms; });
     return v;

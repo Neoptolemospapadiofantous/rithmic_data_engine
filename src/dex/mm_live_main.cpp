@@ -110,6 +110,14 @@ int main(int argc, char** argv) {
                 std::to_string(mc.engine.spec.market_index) + "), account " + std::to_string(mc.gw.account_index) +
                 ", key index " + std::to_string(mc.gw.api_key_index) + ", host " + mc.gw.host + " chain " + std::to_string(mc.gw.chain_id) +
                 (sends_orders(mc.gw.mode) ? ", key file + arming OK" : "") + " — no socket opened");
+        {   // the strategy this config would quote with (frozen + engine.strategy overrides)
+            hl::Params p = mmpaper::frozen_params();
+            mc.engine.strategy.apply(p);
+            char b[256];
+            std::snprintf(b, sizeof b, "strategy: half width %.2f, min spread %.2f, imbalance pull %.2f, pause %.2f ticks / %lld ms, requote %.2f ticks",
+                          p.half_width_ticks, p.min_spread_ticks, p.imb_pull, p.pause_move_ticks, (long long)p.pause_ms, p.requote_ticks);
+            logline(b);
+        }
         return 0;
     }
 

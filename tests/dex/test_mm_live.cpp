@@ -902,6 +902,29 @@ TEST(mm_live_config_is_strict) {
     ASSERT_THROWS(parse_config(gw_json("live"), Mode::Live, 1'793'000'000), ConfigError);      // no key file, not armed
 }
 
+TEST(mm_live_strategy_overrides_are_bounded_and_reach_the_quoter) {
+    // no "strategy" block = exactly the frozen setting
+    auto mc = build_mm_live_config(parse_config(gw_json("offline"), Mode::Offline, 1'793'000'000));
+    hl::Params f = mmpaper::frozen_params(), p = f;
+    mc.engine.strategy.apply(p);
+    ASSERT_EQ(p.pause_move_ticks, f.pause_move_ticks); ASSERT_EQ(p.pause_ms, f.pause_ms); ASSERT_EQ(p.min_spread_ticks, f.min_spread_ticks);
+    ASSERT_EQ(p.half_width_ticks, f.half_width_ticks); ASSERT_EQ(p.imb_pull, f.imb_pull); ASSERT_EQ(p.requote_ticks, f.requote_ticks);
+    // the optimised pilot setting (27 Oct): 1-tick pause, 4 s, spread >= 5
+    auto j = gw_json("offline"); j["engine"]["strategy"] = {{"pause_move_ticks", 1}, {"pause_ms", 4000}, {"min_spread_ticks", 5}};
+    mc = build_mm_live_config(parse_config(j, Mode::Offline, 1'793'000'000));
+    p = f; mc.engine.strategy.apply(p);
+    ASSERT_EQ(p.pause_move_ticks, 1.0); ASSERT_EQ(p.pause_ms, int64_t{4000}); ASSERT_EQ(p.min_spread_ticks, 5.0);
+    ASSERT_EQ(p.half_width_ticks, f.half_width_ticks);              // untouched knobs stay frozen
+    ASSERT_EQ(p.order_usd, f.order_usd);                            // size is not a strategy knob
+    // unknown keys, wrong types and out-of-range values are refused — never silently ignored
+    for (const auto& bad : {nlohmann::json{{"order_usd", 100}}, nlohmann::json{{"max_inv_units", 5}}, nlohmann::json{{"pause_ms", 120000}},
+                            nlohmann::json{{"half_width_ticks", 0.1}}, nlohmann::json{{"imb_pull", 2}}, nlohmann::json{{"pause_ms", "4s"}},
+                            nlohmann::json(5)}) {
+        auto b = gw_json("offline"); b["engine"]["strategy"] = bad;
+        ASSERT_THROWS(build_mm_live_config(parse_config(b, Mode::Offline, 1'793'000'000)), ConfigError);
+    }
+}
+
 TEST(alerts_are_rate_limited_and_fail_open) {
     std::vector<std::string> got;
     Alerter a([&](const std::string& s) { got.push_back(s); }, 300'000);
@@ -1462,6 +1485,7 @@ int main(int, char** argv) {
     RUN(single_instance_lock);
     RUN(probe_runs_end_to_end_against_the_fake);
     RUN(mm_live_config_is_strict);
+    RUN(mm_live_strategy_overrides_are_bounded_and_reach_the_quoter);
     RUN(alerts_are_rate_limited_and_fail_open);
     RUN(journal_is_append_only_jsonl_and_fails_loudly);
     RUN(rest_api_reads_through_the_venue_with_auth);

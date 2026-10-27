@@ -18,6 +18,8 @@
     The live market spec is cross-checked against GET orderBookDetails at start; a difference refuses to trade. */
 
 #include "dex/live/engine.hpp"
+
+#include <map>
 #include "dex/live/gateway_config.hpp"
 
 #include <set>
@@ -36,7 +38,8 @@ inline MmLiveConfig build_mm_live_config(const GatewayConfig& gw) {
     out.gw = gw;
     const nlohmann::json& e = gw.engine;
     static const std::set<std::string> keys = {"market_spec", "hl_sz_decimals", "journal_dir", "status_file", "max_collateral_usd",
-                                               "rate_reserve", "send_budget_per_min", "deadman_window_s", "order_expiry_s", "offline_collateral_usd", "label"};
+                                               "rate_reserve", "send_budget_per_min", "deadman_window_s", "order_expiry_s", "offline_collateral_usd", "label",
+                                               "strategy"};
     for (auto& [k, v] : e.items()) if (!keys.count(k)) throw ConfigError("unknown engine key '" + k + "'");
     if (!e.contains("market_spec") || !e.at("market_spec").is_object()) throw ConfigError("engine.market_spec required");
     if (!e.contains("hl_sz_decimals")) throw ConfigError("engine.hl_sz_decimals required (the strategy's tick unit)");
@@ -59,6 +62,25 @@ inline MmLiveConfig build_mm_live_config(const GatewayConfig& gw) {
         c.order_expiry_ms = int64_t(e.value("order_expiry_s", 600)) * 1000;
         out.offline_collateral_micro = int64_t(std::llround(e.value("offline_collateral_usd", 20.0) * kMicro));
         c.label = e.value("label", "");
+        if (e.contains("strategy")) {
+            const auto& st = e.at("strategy");
+            if (!st.is_object()) throw ConfigError("engine.strategy must be an object");
+            // name → (field, min, max): only the quoting knobs; size / inventory / fees are not here on purpose
+            struct K { double* d; int64_t* i; double lo, hi; };
+            std::map<std::string, K> ks = {
+                {"half_width_ticks", {&c.strategy.half_width_ticks, nullptr, 0.5, 50}}, {"min_spread_ticks", {&c.strategy.min_spread_ticks, nullptr, 0, 50}},
+                {"imb_pull", {&c.strategy.imb_pull, nullptr, 0, 1}}, {"pause_move_ticks", {&c.strategy.pause_move_ticks, nullptr, 0, 10}},
+                {"requote_ticks", {&c.strategy.requote_ticks, nullptr, 0, 10}}, {"pause_ms", {nullptr, &c.strategy.pause_ms, 0, 60'000}}};
+            for (auto& [k, v] : st.items()) {
+                auto it = ks.find(k);
+                if (it == ks.end()) throw ConfigError("unknown engine.strategy key '" + k + "'");
+                if (!v.is_number()) throw ConfigError("engine.strategy." + k + " must be a number");
+                const double x = v.get<double>();
+                if (!(x >= it->second.lo && x <= it->second.hi))
+                    throw ConfigError("engine.strategy." + k + " must be " + std::to_string(it->second.lo) + ".." + std::to_string(it->second.hi));
+                if (it->second.d) *it->second.d = x; else *it->second.i = static_cast<int64_t>(std::llround(x));
+            }
+        }
     } catch (const nlohmann::json::exception& x) {
         throw ConfigError(std::string("engine: ") + x.what());
     } catch (const SpecError& x) {

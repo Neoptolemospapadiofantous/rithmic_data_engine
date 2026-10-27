@@ -448,6 +448,10 @@ int main(int argc, char** argv) {
     int rate_per_min = 0;                     // --rate-limit N: requests/min shared by all markets (Lighter Standard: 60)
     int64_t place_ms = -1, cancel_ms = -1;    // --place-/--cancel-latency-ms: override --latency-ms per direction
     bool modify = false;                      // --modify: requote with one modify tx instead of cancel + create (research)
+    // strategy overrides of the frozen setting (2026-10-27: the paper twin of the live pilot's engine.strategy); −1 = frozen
+    double st_pause_ticks = -1, st_min_spread = -1;
+    int64_t st_pause_ms = -1;
+    int st_max_inv = -1;
     int64_t linger_ms = 0;                    // --batch-linger-ms: a new request waits this long for more tx (research)
     bool day_flatten = false;
     for (int i = 1; i < argc; ++i) {
@@ -469,6 +473,10 @@ int main(int argc, char** argv) {
         else if (a == "--hl-anchor") hl_anchor = std::atof(val().c_str());
         else if (a == "--rate-limit") rate_per_min = std::atoi(val().c_str());
         else if (a == "--modify") modify = true;
+        else if (a == "--pause-move-ticks") st_pause_ticks = std::atof(val().c_str());
+        else if (a == "--pause-ms") st_pause_ms = std::atoll(val().c_str());
+        else if (a == "--min-spread-ticks") st_min_spread = std::atof(val().c_str());
+        else if (a == "--max-inv") st_max_inv = std::atoi(val().c_str());
         else if (a == "--batch-linger-ms") linger_ms = std::atoll(val().c_str());
         else if (a == "--place-latency-ms") place_ms = std::atoll(val().c_str());
         else if (a == "--cancel-latency-ms") cancel_ms = std::atoll(val().c_str());
@@ -507,6 +515,10 @@ int main(int argc, char** argv) {
     pc.rate_per_min = rate_per_min;
     pc.batch_linger_ms = linger_ms;
     pc.p.modify = modify;
+    if (st_pause_ticks >= 0) pc.p.pause_move_ticks = st_pause_ticks;
+    if (st_pause_ms >= 0) pc.p.pause_ms = st_pause_ms;
+    if (st_min_spread >= 0) pc.p.min_spread_ticks = st_min_spread;
+    if (st_max_inv >= 1) pc.p.max_inv_units = st_max_inv;
     // "300 ms" or "145/445 ms" (place/cancel): part of the start line, so a change of either reads as a setting change
     const std::string delay_txt = (place_ms >= 0 || cancel_ms >= 0)
         ? std::to_string(place_ms >= 0 ? place_ms : latency_ms) + "/" + std::to_string(cancel_ms >= 0 ? cancel_ms : latency_ms) + " ms place/cancel"
@@ -652,7 +664,10 @@ int main(int argc, char** argv) {
         if (db) db->push({"INSERT INTO mm_paper_events (ts, kind, market, detail, label, uid) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (uid) DO NOTHING",
                           {iso_ms(lighter::now_us() / 1000), "start", "", "paper engine started on " + std::to_string(ids.size()) + " Lighter markets (run " + run_id +
                            ", " + delay_txt + (rate_per_min > 0 ? ", " + std::to_string(rate_per_min) + " req/min shared" : std::string()) +
-                           (modify ? std::string(", modify requotes") : std::string()) + (linger_ms > 0 ? ", batch linger " + std::to_string(linger_ms) + " ms" : std::string()) +
+                           (modify ? std::string(", modify requotes") : std::string()) +
+                           (st_pause_ticks >= 0 || st_pause_ms >= 0 || st_min_spread >= 0 || st_max_inv >= 1
+                                ? ", strategy pause " + num(pc.p.pause_move_ticks) + " ticks/" + std::to_string(pc.p.pause_ms) + " ms, min spread " +
+                                  num(pc.p.min_spread_ticks) + ", cap " + std::to_string(pc.p.max_inv_units) : std::string()) + (linger_ms > 0 ? ", batch linger " + std::to_string(linger_ms) + " ms" : std::string()) +
                            ", $" + num(order_usd) + " quotes, " + (day_flatten ? "day flatten" : "inventory carried") +
                            (hl_anchor > 0 ? ", HL anchor k=" + num(hl_anchor) + " on " + std::to_string(hl_coins.size()) + " markets" : std::string()) +
                            "; starts FLAT — paper positions are not carried across a restart)",

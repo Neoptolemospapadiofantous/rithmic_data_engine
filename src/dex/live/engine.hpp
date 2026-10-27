@@ -117,6 +117,22 @@ private:
 };
 
 // ── config ────────────────────────────────────────────────────────────────────────────────────────────────────
+// Overrides of the frozen strategy (mmpaper::frozen_params) from config "engine.strategy" (2026-10-27, founder: the
+// strategy that goes live must be the optimised one). −1 = keep the frozen value. Ranges are checked in
+// build_mm_live_config; only these knobs exist — size, inventory cap and fees stay with the risk config / the venue.
+struct StrategyOverride {
+    double half_width_ticks = -1, min_spread_ticks = -1, imb_pull = -1, pause_move_ticks = -1, requote_ticks = -1;
+    int64_t pause_ms = -1;
+    void apply(hl::Params& p) const {
+        if (half_width_ticks >= 0) p.half_width_ticks = half_width_ticks;
+        if (min_spread_ticks >= 0) p.min_spread_ticks = min_spread_ticks;
+        if (imb_pull >= 0) p.imb_pull = imb_pull;
+        if (pause_move_ticks >= 0) p.pause_move_ticks = pause_move_ticks;
+        if (pause_ms >= 0) p.pause_ms = pause_ms;
+        if (requote_ticks >= 0) p.requote_ticks = requote_ticks;
+    }
+};
+
 struct EngineConfig {
     Mode mode = Mode::Offline;
     std::string label = "lighter_main";
@@ -124,6 +140,7 @@ struct EngineConfig {
     int api_key_index = 0;
     MarketSpec spec;
     int hl_sz_decimals = 2;
+    StrategyOverride strategy;                          // engine.strategy (empty = the frozen setting)
     RiskConfig risk;
     std::string state_dir, journal_dir, status_file;
     int64_t max_collateral_micro = 50 * kMicro;
@@ -489,6 +506,7 @@ private:
         p.hl_sz_decimals = cfg_.hl_sz_decimals;
         p.fills = hl::FillModel::NoCross;
         p.track_markouts = false;
+        cfg_.strategy.apply(p);
         return p;
     }
 
