@@ -18,8 +18,8 @@
 //                  min_spread_ticks, imb_pull, pause_move_ticks, pause_ms, requote_ticks
 //                  (refused: fees, fill model, queue model, latency, ticks — the evaluation owns those)
 //      "size_usd": 25,                           $ per quote; rounded UP to the venue's minimum order; default = frozen $100
-//      "fair": {"type":"own_mid"} | {"type":"hl_anchor","k":0.5} | {"type":"ext_anchor","k":0.5} |
-//              {"type":"blend","weights":{"mid":1,"micro":0,"hl":1,"ext":1}}
+//      "fair": {"type":"own_mid"} | {"type":"hl_anchor","k":0.5} | {"type":"ext_anchor","k":0.5} | {"type":"bn_anchor","k":0.5} |
+//              {"type":"blend","weights":{"mid":1,"micro":0,"hl":1,"ext":1,"bn":1}}
 //      "rules": [{"when":[[feature, op, value], ...], "action": "pull_bid"|"pull_ask"|"pull_both"|"skew_ticks"|"widen_ticks",
 //                 "value": <ticks, for skew_ticks / widen_ticks>, "hold_ms": <keep the action this long after the
 //                 condition was last true, default 0>}]
@@ -43,7 +43,11 @@
 // ── Causality ───────────────────────────────────────────────────────────────────────────────────────────────────
 // Features are computed in ONE forward pass over the venue's events in simulation order; the value at event i uses
 // events ≤ i only. Cross-venue features use a REFERENCE venue's live archive — Hyperliquid (hl_*, cross_venue_lead_bps)
-// or Extended (ext_*; since 2026-10-27, on every venue but Extended itself) — by RECEIVE time, cut at the DECISION time:
+// or Extended (ext_*; since 2026-10-27, on every venue but Extended itself) or Binance futures (bn_*, 2026-10-27) — by
+// RECEIVE time, cut at the DECISION time. Binance: the published trade history (data.binance.vision aggTrades, the last
+// trade price, stamped Binance match time + kBinanceDelayMs = 135 ms, our measured Binance → box delay: p10–p90
+// 132–136 ms on 27 Oct) for any day it exists, else the live archive (rithmic_dex/binance, bookTicker mids, our receive
+// time). History first so every day is built the same way; the card names the source.
 // the simulator acts on a venue event at its exchange time t, so only Hyperliquid books we had received by t count
 // (hl_r ≤ t, a running max of t drives the pointer; stale when t − hl_r > 5 s → unavailable; Extended the same way).
 // Using our receive time
@@ -130,6 +134,7 @@ constexpr double  kHoldoutFrac    = 0.30;
 constexpr int     kDaySplitMin    = 4;       // recorded days needed for a calendar-day split
 constexpr int     kDayUnitMin     = 5;       // tuning calendar days needed to judge consistency by day (else 4 h blocks)
 constexpr int64_t kHlStaleMs      = 5'000;
+constexpr int64_t kBinanceDelayMs = 135;   // Binance match time → usable here (measured 27 Oct, p50 132 ms)
 constexpr int64_t kBasisWindowS   = 300;     // hl_basis trailing median: 1-second samples over 5 minutes …
 constexpr int     kBasisMinSamples = 60;     // … at least 60 of them
 constexpr int     kRateLimitLevels = 10;     // rate-limited runs replay every coin of a day at once: books cut to 10 levels
@@ -191,11 +196,13 @@ struct Venue {
     int rate_per_min = 0;                 // the venue's standard account limit (0 = not modelled)
     bool cross = false;                   // Hyperliquid live archive can serve cross-venue features
     bool ext = false;                     // Extended live archive can serve ext_* features (every venue but Extended)
+    bool bn = false;                      // Binance futures reference (history or live archive) serves bn_* features
     std::string fixed_holdout_from;       // days ≥ this are always holdout ("" = none)
 };
 struct Env {
     fs::path root = "/media/theone/381C48C51C48803C/rithmic_dex";
     fs::path params_dir = "data/mm_gates";
+    fs::path binance_hist = "/media/theone/381C48C51C48803C/rithmic_archive/history/binance";   // <SYM>USDT/<SYM>USDT-aggTrades-<day>.zip
     // venue → UTC day → reason: days whose archive is known to be damaged (data/mm_lab/excluded_days.json, committed).
     // Excluded days are never loaded, in-sample or holdout; the frozen split is not affected (it only fixes a time).
     std::map<std::string, std::map<std::string, std::string>> excluded_days;
@@ -232,10 +239,10 @@ inline const std::vector<std::string>& venue_names() {
 // on every card that rounds a size up.
 inline std::optional<Venue> venue_of(const std::string& name, const Env& env) {
     Venue v; v.name = name;
-    if (name == "lighter")       { v.dirs = {env.root / "lighter"};  v.maker_bps = 0;   v.taker_bps = 0;   v.place_ms = 145; v.cancel_ms = 445; v.min_order_usd = 10.5; v.rate_per_min = 60; v.cross = true; v.ext = true; }
-    else if (name == "extended") { v.dirs = {env.root / "extended"}; v.maker_bps = 0;   v.taker_bps = 2.5; v.place_ms = 100; v.cancel_ms = 100; v.min_order_usd = 10;   v.cross = true; }
-    else if (name == "aster")    { v.dirs = {env.root / "aster"};    v.maker_bps = 0;   v.taker_bps = 3.5; v.place_ms = 100; v.cancel_ms = 100; v.min_order_usd = 5;    v.cross = true; v.ext = true; }
-    else if (name == "paradex")  { v.dirs = {env.root / "paradex"};  v.maker_bps = 0.3; v.taker_bps = 4.5; v.place_ms = 100; v.cancel_ms = 100; v.min_order_usd = 10;   v.cross = true; v.ext = true; }
+    if (name == "lighter")       { v.dirs = {env.root / "lighter"};  v.maker_bps = 0;   v.taker_bps = 0;   v.place_ms = 145; v.cancel_ms = 445; v.min_order_usd = 10.5; v.rate_per_min = 60; v.cross = true; v.ext = true; v.bn = true; }
+    else if (name == "extended") { v.dirs = {env.root / "extended"}; v.maker_bps = 0;   v.taker_bps = 2.5; v.place_ms = 100; v.cancel_ms = 100; v.min_order_usd = 10;   v.cross = true; v.bn = true; }
+    else if (name == "aster")    { v.dirs = {env.root / "aster"};    v.maker_bps = 0;   v.taker_bps = 3.5; v.place_ms = 100; v.cancel_ms = 100; v.min_order_usd = 5;    v.cross = true; v.ext = true; v.bn = true; }
+    else if (name == "paradex")  { v.dirs = {env.root / "paradex"};  v.maker_bps = 0.3; v.taker_bps = 4.5; v.place_ms = 100; v.cancel_ms = 100; v.min_order_usd = 10;   v.cross = true; v.ext = true; v.bn = true; }
     else if (name == "hyperliquid_hist") { v.dirs = {env.root / "tardis", env.root / "tardis_extra"}; v.maker_bps = 1.5; v.taker_bps = 4.5;
                                            v.place_ms = 200; v.cancel_ms = 200; v.min_order_usd = 10; v.fixed_holdout_from = "2025-11-01"; }
     else return std::nullopt;
@@ -292,7 +299,7 @@ inline double strat_tick(const hl::Params& p, const hl::Book& b) {    // mirrors
 }
 
 // ── feature library ─────────────────────────────────────────────────────────────────────────────────────────────
-constexpr int kOwn = 0, kRefHl = 1, kRefExt = 2;
+constexpr int kOwn = 0, kRefHl = 1, kRefExt = 2, kRefBn = 3;
 struct FeatureDef {
     const char* name;
     int64_t default_window;   // 0 = not windowed
@@ -317,6 +324,9 @@ inline const std::vector<FeatureDef>& features() {
         {"ext_basis_bps", 0, kRefExt, false, 1, "(our mid − Extended mid)/Extended mid in bps, minus its own trailing 5-min median (1-s samples)"},
         {"ext_basis_ticks", 0, kRefExt, false, 1, "ext_basis_bps expressed in strategy ticks (our mid − Extended-implied price)"},
         {"ext_lead_bps", 1'000, kRefExt, false, 1, "Extended mid move over the last W ms of receive time, bps"},
+        {"bn_basis_bps", 0, kRefBn, false, 1, "(our mid − Binance price)/Binance price in bps, minus its own trailing 5-min median (1-s samples)"},
+        {"bn_basis_ticks", 0, kRefBn, false, 1, "bn_basis_bps expressed in strategy ticks (our mid − Binance-implied price)"},
+        {"bn_lead_bps", 1'000, kRefBn, false, 1, "Binance price move over the last W ms of usable time, bps"},
         {"time_of_day_utc", 0, kOwn, false, 1, "hours since 00:00 UTC (fractional)"},
         {"weekday", 0, kOwn, false, 1, "UTC weekday, 0 = Monday … 6 = Sunday"},
         {"inventory_usd", 0, kOwn, true, 25, "signed position × current mid, $"},
@@ -343,8 +353,8 @@ struct Cond {
 };
 enum class Act { PullBid, PullAsk, PullBoth, Skew, Widen };
 struct Rule { std::vector<Cond> when; Act act = Act::PullBoth; double value = 0; int64_t hold_ms = 0; };
-enum class FairType { OwnMid, HlAnchor, ExtAnchor, Blend };
-struct FairSpec { FairType type = FairType::OwnMid; double k = 1; double w_mid = 1, w_micro = 0, w_hl = 0, w_ext = 0; };
+enum class FairType { OwnMid, HlAnchor, ExtAnchor, BnAnchor, Blend };
+struct FairSpec { FairType type = FairType::OwnMid; double k = 1; double w_mid = 1, w_micro = 0, w_hl = 0, w_ext = 0, w_bn = 0; };
 struct Idea {
     std::string id, venue;
     std::vector<std::string> markets;      // empty = all
@@ -368,12 +378,18 @@ struct Idea {
         for (const auto& r : rules) for (const auto& c : r.when) if (feature(c.feat)->ref == kRefExt) return true;
         return false;
     }
+    bool needs_bn() const {
+        if (fair.type == FairType::BnAnchor || (fair.type == FairType::Blend && fair.w_bn > 0)) return true;
+        for (const auto& r : rules) for (const auto& c : r.when) if (feature(c.feat)->ref == kRefBn) return true;
+        return false;
+    }
     bool plain() const { return rules.empty() && fair.type == FairType::OwnMid; }
     std::set<std::string> frame_keys() const {
         std::set<std::string> k;
         for (const auto& r : rules) for (const auto& c : r.when) if (!feature(c.feat)->state) k.insert(c.key);
         if (fair.type == FairType::HlAnchor || (fair.type == FairType::Blend && fair.w_hl > 0)) k.insert("hl_basis_bps");
         if (fair.type == FairType::ExtAnchor || (fair.type == FairType::Blend && fair.w_ext > 0)) k.insert("ext_basis_bps");
+        if (fair.type == FairType::BnAnchor || (fair.type == FairType::Blend && fair.w_bn > 0)) k.insert("bn_basis_bps");
         return k;
     }
 };
@@ -471,23 +487,24 @@ inline std::optional<Idea> parse_idea(const json& j, const Env& env, std::string
         for (auto& [k, _] : f.items()) if (k != "type" && k != "k" && k != "weights") return fail("unknown fair field '" + k + "'");
         const std::string t = f.value("type", "own_mid");
         if (t == "own_mid") I.fair.type = FairType::OwnMid;
-        else if (t == "hl_anchor" || t == "ext_anchor") {
-            I.fair.type = t == "hl_anchor" ? FairType::HlAnchor : FairType::ExtAnchor;
+        else if (t == "hl_anchor" || t == "ext_anchor" || t == "bn_anchor") {
+            I.fair.type = t == "hl_anchor" ? FairType::HlAnchor : t == "ext_anchor" ? FairType::ExtAnchor : FairType::BnAnchor;
             if (f.contains("k")) { if (!f["k"].is_number()) return fail("fair.k must be a number"); I.fair.k = f["k"].get<double>(); }
             if (!(I.fair.k >= 0 && I.fair.k <= 2)) return fail("fair.k must be in [0, 2]");
         } else if (t == "blend") {
             I.fair.type = FairType::Blend;
-            if (!f.contains("weights") || !f["weights"].is_object()) return fail("fair.weights must be an object {mid, micro, hl, ext}");
-            I.fair.w_mid = I.fair.w_micro = I.fair.w_hl = I.fair.w_ext = 0;
+            if (!f.contains("weights") || !f["weights"].is_object()) return fail("fair.weights must be an object {mid, micro, hl, ext, bn}");
+            I.fair.w_mid = I.fair.w_micro = I.fair.w_hl = I.fair.w_ext = I.fair.w_bn = 0;
             for (auto& [k, v] : f["weights"].items()) {
                 if (!v.is_number() || v.get<double>() < 0) return fail("fair.weights." + k + " must be a number ≥ 0");
                 if (k == "mid") I.fair.w_mid = v.get<double>(); else if (k == "micro") I.fair.w_micro = v.get<double>();
                 else if (k == "hl") I.fair.w_hl = v.get<double>(); else if (k == "ext") I.fair.w_ext = v.get<double>();
-                else return fail("unknown fair weight '" + k + "' (mid|micro|hl|ext)");
+                else if (k == "bn") I.fair.w_bn = v.get<double>();
+                else return fail("unknown fair weight '" + k + "' (mid|micro|hl|ext|bn)");
             }
-            if (I.fair.w_mid + I.fair.w_micro + I.fair.w_hl + I.fair.w_ext <= 0) return fail("fair.weights must not all be 0");
+            if (I.fair.w_mid + I.fair.w_micro + I.fair.w_hl + I.fair.w_ext + I.fair.w_bn <= 0) return fail("fair.weights must not all be 0");
             if (I.params.contains("fair")) return fail("fair.type blend sets the fair price itself: drop params.fair");
-        } else return fail("unknown fair.type '" + t + "' (own_mid|hl_anchor|ext_anchor|blend)");
+        } else return fail("unknown fair.type '" + t + "' (own_mid|hl_anchor|ext_anchor|bn_anchor|blend)");
     }
     if (j.contains("rules")) {
         if (!j["rules"].is_array()) return fail("rules must be a list");
@@ -524,6 +541,7 @@ inline std::optional<Idea> parse_idea(const json& j, const Env& env, std::string
                 if (C.feat == "funding") return fail(at + ": feature 'funding' is unavailable (not recorded in any archive)");
                 if (fd->ref == kRefHl && !V->cross) return fail(at + ": feature '" + C.feat + "' needs Hyperliquid's live archive — unavailable on " + I.venue);
                 if (fd->ref == kRefExt && !V->ext) return fail(at + ": feature '" + C.feat + "' needs Extended's live archive as a second venue — unavailable on " + I.venue);
+                if (fd->ref == kRefBn && !V->bn) return fail(at + ": feature '" + C.feat + "' needs the Binance reference — unavailable on " + I.venue);
                 if (at_pos != std::string::npos) {
                     if (!fd->default_window) return fail(at + ": feature '" + C.feat + "' takes no @window");
                     const std::string w = f.substr(at_pos + 1);
@@ -587,6 +605,8 @@ inline std::optional<Idea> parse_idea(const json& j, const Env& env, std::string
     }
     if ((I.fair.type == FairType::HlAnchor || (I.fair.type == FairType::Blend && I.fair.w_hl > 0)) && !V->cross)
         return fail("fair." + std::string(I.fair.type == FairType::HlAnchor ? "hl_anchor" : "blend weight hl") + " needs Hyperliquid's live archive — unavailable on " + I.venue);
+    if ((I.fair.type == FairType::BnAnchor || (I.fair.type == FairType::Blend && I.fair.w_bn > 0)) && !V->bn)
+        return fail("fair." + std::string(I.fair.type == FairType::BnAnchor ? "bn_anchor" : "blend weight bn") + " needs the Binance reference — unavailable on " + I.venue);
     if ((I.fair.type == FairType::ExtAnchor || (I.fair.type == FairType::Blend && I.fair.w_ext > 0)) && !V->ext)
         return fail("fair." + std::string(I.fair.type == FairType::ExtAnchor ? "ext_anchor" : "blend weight ext") + " needs Extended's live archive as a second venue — unavailable on " + I.venue);
     json h = j; h.erase("id"); h.erase("why"); h.erase("notes");
@@ -625,13 +645,13 @@ inline std::vector<std::pair<std::string, json>> neighbours(const Idea& I, const
     }
     if (I.size_usd > 0)
         for (double f : {0.8, 1.25}) { json s = I.spec; s["size_usd"] = std::max(V.min_order_usd, I.size_usd * f); add("size_usd=" + num(s["size_usd"].get<double>()), s); }
-    if (I.fair.type == FairType::HlAnchor || I.fair.type == FairType::ExtAnchor)
+    if (I.fair.type == FairType::HlAnchor || I.fair.type == FairType::ExtAnchor || I.fair.type == FairType::BnAnchor)
         for (int d : {-1, 1}) { json s = I.spec; const double y = std::min(2.0, std::max(0.0, I.fair.k + 0.25 * d)); s["fair"]["k"] = y; add("fair.k=" + num(y), s); }
     if (I.fair.type == FairType::Blend)
-        for (const char* w : {"mid", "micro", "hl", "ext"})
+        for (const char* w : {"mid", "micro", "hl", "ext", "bn"})
             for (int d : {-1, 1}) {
-                // "ext" is varied only when the spec uses it, so blends judged before it existed keep their neighbours
-                if (std::string(w) == "ext" && !I.spec["fair"]["weights"].contains("ext")) continue;
+                // "ext"/"bn" are varied only when the spec uses them, so blends judged before they existed keep their neighbours
+                if ((std::string(w) == "ext" || std::string(w) == "bn") && !I.spec["fair"]["weights"].contains(w)) continue;
                 json s = I.spec;
                 const double x = s["fair"]["weights"].value(w, 0.0), y = std::max(0.0, x + 0.25 * d);
                 s["fair"]["weights"][w] = y;
@@ -712,6 +732,38 @@ inline std::vector<HlMid> hl_mids_from(const std::vector<hl::Event>& ev) {
     return m;
 }
 
+// Binance reference for one coin-day (see the header): the published trade history if present, else the live archive.
+inline fs::path binance_hist_file(const Env& env, const std::string& coin, const std::string& day) {
+    const std::string sym = coin + "USDT";
+    return env.binance_hist / sym / (sym + "-aggTrades-" + day + ".zip");
+}
+inline bool binance_listed(const Env& env, const std::string& coin) {
+    std::error_code ec;
+    return fs::is_directory(env.binance_hist / (coin + "USDT"), ec) || fs::is_directory(env.root / "binance" / coin, ec);
+}
+inline std::vector<HlMid> binance_mids(const Env& env, const std::string& coin, const std::string& day, bool enabled) {
+    std::vector<HlMid> m;
+    if (!enabled) return m;
+    std::error_code ec;
+    if (const fs::path z = binance_hist_file(env, coin, day); fs::exists(z, ec)) {
+        FILE* p = popen(("unzip -p '" + z.string() + "'").c_str(), "r");      // id,price,qty,first,last,time,is_buyer_maker
+        if (!p) return m;
+        char line[512];
+        while (std::fgets(line, sizeof line, p)) {
+            long long id = 0, ts = 0; double px = 0;
+            if (std::sscanf(line, "%lld,%lf", &id, &px) != 2) continue;                        // the header line
+            const char* q = line; int commas = 0;
+            for (; *q && commas < 5; ++q) if (*q == ',') ++commas;
+            if (commas == 5 && std::sscanf(q, "%lld", &ts) == 1 && px > 0) m.push_back({ts + kBinanceDelayMs, px});
+        }
+        pclose(p);
+        std::stable_sort(m.begin(), m.end(), [](const HlMid& a, const HlMid& b) { return a.r < b.r; });
+        return m;
+    }
+    if (const fs::path a = env.root / "binance" / coin / (day + ".jsonl.zst"); fs::exists(a, ec)) m = hl_mids_from(hl::load_archive(a));
+    return m;
+}
+
 // ── feature frame: one forward pass, value at event i uses events ≤ i (and reference books received by its time t) ──
 struct Frame {
     std::vector<std::string> keys;
@@ -763,7 +815,7 @@ struct RefTrack {
     }
 };
 inline Frame compute_frame(const DayData& d, const std::vector<HlMid>* hl, const std::set<std::string>& want, const hl::Params& p,
-                           const std::vector<HlMid>* ext = nullptr) {
+                           const std::vector<HlMid>* ext = nullptr, const std::vector<HlMid>* bn = nullptr) {
     Frame F;
     for (const auto& k : want) { F.keys.push_back(k); F.cols.emplace_back(d.ev.size(), NaN); }
     if (F.keys.empty()) return F;
@@ -772,8 +824,8 @@ inline Frame compute_frame(const DayData& d, const std::vector<HlMid>* hl, const
     struct VW { int64_t w; std::deque<std::pair<int64_t, double>> q; double sum = 0; };                     // squared returns
     struct MW { int64_t w; std::deque<std::pair<int64_t, double>> q; };                                     // mid history
     std::map<int64_t, TW> tw; std::map<int64_t, VW> vw; std::map<int64_t, MW> mw;
-    RefTrack H, X;
-    H.m = hl; X.m = ext;
+    RefTrack H, X, Bn;
+    H.m = hl; X.m = ext; Bn.m = bn;
     struct Col { int idx; std::string feat; int64_t w; };
     std::vector<Col> cols;
     for (size_t i = 0; i < F.keys.size(); ++i) {
@@ -785,6 +837,7 @@ inline Frame compute_frame(const DayData& d, const std::vector<HlMid>* hl, const
         if (c.feat == "mid_move_bps") mw[c.w].w = c.w;
         if (c.feat == "cross_venue_lead_bps") H.lead[c.w];
         if (c.feat == "ext_lead_bps") X.lead[c.w];
+        if (c.feat == "bn_lead_bps") Bn.lead[c.w];
         cols.push_back(c);
     }
     hl::Book book; bool have_book = false; double mid = 0, last_mid = 0;
@@ -812,6 +865,7 @@ inline Frame compute_frame(const DayData& d, const std::vector<HlMid>* hl, const
         dec_t = std::max(dec_t, e.t);
         H.step(dec_t, have_book, mid, e.is_book, e.t);
         X.step(dec_t, have_book, mid, e.is_book, e.t);
+        Bn.step(dec_t, have_book, mid, e.is_book, e.t);
         for (const auto& c : cols) {
             double x = NaN;
             const bool warm = e.t - d.t0 >= c.w;
@@ -831,13 +885,14 @@ inline Frame compute_frame(const DayData& d, const std::vector<HlMid>* hl, const
             else if (c.feat == "trades_per_min") { if (warm) x = static_cast<double>(tw[c.w].q.size()) * 60'000.0 / c.w; }
             else if (c.feat == "realized_vol_bps") { if (warm) x = std::sqrt(std::max(0.0, vw[c.w].sum)) * 1e4; }
             else if (c.feat == "mid_move_bps") { const auto& q = mw[c.w].q; if (!q.empty() && q.front().first <= e.t - c.w) x = (mid - q.front().second) / q.front().second * 1e4; }
-            else if (c.feat == "hl_basis_bps" || c.feat == "ext_basis_bps") x = (c.feat[0] == 'h' ? H : X).basis_bps();
-            else if (c.feat == "hl_basis_ticks" || c.feat == "ext_basis_ticks") {
-                x = (c.feat[0] == 'h' ? H : X).basis_bps();
+            else if (c.feat == "hl_basis_bps" || c.feat == "ext_basis_bps" || c.feat == "bn_basis_bps") x = (c.feat[0] == 'h' ? H : c.feat[0] == 'e' ? X : Bn).basis_bps();
+            else if (c.feat == "hl_basis_ticks" || c.feat == "ext_basis_ticks" || c.feat == "bn_basis_ticks") {
+                x = (c.feat[0] == 'h' ? H : c.feat[0] == 'e' ? X : Bn).basis_bps();
                 if (std::isfinite(x)) x = x * mid / 1e4 / strat_tick(p, book);
             }
             else if (c.feat == "cross_venue_lead_bps") x = H.lead_bps(c.w, dec_t);
             else if (c.feat == "ext_lead_bps") x = X.lead_bps(c.w, dec_t);
+            else if (c.feat == "bn_lead_bps") x = Bn.lead_bps(c.w, dec_t);
             F.cols[c.idx][i] = x;
         }
     }
@@ -883,6 +938,7 @@ public:
         last_true_.assign(I.rules.size(), std::numeric_limits<int64_t>::min() / 2);
         basis_col_ = F.col("hl_basis_bps");
         ext_col_ = F.col("ext_basis_bps");
+        bn_col_ = F.col("bn_basis_bps");
         seg_t0_ = d.t0;
     }
     hl::Simulator& sim() { return sim_; }
@@ -965,13 +1021,14 @@ private:
         }
         // a reference venue's implied price = our mid less its basis deviation; unavailable → that term drops out
         auto implied = [&](int col) { const double bb = col >= 0 ? F_.cols[col][i] : NaN; return std::isfinite(bb) ? mid_ * (1 - bb / 1e4) : NaN; };
-        if (I_.fair.type == FairType::HlAnchor || I_.fair.type == FairType::ExtAnchor) {
-            const double px = implied(I_.fair.type == FairType::HlAnchor ? basis_col_ : ext_col_);
+        if (I_.fair.type == FairType::HlAnchor || I_.fair.type == FairType::ExtAnchor || I_.fair.type == FairType::BnAnchor) {
+            const double px = implied(I_.fair.type == FairType::HlAnchor ? basis_col_ : I_.fair.type == FairType::ExtAnchor ? ext_col_ : bn_col_);
             if (std::isfinite(px)) ov.fair_off = I_.fair.k * (px - mid_);
         } else if (I_.fair.type == FairType::Blend) {
             double w = I_.fair.w_mid + I_.fair.w_micro, num = I_.fair.w_mid * mid_ + I_.fair.w_micro * micro_;
             if (I_.fair.w_hl > 0) { const double px = implied(basis_col_); if (std::isfinite(px)) { w += I_.fair.w_hl; num += I_.fair.w_hl * px; } }
             if (I_.fair.w_ext > 0) { const double px = implied(ext_col_); if (std::isfinite(px)) { w += I_.fair.w_ext; num += I_.fair.w_ext * px; } }
+            if (I_.fair.w_bn > 0) { const double px = implied(bn_col_); if (std::isfinite(px)) { w += I_.fair.w_bn; num += I_.fair.w_bn * px; } }
             if (w > 0) ov.fair_off = num / w - mid_;
         }
         return ov;
@@ -988,7 +1045,7 @@ private:
     bool have_ = false;
     std::vector<std::vector<std::pair<int, double>>> conds_;
     std::vector<int64_t> last_true_;
-    int basis_col_ = -1, ext_col_ = -1;
+    int basis_col_ = -1, ext_col_ = -1, bn_col_ = -1;
     int64_t seg_t0_ = 0;
     int64_t pulled_ = 0, decisions_ = 0;
 };
@@ -1104,6 +1161,7 @@ inline RunStats run_variants(std::vector<Variant>& vars, const Venue& V, const j
         if (V.cross && fs::exists(p, ec)) m = hl_mids_from(hl::load_archive(p));
         return m;
     };
+    auto bn_mids_for = [&](const std::string& coin, const std::string& day) { return binance_mids(env, coin, day, V.bn); };
     auto ext_mids_for = [&](const std::string& coin, const std::string& day) {
         std::vector<HlMid> m;
         const fs::path p = env.root / "extended" / coin / (day + ".jsonl.zst");
@@ -1122,9 +1180,9 @@ inline RunStats run_variants(std::vector<Variant>& vars, const Venue& V, const j
             for (size_t k; (k = next++) < items.size();) {
                 const auto& f = items[k].f;
                 std::vector<int> mine;
-                bool need_hl = false, need_ext = false;
+                bool need_hl = false, need_ext = false, need_bn = false;
                 std::set<std::string> keys;
-                for (int v : plain_vars) if (vars[v].coins.count(f.coin)) { mine.push_back(v); need_hl |= vars[v].idea.needs_hl(); need_ext |= vars[v].idea.needs_ext(); auto ks = vars[v].idea.frame_keys(); keys.insert(ks.begin(), ks.end()); }
+                for (int v : plain_vars) if (vars[v].coins.count(f.coin)) { mine.push_back(v); need_hl |= vars[v].idea.needs_hl(); need_ext |= vars[v].idea.needs_ext(); need_bn |= vars[v].idea.needs_bn(); auto ks = vars[v].idea.frame_keys(); keys.insert(ks.begin(), ks.end()); }
                 if (mine.empty()) continue;
                 const auto c0 = std::chrono::steady_clock::now();
                 DayData d;
@@ -1133,15 +1191,16 @@ inline RunStats run_variants(std::vector<Variant>& vars, const Venue& V, const j
                     d = compact(ev, 20, w0, w1);
                 }
                 d.coin = f.coin; d.day = f.day;
-                std::vector<HlMid> hm, xm;
+                std::vector<HlMid> hm, xm, bm;
                 if (need_hl) hm = hl_mids_for(f.coin, f.day);
                 if (need_ext) xm = ext_mids_for(f.coin, f.day);
+                if (need_bn) bm = bn_mids_for(f.coin, f.day);
                 const auto c1 = std::chrono::steady_clock::now();
                 std::vector<SegResult> out(mine.size());
                 bool any = !d.ev.empty();
                 if (any) {
                     const auto p0 = params_for(vars[mine[0]], f.coin);
-                    const Frame F = compute_frame(d, hm.empty() ? nullptr : &hm, keys, *p0, xm.empty() ? nullptr : &xm);
+                    const Frame F = compute_frame(d, hm.empty() ? nullptr : &hm, keys, *p0, xm.empty() ? nullptr : &xm, bm.empty() ? nullptr : &bm);
                     for (size_t m = 0; m < mine.size(); ++m) {
                         auto p = params_for(vars[mine[m]], f.coin);
                         CoinRun cr(vars[mine[m]].idea, *p, d, F);
@@ -1166,8 +1225,8 @@ inline RunStats run_variants(std::vector<Variant>& vars, const Venue& V, const j
         std::map<std::string, std::vector<hl::DayFile>> by_day;
         for (const auto& it : items) by_day[it.f.day].push_back(it.f);
         for (auto& [day, fl] : by_day) {
-            std::set<std::string> coins_needed; bool need_hl = false, need_ext = false; std::set<std::string> keys;
-            for (int v : rl_vars) { coins_needed.insert(vars[v].coins.begin(), vars[v].coins.end()); need_hl |= vars[v].idea.needs_hl(); need_ext |= vars[v].idea.needs_ext(); auto ks = vars[v].idea.frame_keys(); keys.insert(ks.begin(), ks.end()); }
+            std::set<std::string> coins_needed; bool need_hl = false, need_ext = false, need_bn = false; std::set<std::string> keys;
+            for (int v : rl_vars) { coins_needed.insert(vars[v].coins.begin(), vars[v].coins.end()); need_hl |= vars[v].idea.needs_hl(); need_ext |= vars[v].idea.needs_ext(); need_bn |= vars[v].idea.needs_bn(); auto ks = vars[v].idea.frame_keys(); keys.insert(ks.begin(), ks.end()); }
             const auto c0 = std::chrono::steady_clock::now();
             // load the day's coins on `threads` threads into fixed slots (file order), then keep the non-empty ones in order
             std::vector<hl::DayFile> lf;
@@ -1183,11 +1242,12 @@ inline RunStats run_variants(std::vector<Variant>& vars, const Venue& V, const j
                         { auto ev = hl::load_day(f); d = compact(ev, kRateLimitLevels, w0, w1); }
                         d.coin = f.coin; d.day = f.day;
                         if (d.ev.empty()) continue;
-                        std::vector<HlMid> hm, xm;
+                        std::vector<HlMid> hm, xm, bm;
                         if (need_hl) hm = hl_mids_for(f.coin, f.day);
                         if (need_ext) xm = ext_mids_for(f.coin, f.day);
+                        if (need_bn) bm = bn_mids_for(f.coin, f.day);
                         const hl::Params p0 = *params_for(vars[rl_vars[0]], f.coin);
-                        slot_f[q] = compute_frame(d, hm.empty() ? nullptr : &hm, keys, p0, xm.empty() ? nullptr : &xm);
+                        slot_f[q] = compute_frame(d, hm.empty() ? nullptr : &hm, keys, p0, xm.empty() ? nullptr : &xm, bm.empty() ? nullptr : &bm);
                         slot_d[q] = std::move(d);
                     }
                 };
@@ -1249,6 +1309,7 @@ inline std::set<std::string> idea_coins(const Idea& I, const Venue& V, const jso
         if (!frozen_params(V, pf, f.coin, true)) continue;
         if (I.needs_hl()) { std::error_code ec; if (!fs::is_directory(env.root / "hyperliquid" / f.coin, ec)) continue; }
         if (I.needs_ext()) { std::error_code ec; if (!fs::is_directory(env.root / "extended" / f.coin, ec)) continue; }
+        if (I.needs_bn() && !binance_listed(env, f.coin)) continue;
         have.insert(f.coin);
     }
     if (I.markets.empty()) return have;
@@ -1617,6 +1678,7 @@ inline BatchResult judge_batch(const json& doc, const Options& opt) {
                                                     " levels per side; the baselines run under the same limiter");
             if (I.needs_hl()) notes.push_back("cross-venue: Hyperliquid books received by the decision time (exchange clock); coins without a Hyperliquid archive are skipped");
             if (I.needs_ext()) notes.push_back("cross-venue: Extended books received by the decision time (exchange clock); coins without an Extended archive are skipped");
+            if (I.needs_bn()) notes.push_back("cross-venue: Binance futures — published trade history (last price, Binance match time + 135 ms) where it exists, else the live bookTicker archive (receive time); coins Binance does not list are skipped");
             if (const auto ex = opt.env.excluded_days.find(V.name); ex != opt.env.excluded_days.end())
                 for (const auto& [day, why] : ex->second) {
                     const int64_t ds = day_start_ms(day);

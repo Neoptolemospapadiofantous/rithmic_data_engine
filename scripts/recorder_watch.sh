@@ -24,7 +24,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DRY=0
 [ "${1:-}" = "--dry-run" ] && DRY=1
 
-UNITS="${RECORDER_WATCH_UNITS:-lighter-recorder-local=lighter hl-recorder-local=hyperliquid extended-recorder-local=extended aster-recorder-local=aster paradex-recorder-local=paradex}"
+UNITS="${RECORDER_WATCH_UNITS:-lighter-recorder-local=lighter hl-recorder-local=hyperliquid extended-recorder-local=extended aster-recorder-local=aster paradex-recorder-local=paradex binance-recorder-local=binance}"
 STATUS_DIR="${RECORDER_STATUS_DIR:-$ROOT/data/recorder_status}"
 MAX_AGE="${RECORDER_WATCH_MAX_AGE:-60}"
 MIN_GAP="${RECORDER_WATCH_MIN_GAP:-600}"

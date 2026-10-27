@@ -227,6 +227,40 @@ TEST(paradex_book_applies_deltas_in_sequence) {
 }
 
 // ── archive loader dispatch ──────────────────────────────────────────────────────────────────────────────
+TEST(binance_book_ticker_and_trades_parse_and_replay) {
+    namespace bn = venue::binance;
+    ASSERT(bn::streams_target({"AVAXUSDT", "BNBUSDT"}) == "/stream?streams=avaxusdt@bookTicker/avaxusdt@trade/bnbusdt@bookTicker/bnbusdt@trade");
+    const json bt = json::parse(R"({"stream":"avaxusdt@bookTicker","data":{"e":"bookTicker","s":"AVAXUSDT","b":"8.7410","B":"564","a":"8.7420","A":"212","T":1000,"E":1001}})");
+    auto b = bn::parse_book_ticker(bt);
+    ASSERT(b && b->valid());
+    ASSERT_EQ(b->t_ms, int64_t{1000});                                  // the match time T, not the event time E
+    ASSERT_NEAR(b->bids[0].px, 8.741, 1e-12); ASSERT_NEAR(b->asks[0].sz, 212, 1e-12);
+    ASSERT(!bn::parse_book_ticker(json::parse(R"({"data":{"e":"trade"}})")));
+    // raw trade: m = buyer is maker → the taker SOLD; only MARKET prints count
+    auto t = bn::parse_trades(json::parse(R"({"data":{"e":"trade","s":"AVAXUSDT","p":"8.749","q":"22","T":1002,"m":true,"X":"MARKET"}})"));
+    ASSERT_EQ(t.size(), size_t{1}); ASSERT(!t[0].buy_aggr); ASSERT_EQ(t[0].t_ms, int64_t{1002});
+    ASSERT(bn::parse_trades(json::parse(R"({"data":{"e":"trade","s":"AVAXUSDT","p":"8.7","q":"1","T":1003,"m":false,"X":"INSURANCE_FUND"}})")).empty());
+    ASSERT_EQ(bn::parse_trades(json::parse(R"({"data":{"e":"aggTrade","s":"AVAXUSDT","p":"8.7","q":"1","T":1004,"m":false}})")).size(), size_t{1});
+    // the archive loader replays a "v":"binance" file with OUR receive time attached
+    auto dir = std::filesystem::temp_directory_path() / ("venues_bn_" + std::to_string(getpid()));
+    std::filesystem::create_directories(dir);
+    {
+        ZstdDaily f(dir / "AVAX", {}, 3);
+        const int64_t r = 1'700'000'000'000'000;
+        f.write_line(R"({"r":)" + std::to_string(r) + R"(,"v":"binance","m":)" + bt.dump() + "}", r);
+        f.write_line(R"({"r":)" + std::to_string(r + 131000) + R"(,"v":"binance","m":{"stream":"avaxusdt@trade","data":{"e":"trade","s":"AVAXUSDT","p":"8.749","q":"22","T":1002,"m":false,"X":"MARKET"}}})", r + 131000);
+        f.close();
+    }
+    auto days = hl::list_days(dir);
+    int64_t bad = 0;
+    auto ev = hl::load_day(days.at(0), &bad);
+    ASSERT_EQ(bad, int64_t{0});
+    ASSERT_EQ(ev.size(), size_t{2});
+    ASSERT(ev[0].is_book && ev[0].r_ms == 1'700'000'000'000);
+    ASSERT(!ev[1].is_book && ev[1].trade.buy_aggr && ev[1].r_ms == 1'700'000'000'131);
+    std::filesystem::remove_all(dir);
+}
+
 static std::filesystem::path tmpdir() {
     auto p = std::filesystem::temp_directory_path() / ("venues_test_" + std::to_string(getpid()));
     std::filesystem::create_directories(p);
@@ -280,6 +314,7 @@ int main() {
     RUN(paradex_sbe_trade_frame_and_filter);
     RUN(paradex_book_applies_deltas_in_sequence);
     RUN(loader_replays_every_venue_from_its_tag);
+    RUN(binance_book_ticker_and_trades_parse_and_replay);
     std::cout << tests_run - tests_failed << "/" << tests_run << " passed\n";
     return tests_failed ? 1 : 0;
 }

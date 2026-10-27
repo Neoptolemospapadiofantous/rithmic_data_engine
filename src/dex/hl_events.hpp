@@ -86,6 +86,9 @@ inline std::vector<Event> load_archive(const std::filesystem::path& file, int64_
             } else if (v == "aster") {
                 if (auto b = venue::aster::parse_depth(m)) { b->coin.clear(); if (b->valid()) push_book(std::move(*b)); }
                 else if (auto ts = venue::aster::parse_trades(m); !ts.empty()) push_trades(std::move(ts));
+            } else if (v == "binance") {
+                if (auto b = venue::binance::parse_book_ticker(m)) { b->coin.clear(); if (b->valid()) push_book(std::move(*b)); }
+                else if (auto ts = venue::binance::parse_trades(m); !ts.empty()) push_trades(std::move(ts));
             } else if (v == "paradex") {
                 if (m.value("c", "") == "order_book") {
                     const auto r = pbook.apply(m);

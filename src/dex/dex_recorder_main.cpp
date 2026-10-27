@@ -102,8 +102,9 @@ static asio::awaitable<std::map<std::string, std::pair<std::string, double>>> re
                 if (m.value("status", "") == "ACTIVE" && m.contains("tradingConfig"))
                     live[m.value("name", "")] = hl::num(m["tradingConfig"].value("minPriceChange", json()));
         for (const auto& c : coins) if (auto it = live.find(venue::extended::market_for(c)); it != live.end()) out[c] = {it->first, it->second};
-    } else if (g_venue == "aster") {
-        auto j = json::parse(co_await lighter::https_request(ctx, venue::aster::API_HOST, "/fapi/v1/exchangeInfo"), nullptr, false);
+    } else if (g_venue == "aster" || g_venue == "binance") {      // Binance futures: the same exchangeInfo shape
+        const bool bn = g_venue == "binance";
+        auto j = json::parse(co_await lighter::https_request(ctx, bn ? venue::binance::API_HOST : venue::aster::API_HOST, "/fapi/v1/exchangeInfo"), nullptr, false);
         std::map<std::string, double> live;
         if (j.is_object() && j.contains("symbols"))
             for (const auto& s : j["symbols"]) {
@@ -112,7 +113,7 @@ static asio::awaitable<std::map<std::string, std::pair<std::string, double>>> re
                 if (s.contains("filters")) for (const auto& f : s["filters"]) if (f.value("filterType", "") == "PRICE_FILTER") tick = hl::num(f.value("tickSize", json()));
                 live[s.value("symbol", "")] = tick;
             }
-        for (const auto& c : coins) if (auto it = live.find(venue::aster::market_for(c)); it != live.end()) out[c] = {it->first, it->second};
+        for (const auto& c : coins) if (auto it = live.find(venue::aster::market_for(c)); it != live.end()) out[c] = {it->first, it->second};   // same COINUSDT naming
     } else {
         auto j = json::parse(co_await lighter::https_request(ctx, venue::paradex::API_HOST, "/v1/markets"), nullptr, false);
         std::map<std::string, double> live;
@@ -158,8 +159,9 @@ static asio::awaitable<void> extended_stream(lighter::ssl::context& ctx, Market&
     }
 }
 
-// ── Aster: one connection, combined streams ─────────────────────────────────────────────────────────────
+// ── Aster / Binance: one connection, combined streams (Binance: bookTicker instead of depth20) ─────────────
 static asio::awaitable<void> aster_session(lighter::ssl::context& ctx) {
+    const bool bn = g_venue == "binance";
     int backoff = 1;
     std::vector<std::string> markets;
     for (const auto& [m, x] : g_mk) markets.push_back(m);
@@ -167,7 +169,8 @@ static asio::awaitable<void> aster_session(lighter::ssl::context& ctx) {
         const auto t0 = std::chrono::steady_clock::now();
         std::string why;
         try {
-            auto ws = co_await dexws::connect(ctx, venue::aster::WS_HOST, venue::aster::streams_target(markets));
+            auto ws = co_await dexws::connect(ctx, bn ? venue::binance::WS_HOST : venue::aster::WS_HOST,
+                                              bn ? venue::binance::streams_target(markets) : venue::aster::streams_target(markets));
             co_await dexws::read_loop(ws, [&](const std::string& raw, bool binary, int64_t recv) {
                 if (binary) { ++g_other; return; }
                 auto m = json::parse(raw, nullptr, false);
@@ -175,12 +178,12 @@ static asio::awaitable<void> aster_session(lighter::ssl::context& ctx) {
                 auto it = g_mk.find(venue::aster::market_of_stream(venue::aster::stream_of(m)));
                 if (it == g_mk.end()) { ++g_other; return; }
                 const std::string e = m.contains("data") && m["data"].is_object() ? m["data"].value("e", "") : "";
-                if (e == "depthUpdate") ++g_books; else if (e == "aggTrade") ++g_trades; else { ++g_other; return; }
-                archive(it->second, raw, recv, true, e == "aggTrade");          // every depth20 message is a complete snapshot
+                if (e == "depthUpdate" || e == "bookTicker") ++g_books; else if (e == "aggTrade" || e == "trade") ++g_trades; else { ++g_other; return; }
+                archive(it->second, raw, recv, true, e == "aggTrade" || e == "trade");          // every depth20 / bookTicker message is a complete snapshot
             });
             why = "closed";
         } catch (const std::exception& e) { why = e.what(); }
-        co_await backoff_sleep(backoff, t0, "aster", why);
+        co_await backoff_sleep(backoff, t0, g_venue.c_str(), why);
     }
 }
 
@@ -245,10 +248,10 @@ int main(int argc, char** argv) {
         else if (a == "--symbols" && i + 1 < argc) { std::stringstream ss(argv[++i]); for (std::string s; std::getline(ss, s, ',');) if (!s.empty()) coins.push_back(s); }
         else if (a == "--duration" && i + 1 < argc) duration_s = std::atoi(argv[++i]);
         else if (a == "--paradex-feed" && i + 1 < argc) feed = argv[++i];
-        else { std::fprintf(stderr, "usage: dex_recorder --venue extended|aster|paradex --out DIR --symbols A,B,C [--duration S] [--paradex-feed deltas|snapshot]\n"
+        else { std::fprintf(stderr, "usage: dex_recorder --venue extended|aster|paradex|binance --out DIR --symbols A,B,C [--duration S] [--paradex-feed deltas|snapshot]\n"
                                     "                    [--name NAME] [--status FILE] [--frame-seconds N]\n"); return 2; }
     }
-    if (g_venue != "extended" && g_venue != "aster" && g_venue != "paradex") { std::fprintf(stderr, "--venue must be extended, aster or paradex\n"); return 2; }
+    if (g_venue != "extended" && g_venue != "aster" && g_venue != "paradex" && g_venue != "binance") { std::fprintf(stderr, "--venue must be extended, aster, paradex or binance\n"); return 2; }
     if (out.empty() || coins.empty()) { std::fprintf(stderr, "--out and --symbols are required\n"); return 2; }
     if (feed != "deltas" && feed != "snapshot") { std::fprintf(stderr, "--paradex-feed must be deltas or snapshot\n"); return 2; }
     std::error_code ec;
@@ -295,7 +298,7 @@ int main(int argc, char** argv) {
                 asio::co_spawn(ex, extended_stream(ctx, x, true), on_end);
                 asio::co_spawn(ex, extended_stream(ctx, x, false), on_end);
             }
-        } else if (g_venue == "aster") {
+        } else if (g_venue == "aster" || g_venue == "binance") {
             asio::co_spawn(ex, aster_session(ctx), on_end);
         } else {
             asio::co_spawn(ex, paradex_session(ctx, feed), on_end);

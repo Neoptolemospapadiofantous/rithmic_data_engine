@@ -18,6 +18,7 @@
 //             in a SNAPSHOT "q" is the absolute size. Trades: .../v1/publicTrades/<MARKET>
 //             {"ts","data":[{"m","S":"BUY"|"SELL" (taker side),"tT":"TRADE"|"LIQUIDATION"|"DELEVERAGE","T":<ms>,"p","q","i"}],"seq"}
 //   Aster     wss://fstream.asterdex.com/stream?streams=<sym>@depth20@100ms/<sym>@aggTrade  (Binance futures shape)
+//   Binance   wss://fstream.binance.com/stream?streams=<sym>@bookTicker/<sym>@aggTrade  (reference price only)
 //             {"stream":"btcusdt@depth20@100ms","data":{"e":"depthUpdate","E":<event ms>,"T":<transaction ms>,"s":"BTCUSDT",
 //              "U","u","pu","b":[["px","sz"],...20],"a":[...]}} — every message is a complete 20-level snapshot.
 //             {"stream":"btcusdt@aggTrade","data":{"e":"aggTrade","E","s","a","p","q","f","l","T":<ms>,"m":<buyer is maker>}}
@@ -214,6 +215,57 @@ inline std::vector<hl::Trade> parse_trades(const json& m) {
 }
 
 }  // namespace aster
+
+// ── Binance USDⓈ-M futures (2026-10-27, research reference only — never traded) ─────────────────────────────
+// Binance moves first: on 26 Oct its price predicted Lighter's mid better than any other signal (mm_fairlab). Same
+// message shapes as Aster (Aster cloned Binance), but the book is the bookTicker stream — every best-price change in
+// real time — not depth20@100ms, whose 100 ms batching would blur a sub-second lead. One level per side.
+// Trades are the raw @trade stream (every fill): since 2026-10 Binance serves @aggTrade only on /market/stream and
+// the book only on /public/stream; the legacy /stream path still carries @bookTicker + @trade on ONE connection
+// (probed 2026-10-27). If Binance retires it, split into a /public and a /market connection.
+namespace binance {
+
+inline const char* WS_HOST = "fstream.binance.com";
+inline const char* API_HOST = "fapi.binance.com";
+inline std::string market_for(const std::string& coin) { return upper(coin) + "USDT"; }
+inline std::string streams_target(const std::vector<std::string>& markets) {
+    std::string t = "/stream?streams=";
+    bool first = true;
+    for (const auto& m : markets) {
+        const std::string l = lower(m);
+        t += (first ? "" : "/") + l + "@bookTicker/" + l + "@trade";
+        first = false;
+    }
+    return t;
+}
+// bookTicker: {"e":"bookTicker","s":"AVAXUSDT","b":"px","B":"qty","a":"px","A":"qty","T":<match ms>,"E":<event ms>}
+inline std::optional<hl::Book> parse_book_ticker(const json& m) {
+    if (!m.is_object() || !m.contains("data") || !m["data"].is_object()) return std::nullopt;
+    const json& d = m["data"];
+    if (d.value("e", "") != "bookTicker") return std::nullopt;
+    hl::Book b;
+    b.coin = d.value("s", "");
+    b.t_ms = d.value("T", d.value("E", int64_t{0}));
+    const hl::Level bid{hl::num(d.value("b", json())), hl::num(d.value("B", json()))}, ask{hl::num(d.value("a", json())), hl::num(d.value("A", json()))};
+    if (bid.px > 0 && bid.sz > 0) b.bids.push_back(bid);
+    if (ask.px > 0 && ask.sz > 0) b.asks.push_back(ask);
+    return b;
+}
+// trade: {"e":"trade","s":..,"p":..,"q":..,"T":<ms>,"m":<buyer is maker>,"X":"MARKET"} — only MARKET fills (not
+// insurance-fund / ADL / NA prints); m = buyer is the maker → the taker SOLD. An aggTrade (history files) also parses.
+inline std::vector<hl::Trade> parse_trades(const json& m) {
+    std::vector<hl::Trade> out;
+    if (!m.is_object() || !m.contains("data") || !m["data"].is_object()) return out;
+    const json& d = m["data"];
+    const std::string e = d.value("e", "");
+    if (e == "aggTrade") return aster::parse_trades(m);
+    if (e != "trade" || d.value("X", "MARKET") != "MARKET") return out;
+    hl::Trade tr{d.value("s", ""), d.value("T", int64_t{0}), hl::num(d.value("p", json())), hl::num(d.value("q", json())), !d.value("m", false)};
+    if (tr.px > 0 && tr.sz > 0) out.push_back(tr);
+    return out;
+}
+
+}  // namespace binance
 
 // ── Paradex ───────────────────────────────────────────────────────────────────────────────────────────────
 namespace paradex {

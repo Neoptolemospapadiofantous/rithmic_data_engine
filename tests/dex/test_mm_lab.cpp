@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
@@ -488,6 +489,65 @@ TEST(ext_anchor_fair_moves_quotes_toward_extended) {
     for (size_t i = 0; i < d.ev.size(); ++i) c.step(i);
     ASSERT_EQ(c.sim().quote_px(true), 99.0);
 }
+TEST(binance_reference_parses_reads_history_with_the_measured_delay_and_falls_back_to_live) {
+    std::string e;
+    auto I = parse(R"({"id":"abc","venue":"lighter","rules":[{"when":[["bn_basis_ticks",">=","half_width_ticks"]],"action":"pull_bid"}]})");
+    ASSERT(I && I->needs_bn() && !I->needs_hl() && !I->needs_ext());
+    auto A = parse(R"({"id":"abc","venue":"extended","fair":{"type":"bn_anchor","k":0.5}})");      // Binance serves Extended too
+    ASSERT(A && A->frame_keys().count("bn_basis_bps") == 1);
+    ASSERT(parse(R"({"id":"abc","venue":"lighter","fair":{"type":"blend","weights":{"mid":1,"bn":1}}})"));
+    ASSERT(!parse(R"({"id":"abc","venue":"hyperliquid_hist","fair":{"type":"bn_anchor","k":1}})", &e)); ASSERT(e.find("Binance") != std::string::npos);
+    // history: aggTrades CSV in a zip → (Binance time + 135 ms, price), header skipped, time-sorted
+    const fs::path root = fs::temp_directory_path() / ("test_mm_lab_bn_" + std::to_string(::getpid()));
+    fs::remove_all(root);
+    Env env; env.root = root / "dex"; env.binance_hist = root / "hist";
+    fs::create_directories(env.binance_hist / "AVAXUSDT");
+    {
+        std::ofstream c(root / "AVAXUSDT-aggTrades-2026-10-26.csv");
+        c << "agg_trade_id,price,quantity,first_trade_id,last_trade_id,transact_time,is_buyer_maker\n"
+          << "2,8.75,3,2,2,1000200,false\n1,8.74,5,1,1,1000100,true\n";
+    }
+    ASSERT_EQ(std::system(("cd '" + root.string() + "' && zip -q '" + (env.binance_hist / "AVAXUSDT" / "AVAXUSDT-aggTrades-2026-10-26.zip").string() + "' AVAXUSDT-aggTrades-2026-10-26.csv").c_str()), 0);
+    const auto h = binance_mids(env, "AVAX", "2026-10-26", true);
+    ASSERT_EQ(h.size(), size_t{2});
+    ASSERT_EQ(h[0].r, int64_t{1000100 + 135}); ASSERT_NEAR(h[0].mid, 8.74, 1e-12);
+    ASSERT_EQ(h[1].r, int64_t{1000200 + 135});
+    ASSERT(binance_listed(env, "AVAX"));
+    ASSERT(!binance_listed(env, "APEX"));
+    ASSERT(binance_mids(env, "AVAX", "2026-10-26", false).empty());          // venue without the reference: nothing
+    // no history for the day → the live archive (bookTicker mid at OUR receive time)
+    {
+        ZstdDaily f(env.root / "binance" / "AVAX", {}, 3);
+        const int64_t r = 1'793'100'000'000'000;   // 27 Oct: no history file that day
+        f.write_line(R"({"r":)" + std::to_string(r) + R"(,"v":"binance","m":{"stream":"avaxusdt@bookTicker","data":{"e":"bookTicker","s":"AVAXUSDT","b":"8.70","B":"1","a":"8.72","A":"1","T":1793099999800,"E":1793099999801}}})", r);
+        f.close();
+    }
+    std::string live_day;
+    for (const auto& d : hl::list_days(env.root / "binance")) live_day = d.day;
+    const auto l = binance_mids(env, "AVAX", live_day, true);
+    ASSERT_EQ(l.size(), size_t{1});
+    ASSERT_EQ(l[0].r, int64_t{1'793'100'000'000});                        // receive time, not Binance's clock
+    ASSERT_NEAR(l[0].mid, 8.71, 1e-12);
+    fs::remove_all(root);
+}
+TEST(bn_anchor_fair_moves_quotes_toward_binance) {
+    std::vector<hl::Event> ev;
+    std::vector<HlMid> bm;
+    for (int s = 0; s < 90; ++s) { ev.push_back(ebook(mkbook(DAY0 + s * 1000, 95, 105), DAY0 + s * 1000 + 50)); bm.push_back({DAY0 + s * 1000 + 10, s < 80 ? 100.0 : 102.0}); }
+    Idea I = *parse(R"({"id":"abc","venue":"lighter","fair":{"type":"bn_anchor","k":1}})");
+    DayData d = compact(ev, 20, 0, INT64_MAX);
+    Frame F = compute_frame(d, nullptr, I.frame_keys(), rule_params(), nullptr, &bm);
+    CoinRun a(I, rule_params(), d, F);
+    for (size_t i = 0; i < d.ev.size(); ++i) a.step(i);
+    ASSERT(a.sim().quote_px(true) >= 100.0);              // Binance-implied ≈ 102: the bid moved up toward it
+    // the same series as Hyperliquid and as Binance gives identical basis columns
+    const std::set<std::string> keys = {"hl_basis_bps", "bn_basis_bps", "cross_venue_lead_bps@1000", "bn_lead_bps@1000"};
+    const Frame g = compute_frame(d, &bm, keys, rule_params(), nullptr, &bm);
+    for (size_t i = 0; i < d.ev.size(); ++i) {
+        ASSERT(same(g.cols[g.col("hl_basis_bps")][i], g.cols[g.col("bn_basis_bps")][i]));
+        ASSERT(same(g.cols[g.col("cross_venue_lead_bps@1000")][i], g.cols[g.col("bn_lead_bps@1000")][i]));
+    }
+}
 TEST(plain_idea_and_a_never_firing_rule_reproduce_mm_sim_bit_for_bit) {
     auto ev = synth_events(DAY0, DAY0 + 6 * 3'600'000, 11);
     hl::Params p = tick1(); p.half_width_ticks = 2; p.min_spread_ticks = 4; p.imb_pull = 0.6; p.pause_move_ticks = 2; p.pause_ms = 2000;
@@ -800,6 +860,8 @@ int main() {
     RUN(extended_reference_parses_on_other_venues_and_is_refused_on_extended_itself);
     RUN(extended_features_share_the_hyperliquid_semantics_and_never_see_the_future);
     RUN(ext_anchor_fair_moves_quotes_toward_extended);
+    RUN(binance_reference_parses_reads_history_with_the_measured_delay_and_falls_back_to_live);
+    RUN(bn_anchor_fair_moves_quotes_toward_binance);
     RUN(plain_idea_and_a_never_firing_rule_reproduce_mm_sim_bit_for_bit);
     RUN(baseline_equals_mm_sim_frozen_on_a_real_lighter_day);
     RUN(registry_appends_counts_and_refuses_a_retest);

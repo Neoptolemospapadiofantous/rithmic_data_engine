@@ -1,0 +1,39 @@
+# binance-recorder-local.service — 24/7 Binance USDⓈ-M futures best bid/ask + trade archive for the Lighter coins
+# (2026-10-27, founder "yes" to the live Binance feed). REFERENCE PRICE ONLY — nothing trades on Binance. On 26 Oct
+# Binance's price predicted Lighter's mid better than any other signal (mm_fairlab); this archive gives the research
+# judge and the fair-price lab Binance with OUR receive time (the history files only have Binance's own clock), which
+# is also how our real Binance → box latency gets measured. systemd USER unit, modeled on aster-recorder-local.
+# Public data, no keys, no orders.
+#
+# Install once:
+#   mkdir -p /media/theone/381C48C51C48803C/rithmic_dex/binance
+#   cp deploy/binance-recorder-local.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now binance-recorder-local
+# Check:   tail -f data/logs/dex_recorder_binance.log ; data/recorder_status/binance.json
+#
+# One websocket on the legacy /stream path: <sym>@bookTicker (every best-price change) + <sym>@trade (raw fills).
+# Binance lists every coin of the Lighter paper list except APEX; the binary skips what the venue does not list.
+[Unit]
+Description=Binance futures best bid/ask + trade recorder (reference price for the market maker), 24/7
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/dex_recorder --venue binance --out /media/theone/381C48C51C48803C/rithmic_dex/binance --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/dex_recorder_binance.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/dex_recorder_binance.log
+Restart=always
+RestartSec=60
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=15
+CPUWeight=50
+IOWeight=50
+OOMScoreAdjust=100
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target
