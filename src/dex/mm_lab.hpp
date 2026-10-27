@@ -97,6 +97,7 @@
 #include "zstd_daily.hpp"
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -364,6 +365,7 @@ struct Idea {
     std::vector<Rule> rules;
     int rate_per_min = 0, rate_accounts = 0;
     bool modify = false;                   // execution.modify
+    bool keep_fills = false;               // internal (fill_study): CoinRun keeps every resting fill; never parsed
     int64_t linger_ms = 0;                 // execution.batch_linger_ms
     int64_t place_ms = -1, cancel_ms = -1;
     json spec;                             // the idea as given (id included)
@@ -905,6 +907,7 @@ struct SegResult {
     int64_t fills = 0, quotes = 0, pulled = 0, decisions = 0;
     double vol = 0, pnl = 0, capture = 0, mk1 = 0, mk10 = 0, mk60 = 0, mkw = 0;
     std::map<int64_t, double> hours;      // UTC hour index → P&L $ (every hour the segment covered, zeros included)
+    std::vector<std::array<double, 4>> fill_rows;   // Idea::keep_fills: (t ms, px, qty, side) of every resting fill
 };
 
 // A rate limiter shared by every coin an account trades (research/programs/mm_rate_limit.cpp): rolling 60 s window,
@@ -968,6 +971,8 @@ public:
         s.fills = r.fills; s.quotes = r.quotes_placed + r.quotes_modified; s.vol = r.volume_usd; s.pnl = r.flat_pnl; s.capture = r.capture_bps_sum;
         s.mk1 = r.mk1_bps_sum; s.mk10 = r.mk10_bps_sum; s.mk60 = r.mk60_bps_sum; s.mkw = r.mk_weight;
         s.pulled = pulled_; s.decisions = decisions_;
+        if (I_.keep_fills)
+            for (const auto& f : sim_.fills()) if (!f.taker) s.fill_rows.push_back({static_cast<double>(f.t_ms), f.px, f.qty, static_cast<double>(f.side)});
         // A day file can open a few ms before its UTC midnight (the recorder's / Tardis's first message): those
         // moments belong to the file's own day, not to an hour of the previous one.
         const int64_t floor_h = d_.day.size() == 10 ? day_start_ms(d_.day) / 3'600'000 : INT64_MIN;
@@ -1563,6 +1568,121 @@ inline json daily_baseline(const Env& env, const std::string& venue, double size
                         {"mk10_bps", g.mkw > 0 ? g.mk10 / g.mkw : 0.0}});
     return {{"venue", venue}, {"size_usd", size_usd}, {"rate_per_min", I->rate_per_min}, {"place_ms", I->place_ms < 0 ? V->place_ms : I->place_ms},
             {"cancel_ms", I->cancel_ms < 0 ? V->cancel_ms : I->cancel_ms}, {"from", iso_ms(w0)}, {"to", iso_ms(w1)}, {"rows", rows}};
+}
+
+// ── fill study (2026-10-27): which signals, known BEFORE our cancel could land, predict a fill's markout ────────────
+// Runs the frozen baseline (the venue's standard execution, rate limit included) over [w0, w1) and keeps every resting
+// fill. For each fill it reads the feature frame at the last event ≤ fill time − the venue's cancel latency (the latest
+// moment a pull could still have removed the order) and the fill's side-signed markouts 1 / 10 / 60 s (bps; fills less
+// than 60 s before w1 are dropped so no markout reads past the window). Per feature: correlation of side × feature
+// with the 10 s markout (direction-less features — spread, activity, volatility — are used as they are: a pull of
+// both sides, not of one), and an honest "avoid" test — the worse tail (top or bottom decile of side × feature) and its
+// threshold are chosen on the FIRST half of the window, then measured on the SECOND half: share of fills avoided, their
+// mean markout vs the rest, and the $ the avoided fills lost (or made) at 10 s. Research only; no registry, no verdict.
+inline json fill_study(const Env& env, const std::string& venue, double size_usd, int64_t w0, int64_t w1, int threads) {
+    const auto V = venue_of(venue, env);
+    if (!V) throw std::runtime_error("unknown venue " + venue);
+    const json pf = load_params_file(*V);
+    json spec = {{"id", "baseline"}, {"venue", venue}};
+    if (size_usd > 0) spec["size_usd"] = size_usd;
+    std::string err;
+    auto I = parse_idea(spec, env, err);
+    if (!I) throw std::runtime_error(err);
+    I->keep_fills = true;
+    const auto files = venue_days(*V);
+    std::vector<Variant> vars(1);
+    vars[0].idea = *I; vars[0].label = "baseline";
+    vars[0].coins = idea_coins(*I, *V, pf, env, files, w0, w1);
+    run_variants(vars, *V, pf, env, w0, w1, threads);
+    const std::vector<std::string> keys = {"book_imbalance", "book_imbalance5", "spread_ticks", "trade_flow_imbalance@1000",
+        "trade_flow_imbalance@5000", "trades_per_min@60000", "realized_vol_bps@60000", "mid_move_bps@1000",
+        "hl_basis_bps", "cross_venue_lead_bps@500", "cross_venue_lead_bps@1000", "ext_basis_bps", "ext_lead_bps@500",
+        "ext_lead_bps@1000", "bn_basis_bps", "bn_lead_bps@500", "bn_lead_bps@1000"};
+    const int64_t lag = V->cancel_ms, mid_t = w0 + (w1 - w0) / 2;
+    struct Row { int64_t t; int side; double usd, mk1, mk10, mk60; std::vector<double> x; std::string coin; };
+    std::vector<Row> rows;
+    for (const auto& g : vars[0].segs) {
+        if (g.fill_rows.empty()) continue;
+        const hl::DayFile* df = nullptr;
+        for (const auto& f : files) if (f.coin == g.coin && f.day == g.day) df = &f;
+        if (!df) continue;
+        DayData d;
+        { auto ev = hl::load_day(*df); d = compact(ev, 20, w0, w1); }
+        d.coin = g.coin; d.day = g.day;
+        std::vector<HlMid> hm, xm, bm;
+        std::error_code ec;
+        if (V->cross) if (const fs::path p = env.root / "hyperliquid" / g.coin / (g.day + ".jsonl.zst"); fs::exists(p, ec)) hm = hl_mids_from(hl::load_archive(p));
+        if (V->ext) if (const fs::path p = env.root / "extended" / g.coin / (g.day + ".jsonl.zst"); fs::exists(p, ec)) xm = hl_mids_from(hl::load_archive(p));
+        bm = binance_mids(env, g.coin, g.day, V->bn);
+        const auto p0 = idea_params(*I, *V, pf, g.coin);
+        if (!p0) continue;
+        const Frame F = compute_frame(d, hm.empty() ? nullptr : &hm, std::set<std::string>(keys.begin(), keys.end()), *p0,
+                                      xm.empty() ? nullptr : &xm, bm.empty() ? nullptr : &bm);
+        std::vector<std::pair<int64_t, double>> mids;
+        hl::Book bk;
+        for (const auto& e : d.ev) if (e.is_book) { book_of(d, e, bk); if (bk.valid()) mids.push_back({e.t, bk.mid()}); }
+        auto mid_at = [&](int64_t t) {
+            auto it = std::upper_bound(mids.begin(), mids.end(), t, [](int64_t v, const auto& m) { return v < m.first; });
+            return it == mids.begin() ? NaN : std::prev(it)->second;
+        };
+        for (const auto& fr : g.fill_rows) {
+            const int64_t tf = static_cast<int64_t>(fr[0]);
+            if (tf + 60'000 >= w1) continue;
+            auto it = std::upper_bound(d.ev.begin(), d.ev.end(), tf - lag, [](int64_t v, const CE& e) { return v < e.t; });
+            if (it == d.ev.begin()) continue;
+            const size_t idx = static_cast<size_t>(std::prev(it) - d.ev.begin());
+            Row r; r.t = tf; r.side = static_cast<int>(fr[3]); r.usd = fr[1] * fr[2]; r.coin = g.coin;
+            auto mk = [&](int64_t h) { const double m = mid_at(tf + h); return std::isfinite(m) ? r.side * (m - fr[1]) / fr[1] * 1e4 : NaN; };
+            r.mk1 = mk(1'000); r.mk10 = mk(10'000); r.mk60 = mk(60'000);
+            if (!std::isfinite(r.mk10)) continue;
+            for (const auto& k : keys) { const int c = F.col(k); r.x.push_back(c >= 0 ? F.cols[c][idx] : NaN); }
+            rows.push_back(std::move(r));
+        }
+    }
+    json feats = json::array();
+    double all_mk = 0, all_usd = 0;
+    for (const auto& r : rows) { all_mk += r.usd * r.mk10; all_usd += r.usd; }
+    auto unsigned_feature = [](const std::string& k) {
+        return k == "spread_ticks" || k.rfind("trades_per_min", 0) == 0 || k.rfind("realized_vol_bps", 0) == 0;
+    };
+    for (size_t k = 0; k < keys.size(); ++k) {
+        const bool uns = unsigned_feature(keys[k]);
+        std::vector<std::pair<double, const Row*>> A, B;     // (side × feature, or the feature itself, row): halves
+        double sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0, n = 0;
+        for (const auto& r : rows) {
+            if (!std::isfinite(r.x[k])) continue;
+            const double v = uns ? r.x[k] : r.side * r.x[k];
+            (r.t < mid_t ? A : B).push_back({v, &r});
+            sx += v; sy += r.mk10; sxx += v * v; syy += r.mk10 * r.mk10; sxy += v * r.mk10; n += 1;
+        }
+        json f = {{"feature", keys[k]}, {"fills", n}};
+        if (n < 50 || A.size() < 30 || B.size() < 30) { feats.push_back(f); continue; }
+        const double cov = sxy / n - sx / n * sy / n, vx = sxx / n - (sx / n) * (sx / n), vy = syy / n - (sy / n) * (sy / n);
+        f["corr_mk10"] = vx > 0 && vy > 0 ? cov / std::sqrt(vx * vy) : 0;
+        // first half: which decile tail is worse, and its threshold
+        std::vector<double> va; for (auto& [v, _] : A) va.push_back(v);
+        std::sort(va.begin(), va.end());
+        const double lo = va[va.size() / 10], hi = va[va.size() - 1 - va.size() / 10];
+        double mlo = 0, nlo = 0, mhi = 0, nhi = 0;
+        for (auto& [v, r] : A) { if (v <= lo) { mlo += r->mk10; nlo += 1; } if (v >= hi) { mhi += r->mk10; nhi += 1; } }
+        const bool top = (nhi ? mhi / nhi : 0) < (nlo ? mlo / nlo : 0);
+        const double thr = top ? hi : lo;
+        double m_av = 0, n_av = 0, m_keep = 0, n_keep = 0, usd_av = 0;
+        for (auto& [v, r] : B) {
+            if (top ? v >= thr : v <= thr) { m_av += r->mk10; n_av += 1; usd_av += r->usd * r->mk10 / 1e4; }
+            else { m_keep += r->mk10; n_keep += 1; }
+        }
+        f["avoid_tail"] = top ? "top" : "bottom";
+        f["signed_by_side"] = !uns;
+        f["threshold_first_half"] = thr;                  // in the feature's own units (× side for signed features)
+        f["avoid_share_test"] = n_av / B.size();
+        f["avoided_mk10_test"] = n_av ? m_av / n_av : 0;
+        f["kept_mk10_test"] = n_keep ? m_keep / n_keep : 0;
+        f["avoided_usd_at_10s_test"] = usd_av;            // negative = the avoided fills lost this much at 10 s
+        feats.push_back(f);
+    }
+    return {{"venue", venue}, {"from", iso_ms(w0)}, {"to", iso_ms(w1)}, {"split", iso_ms(mid_t)}, {"cancel_lag_ms", lag},
+            {"fills", rows.size()}, {"mean_mk10_all", all_usd > 0 ? all_mk / all_usd : 0}, {"features", feats}};
 }
 
 

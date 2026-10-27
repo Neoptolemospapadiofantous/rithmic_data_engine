@@ -34,7 +34,8 @@ using namespace mmlab;
 static int usage() {
     std::fprintf(stderr, "usage: mm_lab run IDEAS.json [--holdout] [--out DIR] [--registry FILE] [--asof TIME] [--threads N] [--root DIR] "
                          "[--params-dir DIR] [--summary FILE] [--now ISO]\n       mm_lab check IDEAS.json | mm_lab features | mm_lab split VENUE [--asof TIME]\n"
-                         "       mm_lab daily VENUE --from TIME --to TIME --file OUT.json [--size USD]   (G1: frozen setting, real limits)\n");
+                         "       mm_lab daily VENUE --from TIME --to TIME --file OUT.json [--size USD]   (G1: frozen setting, real limits)\n"
+                         "       mm_lab fills VENUE --from TIME --to TIME --file OUT.json [--size USD]   (which signals predict a fill's markout)\n");
     return 2;
 }
 
@@ -68,7 +69,7 @@ int main(int argc, char** argv) {
         else if (a == "--to") to_ms = parse_time(val());
         else if (a == "--size") size_usd = std::atof(val().c_str());
         else if (a == "--file") out_file = val();
-        else if (!a.empty() && a[0] != '-' && ideas_file.empty() && venue_arg.empty()) { if (cmd == "split" || cmd == "daily") venue_arg = a; else ideas_file = a; }
+        else if (!a.empty() && a[0] != '-' && ideas_file.empty() && venue_arg.empty()) { if (cmd == "split" || cmd == "daily" || cmd == "fills") venue_arg = a; else ideas_file = a; }
         else return usage();
     }
     const int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -102,6 +103,23 @@ int main(int argc, char** argv) {
             std::ofstream(out_file) << d.dump(1) << "\n";
             std::printf("%zu coin-day rows → %s\n", d["rows"].size(), out_file.c_str());
         } catch (const std::exception& e) { std::fprintf(stderr, "mm_lab daily: %s\n", e.what()); return 2; }
+        return 0;
+    }
+    if (cmd == "fills") {    // fill study: never past the venue's frozen holdout boundary
+        if (venue_arg.empty() || from_ms < 0 || to_ms <= from_ms || out_file.empty()) {
+            std::fprintf(stderr, "usage: mm_lab fills VENUE --from TIME --to TIME --file OUT.json [--size USD]\n"); return 2;
+        }
+        const json b = read_boundaries(opt.boundaries);
+        if (!b.contains(venue_arg) || to_ms > b[venue_arg].value("boundary_ms", int64_t{0})) {
+            std::fprintf(stderr, "mm_lab fills: --to must not pass %s's frozen holdout boundary (%s)\n", venue_arg.c_str(),
+                         b.contains(venue_arg) ? b[venue_arg].value("boundary", "?").c_str() : "none frozen");
+            return 2;
+        }
+        try {
+            const json d = fill_study(opt.env, venue_arg, size_usd, from_ms, to_ms, opt.threads);
+            std::ofstream(out_file) << d.dump(1) << "\n";
+            std::printf("%lld fills, mean 10 s markout %.2f bps → %s\n", (long long)d["fills"].get<int64_t>(), d["mean_mk10_all"].get<double>(), out_file.c_str());
+        } catch (const std::exception& e) { std::fprintf(stderr, "mm_lab fills: %s\n", e.what()); return 2; }
         return 0;
     }
     if (cmd != "run" && cmd != "check") return usage();
