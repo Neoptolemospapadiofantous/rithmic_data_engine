@@ -144,6 +144,7 @@ struct EngineConfig {
     RiskConfig risk;
     std::string state_dir, journal_dir, status_file;
     int64_t max_collateral_micro = 50 * kMicro;
+    double max_margin_pct = 30.0;                       // pull quotes while margin usage is above this
     int rate_budget = 54, rate_reserve = 24;            // ALL requests (REST + sendTx): quoting may use budget − reserve/min
     int send_budget = 30, send_reserve = 6;             // sendTx requests alone (the 40/min per-tx-type limit is unconfirmed)
     int max_txs_per_batch = 15;
@@ -347,6 +348,7 @@ public:
         public_open_ = true;
         public_reconnect_ = false;
         last_public_ms_ = now;
+        last_public_ping_ms_ = now;
         book_ = lighter::Book{};
         book_snapshot_ = false;
         for (const char* ch : {"order_book/", "trade/"})
@@ -394,6 +396,9 @@ public:
 
     // ── the clock tick ────────────────────────────────────────────────────────────────────────────────────────
     void tick(int64_t now) {
+        // Lighter drops a client that SENDS nothing for 2 min (answering its pings is not enough): ping every 60 s,
+        // as the account feed and the recorder do (2026-10-27 live: the public stream closed every 2 min without it)
+        if (public_open_ && now - last_public_ping_ms_ >= 60'000) { public_out_.push_back(R"({"type":"ping"})"); last_public_ping_ms_ = now; }
         if (!started_ || stopping_) return;
         try {
             tick_inner(now);
@@ -756,6 +761,11 @@ private:
         // de-duplicate (cancel by order ref, cancel-all by tif+market)
         std::vector<Intent> u;
         for (auto& i : v) {
+            // a cancel of an order that is already filled / cancelled (or forgotten) can only be rejected — on mainnet
+            // BEFORE applying (21727), which fails every later tx of the request: re-sending it loops forever and
+            // blocks the flatten behind it (2026-10-27 live incident)
+            if (i.kind == IntentKind::Cancel &&
+                (!tracker_.has(i.order_ref) || is_terminal(tracker_.get(i.order_ref).state))) continue;
             bool dup = std::any_of(u.begin(), u.end(), [&](const Intent& x) {
                 return x.kind == i.kind && x.order_ref == i.order_ref && x.market == i.market && x.ca_tif == i.ca_tif; });
             if (!dup) u.push_back(i);
@@ -1581,7 +1591,7 @@ private:
     std::vector<std::string> account_out_, public_out_;
     bool feed_was_live_ = false;
     bool account_open_ = false, public_open_ = false, public_reconnect_ = false, book_snapshot_ = false, book_dirty_ = false;
-    int64_t last_public_ms_ = 0, last_book_change_ms_ = 0;
+    int64_t last_public_ms_ = 0, last_public_ping_ms_ = 0, last_book_change_ms_ = 0;
     std::map<int64_t, SentTx> sent_;
     std::map<int64_t, Fate> fates_;
     std::set<int64_t> not_applied_cois_;
@@ -1709,7 +1719,8 @@ inline void Engine::on_stats(const AcctStats& s, int64_t now) {
     collateral_ = s.collateral_micro;
     if (collateral_ > cfg_.max_collateral_micro)
         sticky_halt("capital_guard", "collateral $" + usd(collateral_) + " above max $" + usd(cfg_.max_collateral_micro), now);
-    if (s.margin_usage_pct > 30.0) set_condition("margin", true, false, Pull::Quotes, "margin usage above 30 %", now);
+    if (s.margin_usage_pct > cfg_.max_margin_pct)
+        set_condition("margin", true, false, Pull::Quotes, "margin usage above " + std::to_string(int(cfg_.max_margin_pct)) + " %", now);
     else set_condition("margin", false, false, Pull::None, "", now);
 }
 

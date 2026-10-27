@@ -772,6 +772,46 @@ TEST(sigterm_path_cancels_all_and_aborts_the_deadman) {
     ASSERT(st["quoting_block"] == "stopping");
 }
 
+// 2026-10-27 live incident: a quote filled just before the engine cancelled it; mainnet rejected that cancel BEFORE
+// applying (21727), which fails every later tx of the request. The engine re-queued the dead cancel on every resync,
+// so each batch — the KILL flatten included — failed behind it, every 2 s, until the process was restarted.
+TEST(cancel_of_a_filled_order_rejected_before_apply_does_not_loop_or_block_the_flatten) {
+    Rig r("dead_cancel");
+    r.ex.set_cancel_missing_rejects_before(true);
+    ASSERT(r.start());
+    r.run(2'000);
+    int64_t bid_coi = r.resting(false);
+    ASSERT(bid_coi);
+    r.venue.hold_account_events = true;                       // the fill is not streamed yet …
+    ASSERT(r.ex.hit(bid_coi, 82));                            // … but it is done on the exchange
+    r.bid = 135'050; r.ask = 135'150;                         // the engine pulls quotes on a jump → cancel rejected
+    r.run(1'000, 50);
+    r.venue.hold_account_events = false;
+    r.venue.release_held();                                   // now the engine learns the order filled
+    r.run(10'000);
+    ASSERT(r.eng->sequencer_rejects() >= 1);                  // the race happened
+    ASSERT(r.eng->sequencer_rejects() <= 3);                  // … and did not loop
+    ASSERT(!r.eng->nonces().frozen());
+    ASSERT_EQ(r.eng->position(), r.ex.position(kMkt));
+    std::ofstream(r.cfg.state_dir + "/KILL") << "x";
+    r.run(15'000);
+    ASSERT_EQ(r.ex.position(kMkt), int64_t{0});               // the flatten got through
+    ASSERT_EQ(r.eng->position(), int64_t{0});
+    ASSERT(!r.alerted("FLATTEN FAILED"));
+}
+
+// 2026-10-27 live: Lighter closed the public stream every 2 min — the engine only answered server pings and never
+// sent one, and the server drops a client that sends nothing for 2 min. The account feed and the recorder ping.
+TEST(public_stream_sends_its_own_ping_every_minute) {
+    Rig r("pub_ping");
+    ASSERT(r.start());
+    r.run(185'000, 500);
+    int pings = 0;
+    for (const auto& m : r.pws.sent) if (m == R"({"type":"ping"})") ++pings;
+    ASSERT(pings >= 3);
+    ASSERT_EQ(r.pws.opens, 1);                                // never reconnected
+}
+
 TEST(kill_file_halts_flattens_and_never_auto_resumes) {
     Rig r("kill");
     ASSERT(r.start());
@@ -922,6 +962,14 @@ TEST(mm_live_strategy_overrides_are_bounded_and_reach_the_quoter) {
                             nlohmann::json(5)}) {
         auto b = gw_json("offline"); b["engine"]["strategy"] = bad;
         ASSERT_THROWS(build_mm_live_config(parse_config(b, Mode::Offline, 1'793'000'000)), ConfigError);
+    }
+    // margin limit: default 30 %, a $5 account holding one $11 quote at 5x needs ~44 % (founder 27 Oct: 60)
+    ASSERT_EQ(build_mm_live_config(parse_config(gw_json("offline"), Mode::Offline, 1'793'000'000)).engine.max_margin_pct, 30.0);
+    auto m = gw_json("offline"); m["engine"]["max_margin_pct"] = 60;
+    ASSERT_EQ(build_mm_live_config(parse_config(m, Mode::Offline, 1'793'000'000)).engine.max_margin_pct, 60.0);
+    for (double bad : {5.0, 95.0}) {
+        m["engine"]["max_margin_pct"] = bad;
+        ASSERT_THROWS(build_mm_live_config(parse_config(m, Mode::Offline, 1'793'000'000)), ConfigError);
     }
 }
 
@@ -1477,6 +1525,8 @@ int main(int, char** argv) {
     RUN(timeout_is_unknown_never_failed_and_reconcile_resolves_it);
     RUN(timeout_before_the_exchange_resends_identical_bytes);
     RUN(sigterm_path_cancels_all_and_aborts_the_deadman);
+    RUN(cancel_of_a_filled_order_rejected_before_apply_does_not_loop_or_block_the_flatten);
+    RUN(public_stream_sends_its_own_ping_every_minute);
     RUN(kill_file_halts_flattens_and_never_auto_resumes);
     RUN(pause_file_pulls_quotes_and_keeps_the_position);
     RUN(disarming_stops_new_orders_but_not_cancels);

@@ -9,6 +9,7 @@
         "journal_dir": "data/mm_live/journal",
         "status_file": "data/mm_live/status.json",
         "max_collateral_usd": 50,       // capital guard: refuse to trade an account holding more
+        "max_margin_pct": 30,           // pull quotes while margin usage is above this (10..80; small accounts need more)
         "rate_reserve": 24,             // requests/min kept for cancels, the dead-man and REST (quoting gets budget − this)
         "send_budget_per_min": 30,      // sendTx/sendTxBatch requests alone (6 of them reserved for cancels / dead-man)
         "deadman_window_s": 315,        // scheduled cancel-all deadline ahead of server time (≥ 305: Lighter's min is 5 min)
@@ -38,7 +39,7 @@ inline MmLiveConfig build_mm_live_config(const GatewayConfig& gw) {
     out.gw = gw;
     const nlohmann::json& e = gw.engine;
     static const std::set<std::string> keys = {"market_spec", "hl_sz_decimals", "journal_dir", "status_file", "max_collateral_usd",
-                                               "rate_reserve", "send_budget_per_min", "deadman_window_s", "order_expiry_s", "offline_collateral_usd", "label",
+                                               "rate_reserve", "send_budget_per_min", "deadman_window_s", "order_expiry_s", "offline_collateral_usd", "label", "max_margin_pct",
                                                "strategy"};
     for (auto& [k, v] : e.items()) if (!keys.count(k)) throw ConfigError("unknown engine key '" + k + "'");
     if (!e.contains("market_spec") || !e.at("market_spec").is_object()) throw ConfigError("engine.market_spec required");
@@ -56,6 +57,7 @@ inline MmLiveConfig build_mm_live_config(const GatewayConfig& gw) {
         c.journal_dir = e.value("journal_dir", gw.state_dir + "/journal");
         c.status_file = e.value("status_file", gw.state_dir + "/status.json");
         c.max_collateral_micro = int64_t(std::llround(e.value("max_collateral_usd", 50.0) * kMicro));
+        c.max_margin_pct = e.value("max_margin_pct", 30.0);
         c.rate_reserve = e.value("rate_reserve", 24);
         c.send_budget = e.value("send_budget_per_min", 30);
         c.deadman_window_ms = int64_t(e.value("deadman_window_s", 315)) * 1000;
@@ -95,6 +97,7 @@ inline MmLiveConfig build_mm_live_config(const GatewayConfig& gw) {
         throw ConfigError("engine.order_expiry_s must be 360..86400");
     if (c.rate_reserve < 6 || c.rate_reserve >= gw.rate_budget_per_min) throw ConfigError("engine.rate_reserve must be 6..rate_budget_per_min-1");
     if (c.max_collateral_micro <= 0) throw ConfigError("engine.max_collateral_usd must be > 0");
+    if (!(c.max_margin_pct >= 10.0 && c.max_margin_pct <= 80.0)) throw ConfigError("engine.max_margin_pct must be 10..80");
     if (c.send_budget <= c.send_reserve || c.send_budget > gw.rate_budget_per_min)
         throw ConfigError("engine.send_budget_per_min must be 7..rate_budget_per_min (default 30: Lighter's per-tx-type 40/min is unconfirmed)");
     c.mode = gw.mode;

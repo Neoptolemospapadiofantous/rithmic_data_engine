@@ -30,6 +30,7 @@
     "journal_dir": "/home/theone/Desktop/rithmic_engine/data/mm_live/journal",
     "status_file": "/home/theone/Desktop/rithmic_engine/data/mm_live/status.json",
     "max_collateral_usd": 10,
+    "max_margin_pct": 60,
     "strategy": {
       "pause_move_ticks": 1,
       "pause_ms": 4000,

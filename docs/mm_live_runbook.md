@@ -109,7 +109,7 @@ ack and cancel latency, the dead-man deadline. Anything else → do not go live;
 | Action | How | What happens |
 |---|---|---|
 | Stop | `systemctl --user stop mm-live@aave` (SIGTERM) | stop quoting → cancel-all → wait ≤ 10 s → the dead-man is aborted ONLY if the cancel-all was applied (server nextNonce past it) AND REST shows 0 open orders; otherwise it is LEFT ARMED (the exchange cancels whatever remains at the deadline), the alert says `NOT clean … dead-man LEFT ARMED`, exit 1. Position kept. Verify with `pgrep -x mm_live` (never `pkill -f`). |
-| Kill | `touch data/mm_live/state/KILL` | sticky halt, cancel-all, flatten with reduce-only IOC capped 0.5 % through the touch (≤ 5 tries, then an alert "FLATTEN FAILED"). Deleting the file does NOT resume: stop the unit, investigate, remove KILL, restart. |
+| Kill | `touch data/mm_live/state/KILL` | sticky halt, cancel-all, flatten with reduce-only IOC capped 0.5 % through the touch (≤ 5 tries, then an alert "FLATTEN FAILED"). Deleting the file does NOT resume: the halt is also persisted (`halt_kill: true` in `<state_dir>/risk_state.json`). To resume: stop the unit, investigate, `rm <state_dir>/KILL`, set `halt_kill` to false and `reason` to "" in risk_state.json (keep mode 0600; nothing else in that file may change — it holds the loss-stop baselines), restart. |
 | Pause | `touch data/mm_live/state/PAUSE` | quotes cancelled, position kept; delete the file to resume. |
 | Crash / kill -9 / box down | nothing | the exchange's scheduled cancel-all fires ≤ 5 min 15 s after the last re-arm; post-only quotes also expire after 10 min. On restart: cancel-all, wait for 0 open orders, ADOPT the exchange position, re-arm. |
 | Restart loop | systemd | 3 starts in 10 min stop the unit (StartLimitBurst). |

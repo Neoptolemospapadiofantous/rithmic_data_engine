@@ -105,6 +105,10 @@ public:
     // Whether a cancel-all rule error (21712 / 21714) consumes the nonce is UNCONFIRMED: default yes.
     void set_cancel_all_errors_consume(bool c) { ca_errors_consume_ = c; }
     void inject_reject_before_apply(int64_t nonce) { reject_before_.push_back(nonce); }
+    // Mainnet (2026-10-27): a cancel of an order that is no longer resting (filled / cancelled) is rejected by the
+    // sequencer BEFORE applying (code 21727) — not consumed, every later tx of the request fails too. Default off
+    // (the older model: it fails while applying, 21600, nonce consumed).
+    void set_cancel_missing_rejects_before(bool on) { cancel_missing_before_ = on; }
     void set_now(int64_t ms) { if (ms > now_) now_ = ms; apply_due(); }
     void advance(int64_t ms) { set_now(now_ + ms); }
     int64_t now() const { return now_; }
@@ -143,9 +147,14 @@ public:
         next_nonce_[key] = expect + int64_t(apply_n);       // accepted txs consume their nonces, in order
         for (size_t k = 0; k < apply_n; ++k) {
             int64_t n = parsed[k].at("Nonce").get<int64_t>();
-            if (auto it = std::find(reject_before_.begin(), reject_before_.end(), n); it != reject_before_.end()) {
+            bool missing_cancel = false;
+            if (cancel_missing_before_ && txs[k].first == 15) {
+                Ord* o = find(parsed[k].at("Index").get<int64_t>());
+                missing_cancel = !o || o->status != 2;
+            }
+            if (auto it = std::find(reject_before_.begin(), reject_before_.end(), n); it != reject_before_.end() || missing_cancel) {
                 // sequencer rejects n BEFORE applying: n not consumed, every later tx of this request fails too
-                reject_before_.erase(it);
+                if (it != reject_before_.end()) reject_before_.erase(it);
                 next_nonce_[key] = n;
                 for (size_t r = k; r < apply_n; ++r)
                     txlog_.push_back({parsed[r].at("Nonce").get<int64_t>(), key, txs[r].first, 0, kRejectBeforeApply, -1, now_});
@@ -428,6 +437,7 @@ private:
     std::vector<TradeRecord> trades_;
     std::vector<TxRecord> txlog_;
     std::vector<int64_t> reject_before_;
+    bool cancel_missing_before_ = false;
     int64_t order_seq_ = 0, trade_id_ = 0;
     int accepted_requests_ = 0, late_fills_emitted_ = 0, dead_man_fired_ = 0;
 };
