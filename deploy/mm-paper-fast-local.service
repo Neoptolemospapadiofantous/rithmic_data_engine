@@ -4,6 +4,8 @@
 # its own status file. The gates read only label 'paper'; the shadow is for measuring the server's value on live days.
 #
 # Install: cp deploy/mm-paper-fast-local.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user enable --now mm-paper-fast-local
+# 2026-10-27: Lighter's account request limit (--rate-limit 60: 60 requests/min, ≤ 15 tx each, shared by all markets)
+# The 220 ms both ways stays: this shadow is the 'server next to Lighter' scenario.
 [Unit]
 Description=Lighter paper market maker, shadow at 220 ms (no orders), 24/7
 After=network-online.target postgresql.service
@@ -13,7 +15,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 WorkingDirectory=/home/theone/Desktop/rithmic_engine
-ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_220 --latency-ms 220 --tick-rule hl --status data/mm_paper/status_paper_220.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_220 --latency-ms 220 --rate-limit 60 --tick-rule hl --status data/mm_paper/status_paper_220.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
 StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_220.log
 StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_220.log
 Restart=always

@@ -13,6 +13,8 @@
 # 00:00 UTC with mark-to-market daily rows (--day-flatten restores the old flat-to-flat day).
 # --tick-rule hl: the strategy's distances stay in HYPERLIQUID ticks (the unit the backtests validated; Lighter's
 # grid is up to 100× finer), orders round to Lighter's real grid. --latency-ms 300 = the backtests' delay.
+# 2026-10-27: Lighter's account request limit (--rate-limit 60: 60 requests/min, ≤ 15 tx each, shared by all markets)
+# and the measured Standard-account delays (145 ms place / 445 ms cancel, as the judge) — paper ran unlimited at 300/300 before.
 [Unit]
 Description=Lighter paper market maker (no orders), 24/7
 After=network-online.target postgresql.service
@@ -22,7 +24,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 WorkingDirectory=/home/theone/Desktop/rithmic_engine
-ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --tick-rule hl --latency-ms 300 --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --tick-rule hl --latency-ms 300 --place-latency-ms 145 --cancel-latency-ms 445 --rate-limit 60 --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
 StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper.log
 StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper.log
 Restart=always

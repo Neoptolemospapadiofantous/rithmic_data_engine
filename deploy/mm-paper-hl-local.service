@@ -11,6 +11,8 @@
 # NOT installed. Install: cp deploy/mm-paper-hl-local.service ~/.config/systemd/user/ && systemctl --user daemon-reload \
 #                         && systemctl --user enable --now mm-paper-hl-local
 # Check:   systemctl --user status mm-paper-hl-local ; tail -f data/logs/mm_paper_hl.log ; cat data/mm_paper/status_paper_hl.json
+# 2026-10-27: Lighter's account request limit (--rate-limit 60: 60 requests/min, ≤ 15 tx each, shared by all markets)
+# and the measured Standard-account delays (145 ms place / 445 ms cancel) — paper ran unlimited at 300/300 before.
 [Unit]
 Description=Lighter paper market maker, shadow on a Hyperliquid-anchored fair (no orders), 24/7
 After=network-online.target postgresql.service
@@ -20,7 +22,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 WorkingDirectory=/home/theone/Desktop/rithmic_engine
-ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_hl --hl-anchor 1 --latency-ms 300 --tick-rule hl --status data/mm_paper/status_paper_hl.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_hl --hl-anchor 1 --latency-ms 300 --place-latency-ms 145 --cancel-latency-ms 445 --rate-limit 60 --tick-rule hl --status data/mm_paper/status_paper_hl.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
 StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_hl.log
 StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_hl.log
 Restart=always

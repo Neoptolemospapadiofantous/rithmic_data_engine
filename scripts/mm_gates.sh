@@ -11,7 +11,13 @@
 # G2 Paper  — mm_paper_daily (label 'paper', the official 300 ms engine; the 220 ms shadow is 'paper_220'): complete paper days, cumulative P&L, positive-day share, mean day vs the backtest's
 #             95% range ($0.99..$7.48 at $11 quotes; $9..$68 at $100), loss stops. Only COMPLETE paper days count toward any G2 number (audit 2026-10-26); a day is
 #             complete when ALL of these hold, otherwise it is listed under excluded with its reasons:
-#               * no engine restart (a 'start' event) — the engine resets at every start, its row covers only the hours after it;
+#               * at most G2_MAX_RESTARTS (2) engine restarts that day (2026-10-27; was: none). A start resets the engine, so
+#                 mm_paper_daily's row covers only the LAST run's part of the day: the day's P&L is stitched as that row + the
+#                 '_total' equity (since the roll / start) of the last minute before each restart that day, and fills /
+#                 volume come from mm_paper_fills (every run). A stopping engine drops its inventory at mid without a
+#                 flatten cost — a small optimistic bias, which is why restarts stay capped and the downtime rule below
+#                 (≥ 23.5 h running) still holds; a restart that CHANGES the setting (its start line, run id aside, differs
+#                 from the run before) excludes the day — half a day of one setting is not a day of either;
 #               * the engine ran ≥ 23.5 h of that UTC day (minute '_total' equity rows ≥ 1410);
 #               * every configured market has a daily row (symbols from the installed mm-paper-local unit, else deploy/);
 #               * no OUTAGE longer than 30 min in a row (minute equity rows). An outage minute is one where the portfolio
@@ -48,7 +54,7 @@ G1_DAYS=10; G1_NET_BPS=0.25; G1_MK10_PASS=-1.0; G1_MK10_FAIL=-1.5
 G1_MIN_HOURS=23.5; G1_MAX_GAP_MIN=15
 G1_ORDER_USD=11                            # the paper engine's quote size (mmpaper::frozen_params), was 100
 G2_DAYS=20; G2_POS_SHARE=0.55; G2_FAIL_CUM=-33; G2_FAIL_STOPS=2   # fail line −$300 at $100 quotes × 0.11
-G2_MIN_HOURS=23.5; G2_MAX_HALT_MIN=30
+G2_MIN_HOURS=23.5; G2_MAX_HALT_MIN=30; G2_MAX_RESTARTS=2
 
 log() { printf '[%s] [mm_gates] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 
@@ -74,24 +80,41 @@ if [ -d "$ARCH" ] && [ -x build/mm_sim ]; then
       > "$OUT/params_lighter.json"
     # every recorded day; only COMPLETE days (≥ 23.5 h of books) count toward the gate — today is never complete,
     # it shows in the daily list as incomplete so the dashboard can draw it hollow
+    # 2026-10-27: P&L under Lighter's real execution — mm_lab daily replays every coin of a day together under the
+    # shared 60 requests/min limit (≤ 15 tx each) with the measured 145 ms place / 445 ms cancel. mm_sim (unlimited,
+    # 300 ms) still decides completeness (hours, gaps) and its net bps stays alongside as net_bps_unlimited.
+    G1_FIRST=$(ls "$ARCH"/*/ 2>/dev/null | grep -oE '^[0-9]{4}-[0-9]{2}-[0-9]{2}' | sort | head -1)
+    echo '{"rows":[]}' > "$OUT/g1_lab.json"
+    if [ -n "$G1_FIRST" ] && [ -x build/mm_lab ]; then
+      nice -n 10 build/mm_lab daily lighter --from "$G1_FIRST" --to "$(date -u +%Y-%m-%dT%H:%M)" --size "$G1_ORDER_USD" \
+        --params-dir "$OUT" --file "$OUT/g1_lab.json" > "$OUT/g1_mm_lab.log" 2>&1 || log "mm_lab daily failed — G1 falls back to the unlimited replay"
+    fi
     if build/mm_sim --dir "$ARCH" --params "$OUT/params_lighter.json" --daily "$OUT/g1_daily.json" > "$OUT/g1_mm_sim.log" 2>&1; then
-      G1_JSON=$(jq -c --argjson D "$G1_DAYS" --argjson NET "$G1_NET_BPS" --argjson MKP "$G1_MK10_PASS" --argjson MKF "$G1_MK10_FAIL" \
+      G1_JSON=$(jq -c --slurpfile LAB "$OUT/g1_lab.json" --argjson D "$G1_DAYS" --argjson NET "$G1_NET_BPS" --argjson MKP "$G1_MK10_PASS" --argjson MKF "$G1_MK10_FAIL" \
           --argjson MH "$G1_MIN_HOURS" --argjson MG "$G1_MAX_GAP_MIN" '
-        [.rows[] | select(.cfg=="chosen/pess")] as $r |
+        ($LAB[0].rows | map({key: "\(.day)/\(.coin)", value: .}) | from_entries) as $lab |
+        ($LAB[0].rows | length > 0) as $real |
+        [.rows[] | select(.cfg=="chosen/pess")
+         | . + {pnl_unl: .pnl_usd, vol_unl: .volume_usd}
+         | if $real then ($lab["\(.day)/\(.coin)"] // {pnl_usd: 0, volume_usd: 0, fills: 0, mk10_bps: 0}) as $x
+                         | .pnl_usd = $x.pnl_usd | .volume_usd = $x.volume_usd | .fills = $x.fills | .mk10_bps = $x.mk10_bps
+           else . end] as $r |
         # completeness is judged on the busiest market (most book events): ≥ MH hours of books, no gap > MG minutes
         ($r | group_by(.day) | map(max_by(.books // 0) as $b |
              {day: .[0].day, busiest: $b.coin, hours: $b.hours, max_gap_min: ($b.max_gap_min // null), pnl_usd: (map(.pnl_usd)|add),
+              pnl_unl: (map(.pnl_unl)|add), vol_unl: (map(.vol_unl)|add),
               volume_usd: (map(.volume_usd)|add), fills: (map(.fills)|add), mk10_w: (map(.mk10_bps * .volume_usd)|add)}
              | .complete = (.hours >= $MH and .max_gap_min != null and .max_gap_min <= $MG))) as $days |
         [$days[] | select(.complete)] as $full |
         ($full | map(.pnl_usd) | add // 0) as $pnl | ($full | map(.volume_usd) | add // 0) as $vol |
         (if $vol > 0 then $pnl / $vol * 1e4 else null end) as $net |
         (if $vol > 0 then ($full | map(.mk10_w) | add) / $vol else null end) as $mk |
-        {days: ($full|length), net_bps: $net, mk10_bps: $mk, fills: ($full|map(.fills)|add // 0), volume_usd: $vol, pnl_usd: $pnl,
+        {days: ($full|length), net_bps: $net, mk10_bps: $mk, execution: (if $real then "60 req/min shared, 145/445 ms" else "unlimited, 300 ms (mm_lab daily unavailable)" end), fills: ($full|map(.fills)|add // 0), volume_usd: $vol, pnl_usd: $pnl,
          status: (if ($mk != null and $mk < $MKF and ($full|length) >= $D) then "fail"
                   elif (($full|length) >= $D and $net != null and $net >= $NET and $mk >= $MKP) then "pass" else "pending" end),
          daily: ($days | map({day, busiest, hours, max_gap_min, pnl_usd, volume_usd, fills, net_bps: (if .volume_usd > 0 then .pnl_usd/.volume_usd*1e4 else 0 end),
-                              mk10_bps: (if .volume_usd > 0 then .mk10_w/.volume_usd else 0 end), complete}))}' "$OUT/g1_daily.json")
+                              mk10_bps: (if .volume_usd > 0 then .mk10_w/.volume_usd else 0 end),
+                              net_bps_unlimited: (if .vol_unl > 0 then .pnl_unl/.vol_unl*1e4 else 0 end), complete}))}' "$OUT/g1_daily.json")
     else log "mm_sim failed (see $OUT/g1_mm_sim.log)"; fi
   else log "market metadata unavailable — G1 skipped this run"; fi
 fi
@@ -110,9 +133,24 @@ DROPS_FILE=data/mm_paper/db_drops_paper.json
 DROPS=$(jq -c . "$DROPS_FILE" 2>/dev/null || echo null); [ -n "$DROPS" ] || DROPS=null
 if [ -n "$PW" ]; then
   DAILY=$(PGPASSWORD="$PW" psql -h localhost -U rithmic_user -d rithmic -At -c "
-    with days as (select day, sum(pnl) pnl, sum(volume) vol, sum(fills) fills, count(*) n
+    with days0 as (select day, sum(pnl) pnl, count(*) n
                   from mm_paper_daily where label='paper' and day < current_date group by day),
-         starts as (select (ts at time zone 'UTC')::date as day, count(*) c from mm_paper_events where label='paper' and kind='start' group by 1),
+         -- equity of the run a restart ended (last minute before the start, same UTC day; equity is since the roll/start)
+         pre as (select (st.ts at time zone 'UTC')::date as day,
+                        sum(coalesce((select e.equity from mm_paper_equity e
+                                      where e.label='paper' and e.market='_total' and e.ts < st.ts
+                                        and e.ts >= ((st.ts at time zone 'UTC')::date)::timestamp at time zone 'UTC'
+                                      order by e.ts desc limit 1), 0)) pnl_pre
+                 from mm_paper_events st where st.label='paper' and st.kind='start' group by 1),
+         fl as (select (ts at time zone 'UTC')::date as day, count(*) fills, sum(price * qty) vol
+                from mm_paper_fills where label='paper' group by 1),
+         days as (select d.day, d.pnl + coalesce(p.pnl_pre, 0) pnl, coalesce(f.vol, 0) vol, coalesce(f.fills, 0) fills, d.n
+                  from days0 d left join pre p using (day) left join fl f using (day)),
+         -- a start's setting = its detail without the run id; it differs from the run before it → the setting changed
+         st as (select (ts at time zone 'UTC')::date as day, regexp_replace(detail, 'run [0-9]+', 'run') cfg,
+                       lag(regexp_replace(detail, 'run [0-9]+', 'run')) over (order by ts) prev_cfg
+                from mm_paper_events where label='paper' and kind='start'),
+         starts as (select day, count(*) c, bool_or(prev_cfg is not null and cfg <> prev_cfg) changed from st group by 1),
          mins as (select (ts at time zone 'UTC')::date as day, count(distinct ts) c from mm_paper_equity where label='paper' and market='_total' group by 1),
          ls as (select (ts at time zone 'UTC')::date as day, min(ts) t from mm_paper_events where label='paper' and kind='loss_stop' group by 1),
          hm as (select e.ts, (e.ts at time zone 'UTC')::date as day, count(*) filter (where e.halted) nh,
@@ -130,15 +168,16 @@ if [ -n "$PW" ]; then
                   group by day, g),
          mh as (select day, max(len) m from runs group by day)
     select coalesce(json_agg(json_build_object('day', d.day, 'pnl_usd', d.pnl, 'volume_usd', d.vol, 'fills', d.fills, 'markets', d.n,
-             'restarts', coalesce(s.c, 0), 'hours', coalesce(mi.c, 0) / 60.0, 'max_halt_min', coalesce(mh.m, 0)) order by d.day), '[]')
+             'restarts', coalesce(s.c, 0), 'setting_changed', coalesce(s.changed, false), 'hours', coalesce(mi.c, 0) / 60.0, 'max_halt_min', coalesce(mh.m, 0)) order by d.day), '[]')
     from days d left join starts s using (day) left join mins mi using (day) left join mh using (day);" 2>/dev/null || echo '[]')
   STOPS=$(PGPASSWORD="$PW" psql -h localhost -U rithmic_user -d rithmic -At -c "select count(*) from mm_paper_events where kind='loss_stop' and label='paper';" 2>/dev/null || echo 0)
   G2_JSON=$(jq -c -n --argjson d "${DAILY:-[]}" --argjson stops "${STOPS:-0}" --argjson D "$G2_DAYS" --argjson PS "$G2_POS_SHARE" \
       --argjson FC "$G2_FAIL_CUM" --argjson FS "$G2_FAIL_STOPS" --argjson LO "$BT_LOW" --argjson HI "$BT_HIGH" \
-      --argjson MH "$G2_MIN_HOURS" --argjson MX "$G2_MAX_HALT_MIN" --argjson NCFG "$NCFG" --argjson drops "$DROPS" '
+      --argjson MH "$G2_MIN_HOURS" --argjson MX "$G2_MAX_HALT_MIN" --argjson MR "$G2_MAX_RESTARTS" --argjson NCFG "$NCFG" --argjson drops "$DROPS" '
     ($d | map(. as $x | ($drops.days[$x.day] // 0) as $dr |
        . + {db_drops: (if $drops == null or ($drops.since // "") == "" or $x.day < $drops.since then null else $dr end)}
-         | .reasons = ([ (if (.restarts // 0) > 0 then "engine restarted" else empty end),
+         | .reasons = ([ (if (.restarts // 0) > $MR then "engine restarted \(.restarts)× (> \($MR))" else empty end),
+                         (if .setting_changed then "setting changed by a restart that day" else empty end),
                          (if .hours < $MH then "ran \(.hours*10|round/10) h < \($MH) h" else empty end),
                          (if .markets < $NCFG then "\(.markets)/\($NCFG) markets" else empty end),
                          (if .max_halt_min > $MX then "outage (kill / feed / ≥ half the markets halted) \(.max_halt_min) min in a row" else empty end),

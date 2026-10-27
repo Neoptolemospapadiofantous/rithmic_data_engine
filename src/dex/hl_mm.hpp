@@ -34,6 +34,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <deque>
 #include <functional>
 #include <map>
 #include <optional>
@@ -178,6 +179,11 @@ struct Params {
     // live replay sets place = network, cancel = network + 300.
     int64_t place_latency_ms  = -1;
     int64_t cancel_latency_ms = -1;
+    // Requote by MODIFY instead of cancel + create (2026-10-27, research; Lighter signs SignModifyOrder). One
+    // transaction instead of two through a send gate; the order keeps resting at its old price until the modify lands
+    // (cancel latency — Lighter delays modifies like cancels), then rejoins the BACK of the queue at the new price
+    // (post-only: a modify that would cross is rejected and the order is gone). A pull (not allowed) still cancels.
+    bool modify = false;
     CancelModel cancels  = CancelModel::Pessimistic;
     // The video's strategy: quote around our own fair price, at a width we choose, leaning against inventory.
     //   bid = fair − skew·inventory − half_width   (rounded down to the tick grid, never crossing the ask)
@@ -260,6 +266,7 @@ constexpr int N_MARKOUT = 5;
 
 struct Result {
     int64_t fills = 0, quotes_placed = 0, rejected_cross = 0, flattens = 0;   // flattens: taker exits (not in fills)
+    int64_t quotes_modified = 0;                                                // Params::modify requotes (one tx each)
     double volume_usd = 0, fees = 0, cash = 0, inv = 0;
     double capture_bps_sum = 0;                  // Σ side·(mid−px)/px, $-weighted
     double mk1_bps_sum = 0, mk10_bps_sum = 0, mk60_bps_sum = 0;   // Σ side·(mid_later−px)/px, $-weighted
@@ -314,6 +321,7 @@ public:
             const double take = std::min(q, o.queue_ahead);
             o.queue_ahead -= take;
             q -= take;
+            if (q <= t.sz * 1e-9) q = 0;          // floating-point residue of "trade = queue ahead" is not a fill (dust, 2026-10-27)
             o.traded_at_px += t.sz;
             fill = std::min(q, o.remaining);
         }
@@ -431,6 +439,8 @@ private:
         int64_t active_at = 0;       // order reaches the book (decision + latency)
         int64_t cancel_at = 0;       // 0 = no cancel pending; else leaves the book at this time
         bool    placed_in_book = false;
+        int64_t mod_at = 0;          // Params::modify: 0 = none pending; else the new price applies at this time
+        double  mod_px = 0;
     };
 
     static double eps(double px) { return px * 1e-9; }
@@ -447,6 +457,10 @@ private:
             Order& o = s == 0 ? bid_ : ask_;
             if (!o.live) continue;
             if (o.cancel_at && now >= o.cancel_at) { o = Order{}; continue; }
+            if (o.mod_at && now >= o.mod_at) {
+                o.px = o.mod_px; o.mod_at = 0; o.mod_px = 0;
+                if (o.placed_in_book) { o.placed_in_book = false; o.active_at = now; }   // re-enters below: crossing check + back of the queue
+            }
             if (!o.placed_in_book && now >= o.active_at) {
                 const Book& ref = b ? *b : book_;
                 const bool bid_side = s == 0;
@@ -546,8 +560,14 @@ private:
                          : !inv_ok ? InvCap
                          : (o.live && !o.cancel_at && std::abs(o.px - target) > eps(target) &&
                             std::abs(o.px - target) <= p_.requote_ticks * st + eps(target)) ? Kept : Quoting);
-            if (o.live && !o.cancel_at && (!allowed || std::abs(o.px - target) > p_.requote_ticks * st + eps(target)))
-                o.cancel_at = send_at(now) + (p_.cancel_latency_ms >= 0 ? p_.cancel_latency_ms : p_.latency_ms);   // still fillable until the cancel lands
+            const bool moved = std::abs(o.px - target) > p_.requote_ticks * st + eps(target);
+            const int64_t cancel_ms = p_.cancel_latency_ms >= 0 ? p_.cancel_latency_ms : p_.latency_ms;
+            if (o.live && !o.cancel_at && (!allowed || (moved && !p_.modify)))
+                o.cancel_at = send_at(now) + cancel_ms;   // still fillable until the cancel lands
+            else if (p_.modify && o.live && !o.cancel_at && !o.mod_at && moved) {
+                o.mod_px = target; o.mod_at = send_at(now) + cancel_ms;   // still fillable at the old price until then
+                ++r_.quotes_modified;
+            }
             if (!o.live && allowed) {
                 o = Order{};
                 o.live = true;
@@ -612,6 +632,33 @@ private:
     std::function<int64_t(int64_t)> gate_;
     Overlay ov_;
     int64_t send_at(int64_t now) { return gate_ ? std::max(now, gate_(now)) : now; }
+};
+
+// An exchange request limiter for set_send_gate, shared by every market of one account (2026-10-27; moved here
+// from mm_lab so the judge and the paper engine run the same code). Lighter Standard: 60 requests per rolling
+// minute, up to 15 transactions per request — transactions decided while a request is still open (same or earlier
+// send time, < `batch` in it) ride in that request; otherwise a new request takes the next free slot of the window.
+// Returns when the transaction actually leaves (≥ now). Calls must come in non-decreasing `now` (one event clock).
+struct RequestGate {
+    int limit = 60, batch = 15; int64_t window = 60'000;
+    int64_t linger_ms = 0;          // research: a new request waits this long for more transactions (0 = send at once, as live)
+    std::deque<int64_t> sent;
+    int64_t open_t = -1; int open_n = 0;
+    int64_t txs = 0, requests = 0, delayed = 0, max_wait_ms = 0;   // observability only
+    int64_t operator()(int64_t now) {
+        ++txs;
+        if (open_t >= now && open_n < batch) { ++open_n; note(now, open_t); return open_t; }
+        while (!sent.empty() && sent.front() <= now - window) sent.pop_front();
+        int64_t t = now + linger_ms;
+        if (static_cast<int>(sent.size()) >= limit) t = std::max(t, sent[sent.size() - limit] + window);
+        sent.push_back(t);
+        ++requests;
+        open_t = t; open_n = 1;
+        note(now, t);
+        return t;
+    }
+private:
+    void note(int64_t now, int64_t t) { if (t > now) { ++delayed; max_wait_ms = std::max(max_wait_ms, t - now); } }
 };
 
 }  // namespace hl

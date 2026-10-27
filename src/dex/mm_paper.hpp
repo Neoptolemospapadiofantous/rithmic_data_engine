@@ -57,6 +57,9 @@ struct Config {
     int64_t reorder_ms = 250;       // live events are held this long (receive time) and released in backtest order
     bool    day_flatten = false;    // true = the pre-2026-10-26 flat-to-flat day (taker flatten + fresh simulators at 00:00 UTC)
     double  hl_k = 0;               // > 0: quote around the Hyperliquid-anchored fair, weight k (HlAnchor); 0 = own mid
+    int     rate_per_min = 0;       // > 0: ONE request limiter shared by every market (the account's limit; Lighter
+                                    // Standard 60/min, ≤ 15 tx per request — hl::RequestGate, the judge's own). 0 = none
+    int64_t batch_linger_ms = 0;    // research: a new request waits this long for more transactions (0 = as live)
 };
 
 // The frozen setting (mm_robust.cpp candidate, Lighter Standard): width 5, spread ≥ 4 ticks, imbalance
@@ -392,7 +395,11 @@ public:
     using EventFn = std::function<void(int64_t t_ms, const std::string& kind, const std::string& market, const std::string& detail)>;
     using DayFn = std::function<void(const DayRow&)>;
 
-    explicit Portfolio(Config c) : c_(std::move(c)), seq_(c_.reorder_ms) {}
+    explicit Portfolio(Config c) : c_(std::move(c)), seq_(c_.reorder_ms) {
+        if (c_.rate_per_min > 0) { gate_ = std::make_shared<hl::RequestGate>(); gate_->limit = c_.rate_per_min; gate_->linger_ms = c_.batch_linger_ms; }
+    }
+    // The shared request limiter (nullptr = none): its counters say how often a quote change waited for a slot.
+    const hl::RequestGate* request_gate() const { return gate_.get(); }
     void on_fill(FillFn f) { fill_fn_ = std::move(f); }
     void on_event(EventFn f) { event_fn_ = std::move(f); }
     void on_day(DayFn f) { day_fn_ = std::move(f); }
@@ -574,6 +581,7 @@ private:
         auto it = mkts_.find(m);
         if (it == mkts_.end()) {
             Mkt k; k.sim = std::make_unique<hl::Simulator>(params_for(m));
+            wire_gate(*k.sim);
             it = mkts_.emplace(m, std::move(k)).first;
             if (halted()) it->second.sim->set_halted(true, 0);
         }
@@ -645,6 +653,7 @@ private:
             const int64_t recv = k.last_book_recv_ms;
             k = Mkt{};
             k.sim = std::make_unique<hl::Simulator>(params_for(m));
+            wire_gate(*k.sim);
             k.last_book_recv_ms = recv;
         }
         emit(t_ms, "day_roll", "", day_ + " closed; " + d + " opened");
@@ -660,6 +669,10 @@ private:
     Config c_;
     Sequencer seq_;
     std::map<std::string, Mkt> mkts_;
+    std::shared_ptr<hl::RequestGate> gate_;    // one per account: every market's creates and cancels share it
+    void wire_gate(hl::Simulator& sim) {
+        if (gate_) sim.set_send_gate([g = gate_](int64_t now) { return (*g)(now); });
+    }
     std::map<std::string, HlAnchor> anchors_;   // paper_hl (Config::hl_k > 0): per market, market data only — survives every day roll
     std::string day_;
     bool killed_ = false, loss_stop_ = false, feed_down_ = false;

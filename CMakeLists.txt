@@ -355,6 +355,11 @@ target_include_directories(mm_lab PRIVATE src/)
 target_link_libraries(mm_lab PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
 target_compile_features(mm_lab PRIVATE cxx_std_20)
 target_compile_definitions(mm_lab PRIVATE MM_LAB_REPO="${CMAKE_SOURCE_DIR}")   # pinned registry + frozen boundaries
+# mm_fairlab: scores fair-price (centre) models by how well they predict Lighter's mid 1 s / 10 s ahead (research only)
+add_executable(mm_fairlab src/dex/mm_fairlab_main.cpp)
+target_include_directories(mm_fairlab PRIVATE src/)
+target_link_libraries(mm_fairlab PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
+target_compile_features(mm_fairlab PRIVATE cxx_std_20)
 
 add_executable(test_mm_lab tests/dex/test_mm_lab.cpp)
 target_include_directories(test_mm_lab PRIVATE src/)

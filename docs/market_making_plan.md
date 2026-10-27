@@ -85,6 +85,18 @@ Leverage is never used to reach a size: losses scale with position size, not mar
 
 ## 8. Decision log (append only)
 
+- 2026-10-27 — **Founder: "move the boundary now and fix the paper limiter".** (1) Judge epoch 2: 25 Oct is excluded on
+  every venue (`data/mm_lab/excluded_days.json`, damaged archive), which left Lighter's epoch-1 in-sample at ~3 h; every
+  venue (lighter, extended, aster, paradex) is re-frozen with the same 30 % time rule from the first clean day:
+  in-sample 26 Oct 00:00 → 23:00 UTC, holdout from 26 Oct 23:00. Epoch-1 values are kept in each entry (`epoch1`) and in
+  `holdout_boundaries.epoch1.json`; the registry (alpha spending) carries on, k is not reset. Disclosed contamination:
+  26 Oct was seen descriptively before the move (G1 +2.65 bps; four exploratory scratch screens on it after), and the
+  paper engines' 27 Oct P&L (holdout period) was read. (2) Paper now runs Lighter's request limit: one
+  `hl::RequestGate` (moved from mm_lab, same code as the judge) shared by all 24 markets — 60 requests/min, ≤ 15 tx each —
+  and the measured Standard delays 145 ms place / 445 ms cancel on `paper` and `paper_hl` (`paper_220` keeps 220/220 as
+  the near-server scenario). Before, paper changed quotes ≥ 306 times/min unlimited; the judge measured the limit at up to
+  ~1 bp. The start line carries the new setting, so G2 voids 27 Oct and its count starts 28 Oct. Same day: a G2 day now
+  counts with ≤ 2 restarts that do not change the setting (P&L stitched across runs).
 - 2026-10-26 — Gates re-based to the $11 setting (consequence of the decision below, proportional ×0.11): G2 mean-day
   range +$9…+$68 → **+$0.99…+$7.48**, G2 fail line −$300 → **−$33**, paper daily loss stop $150 → **$16.50**; G1 replays at
   $11 with Lighter's size grid/minimums. Paper day rows are mark-to-market (carried inventory); a restart day stays

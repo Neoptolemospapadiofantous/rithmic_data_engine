@@ -407,6 +407,87 @@ static hl::Result mm_sim_way(const std::vector<hl::Event>& ev, const hl::Params&
     s.flatten_now(last);
     return s.finish();
 }
+TEST(extended_reference_parses_on_other_venues_and_is_refused_on_extended_itself) {
+    std::string e;
+    auto L = parse(R"({"id":"abc","venue":"lighter","rules":[{"when":[["ext_lead_bps@1000",">=",2]],"action":"pull_ask"}]})");
+    ASSERT(L.has_value());
+    ASSERT(L->needs_ext());
+    ASSERT(!L->needs_hl());
+    ASSERT(parse(R"({"id":"abc","venue":"aster","rules":[{"when":[["ext_basis_ticks",">=","half_width_ticks"]],"action":"pull_bid"}]})"));
+    ASSERT(!parse(R"({"id":"abc","venue":"extended","rules":[{"when":[["ext_lead_bps",">",1]],"action":"pull_ask"}]})", &e)); ASSERT(e.find("Extended") != std::string::npos);
+    ASSERT(!parse(R"({"id":"abc","venue":"extended","fair":{"type":"ext_anchor","k":0.5}})", &e)); ASSERT(e.find("Extended") != std::string::npos);
+    ASSERT(!parse(R"({"id":"abc","venue":"extended","fair":{"type":"blend","weights":{"mid":1,"ext":1}}})", &e)); ASSERT(e.find("Extended") != std::string::npos);
+    ASSERT(!parse(R"({"id":"abc","venue":"hyperliquid_hist","rules":[{"when":[["ext_basis_bps",">",1]],"action":"pull_ask"}]})", &e));
+    ASSERT(!parse(R"({"id":"abc","venue":"lighter","fair":{"type":"ext_anchor","k":3}})", &e));
+    auto A = parse(R"({"id":"abc","venue":"lighter","fair":{"type":"ext_anchor","k":0.5}})");
+    ASSERT(A.has_value());
+    ASSERT(A->needs_ext() && !A->needs_hl());
+    ASSERT(A->frame_keys().count("ext_basis_bps") == 1);
+    Env env;
+    std::set<std::string> labels;
+    for (auto& [l, s] : neighbours(*A, *venue_of("lighter", env))) labels.insert(l);
+    ASSERT(labels.count("fair.k=0.25") == 1 && labels.count("fair.k=0.75") == 1);
+    // a blend without an ext weight keeps the neighbours it had before ext existed; with one, ext is varied too
+    auto B0 = parse(R"({"id":"abc","venue":"lighter","fair":{"type":"blend","weights":{"mid":1,"hl":1}}})");
+    auto B1 = parse(R"({"id":"abc","venue":"lighter","fair":{"type":"blend","weights":{"mid":1,"ext":1}}})");
+    bool ext0 = false, ext1 = false;
+    for (auto& [l, s] : neighbours(*B0, *venue_of("lighter", env))) ext0 |= l.find("weights.ext") != std::string::npos;
+    for (auto& [l, s] : neighbours(*B1, *venue_of("lighter", env))) ext1 |= l.find("weights.ext") != std::string::npos;
+    ASSERT(!ext0);
+    ASSERT(ext1);
+}
+TEST(extended_features_share_the_hyperliquid_semantics_and_never_see_the_future) {
+    std::vector<hl::Event> ev;
+    std::vector<HlMid> ref;
+    for (int s = 0; s < 180; ++s) {
+        const int64_t t = DAY0 + s * 1000;
+        ev.push_back(ebook(mkbook(t, 99.99, 100.01, 5, 5, 0.01), t + 100));
+        ref.push_back({t + 130, s < 120 ? 100.05 : 100.25});
+    }
+    DayData d = compact(ev, 20, 0, INT64_MAX);
+    const std::set<std::string> keys = {"hl_basis_bps", "hl_basis_ticks", "cross_venue_lead_bps@1000",
+                                        "ext_basis_bps", "ext_basis_ticks", "ext_lead_bps@1000"};
+    // the same series as Hyperliquid and as Extended gives the same values, column for column
+    const Frame f = compute_frame(d, &ref, keys, tick1(), &ref);
+    size_t finite = 0;
+    for (size_t i = 0; i < d.ev.size(); ++i) {
+        ASSERT(same(f.cols[f.col("hl_basis_bps")][i], f.cols[f.col("ext_basis_bps")][i]));
+        ASSERT(same(f.cols[f.col("hl_basis_ticks")][i], f.cols[f.col("ext_basis_ticks")][i]));
+        ASSERT(same(f.cols[f.col("cross_venue_lead_bps@1000")][i], f.cols[f.col("ext_lead_bps@1000")][i]));
+        finite += std::isfinite(f.cols[f.col("ext_basis_bps")][i]);
+    }
+    ASSERT(finite > 50);
+    // Extended alone: its columns are filled, the Hyperliquid ones stay unavailable — and the reverse
+    const Frame x = compute_frame(d, nullptr, keys, tick1(), &ref), h = compute_frame(d, &ref, keys, tick1());
+    for (size_t i = 0; i < d.ev.size(); ++i) {
+        ASSERT(std::isnan(x.cols[x.col("hl_basis_bps")][i]));
+        ASSERT(std::isnan(h.cols[h.col("ext_basis_bps")][i]));
+        ASSERT(same(x.cols[x.col("ext_lead_bps@1000")][i], f.cols[f.col("ext_lead_bps@1000")][i]));
+    }
+    // the Extended move received at t(120) + 130 ms is not seen at event 120 (decision time t(120)); it is at 121
+    const int L = x.col("ext_lead_bps@1000");
+    ASSERT_NEAR(x.cols[L][120], 0.0, 1e-9);
+    ASSERT(x.cols[L][121] > 15);
+}
+TEST(ext_anchor_fair_moves_quotes_toward_extended) {
+    std::vector<hl::Event> ev;
+    std::vector<HlMid> xm;
+    for (int s = 0; s < 90; ++s) { ev.push_back(ebook(mkbook(DAY0 + s * 1000, 95, 105), DAY0 + s * 1000 + 50)); xm.push_back({DAY0 + s * 1000 + 10, s < 80 ? 100.0 : 102.0}); }
+    Idea I = *parse(R"({"id":"abc","venue":"lighter","fair":{"type":"ext_anchor","k":1}})");
+    Idea P = *parse(R"({"id":"abc","venue":"lighter"})");
+    DayData d = compact(ev, 20, 0, INT64_MAX);
+    Frame F = compute_frame(d, nullptr, I.frame_keys(), rule_params(), &xm);
+    CoinRun a(I, rule_params(), d, F), b(P, rule_params(), d, F);
+    for (size_t i = 0; i < d.ev.size(); ++i) { a.step(i); b.step(i); }
+    ASSERT_EQ(b.sim().quote_px(true), 99.0);
+    ASSERT(a.sim().quote_px(true) >= 100.0);               // Extended-implied ≈ 102: the bid moved up toward it
+    ASSERT(a.sim().quote_px(false) >= 102.0);
+    // without the Extended series the anchor has nothing to anchor to: quotes stay where the plain idea has them
+    Frame F0 = compute_frame(d, nullptr, I.frame_keys(), rule_params());
+    CoinRun c(I, rule_params(), d, F0);
+    for (size_t i = 0; i < d.ev.size(); ++i) c.step(i);
+    ASSERT_EQ(c.sim().quote_px(true), 99.0);
+}
 TEST(plain_idea_and_a_never_firing_rule_reproduce_mm_sim_bit_for_bit) {
     auto ev = synth_events(DAY0, DAY0 + 6 * 3'600'000, 11);
     hl::Params p = tick1(); p.half_width_ticks = 2; p.min_spread_ticks = 4; p.imb_pull = 0.6; p.pause_move_ticks = 2; p.pause_ms = 2000;
@@ -542,6 +623,37 @@ TEST(in_sample_results_cannot_see_the_holdout_days) {
     const auto ca = judge_batch(doc, ha).cards, cb = judge_batch(doc, hb).cards;
     ASSERT_EQ(ca.size(), size_t{1}); ASSERT_EQ(cb.size(), size_t{1});
     ASSERT(ca[0]["idea"].dump() != cb[0]["idea"].dump());
+    fs::remove_all(a); fs::remove_all(b);
+}
+TEST(excluded_days_are_never_loaded_and_are_named_on_the_card) {
+    const fs::path a = synth_root("excl_a", false), b = synth_root("excl_b", false);
+    // the earliest recorded day of the synthetic venue
+    std::string first;
+    for (const auto& f : venue_days(*venue_of("extended", test_env(a)))) if (first.empty() || f.day < first) first = f.day;
+    ASSERT(!first.empty());
+    // (a) the day excluded through the list   (b) the same day's files deleted from disk
+    Options oa = synth_opts(a), ob = synth_opts(b);
+    oa.env.excluded_days["extended"][first] = "test: damaged";
+    for (const auto& f : venue_days(*venue_of("extended", test_env(b)))) if (f.day == first) { fs::remove(f.a); if (!f.b.empty()) fs::remove(f.b); }
+    // (a) freezes its split on the full recording; (b) gets the same frozen boundary (an exclusion never moves it)
+    const auto ra = judge_batch(json::parse(SYN_IDEAS), oa);
+    fs::copy_file(oa.boundaries, ob.boundaries, fs::copy_options::overwrite_existing);
+    const auto rb = judge_batch(json::parse(SYN_IDEAS), ob);
+    ASSERT_EQ(ra.cards.size(), rb.cards.size());
+    ASSERT(!ra.cards.empty());
+    for (size_t i = 0; i < ra.cards.size(); ++i) {
+        ASSERT_EQ(ra.cards[i]["idea"].dump(), rb.cards[i]["idea"].dump());
+        bool named = false;
+        for (const auto& n : ra.cards[i]["notes"]) named |= n.get<std::string>().find("excluded day " + first) != std::string::npos;
+        ASSERT(named);
+    }
+    // a malformed list is refused, a missing one excludes nothing
+    const fs::path bad = a / "bad_excl.json";
+    { std::ofstream o(bad); o << R"({"lighter":{"25-10-2026":"x"}})"; }
+    bool threw = false;
+    try { (void)load_excluded_days(bad); } catch (const std::exception&) { threw = true; }
+    ASSERT(threw);
+    ASSERT(load_excluded_days(a / "none.json").empty());
     fs::remove_all(a); fs::remove_all(b);
 }
 TEST(same_input_gives_identical_output_at_any_thread_count) {
@@ -685,11 +797,15 @@ int main() {
     RUN(hold_ms_keeps_an_action_after_its_condition_clears);
     RUN(state_features_inventory_and_time_since_fill_drive_rules);
     RUN(hl_anchor_fair_moves_quotes_toward_hyperliquid);
+    RUN(extended_reference_parses_on_other_venues_and_is_refused_on_extended_itself);
+    RUN(extended_features_share_the_hyperliquid_semantics_and_never_see_the_future);
+    RUN(ext_anchor_fair_moves_quotes_toward_extended);
     RUN(plain_idea_and_a_never_firing_rule_reproduce_mm_sim_bit_for_bit);
     RUN(baseline_equals_mm_sim_frozen_on_a_real_lighter_day);
     RUN(registry_appends_counts_and_refuses_a_retest);
     RUN(holdout_is_sealed_without_a_registered_in_sample_pass);
     RUN(in_sample_results_cannot_see_the_holdout_days);
+    RUN(excluded_days_are_never_loaded_and_are_named_on_the_card);
     RUN(same_input_gives_identical_output_at_any_thread_count);
     RUN(verdict_rule_checks_every_criterion);
     RUN(criterion_two_compares_against_the_same_size_baseline_not_100);

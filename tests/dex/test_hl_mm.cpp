@@ -618,6 +618,66 @@ TEST(reason_priority_halted_beats_every_other_rule) {
     ASSERT_EQ(s.reason(false), Halted);
 }
 
+// ── 2026-10-27: dust fills, modify requotes, request linger ─────────────────────────────────────────────────────
+TEST(trade_equal_to_the_queue_ahead_leaves_no_dust_fill) {
+    Simulator s(params());
+    s.on_book(book(1000, 100, 0.3, 101, 5));          // our bid joins 100 behind 0.3
+    s.on_trade(sell(1001, 100, 0.1 + 0.2));           // 0.30000000000000004: eats the queue, the residue is float noise
+    ASSERT_EQ(s.running().fills, int64_t{0});
+    s.on_trade(sell(1002, 100, 0.5));                 // a real trade at our price now fills us
+    ASSERT_EQ(s.running().fills, int64_t{1});
+}
+
+TEST(modify_requotes_with_one_tx_and_rests_at_the_old_price_until_it_lands) {
+    auto run = [](bool modify, int64_t* txs) {
+        Params p = params(); p.place_latency_ms = 0; p.cancel_latency_ms = 300; p.modify = modify;
+        Simulator s(p);
+        s.set_send_gate([txs](int64_t now) { ++*txs; return now; });
+        s.on_book(book(1000, 100, 5, 101, 5));        // bid 100, ask 101
+        s.on_book(book(1100, 100.5, 5, 101, 5));      // best bid up: requote the bid
+        s.on_trade(sell(1200, 99.9, 0.2));            // through 100 before the change lands: filled at the OLD price
+        s.on_book(book(1500, 100.5, 5, 101, 5));      // change landed (1400); cancel+create places the new bid now
+        s.on_book(book(1501, 100.5, 5, 101, 5));
+        s.on_trade(sell(1600, 100.4, 0.2));           // through the NEW bid
+        return s;
+    };
+    int64_t tm = 0, tc = 0;
+    const Simulator m = run(true, &tm), c = run(false, &tc);
+    ASSERT_EQ(m.running().quotes_modified, int64_t{1});
+    ASSERT_EQ(m.running().quotes_placed, int64_t{2});
+    ASSERT_EQ(tm, int64_t{3});                         // bid, ask, ONE modify
+    ASSERT_EQ(c.running().quotes_modified, int64_t{0});
+    ASSERT_EQ(tc, int64_t{4});                         // bid, ask, cancel, create
+    for (const Simulator* x : {&m, &c}) {
+        ASSERT_EQ(x->fills().size(), size_t{2});
+        ASSERT_NEAR(x->fills()[0].px, 100.0, 1e-12);
+        ASSERT_NEAR(x->fills()[1].px, 100.5, 1e-12);
+    }
+}
+
+TEST(modify_that_would_cross_on_landing_is_rejected) {
+    Params p = params(); p.place_latency_ms = 0; p.cancel_latency_ms = 300; p.modify = true;
+    Simulator s(p);
+    s.on_book(book(1000, 100, 5, 101, 5));
+    s.on_book(book(1100, 100.5, 5, 101, 5));          // modify the bid to 100.5, lands at 1400
+    s.on_book(book(1300, 99, 5, 100.5, 5));           // the ask comes down to 100.5 BEFORE the modify lands …
+    s.on_book(book(1500, 99, 5, 100.5, 5));           // … so on landing (1400) our 100.5 bid would cross: rejected
+    ASSERT_EQ(s.running().rejected_cross, int64_t{1});
+    ASSERT_EQ(s.running().fills, int64_t{0});
+}
+
+TEST(request_gate_linger_collects_transactions_into_one_request) {
+    RequestGate g; g.linger_ms = 50;
+    ASSERT_EQ(g(1000), int64_t{1050});                // a new request waits 50 ms …
+    ASSERT_EQ(g(1020), int64_t{1050});                // … and carries what is decided meanwhile
+    ASSERT_EQ(g(1060), int64_t{1110});                // after it left, the next opens its own
+    ASSERT_EQ(g.requests, int64_t{2});
+    RequestGate z;                                     // linger 0 = send at once (the live engine)
+    ASSERT_EQ(z(1000), int64_t{1000});
+    ASSERT_EQ(z(1001), int64_t{1001});
+    ASSERT_EQ(z.requests, int64_t{2});
+}
+
 int main() {
     RUN(parse_book_and_trades);
     RUN(back_of_queue_fills_only_after_queue_ahead);
@@ -661,6 +721,10 @@ int main() {
     RUN(reason_inventory_cap);
     RUN(reason_kept_by_requote_hysteresis);
     RUN(reason_priority_halted_beats_every_other_rule);
+    RUN(trade_equal_to_the_queue_ahead_leaves_no_dust_fill);
+    RUN(modify_requotes_with_one_tx_and_rests_at_the_old_price_until_it_lands);
+    RUN(modify_that_would_cross_on_landing_is_rejected);
+    RUN(request_gate_linger_collects_transactions_into_one_request);
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed ? 1 : 0;
 }

@@ -445,6 +445,10 @@ int main(int argc, char** argv) {
     int64_t reorder_ms = 250;
     fs::path env_file = ".env";
     double order_usd = 11, hl_anchor = 0;
+    int rate_per_min = 0;                     // --rate-limit N: requests/min shared by all markets (Lighter Standard: 60)
+    int64_t place_ms = -1, cancel_ms = -1;    // --place-/--cancel-latency-ms: override --latency-ms per direction
+    bool modify = false;                      // --modify: requote with one modify tx instead of cancel + create (research)
+    int64_t linger_ms = 0;                    // --batch-linger-ms: a new request waits this long for more tx (research)
     bool day_flatten = false;
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
@@ -463,6 +467,11 @@ int main(int argc, char** argv) {
         else if (a == "--order-usd") order_usd = std::atof(val().c_str());
         else if (a == "--day-flatten") day_flatten = true;
         else if (a == "--hl-anchor") hl_anchor = std::atof(val().c_str());
+        else if (a == "--rate-limit") rate_per_min = std::atoi(val().c_str());
+        else if (a == "--modify") modify = true;
+        else if (a == "--batch-linger-ms") linger_ms = std::atoll(val().c_str());
+        else if (a == "--place-latency-ms") place_ms = std::atoll(val().c_str());
+        else if (a == "--cancel-latency-ms") cancel_ms = std::atoll(val().c_str());
         else {
             std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K]\n");
             return 2;
@@ -470,6 +479,7 @@ int main(int argc, char** argv) {
     }
     if (symbols.empty()) { std::fprintf(stderr, "--symbols is required\n"); return 2; }
     if (!(order_usd > 0) || !(hl_anchor >= 0)) { std::fprintf(stderr, "--order-usd must be > 0 and --hl-anchor >= 0\n"); return 2; }
+    if (rate_per_min < 0 || rate_per_min > 6000 || place_ms < -1 || cancel_ms < -1 || linger_ms < 0 || linger_ms > 2000) { std::fprintf(stderr, "--rate-limit 0..6000, latencies ≥ 0\n"); return 2; }
     std::error_code ec;
     fs::create_directories(status_file.parent_path(), ec);
 
@@ -494,6 +504,15 @@ int main(int argc, char** argv) {
     pc.p.order_usd = order_usd;
     pc.day_flatten = day_flatten;
     pc.hl_k = hl_anchor;
+    pc.rate_per_min = rate_per_min;
+    pc.batch_linger_ms = linger_ms;
+    pc.p.modify = modify;
+    // "300 ms" or "145/445 ms" (place/cancel): part of the start line, so a change of either reads as a setting change
+    const std::string delay_txt = (place_ms >= 0 || cancel_ms >= 0)
+        ? std::to_string(place_ms >= 0 ? place_ms : latency_ms) + "/" + std::to_string(cancel_ms >= 0 ? cancel_ms : latency_ms) + " ms place/cancel"
+        : std::to_string(latency_ms) + " ms";
+    pc.p.place_latency_ms = place_ms;
+    pc.p.cancel_latency_ms = cancel_ms;
     mmpaper::Portfolio pf(pc);         // per_market is filled once the markets are resolved (below), before any book
     int64_t fills = 0, events = 0;
     auto fill_fn = [&](const std::string& m, const hl::Fill& f, double inv) {
@@ -632,7 +651,9 @@ int main(int argc, char** argv) {
         } else if (hl_anchor > 0) logf("--hl-anchor: no market has a Hyperliquid listing (or HL meta unavailable) — every market quotes on its own mid");
         if (db) db->push({"INSERT INTO mm_paper_events (ts, kind, market, detail, label, uid) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (uid) DO NOTHING",
                           {iso_ms(lighter::now_us() / 1000), "start", "", "paper engine started on " + std::to_string(ids.size()) + " Lighter markets (run " + run_id +
-                           ", " + std::to_string(latency_ms) + " ms, $" + num(order_usd) + " quotes, " + (day_flatten ? "day flatten" : "inventory carried") +
+                           ", " + delay_txt + (rate_per_min > 0 ? ", " + std::to_string(rate_per_min) + " req/min shared" : std::string()) +
+                           (modify ? std::string(", modify requotes") : std::string()) + (linger_ms > 0 ? ", batch linger " + std::to_string(linger_ms) + " ms" : std::string()) +
+                           ", $" + num(order_usd) + " quotes, " + (day_flatten ? "day flatten" : "inventory carried") +
                            (hl_anchor > 0 ? ", HL anchor k=" + num(hl_anchor) + " on " + std::to_string(hl_coins.size()) + " markets" : std::string()) +
                            "; starts FLAT — paper positions are not carried across a restart)",
                            label, label + ":" + run_id + ":start"}, mmpaper::utc_day(lighter::now_us() / 1000)});
@@ -693,7 +714,7 @@ int main(int argc, char** argv) {
                           {iso_ms(minute), num(eq), num(inv_usd), std::to_string(f), pf.halted() ? "true" : "false", label}, mmpaper::utc_day(minute)});
             }
             if (n % 10 == 0) {
-                json st = {{"updated", iso_ms(now)}, {"label", label}, {"latency_ms", latency_ms}, {"day", pf.day()}, {"connected", connected}, {"equity_usd", pf.equity()},
+                json st = {{"updated", iso_ms(now)}, {"label", label}, {"latency_ms", latency_ms}, {"place_latency_ms", place_ms}, {"cancel_latency_ms", cancel_ms}, {"day", pf.day()}, {"connected", connected}, {"equity_usd", pf.equity()},
                            {"gross_inventory_usd", pf.gross_usd()}, {"halted", pf.halted()}, {"books", books}, {"trades", trades},
                            {"fills", fills}, {"events", events}, {"gaps", gaps}, {"reconnects", reconnects},
                            {"db_dropped", db ? db->dropped_total() : 0}, {"db_dropped_today", db ? db->dropped_today() : 0},
@@ -705,6 +726,9 @@ int main(int argc, char** argv) {
                            {"lighter_skew_ms_p50", nan_null(skew_all.p50(now))},
                            {"hl_feed", {{"enabled", hl_anchor > 0}, {"connected", hl_feed.connected}, {"books", hl_feed.books},
                                         {"reconnects", hl_feed.reconnects}, {"last_ms", hl_feed.last_ms}, {"coins", hl_coins}}}};
+                if (const hl::RequestGate* g = pf.request_gate())     // how often a quote change waited for a request slot
+                    st["request_gate"] = {{"per_min", g->limit}, {"batch", g->batch}, {"txs", g->txs}, {"requests", g->requests},
+                                          {"delayed_txs", g->delayed}, {"max_wait_ms", g->max_wait_ms}};
                 mmpaper::Health h;
                 h.now_ms = now; h.started_ms = started_ms;
                 h.connected = connected; h.last_msg_ms = last_msg_us / 1000; h.books = books; h.trades = trades; h.gaps = gaps; h.reconnects = reconnects;

@@ -226,6 +226,45 @@ TEST(quote_size_rounds_up_to_lighter_minimums) {
     ASSERT_NEAR(sim.running().inv, 0.03, 1e-12);
 }
 
+// ── 2026-10-27: Lighter's request limit in paper (hl::RequestGate, the judge's own limiter) ─────────────────────────
+
+TEST(request_gate_batches_up_to_15_and_allows_60_requests_per_minute) {
+    hl::RequestGate g;                                     // Lighter Standard: 60 requests/min, ≤ 15 tx per request
+    for (int i = 0; i < 15; ++i) ASSERT_EQ(g(1000), int64_t{1000});   // one request carries 15 transactions
+    ASSERT_EQ(g.requests, int64_t{1});
+    ASSERT_EQ(g(1000), int64_t{1000});                     // the 16th opens a second request, still free
+    ASSERT_EQ(g.requests, int64_t{2});
+    for (int i = 2; i < 60; ++i) ASSERT_EQ(g(1000 + i * 10), int64_t{1000 + i * 10});   // up to 60 requests in the minute
+    ASSERT_EQ(g.delayed, int64_t{0});
+    const int64_t t = g(2000);                             // the 61st request waits for the oldest to leave the window
+    ASSERT_EQ(t, int64_t{61'000});
+    ASSERT_EQ(g.delayed, int64_t{1});
+    ASSERT_EQ(g.max_wait_ms, int64_t{59'000});
+    ASSERT_EQ(g(2001), t);                                 // a transaction decided meanwhile rides in that waiting request
+}
+
+TEST(paper_shares_one_request_limit_across_markets) {
+    // 20 markets churning their quotes every 100 ms for 2 minutes: unlimited they send far more than 60 requests a minute
+    auto run = [](int per_min) {
+        mmpaper::Config c = cfg(); c.rate_per_min = per_min;
+        mmpaper::Portfolio pf(c);
+        for (int k = 0; k < 1200; ++k) {
+            const int64_t t = D1 + 1000 + k * 100;
+            for (int m = 0; m < 20; ++m) {
+                const double mid = 100 + 0.5 * ((k + m) % 2);   // every book moves the quotes by more than the requote band
+                pf.book("M" + std::to_string(m), bk(t, mid - 0.5, mid + 0.5));
+            }
+        }
+        return pf.request_gate() ? *pf.request_gate() : hl::RequestGate{};
+    };
+    const hl::RequestGate off = run(0), on = run(60), loose = run(6000);
+    ASSERT_EQ(off.txs, int64_t{0});                        // no limiter: nothing counted (and none wired)
+    ASSERT(loose.delayed == 0 && loose.txs > 2 * on.txs);  // the demand: a loose limit lets far more changes through
+    ASSERT(on.requests <= 2 * 60 + 60);                    // 60 a minute over 2 min (+ requests already queued past the end)
+    ASSERT(on.delayed > 0);                                // the limit binds: quote changes wait for a slot …
+    ASSERT(on.max_wait_ms > 1000 && on.max_wait_ms <= 60'000);   // … for up to one window
+}
+
 // Default since 2026-10-26: no flatten at 00:00 UTC — the position and cash carry over, the daily row is the day's
 // mark-to-market P&L (equity at the roll − equity at the previous roll), fills / volume restart per day.
 TEST(portfolio_carries_inventory_across_the_day_roll) {
@@ -851,6 +890,8 @@ int main() {
     RUN(halt_cancels_quotes_and_flatten_crosses_the_spread);
     RUN(portfolio_rolls_the_day_flat_and_reports_it);
     RUN(quote_size_rounds_up_to_lighter_minimums);
+    RUN(request_gate_batches_up_to_15_and_allows_60_requests_per_minute);
+    RUN(paper_shares_one_request_limit_across_markets);
     RUN(portfolio_carries_inventory_across_the_day_roll);
     RUN(portfolio_carry_loss_stop_still_flattens_and_releases_next_day);
     RUN(hl_anchor_shifts_quotes_toward_hyperliquid_and_turns_off_when_stale);

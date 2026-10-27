@@ -3,6 +3,10 @@
 # on it (orders never route through the dashboard) — this unit only keeps the UI up.
 # MemoryMax: it has reached 3-4 GB when analytics ran on the request path; a runaway backend is
 # restarted here instead of pushing the box into swap while the executor is trading.
+# 2026-10-27: no MemoryHigh and no swap. With MemoryHigh 3G + swap the backend never reached MemoryMax: the kernel
+# throttled it at 3G and paged it out (3.3 G + 2.9 G swap), so it hung for hours ("AbortError" on every page — the
+# frontend's 60 s fetch timeout) instead of being killed. Now it hits MemoryMax, is OOM-killed and Restart=always
+# brings it back in ~10 s (same incident 2026-10-18).
 [Unit]
 Description=Trading dashboard backend (bot ui.app on :8080, CPP_LOCAL via bot/.env)
 After=network-online.target postgresql.service
@@ -19,8 +23,8 @@ Restart=always
 RestartSec=10
 KillSignal=SIGTERM
 TimeoutStopSec=20
-MemoryHigh=3G
-MemoryMax=4G
+MemoryMax=3G
+MemorySwapMax=0
 CPUWeight=50
 
 [Install]

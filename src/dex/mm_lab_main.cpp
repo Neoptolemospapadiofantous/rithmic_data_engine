@@ -18,6 +18,7 @@
 // Pinned files (compile-time repo root MM_LAB_REPO, else the current directory):
 //   <repo>/data/mm_lab/registry.jsonl            the registry (append-only; ops: sudo chattr +a on it)
 //   <repo>/data/mm_lab/holdout_boundaries.json   one frozen holdout boundary per venue, written once (commit it)
+//   <repo>/data/mm_lab/excluded_days.json        venue → day → reason: damaged archive days never loaded (commit it)
 #include "dex/mm_lab.hpp"
 
 #include <cstdio>
@@ -32,7 +33,8 @@ using namespace mmlab;
 
 static int usage() {
     std::fprintf(stderr, "usage: mm_lab run IDEAS.json [--holdout] [--out DIR] [--registry FILE] [--asof TIME] [--threads N] [--root DIR] "
-                         "[--params-dir DIR] [--summary FILE] [--now ISO]\n       mm_lab check IDEAS.json | mm_lab features | mm_lab split VENUE [--asof TIME]\n");
+                         "[--params-dir DIR] [--summary FILE] [--now ISO]\n       mm_lab check IDEAS.json | mm_lab features | mm_lab split VENUE [--asof TIME]\n"
+                         "       mm_lab daily VENUE --from TIME --to TIME --file OUT.json [--size USD]   (G1: frozen setting, real limits)\n");
     return 2;
 }
 
@@ -43,8 +45,12 @@ int main(int argc, char** argv) {
     opt.pinned_registry = fs::path(MM_LAB_REPO) / "data/mm_lab/registry.jsonl";
     opt.registry = opt.pinned_registry;
     opt.boundaries = fs::path(MM_LAB_REPO) / "data/mm_lab/holdout_boundaries.json";
+    try { opt.env.excluded_days = load_excluded_days(fs::path(MM_LAB_REPO) / "data/mm_lab/excluded_days.json"); }
+    catch (const std::exception& e) { std::fprintf(stderr, "%s\n", e.what()); return 2; }
     bool registry_given = false;
-    fs::path ideas_file, summary;
+    fs::path ideas_file, summary, out_file;
+    int64_t from_ms = -1, to_ms = -1;
+    double size_usd = 0;
     std::string venue_arg;
     for (int i = 2; i < argc; ++i) {
         const std::string a = argv[i];
@@ -58,7 +64,11 @@ int main(int argc, char** argv) {
         else if (a == "--summary") summary = val();
         else if (a == "--now") opt.now_iso = val();
         else if (a == "--holdout") opt.holdout = true;
-        else if (!a.empty() && a[0] != '-' && ideas_file.empty() && venue_arg.empty()) { if (cmd == "split") venue_arg = a; else ideas_file = a; }
+        else if (a == "--from") from_ms = parse_time(val());
+        else if (a == "--to") to_ms = parse_time(val());
+        else if (a == "--size") size_usd = std::atof(val().c_str());
+        else if (a == "--file") out_file = val();
+        else if (!a.empty() && a[0] != '-' && ideas_file.empty() && venue_arg.empty()) { if (cmd == "split" || cmd == "daily") venue_arg = a; else ideas_file = a; }
         else return usage();
     }
     const int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -74,13 +84,24 @@ int main(int argc, char** argv) {
         std::printf("| feature | default window ms | source | robustness step | meaning |\n|---|---|---|---|---|\n");
         for (const auto& f : features())
             std::printf("| %s | %s | %s | %g | %s |\n", f.name, f.default_window ? std::to_string(f.default_window).c_str() : "—",
-                        f.cross ? "Hyperliquid (receive time)" : f.state ? "simulator state" : "own venue", f.step, f.desc);
+                        f.ref == kRefHl ? "Hyperliquid (receive time)" : f.ref == kRefExt ? "Extended (receive time)" : f.state ? "simulator state" : "own venue", f.step, f.desc);
         return 0;
     }
     if (cmd == "split") {
         const auto V = venue_of(venue_arg, opt.env);
         if (!V) { std::fprintf(stderr, "unknown venue\n"); return 2; }
         std::cout << compute_split(*V, venue_days(*V), opt.asof_ms).to_json().dump(1) << "\n";
+        return 0;
+    }
+    if (cmd == "daily") {    // G1's data check: the frozen setting under the venue's standard execution, per coin-day
+        if (venue_arg.empty() || from_ms < 0 || to_ms <= from_ms || out_file.empty()) {
+            std::fprintf(stderr, "usage: mm_lab daily VENUE --from TIME --to TIME --file OUT.json [--size USD]\n"); return 2;
+        }
+        try {
+            const json d = daily_baseline(opt.env, venue_arg, size_usd, from_ms, to_ms, opt.threads);
+            std::ofstream(out_file) << d.dump(1) << "\n";
+            std::printf("%zu coin-day rows → %s\n", d["rows"].size(), out_file.c_str());
+        } catch (const std::exception& e) { std::fprintf(stderr, "mm_lab daily: %s\n", e.what()); return 2; }
         return 0;
     }
     if (cmd != "run" && cmd != "check") return usage();
