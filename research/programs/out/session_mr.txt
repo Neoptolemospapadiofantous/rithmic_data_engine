@@ -1,0 +1,30 @@
+Does NQ mean-revert overnight and pick a direction in NY? — NQ 1m, 2010-07 → 2026-10-23. Eras 2010-20 | 2021-26.
+
+A  VARIANCE RATIO (1.00 = random walk; < 1 mean-reverting; > 1 trending)
+                         VR( 5m) 10-20|21-26   VR(15m) 10-20|21-26   VR(30m) 10-20|21-26   VR(60m) 10-20|21-26
+Asia 18:00-03:00              0.89  0.94            0.87  0.92            0.86  0.92            0.88  0.91    
+London 03:00-09:30            0.89  0.95            0.85  0.93            0.84  0.93            0.82  0.91    
+NY open 09:30-11:00           0.98  1.02            0.96  1.01            0.96  1.02            0.98  1.01    
+NY rest 11:00-16:00           0.95  0.98            0.91  0.96            0.89  0.95            0.87  0.95    
+
+B  STRAIGHTNESS |close − open| / range (random-walk baseline from the same window's shuffled moves)
+Asia 18:00-03:00         10-20 0.463 (random 0.432)   21-26 0.475 (random 0.465)
+London 03:00-09:30       10-20 0.473 (random 0.454)   21-26 0.489 (random 0.474)
+NY open 09:30-11:00      10-20 0.513 (random 0.510)   21-26 0.518 (random 0.520)
+NY rest 11:00-16:00      10-20 0.496 (random 0.482)   21-26 0.487 (random 0.484)
+
+C  FIRST TOUCH OF ±1 SD (18:00 VWAP) → back to VWAP first / on to ±2 SD first / neither by window end
+Asia 18:00-03:00         10-20 n2169  VWAP 49%  2SD 51%  neither  0%   21-26 n1116  VWAP 52%  2SD 48%  neither  0%
+London 03:00-09:30       10-20 n2166  VWAP 53%  2SD 44%  neither  3%   21-26 n1116  VWAP 43%  2SD 54%  neither  3%
+NY open 09:30-11:00      10-20 n2158  VWAP 57%  2SD 35%  neither  8%   21-26 n1110  VWAP 51%  2SD 42%  neither  7%
+NY rest 11:00-16:00      10-20 n2160  VWAP 42%  2SD 47%  neither 11%   21-26 n1111  VWAP 39%  2SD 46%  neither 15%
+
+E  TIME INSIDE ±1 SD and where the window ENDS (18:00 VWAP)
+Asia 18:00-03:00         10-20 inside 1SD 53% of minutes · ends beyond 1SD 45% / beyond 2SD  7% of days   21-26 inside 1SD 51% of minutes · ends beyond 1SD 54% / beyond 2SD 12% of days
+London 03:00-09:30       10-20 inside 1SD 53% of minutes · ends beyond 1SD 38% / beyond 2SD  2% of days   21-26 inside 1SD 48% of minutes · ends beyond 1SD 48% / beyond 2SD  7% of days
+NY open 09:30-11:00      10-20 inside 1SD 51% of minutes · ends beyond 1SD 52% / beyond 2SD  7% of days   21-26 inside 1SD 48% of minutes · ends beyond 1SD 52% / beyond 2SD  8% of days
+NY rest 11:00-16:00      10-20 inside 1SD 49% of minutes · ends beyond 1SD 49% / beyond 2SD  7% of days   21-26 inside 1SD 47% of minutes · ends beyond 1SD 53% / beyond 2SD  7% of days
+
+D  NY DIRECTION
+   09:30-10:00 move and 10:00-16:00 move same sign: 50.9% (n 3256)  · 2010-20 50.0% · 2021-26 52.6%   (coin flip = 50%)
+   overnight (18:00-09:30) and NY (09:30-16:00) same sign:      51.1% (n 3258)  · 2010-20 51.5% · 2021-26 50.4%

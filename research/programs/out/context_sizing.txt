@@ -1,0 +1,58 @@
+BOOK2 trades: mean net R by feature (2014-19 | 2020-26), NQ and ES; the favourable value is chosen on 2014-19, both markets pooled
+  R1 volatility rising                 favourable = yes | NQ yes +0.188 ( 757) / +0.262 ( 825) | NQ no  +0.042 ( 821) / +0.232 ( 836) | ES yes +0.068 ( 653) / +0.125 ( 742) | ES no  -0.008 ( 891) / +0.199 ( 795) |
+  R2 prior week with the flag          favourable = no  | NQ yes +0.118 ( 814) / +0.275 ( 875) | NQ no  +0.105 ( 764) / +0.215 ( 786) | ES yes -0.012 ( 799) / +0.183 ( 799) | ES no  +0.062 ( 745) / +0.142 ( 738) |
+  R3 gap with the flag                 favourable = yes | NQ yes +0.301 ( 808) / +0.432 ( 803) | NQ no  -0.086 ( 770) / +0.073 ( 858) | ES yes +0.127 ( 809) / +0.307 ( 712) | ES no  -0.089 ( 735) / +0.039 ( 825) |
+  E1 15m + daily EMA20 with the flag   favourable = no  | NQ yes +0.199 ( 722) / +0.314 ( 796) | NQ no  +0.038 ( 856) / +0.185 ( 865) | ES yes -0.118 ( 719) / +0.205 ( 741) | ES no  +0.148 ( 825) / +0.124 ( 796) |
+  N1 beyond the noise band             favourable = yes | NQ yes +0.139 (1283) / +0.316 (1362) | NQ no  -0.009 ( 295) / -0.070 ( 299) | ES yes +0.049 (1252) / +0.150 (1230) | ES no  -0.082 ( 292) / +0.214 ( 307) |
+
+  variant base  : 0 BOOK2 trades at 2 micros, 0 skipped
+  variant S1    : 2977 BOOK2 trades at 2 micros, 0 skipped
+  variant S2    : 3033 BOOK2 trades at 2 micros, 0 skipped
+  variant S3    : 3132 BOOK2 trades at 2 micros, 0 skipped
+  variant S4    : 3342 BOOK2 trades at 2 micros, 0 skipped
+  variant S5    : 5127 BOOK2 trades at 2 micros, 0 skipped
+  variant SC2   : 5405 BOOK2 trades at 2 micros, 0 skipped
+  variant SC3   : 3715 BOOK2 trades at 2 micros, 0 skipped
+  variant SC4   : 1829 BOOK2 trades at 2 micros, 0 skipped
+  variant SK    : 3715 BOOK2 trades at 2 micros, 138 skipped
+
+######## CONTEXT: BOOK2 mean net R by context (2014-19 | 2020-26), favourable chosen on 2014-19, NQ + ES pooled
+  C1 open beyond yesterday           fav = yes | NQ yes +0.285 ( 333) / +0.585 ( 309) | NQ no  +0.065 (1245) / +0.169 (1352) | ES yes +0.061 ( 384) / +0.236 ( 328) | ES no  +0.012 (1160) / +0.143 (1209) |
+  C2 open in overnight top third     fav = yes | NQ yes +0.354 ( 549) / +0.572 ( 593) | NQ no  -0.018 (1029) / +0.066 (1068) | ES yes +0.176 ( 564) / +0.338 ( 512) | ES no  -0.063 ( 980) / +0.075 (1025) |
+  C3 room left (range < 0.6 ATR)     fav = no  | NQ yes +0.008 ( 531) / +0.105 ( 503) | NQ no  +0.164 (1047) / +0.308 (1158) | ES yes -0.002 ( 580) / +0.144 ( 623) | ES no  +0.040 ( 964) / +0.176 ( 914) |
+  C4 VWAP side                       fav = yes | NQ yes +0.112 (1578) / +0.247 (1661) | NQ no  +0.000 (   0) / +0.000 (   0) | ES yes +0.024 (1544) / +0.163 (1537) | ES no  +0.000 (   0) / +0.000 (   0) |
+  C5 upper half of day range         fav = yes | NQ yes +0.112 (1578) / +0.247 (1661) | NQ no  +0.000 (   0) / +0.000 (   0) | ES yes +0.024 (1544) / +0.163 (1537) | ES no  +0.000 (   0) / +0.000 (   0) |
+  C6 above 20-session average        fav = no  | NQ yes +0.114 ( 777) / +0.399 ( 865) | NQ no  +0.109 ( 801) / +0.081 ( 796) | ES yes -0.113 ( 797) / +0.171 ( 832) | ES no  +0.171 ( 747) / +0.153 ( 705) |
+  C7 opening drive with the flag     fav = yes | NQ yes +0.171 (1386) / +0.282 (1450) | NQ no  -0.313 ( 192) / +0.004 ( 211) | ES yes +0.034 (1335) / +0.160 (1304) | ES no  -0.039 ( 209) / +0.181 ( 233) |
+  C8 above last week's midpoint      fav = yes | NQ yes +0.198 ( 793) / +0.288 ( 853) | NQ no  +0.025 ( 785) / +0.203 ( 808) | ES yes +0.035 ( 844) / +0.118 ( 828) | ES no  +0.011 ( 700) / +0.215 ( 709) |
+  C9 1h trend with the flag          fav = yes | NQ yes +0.154 (1369) / +0.297 (1416) | NQ no  -0.168 ( 209) / -0.045 ( 245) | ES yes +0.012 (1320) / +0.185 (1259) | ES no  +0.097 ( 224) / +0.063 ( 278) |
+  C10 4h trend with the flag         fav = yes | NQ yes +0.239 (1018) / +0.280 (1041) | NQ no  -0.120 ( 560) / +0.190 ( 620) | ES yes -0.008 (1029) / +0.136 ( 937) | ES no  +0.089 ( 515) / +0.206 ( 600) |
+  C11 yesterday a pole day with the flag fav = no  | NQ yes -0.096 ( 311) / +0.069 ( 360) | NQ no  +0.163 (1267) / +0.296 (1301) | ES yes -0.126 ( 335) / -0.048 ( 345) | ES no  +0.066 (1209) / +0.224 (1192) |
+  C12 15m trend with the flag        fav = yes | NQ yes +0.113 (1573) / +0.251 (1655) | NQ no  -0.259 (   5) / -1.042 (   6) | ES yes +0.024 (1537) / +0.162 (1527) | ES no  +0.057 (   7) / +0.373 (  10) |
+  C13 30m trend with the flag        fav = no  | NQ yes +0.118 (1529) / +0.277 (1587) | NQ no  -0.085 (  49) / -0.392 (  74) | ES yes +0.015 (1486) / +0.181 (1464) | ES no  +0.268 (  58) / -0.203 (  73) |
+  variant A_C1  : 1354 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C1  : 1778 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C2  : 2218 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C2  : 1464 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C3  : 4083 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C3  : 3329 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C4  : 6320 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C4  : 3188 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C5  : 6320 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C5  : 3188 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C6  : 3049 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C6  : 3293 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C7  : 5475 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C7  : 3207 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C8  : 3318 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C8  : 3192 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C9  : 5364 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C9  : 2388 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C10 : 4025 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C10 : 2119 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C11 : 4969 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C11 : 3235 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C12 : 6292 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C12 : 3162 BOOK2 trades at 2 micros, 0 skipped
+  variant A_C13 : 254 BOOK2 trades at 2 micros, 0 skipped
+  variant B_C13 : 3334 BOOK2 trades at 2 micros, 0 skipped

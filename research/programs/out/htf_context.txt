@@ -1,0 +1,68 @@
+set A (4-5m wide15 flags with a trade): 141379 rows read, 1 not located
+
+Set A: favourable vs rest — n, mean net R, edge over twins; NQ 2014-19 | NQ 2020-26 | ES 2014-19 | ES 2020-26; shuffle p (2014-26, 1,000 shuffles within year × market)
+  15m   FLAG (nested in a bigger flag)       fav=agree | +0.08/+0.10 ( 818) vs +0.03 (1617) | +0.16/+0.07 ( 852) vs +0.15 (1722) | -0.04/-0.07 ( 840) vs -0.08 (1775) | +0.13/+0.12 ( 744) vs +0.11 (1841) | diff +0.029 p=0.239
+  15m   TREND at the pole's start            fav=yes | +0.11/+0.09 (1622) vs -0.07 ( 813) | +0.22/+0.08 (1662) vs +0.04 ( 912) | -0.07/+0.01 (1722) vs -0.06 ( 893) | +0.16/+0.13 (1630) vs +0.05 ( 955) | diff +0.109 p=0.002
+  15m   ROOM (target inside the HTF range)   fav=yes | -0.71/-0.27 (  14) vs +0.05 (2421) | +0.60/+0.10 (  20) vs +0.15 (2554) | -0.05/-0.12 (  22) vs -0.07 (2593) | +0.70/+0.19 (  31) vs +0.11 (2554) | diff +0.204 p=0.196
+  30m   FLAG (nested in a bigger flag)       fav=agree | +0.00/+0.08 ( 600) vs +0.06 (1835) | +0.33/+0.14 ( 599) vs +0.10 (1975) | -0.11/-0.05 ( 623) vs -0.06 (1992) | +0.18/+0.19 ( 552) vs +0.10 (2033) | diff +0.048 p=0.096
+  30m   TREND at the pole's start            fav=yes | +0.11/+0.07 (1626) vs -0.08 ( 809) | +0.19/+0.05 (1679) vs +0.09 ( 895) | -0.08/+0.01 (1714) vs -0.05 ( 901) | +0.19/+0.17 (1616) vs -0.01 ( 969) | diff +0.107 p=0.002
+  30m   ROOM (target inside the HTF range)   fav=no  | +0.05/+0.07 (2406) vs -0.51 (  29) | +0.16/+0.07 (2539) vs -0.01 (  35) | -0.07/+0.02 (2558) vs -0.12 (  57) | +0.12/+0.13 (2506) vs -0.06 (  79) | diff +0.202 p=0.112
+  1h    FLAG (nested in a bigger flag)       fav=agree | -0.01/-0.02 ( 397) vs +0.06 (2038) | +0.57/+0.32 ( 319) vs +0.10 (2255) | -0.06/+0.06 ( 420) vs -0.07 (2195) | +0.26/+0.29 ( 355) vs +0.09 (2230) | diff +0.120 p=0.004
+  1h    TREND at the pole's start            fav=yes | +0.06/+0.02 (1550) vs +0.02 ( 885) | +0.20/+0.06 (1570) vs +0.09 (1004) | -0.06/+0.04 (1655) vs -0.10 ( 960) | +0.19/+0.19 (1523) vs +0.01 (1062) | diff +0.091 p=0.008
+  1h    ROOM (target inside the HTF range)   fav=no  | +0.06/+0.05 (2232) vs -0.11 ( 203) | +0.17/+0.08 (2345) vs -0.04 ( 229) | -0.04/+0.03 (2327) vs -0.28 ( 288) | +0.16/+0.15 (2227) vs -0.15 ( 358) | diff +0.242 p=0.000
+  4h    FLAG (nested in a bigger flag)       fav=agree | -0.11/+0.06 ( 493) vs +0.09 (1942) | +0.04/-0.04 ( 579) vs +0.19 (1995) | -0.14/+0.11 ( 548) vs -0.05 (2067) | +0.00/+0.08 ( 598) vs +0.15 (1987) | diff -0.139 p=1.000
+  4h    TREND at the pole's start            fav=yes | +0.11/+0.10 (1365) vs -0.03 (1070) | +0.19/+0.05 (1367) vs +0.12 (1207) | -0.04/+0.10 (1487) vs -0.11 (1128) | +0.12/+0.12 (1381) vs +0.11 (1204) | diff +0.064 p=0.062
+  4h    ROOM (target inside the HTF range)   fav=no  | +0.15/+0.08 (1502) vs -0.12 ( 933) | +0.24/+0.09 (1544) vs +0.02 (1030) | +0.00/+0.09 (1522) vs -0.17 (1093) | +0.14/+0.12 (1415) vs +0.09 (1170) | diff +0.172 p=0.000
+  daily FLAG (nested in a bigger flag)       fav=agree | +0.12/+0.01 ( 501) vs +0.03 (1934) | +0.35/+0.13 ( 650) vs +0.09 (1924) | -0.12/-0.12 ( 548) vs -0.06 (2067) | +0.28/+0.10 ( 609) vs +0.07 (1976) | diff +0.139 p=0.005
+  daily TREND at the pole's start            fav=no  | +0.02/+0.10 (1217) vs +0.07 (1218) | +0.08/+0.09 (1265) vs +0.22 (1309) | +0.00/+0.05 (1320) vs -0.15 (1295) | +0.10/+0.20 (1252) vs +0.13 (1333) | diff -0.021 p=0.618
+  daily ROOM (target inside the HTF range)   fav=yes | +0.03/+0.06 (1714) vs +0.09 ( 721) | +0.10/+0.06 (1771) vs +0.26 ( 803) | -0.07/+0.03 (1895) vs -0.08 ( 720) | +0.10/+0.15 (1843) vs +0.16 ( 742) | diff -0.072 p=0.928
+  (cells: favourable R / edge (n) vs rest R (n))
+
+variants:
+  FLAT               0 BOOK2 trades at 2 micros,     0 dropped
+  CAND            3132 BOOK2 trades at 2 micros,     0 dropped
+  SIZE_FLAG_15m   1648 BOOK2 trades at 2 micros,     0 dropped
+  FILT_FLAG_15m   2876 BOOK2 trades at 2 micros,   794 dropped
+  STRICT_FLAG_15m   973 BOOK2 trades at 2 micros,  4672 dropped
+  SIZE_TREND_15m  3837 BOOK2 trades at 2 micros,     0 dropped
+  FILT_TREND_15m  2399 BOOK2 trades at 2 micros,  2483 dropped
+  STRICT_TREND_15m  2399 BOOK2 trades at 2 micros,  2483 dropped
+  SIZE_ROOM_15m     13 BOOK2 trades at 2 micros,     0 dropped
+  FILT_ROOM_15m      1 BOOK2 trades at 2 micros,  6307 dropped
+  STRICT_ROOM_15m     1 BOOK2 trades at 2 micros,  6307 dropped
+  SIZE_FLAG_30m   1353 BOOK2 trades at 2 micros,     0 dropped
+  FILT_FLAG_30m   2930 BOOK2 trades at 2 micros,   780 dropped
+  STRICT_FLAG_30m   915 BOOK2 trades at 2 micros,  4967 dropped
+  SIZE_TREND_30m  3917 BOOK2 trades at 2 micros,     0 dropped
+  FILT_TREND_30m  2636 BOOK2 trades at 2 micros,  2403 dropped
+  STRICT_TREND_30m  2636 BOOK2 trades at 2 micros,  2403 dropped
+  SIZE_ROOM_30m   6271 BOOK2 trades at 2 micros,     0 dropped
+  FILT_ROOM_30m   3131 BOOK2 trades at 2 micros,    49 dropped
+  STRICT_ROOM_30m  3131 BOOK2 trades at 2 micros,    49 dropped
+  SIZE_FLAG_1h     994 BOOK2 trades at 2 micros,     0 dropped
+  FILT_FLAG_1h    3025 BOOK2 trades at 2 micros,   818 dropped
+  STRICT_FLAG_1h   782 BOOK2 trades at 2 micros,  5326 dropped
+  SIZE_TREND_1h   3781 BOOK2 trades at 2 micros,     0 dropped
+  FILT_TREND_1h   2727 BOOK2 trades at 2 micros,  2539 dropped
+  STRICT_TREND_1h  2727 BOOK2 trades at 2 micros,  2539 dropped
+  SIZE_ROOM_1h    5898 BOOK2 trades at 2 micros,     0 dropped
+  FILT_ROOM_1h    3107 BOOK2 trades at 2 micros,   422 dropped
+  STRICT_ROOM_1h  3107 BOOK2 trades at 2 micros,   422 dropped
+  SIZE_FLAG_4h    1373 BOOK2 trades at 2 micros,     0 dropped
+  FILT_FLAG_4h    2329 BOOK2 trades at 2 micros,  1557 dropped
+  STRICT_FLAG_4h   582 BOOK2 trades at 2 micros,  4947 dropped
+  SIZE_TREND_4h   3463 BOOK2 trades at 2 micros,     0 dropped
+  FILT_TREND_4h   2229 BOOK2 trades at 2 micros,  2857 dropped
+  STRICT_TREND_4h  2229 BOOK2 trades at 2 micros,  2857 dropped
+  SIZE_ROOM_4h    4104 BOOK2 trades at 2 micros,     0 dropped
+  FILT_ROOM_4h    2463 BOOK2 trades at 2 micros,  2216 dropped
+  STRICT_ROOM_4h  2463 BOOK2 trades at 2 micros,  2216 dropped
+  SIZE_FLAG_daily  1488 BOOK2 trades at 2 micros,     0 dropped
+  FILT_FLAG_daily  2513 BOOK2 trades at 2 micros,  1366 dropped
+  STRICT_FLAG_daily   761 BOOK2 trades at 2 micros,  4832 dropped
+  SIZE_TREND_daily  3047 BOOK2 trades at 2 micros,     0 dropped
+  FILT_TREND_daily  1436 BOOK2 trades at 2 micros,  3273 dropped
+  STRICT_TREND_daily  1436 BOOK2 trades at 2 micros,  3273 dropped
+  SIZE_ROOM_daily  4252 BOOK2 trades at 2 micros,     0 dropped
+  FILT_ROOM_daily  1845 BOOK2 trades at 2 micros,  2068 dropped
+  STRICT_ROOM_daily  1845 BOOK2 trades at 2 micros,  2068 dropped

@@ -20,6 +20,11 @@
 //                on its own mid. status.json gains per market hl_mid, hl_basis_bps, hl_anchor_active (+ hl_fair_off,
 //                hl_basis_samples, hl_basis_median_bps, hl_anchor_off_reason) and a top-level hl_feed block. The anchor is
 //                off (own mid) beyond a ±200 bps median basis or a > 200 bps fair move (mmpaper::HlAnchor);
+//   --bn-pull W,X,H  (label paper_bn, 2026-10-28) the live quoter's Binance-lead pull (src/dex/bn_pull.hpp): pull the bid when
+//                Binance futures' bookTicker mid fell more than X bps over the last W ms, the ask when it rose, held H ms.
+//                Reads wss://fstream.binance.com bookTicker for every market (<COIN>USDT); a coin Binance does not list
+//                never pulls. Decided at each venue event's exchange time on Binance mids received at or before it.
+//                status.json gains bn_feed and per-market bn_pulls_bid / bn_pulls_ask / bn_lead_bps;
 //   --daily-loss default $16.50 ($150 at $100 quotes × 0.11, founder 2026-10-26);
 //   a stop writes one 'position_discarded' event per market still holding inventory (inventory, mid, equity since the
 //                last roll) and a 'stop' summary; the 'start' event says the engine starts flat;
@@ -69,6 +74,7 @@
 
 #include <libpq-fe.h>
 
+#include <cctype>
 #include <cmath>
 
 #include <atomic>
@@ -433,6 +439,65 @@ static asio::awaitable<void> hl_session(lighter::ssl::context& ctx, const std::v
     }
 }
 
+// ── Binance futures bookTicker for the paper_bn pull (--bn-pull) ─────────────────────────────────────────────────
+struct BnFeed {
+    bool connected = false;
+    int64_t books = 0, reconnects = 0, last_ms = 0;
+};
+static asio::awaitable<void> bn_session(lighter::ssl::context& ctx, const std::vector<std::string>& coins, BnFeed& st,
+                                        const std::function<void(const std::string&, int64_t, double)>& on_mid) {
+    namespace beast = boost::beast;
+    namespace websocket = beast::websocket;
+    const std::string host = "fstream.binance.com";
+    std::string target = "/stream?streams=";
+    for (size_t i = 0; i < coins.size(); ++i) {
+        std::string l = coins[i] + "usdt";
+        for (auto& ch : l) ch = char(std::tolower(static_cast<unsigned char>(ch)));
+        target += (i ? "/" : "") + l + "@bookTicker";
+    }
+    auto ex = co_await asio::this_coro::executor;
+    asio::ip::tcp::resolver res(ex);
+    auto eps = co_await res.async_resolve(host, "443", asio::use_awaitable);
+    auto ws = std::make_shared<HlWs>(ex, ctx);
+    beast::get_lowest_layer(*ws).expires_after(std::chrono::seconds(15));
+    co_await beast::get_lowest_layer(*ws).async_connect(eps, asio::use_awaitable);
+    if (!SSL_set_tlsext_host_name(ws->next_layer().native_handle(), host.c_str())) throw std::runtime_error("SNI failed");
+    ws->next_layer().set_verify_callback(lighter::ssl::host_name_verification(host));
+    co_await ws->next_layer().async_handshake(lighter::ssl::stream_base::client, asio::use_awaitable);
+    beast::get_lowest_layer(*ws).expires_never();
+    websocket::stream_base::timeout to{};
+    to.handshake_timeout = std::chrono::seconds(15);
+    to.idle_timeout = std::chrono::seconds(60);
+    to.keep_alive_pings = true;
+    ws->set_option(to);
+    ws->read_message_max(64 << 20);
+    co_await ws->async_handshake(host, target, asio::use_awaitable);
+    ws->text(true);
+    st.connected = true;
+    logf("binance: connected, bookTicker for %zu coins", coins.size());
+    beast::flat_buffer buf;
+    try {
+        while (true) {
+            buf.clear();
+            co_await ws->async_read(buf, asio::use_awaitable);
+            const int64_t recv_ms = lighter::now_us() / 1000;
+            const json j = json::parse(beast::buffers_to_string(buf.data()), nullptr, false);
+            if (j.is_discarded() || !j.is_object() || !j.contains("data") || !j["data"].is_object()) continue;
+            const json& d = j["data"];
+            if (d.value("e", "") != "bookTicker") continue;
+            std::string sym = d.value("s", "");
+            if (sym.size() <= 4 || sym.compare(sym.size() - 4, 4, "USDT") != 0) continue;
+            const double b = hl::num(d.value("b", json())), a = hl::num(d.value("a", json()));
+            if (!(b > 0) || a < b) continue;
+            ++st.books; st.last_ms = recv_ms;
+            on_mid(sym.substr(0, sym.size() - 4), recv_ms, (a + b) / 2);
+        }
+    } catch (...) {
+        st.connected = false;
+        throw;
+    }
+}
+
 int main(int argc, char** argv) {
     std::vector<std::string> symbols;
     fs::path kill_file = "data/mm_paper/KILL", status_file = "data/mm_paper/status.json";
@@ -453,6 +518,8 @@ int main(int argc, char** argv) {
     int64_t st_pause_ms = -1;
     int st_max_inv = -1;
     int64_t linger_ms = 0;                    // --batch-linger-ms: a new request waits this long for more tx (research)
+    bnpull::Params bn_pull;                   // --bn-pull W,X,H (label paper_bn)
+    double maker_fee_bps = -1;                // --maker-fee-bps: Lighter Premium shadow (Standard = 0, the frozen value)
     bool day_flatten = false;
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
@@ -480,13 +547,22 @@ int main(int argc, char** argv) {
         else if (a == "--batch-linger-ms") linger_ms = std::atoll(val().c_str());
         else if (a == "--place-latency-ms") place_ms = std::atoll(val().c_str());
         else if (a == "--cancel-latency-ms") cancel_ms = std::atoll(val().c_str());
+        else if (a == "--maker-fee-bps") maker_fee_bps = std::atof(val().c_str());
+        else if (a == "--bn-pull") {
+            long long w = 0, h = 0; double x = 0;
+            if (std::sscanf(val().c_str(), "%lld,%lf,%lld", &w, &x, &h) != 3 || w < 100 || w > 10'000 || !(x >= 0.5 && x <= 100) || h < 0 || h > 60'000) {
+                std::fprintf(stderr, "--bn-pull W_MS,X_BPS,HOLD_MS (100..10000, 0.5..100, 0..60000)\n"); return 2;
+            }
+            bn_pull.w_ms = w; bn_pull.x_bps = x; bn_pull.hold_ms = h;
+        }
         else {
-            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K]\n");
+            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K] [--bn-pull W,X,H]\n");
             return 2;
         }
     }
     if (symbols.empty()) { std::fprintf(stderr, "--symbols is required\n"); return 2; }
     if (!(order_usd > 0) || !(hl_anchor >= 0)) { std::fprintf(stderr, "--order-usd must be > 0 and --hl-anchor >= 0\n"); return 2; }
+    if (maker_fee_bps != -1 && !(maker_fee_bps >= 0 && maker_fee_bps <= 10)) { std::fprintf(stderr, "--maker-fee-bps 0..10\n"); return 2; }
     if (rate_per_min < 0 || rate_per_min > 6000 || place_ms < -1 || cancel_ms < -1 || linger_ms < 0 || linger_ms > 2000) { std::fprintf(stderr, "--rate-limit 0..6000, latencies ≥ 0\n"); return 2; }
     std::error_code ec;
     fs::create_directories(status_file.parent_path(), ec);
@@ -512,6 +588,7 @@ int main(int argc, char** argv) {
     pc.p.order_usd = order_usd;
     pc.day_flatten = day_flatten;
     pc.hl_k = hl_anchor;
+    pc.bn = bn_pull;
     pc.rate_per_min = rate_per_min;
     pc.batch_linger_ms = linger_ms;
     pc.p.modify = modify;
@@ -519,6 +596,7 @@ int main(int argc, char** argv) {
     if (st_pause_ms >= 0) pc.p.pause_ms = st_pause_ms;
     if (st_min_spread >= 0) pc.p.min_spread_ticks = st_min_spread;
     if (st_max_inv >= 1) pc.p.max_inv_units = st_max_inv;
+    if (maker_fee_bps >= 0) pc.p.maker_fee_bps = maker_fee_bps;
     // "300 ms" or "145/445 ms" (place/cancel): part of the start line, so a change of either reads as a setting change
     const std::string delay_txt = (place_ms >= 0 || cancel_ms >= 0)
         ? std::to_string(place_ms >= 0 ? place_ms : latency_ms) + "/" + std::to_string(cancel_ms >= 0 ? cancel_ms : latency_ms) + " ms place/cancel"
@@ -575,6 +653,7 @@ int main(int argc, char** argv) {
     std::vector<int> id_list;
     std::vector<std::string> hl_coins;      // --hl-anchor: markets Hyperliquid lists (anchor feed subscriptions)
     HlFeed hl_feed;
+    BnFeed bn_feed;
     std::map<std::string, mmpaper::SkewWindow> skew;   // Lighter book exchange time − receive time, per market
     mmpaper::SkewWindow skew_all;
     int64_t books = 0, trades = 0, gaps = 0, reconnects = 0;
@@ -661,15 +740,34 @@ int main(int argc, char** argv) {
                 }
             }, [](std::exception_ptr e) { if (e) try { std::rethrow_exception(e); } catch (const std::exception& x) { logf("hyperliquid task ended: %s", x.what()); } });
         } else if (hl_anchor > 0) logf("--hl-anchor: no market has a Hyperliquid listing (or HL meta unavailable) — every market quotes on its own mid");
+        if (bn_pull.on()) {
+            asio::co_spawn(co_await asio::this_coro::executor, [&]() -> asio::awaitable<void> {
+                int hb = 1;
+                while (true) {
+                    const auto t0 = std::chrono::steady_clock::now();
+                    std::string why;
+                    try { co_await bn_session(ctx, symbols, bn_feed, [&](const std::string& c, int64_t r, double mid) { pf.push_bn(c, r, mid); }); why = "closed"; }
+                    catch (const std::exception& e) { why = e.what(); }
+                    bn_feed.connected = false;
+                    if (std::chrono::steady_clock::now() - t0 > std::chrono::seconds(60)) hb = 1;
+                    ++bn_feed.reconnects;
+                    logf("binance: disconnected (%s) — reconnecting in %d s (no pulls while Binance is stale)", why.c_str(), hb);
+                    co_await lighter::sleep_s(hb);
+                    hb = std::min(hb * 2, 60);
+                }
+            }, [](std::exception_ptr e) { if (e) try { std::rethrow_exception(e); } catch (const std::exception& x) { logf("binance task ended: %s", x.what()); } });
+        }
         if (db) db->push({"INSERT INTO mm_paper_events (ts, kind, market, detail, label, uid) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (uid) DO NOTHING",
                           {iso_ms(lighter::now_us() / 1000), "start", "", "paper engine started on " + std::to_string(ids.size()) + " Lighter markets (run " + run_id +
                            ", " + delay_txt + (rate_per_min > 0 ? ", " + std::to_string(rate_per_min) + " req/min shared" : std::string()) +
                            (modify ? std::string(", modify requotes") : std::string()) +
+                           (maker_fee_bps >= 0 ? ", maker fee " + num(maker_fee_bps) + " bps" : std::string()) +
                            (st_pause_ticks >= 0 || st_pause_ms >= 0 || st_min_spread >= 0 || st_max_inv >= 1
                                 ? ", strategy pause " + num(pc.p.pause_move_ticks) + " ticks/" + std::to_string(pc.p.pause_ms) + " ms, min spread " +
                                   num(pc.p.min_spread_ticks) + ", cap " + std::to_string(pc.p.max_inv_units) : std::string()) + (linger_ms > 0 ? ", batch linger " + std::to_string(linger_ms) + " ms" : std::string()) +
                            ", $" + num(order_usd) + " quotes, " + (day_flatten ? "day flatten" : "inventory carried") +
                            (hl_anchor > 0 ? ", HL anchor k=" + num(hl_anchor) + " on " + std::to_string(hl_coins.size()) + " markets" : std::string()) +
+                           (bn_pull.on() ? ", Binance pull " + std::to_string(bn_pull.w_ms) + " ms / " + num(bn_pull.x_bps) + " bps / hold " + std::to_string(bn_pull.hold_ms) + " ms" : std::string()) +
                            "; starts FLAT — paper positions are not carried across a restart)",
                            label, label + ":" + run_id + ":start"}, mmpaper::utc_day(lighter::now_us() / 1000)});
         logf("paper trading %zu Lighter markets (frozen setting, $%.2f quotes, %s ticks, %lld ms delay, daily loss stop $%.2f, %s%s)", ids.size(),
@@ -740,7 +838,15 @@ int main(int argc, char** argv) {
                            {"hl_anchor_k", hl_anchor},
                            {"lighter_skew_ms_p50", nan_null(skew_all.p50(now))},
                            {"hl_feed", {{"enabled", hl_anchor > 0}, {"connected", hl_feed.connected}, {"books", hl_feed.books},
-                                        {"reconnects", hl_feed.reconnects}, {"last_ms", hl_feed.last_ms}, {"coins", hl_coins}}}};
+                                        {"reconnects", hl_feed.reconnects}, {"last_ms", hl_feed.last_ms}, {"coins", hl_coins}}},
+                           {"bn_feed", {{"enabled", bn_pull.on()}, {"w_ms", bn_pull.w_ms}, {"x_bps", bn_pull.x_bps}, {"hold_ms", bn_pull.hold_ms},
+                                        {"connected", bn_feed.connected}, {"books", bn_feed.books}, {"reconnects", bn_feed.reconnects}, {"last_ms", bn_feed.last_ms}}}};
+                if (bn_pull.on())
+                    for (auto& m : st["markets"])
+                        if (const bnpull::Lead* L = pf.bn_lead(m.value("market", ""))) {
+                            m["bn_pulls_bid"] = L->pulls_bid(); m["bn_pulls_ask"] = L->pulls_ask();
+                            m["bn_lead_bps"] = nan_null(L->last().lead_bps); m["bn_samples"] = L->samples();
+                        }
                 if (const hl::RequestGate* g = pf.request_gate())     // how often a quote change waited for a request slot
                     st["request_gate"] = {{"per_min", g->limit}, {"batch", g->batch}, {"txs", g->txs}, {"requests", g->requests},
                                           {"delayed_txs", g->delayed}, {"max_wait_ms", g->max_wait_ms}};

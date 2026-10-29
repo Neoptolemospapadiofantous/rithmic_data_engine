@@ -1,0 +1,28 @@
+Today's ATR: NQ 307 pts, ES 55.4 pts. Cards 2016-01 → 2026-10 (walk-forward trades, net of cost). R = net / stop.
+
+setup             mk acct  tr/yr  win%   winR  lossR   expR    PF   yrs+  PF11-15 | stop today 1 mini
+weak_day_long     NQ B        58    58  +1.12  -1.19 +0.142  1.28   7/11     0.99 | no stop, 1R≈ 154 pts = $3074
+monday_long       NQ B        30    55  +0.99  -0.94 +0.116  1.27   5/9      0.99 | no stop, 1R≈ 154 pts = $3074
+so_cascade        NQ A       157    41  +1.73  -0.98 +0.138  1.24   9/11     0.98 |   83 pts = $1653
+cascade_noon      NQ A       231    44  +1.33  -0.90 +0.080  1.18   9/11     0.91 |   93 pts = $1851
+strong_open       NQ A        76    41  +1.69  -0.97 +0.118  1.22   7/11     1.01 |   93 pts = $1866
+gap_or_retest     NQ A       101    48  +1.28  -0.92 +0.141  1.31   6/9      1.21 |  104 pts = $2077
+gap_breakout      NQ A       112    46  +1.44  -0.96 +0.137  1.27   8/9      1.07 |   95 pts = $1901
+bdh_opt           NQ A        94    40  +1.88  -1.01 +0.164  1.31   8/9      1.20 |   87 pts = $1744
+flag5_trend       NQ B        40    52  +1.41  -0.98 +0.270  1.63   9/9      0.92 |   75 pts = $1507
+mom_scan_3_pb     NQ B       161    44  +1.28  -0.88 +0.071  1.14   5/9      1.01 |  103 pts = $2057
+bos_ema_gap       NQ B       104    46  +1.20  -0.92 +0.057  1.14   7/9      0.88 |   82 pts = $1645
+ema_cross_vwap    NQ B       108    42  +1.61  -0.93 +0.144  1.25   6/8     99.00 |   68 pts = $1365
+scalp_m1_1000     NQ A        27    76  +0.46  -1.06 +0.102  1.38   7/9      1.09 |   43 pts = $863
+dir_market        NQ A        62    43  +1.48  -0.96 +0.080  1.15   6/9      0.90 |  103 pts = $2055
+pat_3bar          NQ B       155    39  +1.59  -0.99 +0.021  1.05   6/10     0.50 |   64 pts = $1281
+wave_ldn5         NQ B        99    38  +1.89  -1.08 +0.064  1.11   8/11     0.93 |   54 pts = $1077
+es_cascade        ES A       135    43  +1.56  -0.97 +0.112  1.23   7/11     1.04 |   16 pts = $812
+es_weak_day       ES B        46    57  +1.11  -1.24 +0.100  1.19   6/11     1.10 | no stop, 1R≈  28 pts = $1384
+es_gap_or_retest  ES A       109    47  +1.27  -0.93 +0.094  1.19   6/9      0.76 |   18 pts = $907
+
+ACCOUNTS 2016-01 → 2026-10, 1 mini per trade at today's size (one position per account; 10162 signals skipped — account busy, 2024 skipped — opposite to the other account's open trade)
+acct   trades   /day    PF     $/year   worst d     max DD   DD 2025+ stop>40% stop>40%
+                                                                        of 50K  of 150K
+A        2811   1.00  1.14     +30352     -7982      88264      21218      88%      41%
+B        3889   1.38  1.19     +59242    -13723      66933      19669      90%      37%

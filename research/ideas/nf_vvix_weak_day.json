@@ -1,0 +1,28 @@
+{
+ "id": "nf_vvix_weak_day",
+ "name": "Weak close + VVIX >= w \u2192 buy 09:30, sell 15:55",
+ "why": "Vol-of-vol spikes mark forced de-risking that reverses. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "w": [
+   90,
+   100,
+   110
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "pibs <= 0.3 && vvix >= w",
+   "dir": "1"
+  }
+ ],
+ "stop": "0",
+ "target": "0"
+}

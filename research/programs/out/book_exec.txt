@@ -1,0 +1,63 @@
+
+all 4-5m flag-mid fills: 91 fills by the 1m simulation (91 with entry ticks, 91 with exit ticks)
+  entry: ticks touched the limit 91 (100 %) · traded >= 1 tick through 90 (99 %) · touch only 1 — their 1m outcome 0 target / 1 stop / 0 flat · avg R of the touch-only -1.056
+  stops: 60 with ticks · slippage past the stop median 0.11 pts · mean 0.16 · worst 0.56 pts · stop-and-target in the same minute 0 (0 where the target came first — the 1m simulation called them stops)
+  avg R after costs: 1m simulation 0.183 · with the measured stop slippage 0.177 · and only trade-through fills (touch-only = missed, 0R) 0.189
+
+fills the books take (BOOK2 / RULE): 51 fills by the 1m simulation (51 with entry ticks, 51 with exit ticks)
+  entry: ticks touched the limit 51 (100 %) · traded >= 1 tick through 51 (100 %) · touch only 0 — their 1m outcome 0 target / 0 stop / 0 flat · avg R of the touch-only 0.000
+  stops: 36 with ticks · slippage past the stop median 0.11 pts · mean 0.16 · worst 0.48 pts · stop-and-target in the same minute 0 (0 where the target came first — the 1m simulation called them stops)
+  avg R after costs: 1m simulation 0.248 · with the measured stop slippage 0.242 · and only trade-through fills (touch-only = missed, 0R) 0.242
+
+book trades: date sym set side tf · limit · entry ticks · 1m outcome · stop slippage
+  2026-09-22 NQ BOOK2 bull 5m · 30922.00 · traded through 10:06 · flat +1.93R
+  2026-09-22 NQ BOOK2+RULE bull 4m · 30927.13 · traded through 10:06 · flat +2.09R
+  2026-09-23 NQ BOOK2 bear 4m · 30690.75 · traded through 10:38 · stop -1.02R · slip 0.40 pts
+  2026-09-23 NQ BOOK2 bear 5m · 30690.75 · traded through 10:40 · stop -1.02R · slip 0.40 pts
+  2026-09-23 ES BOOK2 bear 4m · 7785.75 · traded through 10:38 · flat +1.86R
+  2026-09-23 ES BOOK2 bear 5m · 7785.75 · traded through 10:41 · flat +1.33R
+  2026-09-24 ES BOOK2+RULE bull 4m · 7753.75 · traded through 10:18 · stop -1.04R · slip 0.18 pts
+  2026-09-24 ES BOOK2 bull 5m · 7753.75 · traded through 10:20 · stop -1.04R · slip 0.18 pts
+  2026-09-24 ES RULE bull 5m · 7767.13 · traded through 12:30 · flat +0.40R
+  2026-09-28 NQ RULE bear 4m · 30552.00 · traded through 10:26 · stop -1.02R · slip 0.11 pts
+  2026-09-28 NQ BOOK2 bear 5m · 30560.75 · traded through 10:33 · stop -1.02R · slip 0.11 pts
+  2026-09-28 ES BOOK2 bear 4m · 7731.75 · traded through 11:06 · stop -1.05R · slip 0.09 pts
+  2026-09-28 ES BOOK2+RULE bear 5m · 7738.88 · traded through 11:15 · stop -1.04R · slip 0.09 pts
+  2026-10-01 ES BOOK2 bear 4m · 7692.00 · traded through 10:18 · stop -1.04R · slip 0.17 pts
+  2026-10-01 ES BOOK2 bear 5m · 7692.00 · traded through 10:20 · stop -1.03R · slip 0.17 pts
+  2026-10-05 NQ BOOK2 bull 4m · 31174.38 · traded through 09:58 · stop -1.03R · slip 0.21 pts
+  2026-10-05 NQ BOOK2+RULE bull 4m · 31220.00 · traded through 10:38 · flat +1.94R
+  2026-10-05 NQ BOOK2 bull 5m · 31220.00 · traded through 10:40 · flat +1.95R
+  2026-10-06 ES BOOK2+RULE bull 4m · 7894.25 · traded through 11:38 · stop -1.06R · slip 0.21 pts
+  2026-10-06 ES BOOK2 bull 5m · 7894.25 · traded through 11:40 · stop -1.05R · slip 0.21 pts
+  2026-10-07 ES BOOK2 bear 4m · 7824.38 · traded through 10:42 · stop -1.06R · slip 0.05 pts
+  2026-10-08 NQ BOOK2+RULE bear 4m · 30858.00 · traded through 13:38 · stop -1.03R · slip 0.05 pts
+  2026-10-08 NQ BOOK2 bear 5m · 30884.88 · traded through 13:45 · stop -1.02R · slip 0.30 pts
+  2026-10-08 ES BOOK2+RULE bull 4m · 7841.88 · traded through 10:42 · stop -1.07R · slip 0.05 pts
+  2026-10-09 NQ BOOK2 bear 4m · 31021.38 · traded through 10:06 · stop -1.03R · slip 0.10 pts
+  2026-10-09 NQ BOOK2 bear 5m · 31030.50 · traded through 10:10 · stop -1.03R · slip 0.10 pts
+  2026-10-09 ES BOOK2 bull 4m · 7860.50 · traded through 13:02 · flat +0.07R
+  2026-10-12 NQ BOOK2 bear 4m · 30900.13 · traded through 10:23 · stop -1.02R · slip 0.04 pts
+  2026-10-12 NQ BOOK2 bear 5m · 30882.75 · traded through 10:40 · stop -1.03R · slip 0.04 pts
+  2026-10-12 NQ BOOK2 bear 5m · 30891.50 · traded through 13:15 · flat +0.08R
+  2026-10-12 ES BOOK2 bear 4m · 7851.50 · traded through 13:02 · flat -0.56R
+  2026-10-13 NQ BOOK2 bull 4m · 30792.75 · traded through 10:10 · stop -1.03R · slip 0.23 pts
+  2026-10-13 NQ BOOK2 bull 5m · 30791.75 · traded through 10:15 · stop -1.04R · slip 0.23 pts
+  2026-10-13 NQ BOOK2 bull 4m · 30792.38 · traded through 12:42 · stop -1.04R · slip 0.48 pts
+  2026-10-13 NQ BOOK2 bull 5m · 30790.75 · traded through 12:45 · stop -1.04R · slip 0.48 pts
+  2026-10-14 NQ BOOK2 bear 4m · 30329.50 · traded through 11:50 · target +4.73R
+  2026-10-15 NQ BOOK2 bull 4m · 30028.13 · traded through 11:26 · stop -1.04R · slip 0.01 pts
+  2026-10-15 NQ BOOK2 bull 5m · 30022.63 · traded through 11:30 · stop -1.03R · slip 0.01 pts
+  2026-10-15 ES BOOK2 bull 4m · 7780.38 · traded through 11:26 · stop -1.08R · slip 0.21 pts
+  2026-10-15 ES BOOK2 bull 5m · 7779.25 · traded through 11:30 · stop -1.06R · slip 0.21 pts
+  2026-10-16 NQ BOOK2 bear 4m · 29842.00 · traded through 10:06 · stop -1.02R · slip 0.31 pts
+  2026-10-16 NQ BOOK2 bear 4m · 29685.75 · traded through 11:34 · target +10.63R
+  2026-10-16 NQ BOOK2+RULE bear 5m · 29688.38 · traded through 11:35 · target +9.20R
+  2026-10-16 ES BOOK2 bear 4m · 7779.50 · traded through 10:22 · stop -1.05R · slip 0.05 pts
+  2026-10-16 ES BOOK2 bear 4m · 7758.50 · traded through 11:34 · target +7.47R
+  2026-10-16 ES BOOK2 bear 5m · 7758.88 · traded through 11:35 · target +6.98R
+  2026-10-19 ES BOOK2 bull 4m · 7769.25 · traded through 11:46 · stop -1.06R · slip 0.07 pts
+  2026-10-19 ES BOOK2 bull 5m · 7768.63 · traded through 11:50 · stop -1.05R · slip 0.07 pts
+  2026-10-20 ES BOOK2 bull 4m · 7783.75 · traded through 10:42 · stop -1.04R · slip 0.08 pts
+  2026-10-20 ES BOOK2 bull 5m · 7783.75 · traded through 10:45 · stop -1.04R · slip 0.08 pts
+  2026-10-21 ES BOOK2 bear 4m · 7754.75 · traded through 10:22 · stop -1.05R · slip 0.01 pts

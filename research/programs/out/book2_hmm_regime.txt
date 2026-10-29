@@ -1,0 +1,26 @@
+/home/theone/Desktop/rithmic_engine/research/programs/book2_hmm_regime.py:73: RuntimeWarning: Mean of empty slice.
+  print(f"  {k:6d} {np.sum(e&(ts==k)):12d} {T_R[e&(ts==k)].mean():12.3f} {np.sum(l&(ts==k)):12d} {T_R[l&(ts==k)].mean():12.3f} {T_R[l&(ts==k)&(y<20230101)].mean():7.3f} {T_R[l&(ts==k)&(y>=20230101)].mean():7.3f}")
+/home/theone/miniconda3/lib/python3.13/site-packages/numpy/_core/_methods.py:145: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+daily observations 3837 (20100716 → 20261015), fit on 2296 days before 2020; BOOK2 NQ trades 3239
+
+===== K = 2  (log-likelihood -11887)
+  state 0: ret -0.01%  range/ATR 1.19  efficiency 0.61  gap/ATR 0.55 | 36% of days, expected run 2.1 days
+  state 1: ret +0.12%  range/ATR 0.76  efficiency 0.36  gap/ATR 0.22 | 64% of days, expected run 2.7 days
+   state trades 14-19 mean R 14-19 trades 20-26 mean R 20-26   20-22   23-26
+       0          484        0.038          688        0.137   0.269  -0.010
+       1         1094        0.144          973        0.324   0.361   0.297
+  worst state on 2014-19 = 0; 2020-26: others − worst = +0.187 R (90% low -0.048, p 0.092) | 2020-22 +0.092 | 2023-26 +0.307
+
+===== K = 3  (log-likelihood -11590)
+  state 0: ret +0.29%  range/ATR 0.89  efficiency 0.51  gap/ATR 0.36 | 92% of days, expected run 2.1 days
+  state 1: ret +0.02%  range/ATR 0.72  efficiency 0.24  gap/ATR 0.15 | 0% of days, expected run 1.3 days
+  state 2: ret -0.46%  range/ATR 1.44  efficiency 0.62  gap/ATR 0.66 | 8% of days, expected run 1.8 days
+   state trades 14-19 mean R 14-19 trades 20-26 mean R 20-26   20-22   23-26
+       0         1494        0.129         1493        0.258   0.349   0.180
+       1            0          nan            0          nan     nan     nan
+       2           84       -0.194          168        0.149   0.098   0.221
+  worst state on 2014-19 = 2; 2020-26: others − worst = +0.108 R (90% low -0.287, p 0.309) | 2020-22 +0.251 | 2023-26 -0.041
+
+K=2: Holm 0.184 -> fail
+K=3: Holm 0.309 -> fail

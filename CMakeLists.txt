@@ -321,6 +321,16 @@ target_compile_definitions(hl_recorder PRIVATE BOOST_ASIO_HAS_CO_AWAIT)
 target_compile_features(hl_recorder PRIVATE cxx_std_20)
 
 find_package(ZLIB REQUIRED)       # Tardis history is gzip CSV (src/dex/hl_events.hpp)
+# mm_rl_label: counterfactual (state, action, markout-adjusted reward) dataset for a state-dependent quoting policy (2026-10-28)
+add_executable(mm_rl_label src/dex/mm_rl_label_main.cpp)
+target_include_directories(mm_rl_label PRIVATE src/)
+target_link_libraries(mm_rl_label PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
+target_compile_features(mm_rl_label PRIVATE cxx_std_20)
+
+add_executable(mm_rl_judge src/dex/mm_rl_judge_main.cpp)
+target_include_directories(mm_rl_judge PRIVATE src/)
+target_compile_features(mm_rl_judge PRIVATE cxx_std_20)
+
 add_executable(mm_sim src/dex/mm_sim_main.cpp)
 target_include_directories(mm_sim PRIVATE src/)
 target_link_libraries(mm_sim PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB)
@@ -366,6 +376,15 @@ target_include_directories(test_mm_lab PRIVATE src/)
 target_link_libraries(test_mm_lab PRIVATE ${ZSTD_LIBRARY} ZLIB::ZLIB pthread)
 target_compile_features(test_mm_lab PRIVATE cxx_std_20)
 add_test(NAME mm_lab_tests COMMAND test_mm_lab)
+# funding_lab: stage F0 of docs/funding_carry_plan.md — the pre-registered cross-venue funding-carry backtest
+# (research/preregistered/2026-10-28_funding_carry.md); reads scripts/funding_history.sh output. Research only.
+add_executable(funding_lab src/dex/funding_lab_main.cpp)
+target_include_directories(funding_lab PRIVATE src/)
+target_compile_features(funding_lab PRIVATE cxx_std_20)
+add_executable(test_funding_lab tests/dex/test_funding_lab.cpp)
+target_include_directories(test_funding_lab PRIVATE src/)
+target_compile_features(test_funding_lab PRIVATE cxx_std_20)
+add_test(NAME funding_lab_tests COMMAND test_funding_lab)
 
 # Lighter: public market-data recorder + the 24/7 paper market maker (no keys, no order path).
 add_executable(lighter_recorder src/dex/lighter_recorder_main.cpp)

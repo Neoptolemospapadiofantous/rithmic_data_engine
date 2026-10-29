@@ -1,0 +1,5 @@
+trades 790  base mean R 0.181 (23-24 0.301 / 25-26 -0.009)
+ADD on flush (delta <= -0.15)            n  711 rule 0.143 | same-minute other trades 0.186 p 0.718 | same trade ±2 min 0.015 p 0.001 | add at first minute 0.260 | median minute 5
+ADD on flush (delta <= -0.3)             n  244 rule 0.223 | same-minute other trades 0.107 p 0.156 | same trade ±2 min 0.097 p 0.001 | add at first minute 0.992 | median minute 78
+ADD on flow (delta >= +0.15) [contrast]  n  628 rule 0.213 | same-minute other trades 0.190 p 0.381 | same trade ±2 min 0.340 p 1.000 | add at first minute 0.488 | median minute 5
+ADD on flow (delta >= +0.3) [contrast]   n  232 rule 0.107 | same-minute other trades 0.117 p 0.539 | same trade ±2 min 0.234 p 1.000 | add at first minute 1.171 | median minute 56

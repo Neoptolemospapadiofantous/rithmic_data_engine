@@ -1,0 +1,62 @@
+Flags: break, then pullback, then flag (fixed before the run) — NQ, 3311 NY days, 9638 flags (3-5m, researched tier).
+Fixed cost 1.5 pts a round trip. Cells per period 2010-15 | 2016-20 | 2021-24 | 2025-26: avg R / win % / PF (trades). Twins = the same stop / target at a random minute in the hour after the flag (same day) and at the same clock time on a random other day.
+
+######## NY bull 3-5m
+    all                                            -0.21 28% 0.80 (1076) | +0.19 29% 1.22 (1070) | +0.32 28% 1.41 ( 762) | -0.05 25% 0.94 ( 255) | all +0.065R +3.1 pts · twins: same day +0.025, other day -0.189 · 188/yr
+    F0 first leg (no pullback before): yes         +0.00 31% 1.00 ( 576) | +0.01 26% 1.02 ( 498) | +0.41 28% 1.54 ( 336) | +0.10 28% 1.15 ( 136) | all +0.104R +2.9 pts · twins: same day +0.086, other day -0.150 · 92/yr
+    F0 first leg (no pullback before): no          -0.46 24% 0.59 ( 500) | +0.35 31% 1.40 ( 572) | +0.24 29% 1.32 ( 426) | -0.22 23% 0.73 ( 119) | all +0.028R +3.3 pts · twins: same day -0.033, other day -0.225 · 96/yr
+    N0 pullback WITHOUT a break: yes               -1.11 15% 0.13 (  27) | +1.30 42% 2.81 (  24) | -0.41 18% 0.53 (  22) |   —          (  2) | all -0.086R +0.8 pts · twins: same day -0.060, other day -0.110 · 4/yr
+    N0 pullback WITHOUT a break: no                -0.19 28% 0.82 (1049) | +0.17 28% 1.19 (1046) | +0.34 29% 1.44 ( 740) | -0.05 25% 0.93 ( 253) | all +0.069R +3.2 pts · twins: same day +0.027, other day -0.191 · 184/yr
+    B1 break, then pullback: yes                   -0.41 25% 0.64 ( 348) | +0.29 31% 1.33 ( 425) | +0.15 30% 1.20 ( 315) | -0.32 22% 0.62 (  86) | all +0.002R +2.9 pts · twins: same day -0.061, other day -0.235 · 70/yr
+    B1 break, then pullback: no                    -0.12 29% 0.88 ( 728) | +0.12 27% 1.14 ( 645) | +0.43 28% 1.56 ( 447) | +0.09 27% 1.13 ( 169) | all +0.102R +3.2 pts · twins: same day +0.076, other day -0.161 · 118/yr
+    B2 break, then 38-62 % pullback: yes           -0.08 27% 0.93 ( 128) | +0.47 35% 1.56 ( 125) | +0.60 36% 1.86 ( 119) | -0.41 23% 0.51 (  30) | all +0.268R +8.0 pts · twins: same day +0.005, other day -0.250 · 24/yr
+    B2 break, then 38-62 % pullback: no            -0.23 28% 0.78 ( 948) | +0.16 28% 1.18 ( 945) | +0.26 27% 1.34 ( 643) | +0.00 26% 1.00 ( 225) | all +0.036R +2.4 pts · twins: same day +0.028, other day -0.180 · 164/yr
+    B3 break, then retest of the broken level: yes -0.27 27% 0.75 ( 211) | +0.12 29% 1.13 ( 268) | +0.17 28% 1.21 ( 195) | -0.24 19% 0.73 (  42) | all -0.003R +2.4 pts · twins: same day -0.043, other day -0.215 · 43/yr
+    B3 break, then retest of the broken level: no  -0.20 28% 0.81 ( 865) | +0.22 29% 1.25 ( 802) | +0.37 29% 1.48 ( 567) | -0.01 27% 0.99 ( 213) | all +0.085R +3.3 pts · twins: same day +0.045, other day -0.181 · 146/yr
+    B4 leg 1 broke overnight / prior-day high: yes -0.34 26% 0.70 ( 275) | +0.42 34% 1.49 ( 317) | +0.14 30% 1.18 ( 248) | -0.24 24% 0.71 (  55) | all +0.066R +3.7 pts · twins: same day -0.013, other day -0.250 · 53/yr
+    B4 leg 1 broke overnight / prior-day high: no  -0.17 28% 0.83 ( 801) | +0.10 26% 1.11 ( 753) | +0.41 28% 1.53 ( 514) | +0.01 26% 1.01 ( 200) | all +0.065R +2.9 pts · twins: same day +0.040, other day -0.165 · 135/yr
+
+######## NY bull 3-5m, 1st pullback
+    all                                            -0.16 28% 0.85 ( 901) | +0.26 29% 1.30 ( 855) | +0.37 29% 1.48 ( 636) | -0.11 25% 0.86 ( 200) | all +0.112R +3.5 pts · twins: same day +0.081, other day -0.192 · 154/yr
+    F0 first leg (no pullback before): yes         +0.04 31% 1.05 ( 542) | +0.05 27% 1.06 ( 463) | +0.41 28% 1.53 ( 315) | +0.07 28% 1.11 ( 123) | all +0.127R +2.9 pts · twins: same day +0.119, other day -0.162 · 86/yr
+    F0 first leg (no pullback before): no          -0.47 23% 0.59 ( 359) | +0.50 32% 1.59 ( 392) | +0.34 30% 1.44 ( 321) | -0.39 19% 0.54 (  77) | all +0.094R +4.1 pts · twins: same day +0.032, other day -0.230 · 68/yr
+    N0 pullback WITHOUT a break: yes               -1.11 14% 0.14 (  21) | +1.36 41% 2.89 (  22) | -0.62 12% 0.35 (  17) |   —          (  0) | all -0.066R -0.3 pts · twins: same day -0.032, other day -0.121 · 4/yr
+    N0 pullback WITHOUT a break: no                -0.14 28% 0.87 ( 880) | +0.23 29% 1.26 ( 833) | +0.40 29% 1.52 ( 619) | -0.11 25% 0.86 ( 200) | all +0.117R +3.6 pts · twins: same day +0.083, other day -0.194 · 151/yr
+    B1 break, then pullback: yes                   -0.44 23% 0.62 ( 235) | +0.44 32% 1.51 ( 265) | +0.22 31% 1.29 ( 220) | -0.48 18% 0.46 (  50) | all +0.047R +3.6 pts · twins: same day -0.021, other day -0.232 · 46/yr
+    B1 break, then pullback: no                    -0.06 30% 0.94 ( 666) | +0.18 28% 1.20 ( 590) | +0.45 28% 1.59 ( 416) | +0.02 27% 1.03 ( 150) | all +0.140R +3.4 pts · twins: same day +0.124, other day -0.175 · 108/yr
+    B2 break, then 38-62 % pullback: yes           +0.07 30% 1.07 ( 100) | +0.73 39% 1.92 (  85) | +0.40 32% 1.53 (  82) | -0.24 25% 0.71 (  16) | all +0.344R +6.7 pts · twins: same day +0.089, other day -0.269 · 17/yr
+    B2 break, then 38-62 % pullback: no            -0.19 28% 0.82 ( 801) | +0.21 28% 1.23 ( 770) | +0.37 29% 1.48 ( 554) | -0.09 25% 0.88 ( 184) | all +0.084R +3.1 pts · twins: same day +0.080, other day -0.183 · 137/yr
+    B3 break, then retest of the broken level: yes -0.26 27% 0.76 ( 165) | +0.33 33% 1.39 ( 196) | +0.09 27% 1.11 ( 157) | -0.40 20% 0.54 (  30) | all +0.044R +3.2 pts · twins: same day -0.005, other day -0.218 · 33/yr
+    B3 break, then retest of the broken level: no  -0.14 28% 0.87 ( 736) | +0.24 29% 1.27 ( 659) | +0.46 30% 1.62 ( 479) | -0.05 26% 0.93 ( 170) | all +0.131R +3.5 pts · twins: same day +0.103, other day -0.185 · 122/yr
+    B4 leg 1 broke overnight / prior-day high: yes -0.36 25% 0.69 ( 174) | +0.72 38% 1.89 ( 187) | +0.16 30% 1.21 ( 167) | -0.56 17% 0.39 (  30) | all +0.145R +4.3 pts · twins: same day +0.056, other day -0.242 · 33/yr
+    B4 leg 1 broke overnight / prior-day high: no  -0.11 29% 0.89 ( 727) | +0.13 27% 1.14 ( 668) | +0.45 29% 1.58 ( 469) | -0.02 26% 0.97 ( 170) | all +0.104R +3.2 pts · twins: same day +0.087, other day -0.178 · 121/yr
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x)
+    all                                            -0.26 33% 0.75 (  93) | +1.19 46% 2.75 ( 128) | +1.02 39% 2.56 (  90) | +0.21 24% 1.29 (  17) | all +0.680R +9.7 pts · twins: same day +0.295, other day -0.207 · 20/yr
+    F0 first leg (no pullback before): yes         -0.12 34% 0.88 (  61) | +0.31 35% 1.37 (  75) | +0.97 36% 2.45 (  55) | +0.48 29% 1.75 (  14) | all +0.372R +7.1 pts · twins: same day +0.106, other day -0.135 · 12/yr
+    F0 first leg (no pullback before): no          -0.53 31% 0.54 (  32) | +2.44 62% 6.10 (  53) | +1.09 43% 2.76 (  35) |   —          (  3) | all +1.194R +14.2 pts · twins: same day +0.610, other day -0.327 · 7/yr
+    N0 pullback WITHOUT a break: yes               (9 trades)
+    N0 pullback WITHOUT a break: no                -0.26 33% 0.76 (  91) | +1.12 46% 2.64 ( 122) | +1.04 39% 2.61 (  89) | +0.21 24% 1.29 (  17) | all +0.658R +9.2 pts · twins: same day +0.271, other day -0.199 · 19/yr
+    B1 break, then pullback: yes                   -0.67 27% 0.42 (  15) | +1.22 51% 2.96 (  35) | +0.66 46% 2.13 (  24) |   —          (  1) | all +0.633R +8.2 pts · twins: same day +0.106, other day -0.243 · 4/yr
+    B1 break, then pullback: no                    -0.18 35% 0.82 (  78) | +1.18 44% 2.68 (  93) | +1.15 36% 2.70 (  66) | +0.29 25% 1.42 (  16) | all +0.694R +10.2 pts · twins: same day +0.351, other day -0.197 · 15/yr
+    B2 break, then 38-62 % pullback: yes           -0.43 40% 0.59 (   5) | +1.99 67% 5.66 (  12) |   —          (  4) |   —          (  0) | all +1.251R +8.7 pts · twins: same day -0.087, other day -0.433 · 1/yr
+    B2 break, then 38-62 % pullback: no            -0.25 33% 0.76 (  88) | +1.11 44% 2.57 ( 116) | +1.01 38% 2.54 (  86) | +0.21 24% 1.29 (  17) | all +0.641R +9.8 pts · twins: same day +0.321, other day -0.192 · 18/yr
+    B3 break, then retest of the broken level: yes -0.24 40% 0.75 (  10) | +1.41 52% 3.39 (  25) | +0.69 54% 2.37 (  13) |   —          (  1) | all +0.828R +9.5 pts · twins: same day +0.124, other day -0.245 · 3/yr
+    B3 break, then retest of the broken level: no  -0.26 33% 0.75 (  83) | +1.14 45% 2.62 ( 103) | +1.07 36% 2.58 (  77) | +0.29 25% 1.42 (  16) | all +0.654R +9.8 pts · twins: same day +0.325, other day -0.200 · 17/yr
+    B4 leg 1 broke overnight / prior-day high: yes -0.60 31% 0.44 (  16) | +1.43 57% 3.52 (  30) | +0.66 46% 2.13 (  24) |   —          (  0) | all +0.703R +9.2 pts · twins: same day +0.175, other day -0.357 · 4/yr
+    B4 leg 1 broke overnight / prior-day high: no  -0.19 34% 0.82 (  77) | +1.12 43% 2.56 (  98) | +1.15 36% 2.70 (  66) | +0.21 24% 1.29 (  17) | all +0.674R +9.9 pts · twins: same day +0.328, other day -0.167 · 15/yr
+
+######## NY bear 3-5m
+    all                                            -0.31 21% 0.72 (1120) | -0.13 19% 0.87 ( 953) | +0.11 27% 1.14 ( 753) | -0.10 23% 0.88 ( 216) | all -0.133R +1.8 pts · twins: same day -0.184, other day -0.251 · 181/yr
+    F0 first leg (no pullback before): yes         -0.24 22% 0.77 ( 493) | +0.12 24% 1.14 ( 408) | +0.32 31% 1.44 ( 351) | -0.25 18% 0.69 (  79) | all +0.019R +4.8 pts · twins: same day -0.108, other day -0.231 · 79/yr
+    F0 first leg (no pullback before): no          -0.36 20% 0.69 ( 627) | -0.32 15% 0.69 ( 545) | -0.07 23% 0.91 ( 402) | -0.01 26% 0.99 ( 137) | all -0.251R -0.5 pts · twins: same day -0.244, other day -0.267 · 102/yr
+    N0 pullback WITHOUT a break: yes               -1.26  4% 0.08 (  24) | -0.31  8% 0.73 (  13) | -0.15 35% 0.79 (  20) | -0.12 17% 0.86 (   6) | all -0.604R +1.3 pts · twins: same day -0.532, other day -0.448 · 4/yr
+    N0 pullback WITHOUT a break: no                -0.29 21% 0.74 (1096) | -0.13 19% 0.87 ( 940) | +0.11 26% 1.15 ( 733) | -0.10 23% 0.88 ( 210) | all -0.123R +1.8 pts · twins: same day -0.177, other day -0.247 · 177/yr
+    B1 break, then pullback: yes                   -0.32 21% 0.72 ( 445) | -0.18 17% 0.81 ( 418) | +0.03 24% 1.04 ( 292) | -0.01 25% 0.99 (  97) | all -0.169R +0.2 pts · twins: same day -0.179, other day -0.252 · 75/yr
+    B1 break, then pullback: no                    -0.29 21% 0.73 ( 675) | -0.08 20% 0.91 ( 535) | +0.15 28% 1.21 ( 461) | -0.17 21% 0.78 ( 119) | all -0.108R +2.9 pts · twins: same day -0.188, other day -0.251 · 107/yr
+    B2 break, then 38-62 % pullback: yes           -0.14 25% 0.87 ( 163) | -0.05 20% 0.95 ( 174) | +0.09 24% 1.11 ( 135) | -0.44 18% 0.47 (  38) | all -0.069R +0.1 pts · twins: same day -0.107, other day -0.214 · 30/yr
+    B2 break, then 38-62 % pullback: no            -0.33 20% 0.70 ( 957) | -0.15 19% 0.85 ( 779) | +0.11 27% 1.14 ( 618) | -0.02 24% 0.97 ( 178) | all -0.146R +2.1 pts · twins: same day -0.200, other day -0.259 · 151/yr
+    B3 break, then retest of the broken level: yes -0.34 21% 0.70 ( 284) | +0.04 19% 1.04 ( 214) | -0.20 20% 0.77 ( 161) | +0.23 31% 1.32 (  49) | all -0.155R +1.3 pts · twins: same day -0.318, other day -0.261 · 42/yr
+    B3 break, then retest of the broken level: no  -0.29 21% 0.73 ( 836) | -0.18 19% 0.82 ( 739) | +0.19 28% 1.25 ( 592) | -0.19 20% 0.76 ( 167) | all -0.126R +1.9 pts · twins: same day -0.144, other day -0.248 · 139/yr
+    B4 leg 1 broke overnight / prior-day high: yes -0.16 24% 0.85 ( 305) | -0.04 20% 0.95 ( 306) | -0.05 22% 0.94 ( 208) | +0.09 26% 1.12 (  77) | all -0.074R -0.7 pts · twins: same day -0.096, other day -0.216 · 53/yr
+    B4 leg 1 broke overnight / prior-day high: no  -0.36 20% 0.68 ( 815) | -0.17 18% 0.83 ( 647) | +0.17 28% 1.22 ( 545) | -0.20 21% 0.74 ( 139) | all -0.157R +2.8 pts · twins: same day -0.221, other day -0.266 · 128/yr

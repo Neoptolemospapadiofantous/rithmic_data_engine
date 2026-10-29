@@ -1,0 +1,232 @@
+High-win-rate setups as trades and through Tradeify payouts — NQ, 3311 NY days. Cost 1.5 pts. Points at today's ATR (307).
+TRADES: 2010-15 | 2016-20 | 2021-24 | 2025-26 mean pts (n) · all pts/trade, win %, PF, trades/yr, worst drawdown (pts, 1 contract) · vs control (random other day, same minute / direction / distances)
+
+######## S1 VWAP 2SD fade
+  X1 TP.03 SL10x    -1.93 ( 2949) |  -2.50 ( 2730) |  -2.66 ( 2239) |  -0.91 (  669) | all  -2.22 win 90.0% PF 0.76  527/yr dd  19470 · vs control -0.12 · 0/4
+  X2 TP.05 SL10x    -3.77 ( 2712) |  -3.98 ( 2495) |  -3.70 ( 2080) |  -1.30 (  612) | all  -3.62 win 87.9% PF 0.77  485/yr dd  28946 · vs control -0.93 · 0/4
+  X3 TP.05 SL5x     -2.05 ( 2868) |  -2.39 ( 2664) |  -3.02 ( 2198) |  -1.33 (  650) | all  -2.36 win 82.1% PF 0.83  514/yr dd  20176 · vs control -0.41 · 0/4
+  X4 natural 1:1    -2.17 ( 2611) |  -4.05 ( 2473) |  -3.97 ( 2041) |  -3.32 (  596) | all  -3.34 win 48.8% PF 0.91  474/yr dd  25837 · vs control -1.72 · 0/4
+
+######## S2 VWAP 2.5SD fade
+  X1 TP.03 SL10x    -1.89 ( 1551) |  -2.22 ( 1440) |  -2.32 ( 1222) |  -0.37 (  326) | all  -2.00 win 90.3% PF 0.78  278/yr dd   9498 · vs control +0.04 · 0/4
+  X2 TP.05 SL10x    -2.76 ( 1381) |  -3.06 ( 1287) |  -4.36 ( 1101) |  +1.56 (  304) | all  -2.96 win 88.5% PF 0.81  250/yr dd  13143 · vs control -1.10 · 1/4
+  X3 TP.05 SL5x     -1.78 ( 1451) |  -2.65 ( 1354) |  -2.65 ( 1150) |  +0.27 (  312) | all  -2.14 win 82.4% PF 0.84  262/yr dd   9587 · vs control -0.36 · 1/4
+  X4 natural 1:1    -0.86 ( 1241) |  +0.71 ( 1169) |  -4.25 ( 1013) |  +0.18 (  268) | all  -1.22 win 50.7% PF 0.97  226/yr dd   6910 · vs control -0.24 · 2/4
+
+######## S3 failed OR break
+  X1 TP.03 SL10x    -3.06 ( 1408) |  -1.39 ( 1316) |  -0.93 ( 1060) |  +1.30 (  316) | all  -1.64 win 90.6% PF 0.81  252/yr dd   7473 · vs control +0.13 · 1/4
+  X2 TP.05 SL10x    -3.13 ( 1408) |  -1.76 ( 1316) |  -1.35 ( 1059) |  +1.27 (  316) | all  -1.89 win 89.2% PF 0.87  251/yr dd   9494 · vs control +1.00 · 1/4
+  X3 TP.05 SL5x     -1.86 ( 1408) |  +0.05 ( 1316) |  -1.07 ( 1059) |  +0.94 (  316) | all  -0.82 win 83.9% PF 0.93  251/yr dd   4490 · vs control +1.06 · 2/4
+  X4 natural 1:1    -2.08 ( 1398) |  -0.25 ( 1311) |  -2.49 ( 1055) |  -5.23 (  314) | all  -1.84 win 49.6% PF 0.94  250/yr dd   9060 · vs control +0.04 · 0/4
+
+######## S4 gap 1st pullback
+  X1 TP.03 SL10x    -1.47 (  673) |  -1.14 (  657) |  -0.65 (  533) |  -1.38 (  156) | all  -1.14 win 91.2% PF 0.86  124/yr dd   2731 · vs control +0.27 · 0/4
+  X2 TP.05 SL10x    -3.63 (  673) |  -3.19 (  657) |  -0.78 (  533) |  -2.85 (  156) | all  -2.67 win 89.9% PF 0.82  124/yr dd   5732 · vs control -0.61 · 0/4
+  X3 TP.05 SL5x     -3.56 (  673) |  -2.55 (  657) |  -0.49 (  533) |  -0.32 (  156) | all  -2.17 win 82.6% PF 0.84  124/yr dd   4634 · vs control -0.50 · 0/4
+  X4 natural 1:1    -3.97 (  624) |  -5.93 (  619) |  -3.82 (  517) |  -5.04 (  150) | all  -4.65 win 47.5% PF 0.82  117/yr dd  10527 · vs control -3.37 · 0/4
+
+######## S5 RSI-2 dip in trend
+  X1 TP.03 SL10x    -0.88 ( 1779) |  +0.58 ( 1708) |  -2.31 ( 1353) |  +0.39 (  442) | all  -0.67 win 90.8% PF 0.91  324/yr dd   4446 · vs control +1.22 · 2/4
+  X2 TP.05 SL10x    -1.63 ( 1596) |  +0.33 ( 1548) |  -1.09 ( 1241) |  -0.50 (  400) | all  -0.76 win 87.5% PF 0.94  294/yr dd   4488 · vs control +0.71 · 1/4
+  X3 TP.05 SL5x     +0.17 ( 1627) |  +1.12 ( 1582) |  -1.22 ( 1274) |  +0.71 (  410) | all  +0.16 win 84.0% PF 1.01  300/yr dd   2595 · vs control +1.76 · 3/4
+  X4 natural 1:1    +0.14 ( 1791) |  -0.01 ( 1708) |  -0.99 ( 1397) |  -0.74 (  441) | all  -0.28 win 53.4% PF 0.98  327/yr dd   2813 · vs control +1.19 · 1/4
+
+######## S6 stretch fade
+  X1 TP.03 SL10x    -3.17 (  989) |  -4.31 ( 1095) |  -3.32 ( 1111) |  -0.05 (  360) | all  -3.25 win 88.6% PF 0.68  218/yr dd  11884 · vs control -1.49 · 0/4
+  X2 TP.05 SL10x    -3.17 (  926) |  -6.74 ( 1010) |  -5.39 ( 1011) |  +1.72 (  344) | all  -4.44 win 86.2% PF 0.73  202/yr dd  15824 · vs control -2.54 · 1/4
+  X3 TP.05 SL5x     -1.31 (  967) |  -5.28 ( 1069) |  -3.41 ( 1088) |  +0.96 (  357) | all  -2.95 win 81.1% PF 0.79  214/yr dd  11370 · vs control -1.27 · 1/4
+  X4 natural 1:1    -1.47 (  683) | -10.70 (  758) |  -7.77 (  736) |  -6.26 (  246) | all  -6.76 win 45.9% PF 0.86  149/yr dd  17706 · vs control -5.10 · 0/4
+
+######## PROP (2014-2025): one account from every 5th day · 5 accounts opened one a week, 12 months from each month start
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1708,   0% of years > 0
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1708,   0% of years > 0
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   2 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3234,   0% of years > 0
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   2 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3234,   0% of years > 0
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   3 micro select_flex_50k  eval pass   1% median   90 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -5036,   0% of years > 0
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   3 micro select_daily_50k eval pass   1% median   90 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -5036,   0% of years > 0
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   5 micro select_flex_50k  eval pass   8% median   27 days · funded paid within 20 days  38% · $   200 per funded acct · 5 accts/yr mean $  -8443,   3% of years > 0
+  S1 VWAP 2SD fade       X1 TP.03 SL10x   5 micro select_daily_50k eval pass   8% median   27 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -9428,   0% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2484,   0% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2484,   0% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   2 micro select_flex_50k  eval pass   1% median   38 days · funded paid within 20 days  67% · $     3 per funded acct · 5 accts/yr mean $  -5433,   0% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   2 micro select_daily_50k eval pass   1% median   38 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -5436,   0% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   3 micro select_flex_50k  eval pass   7% median   30 days · funded paid within 20 days  39% · $    82 per funded acct · 5 accts/yr mean $  -8160,   0% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   3 micro select_daily_50k eval pass   7% median   30 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -8655,   0% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   5 micro select_flex_50k  eval pass  10% median   12 days · funded paid within 20 days  25% · $   202 per funded acct · 5 accts/yr mean $ -13626,   4% of years > 0
+  S1 VWAP 2SD fade       X2 TP.05 SL10x   5 micro select_daily_50k eval pass  10% median   12 days · funded paid within 20 days   6% · $    65 per funded acct · 5 accts/yr mean $ -15993,   0% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1800,   0% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1800,   0% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    2 micro select_flex_50k  eval pass   1% median   88 days · funded paid within 20 days  20% · $    68 per funded acct · 5 accts/yr mean $  -3617,   0% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    2 micro select_daily_50k eval pass   1% median   88 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3670,   0% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    3 micro select_flex_50k  eval pass   4% median   39 days · funded paid within 20 days  47% · $   243 per funded acct · 5 accts/yr mean $  -5667,   3% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    3 micro select_daily_50k eval pass   4% median   39 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -6153,   0% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    5 micro select_flex_50k  eval pass  12% median   22 days · funded paid within 20 days  53% · $   374 per funded acct · 5 accts/yr mean $ -10101,   1% of years > 0
+  S1 VWAP 2SD fade       X3 TP.05 SL5x    5 micro select_daily_50k eval pass  12% median   22 days · funded paid within 20 days  19% · $   300 per funded acct · 5 accts/yr mean $ -10257,   7% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   1 micro select_flex_50k  eval pass   9% median   66 days · funded paid within 20 days  58% · $   340 per funded acct · 5 accts/yr mean $  -2893,   6% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   1 micro select_daily_50k eval pass   9% median   66 days · funded paid within 20 days   0% · $    98 per funded acct · 5 accts/yr mean $  -3235,   2% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   2 micro select_flex_50k  eval pass  11% median   22 days · funded paid within 20 days  60% · $   912 per funded acct · 5 accts/yr mean $  -4785,  20% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   2 micro select_daily_50k eval pass  11% median   22 days · funded paid within 20 days  25% · $   593 per funded acct · 5 accts/yr mean $  -6098,  13% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   3 micro select_flex_50k  eval pass  14% median   14 days · funded paid within 20 days  44% · $   670 per funded acct · 5 accts/yr mean $  -9420,  11% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   3 micro select_daily_50k eval pass  14% median   14 days · funded paid within 20 days  24% · $   667 per funded acct · 5 accts/yr mean $  -9787,  15% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   5 micro select_flex_50k  eval pass  12% median    9 days · funded paid within 20 days  16% · $   392 per funded acct · 5 accts/yr mean $ -16917,  10% of years > 0
+  S1 VWAP 2SD fade       X4 natural 1:1   5 micro select_daily_50k eval pass  12% median    9 days · funded paid within 20 days  26% · $   390 per funded acct · 5 accts/yr mean $ -16751,  11% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1160,   0% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1160,   0% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   2 micro select_flex_50k  eval pass   0% median  115 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1965,   0% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   2 micro select_daily_50k eval pass   0% median  115 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1965,   0% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   3 micro select_flex_50k  eval pass   3% median   84 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3049,   0% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   3 micro select_daily_50k eval pass   3% median   84 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3049,   0% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   5 micro select_flex_50k  eval pass  10% median   47 days · funded paid within 20 days  49% · $   576 per funded acct · 5 accts/yr mean $  -4736,   6% of years > 0
+  S2 VWAP 2.5SD fade     X1 TP.03 SL10x   5 micro select_daily_50k eval pass  10% median   47 days · funded paid within 20 days   0% · $   312 per funded acct · 5 accts/yr mean $  -5116,   5% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1445,   0% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1445,   0% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   2 micro select_flex_50k  eval pass   4% median   94 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3149,   0% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   2 micro select_daily_50k eval pass   4% median   94 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3130,   0% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   3 micro select_flex_50k  eval pass  13% median   58 days · funded paid within 20 days  39% · $   250 per funded acct · 5 accts/yr mean $  -4051,  11% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   3 micro select_daily_50k eval pass  13% median   58 days · funded paid within 20 days   0% · $    22 per funded acct · 5 accts/yr mean $  -4679,   0% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   5 micro select_flex_50k  eval pass  20% median   24 days · funded paid within 20 days  43% · $   420 per funded acct · 5 accts/yr mean $  -6026,   6% of years > 0
+  S2 VWAP 2.5SD fade     X2 TP.05 SL10x   5 micro select_daily_50k eval pass  20% median   24 days · funded paid within 20 days   3% · $   100 per funded acct · 5 accts/yr mean $  -7664,   8% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1170,   0% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1170,   0% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    2 micro select_flex_50k  eval pass   1% median  158 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2178,   0% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    2 micro select_daily_50k eval pass   1% median  158 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2178,   0% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    3 micro select_flex_50k  eval pass   7% median  109 days · funded paid within 20 days  11% · $   118 per funded acct · 5 accts/yr mean $  -3253,   0% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    3 micro select_daily_50k eval pass   7% median  109 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3316,   0% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    5 micro select_flex_50k  eval pass  12% median   42 days · funded paid within 20 days  38% · $   281 per funded acct · 5 accts/yr mean $  -5916,   5% of years > 0
+  S2 VWAP 2.5SD fade     X3 TP.05 SL5x    5 micro select_daily_50k eval pass  12% median   42 days · funded paid within 20 days  12% · $    53 per funded acct · 5 accts/yr mean $  -6499,   0% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   1 micro select_flex_50k  eval pass  19% median  146 days · funded paid within 20 days  44% · $  1265 per funded acct · 5 accts/yr mean $  -1546,   5% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   1 micro select_daily_50k eval pass  19% median  146 days · funded paid within 20 days   0% · $   570 per funded acct · 5 accts/yr mean $  -1773,   1% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   2 micro select_flex_50k  eval pass  24% median   42 days · funded paid within 20 days  48% · $   566 per funded acct · 5 accts/yr mean $  -1560,  27% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   2 micro select_daily_50k eval pass  24% median   42 days · funded paid within 20 days  10% · $   291 per funded acct · 5 accts/yr mean $  -2200,  22% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   3 micro select_flex_50k  eval pass  19% median   18 days · funded paid within 20 days  38% · $   686 per funded acct · 5 accts/yr mean $  -4042,  12% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   3 micro select_daily_50k eval pass  19% median   18 days · funded paid within 20 days  17% · $   580 per funded acct · 5 accts/yr mean $  -5747,   8% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   5 micro select_flex_50k  eval pass  20% median   12 days · funded paid within 20 days  26% · $   695 per funded acct · 5 accts/yr mean $  -6595,  15% of years > 0
+  S2 VWAP 2.5SD fade     X4 natural 1:1   5 micro select_daily_50k eval pass  20% median   12 days · funded paid within 20 days  29% · $   756 per funded acct · 5 accts/yr mean $  -7976,   8% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -910,   0% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -910,   0% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   2 micro select_flex_50k  eval pass   0% median  132 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1645,   0% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   2 micro select_daily_50k eval pass   0% median  132 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1645,   0% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   3 micro select_flex_50k  eval pass   7% median   86 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2633,   0% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   3 micro select_daily_50k eval pass   7% median   86 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2633,   0% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   5 micro select_flex_50k  eval pass  12% median   47 days · funded paid within 20 days  41% · $   559 per funded acct · 5 accts/yr mean $  -3604,  11% of years > 0
+  S3 failed OR break     X1 TP.03 SL10x   5 micro select_daily_50k eval pass  12% median   47 days · funded paid within 20 days   0% · $   188 per funded acct · 5 accts/yr mean $  -4469,   6% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   1 micro select_flex_50k  eval pass   0% median  236 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1328,   0% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   1 micro select_daily_50k eval pass   0% median  236 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1328,   0% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   2 micro select_flex_50k  eval pass   9% median  105 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2576,   0% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   2 micro select_daily_50k eval pass   9% median  105 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2576,   0% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   3 micro select_flex_50k  eval pass  14% median   48 days · funded paid within 20 days  32% · $   221 per funded acct · 5 accts/yr mean $  -4066,   2% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   3 micro select_daily_50k eval pass  14% median   48 days · funded paid within 20 days   0% · $    19 per funded acct · 5 accts/yr mean $  -4706,   0% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   5 micro select_flex_50k  eval pass  19% median   21 days · funded paid within 20 days  17% · $   272 per funded acct · 5 accts/yr mean $  -6293,  13% of years > 0
+  S3 failed OR break     X2 TP.05 SL10x   5 micro select_daily_50k eval pass  19% median   21 days · funded paid within 20 days   6% · $   152 per funded acct · 5 accts/yr mean $  -6717,   8% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -888,   0% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -888,   0% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    2 micro select_flex_50k  eval pass   7% median  253 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1614,   0% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    2 micro select_daily_50k eval pass   7% median  253 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1614,   0% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    3 micro select_flex_50k  eval pass  13% median   77 days · funded paid within 20 days  38% · $   222 per funded acct · 5 accts/yr mean $  -2154,  13% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    3 micro select_daily_50k eval pass  13% median   77 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2590,   0% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    5 micro select_flex_50k  eval pass  21% median   35 days · funded paid within 20 days  34% · $   366 per funded acct · 5 accts/yr mean $  -4043,  13% of years > 0
+  S3 failed OR break     X3 TP.05 SL5x    5 micro select_daily_50k eval pass  21% median   35 days · funded paid within 20 days  13% · $   269 per funded acct · 5 accts/yr mean $  -4522,  12% of years > 0
+  S3 failed OR break     X4 natural 1:1   1 micro select_flex_50k  eval pass  12% median  159 days · funded paid within 20 days  62% · $   640 per funded acct · 5 accts/yr mean $  -1380,   6% of years > 0
+  S3 failed OR break     X4 natural 1:1   1 micro select_daily_50k eval pass  12% median  159 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1497,   0% of years > 0
+  S3 failed OR break     X4 natural 1:1   2 micro select_flex_50k  eval pass  11% median   42 days · funded paid within 20 days  63% · $   809 per funded acct · 5 accts/yr mean $  -2206,  15% of years > 0
+  S3 failed OR break     X4 natural 1:1   2 micro select_daily_50k eval pass  11% median   42 days · funded paid within 20 days  28% · $   451 per funded acct · 5 accts/yr mean $  -2843,  10% of years > 0
+  S3 failed OR break     X4 natural 1:1   3 micro select_flex_50k  eval pass  15% median   21 days · funded paid within 20 days  37% · $   715 per funded acct · 5 accts/yr mean $  -3466,  11% of years > 0
+  S3 failed OR break     X4 natural 1:1   3 micro select_daily_50k eval pass  15% median   21 days · funded paid within 20 days  25% · $   674 per funded acct · 5 accts/yr mean $  -3809,  11% of years > 0
+  S3 failed OR break     X4 natural 1:1   5 micro select_flex_50k  eval pass  15% median   14 days · funded paid within 20 days  28% · $   617 per funded acct · 5 accts/yr mean $  -4814,  15% of years > 0
+  S3 failed OR break     X4 natural 1:1   5 micro select_daily_50k eval pass  15% median   14 days · funded paid within 20 days  24% · $   832 per funded acct · 5 accts/yr mean $  -3253,  27% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -825,   0% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -825,   0% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   2 micro select_flex_50k  eval pass   0% median  465 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1070,   0% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   2 micro select_daily_50k eval pass   0% median  465 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1070,   0% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   3 micro select_flex_50k  eval pass   9% median  288 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1423,   0% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   3 micro select_daily_50k eval pass   9% median  288 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1423,   0% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   5 micro select_flex_50k  eval pass  17% median  117 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2655,   0% of years > 0
+  S4 gap 1st pullback    X1 TP.03 SL10x   5 micro select_daily_50k eval pass  17% median  117 days · funded paid within 20 days   0% · $    47 per funded acct · 5 accts/yr mean $  -2647,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1040,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1040,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   2 micro select_flex_50k  eval pass   6% median  278 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1702,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   2 micro select_daily_50k eval pass   6% median  278 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1702,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   3 micro select_flex_50k  eval pass  10% median  116 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2803,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   3 micro select_daily_50k eval pass  10% median  116 days · funded paid within 20 days   0% · $    10 per funded acct · 5 accts/yr mean $  -2803,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   5 micro select_flex_50k  eval pass  14% median   42 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -5438,   0% of years > 0
+  S4 gap 1st pullback    X2 TP.05 SL10x   5 micro select_daily_50k eval pass  14% median   42 days · funded paid within 20 days   0% · $    62 per funded acct · 5 accts/yr mean $  -4942,   4% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -862,   0% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -862,   0% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    2 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1254,   0% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    2 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1254,   0% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    3 micro select_flex_50k  eval pass   1% median   76 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1738,   0% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    3 micro select_daily_50k eval pass   1% median   76 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1738,   0% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    5 micro select_flex_50k  eval pass   7% median   56 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3771,   0% of years > 0
+  S4 gap 1st pullback    X3 TP.05 SL5x    5 micro select_daily_50k eval pass   7% median   56 days · funded paid within 20 days   0% · $    36 per funded acct · 5 accts/yr mean $  -3694,   0% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1260,   0% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1260,   0% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   2 micro select_flex_50k  eval pass   9% median   77 days · funded paid within 20 days   0% · $   217 per funded acct · 5 accts/yr mean $  -2115,   6% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   2 micro select_daily_50k eval pass   9% median   77 days · funded paid within 20 days   0% · $    22 per funded acct · 5 accts/yr mean $  -2395,   1% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   3 micro select_flex_50k  eval pass  13% median   54 days · funded paid within 20 days  43% · $   662 per funded acct · 5 accts/yr mean $  -2522,  16% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   3 micro select_daily_50k eval pass  13% median   54 days · funded paid within 20 days   0% · $   261 per funded acct · 5 accts/yr mean $  -3143,   5% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   5 micro select_flex_50k  eval pass  14% median   26 days · funded paid within 20 days  42% · $   694 per funded acct · 5 accts/yr mean $  -3702,  20% of years > 0
+  S4 gap 1st pullback    X4 natural 1:1   5 micro select_daily_50k eval pass  14% median   26 days · funded paid within 20 days  17% · $   570 per funded acct · 5 accts/yr mean $  -3639,  21% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   1 micro select_flex_50k  eval pass  14% median  607 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -957,   0% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   1 micro select_daily_50k eval pass  14% median  607 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -957,   0% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   2 micro select_flex_50k  eval pass  13% median  169 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1600,   0% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   2 micro select_daily_50k eval pass  13% median  169 days · funded paid within 20 days   0% · $   153 per funded acct · 5 accts/yr mean $  -1600,   0% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   3 micro select_flex_50k  eval pass  18% median  102 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2319,   0% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   3 micro select_daily_50k eval pass  18% median  102 days · funded paid within 20 days   0% · $   542 per funded acct · 5 accts/yr mean $  -2072,   4% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   5 micro select_flex_50k  eval pass  22% median   46 days · funded paid within 20 days  60% · $   822 per funded acct · 5 accts/yr mean $  -1687,  25% of years > 0
+  S5 RSI-2 dip in trend  X1 TP.03 SL10x   5 micro select_daily_50k eval pass  22% median   46 days · funded paid within 20 days   0% · $  1047 per funded acct · 5 accts/yr mean $  -2756,  14% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   1 micro select_flex_50k  eval pass   3% median  506 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1049,   0% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   1 micro select_daily_50k eval pass   3% median  506 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1049,   0% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   2 micro select_flex_50k  eval pass  17% median  110 days · funded paid within 20 days   7% · $   197 per funded acct · 5 accts/yr mean $  -2122,   4% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   2 micro select_daily_50k eval pass  17% median  110 days · funded paid within 20 days   0% · $    16 per funded acct · 5 accts/yr mean $  -2305,   0% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   3 micro select_flex_50k  eval pass  20% median   55 days · funded paid within 20 days  62% · $   667 per funded acct · 5 accts/yr mean $  -1514,  25% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   3 micro select_daily_50k eval pass  20% median   55 days · funded paid within 20 days   0% · $   326 per funded acct · 5 accts/yr mean $  -2614,  11% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   5 micro select_flex_50k  eval pass  21% median   23 days · funded paid within 20 days  47% · $   631 per funded acct · 5 accts/yr mean $  -3536,  31% of years > 0
+  S5 RSI-2 dip in trend  X2 TP.05 SL10x   5 micro select_daily_50k eval pass  21% median   23 days · funded paid within 20 days   8% · $   363 per funded acct · 5 accts/yr mean $  -4185,  30% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    1 micro select_flex_50k  eval pass  44% median  746 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -925,   0% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    1 micro select_daily_50k eval pass  44% median  746 days · funded paid within 20 days   0% · $    33 per funded acct · 5 accts/yr mean $   -925,   0% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    2 micro select_flex_50k  eval pass  26% median  153 days · funded paid within 20 days   1% · $   528 per funded acct · 5 accts/yr mean $  -1258,   6% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    2 micro select_daily_50k eval pass  26% median  153 days · funded paid within 20 days   0% · $   169 per funded acct · 5 accts/yr mean $  -1444,   1% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    3 micro select_flex_50k  eval pass  23% median   82 days · funded paid within 20 days  49% · $   950 per funded acct · 5 accts/yr mean $   -919,  26% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    3 micro select_daily_50k eval pass  23% median   82 days · funded paid within 20 days   0% · $   590 per funded acct · 5 accts/yr mean $  -1637,  11% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    5 micro select_flex_50k  eval pass  24% median   34 days · funded paid within 20 days  53% · $   633 per funded acct · 5 accts/yr mean $   -941,  27% of years > 0
+  S5 RSI-2 dip in trend  X3 TP.05 SL5x    5 micro select_daily_50k eval pass  24% median   34 days · funded paid within 20 days   6% · $   411 per funded acct · 5 accts/yr mean $  -2257,  20% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   1 micro select_flex_50k  eval pass   1% median 1010 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -940,   0% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   1 micro select_daily_50k eval pass   1% median 1010 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $   -940,   0% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   2 micro select_flex_50k  eval pass   8% median  152 days · funded paid within 20 days  16% · $   305 per funded acct · 5 accts/yr mean $  -1653,   1% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   2 micro select_daily_50k eval pass   8% median  152 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1678,   0% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   3 micro select_flex_50k  eval pass  17% median   91 days · funded paid within 20 days  28% · $   463 per funded acct · 5 accts/yr mean $  -2223,   6% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   3 micro select_daily_50k eval pass  17% median   91 days · funded paid within 20 days   0% · $   360 per funded acct · 5 accts/yr mean $  -2547,   3% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   5 micro select_flex_50k  eval pass  22% median   33 days · funded paid within 20 days  44% · $   478 per funded acct · 5 accts/yr mean $  -2460,  20% of years > 0
+  S5 RSI-2 dip in trend  X4 natural 1:1   5 micro select_daily_50k eval pass  22% median   33 days · funded paid within 20 days   5% · $   203 per funded acct · 5 accts/yr mean $  -3588,  14% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1207,   0% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1207,   0% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   2 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2059,   0% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   2 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2059,   0% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   3 micro select_flex_50k  eval pass   1% median   92 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3115,   0% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   3 micro select_daily_50k eval pass   1% median   92 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3115,   0% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   5 micro select_flex_50k  eval pass   6% median   47 days · funded paid within 20 days  66% · $   406 per funded acct · 5 accts/yr mean $  -4973,   5% of years > 0
+  S6 stretch fade        X1 TP.03 SL10x   5 micro select_daily_50k eval pass   6% median   47 days · funded paid within 20 days   0% · $    54 per funded acct · 5 accts/yr mean $  -5440,   0% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1578,   0% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1578,   0% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   2 micro select_flex_50k  eval pass   1% median  167 days · funded paid within 20 days  67% · $   342 per funded acct · 5 accts/yr mean $  -3001,   0% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   2 micro select_daily_50k eval pass   1% median  167 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3013,   0% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   3 micro select_flex_50k  eval pass   2% median   55 days · funded paid within 20 days  64% · $   206 per funded acct · 5 accts/yr mean $  -4465,   6% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   3 micro select_daily_50k eval pass   2% median   55 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -4836,   0% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   5 micro select_flex_50k  eval pass   6% median   27 days · funded paid within 20 days  23% · $   200 per funded acct · 5 accts/yr mean $  -8379,   6% of years > 0
+  S6 stretch fade        X2 TP.05 SL10x   5 micro select_daily_50k eval pass   6% median   27 days · funded paid within 20 days   3% · $    60 per funded acct · 5 accts/yr mean $  -8748,   5% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    1 micro select_flex_50k  eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1291,   0% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    1 micro select_daily_50k eval pass   0% median   -1 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -1291,   0% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    2 micro select_flex_50k  eval pass   0% median  189 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2393,   0% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    2 micro select_daily_50k eval pass   0% median  189 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2395,   0% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    3 micro select_flex_50k  eval pass   5% median  128 days · funded paid within 20 days  17% · $    34 per funded acct · 5 accts/yr mean $  -3459,   0% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    3 micro select_daily_50k eval pass   5% median  128 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -3511,   0% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    5 micro select_flex_50k  eval pass  11% median   54 days · funded paid within 20 days  34% · $   306 per funded acct · 5 accts/yr mean $  -5566,  10% of years > 0
+  S6 stretch fade        X3 TP.05 SL5x    5 micro select_daily_50k eval pass  11% median   54 days · funded paid within 20 days   2% · $     9 per funded acct · 5 accts/yr mean $  -6378,   0% of years > 0
+  S6 stretch fade        X4 natural 1:1   1 micro select_flex_50k  eval pass   0% median   65 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2534,   0% of years > 0
+  S6 stretch fade        X4 natural 1:1   1 micro select_daily_50k eval pass   0% median   65 days · funded paid within 20 days   0% · $     0 per funded acct · 5 accts/yr mean $  -2534,   0% of years > 0
+  S6 stretch fade        X4 natural 1:1   2 micro select_flex_50k  eval pass   9% median   40 days · funded paid within 20 days   2% · $    37 per funded acct · 5 accts/yr mean $  -5521,   0% of years > 0
+  S6 stretch fade        X4 natural 1:1   2 micro select_daily_50k eval pass   9% median   40 days · funded paid within 20 days   7% · $    31 per funded acct · 5 accts/yr mean $  -5384,   0% of years > 0
+  S6 stretch fade        X4 natural 1:1   3 micro select_flex_50k  eval pass  15% median   24 days · funded paid within 20 days   3% · $    36 per funded acct · 5 accts/yr mean $  -8608,   0% of years > 0
+  S6 stretch fade        X4 natural 1:1   3 micro select_daily_50k eval pass  15% median   24 days · funded paid within 20 days  12% · $    83 per funded acct · 5 accts/yr mean $  -7920,   6% of years > 0
+  S6 stretch fade        X4 natural 1:1   5 micro select_flex_50k  eval pass  12% median   14 days · funded paid within 20 days   7% · $   128 per funded acct · 5 accts/yr mean $ -15683,   0% of years > 0
+  S6 stretch fade        X4 natural 1:1   5 micro select_daily_50k eval pass  12% median   14 days · funded paid within 20 days  15% · $   223 per funded acct · 5 accts/yr mean $ -13977,   0% of years > 0

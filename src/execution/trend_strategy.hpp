@@ -132,6 +132,9 @@ struct TrendConfig {
     // 5-minute bar (starting 09:45–13:55) that touches the 15-minute opening range edge on that side and closes beyond it enters
     // (long: low ≤ OR high, close > OR high; short mirrored). tf_min 5, one trade a day, stop lf_stop_atr × day ATR, target tp_r.
     double gr_gap_min_atr = 0.1;
+    // gap_or_retest_eff (2026-10-28, edge_lab PASS +11.2 pts/trade, PF 1.61, 12/14 years): the retest bar is taken only when the
+    // session is efficient so far — |bar open − 09:30 open| / (RTH high − low so far) ≥ gr_min_eff (0 = off).
+    double gr_min_eff = 0.0;
     // Order-flow agreement (2026-10-17, research/preregistered/2026-10-17_tests_c_d_e.md, test D: cascade +18.5 vs +15.0 pts/trade on the
     // same 2023–26 days): an entry is taken only when the RTH cumulative aggressor delta points the trade's way (no data → no trade).
     bool drive_flow_agree = false, gr_flow_agree = false;
@@ -177,6 +180,10 @@ struct TrendConfig {
     // take_target_px — PAPER ONLY, the executor refuses this mode). Research: walk-forward +0.39 / +0.90 / +0.39R (2013-18 / 2019-24 /
     // 2025-26), ≈ 12-13 a year per chart. Use tf_min 1, sl_points well above any flag stop, no trail, flat 15:55.
     int ft_tf = 5; bool ft_take = true;
+    // 2026-10-22 flag tilts (paper only, research flag_rank.cpp / layer5.txt): ft_min_pole_atr = arm only a flag whose pole is at least
+    // this × the prior-day ATR (0 = off; the 3m standing rule uses 0.4); ft_flow_max = arm only when the aggressor-BUY share of the
+    // flag bars' volume is at most this (0 = off; 0.5 = the pullback is majority counter-flow, +0.39R vs +0.03R on 2023-26 3m flags)
+    double ft_min_pole_atr = 0.0, ft_flow_max = 0.0;
     // noise_momentum (Zarattini/Aziz/Barbon 2024 noise-area intraday momentum; ledger L1, BK1): every nm_check_min minutes
     // after the RTH open, bands = max/min(09:30 open, prior RTH close) × (1 ± σ(m)), σ(m) = mean |close(m)/open − 1| at
     // that minute of the session over the last nm_days sessions. Flat: close above the upper band → long, below the
@@ -198,6 +205,11 @@ struct TrendConfig {
     int rs_lookback_min = 15; double rs_min_bp = 5.0;
     // tod_momentum
     int tod_hhmm = 1000; int tod_lookback_min = 15; double tod_min_atr = 0.8; int tod_window_min = 30;
+    // m1_10am_all (2026-10-28, edge_lab PASS +13.7 pts/trade, PF 1.66, 11/14 years): the lookback move must be EFFICIENT —
+    // |net move| / Σ|1-minute changes| ≥ tod_min_er (0 = off) — and agree with the bar's side of the session VWAP
+    // (tod_vwap_agree) and of the 09:30 open (tod_open_agree); tod_stop_atr > 0 sets this trade's stop to x × the prior-day
+    // ATR (take_stop_dist(), the broker's tp_r × that is the target) instead of the config's flat sl_points.
+    double tod_min_er = 0.0; bool tod_vwap_agree = false, tod_open_agree = false; double tod_stop_atr = 0.0;
     // ── families added 2026-09-21 ──
     // trend_day: recognise a trend day after td_check_min, then buy/sell every pullback to VWAP (or the fast EMA)
     int td_check_min = 60; double td_min_atr = 1.5; double td_vwap_frac = 0.8; std::string td_pullback = "vwap";  // vwap | ema
@@ -361,6 +373,14 @@ struct TrendConfig {
     // rb_min_range_atr > 0: trade only when the range is at least x × the prior session ATR14 (set_day_atr; unknown = no
     // trade). 2026-10-14: wide NY 5m ranges (≥ the 2023-24 median, 0.21 × ATR14) PF 1.43 vs 1.02 for tight ones.
     double rb_min_range_atr = 0.0;
+    // vwap_wave (2026-10-27, founder's VWAP-SD wave fade; research/programs/ema721_wave_search.cpp lead config 5m · 2 SD ·
+    // London · 2R): a tf bar trades through the anchor-session VWAP ± ww_k × VWAP SD (session "globex" = 18:00 VWAP) and
+    // closes back inside → armed (a close beyond the band waits for the next close-back; the excursion's extreme is kept).
+    // SELL at the close of the tf bar where EMA ema_fast crosses below EMA ema_slow while the close is still above VWAP;
+    // BUY mirrored at the lower band. Stop = the excursion extreme + 1 tick (min ww_min_stop pts) via stop_dist, target =
+    // tp_r × that (both live-runnable). The armed state expires ww_expire_min after the last bar past the band and resets
+    // with the session. ww_last_entry = the last tf CLOSE (ET HHMM, inclusive) that may enter (0 = until win_end).
+    double ww_k = 2.0, ww_min_stop = 2.0; int ww_expire_min = 60, ww_last_entry = 0;
     // absorption_zone (2026-10-07, founder spec "Absorption Strategy Spec for Claude Code"): on 5m bars,
     // classify the day at +30 / +60 min after the RTH open (5 votes: open vs prior value, opening range,
     // VWAP slope, cumulative delta, pullbacks) into Trend / Balance / Neutral. Trend: pullback into the
@@ -443,7 +463,7 @@ struct TrendConfig {
         c.drive_late_step = jint(t, "drive_late_step", c.drive_late_step); c.drive_late_min_atr = jdbl(t, "drive_late_min_atr", c.drive_late_min_atr);
         c.drive_late_only = jbool(t, "drive_late_only", c.drive_late_only);
         c.drive_late_last_min_atr = jdbl(t, "drive_late_last_min_atr", c.drive_late_last_min_atr);
-        c.gr_gap_min_atr = jdbl(t, "gr_gap_min_atr", c.gr_gap_min_atr);
+        c.gr_gap_min_atr = jdbl(t, "gr_gap_min_atr", c.gr_gap_min_atr); c.gr_min_eff = jdbl(t, "gr_min_eff", c.gr_min_eff);
         c.drive_flow_agree = jbool(t, "drive_flow_agree", c.drive_flow_agree); c.gr_flow_agree = jbool(t, "gr_flow_agree", c.gr_flow_agree);
         c.bg_gap_min_atr = jdbl(t, "bg_gap_min_atr", c.bg_gap_min_atr); c.bg_box_ratio = jdbl(t, "bg_box_ratio", c.bg_box_ratio);
         c.mom_window = jint(t, "mom_window", c.mom_window); c.mom_ema_len = jint(t, "mom_ema_len", c.mom_ema_len);
@@ -455,6 +475,7 @@ struct TrendConfig {
         c.pd_min_eff = jdbl(t, "pd_min_eff", c.pd_min_eff); c.pd_gap_min_atr = jdbl(t, "pd_gap_min_atr", c.pd_gap_min_atr);
         c.pd_mom_eff = jdbl(t, "pd_mom_eff", c.pd_mom_eff); c.pd_stop_atr = jdbl(t, "pd_stop_atr", c.pd_stop_atr);
         c.ft_tf = jint(t, "ft_tf", c.ft_tf); c.ft_take = jbool(t, "ft_take", c.ft_take);
+        c.ft_min_pole_atr = jdbl(t, "ft_min_pole_atr", c.ft_min_pole_atr); c.ft_flow_max = jdbl(t, "ft_flow_max", c.ft_flow_max);
         c.lf_delta_min = jdbl(t, "lf_delta_min", c.lf_delta_min); c.lf_stop_atr = jdbl(t, "lf_stop_atr", c.lf_stop_atr);
         c.round_step = jdbl(t, "round_step", c.round_step);
         c.drive_gap_agree = jdbl(t, "drive_gap_agree", c.drive_gap_agree);
@@ -507,6 +528,8 @@ struct TrendConfig {
         c.rs_lookback_min = jint(t, "rs_lookback_min", c.rs_lookback_min); c.rs_min_bp = jdbl(t, "rs_min_bp", c.rs_min_bp);
         c.tod_hhmm = jint(t, "tod_hhmm", c.tod_hhmm); c.tod_lookback_min = jint(t, "tod_lookback_min", c.tod_lookback_min);
         c.tod_min_atr = jdbl(t, "tod_min_atr", c.tod_min_atr); c.tod_window_min = jint(t, "tod_window_min", c.tod_window_min);
+        c.tod_min_er = jdbl(t, "tod_min_er", c.tod_min_er); c.tod_vwap_agree = jbool(t, "tod_vwap_agree", c.tod_vwap_agree);
+        c.tod_open_agree = jbool(t, "tod_open_agree", c.tod_open_agree); c.tod_stop_atr = jdbl(t, "tod_stop_atr", c.tod_stop_atr);
         c.td_check_min = jint(t, "td_check_min", c.td_check_min); c.td_min_atr = jdbl(t, "td_min_atr", c.td_min_atr);
         c.td_vwap_frac = jdbl(t, "td_vwap_frac", c.td_vwap_frac); c.td_pullback = jstr(t, "td_pullback", c.td_pullback);
         c.fb_bars = jint(t, "fb_bars", c.fb_bars);
@@ -538,6 +561,8 @@ struct TrendConfig {
         c.rb_of_filter = jint(t, "rb_of_filter", c.rb_of_filter); c.rb_first_only = jbool(t, "rb_first_only", c.rb_first_only);
         c.rb_stop_range = jbool(t, "rb_stop_range", c.rb_stop_range); c.rb_last_entry = jint(t, "rb_last_entry", c.rb_last_entry);
         c.rb_min_range_atr = jdbl(t, "rb_min_range_atr", c.rb_min_range_atr);
+        c.ww_k = jdbl(t, "ww_k", c.ww_k); c.ww_min_stop = jdbl(t, "ww_min_stop", c.ww_min_stop);
+        c.ww_expire_min = jint(t, "ww_expire_min", c.ww_expire_min); c.ww_last_entry = jint(t, "ww_last_entry", c.ww_last_entry);
         c.az_setups = jstr(t, "az_setups", c.az_setups); c.az_daytype = jbool(t, "az_daytype", c.az_daytype);
         c.az_or_bars = jint(t, "az_or_bars", c.az_or_bars);
         c.az_zone_width = jdbl(t, "az_zone_width", c.az_zone_width); c.az_tol = jdbl(t, "az_tol", c.az_tol);
@@ -654,6 +679,7 @@ public:
         reset_2809_modes();
         rb_hi_ = std::numeric_limits<double>::lowest(); rb_lo_ = std::numeric_limits<double>::max();
         rb_built_ = rb_done_ = false; rb_used_long_ = rb_used_short_ = false; rb_v_ = rb_bv_ = 0.0;
+        ww_[0] = ww_[1] = WwSide{};
         sess_.trades_today = 0; sess_.in_position = false; sess_.risk_halted = false; sess_.halt_reason.clear();
         if (keep_pos) { sess_.in_position = true; pos_dir_ = keep_dir; entry_ts_ = keep_ts; }
         LOG("[TREND %s] Session reset (tf=%dm window %04d-%04d anchor=%s)%s", tc_.mode.c_str(), tc_.tf_min,
@@ -932,11 +958,11 @@ private:
         if (mm < 0 || b.mod >= 16 * 60) return;
         const int tf = std::max(1, tc_.ft_tf);
         if (!ft_m1_.empty() && mm <= ft_m1_.back().m0) ft_reset();   // a new day's 09:30 (a late previous-day bar must never seed it)
-        ft_m1_.push_back({b.o, b.h, b.l, b.c, b.v, mm});
+        ft_m1_.push_back({b.o, b.h, b.l, b.c, b.v, mm, b.bv});
         ft_pv_ += (b.h + b.l + b.c) / 3.0 * b.v; ft_vv_ += b.v; ft_hi_ = std::max(ft_hi_, b.h); ft_lo_ = std::min(ft_lo_, b.l);
         if (mm < 30) { ft_or_h_ = std::max(ft_or_h_, b.h); ft_or_l_ = std::min(ft_or_l_, b.l); }
-        if (ft_bars_.empty() || ft_bars_.back().m0 / tf != mm / tf) ft_bars_.push_back({b.o, b.h, b.l, b.c, b.v, mm / tf * tf});
-        else { FtBar& z = ft_bars_.back(); z.h = std::max(z.h, b.h); z.l = std::min(z.l, b.l); z.c = b.c; z.v += b.v; }
+        if (ft_bars_.empty() || ft_bars_.back().m0 / tf != mm / tf) ft_bars_.push_back({b.o, b.h, b.l, b.c, b.v, mm / tf * tf, b.bv});
+        else { FtBar& z = ft_bars_.back(); z.h = std::max(z.h, b.h); z.l = std::min(z.l, b.l); z.c = b.c; z.v += b.v; z.bv += b.bv; }
         const bool chartClose = mm % tf == tf - 1;
         const bool followedBefore = ft_follow_;
         // the flag being followed: the 2m trigger (research loop) and the chart-close bookkeeping
@@ -983,10 +1009,16 @@ private:
         if (minute >= 30 && ft_or_h_ > ft_or_l_) { lvl(ft_or_h_); lvl(ft_or_l_); }
         const bool gapUp = have_prev_ && day_atr_ > 0 && (so - prev_close_) / day_atr_ > 0.1;
         const bool take = pb == 1 && broke && gapUp && M >= 5 * ar;
-        LOG("[TREND flag_take] %s %dm flag registered %02d:%02d · pole %.2f→%.2f (%.1f pts, %.1f× bar) · pullback #%d · broke %d · gap %+.2f ATR → %s",
-            ft_stamp().c_str(), tf, (kFtOpen + minute) / 60, (kFtOpen + minute) % 60, L, H, M, M / ar, pb, (int)broke, day_atr_ > 0 && have_prev_ ? (so - prev_close_) / day_atr_ : 0.0,
-            take ? "TAKE — armed" : tc_.ft_take ? "not TAKE" : "armed");
-        ft_armed_ = (take || !tc_.ft_take) && !sess_.in_position;
+        // the 2026-10-22 tilts: pole size vs the day's ATR, and the aggressor-buy share of the flag bars (no aggressor data → share 0 → passes)
+        double fv = 0, fbv = 0; for (int r = h + 1; r <= q; ++r) { fv += ft_bars_[r].v; fbv += ft_bars_[r].bv; }
+        const double flow = fv > 0 ? fbv / fv : 0.0;
+        const bool poleOk = !(tc_.ft_min_pole_atr > 0) || (day_atr_ > 0 && M >= tc_.ft_min_pole_atr * day_atr_);
+        const bool flowOk = !(tc_.ft_flow_max > 0) || flow <= tc_.ft_flow_max;
+        const bool armed = (take || !tc_.ft_take) && poleOk && flowOk && !sess_.in_position;
+        LOG("[TREND flag_take] %s %dm flag registered %02d:%02d · pole %.2f→%.2f (%.1f pts, %.1f× bar, %.2f ATR) · pullback #%d · broke %d · gap %+.2f ATR · flag buy share %.2f → %s",
+            ft_stamp().c_str(), tf, (kFtOpen + minute) / 60, (kFtOpen + minute) % 60, L, H, M, M / ar, day_atr_ > 0 ? M / day_atr_ : 0.0, pb, (int)broke, day_atr_ > 0 && have_prev_ ? (so - prev_close_) / day_atr_ : 0.0, flow,
+            armed ? (take ? "TAKE — armed" : "armed") : !poleOk ? "pole too small — not armed" : !flowOk ? "buyers already in the flag — not armed" : tc_.ft_take ? "not TAKE" : "in a position — not armed");
+        ft_armed_ = armed;
     }
     // pole-top break = a buy-stop one tick above the pole top: the first tick through it enters
     // ET "YYYY-MM-DD HH:MM" of the last tick (log lines of flag_take, so a replay can be matched to the research trade by trade)
@@ -1138,6 +1170,7 @@ private:
         else if (tc_.mode == "noise_momentum")      mode_noise(b, hhmm);
         else if (tc_.mode == "absorption_zone")     mode_az(b, hhmm);
         else if (tc_.mode == "trend_confirm")       mode_tcf(b, hhmm);
+        else if (tc_.mode == "vwap_wave")           mode_vwap_wave(b, hhmm);
     }
 
     // ── modes ────────────────────────────────────────────────────────────────
@@ -1387,6 +1420,10 @@ private:
         const bool hit = dir > 0 ? (b.l <= gr_hi_ && b.c > gr_hi_) : (b.h >= gr_lo_ && b.c < gr_lo_);
         if (!hit) return;
         if (tc_.gr_flow_agree && !(dir * cum_delta_ > 0.0)) return;   // order flow against the trade: keep scanning
+        if (tc_.gr_min_eff > 0.0) {                                     // gap_or_retest_eff: an efficient session so far
+            const double rng = std::max(day_hi_ - day_lo_, 1.0);
+            if (std::fabs(b.o - rth_open_) / rng < tc_.gr_min_eff) return;   // chop: keep scanning
+        }
         if (!can_enter(hhmm, dir)) return;
         gr_done_ = true;
         stop_dist_ = tc_.lf_stop_atr * day_atr_;
@@ -1540,6 +1577,38 @@ private:
         emit(d > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, d > 0 ? "range_break_long" : "range_break_short");
     }
     double rb_of() const { return rb_v_ > 0.0 ? (2.0 * rb_bv_ - rb_v_) / rb_v_ : 0.0; }
+    // vwap_wave — see TrendConfig::ww_k. Side 0 = the upper band (sells), side 1 = the lower band (buys).
+    void mode_vwap_wave(const Bar& b, int hhmm) {
+        ++ww_q_;
+        const int g = ema_f_ > ema_s_ ? 1 : -1, g_prev = ww_g_prev_; ww_g_prev_ = g;
+        if (!in_rth_ || vwap_v_ <= 0) return;
+        const double vw = vwap(), sd = vwap_sd(); if (!(sd > 0)) return;
+        const int expire = std::max(1, tc_.ww_expire_min / tc_.tf_min);
+        bool entered = false;
+        for (int side = 0; side < 2; ++side) {
+            const int dir = side == 0 ? -1 : 1; WwSide& w = ww_[side];
+            if (w.ex && ww_q_ - w.last > expire) w.ex = w.on = false;
+            const double band = vw - dir * tc_.ww_k * sd, ext = side == 0 ? b.h : b.l;
+            if (-dir * (ext - band) > 0) {                                   // traded through the band
+                if (!w.ex || -dir * (ext - w.top) > 0) w.top = ext;
+                w.ex = true; w.last = ww_q_;
+                if (-dir * (b.c - band) >= 0) w.on = false;                  // closed beyond it: wait for the close-back
+                else w.on = true;
+            }
+            if (entered || !w.on || !(g == dir && g_prev != dir)) continue;  // the EMA cross toward VWAP
+            w.on = w.ex = false;
+            if (tc_.ww_last_entry > 0 && !in_hhmm(hhmm, tc_.win_start, tc_.ww_last_entry) && hhmm != tc_.ww_last_entry) continue;
+            if (dir * (vw - b.c) <= 0) continue;                             // already through VWAP — not a fade any more
+            if (!can_enter(hhmm, dir)) continue;
+            stop_dist_ = std::max(-dir * (w.top - b.c) + 0.25, tc_.ww_min_stop);
+            LOG("[TREND vwap_wave] %s @%.2f wave extreme %.2f stop %.2f pts (VWAP %.2f, band %.2f = %.1f SD x %.2f)",
+                dir > 0 ? "LONG" : "SHORT", b.c, w.top, stop_dist_, vw, band, tc_.ww_k, sd);
+            emit(dir > 0 ? OrbSignal::BUY : OrbSignal::SELL, b.c, dir > 0 ? "vwap_wave_long" : "vwap_wave_short");
+            entered = true;
+        }
+    }
+    struct WwSide { bool ex = false, on = false; double top = 0.0; int last = 0; };
+    WwSide ww_[2]; int ww_q_ = 0, ww_g_prev_ = 0;
     // atr_break — expansion beyond the anchor by k × ATR.
     void mode_atr_break(const Bar& b, int hhmm) {
         if (!in_rth_) return;
@@ -1935,9 +2004,19 @@ private:
         if ((int)m1_hist_.size() < L + 1 || atr_ <= 0) return;
         const double mv = b.c - m1_hist_[m1_hist_.size() - 1 - L].c;
         if (std::fabs(mv) < tc_.tod_min_atr * atr_) return;
+        if (tc_.tod_min_er > 0.0) {                                   // efficiency of the lookback: |net| / Σ|Δclose| over L steps
+            double path = 0.0; const size_t n = m1_hist_.size();
+            for (size_t k = n - L; k < n; ++k) path += std::fabs(m1_hist_[k].c - m1_hist_[k - 1].c);
+            path += std::fabs(b.c - m1_hist_[n - 1].c);
+            if (path <= 0.0 || std::fabs(mv) / path < tc_.tod_min_er) { tod_done_ = true; return; }
+        }
+        const int dir = mv > 0 ? 1 : -1;
+        if (tc_.tod_vwap_agree) { const double vw = vwap(); if (vw <= 0.0 || dir * (b.c - vw) <= 0.0) { tod_done_ = true; return; } }
+        if (tc_.tod_open_agree && (rth_open_ <= 0.0 || dir * (b.c - rth_open_) <= 0.0)) { tod_done_ = true; return; }
         tod_done_ = true;
-        if (mv > 0 && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "tod_continuation_long");
-        else if (mv < 0 && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "tod_continuation_short");
+        if (tc_.tod_stop_atr > 0.0 && day_atr_ > 0.0) stop_dist_ = tc_.tod_stop_atr * day_atr_;
+        if (dir > 0 && can_enter(hhmm, +1)) emit(OrbSignal::BUY, b.c, "tod_continuation_long");
+        else if (dir < 0 && can_enter(hhmm, -1)) emit(OrbSignal::SELL, b.c, "tod_continuation_short");
     }
 
     // ── families added 2026-09-21 ───────────────────────────────────────────
@@ -2693,7 +2772,7 @@ private:
     double stop_hint_ = 0.0;                                     // structural stop of the last entry signal (0 = none)
     double target_px_ = 0.0;                                     // absolute target of the last entry signal (0 = none) — flag_take
     // flag_take state (RTH 1-minute bars from 09:30, the ft_tf chart on the 09:30 grid, the flag being followed)
-    struct FtBar { double o = 0, h = 0, l = 0, c = 0, v = 0; int m0 = 0; };
+    struct FtBar { double o = 0, h = 0, l = 0, c = 0, v = 0; int m0 = 0; double bv = 0; };   // bv = aggressor-buy volume
     std::vector<FtBar> ft_m1_, ft_bars_;
     double ft_pv_ = 0, ft_vv_ = 0, ft_hi_ = 0, ft_lo_ = 0, ft_or_h_ = 0, ft_or_l_ = 0, ft_lod_ = 0;
     int ft_lod_bar_ = 0; std::vector<int> ft_reg_;

@@ -1,0 +1,86 @@
+x0 PLAN|F0cand|conc2|q1|stop500|extreme|select_daily_50k|ev 1284|h1 1251|h2 1320|pass 34|paid 23|days_pass 34|days_first_pay 59
+x0 YEAR|F0cand|extreme|select_daily_50k|2014 1233|2015 489|2016 0|2017 5705|2018 74|2019 0|2020 30|2021 964|2022 1754|2023 1125|2024 2367|2025 2433
+x0 PROG|F0cand|select_daily_50k|gap 0|programs 2394|any account paid >= 300: 22.7%|any passed: 34.8%|avg total paid 6651 (after 80% split 5321)|got >= $250 back after split: 22.7%
+x0 PROG|F0cand|select_daily_50k|gap 1|programs 2390|any account paid >= 300: 26.8%|any passed: 40.3%|avg total paid 6651 (after 80% split 5321)|got >= $250 back after split: 26.8%
+x0 PROG|F0cand|select_daily_50k|gap 5|programs 2374|any account paid >= 300: 35.4%|any passed: 52.5%|avg total paid 6678 (after 80% split 5342)|got >= $250 back after split: 35.4%
+x0 PROG|F0cand|select_daily_50k|gap 10|programs 2354|any account paid >= 300: 41.4%|any passed: 60.0%|avg total paid 6651 (after 80% split 5321)|got >= $250 back after split: 41.4%
+x0 PROG|F0cand|select_daily_50k|gap 20|programs 2314|any account paid >= 300: 51.5%|any passed: 69.4%|avg total paid 6484 (after 80% split 5187)|got >= $250 back after split: 51.5%
+x0 PLAN|F0cand|conc2|q1|stop500|extreme|topstep_50k|ev 1593|h1 1543|h2 1648|pass 46|paid 32|days_pass 31|days_first_pay 57
+x0 YEAR|F0cand|extreme|topstep_50k|2014 1995|2015 746|2016 43|2017 6343|2018 141|2019 0|2020 355|2021 1453|2022 1574|2023 1674|2024 3156|2025 1731
+x0 PROG|F0cand|topstep_50k|gap 0|programs 2394|any account paid >= 300: 31.8%|any passed: 46.0%|avg total paid 7955 (after 80% split 6364)|got >= $250 back after split: 32.0%
+x0 PROG|F0cand|topstep_50k|gap 1|programs 2390|any account paid >= 300: 35.1%|any passed: 50.3%|avg total paid 7939 (after 80% split 6351)|got >= $250 back after split: 35.2%
+x0 PROG|F0cand|topstep_50k|gap 5|programs 2374|any account paid >= 300: 43.0%|any passed: 60.2%|avg total paid 7881 (after 80% split 6305)|got >= $250 back after split: 43.0%
+x0 PROG|F0cand|topstep_50k|gap 10|programs 2354|any account paid >= 300: 50.3%|any passed: 68.5%|avg total paid 7783 (after 80% split 6226)|got >= $250 back after split: 50.3%
+x0 PROG|F0cand|topstep_50k|gap 20|programs 2314|any account paid >= 300: 61.5%|any passed: 77.0%|avg total paid 7635 (after 80% split 6108)|got >= $250 back after split: 61.5%
+x0 PLAN|F0cand|conc2|q1|stop500|extreme|lucid_flex_50k|ev 1273|h1 1084|h2 1479|pass 46|paid 32|days_pass 31|days_first_pay 57
+x0 YEAR|F0cand|extreme|lucid_flex_50k|2014 1444|2015 704|2016 43|2017 4218|2018 120|2019 0|2020 321|2021 1278|2022 1399|2023 1624|2024 2680|2025 1768
+x0 PROG|F0cand|lucid_flex_50k|gap 0|programs 2394|any account paid >= 300: 31.5%|any passed: 46.0%|avg total paid 6407 (after 80% split 5126)|got >= $250 back after split: 31.5%
+x0 PROG|F0cand|lucid_flex_50k|gap 1|programs 2390|any account paid >= 300: 34.9%|any passed: 50.3%|avg total paid 6398 (after 80% split 5119)|got >= $250 back after split: 34.9%
+x0 PROG|F0cand|lucid_flex_50k|gap 5|programs 2374|any account paid >= 300: 42.2%|any passed: 60.2%|avg total paid 6359 (after 80% split 5088)|got >= $250 back after split: 42.2%
+x0 PROG|F0cand|lucid_flex_50k|gap 10|programs 2354|any account paid >= 300: 49.1%|any passed: 68.5%|avg total paid 6273 (after 80% split 5018)|got >= $250 back after split: 49.1%
+x0 PROG|F0cand|lucid_flex_50k|gap 20|programs 2314|any account paid >= 300: 60.0%|any passed: 77.0%|avg total paid 6147 (after 80% split 4918)|got >= $250 back after split: 60.0%
+x0 PLAN|F0cand|conc2|q1|stop500|extreme|builder_25k|ev 342|h1 304|h2 384|pass 43|paid 18|days_pass 8|days_first_pay 32
+x0 YEAR|F0cand|extreme|builder_25k|2014 588|2015 108|2016 114|2017 935|2018 70|2019 0|2020 279|2021 186|2022 326|2023 140|2024 860|2025 786
+x0 PROG|F0cand|builder_25k|gap 0|programs 2394|any account paid >= 300: 18.5%|any passed: 43.8%|avg total paid 1730 (after 80% split 1384)|got >= $250 back after split: 18.5%
+x0 PROG|F0cand|builder_25k|gap 1|programs 2390|any account paid >= 300: 22.8%|any passed: 53.3%|avg total paid 1733 (after 80% split 1386)|got >= $250 back after split: 22.8%
+x0 PROG|F0cand|builder_25k|gap 5|programs 2374|any account paid >= 300: 34.5%|any passed: 76.5%|avg total paid 1708 (after 80% split 1367)|got >= $250 back after split: 34.5%
+x0 PROG|F0cand|builder_25k|gap 10|programs 2354|any account paid >= 300: 45.4%|any passed: 86.0%|avg total paid 1674 (after 80% split 1339)|got >= $250 back after split: 45.4%
+x0 PROG|F0cand|builder_25k|gap 20|programs 2314|any account paid >= 300: 59.4%|any passed: 93.3%|avg total paid 1628 (after 80% split 1303)|got >= $250 back after split: 59.4%
+x0 PLAN|G1all|conc2|q1|stop500|extreme|select_daily_50k|ev 1212|h1 1132|h2 1299|pass 34|paid 20|days_pass 36|days_first_pay 59
+x0 YEAR|G1all|extreme|select_daily_50k|2014 1032|2015 319|2016 0|2017 5428|2018 0|2019 0|2020 30|2021 978|2022 1685|2023 1177|2024 2325|2025 2218
+x0 PROG|G1all|select_daily_50k|gap 0|programs 2394|any account paid >= 300: 20.8%|any passed: 34.4%|avg total paid 6268 (after 80% split 5014)|got >= $250 back after split: 20.8%
+x0 PROG|G1all|select_daily_50k|gap 1|programs 2390|any account paid >= 300: 24.7%|any passed: 39.9%|avg total paid 6241 (after 80% split 4993)|got >= $250 back after split: 24.7%
+x0 PROG|G1all|select_daily_50k|gap 5|programs 2374|any account paid >= 300: 32.4%|any passed: 52.2%|avg total paid 6199 (after 80% split 4959)|got >= $250 back after split: 32.4%
+x0 PROG|G1all|select_daily_50k|gap 10|programs 2354|any account paid >= 300: 37.5%|any passed: 60.0%|avg total paid 6170 (after 80% split 4936)|got >= $250 back after split: 37.5%
+x0 PROG|G1all|select_daily_50k|gap 20|programs 2314|any account paid >= 300: 46.8%|any passed: 70.6%|avg total paid 6065 (after 80% split 4852)|got >= $250 back after split: 46.8%
+x0 PLAN|G1all|conc2|q1|stop500|extreme|topstep_50k|ev 1314|h1 1091|h2 1557|pass 44|paid 29|days_pass 31|days_first_pay 56
+x0 YEAR|G1all|extreme|topstep_50k|2014 1148|2015 526|2016 0|2017 4860|2018 21|2019 0|2020 156|2021 1419|2022 1592|2023 1574|2024 3117|2025 1340
+x0 PROG|G1all|topstep_50k|gap 0|programs 2394|any account paid >= 300: 28.9%|any passed: 43.8%|avg total paid 6559 (after 80% split 5247)|got >= $250 back after split: 28.9%
+x0 PROG|G1all|topstep_50k|gap 1|programs 2390|any account paid >= 300: 32.1%|any passed: 47.9%|avg total paid 6562 (after 80% split 5250)|got >= $250 back after split: 32.1%
+x0 PROG|G1all|topstep_50k|gap 5|programs 2374|any account paid >= 300: 39.2%|any passed: 57.9%|avg total paid 6577 (after 80% split 5261)|got >= $250 back after split: 39.2%
+x0 PROG|G1all|topstep_50k|gap 10|programs 2354|any account paid >= 300: 45.3%|any passed: 65.7%|avg total paid 6565 (after 80% split 5252)|got >= $250 back after split: 45.3%
+x0 PROG|G1all|topstep_50k|gap 20|programs 2314|any account paid >= 300: 56.7%|any passed: 75.6%|avg total paid 6512 (after 80% split 5210)|got >= $250 back after split: 56.7%
+x0 PLAN|G1all|conc2|q1|stop500|extreme|lucid_flex_50k|ev 1090|h1 808|h2 1398|pass 44|paid 29|days_pass 31|days_first_pay 57
+x0 YEAR|G1all|extreme|lucid_flex_50k|2014 964|2015 557|2016 0|2017 3336|2018 20|2019 0|2020 156|2021 1282|2022 1333|2023 1542|2024 2699|2025 1335
+x0 PROG|G1all|lucid_flex_50k|gap 0|programs 2394|any account paid >= 300: 28.9%|any passed: 43.7%|avg total paid 5424 (after 80% split 4339)|got >= $250 back after split: 28.9%
+x0 PROG|G1all|lucid_flex_50k|gap 1|programs 2390|any account paid >= 300: 32.1%|any passed: 47.9%|avg total paid 5426 (after 80% split 4341)|got >= $250 back after split: 32.1%
+x0 PROG|G1all|lucid_flex_50k|gap 5|programs 2374|any account paid >= 300: 39.2%|any passed: 57.9%|avg total paid 5436 (after 80% split 4349)|got >= $250 back after split: 39.2%
+x0 PROG|G1all|lucid_flex_50k|gap 10|programs 2354|any account paid >= 300: 45.3%|any passed: 65.7%|avg total paid 5424 (after 80% split 4339)|got >= $250 back after split: 45.3%
+x0 PROG|G1all|lucid_flex_50k|gap 20|programs 2314|any account paid >= 300: 56.7%|any passed: 75.6%|avg total paid 5368 (after 80% split 4295)|got >= $250 back after split: 56.7%
+x0 PLAN|G1all|conc2|q1|stop500|extreme|builder_25k|ev 293|h1 228|h2 365|pass 42|paid 16|days_pass 8|days_first_pay 36
+x0 YEAR|G1all|extreme|builder_25k|2014 500|2015 27|2016 114|2017 690|2018 23|2019 0|2020 163|2021 199|2022 326|2023 140|2024 860|2025 786
+x0 PROG|G1all|builder_25k|gap 0|programs 2394|any account paid >= 300: 16.2%|any passed: 42.2%|avg total paid 1480 (after 80% split 1184)|got >= $250 back after split: 16.2%
+x0 PROG|G1all|builder_25k|gap 1|programs 2390|any account paid >= 300: 20.4%|any passed: 52.1%|avg total paid 1482 (after 80% split 1186)|got >= $250 back after split: 20.4%
+x0 PROG|G1all|builder_25k|gap 5|programs 2374|any account paid >= 300: 29.7%|any passed: 75.5%|avg total paid 1460 (after 80% split 1168)|got >= $250 back after split: 29.7%
+x0 PROG|G1all|builder_25k|gap 10|programs 2354|any account paid >= 300: 39.2%|any passed: 85.2%|avg total paid 1427 (after 80% split 1142)|got >= $250 back after split: 39.2%
+x0 PROG|G1all|builder_25k|gap 20|programs 2314|any account paid >= 300: 51.3%|any passed: 92.5%|avg total paid 1384 (after 80% split 1107)|got >= $250 back after split: 51.3%
+x0 PLAN|st300|conc2|q1|stop300|extreme|select_daily_50k|ev 467|h1 562|h2 363|pass 21|paid 10|days_pass 36|days_first_pay 58
+x0 PLAN|st300|conc2|q1|stop300|extreme|topstep_50k|ev 768|h1 965|h2 552|pass 33|paid 20|days_pass 33|days_first_pay 68
+x0 PLAN|st300|conc2|q1|stop300|extreme|lucid_flex_50k|ev 616|h1 729|h2 492|pass 33|paid 20|days_pass 33|days_first_pay 68
+x1 PLAN|st300|conc2|q1|stop300|extreme|select_daily_50k|ev 399|h1 476|h2 314|pass 19|paid 9|days_pass 36|days_first_pay 57
+x1 PLAN|st300|conc2|q1|stop300|extreme|topstep_50k|ev 585|h1 706|h2 453|pass 30|paid 17|days_pass 31|days_first_pay 64
+x1 PLAN|st300|conc2|q1|stop300|extreme|lucid_flex_50k|ev 488|h1 550|h2 421|pass 30|paid 17|days_pass 31|days_first_pay 64
+x0 PLAN|st400|conc2|q1|stop400|extreme|select_daily_50k|ev 828|h1 994|h2 648|pass 27|paid 15|days_pass 34|days_first_pay 57
+x0 PLAN|st400|conc2|q1|stop400|extreme|topstep_50k|ev 1087|h1 1230|h2 930|pass 39|paid 25|days_pass 31|days_first_pay 59
+x0 PLAN|st400|conc2|q1|stop400|extreme|lucid_flex_50k|ev 891|h1 961|h2 815|pass 38|paid 24|days_pass 31|days_first_pay 60
+x1 PLAN|st400|conc2|q1|stop400|extreme|select_daily_50k|ev 726|h1 840|h2 601|pass 24|paid 13|days_pass 33|days_first_pay 53
+x1 PLAN|st400|conc2|q1|stop400|extreme|topstep_50k|ev 889|h1 946|h2 827|pass 35|paid 22|days_pass 31|days_first_pay 59
+x1 PLAN|st400|conc2|q1|stop400|extreme|lucid_flex_50k|ev 750|h1 717|h2 786|pass 35|paid 21|days_pass 31|days_first_pay 57
+x0 PLAN|st500|conc2|q1|stop500|extreme|select_daily_50k|ev 1212|h1 1132|h2 1299|pass 34|paid 20|days_pass 36|days_first_pay 59
+x0 PLAN|st500|conc2|q1|stop500|extreme|topstep_50k|ev 1314|h1 1091|h2 1557|pass 44|paid 29|days_pass 31|days_first_pay 56
+x0 PLAN|st500|conc2|q1|stop500|extreme|lucid_flex_50k|ev 1090|h1 808|h2 1398|pass 44|paid 29|days_pass 31|days_first_pay 57
+x1 PLAN|st500|conc2|q1|stop500|extreme|select_daily_50k|ev 1042|h1 1033|h2 1051|pass 32|paid 18|days_pass 34|days_first_pay 58
+x1 PLAN|st500|conc2|q1|stop500|extreme|topstep_50k|ev 1186|h1 1076|h2 1306|pass 43|paid 27|days_pass 30|days_first_pay 56
+x1 PLAN|st500|conc2|q1|stop500|extreme|lucid_flex_50k|ev 955|h1 744|h2 1187|pass 43|paid 27|days_pass 30|days_first_pay 56
+x0 PLAN|st750|conc2|q1|stop750|extreme|select_daily_50k|ev 1309|h1 1081|h2 1557|pass 35|paid 23|days_pass 36|days_first_pay 62
+x0 PLAN|st750|conc2|q1|stop750|extreme|topstep_50k|ev 1419|h1 1169|h2 1692|pass 45|paid 32|days_pass 30|days_first_pay 57
+x0 PLAN|st750|conc2|q1|stop750|extreme|lucid_flex_50k|ev 1182|h1 896|h2 1493|pass 45|paid 32|days_pass 30|days_first_pay 56
+x1 PLAN|st750|conc2|q1|stop750|extreme|select_daily_50k|ev 1149|h1 941|h2 1375|pass 33|paid 22|days_pass 36|days_first_pay 62
+x1 PLAN|st750|conc2|q1|stop750|extreme|topstep_50k|ev 1208|h1 1012|h2 1421|pass 44|paid 29|days_pass 30|days_first_pay 57
+x1 PLAN|st750|conc2|q1|stop750|extreme|lucid_flex_50k|ev 1000|h1 725|h2 1300|pass 44|paid 29|days_pass 30|days_first_pay 57
+x0 PLAN|st1000|conc2|q1|stop1000|extreme|select_daily_50k|ev 1291|h1 1115|h2 1483|pass 36|paid 23|days_pass 36|days_first_pay 62
+x0 PLAN|st1000|conc2|q1|stop1000|extreme|topstep_50k|ev 1392|h1 1201|h2 1601|pass 46|paid 32|days_pass 30|days_first_pay 57
+x0 PLAN|st1000|conc2|q1|stop1000|extreme|lucid_flex_50k|ev 1160|h1 932|h2 1410|pass 46|paid 32|days_pass 30|days_first_pay 57
+x1 PLAN|st1000|conc2|q1|stop1000|extreme|select_daily_50k|ev 1133|h1 976|h2 1306|pass 34|paid 21|days_pass 36|days_first_pay 61
+x1 PLAN|st1000|conc2|q1|stop1000|extreme|topstep_50k|ev 1197|h1 1062|h2 1344|pass 44|paid 29|days_pass 29|days_first_pay 57
+x1 PLAN|st1000|conc2|q1|stop1000|extreme|lucid_flex_50k|ev 997|h1 785|h2 1228|pass 44|paid 29|days_pass 29|days_first_pay 57

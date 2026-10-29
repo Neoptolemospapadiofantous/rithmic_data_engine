@@ -1,0 +1,30 @@
+# mm-paper-prem-local.service — Lighter PREMIUM shadow of the live pilot (2026-10-28, founder: "lets add premium to see
+# tests"). Identical to mm-paper-opt-local (the live setting: pause on 1-tick jumps, 4 s, spread >= 5, $11, cap 1,
+# 60 requests/min) except the account tier: Premium has no Standard speed bump on cancels and charges a maker fee.
+#   delays 145 ms place / 145 ms cancel  (Standard measured 145 / 445 from this box; the 300 ms on cancels is the bump)
+#   maker fee 0.4 bps                     (Lighter Premium schedule as noted in docs/market_making_system.md §7)
+# Request limit kept at Standard's 60/min (conservative: Premium's higher limits are not modelled). Label paper_prem.
+# Compare with paper_opt: same markets, same data, same minute — the difference is the tier.
+# Install: cp deploy/mm-paper-prem-local.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user enable --now mm-paper-prem-local
+[Unit]
+Description=Lighter paper market maker, PREMIUM shadow of the live pilot (no orders), 24/7
+After=network-online.target postgresql.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_prem --latency-ms 300 --place-latency-ms 145 --cancel-latency-ms 145 --maker-fee-bps 0.4 --rate-limit 60 --pause-move-ticks 1 --pause-ms 4000 --min-spread-ticks 5 --max-inv 1 --tick-rule hl --status data/mm_paper/status_paper_prem.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_prem.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_prem.log
+Restart=always
+RestartSec=30
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=10
+OOMScoreAdjust=100
+MemoryMax=512M
+
+[Install]
+WantedBy=default.target

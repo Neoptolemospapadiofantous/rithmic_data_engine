@@ -1,0 +1,27 @@
+BTC gross mean per trade (bp) across ALL 60 variants: choose median   +0.0 | best   +4.3
+variants with POSITIVE taker net in choose: 0 | at maker: 1 of 60 
+
+family chosen variant (best 2020-22)        n |  choose | validate taker/maker twin p |  holdout taker/maker twin p | ETH taker |   PBO verdict
+S1    S1_burst_follow_x0.3_k3_H240      5689 |   -9.2 |   -9.2 /   -3.2      0.276 |  -13.6 /   -7.6      0.988 |      -9.1 |  0.00 fail
+S2    S2_burst_fade_x0.5_k3_H240        4689 |   -5.7 |   -8.2 /   -2.2      0.172 |   -7.0 /   -1.0      0.024 |     -10.5 |  0.00 fail
+S3    S3_divergence_n30_H60            20646 |   -8.0 |  -10.0 /   -4.0      0.513 |   -9.0 /   -3.0      0.008 |     -10.1 |  0.00 fail
+S4    S4_absorption_y0.5_H60            2021 |   -8.1 |   -8.8 /   -2.8      0.180 |  -10.8 /   -4.8      0.792 |      -9.4 |  0.00 fail
+S5    S5_whale_follow_p0.05_H240        4172 |   -7.0 |  -11.3 /   -5.3      0.776 |   -9.5 /   -3.5      0.393 |      -9.8 |  0.00 fail
+S6    S6_cascade_fade_m3_H60           11811 |   -8.7 |   -9.5 /   -3.5      0.142 |  -10.0 /   -4.0      0.466 |     -10.3 |  0.00 fail
+S6b   S6b_cascade_follow_m5_H15         5513 |   -9.9 |  -10.1 /   -4.1      0.570 |  -10.4 /   -4.4      0.914 |      -9.9 |  0.00 fail
+S7    S7_cvd_trend_H60                  1263 |  -10.8 |   -6.1 /   -0.1      0.009 |   -8.4 /   -2.4      0.182 |      -9.8 |  0.66 fail
+S8    S8_session_open_H240              2118 |  -10.5 |  -13.3 /   -7.3      0.859 |  -12.4 /   -6.4      0.781 |     -12.6 |  0.76 fail
+
+(bp = basis points of price per trade; taker cost 10 bp, maker 4 bp per round trip; twin p = share of random-entry twins doing as well gross)
+
+PRE-HISTORY BTC spot 2017-08 → 2019-12 (chosen variants, read once):
+  S1   S1_burst_follow_x0.3_k3_H240     n  3951 gross   -4.0bp  taker  -14.0bp  maker   -8.0bp  twin p 0.922
+  S2   S2_burst_fade_x0.5_k3_H240       n  3726 gross   -2.1bp  taker  -12.1bp  maker   -6.1bp  twin p 0.760
+  S3   S3_divergence_n30_H60            n 14547 gross   +2.6bp  taker   -7.4bp  maker   -1.4bp  twin p 0.002
+  S4   S4_absorption_y0.5_H60           n  4104 gross   -1.8bp  taker  -11.8bp  maker   -5.8bp  twin p 0.878
+  S5   S5_whale_follow_p0.05_H240       n  2667 gross   +1.3bp  taker   -8.7bp  maker   -2.7bp  twin p 0.411
+  S6   S6_cascade_fade_m3_H60           n  5957 gross   -4.7bp  taker  -14.7bp  maker   -8.7bp  twin p 1.000
+  S6b  S6b_cascade_follow_m5_H15        n  2175 gross  +11.0bp  taker   +1.0bp  maker   +7.0bp  twin p 0.002
+  S7   S7_cvd_trend_H60                 n   793 gross   -3.6bp  taker  -13.6bp  maker   -7.6bp  twin p 0.840
+  S8   S8_session_open_H240             n  1515 gross   +2.5bp  taker   -7.5bp  maker   -1.5bp  twin p 0.210
+  all 60 variants: gross median +0.6bp, best +12.6bp; positive at taker: 2

@@ -44,7 +44,7 @@ struct DepthRow {
 };
 
 struct DBSummary {
-    int64_t               tick_count = 0;
+    int64_t               tick_count = 0;   // estimate (row_estimate), not an exact count
     std::string           earliest;
     std::string           latest;
     std::optional<double> price;
@@ -121,7 +121,8 @@ public:
     size_t write_sentinel_alerts(const std::vector<SentinelAlertRow>& alerts);
 
     // Read helpers
-    int64_t               row_count();
+    int64_t               row_count();      // exact COUNT(*) — a full scan: ~30 s on a 140M-row table
+    int64_t               row_estimate();   // planner estimate (pg_class.reltuples), instant; 0 if never analyzed
     std::optional<double> latest_price();
     DBSummary             summary();
 

@@ -1,0 +1,28 @@
+Adaptive flag selection — ES, 2611 NY days 2014-01 → 2026-10, 5-minute opening range. TREND flags 3753, REVERSAL flags 1043. Test years 2017-2026, walk-forward.
+Each scheme picks one cell of the same 1,152-cell grid from its training window and trades it blind the next year. R per trade, one position at a time.
+
+######## TREND flags (with the break)
+    scheme                             | 2017-19 | 2020-22 | 2023-26 | all 2017-26: trades/yr, R, win %, PF, DD R, years > 0
+    FIXED every flag                   |  +0.04 (412) |  +0.15 (413) |  +0.22 (438) | 126.3/yr +0.139R win 29.1% PF 1.18 · worst-year DD 37.6R · 8/10
+    FIXED A-list + 5m HH/HL            |  +0.13 (115) |  +0.53 (127) |  +0.21 (113) |  35.5/yr +0.301R win 31.3% PF 1.40 · worst-year DD 18.2R · 8/10
+    EXPAND best cell, all earlier yrs  |  -0.30 ( 24) |  +0.16 (  9) |  -0.85 (  8) |   4.1/yr -0.307R win 19.5% PF 0.66 · worst-year DD  8.9R · 1/6
+    ROLL1 best cell, last 1 yr         |  +0.37 ( 34) |  +0.02 ( 47) |  -0.36 ( 42) |  12.3/yr -0.011R win 30.9% PF 0.99 · worst-year DD 10.8R · 4/10
+    ROLL2 best cell, last 2 yrs        |  +0.30 ( 47) |  +0.50 ( 50) |  +0.16 ( 52) |  14.9/yr +0.317R win 35.6% PF 1.44 · worst-year DD  7.9R · 8/10
+    ROLL3 best cell, last 3 yrs        |  -0.01 ( 34) |  +0.25 ( 34) |  +0.04 ( 30) |   9.8/yr +0.096R win 26.5% PF 1.12 · worst-year DD  8.9R · 3/9
+    VIX split (< 20 / >= 20)           |  +0.68 ( 44) |  -0.13 ( 54) |  -0.13 ( 11) |  10.9/yr +0.198R win 30.3% PF 1.26 · worst-year DD 16.5R · 5/8
+    TREND5 split (last 5 days up/down) |  -0.05 ( 34) |  -0.15 ( 26) |  +0.02 ( 21) |   8.1/yr -0.066R win 25.9% PF 0.92 · worst-year DD 10.0R · 3/9
+    ATRX split (ATR rising / falling)  |  -0.13 ( 43) |  +0.32 ( 28) |  -0.40 ( 23) |   9.4/yr -0.060R win 29.8% PF 0.92 · worst-year DD 11.6R · 3/9
+    every flag by regime, 2014-26 (no selection): VIX<20 +0.01 (1227) VIX>=20 +0.25 (435) 5d down +0.24 (670) 5d up -0.04 (992) ATR falling +0.02 (904) ATR rising +0.14 (758)
+
+######## REVERSAL flags (against the break)
+    scheme                             | 2017-19 | 2020-22 | 2023-26 | all 2017-26: trades/yr, R, win %, PF, DD R, years > 0
+    FIXED every flag                   |  -0.21 (127) |  -0.09 (105) |  +0.12 (141) |  37.3/yr -0.054R win 26.3% PF 0.93 · worst-year DD 35.9R · 4/10
+    FIXED A-list + 5m HH/HL            |  +0.61 ( 13) |  +0.44 ( 16) |  -0.03 ( 29) |   5.8/yr +0.242R win 31.0% PF 1.33 · worst-year DD  5.5R · 5/8
+    EXPAND best cell, all earlier yrs  |  -0.29 ( 23) |  -0.22 ( 16) |  +0.40 ( 13) |   5.2/yr -0.096R win 28.8% PF 0.88 · worst-year DD 12.0R · 4/7
+    ROLL1 best cell, last 1 yr         |  -0.16 ( 61) |  -0.25 ( 45) |  +0.21 ( 48) |  15.4/yr -0.071R win 29.2% PF 0.91 · worst-year DD 18.4R · 4/10
+    ROLL2 best cell, last 2 yrs        |  -0.27 ( 52) |  -0.02 ( 39) |  +0.09 ( 56) |  14.7/yr -0.065R win 26.5% PF 0.92 · worst-year DD 22.5R · 4/9
+    ROLL3 best cell, last 3 yrs        |  -0.38 ( 27) |  +0.02 ( 28) |  +0.50 ( 31) |   8.6/yr +0.071R win 32.6% PF 1.10 · worst-year DD 14.7R · 7/9
+    VIX split (< 20 / >= 20)           |  -0.26 ( 15) |  -0.13 ( 32) |  +0.64 ( 22) |   6.9/yr +0.087R win 30.4% PF 1.12 · worst-year DD  9.6R · 6/8
+    TREND5 split (last 5 days up/down) |  -0.00 ( 55) |  -0.02 ( 23) |  -0.10 ( 21) |   9.9/yr -0.029R win 26.3% PF 0.96 · worst-year DD 16.3R · 4/9
+    ATRX split (ATR rising / falling)  |  -0.27 ( 49) |  +0.56 ( 19) |  +0.32 ( 23) |   9.1/yr +0.051R win 30.8% PF 1.07 · worst-year DD 13.0R · 5/9
+    every flag by regime, 2014-26 (no selection): VIX<20 +0.03 (337) VIX>=20 -0.05 (131) 5d down +0.15 (219) 5d up -0.11 (249) ATR falling -0.02 (232) ATR rising +0.05 (236)

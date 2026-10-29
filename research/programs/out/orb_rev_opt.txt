@@ -1,0 +1,57 @@
+Optimising the reversal flag — NQ, 2581 NY days 2014-01 → 2026-10, 1001 reversal flags (5-minute range broke one way, a flag formed the other way), 1152 cells.
+Each test year trades the cell that was best over all earlier years (>= 30 trades there). R per trade, points at today's ATR (307), cost 1.5 pts.
+
+  year | walk-forward pick (trained on earlier years)                                    | its trades R | top-5 union R | every reversal flag R
+  2017 | ext<0.15 · any time · any grade · any gap · bull only                        |  -0.48 (  9) |  +0.03 ( 29) |  -0.07 ( 48)
+  2018 | ext any · 10:30-12 · first · any grade · any gap · bull only                |  -0.55 (  7) |  +0.04 ( 18) |  -0.25 ( 38)
+  2019 | ext any · 10:30-12 · A · gap with · both sides                               |  +1.31 (  8) |  +0.09 ( 16) |  -0.23 ( 32)
+  2020 | ext any · 10:30-12 · A · gap with · both sides                               |  +0.92 ( 11) |  +0.61 ( 19) |  +0.25 ( 39)
+  2021 | ext any · 10:30-12 · A · gap with · both sides                               |  +0.27 (  6) |  +0.35 ( 11) |  +0.11 ( 36)
+  2022 | ext any · 10:30-12 · A · 5m HH/HL · gap with · both sides                   |  -1.03 (  6) |  -0.80 (  7) |  -0.17 ( 29)
+  2023 | ext any · 10:30-12 · A · 5m HH/HL · gap with · both sides                   |  -0.66 (  7) |  -0.05 ( 11) |  +0.23 ( 43)
+  2024 | ext any · any time · A or B · gap against · bull only                        |  -1.04 (  3) |  -0.43 ( 12) |  -0.07 ( 42)
+  2025 | ext 0.15-0.4 · any time · A or B · 5m HH/HL · gap with · both sides         |  +1.66 (  1) |  -0.14 (  3) |  +0.02 ( 36)
+  2026 | ext any · 10:30-12 · A or B · gap against · bull only                        |  -1.03 (  1) |  +3.04 (  2) |  +1.25 (  5)
+
+2017-2026 out of sample:
+  walk-forward best cell                         59 trades ( 5.9/yr) · +0.012R · win 32.2% · PF 1.02 ·   +4.3 pts · DD  15.8R
+  walk-forward top-5 union                      128 trades (12.8/yr) · +0.100R · win 31.2% · PF 1.13 ·  +10.6 pts · DD  15.7R
+  every reversal flag (blind)                   348 trades (34.8/yr) · +0.008R · win 27.3% · PF 1.01 ·   +3.3 pts · DD  34.4R
+
+Hindsight (picked on all years — NOT tradable, for reading): best cells with >= 60 trades, and the two halves
+  ext 0.15-0.4 · any time · first · A or B · any gap · both sides               60 tr +0.758R PF 2.22 · 2014-19  +0.25 ( 31) · 2020-26  +1.30 ( 29)
+  ext 0.15-0.4 · any time · A or B · gap with · both sides                       61 tr +0.651R PF 2.03 · 2014-19  +0.23 ( 36) · 2020-26  +1.26 ( 25)
+  ext 0.15-0.4 · any time · A or B · any gap · both sides                        79 tr +0.603R PF 1.89 · 2014-19  +0.31 ( 46) · 2020-26  +1.01 ( 33)
+  ext any · 10:30-12 · A · 5m HH/HL · any gap · both sides                      63 tr +0.538R PF 1.82 · 2014-19  +1.11 ( 24) · 2020-26  +0.19 ( 39)
+  ext any · 10:30-12 · first · A or B · 5m HH/HL · any gap · both sides        82 tr +0.479R PF 1.65 · 2014-19  +0.51 ( 39) · 2020-26  +0.45 ( 43)
+  ext 0.15-0.4 · any time · first · any grade · gap with · both sides           61 tr +0.448R PF 1.69 · 2014-19  -0.03 ( 33) · 2020-26  +1.01 ( 28)
+  ext any · 10:30-12 · A or B · 5m HH/HL · gap with · both sides                89 tr +0.442R PF 1.61 · 2014-19  +0.77 ( 43) · 2020-26  +0.13 ( 46)
+  ext 0.15-0.4 · any time · any grade · gap with · both sides                    72 tr +0.441R PF 1.66 · 2014-19  +0.08 ( 44) · 2020-26  +1.01 ( 28)
+  ext any · 10:30-12 · A · gap with · both sides                                 86 tr +0.438R PF 1.63 · 2014-19  +0.96 ( 39) · 2020-26  +0.00 ( 47)
+  ext any · any time · first · A · any gap · bull only                          62 tr +0.433R PF 1.70 · 2014-19  +0.57 ( 20) · 2020-26  +0.37 ( 42)
+  ext any · 10:30-12 · A · any gap · both sides                                  98 tr +0.420R PF 1.60 · 2014-19  +0.80 ( 44) · 2020-26  +0.11 ( 54)
+  ext any · any time · first · A or B · 5m HH/HL · any gap · both sides       119 tr +0.413R PF 1.58 · 2014-19  +0.41 ( 51) · 2020-26  +0.41 ( 68)
+
+One condition at a time (every reversal flag 2014-26, one at a time):
+  all                                       451 tr +0.022R win 27.7% PF 1.03 · 2014-19  -0.06 (221) · 2020-26  +0.10 (230)
+  ext < 0.15 ATR (a fake break)             322 tr -0.086R win 25.2% PF 0.90 · 2014-19  -0.08 (148) · 2020-26  -0.09 (174)
+  ext 0.15-0.40                             126 tr +0.307R win 34.1% PF 1.41 · 2014-19  +0.03 ( 71) · 2020-26  +0.67 ( 55)
+  ext > 0.40 (a real move, then turned)       3 tr -0.417R win 33.3% PF 0.46 · 2014-19  -1.16 (  2) · 2020-26  +1.06 (  1)
+  registered before 10:30                    57 tr -0.238R win 19.3% PF 0.74 · 2014-19  +0.12 ( 25) · 2020-26  -0.52 ( 32)
+  10:30-12:00                               260 tr +0.050R win 25.4% PF 1.06 · 2014-19  +0.05 (129) · 2020-26  +0.05 (131)
+  12:00-14:00                               190 tr -0.059R win 31.6% PF 0.92 · 2014-19  -0.38 ( 95) · 2020-26  +0.26 ( 95)
+  first reversal flag of the day            369 tr +0.049R win 28.7% PF 1.06 · 2014-19  +0.00 (175) · 2020-26  +0.09 (194)
+  A-list                                    163 tr +0.217R win 35.0% PF 1.30 · 2014-19  +0.32 ( 79) · 2020-26  +0.12 ( 84)
+  5m HH/HL                                  298 tr +0.039R win 28.2% PF 1.05 · 2014-19  -0.09 (140) · 2020-26  +0.15 (158)
+  gap on the flag's side                    235 tr +0.154R win 33.2% PF 1.21 · 2014-19  +0.16 (118) · 2020-26  +0.15 (117)
+  gap against the flag                      216 tr -0.123R win 21.8% PF 0.86 · 2014-19  -0.31 (103) · 2020-26  +0.04 (113)
+  bull (broke down, turned up)              192 tr +0.244R win 36.5% PF 1.35 · 2014-19  +0.18 ( 86) · 2020-26  +0.30 (106)
+  bear (broke up, turned down)              259 tr -0.143R win 21.2% PF 0.84 · 2014-19  -0.21 (135) · 2020-26  -0.07 (124)
+
+Two conditions that held on both NQ and ES in both halves (chosen AFTER the table above — a hypothesis, not a pre-registered result):
+  bull reversal + gap up (gap on the flag's side)   109 tr ( 8.5/yr) +0.171R win 39.4% PF 1.25 ·  +10.3 pts · DD  17.0R · 2014-19  +0.19 ( 50) · 2020-26  +0.16 ( 59) · years > 0: 7/13
+    … + registered 10:30-12:00                     66 tr ( 5.2/yr) +0.036R win 30.3% PF 1.05 ·   +3.7 pts · DD  17.8R · 2014-19  +0.24 ( 28) · 2020-26  -0.11 ( 38) · years > 0: 5/12
+    … + A or B grade                               95 tr ( 7.4/yr) +0.229R win 40.0% PF 1.35 ·  +12.1 pts · DD  17.0R · 2014-19  +0.28 ( 40) · 2020-26  +0.19 ( 55) · years > 0: 7/13
+    … + first reversal flag of the day             98 tr ( 7.7/yr) +0.192R win 39.8% PF 1.29 ·  +11.2 pts · DD  15.5R · 2014-19  +0.22 ( 44) · 2020-26  +0.17 ( 54) · years > 0: 5/12
+  bull reversal + gap DOWN (control)                 83 tr ( 6.5/yr) +0.341R win 32.5% PF 1.46 ·  +14.4 pts · DD  20.2R · 2014-19  +0.16 ( 36) · 2020-26  +0.48 ( 47) · years > 0: 6/11
+  bear reversal + gap down                          126 tr ( 9.8/yr) +0.140R win 27.8% PF 1.18 ·  +14.3 pts · DD  14.9R · 2014-19  +0.14 ( 68) · 2020-26  +0.14 ( 58) · years > 0: 7/12

@@ -1,0 +1,114 @@
+SET AND FORGET — NQ A grade (NY bull 3-5m flag-mid, registered before 12:00, one position across charts) · STRICT fills (limit fills only on a trade-through)
+
+STRATEGY
+    S1 walk-forward 2014-26 (honest)              338 trades (26.4/yr) · +0.446R · win 41% · PF 1.68 · total +150.8R · max DD 14.2R · worst streak 10
+    frozen page rule (score >= 1.307; weights learned on these years — IN-SAMPLE):
+    S1 frozen 2010-2013                            75 trades (18.8/yr) · +0.374R · win 40% · PF 1.48 · total  +28.0R · max DD 10.4R · worst streak 5
+    S1 frozen 2014-2019                           144 trades (24.0/yr) · +0.818R · win 49% · PF 2.33 · total +117.9R · max DD  6.9R · worst streak 6
+    S1 frozen 2020-2024                           127 trades (25.4/yr) · +0.811R · win 43% · PF 2.36 · total +103.0R · max DD  7.3R · worst streak 7
+    S1 frozen 2025-2026                            35 trades (19.4/yr) · +0.083R · win 34% · PF 1.13 · total   +2.9R · max DD  9.3R · worst streak 9
+    S1 frozen 2010-2026                           381 trades (22.7/yr) · +0.661R · win 44% · PF 2.03 · total +251.8R · max DD 10.4R · worst streak 9
+    S2 2014-26: walk-forward 338 trades, frozen 306, shared 251 (82% of frozen)
+
+EXECUTION (walk-forward list)
+    X0 base (cost 1.5)                            338 trades (26.4/yr) · +0.446R · win 41% · PF 1.68 · total +150.8R · max DD 14.2R · worst streak 10
+    X1 cost 3.0 pts                               338 trades (26.4/yr) · +0.320R · win 40% · PF 1.44 · total +108.3R · max DD 19.8R · worst streak 10
+    X1 cost 4.5 pts                               338 trades (26.4/yr) · +0.195R · win 39% · PF 1.24 · total  +65.9R · max DD 28.0R · worst streak 10
+    X2 stops 2 ticks worse, 15:55 1 tick          338 trades (26.4/yr) · +0.416R · win 41% · PF 1.61 · total +140.6R · max DD 14.6R · worst streak 10
+    X2 stops 4 ticks worse, 15:55 1 tick          338 trades (26.4/yr) · +0.392R · win 41% · PF 1.55 · total +132.6R · max DD 16.0R · worst streak 10
+    X2 stops 8 ticks worse, 15:55 1 tick          338 trades (26.4/yr) · +0.345R · win 41% · PF 1.46 · total +116.7R · max DD 20.2R · worst streak 10
+    exits: stop 198 · target 37 · 15:55 103
+    X3 10% of trades missed                      mean +0.447R a trade · total R: mean +135.8, 5th pct +115.4
+    X3 25% of trades missed                      mean +0.448R a trade · total R: mean +113.8, 5th pct +83.0
+    X4 all bad (cost 3, stops 4 ticks, 15:55 1 tick)  338 trades (26.4/yr) · +0.267R · win 40% · PF 1.34 · total  +90.2R · max DD 24.2R · worst streak 10
+    X4 + 10% missed                              mean +0.267R a trade · total R: mean +81.3, 5th pct +60.7
+
+RISK (ATR now 307 pts on 20261015; stop distance scaled to it: median 41.3 pts, 10th 32.9, 90th 53.3 — 1 MNQ risks $83 median)
+
+  REALISTIC (cost 1.5, stops 2 ticks worse) fills
+  R1 Tradeify Select Flex 50K   $250/trade: pass  67% (unresolved 9 of 504) · median 192 trading days to pass · funded account pays $ 5641 over 609 days alive · net per eval bought $+3595
+     R2  1 account  together  12 months (142 windows): net mean $   -97 · median $  -165 · 10th pct $  -330 ·  12% of windows > 0 · fees $  195 · payouts $    98 · worst running loss $  -495 (10th pct $ -330)
+     R2  1 account  one/week  12 months (142 windows): net mean $   -97 · median $  -165 · 10th pct $  -330 ·  12% of windows > 0 · fees $  195 · payouts $    98 · worst running loss $  -495 (10th pct $ -330)
+     R2  3 accounts together  12 months (142 windows): net mean $  -292 · median $  -495 · 10th pct $  -990 ·  12% of windows > 0 · fees $  586 · payouts $   293 · worst running loss $ -1485 (10th pct $ -990)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -281 · median $  -495 · 10th pct $  -990 ·  13% of windows > 0 · fees $  588 · payouts $   307 · worst running loss $ -1485 (10th pct $ -990)
+     R2  5 accounts together  12 months (142 windows): net mean $  -487 · median $  -825 · 10th pct $ -1650 ·  12% of windows > 0 · fees $  976 · payouts $   489 · worst running loss $ -2475 (10th pct $-1650)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  -497 · median $  -825 · 10th pct $ -1650 ·  13% of windows > 0 · fees $  976 · payouts $   480 · worst running loss $ -2475 (10th pct $-1650)
+  R1 Tradeify Select Flex 50K   $400/trade: pass  54% (unresolved 2 of 504) · median 122 trading days to pass · funded account pays $ 4444 over 347 days alive · net per eval bought $+2217
+     R2  1 account  together  12 months (142 windows): net mean $   +97 · median $  -165 · 10th pct $  -495 ·  19% of windows > 0 · fees $  286 · payouts $   383 · worst running loss $  -825 (10th pct $ -495)
+     R2  1 account  one/week  12 months (142 windows): net mean $   +97 · median $  -165 · 10th pct $  -495 ·  19% of windows > 0 · fees $  286 · payouts $   383 · worst running loss $  -825 (10th pct $ -495)
+     R2  3 accounts together  12 months (142 windows): net mean $  +292 · median $  -495 · 10th pct $ -1485 ·  19% of windows > 0 · fees $  858 · payouts $  1149 · worst running loss $ -2475 (10th pct $-1485)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  +194 · median $  -495 · 10th pct $ -1485 ·  19% of windows > 0 · fees $  852 · payouts $  1046 · worst running loss $ -2475 (10th pct $-1485)
+     R2  5 accounts together  12 months (142 windows): net mean $  +487 · median $  -825 · 10th pct $ -2475 ·  19% of windows > 0 · fees $ 1429 · payouts $  1916 · worst running loss $ -4125 (10th pct $-2475)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  +199 · median $  -825 · 10th pct $ -2475 ·  21% of windows > 0 · fees $ 1413 · payouts $  1612 · worst running loss $ -3960 (10th pct $-2475)
+  R1 Tradeify Select Flex 50K   $600/trade: pass  47% (unresolved 0 of 504) · median 103 trading days to pass · funded account pays $ 9705 over 574 days alive · net per eval bought $+4360
+     R2  1 account  together  12 months (142 windows): net mean $  +112 · median $  -330 · 10th pct $  -660 ·  22% of windows > 0 · fees $  404 · payouts $   517 · worst running loss $  -990 (10th pct $ -660)
+     R2  1 account  one/week  12 months (142 windows): net mean $  +112 · median $  -330 · 10th pct $  -660 ·  22% of windows > 0 · fees $  404 · payouts $   517 · worst running loss $  -990 (10th pct $ -660)
+     R2  3 accounts together  12 months (142 windows): net mean $  +337 · median $  -990 · 10th pct $ -1980 ·  22% of windows > 0 · fees $ 1213 · payouts $  1550 · worst running loss $ -2970 (10th pct $-1980)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  +307 · median $  -990 · 10th pct $ -1980 ·  24% of windows > 0 · fees $ 1203 · payouts $  1510 · worst running loss $ -2970 (10th pct $-2145)
+     R2  5 accounts together  12 months (142 windows): net mean $  +562 · median $ -1650 · 10th pct $ -3300 ·  22% of windows > 0 · fees $ 2022 · payouts $  2584 · worst running loss $ -4950 (10th pct $-3300)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  +399 · median $ -1650 · 10th pct $ -3135 ·  24% of windows > 0 · fees $ 1987 · payouts $  2386 · worst running loss $ -4950 (10th pct $-3465)
+  R1 Tradeify Select Daily 50K  $250/trade: pass  67% (unresolved 9 of 504) · median 192 trading days to pass · funded account pays $ 5418 over 536 days alive · net per eval bought $+3447
+     R2  1 account  together  12 months (142 windows): net mean $  -135 · median $  -165 · 10th pct $  -330 ·   7% of windows > 0 · fees $  195 · payouts $    61 · worst running loss $  -495 (10th pct $ -330)
+     R2  1 account  one/week  12 months (142 windows): net mean $  -135 · median $  -165 · 10th pct $  -330 ·   7% of windows > 0 · fees $  195 · payouts $    61 · worst running loss $  -495 (10th pct $ -330)
+     R2  3 accounts together  12 months (142 windows): net mean $  -404 · median $  -495 · 10th pct $  -990 ·   7% of windows > 0 · fees $  586 · payouts $   182 · worst running loss $ -1485 (10th pct $ -990)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -412 · median $  -495 · 10th pct $  -990 ·   8% of windows > 0 · fees $  588 · payouts $   176 · worst running loss $ -1485 (10th pct $ -990)
+     R2  5 accounts together  12 months (142 windows): net mean $  -673 · median $  -825 · 10th pct $ -1650 ·   7% of windows > 0 · fees $  976 · payouts $   303 · worst running loss $ -2475 (10th pct $-1650)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  -715 · median $  -825 · 10th pct $ -1650 ·   9% of windows > 0 · fees $  976 · payouts $   261 · worst running loss $ -2475 (10th pct $-1650)
+  R1 Tradeify Select Daily 50K  $400/trade: pass  54% (unresolved 2 of 504) · median 122 trading days to pass · funded account pays $ 3406 over 218 days alive · net per eval bought $+1660
+     R2  1 account  together  12 months (142 windows): net mean $  +274 · median $  -165 · 10th pct $  -495 ·  24% of windows > 0 · fees $  284 · payouts $   558 · worst running loss $  -825 (10th pct $ -495)
+     R2  1 account  one/week  12 months (142 windows): net mean $  +274 · median $  -165 · 10th pct $  -495 ·  24% of windows > 0 · fees $  284 · payouts $   558 · worst running loss $  -825 (10th pct $ -495)
+     R2  3 accounts together  12 months (142 windows): net mean $  +823 · median $  -495 · 10th pct $ -1485 ·  24% of windows > 0 · fees $  851 · payouts $  1674 · worst running loss $ -2475 (10th pct $-1485)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  +723 · median $  -495 · 10th pct $ -1485 ·  25% of windows > 0 · fees $  846 · payouts $  1569 · worst running loss $ -2475 (10th pct $-1485)
+     R2  5 accounts together  12 months (142 windows): net mean $ +1372 · median $  -825 · 10th pct $ -2475 ·  24% of windows > 0 · fees $ 1418 · payouts $  2790 · worst running loss $ -4125 (10th pct $-2475)
+     R2  5 accounts one/week  12 months (142 windows): net mean $ +1032 · median $  -825 · 10th pct $ -2475 ·  27% of windows > 0 · fees $ 1406 · payouts $  2438 · worst running loss $ -3960 (10th pct $-2475)
+  R1 Tradeify Select Daily 50K  $600/trade: pass  47% (unresolved 0 of 504) · median 103 trading days to pass · funded account pays $ 3294 over 147 days alive · net per eval bought $+1371
+     R2  1 account  together  12 months (142 windows): net mean $  +679 · median $  -330 · 10th pct $  -660 ·  29% of windows > 0 · fees $  408 · payouts $  1086 · worst running loss $  -990 (10th pct $ -660)
+     R2  1 account  one/week  12 months (142 windows): net mean $  +679 · median $  -330 · 10th pct $  -660 ·  29% of windows > 0 · fees $  408 · payouts $  1086 · worst running loss $  -990 (10th pct $ -660)
+     R2  3 accounts together  12 months (142 windows): net mean $ +2036 · median $  -990 · 10th pct $ -1980 ·  29% of windows > 0 · fees $ 1224 · payouts $  3259 · worst running loss $ -2970 (10th pct $-1980)
+     R2  3 accounts one/week  12 months (142 windows): net mean $ +1956 · median $  -825 · 10th pct $ -1980 ·  29% of windows > 0 · fees $ 1207 · payouts $  3164 · worst running loss $ -2970 (10th pct $-2145)
+     R2  5 accounts together  12 months (142 windows): net mean $ +3393 · median $ -1650 · 10th pct $ -3300 ·  29% of windows > 0 · fees $ 2039 · payouts $  5432 · worst running loss $ -4950 (10th pct $-3300)
+     R2  5 accounts one/week  12 months (142 windows): net mean $ +3001 · median $ -1485 · 10th pct $ -3135 ·  28% of windows > 0 · fees $ 1997 · payouts $  4998 · worst running loss $ -4950 (10th pct $-3465)
+
+  STRESS (cost 3, stops 4 ticks worse) fills
+  R1 Tradeify Select Flex 50K   $250/trade: pass  61% (unresolved 11 of 504) · median 220 trading days to pass · funded account pays $ 4459 over 529 days alive · net per eval bought $+2576
+     R2  1 account  together  12 months (142 windows): net mean $  -147 · median $  -165 · 10th pct $  -330 ·   8% of windows > 0 · fees $  215 · payouts $    68 · worst running loss $  -495 (10th pct $ -330)
+     R2  1 account  one/week  12 months (142 windows): net mean $  -147 · median $  -165 · 10th pct $  -330 ·   8% of windows > 0 · fees $  215 · payouts $    68 · worst running loss $  -495 (10th pct $ -330)
+     R2  3 accounts together  12 months (142 windows): net mean $  -441 · median $  -495 · 10th pct $  -990 ·   8% of windows > 0 · fees $  645 · payouts $   204 · worst running loss $ -1485 (10th pct $ -990)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -458 · median $  -495 · 10th pct $  -990 ·   8% of windows > 0 · fees $  643 · payouts $   185 · worst running loss $ -1485 (10th pct $ -990)
+     R2  5 accounts together  12 months (142 windows): net mean $  -734 · median $  -825 · 10th pct $ -1650 ·   8% of windows > 0 · fees $ 1075 · payouts $   341 · worst running loss $ -2475 (10th pct $-1650)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  -775 · median $  -825 · 10th pct $ -1650 ·   9% of windows > 0 · fees $ 1069 · payouts $   294 · worst running loss $ -2475 (10th pct $-1650)
+  R1 Tradeify Select Flex 50K   $400/trade: pass  40% (unresolved 6 of 504) · median 109 trading days to pass · funded account pays $ 2552 over 236 days alive · net per eval bought $ +865
+     R2  1 account  together  12 months (142 windows): net mean $  -109 · median $  -330 · 10th pct $  -660 ·  14% of windows > 0 · fees $  368 · payouts $   259 · worst running loss $ -1155 (10th pct $ -660)
+     R2  1 account  one/week  12 months (142 windows): net mean $  -109 · median $  -330 · 10th pct $  -660 ·  14% of windows > 0 · fees $  368 · payouts $   259 · worst running loss $ -1155 (10th pct $ -660)
+     R2  3 accounts together  12 months (142 windows): net mean $  -328 · median $  -990 · 10th pct $ -1980 ·  14% of windows > 0 · fees $ 1105 · payouts $   777 · worst running loss $ -3465 (10th pct $-1980)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -336 · median $  -990 · 10th pct $ -1980 ·  16% of windows > 0 · fees $ 1088 · payouts $   751 · worst running loss $ -3465 (10th pct $-1980)
+     R2  5 accounts together  12 months (142 windows): net mean $  -546 · median $ -1650 · 10th pct $ -3300 ·  14% of windows > 0 · fees $ 1842 · payouts $  1295 · worst running loss $ -5775 (10th pct $-3300)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  -646 · median $ -1650 · 10th pct $ -3300 ·  16% of windows > 0 · fees $ 1791 · payouts $  1144 · worst running loss $ -5775 (10th pct $-3300)
+  R1 Tradeify Select Flex 50K   $600/trade: pass  35% (unresolved 3 of 504) · median  90 trading days to pass · funded account pays $  996 over 103 days alive · net per eval bought $ +183
+     R2  1 account  together  12 months (142 windows): net mean $  -282 · median $  -330 · 10th pct $  -990 ·  11% of windows > 0 · fees $  498 · payouts $   216 · worst running loss $ -1650 (10th pct $ -990)
+     R2  1 account  one/week  12 months (142 windows): net mean $  -282 · median $  -330 · 10th pct $  -990 ·  11% of windows > 0 · fees $  498 · payouts $   216 · worst running loss $ -1650 (10th pct $ -990)
+     R2  3 accounts together  12 months (142 windows): net mean $  -847 · median $  -990 · 10th pct $ -2970 ·  11% of windows > 0 · fees $ 1495 · payouts $   648 · worst running loss $ -4950 (10th pct $-2970)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -840 · median $ -1155 · 10th pct $ -2475 ·  11% of windows > 0 · fees $ 1462 · payouts $   622 · worst running loss $ -4785 (10th pct $-2475)
+     R2  5 accounts together  12 months (142 windows): net mean $ -1412 · median $ -1650 · 10th pct $ -4950 ·  11% of windows > 0 · fees $ 2492 · payouts $  1080 · worst running loss $ -8250 (10th pct $-4950)
+     R2  5 accounts one/week  12 months (142 windows): net mean $ -1465 · median $ -1815 · 10th pct $ -4290 ·  13% of windows > 0 · fees $ 2425 · payouts $   960 · worst running loss $ -7755 (10th pct $-4290)
+  R1 Tradeify Select Daily 50K  $250/trade: pass  61% (unresolved 11 of 504) · median 220 trading days to pass · funded account pays $ 4391 over 505 days alive · net per eval bought $+2533
+     R2  1 account  together  12 months (142 windows): net mean $  -176 · median $  -165 · 10th pct $  -330 ·   4% of windows > 0 · fees $  215 · payouts $    39 · worst running loss $  -495 (10th pct $ -330)
+     R2  1 account  one/week  12 months (142 windows): net mean $  -176 · median $  -165 · 10th pct $  -330 ·   4% of windows > 0 · fees $  215 · payouts $    39 · worst running loss $  -495 (10th pct $ -330)
+     R2  3 accounts together  12 months (142 windows): net mean $  -529 · median $  -495 · 10th pct $  -990 ·   4% of windows > 0 · fees $  645 · payouts $   116 · worst running loss $ -1485 (10th pct $ -990)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -547 · median $  -495 · 10th pct $  -990 ·   4% of windows > 0 · fees $  643 · payouts $    96 · worst running loss $ -1485 (10th pct $ -990)
+     R2  5 accounts together  12 months (142 windows): net mean $  -882 · median $  -825 · 10th pct $ -1650 ·   4% of windows > 0 · fees $ 1075 · payouts $   193 · worst running loss $ -2475 (10th pct $-1650)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  -929 · median $  -825 · 10th pct $ -1650 ·   4% of windows > 0 · fees $ 1069 · payouts $   140 · worst running loss $ -2475 (10th pct $-1650)
+  R1 Tradeify Select Daily 50K  $400/trade: pass  40% (unresolved 6 of 504) · median 109 trading days to pass · funded account pays $ 1334 over 143 days alive · net per eval bought $ +373
+     R2  1 account  together  12 months (142 windows): net mean $   -54 · median $  -330 · 10th pct $  -660 ·  13% of windows > 0 · fees $  368 · payouts $   314 · worst running loss $ -1155 (10th pct $ -660)
+     R2  1 account  one/week  12 months (142 windows): net mean $   -54 · median $  -330 · 10th pct $  -660 ·  13% of windows > 0 · fees $  368 · payouts $   314 · worst running loss $ -1155 (10th pct $ -660)
+     R2  3 accounts together  12 months (142 windows): net mean $  -162 · median $  -990 · 10th pct $ -1980 ·  13% of windows > 0 · fees $ 1105 · payouts $   943 · worst running loss $ -3465 (10th pct $-1980)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -173 · median $  -990 · 10th pct $ -1980 ·  15% of windows > 0 · fees $ 1088 · payouts $   914 · worst running loss $ -3465 (10th pct $-1980)
+     R2  5 accounts together  12 months (142 windows): net mean $  -269 · median $ -1650 · 10th pct $ -3300 ·  13% of windows > 0 · fees $ 1842 · payouts $  1572 · worst running loss $ -5775 (10th pct $-3300)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  -343 · median $ -1650 · 10th pct $ -3300 ·  14% of windows > 0 · fees $ 1791 · payouts $  1448 · worst running loss $ -5775 (10th pct $-3300)
+  R1 Tradeify Select Daily 50K  $600/trade: pass  35% (unresolved 3 of 504) · median  90 trading days to pass · funded account pays $  958 over  68 days alive · net per eval bought $ +170
+     R2  1 account  together  12 months (142 windows): net mean $  -120 · median $  -330 · 10th pct $  -990 ·  13% of windows > 0 · fees $  505 · payouts $   385 · worst running loss $ -1650 (10th pct $ -990)
+     R2  1 account  one/week  12 months (142 windows): net mean $  -120 · median $  -330 · 10th pct $  -990 ·  13% of windows > 0 · fees $  505 · payouts $   385 · worst running loss $ -1650 (10th pct $ -990)
+     R2  3 accounts together  12 months (142 windows): net mean $  -361 · median $  -990 · 10th pct $ -2970 ·  13% of windows > 0 · fees $ 1516 · payouts $  1155 · worst running loss $ -4950 (10th pct $-2970)
+     R2  3 accounts one/week  12 months (142 windows): net mean $  -291 · median $ -1155 · 10th pct $ -2475 ·  15% of windows > 0 · fees $ 1482 · payouts $  1190 · worst running loss $ -4785 (10th pct $-2475)
+     R2  5 accounts together  12 months (142 windows): net mean $  -601 · median $ -1650 · 10th pct $ -4950 ·  13% of windows > 0 · fees $ 2527 · payouts $  1926 · worst running loss $ -8250 (10th pct $-4950)
+     R2  5 accounts one/week  12 months (142 windows): net mean $  -568 · median $ -1815 · 10th pct $ -4290 ·  14% of windows > 0 · fees $ 2453 · payouts $  1884 · worst running loss $ -7755 (10th pct $-4290)

@@ -1,0 +1,179 @@
+Stress tests of the account EV — $ of payouts per eval bought (before fees and the split), starts every 5th trading day 2014-01 → 2025-04.
+
+################ BOOK2 4-5m A or B, pb <= 38 %, 2 open (~2/day)
+
+  ---- select_flex_50k, 1 micro(s) on each market ----
+    extra cost +0.0 NQ pts a trade (ES a third)  pass  32% · paid  75% of funded · $  895 per eval bought
+    extra cost +0.5 NQ pts a trade (ES a third)  pass  31% · paid  73% of funded · $  841 per eval bought
+    extra cost +1.0 NQ pts a trade (ES a third)  pass  28% · paid  73% of funded · $  732 per eval bought
+    extra cost +2.0 NQ pts a trade (ES a third)  pass  25% · paid  70% of funded · $  564 per eval bought
+    NQ only                                      pass  29% · paid  88% of funded · $  590 per eval bought
+    ES only                                      pass   0% · paid 100% of funded · $    1 per eval bought
+    NQ 1 + ES 2 micros                           pass  29% · paid  58% of funded · $  723 per eval bought
+    NQ 2 + ES 1 micros                           pass  29% · paid  61% of funded · $  720 per eval bought
+    daily loss stop $100                         pass  53% · paid  99% of funded · $ 2484 per eval bought
+    daily loss stop $150                         pass  47% · paid  96% of funded · $ 1973 per eval bought
+    daily loss stop $200                         pass  38% · paid  83% of funded · $ 1255 per eval bought
+    daily loss stop $250                         pass  34% · paid  79% of funded · $ 1010 per eval bought
+    daily loss stop $300                         pass  30% · paid  74% of funded · $  791 per eval bought
+    daily loss stop $150 + extra cost +1 NQ pt   pass  46% · paid  96% of funded · $ 1774 per eval bought
+      by start year: 2014 $1495 · 2015 $2205 · 2016 $653 · 2017 $5188 · 2018 $1264 · 2019 $59 · 2020 $1102 · 2021 $1594 · 2022 $2304 · 2023 $1938 · 2024 $2414 · 2025 $0 · 
+    daily profit stop $300                       pass   3% · paid  73% of funded · $   24 per eval bought
+    daily profit stop $600                       pass  30% · paid  75% of funded · $  437 per eval bought
+    max 2 trades a day                           pass  16% · paid  89% of funded · $  235 per eval bought
+    max 3 trades a day                           pass  25% · paid  86% of funded · $  517 per eval bought
+    max 5 trades a day                           pass  32% · paid  71% of funded · $  840 per eval bought
+    funded 60 trading days (base 120)            pass  32% · paid  75% of funded · $  492 per eval bought
+    funded 250 trading days (base 120)           pass  32% · paid  75% of funded · $ 1071 per eval bought
+    by start year: 2014 $730 · 2015 $410 · 2016 $0 · 2017 $4040 · 2018 $290 · 2019 $0 · 2020 $192 · 2021 $586 · 2022 $1329 · 2023 $1241 · 2024 $1315 · 2025 $0 · 
+    monthly program at $100 per eval (~4 evals a month): net per month mean $ 2820 · median $ -300 · 10th pct $ -400 · months > 0  31%
+    monthly program at $150 per eval (~4 evals a month): net per month mean $ 2642 · median $ -450 · 10th pct $ -600 · months > 0  30%
+    monthly program at $200 per eval (~4 evals a month): net per month mean $ 2465 · median $ -600 · 10th pct $ -800 · months > 0  30%
+    monthly program at $300 per eval (~4 evals a month): net per month mean $ 2110 · median $ -900 · 10th pct $-1200 · months > 0  29%
+
+  ---- select_daily_50k, 1 micro(s) on each market ----
+    extra cost +0.0 NQ pts a trade (ES a third)  pass  32% · paid  66% of funded · $  893 per eval bought
+    extra cost +0.5 NQ pts a trade (ES a third)  pass  31% · paid  65% of funded · $  826 per eval bought
+    extra cost +1.0 NQ pts a trade (ES a third)  pass  28% · paid  65% of funded · $  738 per eval bought
+    extra cost +2.0 NQ pts a trade (ES a third)  pass  25% · paid  68% of funded · $  613 per eval bought
+    NQ only                                      pass  29% · paid  68% of funded · $  474 per eval bought
+    ES only                                      pass   0% · paid   0% of funded · $    0 per eval bought
+    NQ 1 + ES 2 micros                           pass  29% · paid  53% of funded · $  720 per eval bought
+    NQ 2 + ES 1 micros                           pass  29% · paid  58% of funded · $  911 per eval bought
+    daily loss stop $100                         pass  53% · paid  94% of funded · $ 2781 per eval bought
+    daily loss stop $150                         pass  47% · paid  89% of funded · $ 2058 per eval bought
+    daily loss stop $200                         pass  38% · paid  68% of funded · $ 1264 per eval bought
+    daily loss stop $250                         pass  34% · paid  65% of funded · $  996 per eval bought
+    daily loss stop $300                         pass  30% · paid  61% of funded · $  840 per eval bought
+    daily loss stop $150 + extra cost +1 NQ pt   pass  46% · paid  88% of funded · $ 1859 per eval bought
+      by start year: 2014 $1388 · 2015 $2575 · 2016 $573 · 2017 $6028 · 2018 $1111 · 2019 $77 · 2020 $1198 · 2021 $1710 · 2022 $2531 · 2023 $2122 · 2024 $1917 · 2025 $0 · 
+    daily profit stop $300                       pass   3% · paid  13% of funded · $   10 per eval bought
+    daily profit stop $600                       pass  30% · paid  58% of funded · $  413 per eval bought
+    max 2 trades a day                           pass  16% · paid  57% of funded · $  148 per eval bought
+    max 3 trades a day                           pass  25% · paid  69% of funded · $  448 per eval bought
+    max 5 trades a day                           pass  32% · paid  60% of funded · $  841 per eval bought
+    funded 60 trading days (base 120)            pass  32% · paid  58% of funded · $  488 per eval bought
+    funded 250 trading days (base 120)           pass  32% · paid  66% of funded · $ 1182 per eval bought
+    by start year: 2014 $677 · 2015 $295 · 2016 $0 · 2017 $4353 · 2018 $388 · 2019 $0 · 2020 $218 · 2021 $563 · 2022 $1309 · 2023 $1102 · 2024 $1205 · 2025 $0 · 
+    monthly program at $100 per eval (~4 evals a month): net per month mean $ 2815 · median $ -300 · 10th pct $ -400 · months > 0  30%
+    monthly program at $150 per eval (~4 evals a month): net per month mean $ 2638 · median $ -450 · 10th pct $ -600 · months > 0  29%
+    monthly program at $200 per eval (~4 evals a month): net per month mean $ 2460 · median $ -600 · 10th pct $ -800 · months > 0  28%
+    monthly program at $300 per eval (~4 evals a month): net per month mean $ 2105 · median $ -900 · 10th pct $-1200 · months > 0  27%
+
+  ---- apex_eod_50k, 2 micro(s) on each market ----
+    extra cost +0.0 NQ pts a trade (ES a third)  pass  48% · paid  39% of funded · $  690 per eval bought
+    extra cost +0.5 NQ pts a trade (ES a third)  pass  47% · paid  39% of funded · $  631 per eval bought
+    extra cost +1.0 NQ pts a trade (ES a third)  pass  46% · paid  34% of funded · $  489 per eval bought
+    extra cost +2.0 NQ pts a trade (ES a third)  pass  42% · paid  27% of funded · $  296 per eval bought
+    NQ only                                      pass  51% · paid  50% of funded · $  810 per eval bought
+    ES only                                      pass  15% · paid  42% of funded · $   99 per eval bought
+    NQ 2 + ES 4 micros                           pass  42% · paid  26% of funded · $  351 per eval bought
+    NQ 4 + ES 2 micros                           pass  41% · paid  21% of funded · $  287 per eval bought
+    daily loss stop $100                         pass  86% · paid  94% of funded · $ 3161 per eval bought
+    daily loss stop $150                         pass  78% · paid  78% of funded · $ 2681 per eval bought
+    daily loss stop $200                         pass  73% · paid  79% of funded · $ 2640 per eval bought
+    daily loss stop $250                         pass  72% · paid  71% of funded · $ 2149 per eval bought
+    daily loss stop $300                         pass  66% · paid  68% of funded · $ 1805 per eval bought
+    daily loss stop $150 + extra cost +1 NQ pt   pass  77% · paid  75% of funded · $ 2440 per eval bought
+      by start year: 2014 $1796 · 2015 $1622 · 2016 $987 · 2017 $4701 · 2018 $2445 · 2019 $2294 · 2020 $3301 · 2021 $3447 · 2022 $1461 · 2023 $2185 · 2024 $2632 · 2025 $2194 · 
+    daily profit stop $300                       pass   7% · paid   0% of funded · $    0 per eval bought
+    daily profit stop $600                       pass  18% · paid  19% of funded · $   75 per eval bought
+    max 2 trades a day                           pass  41% · paid  39% of funded · $  461 per eval bought
+    max 3 trades a day                           pass  48% · paid  40% of funded · $  573 per eval bought
+    max 5 trades a day                           pass  45% · paid  39% of funded · $  585 per eval bought
+    funded 60 trading days (base 120)            pass  48% · paid  34% of funded · $  431 per eval bought
+    funded 250 trading days (base 120)           pass  48% · paid  41% of funded · $ 1020 per eval bought
+    by start year: 2014 $429 · 2015 $649 · 2016 $0 · 2017 $2190 · 2018 $651 · 2019 $0 · 2020 $140 · 2021 $1095 · 2022 $504 · 2023 $1252 · 2024 $792 · 2025 $429 · 
+    monthly program at $100 per eval (~4 evals a month): net per month mean $ 2095 · median $ -300 · 10th pct $ -400 · months > 0  28%
+    monthly program at $150 per eval (~4 evals a month): net per month mean $ 1917 · median $ -450 · 10th pct $ -600 · months > 0  28%
+    monthly program at $200 per eval (~4 evals a month): net per month mean $ 1740 · median $ -600 · 10th pct $ -800 · months > 0  28%
+    monthly program at $300 per eval (~4 evals a month): net per month mean $ 1385 · median $ -900 · 10th pct $-1200 · months > 0  28%
+
+################ RULE  A-list + HH/HL + break, 1 open
+
+  ---- select_flex_50k, 4 micro(s) on each market ----
+    extra cost +0.0 NQ pts a trade (ES a third)  pass   9% · paid  67% of funded · $  256 per eval bought
+    extra cost +0.5 NQ pts a trade (ES a third)  pass   9% · paid  65% of funded · $  240 per eval bought
+    extra cost +1.0 NQ pts a trade (ES a third)  pass   9% · paid  63% of funded · $  233 per eval bought
+    extra cost +2.0 NQ pts a trade (ES a third)  pass   9% · paid  52% of funded · $  186 per eval bought
+    NQ only                                      pass   7% · paid  44% of funded · $   65 per eval bought
+    ES only                                      pass   0% · paid   0% of funded · $    0 per eval bought
+    NQ 4 + ES 8 micros                           pass  12% · paid  35% of funded · $  177 per eval bought
+    NQ 8 + ES 4 micros                           pass   7% · paid  31% of funded · $  125 per eval bought
+    daily loss stop $100                         pass   0% · paid   0% of funded · $    0 per eval bought
+    daily loss stop $150                         pass   2% · paid 100% of funded · $   27 per eval bought
+    daily loss stop $200                         pass   3% · paid  83% of funded · $   36 per eval bought
+    daily loss stop $250                         pass   5% · paid  60% of funded · $   98 per eval bought
+    daily loss stop $300                         pass   8% · paid  58% of funded · $  159 per eval bought
+    daily loss stop $150 + extra cost +1 NQ pt   pass   2% · paid  90% of funded · $   20 per eval bought
+      by start year: 2014 $223 · 2015 $0 · 2016 $0 · 2017 $0 · 2018 $0 · 2019 $0 · 2020 $0 · 2021 $0 · 2022 $0 · 2023 $0 · 2024 $0 · 2025 $0 · 
+    daily profit stop $300                       pass   8% · paid  52% of funded · $  178 per eval bought
+    daily profit stop $600                       pass  10% · paid  47% of funded · $  195 per eval bought
+    max 2 trades a day                           pass   9% · paid  65% of funded · $  240 per eval bought
+    max 3 trades a day                           pass   9% · paid  67% of funded · $  257 per eval bought
+    max 5 trades a day                           pass   9% · paid  67% of funded · $  256 per eval bought
+    funded 60 trading days (base 120)            pass   9% · paid  60% of funded · $  111 per eval bought
+    funded 250 trading days (base 120)           pass   9% · paid  67% of funded · $  439 per eval bought
+    by start year: 2014 $1095 · 2015 $0 · 2016 $0 · 2017 $1320 · 2018 $65 · 2019 $0 · 2020 $0 · 2021 $51 · 2022 $0 · 2023 $0 · 2024 $381 · 2025 $0 · 
+    monthly program at $100 per eval (~4 evals a month): net per month mean $  555 · median $ -400 · 10th pct $ -500 · months > 0  10%
+    monthly program at $150 per eval (~4 evals a month): net per month mean $  377 · median $ -600 · 10th pct $ -750 · months > 0  10%
+    monthly program at $200 per eval (~4 evals a month): net per month mean $  200 · median $ -800 · 10th pct $-1000 · months > 0  10%
+    monthly program at $300 per eval (~4 evals a month): net per month mean $ -155 · median $-1200 · 10th pct $-1500 · months > 0  10%
+
+  ---- select_daily_50k, 5 micro(s) on each market ----
+    extra cost +0.0 NQ pts a trade (ES a third)  pass   9% · paid  51% of funded · $  330 per eval bought
+    extra cost +0.5 NQ pts a trade (ES a third)  pass   9% · paid  49% of funded · $  316 per eval bought
+    extra cost +1.0 NQ pts a trade (ES a third)  pass   9% · paid  42% of funded · $  220 per eval bought
+    extra cost +2.0 NQ pts a trade (ES a third)  pass   9% · paid  36% of funded · $  170 per eval bought
+    NQ only                                      pass   7% · paid  45% of funded · $  176 per eval bought
+    ES only                                      pass   0% · paid   0% of funded · $    0 per eval bought
+    NQ 5 + ES 10 micros                          pass  11% · paid  52% of funded · $  291 per eval bought
+    NQ 10 + ES 5 micros                          pass   6% · paid  40% of funded · $  126 per eval bought
+    daily loss stop $100                         pass   0% · paid   0% of funded · $    0 per eval bought
+    daily loss stop $150                         pass   1% · paid  33% of funded · $    6 per eval bought
+    daily loss stop $200                         pass   3% · paid  42% of funded · $   23 per eval bought
+    daily loss stop $250                         pass   3% · paid  50% of funded · $   50 per eval bought
+    daily loss stop $300                         pass   5% · paid  62% of funded · $  187 per eval bought
+    daily loss stop $150 + extra cost +1 NQ pt   pass   0% · paid   0% of funded · $    0 per eval bought
+      by start year: 2014 $0 · 2015 $0 · 2016 $0 · 2017 $0 · 2018 $0 · 2019 $0 · 2020 $0 · 2021 $0 · 2022 $0 · 2023 $0 · 2024 $0 · 2025 $0 · 
+    daily profit stop $300                       pass   8% · paid  53% of funded · $  262 per eval bought
+    daily profit stop $600                       pass   9% · paid  48% of funded · $  264 per eval bought
+    max 2 trades a day                           pass   9% · paid  49% of funded · $  320 per eval bought
+    max 3 trades a day                           pass   9% · paid  51% of funded · $  330 per eval bought
+    max 5 trades a day                           pass   9% · paid  51% of funded · $  330 per eval bought
+    funded 60 trading days (base 120)            pass   9% · paid  44% of funded · $  105 per eval bought
+    funded 250 trading days (base 120)           pass   9% · paid  51% of funded · $  434 per eval bought
+    by start year: 2014 $1781 · 2015 $0 · 2016 $0 · 2017 $1873 · 2018 $0 · 2019 $0 · 2020 $0 · 2021 $0 · 2022 $0 · 2023 $0 · 2024 $109 · 2025 $0 · 
+    monthly program at $100 per eval (~4 evals a month): net per month mean $  817 · median $ -400 · 10th pct $ -500 · months > 0   6%
+    monthly program at $150 per eval (~4 evals a month): net per month mean $  639 · median $ -600 · 10th pct $ -750 · months > 0   6%
+    monthly program at $200 per eval (~4 evals a month): net per month mean $  462 · median $ -800 · 10th pct $-1000 · months > 0   6%
+    monthly program at $300 per eval (~4 evals a month): net per month mean $  107 · median $-1200 · 10th pct $-1500 · months > 0   6%
+
+  ---- apex_eod_50k, 4 micro(s) on each market ----
+    extra cost +0.0 NQ pts a trade (ES a third)  pass  48% · paid  32% of funded · $  363 per eval bought
+    extra cost +0.5 NQ pts a trade (ES a third)  pass  47% · paid  33% of funded · $  351 per eval bought
+    extra cost +1.0 NQ pts a trade (ES a third)  pass  46% · paid  34% of funded · $  351 per eval bought
+    extra cost +2.0 NQ pts a trade (ES a third)  pass  42% · paid  32% of funded · $  309 per eval bought
+    NQ only                                      pass  44% · paid  46% of funded · $  466 per eval bought
+    ES only                                      pass   3% · paid   0% of funded · $    0 per eval bought
+    NQ 4 + ES 8 micros                           pass  46% · paid  29% of funded · $  338 per eval bought
+    NQ 8 + ES 4 micros                           pass  41% · paid  24% of funded · $  221 per eval bought
+    daily loss stop $100                         pass  22% · paid  12% of funded · $   49 per eval bought
+    daily loss stop $150                         pass  27% · paid  22% of funded · $  108 per eval bought
+    daily loss stop $200                         pass  35% · paid  22% of funded · $  148 per eval bought
+    daily loss stop $250                         pass  38% · paid  33% of funded · $  299 per eval bought
+    daily loss stop $300                         pass  43% · paid  40% of funded · $  411 per eval bought
+    daily loss stop $150 + extra cost +1 NQ pt   pass  25% · paid  24% of funded · $  107 per eval bought
+      by start year: 2014 $998 · 2015 $0 · 2016 $0 · 2017 $0 · 2018 $94 · 2019 $0 · 2020 $0 · 2021 $0 · 2022 $0 · 2023 $0 · 2024 $47 · 2025 $237 · 
+    daily profit stop $300                       pass  39% · paid  39% of funded · $  344 per eval bought
+    daily profit stop $600                       pass  41% · paid  37% of funded · $  363 per eval bought
+    max 2 trades a day                           pass  47% · paid  32% of funded · $  351 per eval bought
+    max 3 trades a day                           pass  47% · paid  33% of funded · $  363 per eval bought
+    max 5 trades a day                           pass  48% · paid  32% of funded · $  363 per eval bought
+    funded 60 trading days (base 120)            pass  48% · paid  16% of funded · $  150 per eval bought
+    funded 250 trading days (base 120)           pass  48% · paid  47% of funded · $  760 per eval bought
+    by start year: 2014 $1714 · 2015 $108 · 2016 $0 · 2017 $810 · 2018 $419 · 2019 $0 · 2020 $0 · 2021 $279 · 2022 $0 · 2023 $0 · 2024 $791 · 2025 $0 · 
+    monthly program at $100 per eval (~4 evals a month): net per month mean $  934 · median $ -400 · 10th pct $ -400 · months > 0  20%
+    monthly program at $150 per eval (~4 evals a month): net per month mean $  757 · median $ -600 · 10th pct $ -600 · months > 0  20%
+    monthly program at $200 per eval (~4 evals a month): net per month mean $  579 · median $ -800 · 10th pct $ -800 · months > 0  20%
+    monthly program at $300 per eval (~4 evals a month): net per month mean $  224 · median $-1200 · 10th pct $-1200 · months > 0  20%

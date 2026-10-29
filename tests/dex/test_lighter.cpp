@@ -382,6 +382,34 @@ TEST(hl_anchor_shifts_quotes_toward_hyperliquid_and_turns_off_when_stale) {
     ASSERT_NEAR(off.quote_state("X").bid_px, 104, 1e-9);
 }
 
+// paper_bn (2026-10-28): the live quoter's Binance-lead pull — a Binance drop beyond X bps within W ms pulls the bid
+// (the ask stays), held H ms; Binance mids received after a venue event's exchange time are not used for it.
+TEST(bn_pull_pulls_the_side_binance_moves_against_and_is_causal) {
+    mmpaper::Config c = cfg(); c.bn.w_ms = 500; c.bn.x_bps = 4; c.bn.hold_ms = 1000;
+    mmpaper::Portfolio pf(c);
+    const int64_t t0 = D1 + 10'000;
+    for (int i = 0; i < 10; ++i) { pf.push_bn("X", t0 + 100 * i, 50.0); pf.book("X", bk(t0 + 100 * i, 100, 110)); }
+    ASSERT_EQ(pf.quote_state("X").bid_reason, hl::Quoting);
+    ASSERT_EQ(pf.quote_state("X").ask_reason, hl::Quoting);
+    const int64_t t1 = t0 + 1000;
+    pf.push_bn("X", t1 + 50, 49.95);                            // −10 bps, but received AFTER the next book's exchange time
+    pf.book("X", bk(t1, 100, 110));
+    ASSERT_EQ(pf.quote_state("X").bid_reason, hl::Quoting);     // not visible yet
+    pf.book("X", bk(t1 + 60, 100, 110));                        // now it is
+    ASSERT_EQ(pf.quote_state("X").bid_reason, hl::Halted);      // bid pulled (overlay pulls show as Halted)
+    ASSERT_EQ(pf.quote_state("X").ask_reason, hl::Quoting);     // the ask stays
+    pf.trade("X", {"", t1 + 70, 99, 1, false});                 // a seller arrives: our bid is no longer there to hit
+    ASSERT_EQ(pf.snapshot()[0].fills, int64_t{0});
+    ASSERT_EQ(pf.bn_lead("X")->pulls_bid(), int64_t{1});
+    pf.book("X", bk(t1 + 2000, 100, 110));                      // lead back to 0 for > hold: quoting again
+    ASSERT_EQ(pf.quote_state("X").bid_reason, hl::Quoting);
+    mmpaper::Portfolio off(cfg());                              // bn off (every other label): Binance mids ignored
+    off.push_bn("X", t0, 50.0); off.book("X", bk(t0 + 600, 100, 110));
+    off.push_bn("X", t0 + 700, 40.0); off.book("X", bk(t0 + 800, 100, 110));
+    ASSERT(!off.bn_lead("X"));
+    ASSERT_EQ(off.quote_state("X").bid_reason, hl::Quoting);
+}
+
 // Review 2026-10-26: the anchor switches off when the venues disagree too much — a 5-min median basis beyond ±200 bps,
 // or a fair moved more than 200 bps in one step — and says why.
 TEST(hl_anchor_guards_and_off_reason) {
@@ -896,6 +924,7 @@ int main() {
     RUN(portfolio_carry_loss_stop_still_flattens_and_releases_next_day);
     RUN(hl_anchor_shifts_quotes_toward_hyperliquid_and_turns_off_when_stale);
     RUN(hl_anchor_is_causal);
+    RUN(bn_pull_pulls_the_side_binance_moves_against_and_is_causal);
     RUN(hl_anchor_guards_and_off_reason);
     RUN(inventory_cap_counts_rounded_lots);
     RUN(skew_window_p50_over_the_last_minute);

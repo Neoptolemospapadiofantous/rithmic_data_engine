@@ -1,0 +1,79 @@
+Double bottom / double top with confluences (preregistered/2026-10-22_reversal_plan.md, Part 2) — ES, 2611 NY days 2014-01 → 2026-10, 2119 patterns, 3025 entries.
+Columns: trades (a year), avg R, win %, PF, years > 0, 2025-26 R, R at +1× cost, other-day twin R, edge, PASS points 1-6 (ES = point 7, read across files).
+
+######## every double bottom / top  (judged)
+    D0 at the second low · X1 2R               1089 ( 85.1/yr) -0.104R win 35.7% PF 0.84 · years > 0  4/13 · 2025-26 +0.016R (135) · +1× cost -0.179R · twin -0.058R · edge -0.046R · PASS 100100
+    D0 at the second low · X2 measured move    1104 ( 86.2/yr) -0.102R win 38.1% PF 0.84 · years > 0  3/13 · 2025-26 -0.040R (136) · +1× cost -0.176R · twin -0.090R · edge -0.011R · PASS 100000
+    D0 at the second low · X4 hold 15:55       1049 ( 82.0/yr) -0.102R win 31.0% PF 0.85 · years > 0  3/13 · 2025-26 -0.005R (130) · +1× cost -0.177R · twin -0.045R · edge -0.057R · PASS 100000
+    D1 close above the neck · X1 2R             742 ( 58.0/yr) -0.052R win 42.7% PF 0.89 · years > 0  4/13 · 2025-26 +0.221R ( 73) · +1× cost -0.095R · twin -0.028R · edge -0.024R · PASS 100100
+    D1 close above the neck · X2 measured move   808 ( 63.1/yr) -0.067R win 60.8% PF 0.81 · years > 0  3/13 · 2025-26 -0.022R ( 79) · +1× cost -0.109R · twin -0.053R · edge -0.014R · PASS 100000
+    D1 close above the neck · X4 hold 15:55     737 ( 57.6/yr) -0.060R win 41.9% PF 0.88 · years > 0  3/13 · 2025-26 +0.138R ( 70) · +1× cost -0.103R · twin -0.047R · edge -0.014R · PASS 100100
+    D2 neck retest · X1 2R                      657 ( 51.3/yr) -0.083R win 39.7% PF 0.84 · years > 0  4/13 · 2025-26 +0.081R ( 60) · +1× cost -0.132R · twin -0.067R · edge -0.016R · PASS 100100
+    D2 neck retest · X2 measured move           695 ( 54.3/yr) -0.061R win 54.7% PF 0.85 · years > 0  4/13 · 2025-26 -0.123R ( 62) · +1× cost -0.110R · twin -0.044R · edge -0.017R · PASS 100000
+    D2 neck retest · X4 hold 15:55              651 ( 50.9/yr) -0.088R win 39.0% PF 0.84 · years > 0  2/13 · 2025-26 +0.003R ( 58) · +1× cost -0.137R · twin -0.021R · edge -0.067R · PASS 100100
+
+######## C1 level at the bottom  (slice, not judged)
+    D0 at the second low · X1 2R               1025 ( 80.1/yr) -0.112R win 35.4% PF 0.83 · years > 0  2/13 · 2025-26 +0.021R (126) · +1× cost -0.186R
+    D0 at the second low · X2 measured move    1037 ( 81.0/yr) -0.112R win 37.8% PF 0.82 · years > 0  3/13 · 2025-26 -0.041R (127) · +1× cost -0.186R
+    D0 at the second low · X4 hold 15:55        996 ( 77.8/yr) -0.124R win 30.6% PF 0.82 · years > 0  3/13 · 2025-26 +0.003R (122) · +1× cost -0.199R
+    D1 close above the neck · X1 2R             689 ( 53.8/yr) -0.057R win 43.0% PF 0.88 · years > 0  5/13 · 2025-26 +0.187R ( 67) · +1× cost -0.099R
+    D1 close above the neck · X2 measured move   742 ( 58.0/yr) -0.067R win 60.6% PF 0.81 · years > 0  3/13 · 2025-26 -0.017R ( 72) · +1× cost -0.109R
+    D1 close above the neck · X4 hold 15:55     685 ( 53.5/yr) -0.066R win 42.0% PF 0.86 · years > 0  4/13 · 2025-26 +0.097R ( 65) · +1× cost -0.109R
+    D2 neck retest · X1 2R                      605 ( 47.3/yr) -0.084R win 40.0% PF 0.84 · years > 0  3/13 · 2025-26 +0.052R ( 55) · +1× cost -0.132R
+    D2 neck retest · X2 measured move           640 ( 50.0/yr) -0.064R win 54.7% PF 0.85 · years > 0  3/13 · 2025-26 -0.128R ( 57) · +1× cost -0.112R
+    D2 neck retest · X4 hold 15:55              599 ( 46.8/yr) -0.096R win 39.2% PF 0.82 · years > 0  2/13 · 2025-26 -0.055R ( 53) · +1× cost -0.144R
+
+######## C2 higher second low  (slice, not judged)
+    D0 at the second low · X1 2R                594 ( 46.4/yr) -0.114R win 36.2% PF 0.82 · years > 0  2/13 · 2025-26 -0.087R ( 67) · +1× cost -0.186R
+    D0 at the second low · X2 measured move     599 ( 46.8/yr) -0.117R win 40.6% PF 0.81 · years > 0  1/13 · 2025-26 -0.142R ( 67) · +1× cost -0.188R
+    D0 at the second low · X4 hold 15:55        582 ( 45.5/yr) -0.119R win 32.0% PF 0.82 · years > 0  4/13 · 2025-26 -0.015R ( 66) · +1× cost -0.190R
+    D1 close above the neck · X1 2R             485 ( 37.9/yr) -0.060R win 41.4% PF 0.88 · years > 0  4/13 · 2025-26 +0.280R ( 46) · +1× cost -0.102R
+    D1 close above the neck · X2 measured move   510 ( 39.8/yr) -0.101R win 58.2% PF 0.72 · years > 0  1/13 · 2025-26 -0.124R ( 46) · +1× cost -0.143R
+    D1 close above the neck · X4 hold 15:55     483 ( 37.7/yr) -0.076R win 40.4% PF 0.85 · years > 0  4/13 · 2025-26 +0.100R ( 45) · +1× cost -0.119R
+    D2 neck retest · X1 2R                      411 ( 32.1/yr) -0.095R win 38.0% PF 0.83 · years > 0  3/13 · 2025-26 +0.123R ( 34) · +1× cost -0.144R
+    D2 neck retest · X2 measured move           429 ( 33.5/yr) -0.092R win 53.1% PF 0.79 · years > 0  3/13 · 2025-26 -0.198R ( 34) · +1× cost -0.141R
+    D2 neck retest · X4 hold 15:55              409 ( 32.0/yr) -0.095R win 37.2% PF 0.83 · years > 0  3/13 · 2025-26 -0.007R ( 33) · +1× cost -0.145R
+
+######## C3 volume divergence  (slice, not judged)
+    D0 at the second low · X1 2R                917 ( 71.6/yr) -0.148R win 34.4% PF 0.78 · years > 0  2/13 · 2025-26 -0.031R (115) · +1× cost -0.224R
+    D0 at the second low · X2 measured move     929 ( 72.6/yr) -0.156R win 36.7% PF 0.76 · years > 0  1/13 · 2025-26 -0.058R (116) · +1× cost -0.232R
+    D0 at the second low · X4 hold 15:55        899 ( 70.2/yr) -0.153R win 30.0% PF 0.78 · years > 0  2/13 · 2025-26 -0.002R (113) · +1× cost -0.229R
+    D1 close above the neck · X1 2R             621 ( 48.5/yr) -0.080R win 41.7% PF 0.84 · years > 0  4/13 · 2025-26 +0.233R ( 60) · +1× cost -0.123R
+    D1 close above the neck · X2 measured move   660 ( 51.6/yr) -0.097R win 58.6% PF 0.73 · years > 0  3/13 · 2025-26 -0.024R ( 64) · +1× cost -0.140R
+    D1 close above the neck · X4 hold 15:55     619 ( 48.4/yr) -0.084R win 41.4% PF 0.83 · years > 0  3/13 · 2025-26 +0.218R ( 59) · +1× cost -0.126R
+    D2 neck retest · X1 2R                      545 ( 42.6/yr) -0.128R win 38.5% PF 0.76 · years > 0  3/13 · 2025-26 +0.006R ( 48) · +1× cost -0.177R
+    D2 neck retest · X2 measured move           564 ( 44.1/yr) -0.111R win 52.0% PF 0.75 · years > 0  1/13 · 2025-26 -0.137R ( 49) · +1× cost -0.160R
+    D2 neck retest · X4 hold 15:55              544 ( 42.5/yr) -0.131R win 38.1% PF 0.76 · years > 0  2/13 · 2025-26 -0.007R ( 48) · +1× cost -0.180R
+
+######## C4 stretched under VWAP  (slice, not judged)
+    D0 at the second low · X1 2R                233 ( 18.2/yr) -0.064R win 37.3% PF 0.90 · years > 0  4/13 · 2025-26 +0.348R ( 35) · +1× cost -0.137R
+    D0 at the second low · X2 measured move     234 ( 18.3/yr) -0.149R win 36.8% PF 0.76 · years > 0  4/13 · 2025-26 +0.332R ( 35) · +1× cost -0.222R
+    D0 at the second low · X4 hold 15:55        231 ( 18.0/yr) -0.138R win 32.0% PF 0.79 · years > 0  2/13 · 2025-26 +0.071R ( 34) · +1× cost -0.211R
+    D1 close above the neck · X1 2R             157 ( 12.3/yr) -0.095R win 41.4% PF 0.80 · years > 0  3/13 · 2025-26 +0.198R ( 21) · +1× cost -0.140R
+    D1 close above the neck · X2 measured move   157 ( 12.3/yr) -0.100R win 56.1% PF 0.73 · years > 0  4/13 · 2025-26 +0.028R ( 21) · +1× cost -0.145R
+    D1 close above the neck · X4 hold 15:55     156 ( 12.2/yr) -0.104R win 40.4% PF 0.78 · years > 0  2/13 · 2025-26 -0.093R ( 20) · +1× cost -0.148R
+    D2 neck retest · X1 2R                      134 ( 10.5/yr) -0.157R win 38.1% PF 0.71 · years > 0  2/13 · 2025-26 +0.066R ( 17) · +1× cost -0.207R
+    D2 neck retest · X2 measured move           135 ( 10.5/yr) -0.120R win 50.4% PF 0.73 · years > 0  4/13 · 2025-26 -0.074R ( 17) · +1× cost -0.170R
+    D2 neck retest · X4 hold 15:55              134 ( 10.5/yr) -0.120R win 38.1% PF 0.78 · years > 0  2/13 · 2025-26 -0.072R ( 17) · +1× cost -0.170R
+
+######## >= 2 confluences  (judged)
+    D0 at the second low · X1 2R                973 ( 76.0/yr) -0.147R win 34.6% PF 0.78 · years > 0  3/13 · 2025-26 -0.033R (119) · +1× cost -0.222R · twin -0.055R · edge -0.093R · PASS 100000
+    D0 at the second low · X2 measured move     985 ( 77.0/yr) -0.156R win 37.2% PF 0.76 · years > 0  2/13 · 2025-26 -0.052R (120) · +1× cost -0.231R · twin -0.072R · edge -0.085R · PASS 100000
+    D0 at the second low · X4 hold 15:55        950 ( 74.2/yr) -0.179R win 29.9% PF 0.74 · years > 0  2/13 · 2025-26 -0.049R (115) · +1× cost -0.254R · twin -0.059R · edge -0.121R · PASS 100000
+    D1 close above the neck · X1 2R             670 ( 52.3/yr) -0.059R win 42.5% PF 0.88 · years > 0  4/13 · 2025-26 +0.242R ( 67) · +1× cost -0.101R · twin -0.052R · edge -0.008R · PASS 100100
+    D1 close above the neck · X2 measured move   718 ( 56.1/yr) -0.078R win 59.7% PF 0.78 · years > 0  1/13 · 2025-26 +0.004R ( 72) · +1× cost -0.119R · twin -0.043R · edge -0.035R · PASS 100100
+    D1 close above the neck · X4 hold 15:55     666 ( 52.0/yr) -0.075R win 41.7% PF 0.85 · years > 0  3/13 · 2025-26 +0.140R ( 64) · +1× cost -0.117R · twin -0.024R · edge -0.051R · PASS 100100
+    D2 neck retest · X1 2R                      588 ( 45.9/yr) -0.091R win 39.5% PF 0.83 · years > 0  4/13 · 2025-26 +0.089R ( 55) · +1× cost -0.140R · twin -0.041R · edge -0.051R · PASS 100100
+    D2 neck retest · X2 measured move           615 ( 48.0/yr) -0.080R win 53.7% PF 0.81 · years > 0  2/13 · 2025-26 -0.101R ( 56) · +1× cost -0.128R · twin -0.057R · edge -0.023R · PASS 100000
+    D2 neck retest · X4 hold 15:55              584 ( 45.6/yr) -0.105R win 38.7% PF 0.81 · years > 0  1/13 · 2025-26 -0.016R ( 53) · +1× cost -0.154R · twin -0.061R · edge -0.044R · PASS 100000
+
+######## >= 3 confluences  (judged)
+    D0 at the second low · X1 2R                580 ( 45.3/yr) -0.105R win 36.6% PF 0.83 · years > 0  5/13 · 2025-26 -0.016R ( 69) · +1× cost -0.177R · twin -0.044R · edge -0.061R · PASS 100000
+    D0 at the second low · X2 measured move     586 ( 45.8/yr) -0.137R win 39.4% PF 0.78 · years > 0  2/13 · 2025-26 -0.066R ( 69) · +1× cost -0.209R · twin -0.083R · edge -0.055R · PASS 100000
+    D0 at the second low · X4 hold 15:55        572 ( 44.7/yr) -0.126R win 32.5% PF 0.81 · years > 0  2/13 · 2025-26 +0.040R ( 68) · +1× cost -0.198R · twin -0.011R · edge -0.114R · PASS 100100
+    D1 close above the neck · X1 2R             433 ( 33.8/yr) -0.097R win 40.6% PF 0.80 · years > 0  3/13 · 2025-26 +0.231R ( 38) · +1× cost -0.141R · twin -0.023R · edge -0.075R · PASS 100100
+    D1 close above the neck · X2 measured move   452 ( 35.3/yr) -0.131R win 55.8% PF 0.66 · years > 0  0/13 · 2025-26 -0.129R ( 39) · +1× cost -0.174R · twin -0.022R · edge -0.109R · PASS 100000
+    D1 close above the neck · X4 hold 15:55     432 ( 33.8/yr) -0.103R win 40.0% PF 0.79 · years > 0  1/13 · 2025-26 +0.154R ( 38) · +1× cost -0.147R · twin -0.025R · edge -0.078R · PASS 100100
+    D2 neck retest · X1 2R                      370 ( 28.9/yr) -0.149R win 37.6% PF 0.73 · years > 0  2/13 · 2025-26 -0.052R ( 29) · +1× cost -0.200R · twin -0.020R · edge -0.129R · PASS 100000
+    D2 neck retest · X2 measured move           383 ( 29.9/yr) -0.145R win 50.4% PF 0.69 · years > 0  0/13 · 2025-26 -0.236R ( 29) · +1× cost -0.195R · twin -0.063R · edge -0.082R · PASS 100000
+    D2 neck retest · X4 hold 15:55              369 ( 28.8/yr) -0.132R win 37.4% PF 0.76 · years > 0  1/13 · 2025-26 -0.079R ( 29) · +1× cost -0.183R · twin -0.000R · edge -0.131R · PASS 100000

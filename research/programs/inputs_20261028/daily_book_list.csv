@@ -1,0 +1,9 @@
+so_cascade,NQ,research/programs/inputs_20261028/ready/so_cascade__full.wf_trades.csv,edge
+gap_or_retest,NQ,research/programs/inputs_20261028/ready/gap_or_retest__full.wf_trades.csv,edge
+mom_scan_3_pb,NQ,research/programs/inputs_20261028/ready/mom_scan_3_pb__full.wf_trades.csv,edge
+scalp_m1_1000,NQ,research/programs/inputs_20261028/ready/scalp_m1_1000__full.wf_trades.csv,edge
+bdh_opt,NQ,research/programs/inputs_20261028/ready/bdh_opt__full.wf_trades.csv,edge
+monday_long,NQ,research/programs/inputs_20261028/ready/monday_long__full.wf_trades.csv,edge
+weak_day_long,NQ,research/programs/inputs_20261028/ready/weak_day_long__full.wf_trades.csv,edge
+es_cascade,ES,research/programs/inputs_20261028/ready/es_cascade__full.wf_trades.csv,edge
+wave_ldn5,NQ,research/programs/inputs_20261028/ldn5_NQ.csv,wave

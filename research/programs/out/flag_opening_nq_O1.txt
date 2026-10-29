@@ -1,0 +1,33 @@
+Opening flags O1 — NQ, 3311 NY days, 24640 flags (1-5m). Fixed cost 1.5 pts, target = measured move. Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg R (n) · all: R, win %, PF · vs same-day twin · periods > 0.
+
+######## BULL 3-5m · OPENING (registered 09:34-09:44)
+    break (page entry)     (0 trades)
+    flag-mid limit         (0 trades)
+
+######## BULL 3-5m · registered 09:45-14:00
+    break (page entry)     -0.21 (1076) | +0.20 (1070) | +0.32 ( 762) | -0.05 ( 255) | all +0.069 win 28% PF 1.08 · twin +0.040 · 2/4 · 194/yr
+    flag-mid limit         +0.04 (1031) | +0.32 (1000) | +0.29 ( 747) | +0.04 ( 249) | all +0.192 win 36% PF 1.26 · twin +0.096 · 4/4 · 186/yr
+
+######## BULL 1-2m · OPENING (registered 09:34-09:44)
+    break (page entry)     -0.25 (  74) | +0.53 (  82) | +0.61 (  55) | +1.24 (  20) | all +0.362 win 36% PF 1.47 · twin +0.129 · 3/4 · 14/yr
+    flag-mid limit         -0.36 (  91) | +0.14 (  85) | +0.59 (  75) | +0.72 (  22) | all +0.142 win 29% PF 1.17 · twin +0.165 · 3/4 · 17/yr
+
+######## BULL 1-2m · registered 09:45-14:00
+    break (page entry)     -0.40 ( 867) | +0.09 ( 837) | +0.14 ( 632) | -0.29 ( 205) | all -0.095 win 28% PF 0.89 · twin -0.117 · 2/4 · 156/yr
+    flag-mid limit         -0.16 (1206) | +0.11 (1126) | +0.16 ( 816) | +0.01 ( 252) | all +0.019 win 32% PF 1.02 · twin +0.048 · 3/4 · 209/yr
+
+######## BEAR 3-5m · OPENING (registered 09:34-09:44)
+    break (page entry)     (0 trades)
+    flag-mid limit         (0 trades)
+
+######## BEAR 3-5m · registered 09:45-14:00
+    break (page entry)     -0.30 (1120) | -0.12 ( 954) | +0.11 ( 753) | -0.10 ( 216) | all -0.130 win 22% PF 0.86 · twin +0.057 · 1/4 · 187/yr
+    flag-mid limit         -0.22 (1094) | -0.19 ( 955) | +0.37 ( 731) | +0.04 ( 224) | all -0.049 win 25% PF 0.95 · twin +0.085 · 2/4 · 184/yr
+
+######## BEAR 1-2m · OPENING (registered 09:34-09:44)
+    break (page entry)     +0.06 (  49) | -0.06 (  62) | +0.20 (  47) |   —   (   9) | all +0.124 win 31% PF 1.15 · twin -0.046 · 2/3 · 10/yr
+    flag-mid limit         -0.36 (  64) | +0.25 (  71) | +0.10 (  49) | -0.33 (  12) | all -0.022 win 23% PF 0.98 · twin -0.119 · 2/4 · 12/yr
+
+######## BEAR 1-2m · registered 09:45-14:00
+    break (page entry)     -0.36 (1004) | -0.25 ( 911) | +0.07 ( 722) | +0.07 ( 225) | all -0.186 win 25% PF 0.79 · twin -0.019 · 2/4 · 176/yr
+    flag-mid limit         -0.31 (1447) | -0.12 (1259) | +0.10 ( 972) | -0.02 ( 317) | all -0.124 win 24% PF 0.86 · twin +0.056 · 1/4 · 245/yr

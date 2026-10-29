@@ -1,0 +1,37 @@
+{
+ "id": "nf_xm_rs_follow",
+ "name": "NQ's excess move vs ES at 10:00 \u2192 follow the excess",
+ "why": "Relative strength: the index that leads keeps leading into the close. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "pair": "ES",
+ "params": {
+  "z": [
+   0.15,
+   0.25,
+   0.35
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "rr": [
+   0,
+   2
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:00",
+   "when": "abs((px-open)/atr - xs) >= z",
+   "dir": "sign((px-open)/atr - xs)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr"
+}

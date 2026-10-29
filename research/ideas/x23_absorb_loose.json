@@ -1,0 +1,4 @@
+{"id":"x23_absorb_loose","name":"Absorbed 5m bar (delta against the close), loosened threshold","why":"A bar whose aggressor delta pushed one way but closed the other way shows resting size absorbing the aggressors; the absorbed side must cover. Loosened so it fires at least 100 times, as the StarNet desk asked. Pre-registered 2026-10-23 (research/preregistered/2026-10-23_starnet_open_items.md X3).","symbol":"NQ","from":"2023-03-01","to":"2024-12-31","train_months":6,
+ "params":{"k":[0.02,0.05]},
+ "scan":{"tf":5,"from":"10:00","to":"14:30","when":"flow && !rollwin && ((dsum(5,1) < -k*vsum(5,1) && cl(5,1) > op(5,1)) || (dsum(5,1) > k*vsum(5,1) && cl(5,1) < op(5,1)))","dir":"sign(cl(5,1)-op(5,1))"},
+ "max_trades":1,"stop":"0.2*atr","target":"0","flat":"15:55","min_trades":100}

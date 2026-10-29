@@ -1,0 +1,17 @@
+Shallow / reversal flags S2 — NQ, 3311 NY days, 14023 flags (1-5m). Fixed cost 1.5 pts, target = measured move. Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg R (n) · all: R, win %, PF · vs same-day twin · periods > 0.
+
+######## BULL 3-5m · REVERSAL (below open or VWAP)
+    break (page entry)     -0.29 ( 496) | -0.29 ( 504) | -0.14 ( 291) | -0.02 (  75) | all -0.241 win 23% PF 0.75 · twin -0.032 · 0/4 · 84/yr
+    flag-mid limit         -0.26 ( 553) | -0.40 ( 564) | -0.23 ( 343) | -0.13 (  99) | all -0.296 win 23% PF 0.67 · twin -0.118 · 0/4 · 96/yr
+
+######## BULL 1-2m · REVERSAL (below open or VWAP)
+    break (page entry)     -0.40 ( 927) | -0.19 ( 888) | -0.14 ( 591) | -0.20 ( 166) | all -0.253 win 26% PF 0.73 · twin -0.085 · 0/4 · 158/yr
+    flag-mid limit         -0.27 (1460) | -0.17 (1314) | -0.08 ( 926) | -0.06 ( 276) | all -0.180 win 27% PF 0.80 · twin +0.002 · 0/4 · 244/yr
+
+######## BEAR 3-5m · REVERSAL (below open or VWAP)
+    break (page entry)     -0.55 ( 352) | -0.18 ( 350) | -0.06 ( 312) | -0.04 (  96) | all -0.253 win 21% PF 0.75 · twin -0.013 · 0/4 · 68/yr
+    flag-mid limit         -0.27 ( 403) | -0.10 ( 427) | -0.01 ( 375) | -0.13 ( 113) | all -0.129 win 25% PF 0.85 · twin +0.062 · 0/4 · 81/yr
+
+######## BEAR 1-2m · REVERSAL (below open or VWAP)
+    break (page entry)     -0.54 ( 651) | -0.26 ( 634) | -0.02 ( 498) | -0.03 ( 137) | all -0.276 win 26% PF 0.70 · twin -0.031 · 0/4 · 118/yr
+    flag-mid limit         -0.39 (1113) | -0.20 (1028) | -0.00 ( 844) | -0.11 ( 246) | all -0.206 win 26% PF 0.77 · twin +0.068 · 0/4 · 198/yr

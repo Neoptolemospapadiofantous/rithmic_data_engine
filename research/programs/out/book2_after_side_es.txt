@@ -1,0 +1,4 @@
+ES 2014-19: after side +0.166 R (n 618) vs otherwise -0.071 (n 926) → diff +0.237
+ES 2020-26: after side +0.265 R (n 560) vs otherwise +0.104 (n 977) → diff +0.161
+ES all: after side +0.213 R (n 1178) vs otherwise +0.019 (n 1903) → diff +0.194
+90% low +0.015, p 0.036 -> PASS

@@ -1,0 +1,103 @@
+Order flow on flags and reversals (preregistered/2026-10-22_orderflow_flags_reversals.md) — NQ, 659 flow days (2023-03 → 2026-03, 2026-09+), book minutes matched 1058329.
+Each feature: trades WITH it, then WITHOUT it, one position at a time per set. Pass: >= 60 trades, >= +0.20R, PF >= 1.30, both halves > 0, > 0 at +1× cost, >= +0.20R over without.
+
+######## FLAGS — every flag, 3-5m, flag-mid · measured move
+    all flow-day trades                           524 tr +0.238R win 31.5% PF 1.34 · 2023-24 +0.304 / 2025-26 +0.138 · +1× cost +0.193R
+    FF1 pole bought (share >= 0.55)                 4 tr +0.166R win 25.0% PF 1.21 · 2023-24 +0.166 / 2025-26 +0.000 · +1× cost +0.104R
+          … without it                          522 tr +0.234R win 31.4% PF 1.33 · 2023-24 +0.297 / 2025-26 +0.138 · +1× cost +0.189R  → difference -0.068R
+    FF2 pullback not sold (share >= 0.50)         148 tr +0.244R win 32.4% PF 1.35 · 2023-24 +0.275 / 2025-26 +0.193 · +1× cost +0.204R
+          … without it                          476 tr +0.218R win 31.1% PF 1.31 · 2023-24 +0.298 / 2025-26 +0.096 · +1× cost +0.172R  → difference +0.026R
+    FF3 session delta on our side                 472 tr +0.212R win 31.1% PF 1.30 · 2023-24 +0.300 / 2025-26 +0.086 · +1× cost +0.167R
+          … without it                           70 tr +0.642R win 38.6% PF 2.04 · 2023-24 +0.675 / 2025-26 +0.563 · +1× cost +0.595R  → difference -0.430R
+    FF4 book on our side (10 min)                 301 tr +0.162R win 30.2% PF 1.23 · 2023-24 +0.262 / 2025-26 -0.006 · +1× cost +0.117R
+          … without it                          334 tr +0.297R win 32.3% PF 1.43 · 2023-24 +0.369 / 2025-26 +0.194 · +1× cost +0.253R  → difference -0.135R
+    FF5 buyers defend the mid (5 min)             251 tr +0.175R win 33.1% PF 1.26 · 2023-24 +0.381 / 2025-26 -0.111 · +1× cost +0.137R
+          … without it                          443 tr +0.238R win 30.2% PF 1.33 · 2023-24 +0.287 / 2025-26 +0.161 · +1× cost +0.191R  → difference -0.063R
+    >= 3 of the five                              173 tr +0.184R win 31.8% PF 1.27 · 2023-24 +0.333 / 2025-26 -0.035 · +1× cost +0.146R
+          … without it                          470 tr +0.209R win 30.6% PF 1.29 · 2023-24 +0.265 / 2025-26 +0.127 · +1× cost +0.163R  → difference -0.025R
+    1 + 3 + 5                                       3 tr -1.060R win  0.0% PF 0.00 · 2023-24 -1.060 / 2025-26 +0.000 · +1× cost -1.120R
+          … without it                          524 tr +0.238R win 31.5% PF 1.34 · 2023-24 +0.304 / 2025-26 +0.138 · +1× cost +0.193R  → difference -1.298R
+
+######## FLAGS — A-list + 5m HH/HL + with the 5m opening-range break
+    all flow-day trades                           144 tr +0.379R win 34.0% PF 1.58 · 2023-24 +0.476 / 2025-26 +0.216 · +1× cost +0.334R
+    FF1 pole bought (share >= 0.55)                 1 tr +3.826R win 100.0% PF 99.00 · 2023-24 +3.826 / 2025-26 +0.000 · +1× cost +3.744R
+          … without it                          143 tr +0.355R win 33.6% PF 1.54 · 2023-24 +0.438 / 2025-26 +0.216 · +1× cost +0.310R  → difference +3.471R
+    FF2 pullback not sold (share >= 0.50)          24 tr +0.525R win 37.5% PF 1.81 · 2023-24 +0.588 / 2025-26 +0.421 · +1× cost +0.484R
+          … without it                          134 tr +0.329R win 32.8% PF 1.50 · 2023-24 +0.472 / 2025-26 +0.095 · +1× cost +0.284R  → difference +0.197R
+    FF3 session delta on our side                 134 tr +0.402R win 34.3% PF 1.61 · 2023-24 +0.508 / 2025-26 +0.240 · +1× cost +0.357R
+          … without it                           13 tr +0.394R win 38.5% PF 1.69 · 2023-24 +0.652 / 2025-26 -1.023 · +1× cost +0.351R  → difference +0.007R
+    FF4 book on our side (10 min)                  81 tr +0.414R win 38.3% PF 1.70 · 2023-24 +0.630 / 2025-26 +0.100 · +1× cost +0.371R
+          … without it                           82 tr +0.305R win 29.3% PF 1.42 · 2023-24 +0.333 / 2025-26 +0.250 · +1× cost +0.260R  → difference +0.109R
+    FF5 buyers defend the mid (5 min)              57 tr +0.210R win 29.8% PF 1.31 · 2023-24 +0.487 / 2025-26 -0.266 · +1× cost +0.174R
+          … without it                          112 tr +0.380R win 33.9% PF 1.57 · 2023-24 +0.501 / 2025-26 +0.186 · +1× cost +0.334R  → difference -0.170R
+    >= 3 of the five                               41 tr +0.355R win 34.1% PF 1.58 · 2023-24 +0.473 / 2025-26 +0.171 · +1× cost +0.319R
+          … without it                          121 tr +0.278R win 32.2% PF 1.41 · 2023-24 +0.402 / 2025-26 +0.083 · +1× cost +0.233R  → difference +0.078R
+    1 + 3 + 5                                         no trades
+          … without it                          144 tr +0.379R win 34.0% PF 1.58 · 2023-24 +0.476 / 2025-26 +0.216 · +1× cost +0.334R  → difference +0.000R
+
+######## REVERSALS — R1 CHoCH pullback, exit X2 measured move
+    all flow-day trades                           516 tr -0.063R win 40.7% PF 0.89 · 2023-24 -0.040 / 2025-26 -0.098 · +1× cost -0.089R
+    RF1 delta since the low on our side           479 tr -0.044R win 42.2% PF 0.92 · 2023-24 -0.011 / 2025-26 -0.094 · +1× cost -0.070R
+          … without it                           57 tr -0.161R win 31.6% PF 0.75 · 2023-24 -0.207 / 2025-26 -0.077 · +1× cost -0.188R  → difference +0.117R
+    RF2 absorption at the low                       4 tr -0.260R win 25.0% PF 0.54 · 2023-24 -0.285 / 2025-26 -0.185 · +1× cost -0.280R
+          … without it                          514 tr -0.058R win 40.9% PF 0.90 · 2023-24 -0.031 / 2025-26 -0.098 · +1× cost -0.084R  → difference -0.202R
+    RF3 delta divergence at the low               286 tr -0.027R win 43.0% PF 0.95 · 2023-24 +0.009 / 2025-26 -0.086 · +1× cost -0.054R
+          … without it                          300 tr -0.095R win 38.3% PF 0.84 · 2023-24 -0.075 / 2025-26 -0.124 · +1× cost -0.121R  → difference +0.068R
+    RF4 book on our side (signal bar)             192 tr -0.049R win 40.6% PF 0.91 · 2023-24 -0.034 / 2025-26 -0.067 · +1× cost -0.075R
+          … without it                          376 tr -0.056R win 41.2% PF 0.90 · 2023-24 -0.068 / 2025-26 -0.035 · +1× cost -0.083R  → difference +0.008R
+    RF5 signal bar bought (>= 0.55)               120 tr -0.046R win 41.7% PF 0.92 · 2023-24 -0.093 / 2025-26 +0.048 · +1× cost -0.076R
+          … without it                          443 tr -0.074R win 40.0% PF 0.87 · 2023-24 -0.058 / 2025-26 -0.099 · +1× cost -0.100R  → difference +0.029R
+    >= 3 of the five                              157 tr +0.047R win 45.9% PF 1.10 · 2023-24 +0.005 / 2025-26 +0.117 · +1× cost +0.018R
+          … without it                          414 tr -0.085R win 39.1% PF 0.85 · 2023-24 -0.053 / 2025-26 -0.137 · +1× cost -0.112R  → difference +0.132R
+    1 + 3 + 5                                      70 tr -0.055R win 42.9% PF 0.90 · 2023-24 -0.147 / 2025-26 +0.111 · +1× cost -0.086R
+          … without it                          476 tr -0.067R win 40.1% PF 0.88 · 2023-24 -0.037 / 2025-26 -0.112 · +1× cost -0.093R  → difference +0.012R
+
+######## REVERSALS — R2 sweep and reclaim, exit X2 measured move
+    all flow-day trades                           554 tr -0.019R win 47.5% PF 0.96 · 2023-24 -0.053 / 2025-26 +0.032 · +1× cost -0.045R
+    RF1 delta since the low on our side           327 tr +0.034R win 48.9% PF 1.07 · 2023-24 +0.003 / 2025-26 +0.081 · +1× cost +0.010R
+          … without it                          275 tr -0.066R win 46.9% PF 0.88 · 2023-24 -0.074 / 2025-26 -0.051 · +1× cost -0.095R  → difference +0.099R
+    RF2 absorption at the low                      39 tr +0.036R win 51.3% PF 1.08 · 2023-24 +0.155 / 2025-26 -0.176 · +1× cost +0.010R
+          … without it                          520 tr -0.018R win 47.5% PF 0.97 · 2023-24 -0.062 / 2025-26 +0.051 · +1× cost -0.043R  → difference +0.054R
+    RF3 delta divergence at the low               372 tr +0.018R win 48.7% PF 1.04 · 2023-24 -0.019 / 2025-26 +0.075 · +1× cost -0.007R
+          … without it                          225 tr -0.040R win 47.6% PF 0.92 · 2023-24 -0.071 / 2025-26 +0.012 · +1× cost -0.067R  → difference +0.058R
+    RF4 book on our side (signal bar)             323 tr -0.023R win 47.4% PF 0.96 · 2023-24 -0.066 / 2025-26 +0.048 · +1× cost -0.051R
+          … without it                          284 tr -0.006R win 48.2% PF 0.99 · 2023-24 -0.026 / 2025-26 +0.024 · +1× cost -0.031R  → difference -0.017R
+    RF5 signal bar bought (>= 0.55)                54 tr -0.101R win 42.6% PF 0.81 · 2023-24 -0.126 / 2025-26 +0.011 · +1× cost -0.126R
+          … without it                          518 tr -0.009R win 48.1% PF 0.98 · 2023-24 -0.044 / 2025-26 +0.041 · +1× cost -0.035R  → difference -0.092R
+    >= 3 of the five                              181 tr +0.012R win 47.5% PF 1.02 · 2023-24 -0.029 / 2025-26 +0.084 · +1× cost -0.013R
+          … without it                          413 tr -0.037R win 47.2% PF 0.93 · 2023-24 -0.039 / 2025-26 -0.035 · +1× cost -0.064R  → difference +0.050R
+    1 + 3 + 5                                      32 tr -0.002R win 46.9% PF 1.00 · 2023-24 +0.005 / 2025-26 -0.025 · +1× cost -0.026R
+          … without it                          537 tr -0.021R win 47.5% PF 0.96 · 2023-24 -0.060 / 2025-26 +0.039 · +1× cost -0.046R  → difference +0.018R
+
+######## REVERSALS — D1 double bottom / top, close above the neck, exit X2 measured move
+    all flow-day trades                           230 tr -0.039R win 59.1% PF 0.88 · 2023-24 -0.089 / 2025-26 +0.022 · +1× cost -0.054R
+    RF1 delta since the low on our side           206 tr -0.054R win 58.3% PF 0.84 · 2023-24 -0.115 / 2025-26 +0.019 · +1× cost -0.068R
+          … without it                           35 tr +0.037R win 65.7% PF 1.12 · 2023-24 -0.040 / 2025-26 +0.140 · +1× cost +0.022R  → difference -0.091R
+    RF2 absorption at the low                       3 tr -0.521R win 33.3% PF 0.23 · 2023-24 -0.275 / 2025-26 -1.014 · +1× cost -0.533R
+          … without it                          227 tr -0.033R win 59.5% PF 0.90 · 2023-24 -0.086 / 2025-26 +0.032 · +1× cost -0.047R  → difference -0.488R
+    RF3 delta divergence at the low               123 tr +0.008R win 61.8% PF 1.03 · 2023-24 -0.036 / 2025-26 +0.069 · +1× cost -0.007R
+          … without it                          134 tr -0.068R win 58.2% PF 0.80 · 2023-24 -0.111 / 2025-26 -0.022 · +1× cost -0.082R  → difference +0.076R
+    RF4 book on our side (signal bar)              81 tr -0.005R win 63.0% PF 0.98 · 2023-24 -0.123 / 2025-26 +0.069 · +1× cost -0.017R
+          … without it                          155 tr -0.036R win 58.7% PF 0.89 · 2023-24 -0.061 / 2025-26 +0.010 · +1× cost -0.051R  → difference +0.031R
+    RF5 signal bar bought (>= 0.55)                42 tr -0.077R win 61.9% PF 0.76 · 2023-24 -0.194 / 2025-26 +0.114 · +1× cost -0.091R
+          … without it                          196 tr -0.031R win 58.7% PF 0.90 · 2023-24 -0.061 / 2025-26 +0.004 · +1× cost -0.046R  → difference -0.045R
+    >= 3 of the five                               59 tr -0.029R win 61.0% PF 0.91 · 2023-24 -0.120 / 2025-26 +0.066 · +1× cost -0.043R
+          … without it                          185 tr -0.037R win 58.9% PF 0.89 · 2023-24 -0.070 / 2025-26 +0.006 · +1× cost -0.051R  → difference +0.008R
+    1 + 3 + 5                                      22 tr +0.007R win 68.2% PF 1.02 · 2023-24 -0.165 / 2025-26 +0.255 · +1× cost -0.007R
+          … without it                          213 tr -0.040R win 58.7% PF 0.88 · 2023-24 -0.077 / 2025-26 +0.003 · +1× cost -0.054R  → difference +0.047R
+
+Other exits for the reversals (X1 2R / X4 hold), every trade and RF1 + RF3 + RF5:
+    � R1 CHoCH pullback · X1 2R                               all   510 tr -0.047R win 39.6% PF 0.92 · 2023-24 -0.017 / 2025-26 -0.094 · +1× cost -0.074R
+                                                               135    69 tr -0.038R win 40.6% PF 0.93 · 2023-24 -0.027 / 2025-26 -0.057 · +1× cost -0.068R
+    � R1 CHoCH pullback · X4 hold                             all   501 tr -0.041R win 37.1% PF 0.93 · 2023-24 +0.025 / 2025-26 -0.142 · +1× cost -0.067R
+                                                               135    69 tr -0.135R win 37.7% PF 0.77 · 2023-24 -0.099 / 2025-26 -0.199 · +1× cost -0.166R
+    � R2 sweep and reclaim · X1 2R                            all   519 tr -0.040R win 37.6% PF 0.93 · 2023-24 -0.083 / 2025-26 +0.027 · +1× cost -0.065R
+                                                               135    32 tr +0.047R win 40.6% PF 1.09 · 2023-24 +0.019 / 2025-26 +0.128 · +1× cost +0.023R
+    � R2 sweep and reclaim · X4 hold                          all   488 tr +0.005R win 34.4% PF 1.01 · 2023-24 -0.034 / 2025-26 +0.066 · +1× cost -0.021R
+                                                               135    32 tr +0.048R win 40.6% PF 1.09 · 2023-24 +0.039 / 2025-26 +0.073 · +1× cost +0.024R
+    � D1 double bottom / top, close above the neck · X1 2R    all   210 tr -0.065R win 42.4% PF 0.85 · 2023-24 -0.088 / 2025-26 -0.035 · +1× cost -0.079R
+                                                               135    21 tr +0.032R win 57.1% PF 1.10 · 2023-24 -0.335 / 2025-26 +0.522 · +1× cost +0.018R
+    � D1 double bottom / top, close above the neck · X4 hold  all   210 tr -0.080R win 41.9% PF 0.82 · 2023-24 -0.099 / 2025-26 -0.054 · +1× cost -0.094R
+                                                               135    21 tr -0.111R win 52.4% PF 0.70 · 2023-24 -0.335 / 2025-26 +0.188 · +1× cost -0.125R
+
+0 of 35 judged cells pass (expect 2-3 by chance at these thresholds with no second market).

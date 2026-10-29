@@ -1,0 +1,75 @@
+288 designs, 72 start dates 2020-26, 8 months each. h1 = starts 2020-22, h2 = starts 2023-26.
+
+== TOP 10 BY SPEED: P(first payout within 45 sessions)
+  50K N8 $400 | eval 40mq lock 750 | funded 3mq lock 750         | P≥1f 0.99 | paid≤30 0.46 ≤45 0.62 ≤60 0.64 ever 0.68 | med 1st   25 | 8mo mean $6,549 med $5,850 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,111/7,039
+  50K N8 $400 | eval 40mq lock 1000 | funded 3mq lock 750        | P≥1f 0.99 | paid≤30 0.46 ≤45 0.62 ≤60 0.64 ever 0.68 | med 1st   25 | 8mo mean $6,549 med $5,850 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,111/7,039
+  25K N8 $518 | eval 3mq lock 1000 | funded 3mq lock 1000        | P≥1f 0.97 | paid≤30 0.33 ≤45 0.61 ≤60 0.67 ever 0.69 | med 1st   31 | 8mo mean $4,272 med $3,938 p10 $   0 | fee/paid $ 746 | h1/h2 ever 0.76/0.62 mean 5,157/3,282
+  25K N8 $518 | eval 3mq lock 750 | funded 3mq lock 1000         | P≥1f 0.97 | paid≤30 0.32 ≤45 0.60 ≤60 0.68 ever 0.72 | med 1st   32 | 8mo mean $4,216 med $3,150 p10 $   0 | fee/paid $ 718 | h1/h2 ever 0.79/0.65 mean 5,104/3,223
+  25K N8 $518 | eval 6mq lock 750 | funded 2mq lock 750          | P≥1f 0.99 | paid≤30 0.42 ≤45 0.60 ≤60 0.61 ever 0.65 | med 1st   26 | 8mo mean $2,973 med $2,025 p10 $   0 | fee/paid $ 794 | h1/h2 ever 0.71/0.59 mean 3,353/2,548
+  25K N8 $518 | eval 10mq lock 750 | funded 2mq lock 750         | P≥1f 0.97 | paid≤30 0.42 ≤45 0.60 ≤60 0.60 ever 0.64 | med 1st   25 | 8mo mean $3,173 med $2,025 p10 $   0 | fee/paid $ 811 | h1/h2 ever 0.68/0.59 mean 3,306/3,024
+  25K N8 $518 | eval 10mq lock 1000 | funded 2mq lock 750        | P≥1f 0.99 | paid≤30 0.42 ≤45 0.60 ≤60 0.60 ever 0.64 | med 1st   25 | 8mo mean $3,185 med $2,025 p10 $   0 | fee/paid $ 811 | h1/h2 ever 0.68/0.59 mean 3,329/3,024
+  50K N8 $400 | eval 40mq lock 750 | funded 3mq lock 1000        | P≥1f 0.99 | paid≤30 0.43 ≤45 0.60 ≤60 0.65 ever 0.68 | med 1st   25 | 8mo mean $6,437 med $6,096 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,551/6,309
+  50K N8 $400 | eval 40mq lock 1000 | funded 3mq lock 1000       | P≥1f 0.99 | paid≤30 0.43 ≤45 0.60 ≤60 0.65 ever 0.68 | med 1st   25 | 8mo mean $6,437 med $6,096 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,551/6,309
+  25K N8 $518 | eval 20mq lock 750 | funded 2mq lock 750         | P≥1f 1.00 | paid≤30 0.39 ≤45 0.58 ≤60 0.58 ever 0.65 | med 1st   25 | 8mo mean $3,279 med $2,925 p10 $   0 | fee/paid $ 794 | h1/h2 ever 0.71/0.59 mean 3,649/2,865
+
+== TOP 10 BY CERTAINTY: P(any payout in 8 months)
+  50K N8 $400 | eval 40mq lock 750 | funded 1mq lock 750         | P≥1f 0.99 | paid≤30 0.18 ≤45 0.35 ≤60 0.51 ever 0.88 | med 1st   54 | 8mo mean $4,746 med $5,072 p10 $   0 | fee/paid $ 457 | h1/h2 ever 0.92/0.82 mean 5,963/3,386
+  50K N8 $400 | eval 40mq lock 1000 | funded 1mq lock 750        | P≥1f 0.99 | paid≤30 0.18 ≤45 0.35 ≤60 0.51 ever 0.88 | med 1st   54 | 8mo mean $4,747 med $5,072 p10 $   0 | fee/paid $ 457 | h1/h2 ever 0.92/0.82 mean 5,964/3,386
+  50K N8 $400 | eval 3mq lock none | funded 1mq lock 1000        | P≥1f 1.00 | paid≤30 0.07 ≤45 0.15 ≤60 0.35 ever 0.86 | med 1st   66 | 8mo mean $3,829 med $3,661 p10 $   0 | fee/paid $ 465 | h1/h2 ever 0.92/0.79 mean 4,287/3,317
+  50K N8 $400 | eval 40mq lock 750 | funded 1mq lock 1000        | P≥1f 0.99 | paid≤30 0.14 ≤45 0.29 ≤60 0.49 ever 0.86 | med 1st   56 | 8mo mean $4,512 med $4,901 p10 $   0 | fee/paid $ 465 | h1/h2 ever 0.92/0.79 mean 5,473/3,438
+  50K N8 $400 | eval 40mq lock 1000 | funded 1mq lock 1000       | P≥1f 0.99 | paid≤30 0.14 ≤45 0.29 ≤60 0.49 ever 0.86 | med 1st   56 | 8mo mean $4,521 med $4,901 p10 $   0 | fee/paid $ 465 | h1/h2 ever 0.92/0.79 mean 5,489/3,438
+  50K N8 $400 | eval 3mq lock 750 | funded 1mq lock 750          | P≥1f 1.00 | paid≤30 0.03 ≤45 0.17 ≤60 0.31 ever 0.85 | med 1st   73 | 8mo mean $3,506 med $3,188 p10 $   0 | fee/paid $ 472 | h1/h2 ever 0.87/0.82 mean 3,820/3,156
+  50K N8 $400 | eval 3mq lock 750 | funded 1mq lock 1000         | P≥1f 1.00 | paid≤30 0.01 ≤45 0.12 ≤60 0.29 ever 0.85 | med 1st   73 | 8mo mean $3,611 med $3,571 p10 $   0 | fee/paid $ 472 | h1/h2 ever 0.87/0.82 mean 3,961/3,220
+  50K N8 $400 | eval 3mq lock 1000 | funded 1mq lock 750         | P≥1f 1.00 | paid≤30 0.03 ≤45 0.15 ≤60 0.28 ever 0.85 | med 1st   73 | 8mo mean $3,439 med $3,032 p10 $   0 | fee/paid $ 472 | h1/h2 ever 0.89/0.79 mean 3,693/3,156
+  50K N8 $400 | eval 3mq lock 1000 | funded 1mq lock 1000        | P≥1f 1.00 | paid≤30 0.01 ≤45 0.12 ≤60 0.29 ever 0.85 | med 1st   73 | 8mo mean $3,624 med $3,373 p10 $   0 | fee/paid $ 472 | h1/h2 ever 0.89/0.79 mean 4,048/3,150
+  50K N8 $400 | eval 6mq lock 750 | funded 1mq lock 1000         | P≥1f 0.97 | paid≤30 0.08 ≤45 0.24 ≤60 0.40 ever 0.85 | med 1st   62 | 8mo mean $4,311 med $4,566 p10 $   0 | fee/paid $ 472 | h1/h2 ever 0.89/0.79 mean 5,175/3,344
+
+== TOP 10 BY MONEY: mean 8-month payouts
+  50K N8 $400 | eval 40mq lock 750 | funded 2mq lock 750         | P≥1f 0.99 | paid≤30 0.36 ≤45 0.58 ≤60 0.69 ever 0.78 | med 1st   32 | 8mo mean $6,828 med $6,479 p10 $   0 | fee/paid $ 514 | h1/h2 ever 0.84/0.71 mean 7,367/6,226
+  50K N8 $400 | eval 40mq lock 1000 | funded 2mq lock 750        | P≥1f 0.99 | paid≤30 0.35 ≤45 0.57 ≤60 0.68 ever 0.76 | med 1st   32 | 8mo mean $6,803 med $6,479 p10 $   0 | fee/paid $ 524 | h1/h2 ever 0.82/0.71 mean 7,320/6,226
+  50K N8 $400 | eval 40mq lock 750 | funded 3mq lock 750         | P≥1f 0.99 | paid≤30 0.46 ≤45 0.62 ≤60 0.64 ever 0.68 | med 1st   25 | 8mo mean $6,549 med $5,850 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,111/7,039
+  50K N8 $400 | eval 40mq lock 1000 | funded 3mq lock 750        | P≥1f 0.99 | paid≤30 0.46 ≤45 0.62 ≤60 0.64 ever 0.68 | med 1st   25 | 8mo mean $6,549 med $5,850 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,111/7,039
+  50K N8 $400 | eval 40mq lock 750 | funded 2mq lock 1000        | P≥1f 0.99 | paid≤30 0.31 ≤45 0.53 ≤60 0.69 ever 0.78 | med 1st   36 | 8mo mean $6,545 med $7,320 p10 $   0 | fee/paid $ 514 | h1/h2 ever 0.84/0.71 mean 7,337/5,659
+  50K N8 $400 | eval 40mq lock 1000 | funded 2mq lock 1000       | P≥1f 0.99 | paid≤30 0.31 ≤45 0.53 ≤60 0.68 ever 0.76 | med 1st   35 | 8mo mean $6,464 med $7,320 p10 $   0 | fee/paid $ 524 | h1/h2 ever 0.82/0.71 mean 7,184/5,659
+  50K N8 $400 | eval 40mq lock 750 | funded 3mq lock 1000        | P≥1f 0.99 | paid≤30 0.43 ≤45 0.60 ≤60 0.65 ever 0.68 | med 1st   25 | 8mo mean $6,437 med $6,096 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,551/6,309
+  50K N8 $400 | eval 40mq lock 1000 | funded 3mq lock 1000       | P≥1f 0.99 | paid≤30 0.43 ≤45 0.60 ≤60 0.65 ever 0.68 | med 1st   25 | 8mo mean $6,437 med $6,096 p10 $   0 | fee/paid $ 588 | h1/h2 ever 0.68/0.68 mean 6,551/6,309
+  50K N8 $400 | eval 10mq lock 750 | funded 3mq lock 750         | P≥1f 0.99 | paid≤30 0.35 ≤45 0.54 ≤60 0.62 ever 0.64 | med 1st   26 | 8mo mean $5,851 med $3,290 p10 $   0 | fee/paid $ 626 | h1/h2 ever 0.68/0.59 mean 5,437/6,314
+  50K N8 $400 | eval 10mq lock 1000 | funded 3mq lock 750        | P≥1f 0.99 | paid≤30 0.35 ≤45 0.54 ≤60 0.62 ever 0.64 | med 1st   26 | 8mo mean $5,851 med $3,290 p10 $   0 | fee/paid $ 626 | h1/h2 ever 0.68/0.59 mean 5,437/6,314
+
+== TOP 10 BY COST: fees per paid set
+  50K N6 $300 | eval 40mq lock 750 | funded 1mq lock 750         | P≥1f 0.97 | paid≤30 0.15 ≤45 0.39 ≤60 0.51 ever 0.82 | med 1st   49 | 8mo mean $3,708 med $3,546 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 3,960/3,426
+  50K N6 $300 | eval 40mq lock 750 | funded 1mq lock 1000        | P≥1f 0.97 | paid≤30 0.14 ≤45 0.35 ≤60 0.47 ever 0.82 | med 1st   53 | 8mo mean $4,252 med $4,050 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 4,546/3,923
+  50K N6 $300 | eval 40mq lock 1000 | funded 1mq lock 750        | P≥1f 0.97 | paid≤30 0.15 ≤45 0.39 ≤60 0.51 ever 0.82 | med 1st   49 | 8mo mean $3,708 med $3,546 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 3,960/3,426
+  50K N6 $300 | eval 40mq lock 1000 | funded 1mq lock 1000       | P≥1f 0.97 | paid≤30 0.14 ≤45 0.35 ≤60 0.47 ever 0.82 | med 1st   53 | 8mo mean $4,221 med $4,050 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 4,487/3,923
+  50K N6 $300 | eval 6mq lock none | funded 1mq lock 1000        | P≥1f 0.94 | paid≤30 0.18 ≤45 0.36 ≤60 0.47 ever 0.74 | med 1st   46 | 8mo mean $3,179 med $3,414 p10 $   0 | fee/paid $ 408 | h1/h2 ever 0.74/0.74 mean 2,957/3,427
+  50K N6 $300 | eval 40mq lock none | funded 1mq lock 1000       | P≥1f 0.97 | paid≤30 0.14 ≤45 0.32 ≤60 0.46 ever 0.72 | med 1st   50 | 8mo mean $3,221 med $3,258 p10 $   0 | fee/paid $ 415 | h1/h2 ever 0.71/0.74 mean 3,188/3,257
+  50K N6 $300 | eval 3mq lock 750 | funded 1mq lock 1000         | P≥1f 0.97 | paid≤30 0.06 ≤45 0.14 ≤60 0.25 ever 0.71 | med 1st   66 | 8mo mean $2,910 med $2,955 p10 $   0 | fee/paid $ 424 | h1/h2 ever 0.68/0.74 mean 2,690/3,157
+  50K N6 $300 | eval 3mq lock 1000 | funded 1mq lock 1000        | P≥1f 0.99 | paid≤30 0.07 ≤45 0.15 ≤60 0.26 ever 0.69 | med 1st   64 | 8mo mean $2,968 med $2,954 p10 $   0 | fee/paid $ 432 | h1/h2 ever 0.68/0.71 mean 2,860/3,088
+  50K N6 $300 | eval 6mq lock 750 | funded 1mq lock 1000         | P≥1f 0.89 | paid≤30 0.12 ≤45 0.36 ≤60 0.46 ever 0.69 | med 1st   45 | 8mo mean $3,522 med $3,578 p10 $   0 | fee/paid $ 432 | h1/h2 ever 0.74/0.65 mean 3,847/3,158
+  50K N6 $300 | eval 6mq lock 1000 | funded 1mq lock 1000        | P≥1f 0.92 | paid≤30 0.12 ≤45 0.35 ≤60 0.44 ever 0.69 | med 1st   46 | 8mo mean $3,523 med $3,605 p10 $   0 | fee/paid $ 432 | h1/h2 ever 0.71/0.68 mean 3,808/3,205
+
+== BUDGET ≤ $300: best by each objective
+  speed (≤45)        50K N6 $300 | eval 40mq lock 750 | funded 2mq lock 750         | P≥1f 0.97 | paid≤30 0.36 ≤45 0.53 ≤60 0.62 ever 0.67 | med 1st   29 | 8mo mean $4,977 med $3,828 p10 $   0 | fee/paid $ 450 | h1/h2 ever 0.71/0.62 mean 5,095/4,846
+  certainty (ever)   50K N6 $300 | eval 40mq lock 750 | funded 1mq lock 750         | P≥1f 0.97 | paid≤30 0.15 ≤45 0.39 ≤60 0.51 ever 0.82 | med 1st   49 | 8mo mean $3,708 med $3,546 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 3,960/3,426
+  money (mean)       50K N6 $300 | eval 40mq lock 750 | funded 2mq lock 750         | P≥1f 0.97 | paid≤30 0.36 ≤45 0.53 ≤60 0.62 ever 0.67 | med 1st   29 | 8mo mean $4,977 med $3,828 p10 $   0 | fee/paid $ 450 | h1/h2 ever 0.71/0.62 mean 5,095/4,846
+  median money       50K N6 $300 | eval 40mq lock 750 | funded 1mq lock 1000        | P≥1f 0.97 | paid≤30 0.14 ≤45 0.35 ≤60 0.47 ever 0.82 | med 1st   53 | 8mo mean $4,252 med $4,050 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 4,546/3,923
+
+== KNOB EFFECTS (median over all designs holding one knob)
+  plan       25K: ≤45 0.43 ever 0.58 mean $2,332 fee/paid $778 | 50K: ≤45 0.35 ever 0.62 mean $3,848 fee/paid $568
+  N          6: ≤45 0.39 ever 0.55 mean $2,664 fee/paid $653 | 8: ≤45 0.43 ever 0.65 mean $3,728 fee/paid $719
+  eval_q     3: ≤45 0.28 ever 0.58 mean $2,825 fee/paid $718 | 6: ≤45 0.40 ever 0.59 mean $2,930 fee/paid $691 | 10: ≤45 0.44 ever 0.60 mean $3,078 fee/paid $683 | 20: ≤45 0.46 ever 0.60 mean $2,587 fee/paid $778 | 40: ≤45 0.49 ever 0.68 mean $4,565 fee/paid $524
+  eval_lock  750: ≤45 0.44 ever 0.65 mean $3,386 fee/paid $644 | 1000: ≤45 0.44 ever 0.64 mean $3,364 fee/paid $646 | None: ≤45 0.36 ever 0.49 mean $2,561 fee/paid $765
+  f_q        1: ≤45 0.35 ever 0.71 mean $2,658 fee/paid $536 | 2: ≤45 0.44 ever 0.57 mean $2,958 fee/paid $700 | 3: ≤45 0.46 ever 0.54 mean $3,709 fee/paid $737
+  f_lock     750: ≤45 0.40 ever 0.58 mean $2,947 fee/paid $700 | 1000: ≤45 0.40 ever 0.60 mean $3,014 fee/paid $677
+
+== STABILITY: designs in the top 20 by 'ever' whose h2 (2023-26) 'ever' is within 0.10 of h1
+  50K N8 $400 | eval 40mq lock 750 | funded 1mq lock 750         | P≥1f 0.99 | paid≤30 0.18 ≤45 0.35 ≤60 0.51 ever 0.88 | med 1st   54 | 8mo mean $4,746 med $5,072 p10 $   0 | fee/paid $ 457 | h1/h2 ever 0.92/0.82 mean 5,963/3,386
+  50K N8 $400 | eval 40mq lock 1000 | funded 1mq lock 750        | P≥1f 0.99 | paid≤30 0.18 ≤45 0.35 ≤60 0.51 ever 0.88 | med 1st   54 | 8mo mean $4,747 med $5,072 p10 $   0 | fee/paid $ 457 | h1/h2 ever 0.92/0.82 mean 5,964/3,386
+  50K N8 $400 | eval 3mq lock 750 | funded 1mq lock 750          | P≥1f 1.00 | paid≤30 0.03 ≤45 0.17 ≤60 0.31 ever 0.85 | med 1st   73 | 8mo mean $3,506 med $3,188 p10 $   0 | fee/paid $ 472 | h1/h2 ever 0.87/0.82 mean 3,820/3,156
+  50K N8 $400 | eval 3mq lock 750 | funded 1mq lock 1000         | P≥1f 1.00 | paid≤30 0.01 ≤45 0.12 ≤60 0.29 ever 0.85 | med 1st   73 | 8mo mean $3,611 med $3,571 p10 $   0 | fee/paid $ 472 | h1/h2 ever 0.87/0.82 mean 3,961/3,220
+  50K N8 $400 | eval 6mq lock 750 | funded 1mq lock 750          | P≥1f 0.97 | paid≤30 0.11 ≤45 0.32 ≤60 0.51 ever 0.83 | med 1st   52 | 8mo mean $4,416 med $5,114 p10 $   0 | fee/paid $ 480 | h1/h2 ever 0.87/0.79 mean 5,079/3,675
+  50K N6 $300 | eval 40mq lock 750 | funded 1mq lock 750         | P≥1f 0.97 | paid≤30 0.15 ≤45 0.39 ≤60 0.51 ever 0.82 | med 1st   49 | 8mo mean $3,708 med $3,546 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 3,960/3,426
+  50K N6 $300 | eval 40mq lock 750 | funded 1mq lock 1000        | P≥1f 0.97 | paid≤30 0.14 ≤45 0.35 ≤60 0.47 ever 0.82 | med 1st   53 | 8mo mean $4,252 med $4,050 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 4,546/3,923
+  50K N6 $300 | eval 40mq lock 1000 | funded 1mq lock 750        | P≥1f 0.97 | paid≤30 0.15 ≤45 0.39 ≤60 0.51 ever 0.82 | med 1st   49 | 8mo mean $3,708 med $3,546 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 3,960/3,426
+  50K N6 $300 | eval 40mq lock 1000 | funded 1mq lock 1000       | P≥1f 0.97 | paid≤30 0.14 ≤45 0.35 ≤60 0.47 ever 0.82 | med 1st   53 | 8mo mean $4,221 med $4,050 p10 $   0 | fee/paid $ 366 | h1/h2 ever 0.84/0.79 mean 4,487/3,923
+  50K N8 $400 | eval 3mq lock none | funded 1mq lock 750         | P≥1f 1.00 | paid≤30 0.07 ≤45 0.15 ≤60 0.31 ever 0.82 | med 1st   66 | 8mo mean $3,129 med $2,762 p10 $   0 | fee/paid $ 488 | h1/h2 ever 0.84/0.79 mean 2,966/3,310

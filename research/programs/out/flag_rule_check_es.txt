@@ -1,0 +1,122 @@
+Stress tests of the strongest flag rule — ES 2014-01 → 2026-10. Trade: flag-mid limit, stop flag low − 0.1 ATR, measured move, flat 15:55, cost 0.5 pts.
+RULE B = bull flag, A-list, 5m HH/HL, 5m opening range broken up. RULE 2 = the same on both sides. Money at today's ATR (55): 1 MES = $5 a point, 1 ES = 10×.
+
+################ RULE B (bull only) — 246 trades (19.2 a year)
+
+  T1 by year
+    2014    21 tr +0.965R win 52.4% PF 2.75  $   +740 per MES
+    2015    15 tr +0.263R win 46.7% PF 1.42  $   +280 per MES
+    2016    15 tr +0.803R win 46.7% PF 2.25  $   +429 per MES
+    2017    16 tr +0.237R win 37.5% PF 1.30  $   +266 per MES
+    2018    22 tr +0.487R win 31.8% PF 1.62  $   +275 per MES
+    2019    30 tr +0.894R win 46.7% PF 2.47  $  +1172 per MES
+    2020    22 tr +0.037R win 27.3% PF 1.05  $    +35 per MES
+    2021    31 tr +0.585R win 38.7% PF 1.88  $   +614 per MES
+    2022    18 tr +0.246R win 38.9% PF 1.38  $   +169 per MES
+    2023    28 tr +0.025R win 32.1% PF 1.03  $    +99 per MES
+    2024    10 tr +0.136R win 40.0% PF 1.21  $    +53 per MES
+    2025    12 tr +0.991R win 58.3% PF 3.25  $   +479 per MES
+    2026     6 tr +0.201R win 50.0% PF 1.38  $   +146 per MES
+
+  T2 cost (extra points per trade, taken off each trade's R through its own risk)
+    + 0.0 pts   246 tr +0.472R win 40.7% PF 1.71
+    + 0.5 pts   246 tr +0.340R win 40.7% PF 1.46
+    + 1.0 pts   246 tr +0.208R win 40.7% PF 1.25
+
+  T3 limit fill
+    touch the mid             246 tr +0.472R win 40.7% PF 1.71
+    trade 0.25 THROUGH it     238 tr +0.427R win 39.5% PF 1.63
+
+  T4 other-day twin (same entry minute, side, risk and target in ATR, 5 random other sessions)
+    the rule     246 tr +0.472R win 40.7% PF 1.71
+    its twins   1230 tr -0.063R win 26.7% PF 0.92  → edge over the twin +0.535R
+
+  T5 entry × stop (first rule flag of each day; target the measured move)
+                             | flag low − 0.25              | flag low − 0.1 ATR           | pole low                       | entry − 0.2 ATR             
+    break of the pole high   | +0.174R PF 1.22 ( 216)         | +0.179R PF 1.31 ( 216)         | +0.047R PF 1.15 ( 216)         | +0.139R PF 1.23 ( 217)        
+    retest after the break   | +0.275R PF 1.40 ( 123)         | +0.224R PF 1.45 ( 123)         | +0.063R PF 1.23 ( 123)         | +0.226R PF 1.40 ( 124)        
+    flag-mid limit           | +0.472R PF 1.42 ( 206)         | +0.503R PF 1.76 ( 238)         | +0.146R PF 1.47 ( 238)         | +0.311R PF 1.55 ( 238)        
+    chart close above high   | +0.173R PF 1.32 (  73)         | +0.121R PF 1.29 (  73)         | -0.016R PF 0.95 (  73)         | +0.353R PF 1.69 (  74)        
+
+  T6 slices
+    registered before 10:30         113 tr +0.634R win 40.7% PF 1.95
+    10:30-12:00                     128 tr +0.376R win 41.4% PF 1.57
+    12:00-14:00                       5 tr -0.720R win 20.0% PF 0.19
+    Monday                           55 tr +0.874R win 52.7% PF 2.62
+    Tuesday                          40 tr +0.566R win 52.5% PF 2.05
+    Wednesday                        52 tr +0.395R win 32.7% PF 1.53
+    Thursday                         52 tr +0.164R win 26.9% PF 1.20
+    Friday                           47 tr +0.347R win 40.4% PF 1.53
+    FOMC day                          3 tr +0.194R win 33.3% PF 1.27
+    not FOMC                        243 tr +0.476R win 40.7% PF 1.71
+    VIX >= 20 (prior close)          74 tr +0.606R win 43.2% PF 2.00
+    VIX < 20                        172 tr +0.414R win 39.5% PF 1.60
+    gap in the trade's direction    147 tr +0.520R win 46.3% PF 1.86
+    gap against                      99 tr +0.401R win 32.3% PF 1.53
+    3m chart                         98 tr +0.507R win 38.8% PF 1.73
+    4m chart                         52 tr +0.798R win 48.1% PF 2.36
+    5m chart                         96 tr +0.260R win 38.5% PF 1.38
+
+  T7 money at today's ATR (1 MES; × 10 for 1 ES)
+    total $4757 over 154 months = $31 a month · months > 0: 63 of 154 (months with no trade count as 0) · best month $469 (10% of the total) · worst month $-188
+    worst losing streak 9 trades · worst drawdown $585 per MES ($5848 per ES) · average trade $19.3 per MES
+
+################ RULE 2 (both sides) — 463 trades (36.2 a year)
+
+  T1 by year
+    2014    40 tr +0.218R win 40.0% PF 1.31  $   +398 per MES
+    2015    39 tr +0.307R win 33.3% PF 1.40  $   +618 per MES
+    2016    29 tr +0.068R win 27.6% PF 1.08  $   +173 per MES
+    2017    31 tr -0.282R win 25.8% PF 0.70  $    -51 per MES
+    2018    37 tr +0.064R win 24.3% PF 1.07  $   -148 per MES
+    2019    47 tr +0.464R win 36.2% PF 1.64  $  +1072 per MES
+    2020    43 tr +0.769R win 25.6% PF 1.95  $  +1360 per MES
+    2021    42 tr +0.321R win 35.7% PF 1.46  $   +470 per MES
+    2022    42 tr +0.492R win 33.3% PF 1.70  $   +756 per MES
+    2023    40 tr -0.075R win 30.0% PF 0.90  $    -43 per MES
+    2024    32 tr +0.014R win 28.1% PF 1.02  $    +95 per MES
+    2025    30 tr +0.678R win 40.0% PF 2.09  $   +970 per MES
+    2026    11 tr +0.568R win 36.4% PF 1.91  $   +262 per MES
+
+  T2 cost (extra points per trade, taken off each trade's R through its own risk)
+    + 0.0 pts   463 tr +0.279R win 32.0% PF 1.37
+    + 0.5 pts   463 tr +0.147R win 31.7% PF 1.17
+    + 1.0 pts   463 tr +0.014R win 31.7% PF 1.01
+
+  T3 limit fill
+    touch the mid             463 tr +0.279R win 32.0% PF 1.37
+    trade 0.25 THROUGH it     455 tr +0.253R win 31.2% PF 1.33
+
+  T4 other-day twin (same entry minute, side, risk and target in ATR, 5 random other sessions)
+    the rule     463 tr +0.279R win 32.0% PF 1.37
+    its twins   2315 tr -0.131R win 25.6% PF 0.84  → edge over the twin +0.410R
+
+  T5 entry × stop (first rule flag of each day; target the measured move)
+                             | flag low − 0.25              | flag low − 0.1 ATR           | pole low                       | entry − 0.2 ATR             
+    break of the pole high   | -0.027R PF 0.97 ( 380)         | +0.058R PF 1.09 ( 378)         | +0.016R PF 1.05 ( 375)         | +0.064R PF 1.09 ( 379)        
+    retest after the break   | +0.134R PF 1.19 ( 219)         | +0.135R PF 1.25 ( 219)         | +0.027R PF 1.09 ( 218)         | +0.089R PF 1.13 ( 220)        
+    flag-mid limit           | +0.131R PF 1.11 ( 372)         | +0.228R PF 1.30 ( 435)         | +0.088R PF 1.26 ( 424)         | +0.147R PF 1.22 ( 432)        
+    chart close above high   | -0.009R PF 0.99 ( 137)         | -0.035R PF 0.93 ( 137)         | -0.055R PF 0.83 ( 136)         | +0.027R PF 1.04 ( 138)        
+
+  T6 slices
+    registered before 10:30         164 tr +0.479R win 36.0% PF 1.67
+    10:30-12:00                     253 tr +0.244R win 31.2% PF 1.31
+    12:00-14:00                      46 tr -0.240R win 21.7% PF 0.72
+    Monday                           92 tr +0.352R win 40.2% PF 1.51
+    Tuesday                          83 tr +0.754R win 44.6% PF 2.22
+    Wednesday                        96 tr -0.174R win 19.8% PF 0.81
+    Thursday                        107 tr +0.206R win 24.3% PF 1.24
+    Friday                           85 tr +0.340R win 34.1% PF 1.47
+    FOMC day                          5 tr -0.371R win 20.0% PF 0.59
+    not FOMC                        458 tr +0.286R win 32.1% PF 1.38
+    VIX >= 20 (prior close)         129 tr +0.605R win 35.7% PF 1.88
+    VIX < 20                        334 tr +0.154R win 30.5% PF 1.19
+    gap in the trade's direction    228 tr +0.489R win 40.4% PF 1.73
+    gap against                     233 tr +0.085R win 24.0% PF 1.10
+    3m chart                        197 tr +0.279R win 28.9% PF 1.35
+    4m chart                        100 tr +0.550R win 41.0% PF 1.83
+    5m chart                        166 tr +0.117R win 30.1% PF 1.15
+
+  T7 money at today's ATR (1 MES; × 10 for 1 ES)
+    total $5932 over 154 months = $39 a month · months > 0: 69 of 154 (months with no trade count as 0) · best month $728 (12% of the total) · worst month $-315
+    worst losing streak 11 trades · worst drawdown $777 per MES ($7766 per ES) · average trade $12.8 per MES

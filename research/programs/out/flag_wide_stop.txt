@@ -1,0 +1,86 @@
+Wider stop / smaller target on the /flags page's flags — NQ 2010-07 → 2026-10, 3315 days, 139296 trades. R in units of the PAGE's risk R0 (a 3R stop loses 3).
+Cells: avg R0 2010-18 | 2019-24 | 2025-26 (cost 2 pts × ATR/320) · 2025-26 fixed 1.5 pts · win % · PF · worst year · vs control (a) same day +0-60 min · vs (b) other NY day, same minute.
+
+== NY bull 4-5m TAKE-like (1st pb, pole >= 5x)
+  stop 1.0R  target 0.5R  +0.005 (  362) | +0.051 (  250) | -0.090 (  39) · fixed -0.078 · win 72% · PF 1.06 · worst 2017 -10R · vs (a) +0.001 · vs (b) +0.177
+  stop 1.0R  target 1R    +0.064 (  362) | +0.182 (  250) | -0.231 (  39) · fixed -0.219 · win 58% · PF 1.20 · worst 2017 -14R · vs (a) +0.014 · vs (b) +0.224
+  stop 1.0R  target MM    +0.619 (  362) | +0.721 (  250) | -0.236 (  39) · fixed -0.224 · win 33% · PF 1.87 · worst 2010 -8R · vs (a) +0.235 · vs (b) +0.698
+  stop 1.5R  target 0.5R  +0.011 (  362) | +0.086 (  250) | -0.001 (  39) · fixed +0.012 · win 80% · PF 1.13 · worst 2017 -11R · vs (a) +0.020 · vs (b) +0.203
+  stop 1.5R  target 1R    +0.063 (  362) | +0.247 (  250) | -0.267 (  39) · fixed -0.254 · win 67% · PF 1.22 · worst 2025 -11R · vs (a) +0.022 · vs (b) +0.241
+  stop 1.5R  target MM    +0.815 (  362) | +0.798 (  250) | -0.132 (  39) · fixed -0.120 · win 43% · PF 1.88 · worst 2010 -9R · vs (a) +0.229 · vs (b) +0.827
+  stop 2.0R  target 0.5R  -0.008 (  362) | +0.099 (  250) | -0.039 (  39) · fixed -0.027 · win 84% · PF 1.09 · worst 2017 -13R · vs (a) -0.008 · vs (b) +0.188
+  stop 2.0R  target 1R    +0.005 (  362) | +0.272 (  250) | -0.190 (  39) · fixed -0.177 · win 72% · PF 1.17 · worst 2013 -17R · vs (a) -0.009 · vs (b) +0.216
+  stop 2.0R  target MM    +0.921 (  362) | +1.098 (  250) | -0.218 (  39) · fixed -0.206 · win 50% · PF 1.98 · worst 2014 -11R · vs (a) +0.379 · vs (b) +0.999
+  stop 3.0R  target 0.5R  -0.103 (  362) | +0.048 (  250) | -0.039 (  39) · fixed -0.027 · win 85% · PF 0.90 · worst 2017 -25R · vs (a) -0.090 · vs (b) +0.104
+  stop 3.0R  target 1R    -0.121 (  362) | +0.159 (  250) | -0.078 (  39) · fixed -0.065 · win 75% · PF 0.98 · worst 2013 -35R · vs (a) -0.099 · vs (b) +0.089
+  stop 3.0R  target MM    +0.810 (  362) | +0.936 (  250) | -0.353 (  39) · fixed -0.341 · win 54% · PF 1.68 · worst 2014 -9R · vs (a) +0.237 · vs (b) +0.870
+
+== NY bull 3-5m
+  stop 1.0R  target 0.5R  -0.025 ( 1741) | -0.009 ( 1167) | -0.152 ( 255) · fixed -0.138 · win 69% · PF 0.91 · worst 2025 -31R · vs (a) -0.022 · vs (b) +0.122
+  stop 1.0R  target 1R    -0.018 ( 1741) | +0.033 ( 1167) | -0.111 ( 255) · fixed -0.096 · win 53% · PF 0.99 · worst 2011 -37R · vs (a) -0.033 · vs (b) +0.105
+  stop 1.0R  target MM    +0.259 ( 1741) | +0.322 ( 1167) | -0.061 ( 255) · fixed -0.047 · win 28% · PF 1.34 · worst 2010 -38R · vs (a) +0.046 · vs (b) +0.296
+  stop 1.5R  target 0.5R  +0.017 ( 1741) | +0.008 ( 1167) | -0.054 ( 255) · fixed -0.040 · win 79% · PF 1.02 · worst 2016 -14R · vs (a) -0.007 · vs (b) +0.164
+  stop 1.5R  target 1R    +0.024 ( 1741) | +0.069 ( 1167) | +0.000 ( 255) · fixed +0.015 · win 64% · PF 1.07 · worst 2011 -29R · vs (a) -0.017 · vs (b) +0.150
+  stop 1.5R  target MM    +0.395 ( 1741) | +0.359 ( 1167) | +0.040 ( 255) · fixed +0.055 · win 38% · PF 1.38 · worst 2010 -44R · vs (a) +0.037 · vs (b) +0.383
+  stop 2.0R  target 0.5R  -0.008 ( 1741) | +0.006 ( 1167) | -0.066 ( 255) · fixed -0.051 · win 82% · PF 0.98 · worst 2016 -25R · vs (a) -0.032 · vs (b) +0.147
+  stop 2.0R  target 1R    -0.003 ( 1741) | +0.079 ( 1167) | +0.033 ( 255) · fixed +0.048 · win 70% · PF 1.05 · worst 2011 -38R · vs (a) -0.059 · vs (b) +0.137
+  stop 2.0R  target MM    +0.417 ( 1741) | +0.518 ( 1167) | +0.057 ( 255) · fixed +0.071 · win 45% · PF 1.40 · worst 2010 -61R · vs (a) +0.084 · vs (b) +0.461
+  stop 3.0R  target 0.5R  -0.028 ( 1741) | +0.007 ( 1167) | -0.142 ( 255) · fixed -0.127 · win 86% · PF 0.94 · worst 2024 -43R · vs (a) -0.050 · vs (b) +0.122
+  stop 3.0R  target 1R    -0.032 ( 1741) | +0.058 ( 1167) | -0.033 ( 255) · fixed -0.019 · win 75% · PF 1.00 · worst 2011 -70R · vs (a) -0.087 · vs (b) +0.105
+  stop 3.0R  target MM    +0.425 ( 1741) | +0.501 ( 1167) | +0.172 ( 255) · fixed +0.186 · win 52% · PF 1.35 · worst 2010 -27R · vs (a) +0.068 · vs (b) +0.472
+
+== NY bear 3-5m
+  stop 1.0R  target 0.5R  -0.040 ( 1724) | -0.027 ( 1102) | -0.014 ( 216) · fixed -0.004 · win 68% · PF 0.90 · worst 2016 -18R · vs (a) +0.000 · vs (b) +0.115
+  stop 1.0R  target 1R    -0.020 ( 1724) | -0.011 ( 1102) | +0.053 ( 216) · fixed +0.064 · win 52% · PF 0.98 · worst 2016 -47R · vs (a) +0.024 · vs (b) +0.108
+  stop 1.0R  target MM    +0.086 ( 1724) | -0.008 ( 1102) | -0.107 ( 216) · fixed -0.096 · win 22% · PF 1.05 · worst 2019 -73R · vs (a) +0.044 · vs (b) +0.146
+  stop 1.5R  target 0.5R  -0.036 ( 1724) | -0.041 ( 1102) | +0.053 ( 216) · fixed +0.064 · win 76% · PF 0.92 · worst 2019 -31R · vs (a) +0.009 · vs (b) +0.114
+  stop 1.5R  target 1R    -0.008 ( 1724) | -0.063 ( 1102) | +0.106 ( 216) · fixed +0.117 · win 61% · PF 0.97 · worst 2019 -38R · vs (a) +0.005 · vs (b) +0.096
+  stop 1.5R  target MM    +0.114 ( 1724) | -0.058 ( 1102) | -0.146 ( 216) · fixed -0.136 · win 29% · PF 1.03 · worst 2019 -121R · vs (a) +0.007 · vs (b) +0.129
+  stop 2.0R  target 0.5R  -0.032 ( 1724) | -0.028 ( 1102) | +0.060 ( 216) · fixed +0.071 · win 81% · PF 0.94 · worst 2019 -38R · vs (a) +0.010 · vs (b) +0.122
+  stop 2.0R  target 1R    +0.012 ( 1724) | -0.057 ( 1102) | +0.137 ( 216) · fixed +0.147 · win 68% · PF 0.99 · worst 2019 -50R · vs (a) +0.004 · vs (b) +0.116
+  stop 2.0R  target MM    +0.153 ( 1724) | -0.053 ( 1102) | +0.116 ( 216) · fixed +0.126 · win 36% · PF 1.06 · worst 2019 -159R · vs (a) +0.083 · vs (b) +0.191
+  stop 3.0R  target 0.5R  -0.020 ( 1724) | -0.021 ( 1102) | +0.115 ( 216) · fixed +0.125 · win 86% · PF 0.97 · worst 2019 -58R · vs (a) +0.010 · vs (b) +0.134
+  stop 3.0R  target 1R    +0.036 ( 1724) | -0.051 ( 1102) | +0.174 ( 216) · fixed +0.184 · win 74% · PF 1.02 · worst 2019 -79R · vs (a) +0.016 · vs (b) +0.139
+  stop 3.0R  target MM    +0.118 ( 1724) | -0.065 ( 1102) | +0.345 ( 216) · fixed +0.356 · win 43% · PF 1.05 · worst 2019 -208R · vs (a) +0.034 · vs (b) +0.202
+
+== NY 1-2m (both sides, both tiers)
+  stop 1.0R  target 0.5R  -0.104 (14739) | -0.121 (10704) | -0.119 (2004) · fixed -0.101 · win 64% · PF 0.71 · worst 2021 -243R · vs (a) -0.077 · vs (b) +0.057
+  stop 1.0R  target 1R    -0.091 (14739) | -0.095 (10704) | -0.082 (2004) · fixed -0.064 · win 49% · PF 0.83 · worst 2021 -212R · vs (a) -0.070 · vs (b) +0.039
+  stop 1.0R  target MM    -0.065 (14739) | -0.040 (10704) | -0.078 (2004) · fixed -0.060 · win 29% · PF 0.93 · worst 2013 -210R · vs (a) -0.062 · vs (b) +0.038
+  stop 1.5R  target 0.5R  -0.079 (14739) | -0.097 (10704) | -0.078 (2004) · fixed -0.060 · win 75% · PF 0.79 · worst 2021 -201R · vs (a) -0.059 · vs (b) +0.085
+  stop 1.5R  target 1R    -0.055 (14739) | -0.065 (10704) | -0.028 (2004) · fixed -0.010 · win 61% · PF 0.91 · worst 2020 -166R · vs (a) -0.056 · vs (b) +0.074
+  stop 1.5R  target MM    -0.012 (14739) | +0.014 (10704) | +0.036 (2004) · fixed +0.054 · win 39% · PF 1.00 · worst 2010 -140R · vs (a) -0.049 · vs (b) +0.090
+  stop 2.0R  target 0.5R  -0.084 (14739) | -0.080 (10704) | -0.067 (2004) · fixed -0.048 · win 80% · PF 0.81 · worst 2016 -199R · vs (a) -0.057 · vs (b) +0.094
+  stop 2.0R  target 1R    -0.052 (14739) | -0.039 (10704) | -0.004 (2004) · fixed +0.014 · win 67% · PF 0.93 · worst 2015 -179R · vs (a) -0.044 · vs (b) +0.094
+  stop 2.0R  target MM    -0.007 (14739) | +0.058 (10704) | +0.082 (2004) · fixed +0.100 · win 46% · PF 1.02 · worst 2013 -174R · vs (a) -0.039 · vs (b) +0.120
+  stop 3.0R  target 0.5R  -0.079 (14739) | -0.072 (10704) | -0.062 (2004) · fixed -0.044 · win 85% · PF 0.83 · worst 2015 -198R · vs (a) -0.059 · vs (b) +0.093
+  stop 3.0R  target 1R    -0.044 (14739) | -0.028 (10704) | +0.025 (2004) · fixed +0.043 · win 75% · PF 0.95 · worst 2015 -188R · vs (a) -0.042 · vs (b) +0.103
+  stop 3.0R  target MM    +0.003 (14739) | +0.091 (10704) | +0.111 (2004) · fixed +0.129 · win 54% · PF 1.04 · worst 2010 -222R · vs (a) -0.038 · vs (b) +0.146
+
+== Globex/Asia/London 3-5m (both sides)
+  stop 1.0R  target 0.5R  -0.193 (10508) | -0.173 ( 9415) | -0.174 (1634) · fixed -0.140 · win 64% · PF 0.55 · worst 2023 -388R · vs (a) -0.042
+  stop 1.0R  target 1R    -0.180 (10508) | -0.163 ( 9415) | -0.150 (1634) · fixed -0.116 · win 49% · PF 0.71 · worst 2023 -341R · vs (a) -0.028
+  stop 1.0R  target MM    -0.248 (10508) | -0.200 ( 9415) | -0.192 (1634) · fixed -0.158 · win 20% · PF 0.76 · worst 2021 -590R · vs (a) -0.036
+  stop 1.5R  target 0.5R  -0.184 (10508) | -0.166 ( 9415) | -0.172 (1634) · fixed -0.139 · win 73% · PF 0.59 · worst 2023 -361R · vs (a) -0.041
+  stop 1.5R  target 1R    -0.171 (10508) | -0.160 ( 9415) | -0.119 (1634) · fixed -0.085 · win 59% · PF 0.75 · worst 2022 -400R · vs (a) -0.033
+  stop 1.5R  target MM    -0.256 (10508) | -0.188 ( 9415) | -0.167 (1634) · fixed -0.133 · win 28% · PF 0.81 · worst 2021 -800R · vs (a) -0.041
+  stop 2.0R  target 0.5R  -0.196 (10508) | -0.167 ( 9415) | -0.147 (1634) · fixed -0.113 · win 78% · PF 0.60 · worst 2023 -390R · vs (a) -0.043
+  stop 2.0R  target 1R    -0.194 (10508) | -0.156 ( 9415) | -0.082 (1634) · fixed -0.048 · win 65% · PF 0.76 · worst 2022 -445R · vs (a) -0.034
+  stop 2.0R  target MM    -0.278 (10508) | -0.159 ( 9415) | -0.164 (1634) · fixed -0.131 · win 34% · PF 0.84 · worst 2022 -754R · vs (a) -0.036
+  stop 3.0R  target 0.5R  -0.189 (10508) | -0.162 ( 9415) | -0.159 (1634) · fixed -0.125 · win 83% · PF 0.62 · worst 2023 -372R · vs (a) -0.036
+  stop 3.0R  target 1R    -0.175 (10508) | -0.144 ( 9415) | -0.095 (1634) · fixed -0.061 · win 73% · PF 0.80 · worst 2022 -449R · vs (a) -0.018
+  stop 3.0R  target MM    -0.262 (10508) | -0.134 ( 9415) | -0.173 (1634) · fixed -0.139 · win 42% · PF 0.88 · worst 2022 -851R · vs (a) -0.014
+
+== Globex/Asia/London 1-2m (both sides, both tiers)
+  stop 1.0R  target 0.5R  -0.251 (39613) | -0.273 (37190) | -0.267 (7284) · fixed -0.219 · win 62% · PF 0.42 · worst 2023 -1949R · vs (a) -0.061
+  stop 1.0R  target 1R    -0.230 (39613) | -0.246 (37190) | -0.232 (7284) · fixed -0.185 · win 48% · PF 0.62 · worst 2023 -1907R · vs (a) -0.052
+  stop 1.0R  target MM    -0.236 (39613) | -0.241 (37190) | -0.255 (7284) · fixed -0.208 · win 32% · PF 0.71 · worst 2022 -1841R · vs (a) -0.045
+  stop 1.5R  target 0.5R  -0.237 (39613) | -0.259 (37190) | -0.249 (7284) · fixed -0.202 · win 71% · PF 0.47 · worst 2023 -1828R · vs (a) -0.055
+  stop 1.5R  target 1R    -0.212 (39613) | -0.229 (37190) | -0.214 (7284) · fixed -0.167 · win 59% · PF 0.68 · worst 2023 -1790R · vs (a) -0.049
+  stop 1.5R  target MM    -0.215 (39613) | -0.228 (37190) | -0.248 (7284) · fixed -0.201 · win 42% · PF 0.77 · worst 2022 -1993R · vs (a) -0.041
+  stop 2.0R  target 0.5R  -0.248 (39613) | -0.255 (37190) | -0.243 (7284) · fixed -0.196 · win 76% · PF 0.48 · worst 2023 -1786R · vs (a) -0.052
+  stop 2.0R  target 1R    -0.226 (39613) | -0.225 (37190) | -0.204 (7284) · fixed -0.157 · win 66% · PF 0.70 · worst 2022 -1835R · vs (a) -0.046
+  stop 2.0R  target MM    -0.232 (39613) | -0.226 (37190) | -0.229 (7284) · fixed -0.182 · win 48% · PF 0.79 · worst 2022 -2168R · vs (a) -0.028
+  stop 3.0R  target 0.5R  -0.259 (39613) | -0.257 (37190) | -0.250 (7284) · fixed -0.203 · win 82% · PF 0.49 · worst 2022 -1863R · vs (a) -0.058
+  stop 3.0R  target 1R    -0.234 (39613) | -0.233 (37190) | -0.213 (7284) · fixed -0.166 · win 73% · PF 0.72 · worst 2022 -2018R · vs (a) -0.050
+  stop 3.0R  target MM    -0.244 (39613) | -0.243 (37190) | -0.233 (7284) · fixed -0.186 · win 57% · PF 0.81 · worst 2022 -2599R · vs (a) -0.030

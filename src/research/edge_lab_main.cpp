@@ -140,6 +140,12 @@ json run_idea(Ctx& c, const Spec& sp, std::string& md) {
     WfOut w = walk(s, vt, cost, sp.train_months, std::max(5, sp.min_trades / 20));
     std::vector<double> oos, oos_g;
     for (auto& t : w.trades) { oos.push_back(t.pts - cost); oos_g.push_back(t.pts); }
+    if (c.trades) {   // the walk-forward trades (each month traded with the variant best on the months before it) — combining setups (2026-10-28)
+        std::ofstream tf(c.out + "/reports/" + sp.id + ".wf_trades.csv");
+        tf << "date,entry_epoch,exit_epoch,dir,gross_pts,net_pts,mae,mfe,var,stop_pts,atr\n";
+        for (auto& t : w.trades) tf << s.days[t.day].date << "," << s.t[t.e] << "," << s.t[t.x] << "," << t.dir << "," << t.pts << "," << t.pts - cost << ","
+                                    << t.mae << "," << t.mfe << "," << t.var << "," << t.stop << "," << s.days[t.day].atr << "\n";
+    }
     Stat so = stat_of(oos, oos_g);
     const bool g2 = so.n >= 30 && so.net > 0 && so.pf >= 1.05;
 
@@ -196,7 +202,7 @@ json run_idea(Ctx& c, const Spec& sp, std::string& md) {
 
     // ── 5 PROP
     std::vector<PropOut> props;
-    if (!sp.micro.empty()) for (int q : sp.prop_sizes) props.push_back(prop_chain(s, w.trades, sp.prop_plan, q, sp.micro_cost, sp.micro_pv));
+    if (!sp.micro.empty()) for (int q : sp.prop_sizes) props.push_back(prop_chain(s, w.trades, sp.prop_plan, q, sp.micro_cost, sp.micro_pv, sp.prop_eval_size, sp.prop_eval_days, sp.prop_eval_atr_frac));
     const PropOut* bp = nullptr;
     for (auto& p : props) if (!bp || p.be_fee > bp->be_fee) bp = &p;
     const bool prop_na = sp.micro.empty();   // no micro on our prop firm: judged on gates 1–4
@@ -337,12 +343,12 @@ const char* line_head() { return "| | trades | net pts/trade | $/NQ/trade | PF |
 
 std::pair<std::vector<PropOut>, double> props_of(const Series& s, const std::vector<Trade>& tr, const Spec& sp) {
     std::vector<PropOut> out; double best = 0;
-    for (int q : sp.prop_sizes) { out.push_back(prop_chain(s, tr, sp.prop_plan, q, sp.micro_cost, sp.micro_pv)); best = std::max(best, out.back().be_fee); }
+    for (int q : sp.prop_sizes) { out.push_back(prop_chain(s, tr, sp.prop_plan, q, sp.micro_cost, sp.micro_pv, sp.prop_eval_size, sp.prop_eval_days, sp.prop_eval_atr_frac)); best = std::max(best, out.back().be_fee); }
     return {out, best};
 }
 void prop_table(std::ostringstream& o, const std::string& who, const std::vector<PropOut>& P) {
     for (auto& p : P)
-        o << "| " << who << " | " << p.size << " | " << p.evals << " | " << p.passes << " | " << p.payouts << " | "
+        o << "| " << who << " | " << p.size << (p.eval_size != p.size ? "/e" + std::to_string(p.eval_size) : "") << " | " << p.evals << " | " << p.passes << " | " << p.payouts << " | "
           << f2(p.years > 0 ? p.paid / p.years : 0, 0) << " | " << f2(p.be_fee, 0) << " |\n";
 }
 

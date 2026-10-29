@@ -1,0 +1,17 @@
+2964 sessions 2014-2026 (targets and predictors in % of price)
+predictor           → range: Spearman Pearson r² |   → |open→close|: Spearman     r²
+yesterday's range               0.583      0.403 |                      0.326  0.153
+ATR14 (prior 14)                0.620      0.377 |                      0.368  0.160
+ATR5 (prior 5)                  0.653      0.447 |                      0.390  0.185
+
+2019-2026 by prior ATR14 tercile — next-day RANGE and |open→close| (points of the day), and share of days with range ≥ 200 / move ≥ 100
+tercile   days range med   p25   p75  move med P(range≥200) P(move≥100) ratio move/range
+low        595       160    94   224        68         0.34        0.35             0.48
+mid        595       191   138   277        85         0.47        0.44             0.48
+high       595       257   187   346       124         0.71        0.60             0.50
+
+pair (long+short at 09:30, both flat 15:55) by prior-ATR14 tercile, 2019-2026, stop 50 pts fixed vs stop = 0.2 × prior ATR14
+tercile   days stop50 mean   %>0 stop=.2ATR mean avg stop   %>0
+low        595         7.5    43             6.2       32    43
+mid        595         9.7    45            10.6       43    45
+high       595         2.8    38             4.1       61    44

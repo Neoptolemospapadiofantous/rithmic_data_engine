@@ -1,0 +1,17 @@
+BOOK2 trades: mean net R by feature (2014-19 | 2020-26), NQ and ES; the favourable value is chosen on 2014-19, both markets pooled
+  R1 volatility rising                 favourable = yes | NQ yes +0.188 ( 757) / +0.262 ( 825) | NQ no  +0.042 ( 821) / +0.232 ( 836) | ES yes +0.068 ( 653) / +0.125 ( 742) | ES no  -0.008 ( 891) / +0.199 ( 795) |
+  R2 prior week with the flag          favourable = no  | NQ yes +0.118 ( 814) / +0.275 ( 875) | NQ no  +0.105 ( 764) / +0.215 ( 786) | ES yes -0.012 ( 799) / +0.183 ( 799) | ES no  +0.062 ( 745) / +0.142 ( 738) |
+  R3 gap with the flag                 favourable = yes | NQ yes +0.301 ( 808) / +0.432 ( 803) | NQ no  -0.086 ( 770) / +0.073 ( 858) | ES yes +0.127 ( 809) / +0.307 ( 712) | ES no  -0.089 ( 735) / +0.039 ( 825) |
+  E1 15m + daily EMA20 with the flag   favourable = no  | NQ yes +0.199 ( 722) / +0.314 ( 796) | NQ no  +0.038 ( 856) / +0.185 ( 865) | ES yes -0.118 ( 719) / +0.205 ( 741) | ES no  +0.148 ( 825) / +0.124 ( 796) |
+  N1 beyond the noise band             favourable = yes | NQ yes +0.139 (1283) / +0.316 (1362) | NQ no  -0.009 ( 295) / -0.070 ( 299) | ES yes +0.049 (1252) / +0.150 (1230) | ES no  -0.082 ( 292) / +0.214 ( 307) |
+
+  variant base  : 0 BOOK2 trades at 2 micros, 0 skipped
+  variant S1    : 2977 BOOK2 trades at 2 micros, 0 skipped
+  variant S2    : 3033 BOOK2 trades at 2 micros, 0 skipped
+  variant S3    : 3132 BOOK2 trades at 2 micros, 0 skipped
+  variant S4    : 3342 BOOK2 trades at 2 micros, 0 skipped
+  variant S5    : 5127 BOOK2 trades at 2 micros, 0 skipped
+  variant SC2   : 5405 BOOK2 trades at 2 micros, 0 skipped
+  variant SC3   : 3715 BOOK2 trades at 2 micros, 0 skipped
+  variant SC4   : 1829 BOOK2 trades at 2 micros, 0 skipped
+  variant SK    : 3715 BOOK2 trades at 2 micros, 138 skipped

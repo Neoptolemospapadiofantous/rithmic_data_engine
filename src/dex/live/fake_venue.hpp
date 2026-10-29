@@ -37,6 +37,7 @@ namespace lighter::live::fake {
 class QueueWs : public WsConn {
 public:
     bool open() override {
+        if (on_open) on_open();          // tests: e.g. advance the clock to model a slow TLS handshake
         if (refuse_opens > 0) { --refuse_opens; return false; }
         open_ = true;
         ++opens;
@@ -55,6 +56,7 @@ public:
     size_t pending() const { return in_.size(); }
     std::vector<std::string> sent;
     int opens = 0, refuse_opens = 0;
+    std::function<void()> on_open;
 
 private:
     bool open_ = false;
@@ -73,6 +75,7 @@ public:
     int drop_next_sends = 0;                    // next N send requests get no answer …
     bool drop_applies = true;                   // … after being applied (true) or before reaching the exchange
     int fail_next_rest = 0;                     // next N GETs get no answer
+    std::vector<int> rest_timeouts;             // the timeout each GET was sent with (in order)
     bool hold_account_events = false;           // queue stream events instead of delivering them
     bool suppress_tx_stream = false;            // never emit account_tx updates
     bool suppress_stats = false;                // never emit user_stats updates (equity then only via REST)
@@ -93,6 +96,7 @@ public:
         auto q = form_decode(r.target.find('?') == std::string::npos ? "" : r.target.substr(r.target.find('?') + 1));
         if (r.method == "POST" && (path == "/api/v1/sendTx" || path == "/api/v1/sendTxBatch")) return send(path, r.body);
         ++rest_calls;
+        rest_timeouts.push_back(r.timeout_ms);
         if (fail_next_rest > 0) { --fail_next_rest; return {0, true, "", "injected REST failure"}; }
         if (path == "/api/v1/nextNonce") return ok({{"code", 200}, {"nonce", ex_.next_nonce(std::stoi(form_get(q, "api_key_index")))}});
         if (path == "/api/v1/orderBookDetails") {

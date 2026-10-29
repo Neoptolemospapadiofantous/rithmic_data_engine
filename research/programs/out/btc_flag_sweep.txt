@@ -1,0 +1,77 @@
+complete flags 14903 | discovery (all flags <2025) 6307 | confirmation (BOOK2 >=2025) 791 | BOOK2 discovery 427
+base mean R: discovery all -0.014, BOOK2 discovery 0.247, confirmation BOOK2 0.071
+
+feature                n  rho all   p(day)   BH q rho BOOK2
+F_ext_share         6307   -0.179   0.0000  0.000    -0.122  <- shortlist
+F_vwap              6307    0.189   0.0000  0.000     0.242  <- shortlist
+F_minutes           6307    0.112   0.0000  0.000     0.062  <- shortlist
+F_last1_delta       6307    0.111   0.0000  0.000     0.166  <- shortlist
+F_delta             6307    0.099   0.0000  0.000     0.254  <- shortlist
+F_absorb            6307    0.070   0.0000  0.000     0.066  <- shortlist
+F_last1_vol         6307   -0.060   0.0000  0.000    -0.089  <- shortlist
+F_big_delta         6307    0.076   0.0000  0.000     0.221  <- shortlist
+F_dry               6307    0.077   0.0000  0.000     0.132  <- shortlist
+P_eff               6307    0.095   0.0001  0.000     0.068  <- shortlist
+F_big_share         6307    0.076   0.0003  0.001    -0.070  <- shortlist
+E_wait              6307    0.041   0.0010  0.002    -0.078  <- shortlist
+P_big_delta         6307   -0.061   0.0017  0.004    -0.063  <- shortlist
+P_delta             6307   -0.060   0.0024  0.005    -0.092  <- shortlist
+F_late_delta        6307    0.044   0.0028  0.005     0.075  <- shortlist
+P_top_share         6307   -0.052   0.0028  0.005    -0.043  <- shortlist
+S_cumdelta          6307   -0.059   0.0094  0.017     0.020  <- shortlist
+F_tests             6307    0.034   0.0295  0.049     0.046  <- shortlist
+P_rate_rel          6307    0.034   0.0902  0.142    -0.037
+F_size_asym         6307    0.030   0.1253  0.188     0.204
+F_speed             6307   -0.025   0.1348  0.193    -0.020
+P_vol_rel           6307    0.024   0.2016  0.275    -0.055
+P_big_share         6307    0.021   0.3986  0.513    -0.149
+P_avgsize_rel       6307   -0.017   0.4102  0.513    -0.081
+E_vol_rel            260   -0.048   0.4915  0.590       nan
+E_delta              260   -0.041   0.5675  0.655       nan
+S_vwap              6307    0.010   0.6088  0.676     0.052
+F_poc_pos           6307    0.006   0.7092  0.760    -0.019
+F_undo              6092   -0.002   0.9078  0.939    -0.143
+P_late_delta        6307    0.001   0.9428  0.943     0.061
+
+shortlist (BH q<0.10): ['F_ext_share', 'F_vwap', 'F_minutes', 'F_last1_delta', 'F_delta', 'F_absorb', 'F_last1_vol', 'F_big_delta', 'F_dry', 'P_eff', 'F_big_share', 'E_wait', 'P_big_delta', 'P_delta', 'F_late_delta', 'P_top_share', 'S_cumdelta', 'F_tests']
+
+combined score AUC (win) on confirmation BOOK2: 0.519
+
+CONFIRMATION — BOOK2 trades 2023-01 → 2026-10, read once (BTC, maker fee) (base mean R 0.071, n 791)
+gate                                          n  mean R gate−rest  90% low      p  Holm     23-24 g/b     25-26 g/b (n)  verdict
+F_ext_share (low third)                     149   0.004    -0.082   -0.460  0.640  1.00   0.05/ 0.12  -0.03/ 0.02 (83)  fail
+F_vwap (high third)                         251   0.038    -0.048   -0.288  0.625  1.00   0.21/ 0.12  -0.11/ 0.02 (132)  fail
+F_minutes (high third)                      368   0.047    -0.045   -0.271  0.636  1.00   0.16/ 0.12  -0.07/ 0.02 (186)  fail
+F_last1_delta (high third)                  239  -0.039    -0.157   -0.425  0.844  1.00   0.03/ 0.12  -0.11/ 0.02 (120)  fail
+F_delta (high third)                        178  -0.014    -0.109   -0.459  0.702  1.00   0.07/ 0.12  -0.08/ 0.02 (97)  fail
+F_absorb (high third)                       248   0.116     0.065   -0.249  0.377  1.00   0.36/ 0.12  -0.06/ 0.02 (145)  fail
+F_last1_vol (low third)                     262   0.170     0.148   -0.143  0.216  1.00   0.36/ 0.12   0.02/ 0.02 (149)  fail
+F_big_delta (high third)                    227   0.097     0.037   -0.304  0.440  1.00   0.20/ 0.12   0.01/ 0.02 (124)  fail
+F_dry (high third)                          261   0.182     0.166   -0.151  0.215  1.00   0.24/ 0.12   0.12/ 0.02 (123)  fail
+P_eff (high third)                          424  -0.026    -0.208   -0.540  0.861  1.00  -0.15/ 0.12   0.01/ 0.02 (331)  fail
+F_big_share (high third)                    709   0.092     0.209   -0.297  0.215  1.00   0.17/ 0.12   0.03/ 0.02 (410)  fail
+E_wait (high third)                          63   0.028    -0.046   -0.491  0.590  1.00  -0.33/ 0.12   0.44/ 0.02 (29)  fail
+P_big_delta (low third)                     306   0.049    -0.036   -0.334  0.573  1.00  -0.07/ 0.12   0.13/ 0.02 (182)  fail
+P_delta (low third)                         213   0.059    -0.016   -0.368  0.540  1.00  -0.14/ 0.12   0.20/ 0.02 (124)  fail
+F_late_delta (high third)                   274   0.001    -0.106   -0.393  0.723  1.00   0.06/ 0.12  -0.06/ 0.02 (137)  fail
+P_top_share (low third)                     195  -0.055    -0.167   -0.524  0.770  1.00   0.16/ 0.12  -0.26/ 0.02 (100)  fail
+S_cumdelta (low third)                      227  -0.197    -0.376   -0.687  0.965  1.00  -0.22/ 0.12  -0.19/ 0.02 (142)  fail
+F_tests (high third)                        211   0.333     0.357    0.004  0.048  0.91   0.30/ 0.12   0.37/ 0.02 (100)  fail
+COMBINED score, top half                    619   0.052    -0.088   -0.470  0.653  1.00   0.09/ 0.12   0.02/ 0.02 (361)  fail
+
+EXPLORATORY (not a verdict): every feature on confirmation BOOK2, high third vs low third mean R (cuts from BOOK2 discovery)
+  P_big_share        confirm high−low +0.541  discovery high−low -0.327  (n 725/15) FLIPS
+  S_cumdelta         confirm high−low +0.371  discovery high−low -0.063  (n 345/227) FLIPS
+  F_tests            confirm high−low +0.357  discovery high−low -0.237  (n 211/580) FLIPS
+  P_eff              confirm high−low -0.289  discovery high−low -0.082  (n 424/146) same sign
+  F_dry              confirm high−low +0.262  discovery high−low +0.297  (n 261/275) same sign
+  F_late_delta       confirm high−low -0.244  discovery high−low -0.192  (n 274/296) same sign
+  F_big_share        confirm high−low +0.229  discovery high−low +0.072  (n 709/19) same sign
+  P_rate_rel         confirm high−low +0.178  discovery high−low -0.328  (n 265/296) FLIPS
+  F_last1_vol        confirm high−low -0.170  discovery high−low -0.283  (n 266/262) same sign
+  S_vwap             confirm high−low +0.166  discovery high−low -0.210  (n 269/250) FLIPS
+  P_late_delta       confirm high−low +0.164  discovery high−low +0.509  (n 286/319) same sign
+  F_vwap             confirm high−low -0.157  discovery high−low -0.230  (n 251/286) same sign
+  P_avgsize_rel      confirm high−low +0.153  discovery high−low -0.176  (n 413/228) FLIPS
+  P_top_share        confirm high−low +0.147  discovery high−low -0.037  (n 328/195) FLIPS
+  F_undo             confirm high−low -0.135  discovery high−low -0.196  (n 274/201) same sign

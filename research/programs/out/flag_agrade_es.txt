@@ -1,0 +1,16 @@
+A grade — ES, NY bull 3-5m flag-mid (E2 · S2), score walk-forward 2014-26, fixed cost 0.5 pts.
+
+  real score: top third +0.282R (829) vs the rest +0.131R (1615) — gap +0.152R; before 12:00 only: +0.296 vs +0.187 — gap +0.109R
+  A1 permutation (200 shuffles of R within each year, weights relearned): shuffled gaps median +0.001, 95th pct +0.131, max +0.219 · runs >= the real gap: 10 / 200 (p ≈ 0.055)
+  A2 (in-sample 2010-2025 weights — NOT an independent test) NQ's weights on ES: top third +0.296R (903) vs the rest +0.116R — gap +0.180; before 12:00: +0.345 (678) vs +0.170
+  ONE POSITION across charts (headline): 456 trades (0.7 a week) · +0.212R · win 35% · PF 1.29 · same-day twin +0.161R → flag minus twin +0.051R
+  every chart counted (old headline): 799 trades (1.2 a week) · +0.296R · win 37% · PF 1.42 · same-day twin +0.157R → flag minus twin +0.139R
+
+  A grade 2014-26, one position: 456 trades (0.7 a week) · +0.212R · win 35% · PF 1.29
+  A3 cost x2: +0.075R · PF 1.09
+  A4 by year: 2014 -0.21(36) 2015 +0.02(30) 2016 +0.26(37) 2017 +0.46(33) 2018 -0.00(42) 2019 +0.63(42) 2020 -0.02(36) 2021 +0.82(51) 2022 +0.14(35) 2023 -0.18(33) 2024 -0.03(28) 2025 +0.18(41) 2026 +0.53(12) · 8/13 years > 0
+  A6 one position across all charts of the group: 456 trades (0.7 a week) · +0.212R · win 35% · PF 1.29 (the counts above add every chart)
+  A5 worst losing streak 11 trades · max drawdown 21.1R · total +96.7R
+  A7 Vest $5k Silver, $50 a trade: pass 55% · fail 45% · unresolved 22 · median 18 trades / 175 calendar days to pass
+  A7 Vest $5k Silver, $75 a trade: pass 44% · fail 56% · unresolved 8 · median 8 trades / 79 calendar days to pass
+  A7 Vest $5k Silver, $100 a trade: pass 41% · fail 59% · unresolved 2 · median 5 trades / 40 calendar days to pass

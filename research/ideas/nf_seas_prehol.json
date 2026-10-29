@@ -1,0 +1,27 @@
+{
+ "id": "nf_seas_prehol",
+ "name": "Session before an exchange holiday \u2192 long 09:30 to 15:55",
+ "why": "Pre-holiday drift (thin, positive) is a documented calendar effect. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "stopk": [
+   0,
+   0.5
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "prehol",
+   "dir": "1"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0"
+}

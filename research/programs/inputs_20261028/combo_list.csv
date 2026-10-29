@@ -1,0 +1,20 @@
+# id,market,family,file,fmt — the first setup of a family is its DISTINCT representative
+weak_day_long,NQ,weak,research/programs/inputs_20261028/combo/weak_day_long.wf_trades.csv,edge
+monday_long,NQ,monday,research/programs/inputs_20261028/combo/monday_long.wf_trades.csv,edge
+so_cascade,NQ,cascade,research/programs/inputs_20261028/combo/so_cascade.wf_trades.csv,edge
+cascade_noon,NQ,cascade,research/programs/inputs_20261028/combo/cascade_noon.wf_trades.csv,edge
+strong_open,NQ,cascade,research/programs/inputs_20261028/combo/strong_open.wf_trades.csv,edge
+gap_or_retest,NQ,gapside,research/programs/inputs_20261028/combo/gap_or_retest.wf_trades.csv,edge
+gap_breakout,NQ,gapside,research/programs/inputs_20261028/combo/gap_breakout.wf_trades.csv,edge
+bdh_opt,NQ,orb15gap,research/programs/inputs_20261028/combo/bdh_opt.wf_trades.csv,edge
+flag5_trend,NQ,flag,research/programs/inputs_20261028/combo/flag5_trend.wf_trades.csv,edge
+mom_scan_3_pb,NQ,mom1m,research/programs/inputs_20261028/combo/mom_scan_3_pb.wf_trades.csv,edge
+bos_ema_gap,NQ,bos,research/programs/inputs_20261028/combo/bos_ema_gap.wf_trades.csv,edge
+ema_cross_vwap,NQ,emacross,research/programs/inputs_20261028/combo/ema_cross_vwap.wf_trades.csv,edge
+scalp_m1_1000,NQ,dir10,research/programs/inputs_20261028/combo/scalp_m1_1000.wf_trades.csv,edge
+dir_market,NQ,dir10,research/programs/inputs_20261028/combo/dir_market.wf_trades.csv,edge
+pat_3bar,NQ,pattern,research/programs/inputs_20261028/combo/pat_3bar.wf_trades.csv,edge
+wave_ldn5,NQ,wave,research/programs/inputs_20261028/ldn5_NQ.csv,wave
+es_cascade,ES,cascade,research/programs/inputs_20261028/combo/es_cascade.wf_trades.csv,edge
+es_weak_day,ES,weak,research/programs/inputs_20261028/combo/es_weak_day.wf_trades.csv,edge
+es_gap_or_retest,ES,gapside,research/programs/inputs_20261028/combo/es_gap_or_retest.wf_trades.csv,edge

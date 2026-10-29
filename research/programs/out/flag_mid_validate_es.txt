@@ -1,0 +1,53 @@
+Validation of the flag-mid entry — ES, 3347 NY days, 10010 flags (3-5m). Fixed cost 0.5 pts, target = measured move, avg R per trade after cost.
+
+######## NY bull 3-5m
+  V1 year by year (avg R, trades):
+    year                                 2010   2011   2012   2013   2014   2015   2016   2017   2018   2019   2020   2021   2022   2023   2024   2025   2026  years>0
+    E0 S0 page (break, flag low)        -0.22  -0.40  -0.14  -0.42  -0.06  +0.03  +0.26  +0.01  -0.04  -0.05  -0.44  +0.25  -0.06  +0.32  +0.11  -0.06  +0.12  7/17
+      trades                               76    205    180    192    186    164    182    204    241    195    207    248    192    249    184    244     47
+    E2 S2 flag-mid, flag low-0.1ATR     -0.06  -0.23  -0.10  -0.12  +0.07  +0.41  +0.20  +0.20  +0.08  +0.43  -0.31  +0.45  +0.12  +0.27  +0.13  +0.10  +0.36  12/17
+      trades                               78    208    188    201    180    165    180    195    240    187    198    228    183    236    179    226     47
+    E2 S3 flag-mid, pole 50%            -0.17  -0.17  -0.00  -0.11  +0.14  +0.13  +0.19  +0.24  +0.06  +0.14  -0.21  +0.33  +0.06  +0.31  +0.09  +0.07  +0.39  12/17
+      trades                               78    198    171    192    172    163    177    193    233    186    193    230    180    234    177    225     43
+  V2 cost sensitivity (avg R all years):
+    E0 S0 page (break, flag low)       cost x1 -0.042 · x2 -0.237 · x3 -0.432
+    E2 S2 flag-mid, flag low-0.1ATR    cost x1 +0.113 · x2 -0.053 · x3 -0.218
+    E2 S3 flag-mid, pole 50%           cost x1 +0.087 · x2 -0.036 · x3 -0.159
+  V3 bootstrap of 1145 days: E2 S2 minus E0 S0 = +0.154 R, 95% interval +0.081 … +0.226, share of draws <= 0: 0.0%
+  V4 walk-forward cell chooser 2014-26: +0.108 R (2172 trades) vs always E0 S0 +0.028 (2543) vs always E2 S2 +0.182 (2444) · cells chosen: E1 retest limit/S2 flag low-0.1ATR x1 E1 retest limit/S7 entry-0.2ATR x1 E2 flag-mid limit/S2 flag low-0.1ATR x3 E2 flag-mid limit/S4 pole 61.8% x3 E2 flag-mid limit/S7 entry-0.2ATR x4 E3 close confirm/S4 pole 61.8% x1
+  V5 split by chart and registration time (avg R, trades):
+    3m chart   | E0S0 -0.059 (1202) | E2S2 +0.101 (1180) | E2S3 +0.078 (1150)
+    4m chart   | E0S0 -0.073 (1062) | E2S2 +0.130 (1025) | E2S3 +0.096 ( 996)
+    5m chart   | E0S0 +0.016 ( 932) | E2S2 +0.108 ( 914) | E2S3 +0.090 ( 899)
+    09:45-10:30 | E0S0 +0.044 ( 816) | E2S2 +0.245 ( 801) | E2S3 +0.118 ( 797)
+    10:30-12:00 | E0S0 +0.074 (1632) | E2S2 +0.141 (1586) | E2S3 +0.143 (1562)
+    12:00-14:00 | E0S0 -0.388 ( 748) | E2S2 -0.093 ( 732) | E2S3 -0.074 ( 686)
+  V6 partial half at +1R, rest MM, BE · E0 S0: -0.147 R win 51% vs hold to MM -0.042 R win 28% (3196 trades)
+  V6 partial half at +1R, rest MM, BE · E2 S2: +0.006 R win 56% vs hold to MM +0.113 R win 34% (3119 trades)
+  V7 flags 4400 · flag-mid filled 3119 (71%) · break-entry winners 896, of which the flag-mid never filled 164 (18%)
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x)
+  V1 year by year (avg R, trades):
+    year                                 2010   2011   2012   2013   2014   2015   2016   2017   2018   2019   2020   2021   2022   2023   2024   2025   2026  years>0
+    E0 S0 page (break, flag low)        -0.58  -1.12  +0.19  -1.03  +0.44  +1.45  +1.68  -0.39  +1.19  -0.22  -1.01  +0.54  -0.50  -0.41  -0.01  -0.23      —  6/16
+      trades                               12     16     16     11     10     10     18     16     23     21     22     39     20     24     20     22      1
+    E2 S2 flag-mid, flag low-0.1ATR     -0.18  -0.78  +0.95  -0.90  +0.95  +1.41  +1.07  -0.11  +1.02  +0.74  -0.81  +1.19  +0.19  -0.43  +0.23  +0.38      —  10/16
+      trades                               12     14     16     14     10     10     18     17     21     21     22     31     19     22     19     19      0
+    E2 S3 flag-mid, pole 50%            +0.20  -0.31  +0.52  -0.60  +0.74  +1.05  +0.89  +0.22  +0.69  +0.35  -0.64  +0.80  +0.13  -0.15  +0.36  +0.12      —  12/16
+      trades                               12     14     16     14     10     10     18     17     21     21     22     31     19     22     19     19      0
+  V2 cost sensitivity (avg R all years):
+    E0 S0 page (break, flag low)       cost x1 +0.016 · x2 -0.164 · x3 -0.344
+    E2 S2 flag-mid, flag low-0.1ATR    cost x1 +0.323 · x2 +0.168 · x3 +0.013
+    E2 S3 flag-mid, pole 50%           cost x1 +0.268 · x2 +0.176 · x3 +0.083
+  V3 bootstrap of 210 days: E2 S2 minus E0 S0 = +0.309 R, 95% interval +0.097 … +0.529, share of draws <= 0: 0.2%
+  V4 walk-forward cell chooser 2014-26: +0.225 R (174 trades) vs always E0 S0 -0.026 (192) vs always E2 S2 +0.355 (174) · cells chosen: E2 flag-mid limit/S1 flag low-0.05ATR x8 E2 flag-mid limit/S2 flag low-0.1ATR x1
+  V5 split by chart and registration time (avg R, trades):
+    3m chart   | E0S0 +nan (   0) | E2S2 +nan (   0) | E2S3 +nan (   0)
+    4m chart   | E0S0 +0.103 ( 153) | E2S2 +0.555 ( 147) | E2S3 +0.379 ( 147)
+    5m chart   | E0S0 -0.073 ( 148) | E2S2 +0.076 ( 138) | E2S3 +0.150 ( 138)
+    09:45-10:30 | E0S0 +0.040 (  55) | E2S2 +0.946 (  53) | E2S3 +0.434 (  53)
+    10:30-12:00 | E0S0 -0.000 ( 201) | E2S2 +0.143 ( 189) | E2S3 +0.233 ( 189)
+    12:00-14:00 | E0S0 +0.060 (  45) | E2S2 +0.346 (  43) | E2S3 +0.219 (  43)
+  V6 partial half at +1R, rest MM, BE · E0 S0: -0.026 R win 55% vs hold to MM +0.016 R win 32% (301 trades)
+  V6 partial half at +1R, rest MM, BE · E2 S2: +0.187 R win 64% vs hold to MM +0.323 R win 43% (285 trades)
+  V7 flags 309 · flag-mid filled 285 (92%) · break-entry winners 96, of which the flag-mid never filled 6 (6%)

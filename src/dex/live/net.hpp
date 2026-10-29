@@ -5,6 +5,9 @@
     mainnet.zklighter.elliot.ai:443 (system CA store, hostname verified). Any host naming "testnet" is refused by name.
     The single exception is loopback_test = true, which allows exactly 127.0.0.1 with a caller-supplied CA (the
     tests' local fake HTTPS/WS server); no config file can set it — only code can.
+    Second exception (2026-10-28, the Binance-lead pull): reference_feed = true allows exactly
+    fstream.binance.com:443, for a WebSocket ONLY (BeastHttps refuses it) — a public, read-only price stream that the
+    engine never writes to; nothing signed and no key material can reach it. Also code-only.
 
     BeastHttps: ONE warm TLS connection reused across requests (kept alive while the server allows it, replaced when
     idle > 10 s or when a peek shows the server closed it — both checked BEFORE anything is written), everything
@@ -55,11 +58,19 @@ struct Endpoint {
     std::string tls_name;        // name the certificate must carry (default: host)
     std::string ca_pem;          // loopback tests only: trust exactly this CA (empty = the system store)
     bool loopback_test = false;  // code-only switch for the local test servers
+    bool reference_feed = false; // code-only: the read-only Binance price stream (WebSocket only, see above)
 };
+inline const char* kReferenceFeedHost = "fstream.binance.com";
 
-inline void endpoint_guard(const Endpoint& e) {
+inline void endpoint_guard(const Endpoint& e, bool websocket) {
     if (e.host.find("testnet") != std::string::npos || e.tls_name.find("testnet") != std::string::npos)
         throw ConfigError("testnet endpoint '" + e.host + "' refused (mainnet only, never testnet)");
+    if (e.reference_feed) {
+        if (!websocket) throw ConfigError("reference-feed endpoint refused for HTTP (read-only WebSocket only)");
+        if (e.loopback_test || e.host != kReferenceFeedHost || e.port != "443" || !(e.tls_name.empty() || e.tls_name == kReferenceFeedHost))
+            throw ConfigError("reference-feed endpoint '" + e.host + ":" + e.port + "' refused (only " + std::string(kReferenceFeedHost) + ":443)");
+        return;
+    }
     if (e.loopback_test) {
         if (e.host != "127.0.0.1") throw ConfigError("loopback test endpoint must be 127.0.0.1");
         if (e.ca_pem.empty()) throw ConfigError("loopback test endpoint needs its own CA");
@@ -84,7 +95,7 @@ public:
     static constexpr int kMaxIdleMs = 10'000;
 
     explicit BeastHttps(Endpoint e) : ep_(std::move(e)) {
-        endpoint_guard(ep_);
+        endpoint_guard(ep_, false);
         if (ep_.tls_name.empty()) ep_.tls_name = ep_.host;
         ctx_ = make_tls_context(ep_);
     }
@@ -185,7 +196,7 @@ class BeastWs : public WsConn {
 public:
     explicit BeastWs(Endpoint e, std::string path = "/stream", int open_timeout_ms = 5'000)
         : ep_(std::move(e)), path_(std::move(path)), open_timeout_ms_(open_timeout_ms) {
-        endpoint_guard(ep_);
+        endpoint_guard(ep_, true);
         if (ep_.tls_name.empty()) ep_.tls_name = ep_.host;
         ctx_ = make_tls_context(ep_);
     }

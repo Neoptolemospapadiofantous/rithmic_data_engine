@@ -1,0 +1,6 @@
+F_hidden: discovery all flags 2023-24 n 2482 rho +0.016 p 0.5024  (median 0.50, p90 1.31)
+   confirmation BOOK2 2025-26, high third: n 82 mean R -0.160 vs rest 0.048 (diff -0.208), 90% low -0.595, p 0.817 | 2025 -0.443 | 2026 +0.727 (n 17)
+F_hidden_vol: discovery all flags 2023-24 n 2835 rho -0.098 p 0.0000  (median 0.00, p90 0.00)
+   confirmation BOOK2 2025-26, low third: n 132 mean R -0.060 vs rest 0.031 (diff -0.090), 90% low -0.457, p 0.671 | 2025 +0.003 | 2026 -0.504 (n 22)
+F_hidden_vol: discovery p 0.000, Holm 1.000 -> fail
+F_hidden: discovery p 0.502, Holm 0.817 -> fail

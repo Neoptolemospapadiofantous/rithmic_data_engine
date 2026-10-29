@@ -1,0 +1,58 @@
+check (1 micro, $150 stop, select_flex_50k): $1973 per eval (payout_sim gave $1,973)
+BOOK2 trades' stop risk at 1 micro: average $68 (NQ $2 / ES $5 a point at today's ATR)
+
+######## select_flex_50k, daily stop $150 — $ per eval bought (2014-19 / 2020-25) · with +1 pt cost · pass %
+    FIXED2 (2 micros)          $ 3428 ($ 3337 / $ 3527) · cost $ 3187 · pass  54%
+    RISK$ $40 a trade          $ 1973 ($ 2023 / $ 1919) · cost $ 1774 · pass  47%
+    RISK$ $60 a trade          $ 2210 ($ 2056 / $ 2377) · cost $ 2024 · pass  47%
+    RISK$ $80 a trade          $ 2770 ($ 2567 / $ 2991) · cost $ 2414 · pass  51%
+    CUSHION 1 → 2 at +$500   $ 2125 ($ 1930 / $ 2338) · cost $ 2057 · pass  49%
+    CUSHION 1 → 2 at +$1,000 $ 1965 ($ 1926 / $ 2007) · cost $ 1681 · pass  44%
+    GRADE A 2 / B 1            $ 2977 ($ 2858 / $ 3108) · cost $ 2680 · pass  52%
+
+######## select_daily_50k, daily stop $150 — $ per eval bought (2014-19 / 2020-25) · with +1 pt cost · pass %
+    FIXED2 (2 micros)          $ 4577 ($ 4169 / $ 5022) · cost $ 4100 · pass  54%
+    RISK$ $40 a trade          $ 2058 ($ 2159 / $ 1948) · cost $ 1859 · pass  47%
+    RISK$ $60 a trade          $ 2383 ($ 2246 / $ 2532) · cost $ 2162 · pass  47%
+    RISK$ $80 a trade          $ 3146 ($ 3091 / $ 3206) · cost $ 2734 · pass  51%
+    CUSHION 1 → 2 at +$500   $ 2365 ($ 2552 / $ 2162) · cost $ 2153 · pass  49%
+    CUSHION 1 → 2 at +$1,000 $ 2066 ($ 2062 / $ 2070) · cost $ 1816 · pass  44%
+    GRADE A 2 / B 1            $ 4047 ($ 3986 / $ 4114) · cost $ 3601 · pass  52%
+
+######## apex_eod_50k, daily stop $150 — $ per eval bought (2014-19 / 2020-25) · with +1 pt cost · pass %
+    FIXED2 (2 micros)          $ 2681 ($ 2484 / $ 2897) · cost $ 2440 · pass  78%
+    RISK$ $40 a trade          $ 1677 ($ 1702 / $ 1650) · cost $ 1430 · pass  58%
+    RISK$ $60 a trade          $ 1867 ($ 1801 / $ 1939) · cost $ 1642 · pass  63%
+    RISK$ $80 a trade          $ 2122 ($ 2037 / $ 2215) · cost $ 1911 · pass  70%
+    CUSHION 1 → 2 at +$500   $ 2313 ($ 2159 / $ 2482) · cost $ 2153 · pass  73%
+    CUSHION 1 → 2 at +$1,000 $ 2200 ($ 1916 / $ 2510) · cost $ 1888 · pass  69%
+    GRADE A 2 / B 1            $ 2475 ($ 2317 / $ 2649) · cost $ 2360 · pass  78%
+
+######## select_flex_50k, daily stop $200 — $ per eval bought (2014-19 / 2020-25) · with +1 pt cost · pass %
+    FIXED2 (2 micros)          $ 3821 ($ 3663 / $ 3993) · cost $ 3574 · pass  54%
+    RISK$ $40 a trade          $ 1255 ($ 1197 / $ 1318) · cost $ 1159 · pass  38%
+    RISK$ $60 a trade          $ 1734 ($ 1460 / $ 2033) · cost $ 1454 · pass  44%
+    RISK$ $80 a trade          $ 2044 ($ 1888 / $ 2214) · cost $ 1685 · pass  45%
+    CUSHION 1 → 2 at +$500   $ 2172 ($ 2120 / $ 2228) · cost $ 1908 · pass  44%
+    CUSHION 1 → 2 at +$1,000 $ 1696 ($ 1697 / $ 1695) · cost $ 1537 · pass  41%
+    GRADE A 2 / B 1            $ 3333 ($ 2966 / $ 3734) · cost $ 3080 · pass  52%
+
+######## select_daily_50k, daily stop $200 — $ per eval bought (2014-19 / 2020-25) · with +1 pt cost · pass %
+    FIXED2 (2 micros)          $ 4738 ($ 4429 / $ 5076) · cost $ 4130 · pass  54%
+    RISK$ $40 a trade          $ 1264 ($ 1222 / $ 1310) · cost $ 1155 · pass  38%
+    RISK$ $60 a trade          $ 1957 ($ 1778 / $ 2153) · cost $ 1722 · pass  44%
+    RISK$ $80 a trade          $ 2231 ($ 2100 / $ 2374) · cost $ 1821 · pass  45%
+    CUSHION 1 → 2 at +$500   $ 1916 ($ 1841 / $ 1997) · cost $ 1653 · pass  44%
+    CUSHION 1 → 2 at +$1,000 $ 1630 ($ 1556 / $ 1712) · cost $ 1417 · pass  41%
+    GRADE A 2 / B 1            $ 4035 ($ 3895 / $ 4188) · cost $ 3691 · pass  52%
+
+######## apex_eod_50k, daily stop $200 — $ per eval bought (2014-19 / 2020-25) · with +1 pt cost · pass %
+    FIXED2 (2 micros)          $ 2640 ($ 2603 / $ 2679) · cost $ 2346 · pass  73%
+    RISK$ $40 a trade          $ 1005 ($  972 / $ 1040) · cost $  904 · pass  52%
+    RISK$ $60 a trade          $ 1379 ($ 1272 / $ 1495) · cost $ 1275 · pass  59%
+    RISK$ $80 a trade          $ 1565 ($ 1650 / $ 1472) · cost $ 1347 · pass  63%
+    CUSHION 1 → 2 at +$500   $ 1726 ($ 1657 / $ 1802) · cost $ 1620 · pass  65%
+    CUSHION 1 → 2 at +$1,000 $ 1553 ($ 1601 / $ 1500) · cost $ 1373 · pass  62%
+    GRADE A 2 / B 1            $ 2474 ($ 2566 / $ 2373) · cost $ 2336 · pass  75%
+
+ADOPTED (better than FIXED2 at both stops, all three plans, both halves, with cost): RISK$ $40 a trade no · RISK$ $60 a trade no · RISK$ $80 a trade no · CUSHION 1 → 2 at +$500 no · CUSHION 1 → 2 at +$1,000 no · GRADE A 2 / B 1 no ·

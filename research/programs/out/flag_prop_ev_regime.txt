@@ -1,0 +1,40 @@
+BOOK2 account EV with a $150 daily loss stop — regime filters (judged) and size × stop (reported). preregistered/2026-10-22_book2_account.md.
+$ of payouts per eval bought (before fees and the split), starts every 5th trading day 2014-01 → 2025-04; halves = starts 2014-19 / 2020-25.
+
+######## A  select_flex_50k, 1 micro(s) each market, daily stop $150
+    base (no filter)   pass  47% · paid  96% of funded · $ 1973 per eval (2014-19 $ 2023 / 2020-25 $ 1919) · with +1 pt cost $ 1774
+    DT200              pass  25% · paid  99% of funded · $  562 per eval (2014-19 $  842 / 2020-25 $  255) · with +1 pt cost $  502
+    NOFOMC             pass  48% · paid  96% of funded · $ 1891 per eval (2014-19 $ 2050 / 2020-25 $ 1717) · with +1 pt cost $ 1715
+    DT200 + NOFOMC     pass  26% · paid 100% of funded · $  616 per eval (2014-19 $  904 / 2020-25 $  301) · with +1 pt cost $  544
+
+######## A  select_daily_50k, 1 micro(s) each market, daily stop $150
+    base (no filter)   pass  47% · paid  89% of funded · $ 2058 per eval (2014-19 $ 2159 / 2020-25 $ 1948) · with +1 pt cost $ 1859
+    DT200              pass  25% · paid  73% of funded · $  552 per eval (2014-19 $  871 / 2020-25 $  203) · with +1 pt cost $  498
+    NOFOMC             pass  48% · paid  89% of funded · $ 2128 per eval (2014-19 $ 2319 / 2020-25 $ 1920) · with +1 pt cost $ 1921
+    DT200 + NOFOMC     pass  26% · paid  74% of funded · $  610 per eval (2014-19 $  939 / 2020-25 $  250) · with +1 pt cost $  549
+
+######## A  apex_eod_50k, 2 micro(s) each market, daily stop $150
+    base (no filter)   pass  78% · paid  78% of funded · $ 2681 per eval (2014-19 $ 2484 / 2020-25 $ 2897) · with +1 pt cost $ 2440
+    DT200              pass  67% · paid  79% of funded · $ 1911 per eval (2014-19 $ 2701 / 2020-25 $ 1049) · with +1 pt cost $ 1818
+    NOFOMC             pass  79% · paid  78% of funded · $ 2638 per eval (2014-19 $ 2646 / 2020-25 $ 2628) · with +1 pt cost $ 2440
+    DT200 + NOFOMC     pass  68% · paid  80% of funded · $ 1938 per eval (2014-19 $ 2723 / 2020-25 $ 1082) · with +1 pt cost $ 1823
+
+  ADOPTED (better on all three plans, both halves, and with cost): DT200 no · NOFOMC no · DT200 + NOFOMC no
+
+######## B  select_flex_50k — size × daily stop, no regime filter ($ per eval bought; 2014-19 / 2020-25)
+               | stop $100               | stop $150               | stop $200               | stop $300               | stop $400              
+    1 micro   | $ 2484 ( 2407/ 2568)   | $ 1973 ( 2023/ 1919)   | $ 1255 ( 1197/ 1318)   | $  791 (  789/  793)   | $  889 (  837/  945)  
+    2 micros  | $ 3383 ( 3900/ 2818)   | $ 3428 ( 3337/ 3527)   | $ 3821 ( 3663/ 3993)   | $ 2428 ( 2341/ 2524)   | $ 1411 ( 1369/ 1456)  
+    3 micros  | $ 2172 ( 2470/ 1847)   | $ 3412 ( 3986/ 2786)   | $ 3217 ( 3116/ 3327)   | $ 3643 ( 3617/ 3672)   | $ 2241 ( 2150/ 2341)  
+
+######## B  select_daily_50k — size × daily stop, no regime filter ($ per eval bought; 2014-19 / 2020-25)
+               | stop $100               | stop $150               | stop $200               | stop $300               | stop $400              
+    1 micro   | $ 2781 ( 2778/ 2784)   | $ 2058 ( 2159/ 1948)   | $ 1264 ( 1222/ 1310)   | $  840 (  843/  838)   | $  876 (  887/  864)  
+    2 micros  | $ 5265 ( 6085/ 4370)   | $ 4577 ( 4169/ 5022)   | $ 4738 ( 4429/ 5076)   | $ 3087 ( 3017/ 3164)   | $ 1769 ( 1970/ 1549)  
+    3 micros  | $ 3701 ( 4364/ 2977)   | $ 5363 ( 6144/ 4511)   | $ 4427 ( 4068/ 4818)   | $ 4523 ( 4654/ 4379)   | $ 2500 ( 2379/ 2632)  
+
+######## B  apex_eod_50k — size × daily stop, no regime filter ($ per eval bought; 2014-19 / 2020-25)
+               | stop $100               | stop $150               | stop $200               | stop $300               | stop $400              
+    1 micro   | $ 2049 ( 2079/ 2016)   | $ 1677 ( 1702/ 1650)   | $ 1005 (  972/ 1040)   | $  650 (  690/  607)   | $  654 (  647/  662)  
+    2 micros  | $ 3161 ( 3305/ 3003)   | $ 2681 ( 2484/ 2897)   | $ 2640 ( 2603/ 2679)   | $ 1805 ( 1756/ 1858)   | $ 1102 ( 1086/ 1119)  
+    3 micros  | $ 2548 ( 2919/ 2142)   | $ 2761 ( 2999/ 2502)   | $ 2314 ( 2399/ 2222)   | $ 2297 ( 2224/ 2377)   | $ 1479 ( 1648/ 1295)  

@@ -24,7 +24,7 @@ EDGELAB writes "FAIL at X, stage N" where N = last stage passed.
 | desk_cascade_r5skip | 10-19 08:55 | RESEARCHER-REGIMES | so_cascade only after a choppy prior week (low e5) | FAIL at CONTROLS (st 2); OOS +4.03, PF 1.23, n 935 | not reached | none; random time 10%, ES −23 | (no BRIEF yet) |
 | desk_cascade_r5skip_compl | 10-19 08:55 | RESEARCHER-REGIMES | complement: so_cascade after a straight prior week (high e5) | FAIL at CONTROLS (st 2); OOS +2.28, PF 1.12, n 893 | not reached | none; random dir 94% | (no BRIEF yet) |
 | weakgapdown_stop | 10-19 12:55 | RESEARCHER-FLOWS | Gap-down weakness long with fixed 25/30/35-pt stop (Vest $150 limit) | **not judged yet** (next EDGELAB 16:00) | — | — | — |
-| levg_etf_close_pret | 10-19 12:55 | RESEARCHER-FLOWS | Follow yesterday's big-return sign 15:30→15:55 (leveraged-ETF close rebalance) | **not judged yet** | — | — | — |
+| levg_etf_close_pret | 10-19 12:55 | RESEARCHER-FLOWS | Follow yesterday's big-return sign 15:30→15:55 (leveraged-ETF close rebalance) | FAIL at WALK-FORWARD (desk 10-19: +0.09 on 296); founder 2026-10-23 re-spec on TODAY's move (x23_letf_close_1530/1545) FAIL at SCREEN | — | — | — |
 | macro_shock_follow | 10-19 12:55 | RESEARCHER-FLOWS | Follow 10y-yield / dollar shock (y10c, usdc) re-hedge sign, 10:30→15:55 | **not judged yet** | — | — | — |
 | desk_of5_delta_follow (smoke test) | 10-16 16:37 | desk_edge.sh smoke test | Follow last 5m bar's delta 10:00–14:30 (2023-24) | FAIL at WALK-FORWARD; OOS −0.91, PF 0.96, n 364 (not in registry) | — | — | — |
 
@@ -104,9 +104,9 @@ desk_ex_vbnt_sl12_chand +107.25 (8 tr, PF 1.83), desk_tl_vbch_pm +90.44 (9 tr, P
 
 | desk idea | founder coverage found | verdict |
 |---|---|---|
-| levg_etf_close_pret (yesterday's return → last-25-min follow) | `pret` only used in monday_fade / tuesday_turnaround / vol_target_delever / rgm_*_pdt; no LETF / close-rebalance spec | **untested by founder — and not yet judged by the desk** |
+| levg_etf_close_pret (yesterday's return → last-25-min follow) | `pret` only used in monday_fade / tuesday_turnaround / vol_target_delever / rgm_*_pdt; no LETF / close-rebalance spec | **judged**: desk FAIL at walk-forward; correct mechanism (today's move) FAIL 2026-10-23 (preregistered/2026-10-23_starnet_open_items.md X1) |
 | macro_shock_follow (y10c / usdc as standalone trigger) | y10c/usdc only as FILTERS: cascade_rates_move(_compl), weak_day_flight(_compl), weak_day_usd(_compl) | **untested as own trigger; not yet judged** |
-| desk_cascade_norollwin / rollwin_only (F split by roll window) | founder uses `!rollwin` in many specs, but `so_cascade.json` has none; DESK.md open lead (4) | **desk did it first** (desk result: window costs ~0.93 pts/trade) |
+| desk_cascade_norollwin / rollwin_only (F split by roll window) | founder uses `!rollwin` in many specs, but `so_cascade.json` has none; DESK.md open lead (4) | **desk did it first** (desk result: window costs ~0.93 pts/trade) | — 2026-10-23 fixed book-F setting: roll trades +212 / +38 NQ (2010-18 / 2019-24) → skip NOT adopted (X4)
 | desk_cascade_r5skip / _compl (prior-week straightness e5 on cascade) | so_cascade_eff/_not gate on SAME-DAY straightness; `r5` only in dpa_5; no e5 spec | **untested by founder** (failed controls here) |
 | desk_pibs_cplc_short (strong prior close short, complacent VIX) | `pibs >=` only in cascade_pibs_agree(_compl) | **untested by founder** (failed screen) |
 | desk_rsi2_baldayfade (RSI-2 after balance day) | no RSI-2 + balance-day spec found | **untested by founder** (failed walk-forward) |
@@ -135,3 +135,8 @@ Missing vs the schedule (4-hourly cycle; researchers at :48/:54):
 - **No "No such tool available", "tools are not connected", "untrusted-content-lockout" text** in any desk/memory file or in the sidecar log.
 - Pre-resume gap: no EDGELAB between 10-16 16:37 and 10-19 04:00 (~59 h, ~14 cycles) — flagged by SKEPTIC 0027 and BRIEF.
 - Memory: lessons written since resume only in DESK.md (founder's 10-19 STATE), SABLE.md, SKEPTIC.md, TIMELAB.md (newest 2026-10-19); RESEARCHER.md, FILLS.md, HERMES.md, RISKGUARD.md, TESTGAP.md are empty.
+
+## 2026-10-23 — desk stopped, leftovers closed
+StarNet stopped on the founder's word (scheduled runs lost their tools mid-run; no output after 2026-10-22 00:41). Every open item was
+tested or found already closed: research/preregistered/2026-10-23_starnet_open_items.md. Nothing passed; the roll-window skip is not
+adopted. The desk ends with 15 desk ideas, 0 PASS.

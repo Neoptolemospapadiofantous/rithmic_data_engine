@@ -1,0 +1,45 @@
+Flag detector (BOOK2 approximation on 5m bars), limit at flag mid, stop beyond flag, 3R target. Costs per round trip as % of price. Twin = random bar in the next hour, same distances.
+
+NQ sanity, NY, futures cost 0.005% | all: n  4276 netR -0.123 twin +0.049 edge -0.172 win  25% | 2020-22: n  3366 netR -0.101 twin +0.073 edge -0.174 win  26% | 2023-26: n   910 netR -0.205 twin -0.041 edge -0.164 win  23%
+BTC, NY window, perp 0.10%         | all: n  1235 netR -0.359 twin -0.189 edge -0.171 win  28% | 2020-22: n   508 netR -0.434 twin -0.177 edge -0.258 win  26% | 2023-26: n   727 netR -0.307 twin -0.197 edge -0.110 win  29%
+BTC, NY window, 0.01% (structure?) | all: n  1235 netR -0.123 twin +0.048 edge -0.171 win  28% | 2020-22: n   508 netR -0.236 twin +0.022 edge -0.258 win  26% | 2023-26: n   727 netR -0.044 twin +0.067 edge -0.110 win  29%
+BTC, 24/7, 6h hold, perp 0.10%     | all: n  4791 netR -0.429 twin -0.242 edge -0.187 win  24% | 2020-22: n  2283 netR -0.429 twin -0.268 edge -0.161 win  23% | 2023-26: n  2508 netR -0.429 twin -0.219 edge -0.210 win  25%
+BTC, 24/7, 6h hold, 0.01%          | all: n  4791 netR -0.186 twin +0.000 edge -0.187 win  24% | 2020-22: n  2283 netR -0.235 twin -0.074 edge -0.161 win  23% | 2023-26: n  2508 netR -0.142 twin +0.068 edge -0.210 win  25%
+ETH, NY window, perp 0.10%         | all: n  1281 netR -1.637 twin -1.421 edge -0.216 win  26% | 2020-22: n   493 netR -1.290 twin -0.962 edge -0.328 win  27% | 2023-26: n   788 netR -1.855 twin -1.708 edge -0.146 win  26%
+ETH, 24/7, 6h hold, perp 0.10%     | all: n  4914 netR -1.701 twin -1.522 edge -0.179 win  24% | 2020-22: n  2170 netR -1.303 twin -1.132 edge -0.171 win  25% | 2023-26: n  2744 netR -2.016 twin -1.831 edge -0.185 win  24%
+ETH, 24/7, 6h hold, 0.01%          | all: n  4914 netR -0.285 twin -0.106 edge -0.179 win  24% | 2020-22: n  2170 netR -0.209 twin -0.038 edge -0.171 win  25% | 2023-26: n  2744 netR -0.344 twin -0.159 edge -0.185 win  24%
+
+NQ (real W15 export; sanity): 2814 BOOK2 trades (216/yr), avg risk 23.8 pts = 0.208% of price
+  cost per round trip     all netR   twinR    edge |  h1 netR    edge |  h2 netR    edge |  win%
+  futures 1.5 pts (as book)    +0.501  +0.009  +0.492 |   +0.496  +0.500 |   +0.505  +0.484 |    37
+  0.005% (≈ futures)        +0.471  -0.021  +0.492 |   +0.461  +0.500 |   +0.481  +0.484 |    37
+
+BTC (real detector, wide15): 1069 BOOK2 trades (153/yr), avg risk 239.3 pts = 0.419% of price
+  cost per round trip     all netR   twinR    edge |  h1 netR    edge |  h2 netR    edge |  win%
+  zero cost (structure)     +0.411  -0.034  +0.446 |   +0.444  +0.377 |   +0.393  +0.484 |    36
+  0.01%                     +0.383  -0.063  +0.446 |   +0.422  +0.377 |   +0.361  +0.484 |    36
+  perp 0.10%                +0.124  -0.322  +0.446 |   +0.224  +0.377 |   +0.068  +0.484 |    34
+  perp 0.05% (maker both)    +0.268  -0.178  +0.446 |   +0.334  +0.377 |   +0.231  +0.484 |    34
+
+ETH (real detector, wide15): 1395 BOOK2 trades (199/yr), avg risk 53.4 pts = 0.069% of price
+  cost per round trip     all netR   twinR    edge |  h1 netR    edge |  h2 netR    edge |  win%
+  zero cost (structure)     +0.264  -0.073  +0.337 |   +0.288  +0.361 |   +0.254  +0.327 |    33
+  0.01%                     +0.092  -0.245  +0.337 |   +0.154  +0.361 |   +0.066  +0.327 |    32
+  perp 0.10%                -1.458  -1.795  +0.337 |   -1.047  +0.361 |   -1.628  +0.327 |    22
+  perp 0.05% (maker both)    -0.597  -0.934  +0.337 |   -0.380  +0.361 |   -0.687  +0.327 |    27
+
+NQ sanity (real W15, file net R at the book's 1.5-pt cost): 3239 trades, netR +0.181 | 2014-19 +0.112 | 2020-26 +0.247
+
+BTC (real detector, wide15): 1242 BOOK2 trades (177/yr), avg risk 237.8 pts = 0.415% of price; twins exist for 1242 trades
+  cost per round trip      netR (all)   twinR    edge |  h1 netR h1 edge |  h2 netR h2 edge |  win%    PF
+  zero cost (structure)        +0.233  +0.050  +0.183 |   +0.310  +0.107 |   +0.191  +0.224 |    31  1.27
+  0.01%                        +0.203  +0.021  +0.183 |   +0.287  +0.107 |   +0.158  +0.224 |    31  1.23
+  perp maker 0.04% RT          +0.116  -0.067  +0.183 |   +0.221  +0.107 |   +0.060  +0.224 |    30  1.11
+  perp taker 0.10% RT          -0.058  -0.241  +0.183 |   +0.087  +0.107 |   -0.137  +0.224 |    29  0.92
+
+ETH (real detector, wide15): 1617 BOOK2 trades (231/yr), avg risk 53.3 pts = 0.069% of price; twins exist for 1617 trades
+  cost per round trip      netR (all)   twinR    edge |  h1 netR h1 edge |  h2 netR h2 edge |  win%    PF
+  zero cost (structure)        +0.122  +0.082  +0.040 |   +0.133  +0.065 |   +0.118  +0.030 |    29  1.10
+  0.01%                        -0.051  -0.090  +0.040 |   +0.001  +0.065 |   -0.071  +0.030 |    28  0.91
+  perp maker 0.04% RT          -0.569  -0.609  +0.040 |   -0.397  +0.065 |   -0.639  +0.030 |    25  0.55
+  perp taker 0.10% RT          -1.606  -1.646  +0.040 |   -1.192  +0.065 |   -1.774  +0.030 |    19  0.24

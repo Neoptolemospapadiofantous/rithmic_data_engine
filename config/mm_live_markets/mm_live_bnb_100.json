@@ -1,0 +1,50 @@
+{
+ "mode": "live",
+ "host": "mainnet.zklighter.elliot.ai",
+ "chain_id": 304,
+ "account_index": null,
+ "api_key_index": null,
+ "key_file": "/home/theone/.config/mm_live/lighter_mainnet_key.json",
+ "arming_file": "/home/theone/Desktop/rithmic_engine/data/mm_live/ARM_MAINNET",
+ "no_deploy_file": "/home/theone/Desktop/rithmic_engine/data/mm_live/NO_DEPLOY_MM",
+ "state_dir": "/home/theone/Desktop/rithmic_engine/data/mm_live/state_bnb",
+ "market": "BNB",
+ "risk": {
+  "quote_usd": 100,
+  "max_order_usd": 110,
+  "max_position_quotes": 1,
+  "max_gross_usd": 110,
+  "daily_stop_usd": -10.0,
+  "total_stop_usd": -20.0,
+  "leverage": 20
+ },
+ "engine": {
+  "market_spec": {
+   "market_index": 25,
+   "size_decimals": 2,
+   "price_decimals": 4,
+   "min_base": "0.01",
+   "min_quote": "10.50"
+  },
+  "hl_sz_decimals": 3,
+  "journal_dir": "/home/theone/Desktop/rithmic_engine/data/mm_live/journal",
+  "status_file": "/home/theone/Desktop/rithmic_engine/data/mm_live/status_bnb.json",
+  "max_collateral_usd": 250,
+  "max_margin_pct": 60,
+  "strategy": {
+   "pause_move_ticks": 1,
+   "pause_ms": 4000,
+   "min_spread_ticks": 5,
+   "bn_pull_w_ms": 500,
+   "bn_pull_x_bps": 4,
+   "bn_pull_hold_ms": 1000
+  },
+  "label": "lighter_bnb",
+  "send_budget_per_min": 15,
+  "rate_reserve": 12
+ },
+ "_stage2": {
+  "account": "sub2",
+  "note": "fill account_index/api_key_index from the Lighter app (sub-accounts + one API key each); run the probe twin before the first start"
+ }
+}

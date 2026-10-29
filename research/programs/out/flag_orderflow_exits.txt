@@ -1,0 +1,34 @@
+trades 790  | tick replay vs export: mean R 0.181 vs 0.181, corr 1.000, same win/loss 100.0%
+
+rule                mean R  win %  23-24  25-26 early exits twin mean p(twin)
+base                 0.181   32.0  0.301 -0.009           0       nan     nan
+flip_loss_m2_x15     0.071   13.2  0.180 -0.100         548     0.207   1.000
+flip_loss_m2_x30     0.172   29.9  0.280  0.002          78     0.196   1.000
+flip_loss_m5_x15     0.088   14.3  0.205 -0.097         506     0.218   1.000
+flip_loss_m5_x30     0.177   30.0  0.287  0.002          76     0.199   0.998
+flip_any_m2_x15      0.017   39.0  0.019  0.015         672     0.141   1.000
+flip_any_m2_x30      0.097   36.3  0.172 -0.019         236     0.116   0.852
+flip_any_m5_x15      0.030   42.3  0.029  0.032         638     0.142   1.000
+flip_any_m5_x30      0.103   36.6  0.180 -0.019         234     0.122   0.885
+stall_m10            0.151   28.0  0.270 -0.037         183     0.173   0.994
+stall_m20            0.164   30.5  0.272 -0.007          73     0.175   0.981
+be_flow_k05          0.137   15.9  0.252 -0.045         372       nan     nan
+be_flow_k10          0.180   22.9  0.302 -0.012         219       nan     nan
+book_loss_40         0.181   32.0  0.301 -0.009           0       nan     nan
+
+base: 23-24 0.301  25-26 -0.009
+
+PASS check (better than base in BOTH halves, twin p<0.05, Holm<0.05 over 13):
+  flip_loss_m2_x15   both halves no   twin p 1.000  Holm 1.000  -> fail
+  flip_loss_m2_x30   both halves no   twin p 1.000  Holm 1.000  -> fail
+  flip_loss_m5_x15   both halves no   twin p 1.000  Holm 1.000  -> fail
+  flip_loss_m5_x30   both halves no   twin p 0.998  Holm 1.000  -> fail
+  flip_any_m2_x15    both halves no   twin p 1.000  Holm 1.000  -> fail
+  flip_any_m2_x30    both halves no   twin p 0.852  Holm 1.000  -> fail
+  flip_any_m5_x15    both halves no   twin p 1.000  Holm 1.000  -> fail
+  flip_any_m5_x30    both halves no   twin p 0.885  Holm 1.000  -> fail
+  stall_m10          both halves no   twin p 0.994  Holm 1.000  -> fail
+  stall_m20          both halves no   twin p 0.981  Holm 1.000  -> fail
+  be_flow_k05        both halves no   twin p nan  Holm nan  -> fail
+  be_flow_k10        both halves no   twin p nan  Holm nan  -> fail
+  book_loss_40       both halves no   twin p nan  Holm nan  -> fail

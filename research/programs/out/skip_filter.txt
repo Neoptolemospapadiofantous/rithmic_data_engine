@@ -1,0 +1,25 @@
+The skip filter (preregistered/2026-10-22_reversal_plan.md, Part 4): skip a flag registered <= W minutes after a same-side reversal signal.
+
+######## T1 WALK-FORWARD 2017-2026 (W = 120; the filter is used in a year only if earlier years show after-signal flags >= 0.10R worse)
+  every flag
+    NQ: filter used in 5 of 10 years · filtered  1394 tr +0.200R (total +278.2R) · unfiltered  1569 tr +0.165R (total +258.9R) · per trade +0.035R
+    ES: filter used in 7 of 10 years · filtered  1355 tr +0.125R (total +168.9R) · unfiltered  1636 tr +0.095R (total +155.3R) · per trade +0.030R
+  A-list + 5m HH/HL + with the break
+    NQ: filter used in 7 of 10 years · filtered   335 tr +0.479R (total +160.5R) · unfiltered   362 tr +0.432R (total +156.3R) · per trade +0.047R
+    ES: filter used in 6 of 10 years · filtered   328 tr +0.287R (total  +94.2R) · unfiltered   355 tr +0.301R (total +106.7R) · per trade -0.013R
+
+######## T2 INSIDE EACH REGISTRATION-TIME BUCKET (every flag, W = 120, 2014-26): after a signal vs without
+  NQ:  before 10:30 -0.537R ( 106) vs +0.380R ( 596) ·  10:30-12:00 -0.035R ( 342) vs +0.223R ( 785) ·  12:00-14:00 +0.182R ( 125) vs -0.051R ( 494) ·  gap negative in 2 of 3
+  ES:  before 10:30 -0.435R (  82) vs +0.254R ( 556) ·  10:30-12:00 -0.020R ( 372) vs +0.158R ( 827) ·  12:00-14:00 +0.166R ( 139) vs -0.084R ( 553) ·  gap negative in 2 of 3
+
+######## T3 WINDOWS (every flag, 2014-26): after a signal vs without
+  NQ:  W  60: -0.104R ( 313) vs +0.147R (1813) ·  W  90: -0.005R ( 443) vs +0.157R (1666) ·  W 120: -0.070R ( 534) vs +0.176R (1571) ·  W 180: -0.104R ( 639) vs +0.218R (1438) ·
+  ES:  W  60: -0.128R ( 317) vs +0.113R (1883) ·  W  90: -0.100R ( 466) vs +0.115R (1729) ·  W 120: -0.071R ( 545) vs +0.115R (1621) ·  W 180: -0.073R ( 660) vs +0.121R (1496) ·
+
+######## T4 NEW FLAGS — 1-2 minute charts (never used to find the filter), W = 120, 2014-26
+  NQ every flag                             after a signal -0.279R (1081) vs without +0.103R (2700) → -0.382R
+  NQ A-list + 5m HH/HL + with the break     after a signal -0.485R (  28) vs without +0.214R ( 345) → -0.700R
+  ES every flag                             after a signal -0.210R (1102) vs without +0.019R (3036) → -0.229R
+  ES A-list + 5m HH/HL + with the break     after a signal -0.030R (  38) vs without +0.040R ( 301) → -0.070R
+
+PASS: T1 no · T2 yes · T3 yes · T4 yes → the filter is dropped

@@ -1,0 +1,120 @@
+== BOOK2 2 open — extreme
+  daily stop $1000000000000, 2 open per market: 
+    select_daily_50k   $  598 per eval (2014-19 $  540 / 2020-25 $  661) · pass  27%
+    apex_eod_50k       $  544 per eval (2014-19 $  424 / 2020-25 $  675) · pass  47%
+    builder_50k        $  537 per eval (2014-19 $  416 / 2020-25 $  669) · pass  47%
+    topstep_50k        $ 1054 per eval (2014-19 $  842 / 2020-25 $ 1285) · pass  37%
+    mff_rapid_eod_50k  $  257 per eval (2014-19 $  169 / 2020-25 $  354) · pass  15%
+    lucid_flex_50k     $  841 per eval (2014-19 $  636 / 2020-25 $ 1065) · pass  37%
+  daily stop $300, 2 open per market: 
+    select_daily_50k   $  557 per eval (2014-19 $  266 / 2020-25 $  875) · pass  19%
+    apex_eod_50k       $  488 per eval (2014-19 $  408 / 2020-25 $  576) · pass  43%
+    builder_50k        $  484 per eval (2014-19 $  424 / 2020-25 $  550) · pass  43%
+    topstep_50k        $  897 per eval (2014-19 $  614 / 2020-25 $ 1206) · pass  29%
+    mff_rapid_eod_50k  $  304 per eval (2014-19 $   92 / 2020-25 $  536) · pass   8%
+    lucid_flex_50k     $  697 per eval (2014-19 $  457 / 2020-25 $  958) · pass  29%
+== BOOK2 2 open — close
+  daily stop $1000000000000, 2 open per market: 
+    select_daily_50k   $  633 per eval (2014-19 $  607 / 2020-25 $  661) · pass  27%
+    apex_eod_50k       $  561 per eval (2014-19 $  456 / 2020-25 $  675) · pass  47%
+    builder_50k        $  625 per eval (2014-19 $  584 / 2020-25 $  669) · pass  48%
+    topstep_50k        $ 1197 per eval (2014-19 $ 1117 / 2020-25 $ 1285) · pass  37%
+    mff_rapid_eod_50k  $  268 per eval (2014-19 $  169 / 2020-25 $  375) · pass  15%
+    lucid_flex_50k     $  841 per eval (2014-19 $  636 / 2020-25 $ 1065) · pass  37%
+  daily stop $300, 2 open per market: 
+    select_daily_50k   $  754 per eval (2014-19 $  569 / 2020-25 $  955) · pass  26%
+    apex_eod_50k       $  701 per eval (2014-19 $  640 / 2020-25 $  768) · pass  49%
+    builder_50k        $  688 per eval (2014-19 $  640 / 2020-25 $  741) · pass  49%
+    topstep_50k        $ 1104 per eval (2014-19 $  828 / 2020-25 $ 1406) · pass  36%
+    mff_rapid_eod_50k  $  318 per eval (2014-19 $  117 / 2020-25 $  538) · pass  11%
+    lucid_flex_50k     $  829 per eval (2014-19 $  582 / 2020-25 $ 1099) · pass  36%
+== BOOK2 1 open — extreme
+  daily stop $1000000000000, 1 open per market: 
+    select_daily_50k   $  808 per eval (2014-19 $  680 / 2020-25 $  948) · pass  30%
+    apex_eod_50k       $  682 per eval (2014-19 $  693 / 2020-25 $  671) · pass  45%
+    builder_50k        $  615 per eval (2014-19 $  644 / 2020-25 $  584) · pass  45%
+    topstep_50k        $  948 per eval (2014-19 $  839 / 2020-25 $ 1067) · pass  38%
+    mff_rapid_eod_50k  $  502 per eval (2014-19 $  444 / 2020-25 $  565) · pass  16%
+    lucid_flex_50k     $  885 per eval (2014-19 $  738 / 2020-25 $ 1045) · pass  38%
+  daily stop $300, 1 open per market: 
+    select_daily_50k   $  865 per eval (2014-19 $  730 / 2020-25 $ 1013) · pass  29%
+    apex_eod_50k       $  703 per eval (2014-19 $  648 / 2020-25 $  764) · pass  46%
+    builder_50k        $  646 per eval (2014-19 $  593 / 2020-25 $  704) · pass  46%
+    topstep_50k        $ 1142 per eval (2014-19 $  954 / 2020-25 $ 1347) · pass  38%
+    mff_rapid_eod_50k  $  357 per eval (2014-19 $  145 / 2020-25 $  589) · pass  13%
+    lucid_flex_50k     $ 1106 per eval (2014-19 $  923 / 2020-25 $ 1307) · pass  38%
+== BOOK2 1 open — close
+  daily stop $1000000000000, 1 open per market: 
+    select_daily_50k   $  851 per eval (2014-19 $  741 / 2020-25 $  971) · pass  30%
+    apex_eod_50k       $  686 per eval (2014-19 $  693 / 2020-25 $  680) · pass  45%
+    builder_50k        $  637 per eval (2014-19 $  671 / 2020-25 $  601) · pass  46%
+    topstep_50k        $  967 per eval (2014-19 $  845 / 2020-25 $ 1101) · pass  39%
+    mff_rapid_eod_50k  $  510 per eval (2014-19 $  444 / 2020-25 $  582) · pass  16%
+    lucid_flex_50k     $  890 per eval (2014-19 $  738 / 2020-25 $ 1057) · pass  38%
+  daily stop $300, 1 open per market: 
+    select_daily_50k   $ 1010 per eval (2014-19 $  822 / 2020-25 $ 1216) · pass  31%
+    apex_eod_50k       $  887 per eval (2014-19 $  685 / 2020-25 $ 1108) · pass  50%
+    builder_50k        $  796 per eval (2014-19 $  629 / 2020-25 $  980) · pass  50%
+    topstep_50k        $ 1262 per eval (2014-19 $ 1009 / 2020-25 $ 1538) · pass  41%
+    mff_rapid_eod_50k  $  437 per eval (2014-19 $  225 / 2020-25 $  669) · pass  14%
+    lucid_flex_50k     $ 1211 per eval (2014-19 $  968 / 2020-25 $ 1476) · pass  41%
+== BOOK3 1 open — extreme
+  daily stop $1000000000000, 1 open per market: 
+    select_daily_50k   $  836 per eval (2014-19 $  328 / 2020-25 $ 1391) · pass  34%
+    apex_eod_50k       $  665 per eval (2014-19 $  237 / 2020-25 $ 1133) · pass  45%
+    builder_50k        $  667 per eval (2014-19 $  219 / 2020-25 $ 1155) · pass  45%
+    topstep_50k        $  945 per eval (2014-19 $  428 / 2020-25 $ 1510) · pass  42%
+    mff_rapid_eod_50k  $  547 per eval (2014-19 $  171 / 2020-25 $  958) · pass  20%
+    lucid_flex_50k     $  958 per eval (2014-19 $  425 / 2020-25 $ 1541) · pass  41%
+  daily stop $300, 1 open per market: 
+    select_daily_50k   $  689 per eval (2014-19 $  372 / 2020-25 $ 1035) · pass  30%
+    apex_eod_50k       $  663 per eval (2014-19 $  376 / 2020-25 $  976) · pass  43%
+    builder_50k        $  642 per eval (2014-19 $  361 / 2020-25 $  948) · pass  43%
+    topstep_50k        $  961 per eval (2014-19 $  474 / 2020-25 $ 1492) · pass  39%
+    mff_rapid_eod_50k  $  382 per eval (2014-19 $  120 / 2020-25 $  668) · pass  15%
+    lucid_flex_50k     $  909 per eval (2014-19 $  464 / 2020-25 $ 1394) · pass  39%
+== BOOK3 1 open — close
+  daily stop $1000000000000, 1 open per market: 
+    select_daily_50k   $  838 per eval (2014-19 $  328 / 2020-25 $ 1394) · pass  35%
+    apex_eod_50k       $  690 per eval (2014-19 $  237 / 2020-25 $ 1185) · pass  46%
+    builder_50k        $  667 per eval (2014-19 $  219 / 2020-25 $ 1155) · pass  46%
+    topstep_50k        $  948 per eval (2014-19 $  428 / 2020-25 $ 1516) · pass  42%
+    mff_rapid_eod_50k  $  547 per eval (2014-19 $  171 / 2020-25 $  958) · pass  20%
+    lucid_flex_50k     $  966 per eval (2014-19 $  425 / 2020-25 $ 1558) · pass  42%
+  daily stop $300, 1 open per market: 
+    select_daily_50k   $  938 per eval (2014-19 $  587 / 2020-25 $ 1321) · pass  35%
+    apex_eod_50k       $  850 per eval (2014-19 $  627 / 2020-25 $ 1093) · pass  49%
+    builder_50k        $  787 per eval (2014-19 $  555 / 2020-25 $ 1039) · pass  49%
+    topstep_50k        $ 1181 per eval (2014-19 $  642 / 2020-25 $ 1769) · pass  43%
+    mff_rapid_eod_50k  $  540 per eval (2014-19 $  250 / 2020-25 $  857) · pass  19%
+    lucid_flex_50k     $ 1113 per eval (2014-19 $  577 / 2020-25 $ 1699) · pass  43%
+== RULE 1 open — extreme
+  daily stop $1000000000000, 1 open per market: 
+    select_daily_50k   $  114 per eval (2014-19 $  168 / 2020-25 $   55) · pass   7%
+    apex_eod_50k       $  163 per eval (2014-19 $  227 / 2020-25 $   93) · pass  19%
+    builder_50k        $  127 per eval (2014-19 $  167 / 2020-25 $   82) · pass  19%
+    topstep_50k        $  184 per eval (2014-19 $  288 / 2020-25 $   69) · pass  13%
+    mff_rapid_eod_50k  $   27 per eval (2014-19 $   44 / 2020-25 $    9) · pass   2%
+    lucid_flex_50k     $  185 per eval (2014-19 $  293 / 2020-25 $   68) · pass  13%
+  daily stop $300, 1 open per market: 
+    select_daily_50k   $  110 per eval (2014-19 $  154 / 2020-25 $   63) · pass   7%
+    apex_eod_50k       $  179 per eval (2014-19 $  223 / 2020-25 $  131) · pass  19%
+    builder_50k        $  144 per eval (2014-19 $  168 / 2020-25 $  119) · pass  19%
+    topstep_50k        $  196 per eval (2014-19 $  266 / 2020-25 $  120) · pass  13%
+    mff_rapid_eod_50k  $   31 per eval (2014-19 $   40 / 2020-25 $   20) · pass   2%
+    lucid_flex_50k     $  197 per eval (2014-19 $  268 / 2020-25 $  120) · pass  13%
+== RULE 1 open — close
+  daily stop $1000000000000, 1 open per market: 
+    select_daily_50k   $  115 per eval (2014-19 $  168 / 2020-25 $   56) · pass   7%
+    apex_eod_50k       $  166 per eval (2014-19 $  227 / 2020-25 $   99) · pass  19%
+    builder_50k        $  129 per eval (2014-19 $  167 / 2020-25 $   87) · pass  19%
+    topstep_50k        $  186 per eval (2014-19 $  288 / 2020-25 $   73) · pass  13%
+    mff_rapid_eod_50k  $   29 per eval (2014-19 $   44 / 2020-25 $   13) · pass   2%
+    lucid_flex_50k     $  189 per eval (2014-19 $  293 / 2020-25 $   77) · pass  13%
+  daily stop $300, 1 open per market: 
+    select_daily_50k   $  128 per eval (2014-19 $  174 / 2020-25 $   78) · pass   7%
+    apex_eod_50k       $  177 per eval (2014-19 $  229 / 2020-25 $  121) · pass  20%
+    builder_50k        $  131 per eval (2014-19 $  172 / 2020-25 $   86) · pass  20%
+    topstep_50k        $  199 per eval (2014-19 $  284 / 2020-25 $  106) · pass  15%
+    mff_rapid_eod_50k  $   36 per eval (2014-19 $   45 / 2020-25 $   27) · pass   2%
+    lucid_flex_50k     $  200 per eval (2014-19 $  287 / 2020-25 $  105) · pass  15%

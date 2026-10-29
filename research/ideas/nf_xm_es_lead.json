@@ -1,0 +1,37 @@
+{
+ "id": "nf_xm_es_lead",
+ "name": "ES moved from its open, NQ has not \u2192 NQ follows ES",
+ "why": "Broad-index flow (ES) leads the sector index; NQ catches up. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "pair": "ES",
+ "params": {
+  "k": [
+   0.2,
+   0.3
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "abs(xs) >= k && abs(px-open) < 0.5*k*atr",
+   "dir": "sign(xs)"
+  },
+  {
+   "at": "10:30",
+   "when": "abs(xs) >= k && abs(px-open) < 0.5*k*atr",
+   "dir": "sign(xs)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2"
+}

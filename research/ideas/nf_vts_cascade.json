@@ -1,0 +1,42 @@
+{
+ "id": "nf_vts_cascade",
+ "name": "Strong-open cascade only in backwardation (VIX/VIX3M >= v)",
+ "why": "The cascade's edge is concentrated in fear regimes; the term structure names them before the open. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "v": [
+   0.9,
+   1.0
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "vts >= v && abs(px-open) > 0.25*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "10:30",
+   "when": "vts >= v && abs(px-open) > 0.3*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:00",
+   "when": "vts >= v && abs(px-open) > 0.3*atr",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:30",
+   "when": "vts >= v && abs(px-open) > 0.3*atr",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "0.25*atr",
+ "target": "3"
+}

@@ -1,0 +1,16 @@
+version                        micros Topstep $/eval pass % paid % days 1st Lucid $/eval worst month
+as is (32 % win)                    5            758     22      7       43          392      -11480
+as is (32 % win)                    8            424     16      4       44          163      -11801
+as is (32 % win)                   10            433     15      4       48          175      -13073
+as is (32 % win)                   15            146     11      1       63           75      -14188
+as is (32 % win)                   20             84      7      1       71           33      -15240
+half off at +0.5R (70 % win)        5            647     29     19       42          571       -4284
+half off at +0.5R (70 % win)        8            461     21      8       31          419       -6743
+half off at +0.5R (70 % win)       10            567     18      8       31          428       -8551
+half off at +0.5R (70 % win)       15            185     11      2       35          128       -9290
+half off at +0.5R (70 % win)       20             63      7      1       43           44      -11097
+third off at +0.5R (68 % win)       5            616     26     14       51          529       -4577
+third off at +0.5R (68 % win)       8            599     19      8       35          406       -7078
+third off at +0.5R (68 % win)      10            328     16      6       32          302       -8953
+third off at +0.5R (68 % win)      15            177      8      1       40           76      -10077
+third off at +0.5R (68 % win)      20             21      4      0       57            8      -11642

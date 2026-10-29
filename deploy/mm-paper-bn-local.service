@@ -1,0 +1,30 @@
+# mm-paper-opt-local.service — the paper twin of the live pilot (2026-10-27, founder: "the strategy that will be live
+# testing must be optimized and ready"). The optimised setting the live engine runs (config/mm_live_avax.json
+# engine.strategy): pause on 1-tick jumps, 4 s pause, skip spreads under 5 ticks — the one combination positive on
+# both the 12-month held-out backtest (+0.79 bps, 8/12 days, mm_robust "live $11") and Lighter's clean 26 Oct under
+# real execution (+9.01 bps; +4.87 at the live cap of 1 quote, mm_lab scratch screen). Same as live: $11 quotes, cap
+# 1 quote, 145 ms place / 445 ms cancel, 60 requests/min shared. Label paper_opt. Its AVAX fills are what the live
+# pilot's real fills are compared with (G3); all 24 markets are the forward test of the setting itself.
+# Install: cp deploy/mm-paper-opt-local.service ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user enable --now mm-paper-opt-local
+[Unit]
+Description=Lighter MM paper twin of the live pilot + Binance-lead pull (label paper_bn, --bn-pull 500,4,1000)
+After=network-online.target postgresql.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_bn --latency-ms 300 --place-latency-ms 314 --cancel-latency-ms 614 --rate-limit 60 --pause-move-ticks 1 --pause-ms 4000 --min-spread-ticks 5 --bn-pull 500,4,1000 --max-inv 1 --tick-rule hl --status data/mm_paper/status_paper_bn.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_bn.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_bn.log
+Restart=always
+RestartSec=30
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Nice=10
+OOMScoreAdjust=100
+MemoryMax=512M
+
+[Install]
+WantedBy=default.target

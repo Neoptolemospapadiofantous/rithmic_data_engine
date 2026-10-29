@@ -1,0 +1,148 @@
+Flags on the 1-5 minute charts — setups a day and what they earn. NQ 10444 flags with a trade, ES 11178; 2583 NY days 2014-01 → 2026-10. One position at a time per market.
+Columns: setups a day, avg R, win %, PF, $ per trade and per day (1 MNQ / 1 MES at today's ATR, after cost), worst drawdown $, 2025-26 avg R, years > 0.
+
+################ NQ
+
+  ---- bull only ----
+  1-5m · every flag                                              0.71/day +0.084R win 32.9% PF 1.11 ·  +13.8 $/trade   +9.8 $/day per MNQ · DD $  2191 · 2025-26 +0.121R · years > 0  9/13
+  1-5m · A or B                                                  0.54/day +0.163R win 33.2% PF 1.22 ·  +19.9 $/trade  +10.7 $/day per MNQ · DD $  1990 · 2025-26 +0.188R · years > 0 10/13
+  1-5m · A                                                       0.31/day +0.239R win 33.4% PF 1.32 ·  +26.6 $/trade   +8.3 $/day per MNQ · DD $  1446 · 2025-26 +0.266R · years > 0 12/13
+  1-5m · A + HH/HL                                               0.16/day +0.229R win 35.2% PF 1.32 ·  +27.3 $/trade   +4.4 $/day per MNQ · DD $  1390 · 2025-26 +0.402R · years > 0  9/13
+  1-5m · A or B + HH/HL                                          0.29/day +0.186R win 35.0% PF 1.26 ·  +21.9 $/trade   +6.4 $/day per MNQ · DD $  1736 · 2025-26 +0.178R · years > 0 11/13
+  1-5m · A + HH/HL + with break                                  0.14/day +0.240R win 34.7% PF 1.33 ·  +28.0 $/trade   +4.0 $/day per MNQ · DD $  1519 · 2025-26 +0.436R · years > 0  9/12
+  1-5m · A or B + HH/HL + with break                             0.24/day +0.156R win 33.7% PF 1.21 ·  +20.1 $/trade   +4.8 $/day per MNQ · DD $  1910 · 2025-26 +0.039R · years > 0 10/13
+  3-5m · every flag                                              0.40/day +0.210R win 34.5% PF 1.29 ·  +25.2 $/trade  +10.1 $/day per MNQ · DD $  2989 · 2025-26 +0.082R · years > 0 12/13
+  3-5m · A or B                                                  0.35/day +0.256R win 35.5% PF 1.36 ·  +28.4 $/trade  +10.0 $/day per MNQ · DD $  2623 · 2025-26 +0.123R · years > 0 12/13
+  3-5m · A                                                       0.22/day +0.363R win 37.6% PF 1.53 ·  +37.6 $/trade   +8.1 $/day per MNQ · DD $  1843 · 2025-26 +0.356R · years > 0 13/13
+  3-5m · A + HH/HL                                               0.13/day +0.380R win 40.1% PF 1.58 ·  +39.7 $/trade   +5.2 $/day per MNQ · DD $  1249 · 2025-26 +0.419R · years > 0 11/13
+  3-5m · A or B + HH/HL                                          0.22/day +0.242R win 36.3% PF 1.35 ·  +26.7 $/trade   +5.9 $/day per MNQ · DD $  1359 · 2025-26 +0.080R · years > 0 12/13
+  3-5m · A + HH/HL + with break                                  0.11/day +0.413R win 40.1% PF 1.63 ·  +42.5 $/trade   +4.8 $/day per MNQ · DD $  1496 · 2025-26 +0.516R · years > 0 10/12
+  3-5m · A or B + HH/HL + with break                             0.18/day +0.256R win 36.5% PF 1.37 ·  +28.6 $/trade   +5.2 $/day per MNQ · DD $  1398 · 2025-26 +0.108R · years > 0 10/13
+  1-2m · every flag                                              0.67/day +0.082R win 32.8% PF 1.11 ·  +13.2 $/trade   +8.8 $/day per MNQ · DD $  1912 · 2025-26 +0.105R · years > 0 10/13
+  1-2m · A or B                                                  0.43/day +0.144R win 32.1% PF 1.19 ·  +17.1 $/trade   +7.4 $/day per MNQ · DD $  1529 · 2025-26 +0.186R · years > 0  9/13
+  1-2m · A                                                       0.21/day +0.171R win 30.6% PF 1.22 ·  +19.2 $/trade   +4.0 $/day per MNQ · DD $  1515 · 2025-26 +0.185R · years > 0 10/13
+  1-2m · A + HH/HL                                               0.08/day +0.151R win 30.7% PF 1.20 ·  +17.1 $/trade   +1.3 $/day per MNQ · DD $  1444 · 2025-26 +0.166R · years > 0  7/12
+  1-2m · A or B + HH/HL                                          0.17/day +0.156R win 33.3% PF 1.21 ·  +17.6 $/trade   +2.9 $/day per MNQ · DD $  1636 · 2025-26 +0.212R · years > 0 10/13
+  1-2m · A + HH/HL + with break                                  0.07/day +0.190R win 30.9% PF 1.24 ·  +20.6 $/trade   +1.4 $/day per MNQ · DD $  1201 · 2025-26 +0.221R · years > 0  6/12
+  1-2m · A or B + HH/HL + with break                             0.14/day +0.099R win 30.9% PF 1.13 ·  +13.8 $/trade   +1.9 $/day per MNQ · DD $  1515 · 2025-26 +0.090R · years > 0 10/13
+
+  ---- both sides ----
+  1-5m · every flag                                              1.52/day +0.013R win 28.5% PF 1.02 ·   +9.5 $/trade  +14.5 $/day per MNQ · DD $  4037 · 2025-26 +0.022R · years > 0  8/13
+  1-5m · A or B                                                  1.14/day +0.062R win 28.6% PF 1.08 ·  +12.8 $/trade  +14.6 $/day per MNQ · DD $  3360 · 2025-26 +0.010R · years > 0  8/13
+  1-5m · A                                                       0.67/day +0.156R win 29.1% PF 1.20 ·  +20.3 $/trade  +13.6 $/day per MNQ · DD $  3072 · 2025-26 +0.073R · years > 0 12/13
+  1-5m · A + HH/HL                                               0.33/day +0.211R win 30.6% PF 1.27 ·  +25.0 $/trade   +8.2 $/day per MNQ · DD $  2054 · 2025-26 +0.219R · years > 0 11/13
+  1-5m · A or B + HH/HL                                          0.59/day +0.075R win 29.3% PF 1.09 ·  +13.9 $/trade   +8.2 $/day per MNQ · DD $  2149 · 2025-26 +0.030R · years > 0  8/13
+  1-5m · A + HH/HL + with break                                  0.28/day +0.206R win 30.4% PF 1.27 ·  +24.4 $/trade   +6.9 $/day per MNQ · DD $  2322 · 2025-26 +0.139R · years > 0  9/13
+  1-5m · A or B + HH/HL + with break                             0.48/day +0.053R win 28.6% PF 1.07 ·  +12.1 $/trade   +5.8 $/day per MNQ · DD $  2440 · 2025-26 -0.066R · years > 0  6/13
+  3-5m · every flag                                              0.79/day +0.122R win 29.6% PF 1.16 ·  +19.1 $/trade  +15.2 $/day per MNQ · DD $  2604 · 2025-26 +0.127R · years > 0 11/13
+  3-5m · A or B                                                  0.68/day +0.166R win 30.5% PF 1.21 ·  +22.0 $/trade  +15.0 $/day per MNQ · DD $  2478 · 2025-26 +0.155R · years > 0 11/13
+  3-5m · A                                                       0.43/day +0.292R win 32.7% PF 1.39 ·  +33.0 $/trade  +14.1 $/day per MNQ · DD $  2562 · 2025-26 +0.269R · years > 0 11/13
+  3-5m · A + HH/HL                                               0.25/day +0.391R win 34.7% PF 1.54 ·  +41.6 $/trade  +10.4 $/day per MNQ · DD $  1719 · 2025-26 +0.496R · years > 0 12/13
+  3-5m · A or B + HH/HL                                          0.42/day +0.222R win 31.9% PF 1.30 ·  +26.5 $/trade  +11.1 $/day per MNQ · DD $  2672 · 2025-26 +0.310R · years > 0 10/13
+  3-5m · A + HH/HL + with break                                  0.21/day +0.408R win 34.8% PF 1.57 ·  +42.4 $/trade   +8.9 $/day per MNQ · DD $  1823 · 2025-26 +0.475R · years > 0 12/13
+  3-5m · A or B + HH/HL + with break                             0.33/day +0.237R win 32.5% PF 1.32 ·  +28.2 $/trade   +9.4 $/day per MNQ · DD $  3092 · 2025-26 +0.247R · years > 0 10/13
+  1-2m · every flag                                              1.44/day +0.004R win 28.3% PF 1.00 ·   +8.2 $/trade  +11.8 $/day per MNQ · DD $  3807 · 2025-26 +0.032R · years > 0  8/13
+  1-2m · A or B                                                  0.94/day +0.046R win 27.9% PF 1.06 ·  +11.4 $/trade  +10.8 $/day per MNQ · DD $  3421 · 2025-26 +0.023R · years > 0  8/13
+  1-2m · A                                                       0.47/day +0.103R win 27.4% PF 1.13 ·  +15.9 $/trade   +7.5 $/day per MNQ · DD $  3237 · 2025-26 +0.151R · years > 0 10/13
+  1-2m · A + HH/HL                                               0.16/day +0.154R win 28.6% PF 1.19 ·  +20.0 $/trade   +3.3 $/day per MNQ · DD $  2880 · 2025-26 +0.296R · years > 0  9/13
+  1-2m · A or B + HH/HL                                          0.36/day +0.006R win 27.3% PF 1.01 ·   +8.6 $/trade   +3.1 $/day per MNQ · DD $  3919 · 2025-26 +0.039R · years > 0  7/13
+  1-2m · A + HH/HL + with break                                  0.14/day +0.162R win 28.7% PF 1.20 ·  +21.4 $/trade   +3.1 $/day per MNQ · DD $  3002 · 2025-26 +0.264R · years > 0  9/13
+  1-2m · A or B + HH/HL + with break                             0.30/day -0.037R win 25.7% PF 0.96 ·   +5.7 $/trade   +1.7 $/day per MNQ · DD $  4698 · 2025-26 -0.046R · years > 0  7/13
+
+  ---- each chart alone, both sides, A + HH/HL / A or B + HH/HL + with break ----
+  1m · A + HH/HL                                                 0.11/day +0.148R win 27.9% PF 1.18 ·  +17.3 $/trade   +2.0 $/day per MNQ · DD $  2921 · 2025-26 +0.067R · years > 0  7/13
+  1m · A or B + HH/HL + with break                               0.24/day -0.029R win 25.9% PF 0.96 ·   +4.3 $/trade   +1.0 $/day per MNQ · DD $  3468 · 2025-26 -0.164R · years > 0  7/13
+  2m · A + HH/HL                                                 0.11/day +0.491R win 33.8% PF 1.66 ·  +47.7 $/trade   +5.1 $/day per MNQ · DD $  1066 · 2025-26 +0.618R · years > 0 11/13
+  2m · A or B + HH/HL + with break                               0.19/day +0.249R win 29.6% PF 1.32 ·  +29.0 $/trade   +5.5 $/day per MNQ · DD $  1829 · 2025-26 +0.268R · years > 0  8/13
+  3m · A + HH/HL                                                 0.11/day +0.555R win 34.9% PF 1.76 ·  +57.5 $/trade   +6.1 $/day per MNQ · DD $  1423 · 2025-26 +1.094R · years > 0 10/13
+  3m · A or B + HH/HL + with break                               0.18/day +0.312R win 31.2% PF 1.41 ·  +34.7 $/trade   +6.1 $/day per MNQ · DD $  1601 · 2025-26 +0.669R · years > 0  9/13
+  4m · A + HH/HL                                                 0.13/day +0.280R win 32.6% PF 1.38 ·  +28.9 $/trade   +3.8 $/day per MNQ · DD $  1321 · 2025-26 +0.260R · years > 0 11/13
+  4m · A or B + HH/HL + with break                               0.19/day +0.237R win 32.6% PF 1.32 ·  +27.8 $/trade   +5.2 $/day per MNQ · DD $  1234 · 2025-26 +0.222R · years > 0 10/13
+  5m · A + HH/HL                                                 0.18/day +0.352R win 37.3% PF 1.52 ·  +39.1 $/trade   +6.9 $/day per MNQ · DD $  1859 · 2025-26 +0.121R · years > 0 10/13
+  5m · A or B + HH/HL + with break                               0.24/day +0.308R win 35.5% PF 1.44 ·  +34.5 $/trade   +8.2 $/day per MNQ · DD $  1545 · 2025-26 -0.062R · years > 0  9/13
+
+################ ES
+
+  ---- bull only ----
+  1-5m · every flag                                              0.76/day +0.067R win 33.1% PF 1.09 ·   +4.8 $/trade   +3.7 $/day per MES · DD $  1134 · 2025-26 +0.064R · years > 0  8/13
+  1-5m · A or B                                                  0.55/day +0.091R win 32.1% PF 1.12 ·   +5.9 $/trade   +3.3 $/day per MES · DD $   793 · 2025-26 +0.089R · years > 0  8/13
+  1-5m · A                                                       0.30/day +0.108R win 31.0% PF 1.14 ·   +6.1 $/trade   +1.8 $/day per MES · DD $  1096 · 2025-26 +0.208R · years > 0  8/13
+  1-5m · A + HH/HL                                               0.15/day +0.300R win 36.1% PF 1.42 ·  +13.3 $/trade   +2.0 $/day per MES · DD $   693 · 2025-26 +0.499R · years > 0 12/13
+  1-5m · A or B + HH/HL                                          0.29/day +0.168R win 34.8% PF 1.23 ·   +8.4 $/trade   +2.5 $/day per MES · DD $  1070 · 2025-26 +0.164R · years > 0 10/13
+  1-5m · A + HH/HL + with break                                  0.13/day +0.295R win 35.7% PF 1.41 ·  +13.2 $/trade   +1.8 $/day per MES · DD $   669 · 2025-26 +0.446R · years > 0 10/13
+  1-5m · A or B + HH/HL + with break                             0.24/day +0.182R win 34.7% PF 1.25 ·   +9.2 $/trade   +2.2 $/day per MES · DD $   954 · 2025-26 +0.170R · years > 0  9/13
+  3-5m · every flag                                              0.42/day +0.157R win 33.7% PF 1.21 ·   +8.6 $/trade   +3.6 $/day per MES · DD $  1262 · 2025-26 +0.154R · years > 0 10/13
+  3-5m · A or B                                                  0.35/day +0.175R win 34.2% PF 1.24 ·   +9.3 $/trade   +3.3 $/day per MES · DD $   898 · 2025-26 +0.205R · years > 0 10/13
+  3-5m · A                                                       0.20/day +0.160R win 32.8% PF 1.21 ·   +8.0 $/trade   +1.6 $/day per MES · DD $   843 · 2025-26 +0.247R · years > 0  9/13
+  3-5m · A + HH/HL                                               0.11/day +0.414R win 39.4% PF 1.61 ·  +17.1 $/trade   +2.0 $/day per MES · DD $   599 · 2025-26 +0.648R · years > 0 11/13
+  3-5m · A or B + HH/HL                                          0.21/day +0.293R win 38.1% PF 1.43 ·  +13.0 $/trade   +2.8 $/day per MES · DD $   986 · 2025-26 +0.432R · years > 0 10/13
+  3-5m · A + HH/HL + with break                                  0.10/day +0.410R win 38.7% PF 1.60 ·  +16.9 $/trade   +1.8 $/day per MES · DD $   641 · 2025-26 +0.536R · years > 0 12/13
+  3-5m · A or B + HH/HL + with break                             0.17/day +0.326R win 38.0% PF 1.47 ·  +14.3 $/trade   +2.4 $/day per MES · DD $   924 · 2025-26 +0.406R · years > 0 10/13
+  1-2m · every flag                                              0.73/day +0.061R win 32.8% PF 1.08 ·   +4.6 $/trade   +3.4 $/day per MES · DD $  1056 · 2025-26 +0.032R · years > 0  6/13
+  1-2m · A or B                                                  0.43/day +0.093R win 31.8% PF 1.12 ·   +5.8 $/trade   +2.5 $/day per MES · DD $   628 · 2025-26 +0.095R · years > 0  9/13
+  1-2m · A                                                       0.19/day +0.136R win 31.7% PF 1.17 ·   +7.2 $/trade   +1.4 $/day per MES · DD $   856 · 2025-26 +0.182R · years > 0  9/13
+  1-2m · A + HH/HL                                               0.06/day +0.140R win 32.3% PF 1.18 ·   +7.1 $/trade   +0.4 $/day per MES · DD $   915 · 2025-26 +0.178R · years > 0  6/12
+  1-2m · A or B + HH/HL                                          0.16/day +0.067R win 31.9% PF 1.09 ·   +3.7 $/trade   +0.6 $/day per MES · DD $  1097 · 2025-26 -0.088R · years > 0  6/13
+  1-2m · A + HH/HL + with break                                  0.06/day +0.157R win 33.1% PF 1.20 ·   +7.9 $/trade   +0.4 $/day per MES · DD $   706 · 2025-26 +0.266R · years > 0  6/12
+  1-2m · A or B + HH/HL + with break                             0.14/day +0.031R win 31.7% PF 1.04 ·   +2.8 $/trade   +0.4 $/day per MES · DD $   973 · 2025-26 -0.004R · years > 0  7/13
+
+  ---- both sides ----
+  1-5m · every flag                                              1.65/day -0.027R win 28.1% PF 0.97 ·   +1.5 $/trade   +2.4 $/day per MES · DD $  2254 · 2025-26 +0.054R · years > 0  6/13
+  1-5m · A or B                                                  1.18/day -0.001R win 27.1% PF 1.00 ·   +2.7 $/trade   +3.2 $/day per MES · DD $  2213 · 2025-26 +0.108R · years > 0  7/13
+  1-5m · A                                                       0.67/day +0.046R win 26.5% PF 1.06 ·   +3.9 $/trade   +2.6 $/day per MES · DD $  2899 · 2025-26 +0.250R · years > 0  8/13
+  1-5m · A + HH/HL                                               0.32/day +0.108R win 28.0% PF 1.13 ·   +6.7 $/trade   +2.1 $/day per MES · DD $   999 · 2025-26 +0.272R · years > 0  9/13
+  1-5m · A or B + HH/HL                                          0.61/day +0.016R win 27.6% PF 1.02 ·   +3.1 $/trade   +1.9 $/day per MES · DD $  1543 · 2025-26 +0.036R · years > 0  6/13
+  1-5m · A + HH/HL + with break                                  0.28/day +0.128R win 28.4% PF 1.16 ·   +7.0 $/trade   +1.9 $/day per MES · DD $   940 · 2025-26 +0.236R · years > 0 10/13
+  1-5m · A or B + HH/HL + with break                             0.49/day +0.037R win 27.9% PF 1.05 ·   +4.1 $/trade   +2.0 $/day per MES · DD $  1002 · 2025-26 +0.022R · years > 0  7/13
+  3-5m · every flag                                              0.82/day +0.061R win 28.2% PF 1.08 ·   +4.8 $/trade   +3.9 $/day per MES · DD $  1825 · 2025-26 +0.119R · years > 0  9/13
+  3-5m · A or B                                                  0.70/day +0.070R win 28.4% PF 1.09 ·   +5.1 $/trade   +3.6 $/day per MES · DD $  1243 · 2025-26 +0.124R · years > 0 11/13
+  3-5m · A                                                       0.42/day +0.113R win 28.0% PF 1.14 ·   +6.0 $/trade   +2.5 $/day per MES · DD $  2132 · 2025-26 +0.343R · years > 0  9/13
+  3-5m · A + HH/HL                                               0.23/day +0.229R win 30.2% PF 1.29 ·  +10.8 $/trade   +2.5 $/day per MES · DD $   963 · 2025-26 +0.579R · years > 0 10/13
+  3-5m · A or B + HH/HL                                          0.42/day +0.110R win 29.6% PF 1.14 ·   +6.2 $/trade   +2.6 $/day per MES · DD $  2187 · 2025-26 +0.243R · years > 0 12/13
+  3-5m · A + HH/HL + with break                                  0.20/day +0.255R win 30.7% PF 1.33 ·  +11.3 $/trade   +2.3 $/day per MES · DD $   781 · 2025-26 +0.503R · years > 0 12/13
+  3-5m · A or B + HH/HL + with break                             0.33/day +0.156R win 29.9% PF 1.20 ·   +8.0 $/trade   +2.6 $/day per MES · DD $   963 · 2025-26 +0.225R · years > 0 11/13
+  1-2m · every flag                                              1.58/day -0.039R win 27.8% PF 0.95 ·   +1.1 $/trade   +1.7 $/day per MES · DD $  4565 · 2025-26 +0.072R · years > 0  5/13
+  1-2m · A or B                                                  0.96/day -0.013R win 26.8% PF 0.98 ·   +2.2 $/trade   +2.1 $/day per MES · DD $  3837 · 2025-26 +0.120R · years > 0  7/13
+  1-2m · A                                                       0.43/day +0.032R win 26.6% PF 1.04 ·   +3.6 $/trade   +1.6 $/day per MES · DD $  2219 · 2025-26 +0.163R · years > 0  6/13
+  1-2m · A + HH/HL                                               0.15/day +0.013R win 25.1% PF 1.01 ·   +3.2 $/trade   +0.5 $/day per MES · DD $  2402 · 2025-26 -0.037R · years > 0  5/13
+  1-2m · A or B + HH/HL                                          0.38/day -0.057R win 25.6% PF 0.93 ·   +0.4 $/trade   +0.1 $/day per MES · DD $  3906 · 2025-26 +0.009R · years > 0  6/13
+  1-2m · A + HH/HL + with break                                  0.13/day +0.032R win 26.0% PF 1.04 ·   +3.4 $/trade   +0.4 $/day per MES · DD $  2183 · 2025-26 +0.074R · years > 0  7/13
+  1-2m · A or B + HH/HL + with break                             0.31/day -0.060R win 25.8% PF 0.93 ·   +0.1 $/trade   +0.0 $/day per MES · DD $  3790 · 2025-26 +0.013R · years > 0  5/13
+
+  ---- each chart alone, both sides, A + HH/HL / A or B + HH/HL + with break ----
+  1m · A + HH/HL                                                 0.10/day -0.055R win 25.4% PF 0.94 ·   +0.2 $/trade   +0.0 $/day per MES · DD $  2106 · 2025-26 -0.066R · years > 0  6/12
+  1m · A or B + HH/HL + with break                               0.25/day -0.062R win 26.3% PF 0.93 ·   +0.5 $/trade   +0.1 $/day per MES · DD $  3445 · 2025-26 -0.065R · years > 0  6/13
+  2m · A + HH/HL                                                 0.08/day +0.033R win 24.7% PF 1.04 ·   +3.7 $/trade   +0.3 $/day per MES · DD $  1316 · 2025-26 +0.106R · years > 0  4/13
+  2m · A or B + HH/HL + with break                               0.18/day +0.021R win 26.2% PF 1.03 ·   +2.3 $/trade   +0.4 $/day per MES · DD $  2222 · 2025-26 +0.058R · years > 0  7/13
+  3m · A + HH/HL                                                 0.09/day +0.396R win 30.9% PF 1.51 ·  +16.1 $/trade   +1.4 $/day per MES · DD $   673 · 2025-26 +1.057R · years > 0 11/13
+  3m · A or B + HH/HL + with break                               0.17/day +0.257R win 30.2% PF 1.33 ·  +10.7 $/trade   +1.8 $/day per MES · DD $  1054 · 2025-26 +0.406R · years > 0 11/13
+  4m · A + HH/HL                                                 0.13/day +0.417R win 34.5% PF 1.57 ·  +19.8 $/trade   +2.5 $/day per MES · DD $   582 · 2025-26 +0.541R · years > 0 11/13
+  4m · A or B + HH/HL + with break                               0.19/day +0.216R win 30.7% PF 1.28 ·  +10.4 $/trade   +2.0 $/day per MES · DD $   812 · 2025-26 +0.107R · years > 0 11/13
+  5m · A + HH/HL                                                 0.16/day +0.094R win 30.4% PF 1.12 ·   +6.4 $/trade   +1.0 $/day per MES · DD $  1673 · 2025-26 +0.448R · years > 0  8/13
+  5m · A or B + HH/HL + with break                               0.23/day +0.132R win 31.3% PF 1.17 ·   +7.8 $/trade   +1.8 $/day per MES · DD $   858 · 2025-26 +0.041R · years > 0  8/13
+
+################ NQ + ES together (one position per market; $ = 1 MNQ + 1 MES)
+  1-5m · A · bull only                                          0.61/day +0.175R win 32.2% PF 1.23 ·  +16.5 $/trade  +10.1 $/day per MNQ+MES · DD $  1905 · 2025-26 +0.239R · years > 0 11/13
+  1-5m · A · both sides                                         1.34/day +0.101R win 27.8% PF 1.12 ·  +12.1 $/trade  +16.2 $/day per MNQ+MES · DD $  3777 · 2025-26 +0.158R · years > 0 10/13
+  1-5m · A + HH/HL · bull only                                  0.31/day +0.263R win 35.7% PF 1.37 ·  +20.7 $/trade   +6.4 $/day per MNQ+MES · DD $  1520 · 2025-26 +0.446R · years > 0 13/13
+  1-5m · A + HH/HL · both sides                                 0.65/day +0.161R win 29.3% PF 1.20 ·  +16.0 $/trade  +10.4 $/day per MNQ+MES · DD $  2499 · 2025-26 +0.243R · years > 0 11/13
+  1-5m · A or B + HH/HL · bull only                             0.58/day +0.177R win 34.9% PF 1.24 ·  +15.2 $/trade   +8.8 $/day per MNQ+MES · DD $  2243 · 2025-26 +0.171R · years > 0 13/13
+  1-5m · A or B + HH/HL · both sides                            1.20/day +0.045R win 28.4% PF 1.06 ·   +8.4 $/trade  +10.1 $/day per MNQ+MES · DD $  2337 · 2025-26 +0.033R · years > 0  8/13
+  1-5m · A or B + HH/HL + with break · bull only                0.48/day +0.169R win 34.2% PF 1.23 ·  +14.7 $/trade   +7.0 $/day per MNQ+MES · DD $  2689 · 2025-26 +0.105R · years > 0 10/13
+  1-5m · A or B + HH/HL + with break · both sides               0.97/day +0.045R win 28.2% PF 1.06 ·   +8.0 $/trade   +7.8 $/day per MNQ+MES · DD $  2347 · 2025-26 -0.025R · years > 0  7/13
+  3-5m · A · bull only                                          0.42/day +0.265R win 35.3% PF 1.37 ·  +23.3 $/trade   +9.7 $/day per MNQ+MES · DD $  2184 · 2025-26 +0.305R · years > 0 12/13
+  3-5m · A · both sides                                         0.84/day +0.204R win 30.4% PF 1.26 ·  +19.7 $/trade  +16.6 $/day per MNQ+MES · DD $  3491 · 2025-26 +0.303R · years > 0 11/13
+  3-5m · A + HH/HL · bull only                                  0.25/day +0.396R win 39.7% PF 1.60 ·  +29.1 $/trade   +7.1 $/day per MNQ+MES · DD $  1004 · 2025-26 +0.517R · years > 0 13/13
+  3-5m · A + HH/HL · both sides                                 0.48/day +0.312R win 32.5% PF 1.42 ·  +26.7 $/trade  +12.9 $/day per MNQ+MES · DD $  1489 · 2025-26 +0.533R · years > 0 11/13
+  3-5m · A or B + HH/HL · bull only                             0.43/day +0.267R win 37.2% PF 1.39 ·  +20.0 $/trade   +8.7 $/day per MNQ+MES · DD $  1947 · 2025-26 +0.251R · years > 0 12/13
+  3-5m · A or B + HH/HL · both sides                            0.84/day +0.166R win 30.7% PF 1.22 ·  +16.4 $/trade  +13.7 $/day per MNQ+MES · DD $  2757 · 2025-26 +0.278R · years > 0 11/13
+  3-5m · A or B + HH/HL + with break · bull only                0.35/day +0.290R win 37.2% PF 1.42 ·  +21.6 $/trade   +7.6 $/day per MNQ+MES · DD $  2013 · 2025-26 +0.252R · years > 0 12/13
+  3-5m · A or B + HH/HL + with break · both sides               0.66/day +0.197R win 31.2% PF 1.26 ·  +18.1 $/trade  +12.0 $/day per MNQ+MES · DD $  2788 · 2025-26 +0.237R · years > 0 11/13
+  1-2m · A · bull only                                          0.40/day +0.154R win 31.1% PF 1.20 ·  +13.5 $/trade   +5.4 $/day per MNQ+MES · DD $  1581 · 2025-26 +0.184R · years > 0  9/13
+  1-2m · A · both sides                                         0.90/day +0.069R win 27.0% PF 1.08 ·  +10.0 $/trade   +9.0 $/day per MNQ+MES · DD $  3278 · 2025-26 +0.156R · years > 0  8/13
+  1-2m · A + HH/HL · bull only                                  0.14/day +0.146R win 31.4% PF 1.19 ·  +12.7 $/trade   +1.7 $/day per MNQ+MES · DD $  1570 · 2025-26 +0.170R · years > 0  9/13
+  1-2m · A + HH/HL · both sides                                 0.31/day +0.087R win 27.0% PF 1.11 ·  +12.1 $/trade   +3.7 $/day per MNQ+MES · DD $  3674 · 2025-26 +0.161R · years > 0  9/13
+  1-2m · A or B + HH/HL · bull only                             0.33/day +0.112R win 32.6% PF 1.15 ·  +10.8 $/trade   +3.5 $/day per MNQ+MES · DD $  2010 · 2025-26 +0.075R · years > 0  8/13
+  1-2m · A or B + HH/HL · both sides                            0.74/day -0.026R win 26.4% PF 0.97 ·   +4.4 $/trade   +3.3 $/day per MNQ+MES · DD $  4390 · 2025-26 +0.026R · years > 0  8/13
+  1-2m · A or B + HH/HL + with break · bull only                0.28/day +0.065R win 31.3% PF 1.08 ·   +8.3 $/trade   +2.3 $/day per MNQ+MES · DD $  1642 · 2025-26 +0.044R · years > 0  6/13
+  1-2m · A or B + HH/HL + with break · both sides               0.61/day -0.049R win 25.8% PF 0.94 ·   +2.8 $/trade   +1.7 $/day per MNQ+MES · DD $  5159 · 2025-26 -0.020R · years > 0  6/13

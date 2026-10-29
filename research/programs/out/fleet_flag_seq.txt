@@ -1,0 +1,94 @@
+Fleet strategies in sequence with the 3-5m bull / bear flag — 6425 strategies, 10879676 trades, entries 09:45-15:00 ET, 1061 sessions (2021-01 → 2023-02 bars replay, 2024-03 → 2026-10 tick replay).
+A trade is WITH the flag when a flag on its side was alive at entry (registered → end / break + 30 min). Net $ per MNQ after the fleet's measured costs. CONTROL = the same split with another day's flags (time of day only).
+
+All trades pooled: -3.58 $/trade · PF 0.61
+
+######## every flag
+  WITH the flag       11.5% of trades ·  -3.68 $/trade PF 0.61 · 2021-23  -2.91 / 2024-26  -4.44   | control   9.4% of trades  -4.12 $/trade PF 0.56
+  AGAINST the flag     6.7% of trades ·  -4.11 $/trade PF 0.56 · 2021-23  -2.96 / 2024-26  -5.21   | control   9.6% of trades  -3.55 $/trade PF 0.61
+  no flag alive       81.9% of trades ·  -3.53 $/trade PF 0.61 · 2021-23  -1.97 / 2024-26  -5.01   | control  80.9% of trades  -3.53 $/trade PF 0.61
+  per strategy (>= 60 WITH trades and 60 control trades: 3414): WITH beats the strategy's own average in 50% (median -0.01 $), beats its control in 59% (median +0.41 $) · net > 0: all trades 0%, WITH only 6%, WITH > 0 in both eras 1%
+
+######## A-list flags
+  WITH the flag        6.3% of trades ·  -4.21 $/trade PF 0.56 · 2021-23  -3.28 / 2024-26  -4.83   | control   5.0% of trades  -4.96 $/trade PF 0.48
+  AGAINST the flag     3.6% of trades ·  -3.77 $/trade PF 0.59 · 2021-23  -1.11 / 2024-26  -5.38   | control   5.6% of trades  -4.22 $/trade PF 0.54
+  no flag alive       90.0% of trades ·  -3.53 $/trade PF 0.61 · 2021-23  -2.12 / 2024-26  -4.95   | control  89.4% of trades  -3.47 $/trade PF 0.62
+  per strategy (>= 60 WITH trades and 60 control trades: 2588): WITH beats the strategy's own average in 34% (median -0.58 $), beats its control in 65% (median +0.82 $) · net > 0: all trades 0%, WITH only 3%, WITH > 0 in both eras 1%
+
+######## A-list in 5m HH/HL (LH/LL)
+  WITH the flag        4.0% of trades ·  -3.82 $/trade PF 0.60 · 2021-23  -2.64 / 2024-26  -4.71   | control   2.9% of trades  -5.45 $/trade PF 0.45
+  AGAINST the flag     2.2% of trades ·  -3.93 $/trade PF 0.56 · 2021-23  -3.13 / 2024-26  -4.50   | control   3.5% of trades  -3.04 $/trade PF 0.66
+  no flag alive       93.8% of trades ·  -3.57 $/trade PF 0.61 · 2021-23  -2.11 / 2024-26  -4.98   | control  93.6% of trades  -3.55 $/trade PF 0.61
+  per strategy (>= 60 WITH trades and 60 control trades: 1695): WITH beats the strategy's own average in 38% (median -0.49 $), beats its control in 72% (median +1.47 $) · net > 0: all trades 0%, WITH only 2%, WITH > 0 in both eras 0%
+
+######## Best strategies traded only WITH every flag (>= 100 trades, both eras > 0 on >= 30 trades each) — control and the strategy's other trades beside them
+  27 strategies qualify (with another day's flags — luck alone — 6 qualify). Top 30:
+  tcf5_rth                                     WITH  100 tr +14.56 $ PF 1.41 (2021-23  +5.62 / 2024-26 +34.45) · control   52 tr -14.30 $ PF 0.71 · rest of its trades   553 tr  -5.37 $
+  orb_t1200_noon_15__rvol15                    WITH  139 tr  +9.99 $ PF 2.30 (2021-23  +1.14 / 2024-26 +18.97) · control  133 tr  -1.13 $ PF 0.83 · rest of its trades  1595 tr  -2.50 $
+  volume_burst_1m_notrend__x_ts25_be8+rg_nochase WITH  105 tr  +9.53 $ PF 1.98 (2021-23  +8.38 / 2024-26 +10.79) · control  297 tr  -4.57 $ PF 0.55 · rest of its trades  2777 tr  -3.63 $
+  delta_div_2m__tr25                           WITH  105 tr  +9.51 $ PF 2.11 (2021-23  +8.02 / 2024-26 +10.62) · control  228 tr  -0.22 $ PF 0.97 · rest of its trades  2569 tr  -2.83 $
+  tcf5_rth_bo                                  WITH  107 tr  +9.36 $ PF 1.24 (2021-23  +4.71 / 2024-26 +17.80) · control   60 tr -17.04 $ PF 0.65 · rest of its trades   652 tr  -6.32 $
+  volume_burst_1m_notrend__x_ts20_be8+rg_nochase WITH  106 tr  +9.34 $ PF 1.98 (2021-23 +10.42 / 2024-26  +8.18) · control  298 tr  -2.33 $ PF 0.77 · rest of its trades  2792 tr  -3.59 $
+  volume_burst_1m_notrend__x_ts20_be12+rg_nochase WITH  105 tr  +8.70 $ PF 1.76 (2021-23 +11.19 / 2024-26  +6.06) · control  294 tr  -3.89 $ PF 0.68 · rest of its trades  2765 tr  -3.81 $
+  volume_burst_1m_notrend__x_ts25_be12+rg_nochase WITH  105 tr  +8.12 $ PF 1.70 (2021-23  +7.82 / 2024-26  +8.43) · control  290 tr  -6.18 $ PF 0.50 · rest of its trades  2750 tr  -3.68 $
+  tcf5_rth_liq__lv_tgt                         WITH  125 tr  +8.05 $ PF 1.24 (2021-23  +3.11 / 2024-26 +18.96) · control   54 tr  -9.65 $ PF 0.77 · rest of its trades   575 tr  -6.99 $
+  tcf5_rth__lv_tgt                             WITH  131 tr  +7.63 $ PF 1.23 (2021-23  +4.21 / 2024-26 +15.41) · control   59 tr  -9.77 $ PF 0.77 · rest of its trades   630 tr  -6.03 $
+  orb_2_15_10__x_ts25_be12+rg_range            WITH  121 tr  +5.88 $ PF 1.37 (2021-23  +7.79 / 2024-26  +3.51) · control  173 tr  +4.37 $ PF 1.36 · rest of its trades  1785 tr  -1.82 $
+  volume_burst_1m_notrend__x_ts15_be8+rg_nochase WITH  106 tr  +5.76 $ PF 1.60 (2021-23  +4.80 / 2024-26  +6.83) · control  299 tr  -3.21 $ PF 0.68 · rest of its trades  2804 tr  -3.72 $
+  volume_burst_1m_notrend__x_ts15_be12+rg_nochase WITH  105 tr  +5.37 $ PF 1.47 (2021-23  +6.01 / 2024-26  +4.67) · control  294 tr  -4.32 $ PF 0.65 · rest of its trades  2784 tr  -3.78 $
+  volume_burst_1m_notrend__x_ts20_be5+rg_nochase WITH  107 tr  +5.32 $ PF 1.65 (2021-23  +6.19 / 2024-26  +4.41) · control  300 tr  -2.38 $ PF 0.73 · rest of its trades  2815 tr  -3.37 $
+  orb_t1000_2nd_5__x_ts25_be8+rg_nochase       WITH  112 tr  +4.97 $ PF 1.48 (2021-23  +6.66 / 2024-26  +2.16) · control  172 tr  -6.48 $ PF 0.57 · rest of its trades  2395 tr  -3.83 $
+  orb_t1000_2nd_5__x_ts20_be8+rg_nochase       WITH  112 tr  +4.80 $ PF 1.47 (2021-23  +4.68 / 2024-26  +4.99) · control  172 tr  -6.73 $ PF 0.55 · rest of its trades  2395 tr  -4.07 $
+  volume_burst_1m_notrend__x_ts25_be5+rg_nochase WITH  107 tr  +4.67 $ PF 1.57 (2021-23  +3.79 / 2024-26  +5.59) · control  299 tr  -4.09 $ PF 0.54 · rest of its trades  2805 tr  -3.70 $
+  orb_t1000_2nd_5__x_ts20_be12+rg_nochase      WITH  118 tr  +4.43 $ PF 1.31 (2021-23  +6.99 / 2024-26  +0.44) · control  183 tr  -6.14 $ PF 0.65 · rest of its trades  2352 tr  -4.43 $
+  globex_keltner_20_60m__lv_tgt                WITH  140 tr  +3.27 $ PF 1.73 (2021-23  +2.69 / 2024-26  +4.08) · control   34 tr  -0.98 $ PF 0.83 · rest of its trades   286 tr  +0.54 $
+  globex_keltner_20_60m__tr25                  WITH  150 tr  +2.82 $ PF 1.65 (2021-23  +1.94 / 2024-26  +3.85) · control   38 tr  +5.11 $ PF 1.95 · rest of its trades   300 tr  +0.95 $
+  globex_donchian_55_15m__lv_room              WITH  128 tr  +1.94 $ PF 1.50 (2021-23  +3.13 / 2024-26  +0.03) · control   79 tr  +1.77 $ PF 1.41 · rest of its trades   953 tr  +1.20 $
+  orb_5_be8_off0__rg_range                     WITH  171 tr  +1.67 $ PF 1.14 (2021-23  +1.22 / 2024-26  +2.16) · control  177 tr  -2.16 $ PF 0.83 · rest of its trades  1838 tr  -3.00 $
+  globex_keltner_20_60m                        WITH  151 tr  +1.50 $ PF 1.35 (2021-23  +0.38 / 2024-26  +2.82) · control   37 tr  +7.75 $ PF 2.43 · rest of its trades   300 tr  +1.37 $
+  orb_5_10_5__x_ts20_be12+rg_range             WITH  176 tr  +1.02 $ PF 1.08 (2021-23  +0.55 / 2024-26  +1.54) · control  174 tr  +0.05 $ PF 1.00 · rest of its trades  1758 tr  -2.66 $
+  orb_5_10_5__x_ts10_be12+rg_range             WITH  176 tr  +0.84 $ PF 1.07 (2021-23  +0.92 / 2024-26  +0.74) · control  174 tr  -2.55 $ PF 0.80 · rest of its trades  1758 tr  -3.18 $
+  volume_burst_1m_notrend__x_ts10_be5+rg_nochase WITH  108 tr  +0.43 $ PF 1.05 (2021-23  +0.50 / 2024-26  +0.36) · control  299 tr  -3.18 $ PF 0.63 · rest of its trades  2829 tr  -3.42 $
+  orb_5_buf2__rg_range                         WITH  183 tr  +0.05 $ PF 1.01 (2021-23  +0.09 / 2024-26  +0.01) · control  178 tr  -2.92 $ PF 0.58 · rest of its trades  1866 tr  -2.68 $
+
+######## Best strategies traded only WITH A-list flags (>= 100 trades, both eras > 0 on >= 30 trades each) — control and the strategy's other trades beside them
+  1 strategies qualify (with another day's flags — luck alone — 2 qualify). Top 30:
+  ichimoku_1m_fast__x_ts25_be5                 WITH  141 tr  +0.68 $ PF 1.08 (2021-23  +0.26 / 2024-26  +1.02) · control   67 tr  -4.35 $ PF 0.45 · rest of its trades  1588 tr  -2.85 $
+
+######## By family (id before the first "__"), every flag, pooled over its variants — families with >= 500 WITH trades, sorted by WITH − control
+  300 families, WITH beats control in 189 (63%). Top 25 and bottom 10:
+  orb_t1000_2nd_5                      WITH  12146 tr  +0.15 $ PF 1.02 (2021-23  +4.48 / 2024-26  -3.67) · control  -4.50 $ · AGAINST  -3.01 $ · all  -3.18 $
+  mtf_htf30_v5                         WITH   1661 tr  -3.91 $ PF 0.73 (2021-23  -4.02 / 2024-26  -3.81) · control  -8.13 $ · AGAINST  -3.89 $ · all  -5.23 $
+  mtf_htf60_v5                         WITH   2717 tr  -5.60 $ PF 0.56 (2021-23  -5.35 / 2024-26  -5.93) · control  -9.67 $ · AGAINST  -4.14 $ · all  -5.17 $
+  mtf_retest_v5                        WITH    925 tr  -1.67 $ PF 0.86 (2021-23  -2.19 / 2024-26  -1.35) · control  -5.71 $ · AGAINST  -9.96 $ · all  -3.40 $
+  orb_5_15_5                           WITH    992 tr  -0.55 $ PF 0.91 (2021-23  +0.24 / 2024-26  -1.67) · control  -4.40 $ · AGAINST  -4.16 $ · all  -2.06 $
+  orb_5_trail_now                      WITH    766 tr  +0.52 $ PF 1.09 (2021-23  +0.88 / 2024-26  +0.10) · control  -3.05 $ · AGAINST  -2.80 $ · all  -1.71 $
+  orb_5_be5                            WITH    784 tr  -0.19 $ PF 0.98 (2021-23  +0.81 / 2024-26  -1.18) · control  -3.76 $ · AGAINST  -6.03 $ · all  -2.75 $
+  mtf_pm_v5                            WITH   2820 tr  -4.03 $ PF 0.71 (2021-23  -2.39 / 2024-26  -4.90) · control  -7.59 $ · AGAINST  -0.74 $ · all  -3.93 $
+  orb_3_15_10                          WITH   1323 tr  +0.82 $ PF 1.15 (2021-23  +2.96 / 2024-26  -2.37) · control  -2.64 $ · AGAINST  -3.81 $ · all  -2.05 $
+  orb_5_tight_8_8                      WITH    794 tr  -0.49 $ PF 0.91 (2021-23  +1.17 / 2024-26  -2.53) · control  -3.92 $ · AGAINST  -2.67 $ · all  -2.00 $
+  orb_5_20_15                          WITH   1153 tr  -2.47 $ PF 0.62 (2021-23  -1.65 / 2024-26  -3.68) · control  -5.89 $ · AGAINST  -7.74 $ · all  -2.76 $
+  orb_60_40_25                         WITH   8020 tr  -1.24 $ PF 0.80 (2021-23  -0.97 / 2024-26  -1.42) · control  -4.57 $ · AGAINST  -1.12 $ · all  -2.05 $
+  orb_3_15_5                           WITH    929 tr  +0.60 $ PF 1.10 (2021-23  +2.29 / 2024-26  -1.64) · control  -2.59 $ · AGAINST  -3.94 $ · all  -1.83 $
+  orb_3_10_10                          WITH    907 tr  +0.71 $ PF 1.12 (2021-23  +3.06 / 2024-26  -2.42) · control  -2.42 $ · AGAINST  -3.51 $ · all  -1.76 $
+  orb_5_cooldown60                     WITH    906 tr  -0.24 $ PF 0.96 (2021-23  +1.30 / 2024-26  -1.59) · control  -3.36 $ · AGAINST  -8.20 $ · all  -2.24 $
+  orb_5_15_10                          WITH    992 tr  -1.20 $ PF 0.80 (2021-23  -0.47 / 2024-26  -2.22) · control  -4.32 $ · AGAINST  -4.90 $ · all  -2.16 $
+  delta_div_3m                         WITH   6503 tr  -4.49 $ PF 0.59 (2021-23  -6.08 / 2024-26  -2.72) · control  -7.61 $ · AGAINST  -6.76 $ · all  -4.18 $
+  orb_5_20_10                          WITH   1011 tr  -1.72 $ PF 0.73 (2021-23  -0.49 / 2024-26  -3.36) · control  -4.80 $ · AGAINST  -6.23 $ · all  -2.55 $
+  orb_60_30_20                         WITH   8039 tr  -1.82 $ PF 0.72 (2021-23  -1.14 / 2024-26  -2.29) · control  -4.89 $ · AGAINST  -1.34 $ · all  -2.16 $
+  orb_5_buf2                           WITH    779 tr  +0.03 $ PF 1.01 (2021-23  +3.43 / 2024-26  -3.53) · control  -3.02 $ · AGAINST  -4.01 $ · all  -2.53 $
+  orb_5_be8_off0                       WITH    790 tr  +0.59 $ PF 1.05 (2021-23  +1.41 / 2024-26  -0.17) · control  -2.36 $ · AGAINST  -9.07 $ · all  -2.74 $
+  orb_5_morning                        WITH    588 tr  +0.39 $ PF 1.07 (2021-23  +1.47 / 2024-26  -1.23) · control  -2.54 $ · AGAINST  -5.43 $ · all  -1.82 $
+  orb_5_nochase3                       WITH    770 tr  -0.82 $ PF 0.86 (2021-23  +0.51 / 2024-26  -2.34) · control  -3.69 $ · AGAINST  -5.01 $ · all  -2.13 $
+  orb_5_nochase1                       WITH    770 tr  -0.82 $ PF 0.86 (2021-23  +0.51 / 2024-26  -2.34) · control  -3.69 $ · AGAINST  -5.01 $ · all  -2.13 $
+  orb_5_10_10                          WITH    975 tr  -1.38 $ PF 0.76 (2021-23  -0.66 / 2024-26  -2.42) · control  -4.18 $ · AGAINST  -2.96 $ · all  -2.09 $
+  trend_vwap_5m                        WITH   8863 tr  -3.34 $ PF 0.52 (2021-23  -1.39 / 2024-26  -4.95) · control  -1.67 $ · AGAINST  -1.22 $ · all  -2.62 $
+  keltner_ride_20_15m                  WITH   2959 tr  -3.30 $ PF 0.56 (2021-23  -1.46 / 2024-26  -5.11) · control  -1.39 $ · AGAINST  -1.40 $ · all  +0.04 $
+  orb_3_20_15                          WITH    947 tr  -0.33 $ PF 0.94 (2021-23  +1.96 / 2024-26  -3.24) · control  +1.60 $ · AGAINST  -5.92 $ · all  -2.21 $
+  s2_mr_rsi2_15m                       WITH   1209 tr  -2.99 $ PF 0.62 (2021-23  -0.50 / 2024-26  -6.07) · control  -1.05 $ · AGAINST  -1.32 $ · all  -3.00 $
+  ichimoku_5m                          WITH   1868 tr  -4.41 $ PF 0.45 (2021-23  -2.83 / 2024-26  -5.63) · control  -2.01 $ · AGAINST  +8.18 $ · all  -2.05 $
+  trend_vwap_5m_longonly               WITH   3832 tr  -3.70 $ PF 0.52 (2021-23  -1.64 / 2024-26  -5.11) · control  -1.21 $ · AGAINST  -0.30 $ · all  -2.83 $
+  mr_band_fade_1m_25                   WITH   1276 tr  -4.58 $ PF 0.39 (2021-23  -3.90 / 2024-26  -5.20) · control  -1.89 $ · AGAINST  -3.32 $ · all  -2.72 $
+  trend_nr7_15m                        WITH   2771 tr  -6.53 $ PF 0.26 (2021-23  -4.59 / 2024-26  -8.40) · control  -3.50 $ · AGAINST  -6.08 $ · all  -4.12 $
+  delta_trend_15m                      WITH    807 tr  -1.75 $ PF 0.61 (2021-23  -2.44 / 2024-26  -1.01) · control  +2.14 $ · AGAINST -13.30 $ · all  -2.42 $
+  trend_day_vwap_5m_longonly           WITH   2274 tr  -5.75 $ PF 0.30 (2021-23  -5.30 / 2024-26  -6.07) · control  +0.13 $ · AGAINST  +0.00 $ · all  -4.60 $

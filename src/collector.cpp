@@ -150,8 +150,8 @@ Collector::Collector(const Config& cfg) : cfg_(cfg) {
                                                  depth_to_line, depth_from_line);
     sentinel_  = std::make_unique<DataSentinel>();
 
-    auto count = db_->row_count();
-    LOG("PostgreSQL connected (%lld existing ticks)", (long long)count);
+    auto count = db_->row_estimate();   // not row_count(): a full scan of the ticks table (~30 s)
+    LOG("PostgreSQL connected (~%lld existing ticks)", (long long)count);
 
     // Start a new DB session
     session_id_ = db_->start_session("collect");

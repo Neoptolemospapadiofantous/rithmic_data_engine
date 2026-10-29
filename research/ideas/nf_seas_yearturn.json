@@ -1,0 +1,27 @@
+{
+ "id": "nf_seas_yearturn",
+ "name": "Last two sessions of December / first two of January \u2192 long",
+ "why": "Year-end window dressing and January inflows. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 40,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "stopk": [
+   0,
+   0.5
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "(month == 12 && tdleft <= 2) || (month == 1 && tdom <= 2)",
+   "dir": "1"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0"
+}

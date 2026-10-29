@@ -1,0 +1,27 @@
+{
+ "id": "nf_seas_month_first",
+ "name": "First trading day of the month \u2192 long 09:30 to 15:55",
+ "why": "Month-start inflows (pension / 401k) are bought at the open. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "stopk": [
+   0,
+   0.5
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "tdom <= 1",
+   "dir": "1"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0"
+}

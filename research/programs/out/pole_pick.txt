@@ -1,0 +1,44 @@
+Best filter per pole size, walk-forward — each test year 2017-2026 uses, per pole bucket, the filter that was best over all earlier years
+(>= 30 trades, stand aside if <= 0); all buckets trade together, one position at a time. Pole >= 2× export, grades refit on it.
+
+################ NQ
+  year | pick per pole bucket (2-3× / 3-4× / 4-5× / 5-7× / 7×+), from earlier years
+  2017 | A + HH/HL + break       | stand aside             | bull: A + HH/HL         | bull: every flag        | every flag              |
+  2018 | A + HH/HL + break       | bull: A + HH/HL + break | bull: A + HH/HL + break | bull: A-list            | stand aside             |
+  2019 | stand aside             | A-list                  | bull: A + HH/HL + break | bull: A + HH/HL         | every flag              |
+  2020 | stand aside             | bull: A-list            | bull: A + HH/HL + break | bull: A + HH/HL         | A-list                  |
+  2021 | stand aside             | bull: A-list            | bull: A + HH/HL + break | bull: A + HH/HL         | stand aside             |
+  2022 | stand aside             | bull: A-list            | bull: A + HH/HL + break | bull: A + HH/HL + break | bull: every flag        |
+  2023 | stand aside             | bull: A-list            | bull: A + HH/HL + break | bull: A + HH/HL + break | bull: every flag        |
+  2024 | A + HH/HL + break       | bull: A-list            | bull: A + HH/HL + break | bull: A-list            | bull: every flag        |
+  2025 | A + HH/HL + break       | bull: A-list            | bull: A + HH/HL + break | bull: every flag        | A + HH/HL               |
+  2026 | A + HH/HL + break       | bull: A-list            | bull: A + HH/HL + break | bull: every flag        | A + HH/HL               |
+
+  2017-2026, out of sample:
+  walk-forward best filter per pole size           558 trades ( 56.9 a year) +0.204R win 34.9% PF 1.29 · years > 0 8 of 10
+  today's rule: pole >= 4×, A + HH/HL + break     323 trades ( 33.0 a year) +0.412R win 36.5% PF 1.61 · years > 0 8 of 10
+  pole >= 4×, A + HH/HL                           402 trades ( 41.0 a year) +0.378R win 36.8% PF 1.56 · years > 0 9 of 10
+  pole 4-7×, A + HH/HL + break                    309 trades ( 31.5 a year) +0.407R win 36.2% PF 1.60 · years > 0 7 of 10
+  in-sample pick (hindsight, not tradable)         648 trades ( 66.1 a year) +0.348R win 37.7% PF 1.52 · years > 0 9 of 10
+    in-sample picks: A + HH/HL + break bull: A-list bull: A + HH/HL + break bull: every flag A + HH/HL
+
+################ ES
+  year | pick per pole bucket (2-3× / 3-4× / 4-5× / 5-7× / 7×+), from earlier years
+  2017 | stand aside             | bull: A + HH/HL         | bull: A + HH/HL         | bull: every flag        | stand aside             |
+  2018 | stand aside             | bull: A + HH/HL         | bull: A + HH/HL         | A + HH/HL               | every flag              |
+  2019 | bull: A + HH/HL + break | bull: A + HH/HL         | A + HH/HL               | bull: A + HH/HL         | every flag              |
+  2020 | stand aside             | bull: A + HH/HL + break | bull: A + HH/HL         | bull: A + HH/HL + break | A-list                  |
+  2021 | bull: A + HH/HL + break | bull: A + HH/HL + break | A + HH/HL               | bull: A + HH/HL + break | bull: every flag        |
+  2022 | bull: A + HH/HL + break | bull: A + HH/HL         | A + HH/HL               | bull: A + HH/HL + break | bull: every flag        |
+  2023 | bull: A + HH/HL + break | bull: A + HH/HL         | A + HH/HL               | bull: A + HH/HL + break | bull: every flag        |
+  2024 | bull: A + HH/HL + break | bull: A + HH/HL + break | A + HH/HL               | bull: A + HH/HL + break | bull: every flag        |
+  2025 | bull: A + HH/HL + break | bull: A + HH/HL + break | bull: A + HH/HL         | bull: A + HH/HL + break | bull: every flag        |
+  2026 | bull: A + HH/HL + break | bull: A + HH/HL + break | bull: A + HH/HL         | bull: A + HH/HL + break | A-list                  |
+
+  2017-2026, out of sample:
+  walk-forward best filter per pole size           403 trades ( 41.1 a year) +0.190R win 33.3% PF 1.26 · years > 0 8 of 10
+  today's rule: pole >= 4×, A + HH/HL + break     300 trades ( 30.6 a year) +0.253R win 28.7% PF 1.32 · years > 0 9 of 10
+  pole >= 4×, A + HH/HL                           371 trades ( 37.9 a year) +0.226R win 28.0% PF 1.29 · years > 0 8 of 10
+  pole 4-7×, A + HH/HL + break                    283 trades ( 28.9 a year) +0.276R win 29.3% PF 1.36 · years > 0 10 of 10
+  in-sample pick (hindsight, not tradable)         349 trades ( 35.6 a year) +0.303R win 34.7% PF 1.42 · years > 0 9 of 10
+    in-sample picks: bull: A + HH/HL + break bull: A + HH/HL + break bull: A + HH/HL bull: A + HH/HL + break A-list

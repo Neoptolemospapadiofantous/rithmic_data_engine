@@ -1,0 +1,42 @@
+Honest checks — ES, NY bull 3-5m flag-mid (E2 · S2), score walk-forward 2014-26, fixed cost 0.5 pts.
+
+  real score: top third +0.282R (829) vs the rest +0.131R (1615) — gap +0.152R; before 12:00 only: +0.296 vs +0.187 — gap +0.109R
+  A1 permutation (200 shuffles of R within each year, weights relearned): shuffled gaps median +0.001, 95th pct +0.131, max +0.219 · runs >= the real gap: 10 / 200 (p ≈ 0.055)
+  A2 (in-sample 2010-2025 weights — NOT an independent test) NQ's weights on ES: top third +0.296R (903) vs the rest +0.116R — gap +0.180; before 12:00: +0.345 (678) vs +0.170
+  ONE POSITION across charts (headline): 456 trades (0.7 a week) · +0.212R · win 35% · PF 1.29 · same-day twin +0.161R → flag minus twin +0.051R
+  every chart counted (old headline): 799 trades (1.2 a week) · +0.296R · win 37% · PF 1.42 · same-day twin +0.157R → flag minus twin +0.139R
+
+  H1 extra cost a round trip (one position across charts, 2014-26):
+    all bull flag-mid, +0.00 pts                  1074 trades · +0.159R · win 34% · PF 1.22
+    A grade, +0.00 pts                             456 trades · +0.212R · win 35% · PF 1.29
+    all bull flag-mid, +0.25 pts                  1074 trades · +0.090R · win 33% · PF 1.12
+    A grade, +0.25 pts                             456 trades · +0.143R · win 35% · PF 1.18
+    all bull flag-mid, +0.50 pts                  1074 trades · +0.021R · win 33% · PF 1.03
+    A grade, +0.50 pts                             456 trades · +0.075R · win 35% · PF 1.09
+    all bull flag-mid, +0.75 pts                  1074 trades · -0.047R · win 33% · PF 0.95
+    A grade, +0.75 pts                             456 trades · +0.006R · win 35% · PF 1.01
+
+  H2 exits on A-grade trades (one position):
+    2014-26 measured move (now)                    456 trades · +0.212R · win 35% · PF 1.29
+    2014-26 break-even after +2R                   456 trades · +0.173R · win 31% · PF 1.26
+    2014-26 lock +1R once at +2R                   456 trades · +0.128R · win 42% · PF 1.20
+    2014-19 measured move (now)                    220 trades · +0.200R · win 34% · PF 1.26
+    2014-19 break-even after +2R                   220 trades · +0.145R · win 29% · PF 1.21
+    2014-19 lock +1R once at +2R                   220 trades · +0.127R · win 44% · PF 1.19
+    2020-26 measured move (now)                    236 trades · +0.224R · win 36% · PF 1.33
+    2020-26 break-even after +2R                   236 trades · +0.200R · win 33% · PF 1.31
+    2020-26 lock +1R once at +2R                   236 trades · +0.129R · win 41% · PF 1.20
+
+  H3 size by score — A-grade trades above vs below the median score (one position):
+    2014-26 score >= median (1.81)                 228 trades · +0.339R · win 36% · PF 1.46
+    2014-26 score < median                         228 trades · +0.085R · win 34% · PF 1.12
+    2014-19 score >= median (1.81)                 147 trades · +0.296R · win 35% · PF 1.38
+    2014-19 score < median                          73 trades · +0.005R · win 33% · PF 1.01
+    2020-26 score >= median (1.81)                  81 trades · +0.417R · win 37% · PF 1.61
+    2020-26 score < median                         155 trades · +0.123R · win 35% · PF 1.18
+
+  H4 contract rolls — without expiry Thursday and the first session after expiry (136 days):
+    all bull flag-mid, roll days removed          1025 trades · +0.152R · win 34% · PF 1.21
+    all bull flag-mid, ONLY roll days               49 trades · +0.301R · win 31% · PF 1.40
+    A grade, roll days removed                     430 trades · +0.224R · win 35% · PF 1.31
+    A grade, ONLY roll days                         26 trades · +0.012R · win 31% · PF 1.01

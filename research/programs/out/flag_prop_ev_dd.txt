@@ -1,0 +1,30 @@
+
+######## BOOK2, 2 micros each market, daily stop none
+  total $177050 over 2581 sessions = $1441 a month · worst drawdown END OF DAY $12984 · INTRADAY (at the worst open point) $13016
+  worst day $-1818 · worst month $-7660 · losing months 60 of 147 · longest below a high 264 sessions (20160525 → 20170817)
+  worst drawdown reached in each year (from the running high): 2014 $4642 · 2015 $7343 · 2016 $11244 · 2017 $9250 · 2018 $6569 · 2019 $7161 · 2020 $6010 · 2021 $5816 · 2022 $4220 · 2023 $7149 · 2024 $11794 · 2025 $12984 · 2026 $9104 · 
+
+######## BOOK2, 2 micros each market, daily stop $150
+  total $298578 over 2581 sessions = $2429 a month · worst drawdown END OF DAY $5277 · INTRADAY (at the worst open point) $5465
+  worst day $-150 · worst month $-2400 · losing months 32 of 147 · longest below a high 108 sessions (20240109 → 20240711)
+  worst drawdown reached in each year (from the running high): 2014 $1955 · 2015 $3118 · 2016 $2605 · 2017 $2100 · 2018 $2100 · 2019 $2554 · 2020 $2456 · 2021 $2640 · 2022 $2340 · 2023 $2066 · 2024 $3573 · 2025 $3463 · 2026 $5277 · 
+
+######## BOOK2, 2 micros each market, daily stop $200
+  total $316502 over 2581 sessions = $2575 a month · worst drawdown END OF DAY $5283 · INTRADAY (at the worst open point) $5371
+  worst day $-200 · worst month $-2160 · losing months 33 of 147 · longest below a high 156 sessions (20231016 → 20240711)
+  worst drawdown reached in each year (from the running high): 2014 $2581 · 2015 $3100 · 2016 $3720 · 2017 $3045 · 2018 $2753 · 2019 $2477 · 2020 $1882 · 2021 $3219 · 2022 $2756 · 2023 $2796 · 2024 $5283 · 2025 $2600 · 2026 $2872 · 
+
+######## BOOK2, 1 micro each market, daily stop none
+  total $88525 over 2581 sessions = $720 a month · worst drawdown END OF DAY $6492 · INTRADAY (at the worst open point) $6508
+  worst day $-909 · worst month $-3830 · losing months 60 of 147 · longest below a high 264 sessions (20160525 → 20170817)
+  worst drawdown reached in each year (from the running high): 2014 $2321 · 2015 $3672 · 2016 $5622 · 2017 $4625 · 2018 $3284 · 2019 $3581 · 2020 $3005 · 2021 $2908 · 2022 $2110 · 2023 $3574 · 2024 $5897 · 2025 $6492 · 2026 $4552 · 
+
+######## BOOK2, 1 micro each market, daily stop $150
+  total $137474 over 2581 sessions = $1119 a month · worst drawdown END OF DAY $3285 · INTRADAY (at the worst open point) $3309
+  worst day $-150 · worst month $-1668 · losing months 44 of 147 · longest below a high 158 sessions (20140820 → 20150527)
+  worst drawdown reached in each year (from the running high): 2014 $1870 · 2015 $2837 · 2016 $3285 · 2017 $1280 · 2018 $1713 · 2019 $1682 · 2020 $1112 · 2021 $1745 · 2022 $1850 · 2023 $2581 · 2024 $2846 · 2025 $2072 · 2026 $2806 · 
+
+######## BOOK2, 1 micro each market, daily stop $200
+  total $118183 over 2581 sessions = $962 a month · worst drawdown END OF DAY $4899 · INTRADAY (at the worst open point) $4943
+  worst day $-200 · worst month $-2270 · losing months 54 of 147 · longest below a high 184 sessions (20230830 → 20240717)
+  worst drawdown reached in each year (from the running high): 2014 $1781 · 2015 $3294 · 2016 $4106 · 2017 $2333 · 2018 $2340 · 2019 $2026 · 2020 $1390 · 2021 $2115 · 2022 $2295 · 2023 $4051 · 2024 $4899 · 2025 $3059 · 2026 $3655 · 

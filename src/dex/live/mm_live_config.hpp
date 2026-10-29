@@ -72,7 +72,9 @@ inline MmLiveConfig build_mm_live_config(const GatewayConfig& gw) {
             std::map<std::string, K> ks = {
                 {"half_width_ticks", {&c.strategy.half_width_ticks, nullptr, 0.5, 50}}, {"min_spread_ticks", {&c.strategy.min_spread_ticks, nullptr, 0, 50}},
                 {"imb_pull", {&c.strategy.imb_pull, nullptr, 0, 1}}, {"pause_move_ticks", {&c.strategy.pause_move_ticks, nullptr, 0, 10}},
-                {"requote_ticks", {&c.strategy.requote_ticks, nullptr, 0, 10}}, {"pause_ms", {nullptr, &c.strategy.pause_ms, 0, 60'000}}};
+                {"requote_ticks", {&c.strategy.requote_ticks, nullptr, 0, 10}}, {"pause_ms", {nullptr, &c.strategy.pause_ms, 0, 60'000}},
+                {"bn_pull_w_ms", {nullptr, &c.strategy.bn_pull_w_ms, 100, 10'000}}, {"bn_pull_x_bps", {&c.strategy.bn_pull_x_bps, nullptr, 0.5, 100}},
+                {"bn_pull_hold_ms", {nullptr, &c.strategy.bn_pull_hold_ms, 0, 60'000}}};
             for (auto& [k, v] : st.items()) {
                 auto it = ks.find(k);
                 if (it == ks.end()) throw ConfigError("unknown engine.strategy key '" + k + "'");
@@ -90,6 +92,8 @@ inline MmLiveConfig build_mm_live_config(const GatewayConfig& gw) {
     } catch (const RangeError& x) {
         throw ConfigError(std::string("engine.market_spec: ") + x.what());
     }
+    if ((c.strategy.bn_pull_w_ms > 0) != (c.strategy.bn_pull_x_bps > 0))
+        throw ConfigError("engine.strategy.bn_pull_w_ms and bn_pull_x_bps go together (both set = Binance-lead pull on)");
     if (c.hl_sz_decimals < 0 || c.hl_sz_decimals > 6) throw ConfigError("engine.hl_sz_decimals must be 0..6");
     if (c.deadman_window_ms < 305'000 || c.deadman_window_ms > 3'600'000)
         throw ConfigError("engine.deadman_window_s must be 305..3600 (Lighter's scheduled cancel-all minimum is 5 min)");

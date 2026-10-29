@@ -1,0 +1,19 @@
+The A+ setup (preregistered/2026-10-22_flag_quality.md, Part 2): bull rule + yesterday above the 200-day average + clean bars + no FOMC. Walk-forward 2017-2026.
+
+######## BULL rule → A+ (judged)
+  NQ walk-forward:    76 trades ( 7.6/yr) +0.738R PF 2.25 · rule   187 (18.7/yr) +0.477R PF 1.75 · difference +0.261R (2017-21 +0.457 / 2022-26 -0.086) · A+ used 9/10 years
+     A+ every year (no walk-forward decision):    65 trades ( 6.5/yr) +0.842R PF 2.49 · by year: 17 +2.71(6) 18 +0.42(8) 19 +2.27(5) 20 +1.43(6) 21 +0.49(11) 22 +0.00(0) 23 -0.38(6) 24 +1.12(13) 25 -0.51(8) 26 +0.77(2)
+  ES walk-forward:   175 trades (17.5/yr) +0.380R PF 1.56 · rule   195 (19.5/yr) +0.410R PF 1.60 · difference -0.029R (2017-21 -0.033 / 2022-26 +0.000) · A+ used 2/10 years
+     A+ every year (no walk-forward decision):    87 trades ( 8.7/yr) +0.416R PF 1.57 · by year: 17 +0.29(9) 18 -0.16(9) 19 +1.21(12) 20 +0.36(8) 21 +0.19(18) 22 +0.93(2) 23 +0.59(12) 24 -0.06(8) 25 +1.26(5) 26 -0.18(4)
+
+######## BEAR rule → its mirror (reported, not judged)
+  NQ walk-forward:   111 trades (11.1/yr) +0.401R PF 1.51 · rule   175 (17.5/yr) +0.384R PF 1.51 · difference +0.017R (2017-21 +0.000 / 2022-26 +0.102) · A+ used 4/10 years
+     A+ every year (no walk-forward decision):    14 trades ( 1.4/yr) +1.059R PF 3.04 · by year: 17 +0.00(0) 18 +0.00(0) 19 +0.00(0) 20 +0.00(0) 21 +0.00(0) 22 +1.11(13) 23 +0.00(0) 24 +0.00(0) 25 +0.34(1) 26 +0.00(0)
+  ES walk-forward:   104 trades (10.4/yr) +0.167R PF 1.19 · rule   160 (16.0/yr) +0.168R PF 1.20 · difference -0.001R (2017-21 +0.000 / 2022-26 +0.317) · A+ used 4/10 years
+     A+ every year (no walk-forward decision):    17 trades ( 1.7/yr) +0.712R PF 1.99 · by year: 17 +0.00(0) 18 +0.00(0) 19 -1.09(2) 20 -1.07(2) 21 +0.00(0) 22 +1.42(12) 23 +0.00(0) 24 +0.00(0) 25 +0.00(0) 26 -0.56(1)
+
+######## FRESH bull A-list 1-2m flags, 2015-2026: A+ conditions vs the rest
+  NQ A+ +0.151R ( 229, PF 1.19) vs rest +0.232R ( 345) → -0.080R
+  ES A+ +0.217R ( 207, PF 1.28) vs rest +0.065R ( 309) → +0.152R
+
+PASS (A+): (1) >= +0.10R and higher PF, both markets: no · (2) both halves better, both: no · (3) >= 5 a year, both: yes · (4) fresh 1-2m >= +0.05R, both: no → A+ does not pass

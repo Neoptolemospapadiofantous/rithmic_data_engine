@@ -1,0 +1,9 @@
+# mm-live-watch.service — alerts (grid-notify) when the live Lighter market maker stops writing its status file.
+# Install: cp deploy/mm-live-watch.{service,timer} ~/.config/systemd/user/ && systemctl --user daemon-reload
+#          systemctl --user enable --now mm-live-watch.timer
+[Unit]
+Description=Live Lighter market maker watch (status file age → grid-notify)
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/mm_live_watch.sh

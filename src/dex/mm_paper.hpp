@@ -45,6 +45,8 @@
 #include <string>
 #include <vector>
 
+#include "dex/bn_pull.hpp"
+
 namespace mmpaper {
 
 struct Config {
@@ -60,6 +62,7 @@ struct Config {
     int     rate_per_min = 0;       // > 0: ONE request limiter shared by every market (the account's limit; Lighter
                                     // Standard 60/min, ≤ 15 tx per request — hl::RequestGate, the judge's own). 0 = none
     int64_t batch_linger_ms = 0;    // research: a new request waits this long for more transactions (0 = as live)
+    bnpull::Params bn;              // on(): the Binance-lead pull (src/dex/bn_pull.hpp, label paper_bn) — the live rule
 };
 
 // The frozen setting (mm_robust.cpp candidate, Lighter Standard): width 5, spread ≥ 4 ticks, imbalance
@@ -415,6 +418,7 @@ public:
             ov.fair_off = anchors_[m].step(b.t_ms, b.mid(), true, c_.hl_k);
             k.sim->set_overlay(ov);
         }
+        if (c_.bn.on()) apply_bn(m, k, b.t_ms, false);   // pulls decided at the book's exchange time, before its requote
         k.sim->on_book(b);
         k.last_book_recv_ms = recv_ms >= 0 ? recv_ms : b.t_ms;
         drain(m, k);
@@ -430,6 +434,7 @@ public:
             const double off = anchors_[m].step(t.t_ms, k.sim->last_book().mid(), false, c_.hl_k);
             if (off != ov.fair_off) { ov.fair_off = off; k.sim->set_overlay(ov); k.sim->requote_now(t.t_ms); }
         }
+        if (c_.bn.on() && k.sim->has_book()) apply_bn(m, k, t.t_ms, true);
         drain(m, k);
         recheck_flat(m, k, t.t_ms);
         if (applied_fn_) applied_fn_(m, t.t_ms);
@@ -450,6 +455,12 @@ public:
     void push_hl(const std::string& m, int64_t recv_ms, double hl_mid) {
         if (c_.hl_k > 0) anchors_[m].push(recv_ms, hl_mid);   // kept apart from the markets: an HL book never creates a venue market
     }
+    // A Binance bookTicker mid for market m at its receive time — the paper_bn pull's input (ignored unless Config::bn
+    // is on). Samples stamped after a venue event's exchange time are not used for it (bnpull::Lead::at).
+    void push_bn(const std::string& m, int64_t recv_ms, double mid) {
+        if (c_.bn.on()) bn_.try_emplace(m, c_.bn).first->second.on_price(recv_ms, mid);
+    }
+    const bnpull::Lead* bn_lead(const std::string& m) const { auto it = bn_.find(m); return it == bn_.end() ? nullptr : &it->second; }
     const HlAnchor* anchor(const std::string& m) const { auto it = anchors_.find(m); return it == anchors_.end() ? nullptr : &it->second; }
     std::vector<std::string> markets() const { std::vector<std::string> v; for (const auto& [m, k] : mkts_) v.push_back(m); return v; }
     const hl::Params& params(const std::string& m) const { return params_for(m); }
@@ -672,6 +683,15 @@ private:
     std::shared_ptr<hl::RequestGate> gate_;    // one per account: every market's creates and cancels share it
     void wire_gate(hl::Simulator& sim) {
         if (gate_) sim.set_send_gate([g = gate_](int64_t now) { return (*g)(now); });
+    }
+    std::map<std::string, bnpull::Lead> bn_;    // paper_bn (Config::bn on): per market, market data only
+    void apply_bn(const std::string& m, Mkt& k, int64_t t, bool requote) {
+        const bnpull::Lead::Out o = bn_.try_emplace(m, c_.bn).first->second.at(t);
+        hl::Simulator::Overlay ov = k.sim->overlay();
+        if (ov.pull_bid == o.bid && ov.pull_ask == o.ask) return;
+        ov.pull_bid = o.bid; ov.pull_ask = o.ask;
+        k.sim->set_overlay(ov);
+        if (requote) k.sim->requote_now(t);
     }
     std::map<std::string, HlAnchor> anchors_;   // paper_hl (Config::hl_k > 0): per market, market data only — survives every day roll
     std::string day_;

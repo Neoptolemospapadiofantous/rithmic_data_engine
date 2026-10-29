@@ -1,0 +1,21 @@
+Cutting the drawdown — BOOK2, 2 micros each market, daily stop $150. Continuous account 2014-01 → 2026-10 at today's ATR, and the account EV.
+  base (daily stop $150 only)  worst DD $ 5277 (2014-19 $ 3118 / 2020-26 $ 5277) · $ 2429 a month · traded on 1997 days · EV per eval: flex $ 3428 · daily $ 4577 · apex $ 2681
+  WEEK300                      worst DD $ 4460 (2014-19 $ 3023 / 2020-26 $ 4460) · $ 2000 a month · traded on 1583 days · EV per eval: flex $ 2232 · daily $ 3116 · apex $ 2537
+  WEEK500                      worst DD $ 4827 (2014-19 $ 3118 / 2020-26 $ 4827) · $ 2419 a month · traded on 1962 days · EV per eval: flex $ 3390 · daily $ 4489 · apex $ 2640
+  EQ10                         worst DD $ 4398 (2014-19 $ 2334 / 2020-26 $ 4398) · $ 1552 a month · traded on 1216 days · EV per eval: flex $  922 · daily $ 1347 · apex $ 1092
+  EQ20                         worst DD $ 7332 (2014-19 $ 3295 / 2020-26 $ 7332) · $ 1849 a month · traded on 1500 days · EV per eval: flex $ 1753 · daily $ 2422 · apex $ 1800
+  STREAK3                      worst DD $ 5798 (2014-19 $ 2957 / 2020-26 $ 5798) · $ 1489 a month · traded on 1176 days · EV per eval: flex $ 1015 · daily $ 1457 · apex $ 1345
+
+  Bigger accounts, base book (daily stop $150 at 2 micros, scaled at 3), $ per eval bought · pass % · buy → 1st payout median days:
+    select_flex_50k    2 micros (stop $150): $ 3428 · pass  54% ·  60 days
+    select_flex_50k    3 micros (stop $225): $ 3182 · pass  49% ·  56 days
+    select_flex_100k   2 micros (stop $150): $ 3793 · pass  50% ·  68 days
+    select_flex_100k   3 micros (stop $225): $ 4861 · pass  53% ·  61 days
+    select_flex_150k   2 micros (stop $150): $ 2552 · pass  33% ·  72 days
+    select_flex_150k   3 micros (stop $225): $ 5497 · pass  50% ·  66 days
+    select_daily_50k   2 micros (stop $150): $ 4577 · pass  54% ·  52 days
+    select_daily_50k   3 micros (stop $225): $ 4478 · pass  49% ·  46 days
+    select_daily_100k  2 micros (stop $150): $ 4577 · pass  50% ·  61 days
+    select_daily_100k  3 micros (stop $225): $ 5476 · pass  51% ·  48 days
+    select_daily_150k  2 micros (stop $150): $ 2776 · pass  33% ·  76 days
+    select_daily_150k  3 micros (stop $225): $ 6931 · pass  50% ·  60 days

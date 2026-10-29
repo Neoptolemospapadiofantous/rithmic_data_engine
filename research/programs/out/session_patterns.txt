@@ -1,0 +1,34 @@
+SESSION PATTERNS — NQ 2010-07 … 2026-10-16, $ per MNQ a trade at today's ATR (307), cost 1.5 pts + $1.82
+
+ASIA 18:00-02:00  (2445 sessions; average range 42% of the RTH ATR)
+  R  range model R² 0.178 (baseline -0.015) · trend model AUC 0.505 · the first hour holds to the end on 50% of sessions
+  P1 first hour, go with it                                   2445 (153/yr) · $  -10 a trade · win 49% · PF 0.84 ·  6/16 years > 0 · 2010-17 $  -17 (699) · 2018-26 $   -7 (1746)
+  P2 straight first hour (>= 55 % and >= 0.25 avg range)       486 ( 30/yr) · $  -11 a trade · win 50% · PF 0.84 ·  4/16 years > 0 · 2010-17 $  -45 (137) · 2018-26 $   +3 (349)
+  P3 follow the previous session                              2445 (153/yr) · $   -4 a trade · win 47% · PF 0.93 ·  5/16 years > 0 · 2010-17 $   +0 (699) · 2018-26 $   -6 (1746)
+  P4 fade the previous session                                2445 (153/yr) · $   -5 a trade · win 49% · PF 0.92 ·  8/16 years > 0 · 2010-17 $  -10 (699) · 2018-26 $   -4 (1746)
+  P5 follow a big straight previous session                    402 ( 25/yr) · $   -7 a trade · win 47% · PF 0.91 ·  7/16 years > 0 · 2010-17 $   +1 (120) · 2018-26 $  -10 (282)
+  P5' fade a big straight previous session                     402 ( 25/yr) · $   -3 a trade · win 50% · PF 0.96 ·  7/16 years > 0 · 2010-17 $  -10 (120) · 2018-26 $   +0 (282)
+  P1 2014-26 (the models' years, for comparison)              2268 (174/yr) · $  -10 a trade · win 49% · PF 0.84 ·  6/13 years > 0 · 2010-17 $  -17 (522) · 2018-26 $   -7 (1746)
+  P6 first hour on the trend model's top third (2014-26)       671 ( 52/yr) · $   -6 a trade · win 49% · PF 0.88 ·  7/13 years > 0 · 2010-17 $  -15 (116) · 2018-26 $   -4 (555)
+
+LONDON 02:00-09:30  (2601 sessions; average range 57% of the RTH ATR)
+  R  range model R² 0.198 (baseline -0.008) · trend model AUC 0.526 · the first hour holds to the end on 49% of sessions
+  P1 first hour, go with it                                   2601 (163/yr) · $  -13 a trade · win 48% · PF 0.85 ·  4/16 years > 0 · 2010-17 $  -11 (851) · 2018-26 $  -15 (1750)
+  P2 straight first hour (>= 55 % and >= 0.25 avg range)       374 ( 23/yr) · $  -19 a trade · win 49% · PF 0.81 ·  7/16 years > 0 · 2010-17 $   -7 (107) · 2018-26 $  -24 (267)
+  P3 follow the previous session                              2601 (163/yr) · $  -11 a trade · win 48% · PF 0.88 ·  4/16 years > 0 · 2010-17 $  -18 (851) · 2018-26 $   -7 (1750)
+  P4 fade the previous session                                2601 (163/yr) · $   +1 a trade · win 50% · PF 1.01 ·  7/16 years > 0 · 2010-17 $   +8 (851) · 2018-26 $   -2 (1750)
+  P5 follow a big straight previous session                    351 ( 22/yr) · $  -12 a trade · win 49% · PF 0.88 ·  6/16 years > 0 · 2010-17 $  -36 (99) · 2018-26 $   -2 (252)
+  P5' fade a big straight previous session                     351 ( 22/yr) · $   +2 a trade · win 50% · PF 1.02 · 10/16 years > 0 · 2010-17 $  +27 (99) · 2018-26 $   -7 (252)
+  P1 2014-26 (the models' years, for comparison)              2339 (180/yr) · $  -12 a trade · win 48% · PF 0.86 ·  3/13 years > 0 · 2010-17 $   -6 (589) · 2018-26 $  -15 (1750)
+  P6 first hour on the trend model's top third (2014-26)       771 ( 59/yr) · $   -3 a trade · win 52% · PF 0.97 ·  6/13 years > 0 · 2010-17 $   +9 (203) · 2018-26 $   -7 (568)
+
+NY 09:30-16:00  (2637 sessions; average range 104% of the RTH ATR)
+  R  range model R² 0.179 (baseline -0.003) · trend model AUC 0.534 · the first hour holds to the end on 53% of sessions
+  P1 first hour, go with it                                   2637 (155/yr) · $  +16 a trade · win 53% · PF 1.13 · 12/17 years > 0 · 2010-17 $  +10 (886) · 2018-26 $  +18 (1751)
+  P2 straight first hour (>= 55 % and >= 0.25 avg range)       996 ( 59/yr) · $  +32 a trade · win 57% · PF 1.27 · 12/17 years > 0 · 2010-17 $  +36 (318) · 2018-26 $  +31 (678)
+  P3 follow the previous session                              2637 (155/yr) · $   -5 a trade · win 50% · PF 0.97 ·  7/17 years > 0 · 2010-17 $  -16 (886) · 2018-26 $   +0 (1751)
+  P4 fade the previous session                                2637 (155/yr) · $   -4 a trade · win 49% · PF 0.97 ·  9/17 years > 0 · 2010-17 $   +7 (886) · 2018-26 $  -10 (1751)
+  P5 follow a big straight previous session                    382 ( 24/yr) · $   +1 a trade · win 50% · PF 1.01 ·  9/16 years > 0 · 2010-17 $  +17 (138) · 2018-26 $   -8 (244)
+  P5' fade a big straight previous session                     382 ( 24/yr) · $  -11 a trade · win 50% · PF 0.94 ·  7/16 years > 0 · 2010-17 $  -27 (138) · 2018-26 $   -2 (244)
+  P1 2014-26 (the models' years, for comparison)              2352 (181/yr) · $  +15 a trade · win 53% · PF 1.12 ·  9/13 years > 0 · 2010-17 $   +5 (601) · 2018-26 $  +18 (1751)
+  P6 first hour on the trend model's top third (2014-26)       836 ( 64/yr) · $  +25 a trade · win 57% · PF 1.21 ·  9/13 years > 0 · 2010-17 $  +31 (175) · 2018-26 $  +23 (661)

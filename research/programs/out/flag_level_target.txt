@@ -1,0 +1,23 @@
+Targeting session highs and lows — NQ 2014-01 → 2026-10. Entry flag-mid limit, stop flag low − 0.1 ATR, flat 15:55, cost 1.5 pts. Levels: overnight, Asia, London, yesterday, last week, last month.
+
+######## RULE B — bull flag, A-list, 5m HH/HL, range broken up
+    target                         | 2014-17 | 2018-21 | 2022-24 | 2025-26 | all: trades, R, win %, PF, avg hold min
+    MM measured move (today)       |  +0.67 ( 61) |  +0.42 ( 78) |  +0.51 ( 63) |  +0.23 ( 29) |  231 tr +0.486R win 40.7% PF 1.75 · 151 min · mean |R − export| 0.000
+    L.5 nearest level >= 0.5R      |  +0.72 ( 61) |  +0.36 ( 78) |  +0.59 ( 63) |  +0.06 ( 29) |  231 tr +0.481R win 44.2% PF 1.78 · 128 min · a level >= 0.5R existed on 67%
+    L1 nearest level >= 1R         |  +0.75 ( 61) |  +0.37 ( 78) |  +0.59 ( 63) |  +0.17 ( 29) |  231 tr +0.504R win 42.4% PF 1.80 · 139 min
+    NEAR closer of MM / level      |  +0.68 ( 61) |  +0.41 ( 78) |  +0.40 ( 63) |  +0.10 ( 29) |  231 tr +0.440R win 44.2% PF 1.72 · 124 min
+    FAR farther of MM / level      |  +0.71 ( 61) |  +0.37 ( 78) |  +0.70 ( 63) |  +0.19 ( 29) |  231 tr +0.528R win 40.7% PF 1.81 · 155 min
+    BEYOND first level past MM     |  +0.52 ( 61) |  +0.40 ( 78) |  +0.76 ( 63) |  +0.15 ( 29) |  231 tr +0.500R win 39.8% PF 1.75 · 162 min
+    HOLD to 15:55                  |  +0.51 ( 61) |  +0.40 ( 78) |  +0.76 ( 63) |  +0.15 ( 29) |  231 tr +0.496R win 39.8% PF 1.75 · 164 min
+    SPLIT half level, half MM      |  +0.69 ( 61) |  +0.39 ( 78) |  +0.55 ( 63) |  +0.15 ( 29) |  231 tr +0.484R win 42.0% PF 1.78 · 155 min
+
+######## RULE 2 — both sides
+    target                         | 2014-17 | 2018-21 | 2022-24 | 2025-26 | all: trades, R, win %, PF, avg hold min
+    MM measured move (today)       |  +0.31 (132) |  +0.46 (139) |  +0.49 (131) |  +0.22 ( 54) |  456 tr +0.396R win 34.6% PF 1.55 · 129 min · mean |R − export| 0.000
+    L.5 nearest level >= 0.5R      |  +0.20 (132) |  +0.40 (139) |  +0.40 (131) |  -0.06 ( 54) |  456 tr +0.287R win 39.0% PF 1.43 · 105 min · a level >= 0.5R existed on 80%
+    L1 nearest level >= 1R         |  +0.21 (132) |  +0.40 (139) |  +0.48 (131) |  -0.01 ( 54) |  456 tr +0.320R win 36.8% PF 1.46 · 113 min
+    NEAR closer of MM / level      |  +0.23 (132) |  +0.46 (139) |  +0.34 (131) |  +0.06 ( 54) |  456 tr +0.313R win 39.5% PF 1.47 ·  99 min
+    FAR farther of MM / level      |  +0.27 (132) |  +0.40 (139) |  +0.56 (131) |  +0.10 ( 54) |  456 tr +0.371R win 34.2% PF 1.51 · 135 min
+    BEYOND first level past MM     |  +0.12 (132) |  +0.43 (139) |  +0.62 (131) |  +0.08 ( 54) |  456 tr +0.352R win 33.6% PF 1.48 · 143 min
+    HOLD to 15:55                  |  +0.11 (132) |  +0.44 (139) |  +0.62 (131) |  +0.08 ( 54) |  456 tr +0.353R win 33.6% PF 1.48 · 145 min
+    SPLIT half level, half MM      |  +0.25 (132) |  +0.43 (139) |  +0.45 (131) |  +0.08 ( 54) |  456 tr +0.342R win 36.8% PF 1.51 · 135 min

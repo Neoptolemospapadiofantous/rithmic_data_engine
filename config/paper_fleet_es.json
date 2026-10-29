@@ -1963,7 +1963,7 @@
     "drive_late_last_min_atr": 0.0
    }
   },
-    {
+  {
    "id": "es_cascade_2r_gapagree",
    "engine": "trend",
    "enabled": true,
@@ -1998,6 +1998,92 @@
     "drive_late_last_min_atr": 0.0,
     "drive_gap_agree": 0.1
    }
+  },
+  {
+   "id": "es_gap_or_retest",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "_comment": "2026-10-17 FORWARD TEST of edge_lab gap_or_retest (pre-registered research/preregistered/2026-10-17_direction_sources.md: PASS +9.03 pts/trade 2010-24, holdout 2025+ +7.15 on 135 trades). Gap \u2265 0.1 ATR sets the side; first 5-min bar from 09:45 touching the 15-min opening-range edge and closing beyond it. Paper only. Pass/kill rule: config/working_fleet.json.",
+    "mode": "gap_or_retest",
+    "gr_gap_min_atr": 0.1,
+    "win_start": 930,
+    "win_end": 1555,
+    "session_open_hour": 9,
+    "session_open_min": 30,
+    "tf_min": 5,
+    "sl_points": 144.0,
+    "trail_step": 7200.0,
+    "trail_be_trigger": 7200.0,
+    "trail_delay_secs": 0,
+    "max_daily_trades": 1,
+    "lf_stop_atr": 0.35,
+    "tp_r": 2.0,
+    "eod_flatten_hour": 15,
+    "eod_flatten_min": 55,
+    "last_entry_hour": 24,
+    "family": "gap_direction"
+   },
+   "_comment": "2026-10-28 ES mirror of gap_or_retest (edge_lab es_gap_or_retest PASS +1.45 ES pts/trade, PF 1.24, holdout 2025+ PF 1.23); ATR-relative knobs unchanged, sl_points placeholder x 0.144"
+  },
+  {
+   "id": "es_monday_long",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "mode": "hold",
+    "tf_min": 1,
+    "hold_entry_hhmm": 930,
+    "win_start": 930,
+    "win_end": 1555,
+    "session_open_hour": 9,
+    "session_open_min": 30,
+    "eod_flatten_hour": 15,
+    "eod_flatten_min": 55,
+    "sl_points": 144.0,
+    "trail_step": 7200.0,
+    "trail_be_trigger": 7200.0,
+    "trail_delay_secs": 0,
+    "max_daily_trades": 1,
+    "last_entry_hour": 24,
+    "hold_dow": 1
+   },
+   "_comment": "2026-10-28 ES mirror of monday_long (NQ edge_lab PASS +9.4, holdout PF 2.49; the NQ spec's confirm-on-ES robustness check passed) \u2014 candidate, judged by the working-fleet rule"
+  },
+  {
+   "id": "es_mom1000_k15",
+   "engine": "trend",
+   "enabled": true,
+   "params": {
+    "tf_min": 1,
+    "session_open_hour": 9,
+    "session_open_min": 30,
+    "eod_flatten_hour": 15,
+    "eod_flatten_min": 55,
+    "win_start": 930,
+    "win_end": 1555,
+    "last_entry_hour": 24,
+    "trail_step": 7200.0,
+    "trail_be_trigger": 7200.0,
+    "trail_delay_secs": 0,
+    "sl_points": 144.0,
+    "max_daily_trades": 1,
+    "mode": "opening_drive",
+    "drive_minutes": 30,
+    "drive_min_atr": 0.15,
+    "drive_day_atr": true,
+    "drive_market": true,
+    "drive_entry_from": 1000,
+    "drive_entry_to": 1005,
+    "drive_stop_atr": 0.25,
+    "tp_r": 0.0,
+    "drive_late_count": 0,
+    "drive_late_minutes": 60,
+    "drive_late_step": 30,
+    "drive_late_min_atr": 0.3,
+    "drive_late_last_min_atr": 0.3
+   },
+   "_comment": "2026-10-28 ES mirror of mom1000_k15 (10:00 momentum, nf_xm_rs_ctl) \u2014 candidate"
   }
  ]
 }

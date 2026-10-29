@@ -1,0 +1,35 @@
+{
+ "id": "nf_macro_y10_rehedge",
+ "name": "10-year yield shock yesterday, cash session already against it at 10:30 \u2192 follow",
+ "why": "Vol-target / risk-parity books de-risk the day after a rates shock; the flow is visible by 10:30. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "b": [
+   7,
+   10
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "rr": [
+   0,
+   2
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:30",
+   "when": "abs(y10c) >= b && sign(px-open) == -sign(y10c)",
+   "dir": "-sign(y10c)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr"
+}

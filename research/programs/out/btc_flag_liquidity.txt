@@ -1,0 +1,8 @@
+BOOK2 trades NQ+ES 2014-2026: 1242  mean R 0.122 (2014-19 0.228 / 2020-26 0.066)
+
+LQ1 stopped trades 833 (67% of trades); target reached later the same session: 7.3%
+    sweep-reclaim re-entries 300 (36% of stops): mean R -0.127 win 28.7% | 2014-19 -0.233  2020-26 -0.071 | random re-entry twin 0.071 p 1.000 -> fail
+    added R if every re-entry is taken: -38.2 on top of base 152.1
+
+LQ2 flag swept an earlier flag low n   768 (62%)  mean R 0.057 vs rest 0.229 | 2014-19 diff -0.172  2020-26 diff -0.166 | 90% low -0.450 -> fail
+LQ3 flag swept prior-day/overnight n    11 (1%)  mean R -0.151 vs rest 0.125 | 2014-19 diff -0.015  2020-26 diff -0.301 | 90% low -1.053 -> fail

@@ -1,0 +1,32 @@
+{
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "params": {
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "rr": [
+   0,
+   2
+  ]
+ },
+ "max_trades": 3,
+ "stop": "stopk*atr",
+ "target": "rr",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "id": "nf_ema9vwap_ldn",
+ "name": "EMA 9 crosses the session VWAP, 5m, 05:00-09:00 ET (11-15 Cyprus), flat at the window end",
+ "why": "Founder's TradingView script: VWAP x EMA 9 cross, each cross reverses. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "scan": {
+  "tf": 5,
+  "from": "05:00",
+  "to": "09:00",
+  "when": "!rollwin && ((ema(5,9) > vwap && lag(5, ema(5,9) <= vwap)) || (ema(5,9) < vwap && lag(5, ema(5,9) >= vwap)))",
+  "dir": "(ema(5,9) > vwap && lag(5, ema(5,9) <= vwap)) - (ema(5,9) < vwap && lag(5, ema(5,9) >= vwap))"
+ },
+ "flat": "09:00"
+}

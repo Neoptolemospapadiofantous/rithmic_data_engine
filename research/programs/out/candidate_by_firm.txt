@@ -1,0 +1,16 @@
+topstep_50k        per eval $ 1520 (2014-19 $ 1502 / 2020-25 $ 1540) · pass  42% · ever paid  28% · days to pass  25 · days from buying to 1st payout  46
+select_flex_100k   per eval $ 1379 (2014-19 $ 1416 / 2020-25 $ 1338) · pass  30% · ever paid  22% · days to pass  37 · days from buying to 1st payout  63
+select_daily_100k  per eval $ 1276 (2014-19 $ 1187 / 2020-25 $ 1373) · pass  29% · ever paid  17% · days to pass  37 · days from buying to 1st payout  60
+select_daily_50k   per eval $ 1221 (2014-19 $ 1237 / 2020-25 $ 1204) · pass  34% · ever paid  18% · days to pass  29 · days from buying to 1st payout  47
+lucid_flex_50k     per eval $ 1164 (2014-19 $ 1007 / 2020-25 $ 1336) · pass  41% · ever paid  28% · days to pass  25 · days from buying to 1st payout  45
+apex_eod_50k       per eval $  931 (2014-19 $  984 / 2020-25 $  874) · pass  52% · ever paid  27% · days to pass  18 · days from buying to 1st payout  52
+builder_50k        per eval $  916 (2014-19 $  994 / 2020-25 $  830) · pass  52% · ever paid  28% · days to pass  18 · days from buying to 1st payout  50
+mff_rapid_eod_50k  per eval $  799 (2014-19 $  843 / 2020-25 $  752) · pass  18% · ever paid  12% · days to pass  42 · days from buying to 1st payout  59
+select_flex_150k   per eval $  794 (2014-19 $ 1137 / 2020-25 $  420) · pass  14% · ever paid  13% · days to pass  49 · days from buying to 1st payout  75
+select_daily_150k  per eval $  767 (2014-19 $ 1144 / 2020-25 $  356) · pass  14% · ever paid  11% · days to pass  49 · days from buying to 1st payout  76
+mff_rapid_50k      per eval $  572 (2014-19 $  445 / 2020-25 $  712) · pass  41% · ever paid  10% · days to pass  25 · days from buying to 1st payout  42
+apex_intraday_50k  per eval $  324 (2014-19 $  299 / 2020-25 $  351) · pass  52% · ever paid  10% · days to pass  18 · days from buying to 1st payout  45
+select_flex_25k    per eval $  259 (2014-19 $  327 / 2020-25 $  184) · pass  22% · ever paid   7% · days to pass  25 · days from buying to 1st payout  46
+select_daily_25k   per eval $  256 (2014-19 $  354 / 2020-25 $  150) · pass  22% · ever paid   7% · days to pass  25 · days from buying to 1st payout  33
+builder_25k        per eval $  213 (2014-19 $  199 / 2020-25 $  229) · pass  41% · ever paid  12% · days to pass   6 · days from buying to 1st payout  30
+growth_50k         per eval $  125 (2014-19 $  118 / 2020-25 $  133) · pass  52% · ever paid   8% · days to pass  18 · days from buying to 1st payout  67

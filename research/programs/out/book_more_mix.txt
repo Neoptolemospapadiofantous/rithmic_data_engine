@@ -1,0 +1,13 @@
+BOOK2 size by market — $ of payouts per eval bought (pass %), starts every 5th trading day 2014-01 → 2025-04
+
+  select_flex_50k
+    daily stop $150:  NQ 2/ES 2 $ 3428 ( 54%)  NQ 3/ES 1 $ 2465 ( 45%)  NQ 3/ES 2 $ 2547 ( 47%)  NQ 4/ES 1 $ 1762 ( 38%)  NQ 2/ES 1 $ 3434 ( 54%)  NQ 4/ES 2 $ 1916 ( 42%)
+    daily stop $200:  NQ 2/ES 2 $ 3821 ( 54%)  NQ 3/ES 1 $ 2911 ( 49%)  NQ 3/ES 2 $ 3033 ( 50%)  NQ 4/ES 1 $ 2022 ( 41%)  NQ 2/ES 1 $ 3690 ( 56%)  NQ 4/ES 2 $ 2315 ( 44%)
+
+  select_daily_50k
+    daily stop $150:  NQ 2/ES 2 $ 4577 ( 54%)  NQ 3/ES 1 $ 3666 ( 45%)  NQ 3/ES 2 $ 4123 ( 47%)  NQ 4/ES 1 $ 2965 ( 38%)  NQ 2/ES 1 $ 4767 ( 54%)  NQ 4/ES 2 $ 3154 ( 42%)
+    daily stop $200:  NQ 2/ES 2 $ 4738 ( 54%)  NQ 3/ES 1 $ 4256 ( 49%)  NQ 3/ES 2 $ 4443 ( 50%)  NQ 4/ES 1 $ 2905 ( 41%)  NQ 2/ES 1 $ 4450 ( 56%)  NQ 4/ES 2 $ 3317 ( 44%)
+
+  apex_eod_50k
+    daily stop $150:  NQ 2/ES 2 $ 2681 ( 78%)  NQ 3/ES 1 $ 2434 ( 79%)  NQ 3/ES 2 $ 2405 ( 80%)  NQ 4/ES 1 $ 1802 ( 72%)  NQ 2/ES 1 $ 2777 ( 78%)  NQ 4/ES 2 $ 1841 ( 72%)
+    daily stop $200:  NQ 2/ES 2 $ 2640 ( 73%)  NQ 3/ES 1 $ 2284 ( 74%)  NQ 3/ES 2 $ 2349 ( 73%)  NQ 4/ES 1 $ 1798 ( 70%)  NQ 2/ES 1 $ 2591 ( 75%)  NQ 4/ES 2 $ 1900 ( 70%)

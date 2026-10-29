@@ -1,0 +1,52 @@
+
+  daily stop $1000, 2 open per market: days stopped mark-to-market 0 vs one-trade-at-a-time 0 · total $80922 vs $80922
+DAILY|-|conc2|q1|stop1000|extreme|sessions 2581|mean 31.4|sd 352.0|winning_days 26.2%
+ACCT|-|conc2|q1|stop1000|extreme|total 80922|dd_eod 5622|dd_intraday 5716|worst_month -2737|losing_months 63/147|traded_days 1932
+PLAN|-|conc2|q1|stop1000|extreme|select_daily_50k|ev 716|h1 955|h2 455|pass 28|paid 18|days_pass 38|days_first_pay 75
+YEAR|-|extreme|select_daily_50k|2014 677|2015 295|2016 0|2017 4353|2018 388|2019 0|2020 218|2021 563|2022 1181|2023 0|2024 463|2025 0
+    select_daily_50k   mark-to-market $  716 per eval (2014-19 $  955 / 2020-25 $  455) · pass  28%
+PLAN|-|conc2|q1|stop1000|extreme|apex_eod_50k|ev 539|h1 712|h2 350|pass 42|paid 22|days_pass 31|days_first_pay 79
+YEAR|-|extreme|apex_eod_50k|2014 470|2015 820|2016 0|2017 2616|2018 419|2019 0|2020 0|2021 373|2022 826|2023 0|2024 491|2025 538
+    apex_eod_50k       mark-to-market $  539 per eval (2014-19 $  712 / 2020-25 $  350) · pass  42%
+PLAN|-|conc2|q1|stop1000|extreme|builder_50k|ev 496|h1 672|h2 303|pass 42|paid 23|days_pass 31|days_first_pay 77
+YEAR|-|extreme|builder_50k|2014 494|2015 756|2016 0|2017 2388|2018 439|2019 0|2020 0|2021 210|2022 794|2023 0|2024 451|2025 497
+    builder_50k        mark-to-market $  496 per eval (2014-19 $  672 / 2020-25 $  303) · pass  42%
+PLAN|-|conc2|q1|stop1000|extreme|topstep_50k|ev 777|h1 1002|h2 530|pass 36|paid 24|days_pass 35|days_first_pay 56
+YEAR|-|extreme|topstep_50k|2014 867|2015 993|2016 0|2017 3970|2018 248|2019 0|2020 269|2021 705|2022 1154|2023 37|2024 657|2025 0
+    topstep_50k        mark-to-market $  777 per eval (2014-19 $ 1002 / 2020-25 $  530) · pass  36%
+PLAN|-|conc2|q1|stop1000|extreme|mff_rapid_eod_50k|ev 468|h1 665|h2 254|pass 16|paid 10|days_pass 47|days_first_pay 83
+YEAR|-|extreme|mff_rapid_eod_50k|2014 365|2015 0|2016 0|2017 3484|2018 106|2019 0|2020 0|2021 259|2022 929|2023 0|2024 163|2025 0
+    mff_rapid_eod_50k  mark-to-market $  468 per eval (2014-19 $  665 / 2020-25 $  254) · pass  16%
+PLAN|-|conc2|q1|stop1000|extreme|lucid_flex_50k|ev 736|h1 931|h2 524|pass 36|paid 24|days_pass 35|days_first_pay 58
+YEAR|-|extreme|lucid_flex_50k|2014 815|2015 809|2016 0|2017 3738|2018 267|2019 0|2020 269|2021 624|2022 1194|2023 45|2024 657|2025 0
+    lucid_flex_50k     mark-to-market $  736 per eval (2014-19 $  931 / 2020-25 $  524) · pass  36%
+PLAN|-|conc2|q1|stop1000|extreme|builder_25k|ev 217|h1 208|h2 226|pass 44|paid 14|days_pass 13|days_first_pay 51
+YEAR|-|extreme|builder_25k|2014 95|2015 324|2016 0|2017 810|2018 47|2019 0|2020 70|2021 535|2022 138|2023 204|2024 256|2025 0
+    builder_25k        mark-to-market $  217 per eval (2014-19 $  208 / 2020-25 $  226) · pass  44%
+PLAN|-|conc2|q1|stop1000|extreme|select_daily_25k|ev 231|h1 250|h2 210|pass 24|paid 10|days_pass 31|days_first_pay 47
+YEAR|-|extreme|select_daily_25k|2014 0|2015 34|2016 0|2017 1344|2018 108|2019 0|2020 79|2021 551|2022 69|2023 59|2024 363|2025 0
+    select_daily_25k   mark-to-market $  231 per eval (2014-19 $  250 / 2020-25 $  210) · pass  24%
+PLAN|-|conc2|q1|stop1000|extreme|select_flex_25k|ev 253|h1 315|h2 186|pass 24|paid 11|days_pass 31|days_first_pay 53
+YEAR|-|extreme|select_flex_25k|2014 9|2015 29|2016 0|2017 1796|2018 42|2019 0|2020 80|2021 422|2022 77|2023 97|2024 315|2025 0
+    select_flex_25k    mark-to-market $  253 per eval (2014-19 $  315 / 2020-25 $  186) · pass  24%
+PLAN|-|conc2|q1|stop1000|extreme|mff_rapid_50k|ev 597|h1 742|h2 439|pass 36|paid 13|days_pass 35|days_first_pay 69
+YEAR|-|extreme|mff_rapid_50k|2014 129|2015 0|2016 0|2017 4229|2018 56|2019 0|2020 0|2021 564|2022 919|2023 0|2024 852|2025 0
+    mff_rapid_50k      mark-to-market $  597 per eval (2014-19 $  742 / 2020-25 $  439) · pass  36%
+PLAN|-|conc2|q1|stop1000|extreme|apex_intraday_50k|ev 404|h1 465|h2 337|pass 42|paid 16|days_pass 31|days_first_pay 68
+YEAR|-|extreme|apex_intraday_50k|2014 279|2015 117|2016 0|2017 2386|2018 0|2019 0|2020 0|2021 337|2022 733|2023 0|2024 547|2025 538
+    apex_intraday_50k  mark-to-market $  404 per eval (2014-19 $  465 / 2020-25 $  337) · pass  42%
+PLAN|-|conc2|q1|stop1000|extreme|growth_50k|ev 222|h1 264|h2 177|pass 42|paid 11|days_pass 31|days_first_pay 81
+YEAR|-|extreme|growth_50k|2014 71|2015 122|2016 0|2017 1393|2018 0|2019 0|2020 0|2021 209|2022 314|2023 0|2024 419|2025 0
+    growth_50k         mark-to-market $  222 per eval (2014-19 $  264 / 2020-25 $  177) · pass  42%
+PLAN|-|conc2|q1|stop1000|extreme|select_daily_100k|ev 211|h1 399|h2 6|pass 6|paid 5|days_pass 49|days_first_pay 83
+YEAR|-|extreme|select_daily_100k|2014 314|2015 0|2016 0|2017 2059|2018 0|2019 0|2020 0|2021 0|2022 0|2023 0|2024 32|2025 0
+    select_daily_100k  mark-to-market $  211 per eval (2014-19 $  399 / 2020-25 $    6) · pass   6%
+PLAN|-|conc2|q1|stop1000|extreme|select_daily_150k|ev 22|h1 43|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 134
+YEAR|-|extreme|select_daily_150k|2014 16|2015 0|2016 0|2017 238|2018 0|2019 0|2020 0|2021 0|2022 0|2023 0|2024 0|2025 0
+    select_daily_150k  mark-to-market $   22 per eval (2014-19 $   43 / 2020-25 $    0) · pass   1%
+PLAN|-|conc2|q1|stop1000|extreme|select_flex_100k|ev 236|h1 440|h2 14|pass 6|paid 6|days_pass 49|days_first_pay 76
+YEAR|-|extreme|select_flex_100k|2014 375|2015 152|2016 0|2017 2111|2018 0|2019 0|2020 0|2021 3|2022 0|2023 0|2024 69|2025 0
+    select_flex_100k   mark-to-market $  236 per eval (2014-19 $  440 / 2020-25 $   14) · pass   6%
+PLAN|-|conc2|q1|stop1000|extreme|select_flex_150k|ev 36|h1 69|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 89
+YEAR|-|extreme|select_flex_150k|2014 83|2015 0|2016 0|2017 327|2018 0|2019 0|2020 0|2021 0|2022 0|2023 0|2024 0|2025 0
+    select_flex_150k   mark-to-market $   36 per eval (2014-19 $   69 / 2020-25 $    0) · pass   1%

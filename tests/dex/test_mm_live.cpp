@@ -112,6 +112,8 @@ struct Rig {
     fake::FakeVenue venue{ex, aave(), kKey, [this] { return clock.now_ms(); }};
     fake::FakeAccountWs aws{venue};
     fake::QueueWs pws;
+    fake::QueueWs bws;          // Binance reference stream (bn_pull tests)
+    bool with_ref = false;
     std::vector<std::string> alerts;
     Alerter alerter{[this](const std::string& s) { alerts.push_back(s); }, 300'000};
     std::vector<std::string> logs;
@@ -158,7 +160,7 @@ struct Rig {
                                                         [this](int64_t) { return armed; },
                                                         [this](const std::string& s) { logs.push_back(s); }}, run_id);
         if (!eng->start()) return false;
-        drv = std::make_unique<Driver>(*eng, aws, pws, clock);
+        drv = std::make_unique<Driver>(*eng, aws, pws, clock, nullptr, with_ref ? &bws : nullptr);
         step(0);
         return true;
     }
@@ -524,6 +526,38 @@ TEST(fill_moves_the_position_at_once_and_caps_that_side) {
     ASSERT_EQ(r.eng->mismatch_acts(), int64_t{0});
 }
 
+// 2026-10-28 live: a $11 sell at a higher price is smaller than the $11 buy it closes; the closing quote is sized to the
+// position so no unsellable dust is left.
+TEST(closing_quote_is_sized_to_the_position_not_left_as_dust) {
+    Rig r("dust");
+    ASSERT(r.start());
+    r.run(2'000);
+    const int64_t bid_coi = r.resting(false);
+    ASSERT(r.ex.hit(bid_coi, 82));                          // long 0.082 AAVE bought at 135
+    r.step(50);
+    ASSERT_EQ(r.eng->position(), int64_t{82});
+    r.bid = 140'000; r.ask = 140'100;                        // $11 at 140.1 is 0.079: 3 short of the position
+    r.run(3'000);
+    int64_t ask_base = 0;
+    for (const auto& o : r.ex.resting(kMkt)) if (o.is_ask && o.client_index > 0) ask_base = o.base;
+    ASSERT_EQ(ask_base, int64_t{82});                       // the whole position, not 79
+    ASSERT_EQ(r.resting(false), int64_t{0});                // still capped on the bid side
+}
+
+TEST(day_summary_counts_fills_of_earlier_runs_today) {
+    Rig r("dayseed");
+    ASSERT(r.start());
+    r.run(2'000);
+    ASSERT(r.ex.hit(r.resting(false), 82));
+    r.step(50);
+    ASSERT_EQ(r.eng->status(r.clock.now_ms())["fills_today"].get<int64_t>(), int64_t{1});
+    r.eng->shutdown("test");
+    r.run_id = 6;                                            // a restart the same UTC day
+    ASSERT(r.start());
+    r.run(500);
+    ASSERT_EQ(r.eng->status(r.clock.now_ms())["fills_today"].get<int64_t>(), int64_t{1});
+}
+
 TEST(fill_after_cancel_confirm_takes_the_live_path) {
     Rig r("late_fill");
     r.ex.set_late_fill_prob(1.0);                           // every fill inside the cancel delay arrives AFTER the confirm
@@ -800,6 +834,53 @@ TEST(cancel_of_a_filled_order_rejected_before_apply_does_not_loop_or_block_the_f
     ASSERT(!r.alerted("FLATTEN FAILED"));
 }
 
+// 2026-10-28 live: all 31 sequencer rejects were a cancel that lost the race to a fill already streamed. Each one
+// raised a nonce_frozen HALT + Telegram alert. Now: journalled as cancel_race, the resync still runs, no halt/alert.
+TEST(cancel_lost_to_a_known_fill_resyncs_quietly) {
+    Rig r("race_quiet");
+    r.ex.set_cancel_missing_rejects_before(true);
+    ASSERT(r.start());
+    r.run(2'000);
+    int64_t bid_coi = r.resting(false);
+    ASSERT(bid_coi);
+    r.venue.hold_account_events = true;                       // fill + cancel result arrive together, fill first
+    ASSERT(r.ex.hit(bid_coi, 82));
+    r.bid = 135'050; r.ask = 135'150;                         // the jump sends the (dead) cancel
+    r.run(1'000, 50);
+    r.venue.hold_account_events = false;
+    r.venue.release_held();
+    r.run(10'000);
+    ASSERT(r.eng->sequencer_rejects() >= 1);
+    ASSERT(r.eng->cancel_races() >= 1);
+    ASSERT(r.journal_count("cancel_race") >= 1);
+    ASSERT(!r.alerted("sequencer rejected nonce"));
+    ASSERT(!r.alerted("HALT nonce_frozen"));
+    ASSERT(!r.eng->nonces().frozen());
+    ASSERT_EQ(r.eng->position(), r.ex.position(kMkt));
+    ASSERT(r.resting(false) != 0 || r.resting(true) != 0);   // quoting again
+}
+
+// 2026-10-28 live: periodic reconciles blocked the engine thread 2.6–3.7 s on slow REST reads (stall → 10 s without
+// quotes). Periodic reads now carry an 800 ms timeout; three failed periodic reconciles in a row fall back to the full one.
+TEST(periodic_reconcile_uses_a_short_timeout_and_falls_back) {
+    Rig r("rec_fast");
+    ASSERT(r.start());
+    r.run(25'000, 100);
+    int fast = 0;
+    for (int t : r.venue.rest_timeouts) if (t == 800) ++fast;
+    ASSERT(fast >= 2);                                        // the periodic ones ran fast
+    r.venue.rest_timeouts.clear();
+    r.venue.fail_next_rest = 1000;                            // REST dead
+    r.run(45'000, 100);
+    ASSERT(r.eng->fast_reconcile_fails() >= 3);
+    bool full_seen = false;
+    for (int t : r.venue.rest_timeouts) if (t > 800) full_seen = true;
+    ASSERT(full_seen);                                        // after 3 failures a full-timeout reconcile went out
+    r.venue.fail_next_rest = 0;
+    r.run(25'000, 100);
+    ASSERT_EQ(r.eng->fast_reconcile_fails(), int64_t{0});    // recovered
+}
+
 // 2026-10-27 live: Lighter closed the public stream every 2 min — the engine only answered server pings and never
 // sent one, and the server drops a client that sends nothing for 2 min. The account feed and the recorder ping.
 TEST(public_stream_sends_its_own_ping_every_minute) {
@@ -973,6 +1054,118 @@ TEST(mm_live_strategy_overrides_are_bounded_and_reach_the_quoter) {
     }
 }
 
+// ═════════════════════════════════ Binance-lead pull (bn_pull) ═════════════════════════════════
+
+TEST(bn_lead_matches_the_lab_rule_threshold_hold_warmup_and_staleness) {
+    bnpull::Lead off;
+    off.on_price(0, 100); ASSERT(!off.at(10'000).bid && !off.at(10'000).ask);          // default params = off
+    bnpull::Params p; p.w_ms = 500; p.x_bps = 4; p.hold_ms = 1'000;
+    bnpull::Lead L(p);
+    L.on_price(1'000, 100.0);
+    auto o = L.at(1'200);
+    ASSERT(!o.bid && !o.ask && std::isnan(o.lead_bps));                                  // warm-up: no sample at ≤ now − w
+    L.on_price(1'400, 99.95);                                                             // −5 bps
+    o = L.at(1'600);
+    ASSERT(o.bid && !o.ask);                                                              // falling → pull the bid
+    ASSERT(std::abs(o.lead_bps - (-5.0)) < 1e-9);
+    L.on_price(1'700, 99.98);                                                             // −2 bps vs the 1 000 sample
+    ASSERT(L.at(1'800).bid);                                                              // held (last true 1 600)
+    ASSERT(L.at(2'600).bid);                                                              // 1 000 ms after 1 600: still held
+    ASSERT(!L.at(2'601).bid);                                                             // released
+    ASSERT_EQ(L.pulls_bid(), int64_t{1});
+    L.on_price(2'700, 100.05);                                                            // +7 bps vs 99.98 at 1 700
+    o = L.at(2'800);
+    ASSERT(o.ask && !o.bid);
+    ASSERT(!L.at(10'000).ask && std::isnan(L.last().lead_bps));                           // stale (> 5 s): no new pull
+    bnpull::Lead F(p);                                                                    // a sample stamped after now is not used yet
+    F.on_price(0, 100.0); F.on_price(600, 99.0);
+    ASSERT(!F.at(550).bid && std::abs(F.last().lead_bps) < 1e-12);
+    ASSERT(F.at(650).bid);
+    bnpull::Lead E(p);                                                                    // exactly x is not beyond x
+    E.on_price(0, 100.0); E.on_price(400, 100.0 * (1 - 4e-4));
+    ASSERT(!E.at(500).bid);
+}
+
+TEST(bn_pull_config_is_bounded_and_both_knobs_go_together) {
+    auto j = gw_json("offline");
+    j["engine"]["strategy"] = {{"bn_pull_w_ms", 500}, {"bn_pull_x_bps", 4}, {"bn_pull_hold_ms", 1000}};
+    auto mc = build_mm_live_config(parse_config(j, Mode::Offline, 1'793'000'000));
+    ASSERT(mc.engine.strategy.bn_pull().on());
+    ASSERT_EQ(mc.engine.strategy.bn_pull().hold_ms, int64_t{1000});
+    ASSERT(!build_mm_live_config(parse_config(gw_json("offline"), Mode::Offline, 1'793'000'000)).engine.strategy.bn_pull().on());
+    for (const auto& bad : {nlohmann::json{{"bn_pull_w_ms", 500}}, nlohmann::json{{"bn_pull_x_bps", 4}}, nlohmann::json{{"bn_pull_w_ms", 50}, {"bn_pull_x_bps", 4}},
+                            nlohmann::json{{"bn_pull_w_ms", 500}, {"bn_pull_x_bps", 0.1}}, nlohmann::json{{"bn_pull_w_ms", 500}, {"bn_pull_x_bps", 4}, {"bn_pull_hold_ms", 90000}}}) {
+        auto b = gw_json("offline"); b["engine"]["strategy"] = bad;
+        ASSERT_THROWS(build_mm_live_config(parse_config(b, Mode::Offline, 1'793'000'000)), ConfigError);
+    }
+}
+
+static std::string bn_ticker(double bid, double ask) {
+    return json{{"stream", "aaveusdt@bookTicker"}, {"data", {{"e", "bookTicker"}, {"s", "AAVEUSDT"}, {"b", std::to_string(bid)}, {"B", "1"},
+                                                           {"a", std::to_string(ask)}, {"A", "1"}, {"T", 1}, {"E", 1}}}}.dump();
+}
+
+TEST(binance_drop_pulls_the_live_bid_keeps_the_ask_and_requotes_after_the_hold) {
+    Rig r("bnpull");
+    r.with_ref = true;
+    r.cfg.strategy.bn_pull_w_ms = 500; r.cfg.strategy.bn_pull_x_bps = 4; r.cfg.strategy.bn_pull_hold_ms = 1'000;
+    ASSERT(r.start());
+    ASSERT(r.eng->ref_wanted());
+    ASSERT_EQ(r.eng->ref_ws_path(), std::string("/stream?streams=aaveusdt@bookTicker"));
+    for (int i = 0; i < 20; ++i) { r.bws.push(bn_ticker(135.00, 135.02)); r.step(100); }
+    ASSERT(r.resting(false) && r.resting(true));                                         // calm Binance: both sides quote
+    const int64_t ask_before = r.resting(true);
+    r.bws.push(bn_ticker(134.90, 134.92));                                                // −7.4 bps within 500 ms
+    r.run(1'000);                                                                         // the cancel lands
+    ASSERT(!r.resting(false));                                                            // bid pulled
+    ASSERT_EQ(r.resting(true), ask_before);                                               // ask untouched
+    ASSERT(r.journal_count("bn_pull") >= 1);
+    auto st = r.eng->status(r.clock.now_ms());
+    ASSERT(st["bn_pull"]["on"].get<bool>() && st["bn_pull"]["pulls_bid"].get<int64_t>() == 1);
+    for (int i = 0; i < 30; ++i) { r.bws.push(bn_ticker(134.90, 134.92)); r.step(100); }   // flat again, hold expires
+    ASSERT(r.resting(false));                                                             // the bid is back
+    // the stream dies: stale reference = no pulls, the strategy quotes as without it
+    r.bws.close();
+    r.run(8'000);
+    ASSERT(r.resting(false) && r.resting(true));
+    ASSERT(r.eng->quoting_allowed(r.clock.now_ms()));
+}
+
+// 2026-10-28: re-opening the BOOK (or account) stream is not a stall — its loss already cancelled every quote — but a
+// slow Binance open, which happens while quotes rest on the exchange, still is.
+TEST(slow_book_stream_reopen_is_not_a_stall_but_a_slow_reference_open_is) {
+    Rig r("slowopen");
+    r.with_ref = true;
+    r.cfg.strategy.bn_pull_w_ms = 500; r.cfg.strategy.bn_pull_x_bps = 4; r.cfg.strategy.bn_pull_hold_ms = 1'000;
+    ASSERT(r.start());
+    r.run(2'000);
+    auto stalls = [&] { int n = 0; for (const auto& l : r.logs) if (l.find("[HALT] stall") != std::string::npos) ++n; return n; };
+    const int s0 = stalls();
+    r.pws.on_open = [&] { r.clock.set(r.clock.now_ms() + 3'000); r.ex.set_now(r.clock.now_ms()); };   // a 3 s handshake
+    r.pws.close();
+    r.run(3'000);
+    ASSERT(r.pws.opens >= 2);
+    ASSERT_EQ(stalls(), s0);                                               // not counted
+    r.pws.on_open = nullptr;
+    r.run(2'000);
+    ASSERT(r.resting(false) && r.resting(true));                           // quoting again at once
+    r.bws.on_open = [&] { r.clock.set(r.clock.now_ms() + 3'000); r.ex.set_now(r.clock.now_ms()); };
+    r.bws.close();
+    r.run(3'000);
+    ASSERT(stalls() > s0);                                                 // a slow Binance open still pulls quotes
+}
+
+TEST(no_bn_pull_config_means_no_reference_stream_and_unchanged_quotes) {
+    Rig r("bnoff");
+    r.with_ref = true;
+    ASSERT(r.start());
+    ASSERT(!r.eng->ref_wanted());
+    r.run(2'000);
+    ASSERT_EQ(r.bws.opens, 0);
+    ASSERT(r.resting(false) && r.resting(true));
+    ASSERT(!r.eng->status(r.clock.now_ms())["bn_pull"]["on"].get<bool>());
+}
+
 TEST(alerts_are_rate_limited_and_fail_open) {
     std::vector<std::string> got;
     Alerter a([&](const std::string& s) { got.push_back(s); }, 300'000);
@@ -1128,6 +1321,19 @@ TEST(endpoint_guard_allows_only_mainnet_or_explicit_loopback) {
     ASSERT_THROWS(BeastHttps(Endpoint{"127.0.0.1", "443", "testnet.zklighter.elliot.ai", "pem", true}), ConfigError);
     BeastHttps ok(Endpoint{});                                // mainnet default: constructing opens nothing
     (void)ok;
+    // the Binance reference feed: exactly fstream.binance.com:443, WebSocket only, never HTTP, never by host name alone
+    Endpoint ref; ref.host = kReferenceFeedHost; ref.reference_feed = true;
+    BeastWs ref_ok(ref, "/stream?streams=avaxusdt@bookTicker");
+    (void)ref_ok;
+    ASSERT_THROWS(BeastHttps(ref), ConfigError);                                                    // no HTTP to it
+    Endpoint plain; plain.host = kReferenceFeedHost;
+    ASSERT_THROWS(BeastWs(plain), ConfigError);                                                     // the flag is required
+    for (const char* h : {"api.binance.com", "fapi.binance.com", "example.com"}) {
+        Endpoint bad = ref; bad.host = h;
+        ASSERT_THROWS(BeastWs(bad), ConfigError);
+    }
+    Endpoint port = ref; port.port = "9443";
+    ASSERT_THROWS(BeastWs(port), ConfigError);
 }
 
 TEST(real_https_client_posts_forms_and_reports_timeouts_as_unknown) {
@@ -1500,6 +1706,8 @@ int main(int, char** argv) {
     RUN(startup_refuses_capital_guard_and_metadata_mismatch);
     RUN(quotes_post_only_both_sides_at_the_strategy_prices);
     RUN(fill_moves_the_position_at_once_and_caps_that_side);
+    RUN(closing_quote_is_sized_to_the_position_not_left_as_dust);
+    RUN(day_summary_counts_fills_of_earlier_runs_today);
     RUN(fill_after_cancel_confirm_takes_the_live_path);
     RUN(account_stream_drop_cancels_all_then_backfills_and_reconciles);
     RUN(duplicate_fill_from_stream_and_rest_counts_once);
@@ -1526,6 +1734,8 @@ int main(int, char** argv) {
     RUN(timeout_before_the_exchange_resends_identical_bytes);
     RUN(sigterm_path_cancels_all_and_aborts_the_deadman);
     RUN(cancel_of_a_filled_order_rejected_before_apply_does_not_loop_or_block_the_flatten);
+    RUN(cancel_lost_to_a_known_fill_resyncs_quietly);
+    RUN(periodic_reconcile_uses_a_short_timeout_and_falls_back);
     RUN(public_stream_sends_its_own_ping_every_minute);
     RUN(kill_file_halts_flattens_and_never_auto_resumes);
     RUN(pause_file_pulls_quotes_and_keeps_the_position);
@@ -1536,6 +1746,11 @@ int main(int, char** argv) {
     RUN(probe_runs_end_to_end_against_the_fake);
     RUN(mm_live_config_is_strict);
     RUN(mm_live_strategy_overrides_are_bounded_and_reach_the_quoter);
+    RUN(bn_lead_matches_the_lab_rule_threshold_hold_warmup_and_staleness);
+    RUN(bn_pull_config_is_bounded_and_both_knobs_go_together);
+    RUN(binance_drop_pulls_the_live_bid_keeps_the_ask_and_requotes_after_the_hold);
+    RUN(no_bn_pull_config_means_no_reference_stream_and_unchanged_quotes);
+    RUN(slow_book_stream_reopen_is_not_a_stall_but_a_slow_reference_open_is);
     RUN(alerts_are_rate_limited_and_fail_open);
     RUN(journal_is_append_only_jsonl_and_fails_loudly);
     RUN(rest_api_reads_through_the_venue_with_auth);

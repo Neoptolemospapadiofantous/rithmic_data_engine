@@ -1,0 +1,38 @@
+2960 trading days 2014-2026 · value = Spearman (all | 2014-19 | 2020-26) · r² in brackets for the full sample
+
+== SIZE AND ACTIVITY (continuous targets)
+  RTH range ← overnight range (pct)              0.63 |  0.56 |  0.59   [r² ~0.39]
+  RTH range ← ATR5 (pct)                         0.65 |  0.58 |  0.63   [r² ~0.43]
+  RTH range ← first 30 min range (pct)           0.71 |  0.69 |  0.68   [r² ~0.51]
+  range AFTER 10:30 ← first-hour range (pct)     0.63 |  0.59 |  0.59   [r² ~0.40]
+  last-hour range ← first-hour range (pct)       0.58 |  0.54 |  0.53   [r² ~0.33]
+  RTH volume ← yesterday's volume                0.83 |  0.77 |  0.64   [r² ~0.68]
+  RTH volume ← overnight range (pct)             0.48 |  0.48 |  0.24   [r² ~0.23]
+  |open→close| ← overnight range (pct)           0.38 |  0.35 |  0.33   [r² ~0.15]
+  |open→close| ← first 30 min |move| (pct)       0.44 |  0.39 |  0.41   [r² ~0.19]
+
+== DIRECTION (hit rate of a sign forecast; 0.50 = coin)
+  close−open ← gap direction (with)              0.51 |  0.52 |  0.50
+  close−open ← overnight direction (with)        0.51 |  0.51 |  0.51
+  close−open ← yesterday's direction (with)      0.49 |  0.49 |  0.49
+  close−open ← first 5 min direction (with)      0.59 |  0.59 |  0.59
+
+== STRUCTURAL BASE RATES (probabilities; stable across halves = forecastable as a rate)
+  high OR low of the day set in the first 30 min      0.61 |  0.61 |  0.62
+  high OR low of the day set in the first 60 min      0.78 |  0.78 |  0.78
+  BOTH extremes after 12:00                           0.06 |  0.06 |  0.06
+  day's high or low is the 15:00-16:00 hour           0.43 |  0.40 |  0.45
+  close in the top or bottom quarter of the range     0.59 |  0.56 |  0.62
+  close beyond the 5-min opening range                0.86 |  0.85 |  0.86
+  both sides of the 5-min opening range broken        0.69 |  0.69 |  0.69
+  gap filled (price touches prior close) — all gaps   0.61 |  0.62 |  0.61
+  gap filled — gaps > 0.5 ATR5                        0.32 |  0.32 |  0.31
+  range ≥ 2 × first-hour range                        0.30 |  0.31 |  0.30
+  |open→close| ≥ 0.5 × range (trend day)              0.49 |  0.45 |  0.52
+  trend day given yesterday was a trend day           0.48 |  0.44 |  0.51
+
+== DIRECTION, corrected (forecast made at time T, target = close − price at T; 0.50 = coin)
+  first 5 min direction → close vs 09:35         0.52 |  0.53 |  0.51   (n 2951)
+  first 30 min direction → close vs 10:00        0.52 |  0.51 |  0.54   (n 2967)
+  first hour direction → close vs 10:30          0.53 |  0.50 |  0.55   (n 2968)
+  morning direction → close vs 12:00             0.54 |  0.52 |  0.55   (n 2964)

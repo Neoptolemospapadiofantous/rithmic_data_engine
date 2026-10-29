@@ -1,0 +1,29 @@
+Adding to winners and to losers on the flag trade — NQ 2014-01 → 2026-10, cost 1.5 pts per unit, one position at a time.
+Columns: trades, how often the 2nd unit was added, avg R (both units, in the first unit's R), win %, PF, avg most-risk-open (R), R per unit of that risk, 2014-19 / 2020-26 avg R, years > 0.
+
+######## A-list + 5m HH/HL + with the break, both sides
+    BASE one unit (the rule)             456 tr · added   0% · +0.396R win 34.6% PF 1.55 · max risk 1.00R · +0.396R per risk · 2014-19 +0.247 / 2020-26 +0.523 · years > 0 11/13
+    BASE2 two units from the start       456 tr · added 100% · +0.793R win 34.6% PF 1.55 · max risk 2.00R · +0.396R per risk · 2014-19 +0.493 / 2020-26 +1.046 · years > 0 11/13
+    W1 add at +1R, stop to entry         470 tr · added  57% · +0.526R win 23.4% PF 1.58 · max risk 1.00R · +0.526R per risk · 2014-19 +0.178 / 2020-26 +0.833 · years > 0  9/13
+    W2 add at +1R, stop unchanged        456 tr · added  57% · +0.703R win 32.5% PF 1.59 · max risk 2.14R · +0.329R per risk · 2014-19 +0.431 / 2020-26 +0.933 · years > 0 11/13
+    W3 add at the pole-high break        456 tr · added  61% · +0.679R win 33.3% PF 1.55 · max risk 2.16R · +0.314R per risk · 2014-19 +0.338 / 2020-26 +0.967 · years > 0 11/13
+    L1 add at −0.5R                    456 tr · added  80% · +0.538R win 35.5% PF 1.48 · max risk 1.40R · +0.385R per risk · 2014-19 +0.290 / 2020-26 +0.748 · years > 0 11/13
+    L2 add at −0.75R                   456 tr · added  72% · +0.479R win 35.1% PF 1.50 · max risk 1.18R · +0.406R per risk · 2014-19 +0.200 / 2020-26 +0.715 · years > 0 11/13
+
+######## bull, A-list + 5m HH/HL + with the break
+    BASE one unit (the rule)             231 tr · added   0% · +0.486R win 40.7% PF 1.75 · max risk 1.00R · +0.486R per risk · 2014-19 +0.552 / 2020-26 +0.435 · years > 0 11/12
+    BASE2 two units from the start       231 tr · added 100% · +0.973R win 40.7% PF 1.75 · max risk 2.00R · +0.486R per risk · 2014-19 +1.104 / 2020-26 +0.870 · years > 0 11/12
+    W1 add at +1R, stop to entry         231 tr · added  58% · +0.719R win 30.3% PF 1.88 · max risk 1.00R · +0.719R per risk · 2014-19 +0.673 / 2020-26 +0.754 · years > 0 11/12
+    W2 add at +1R, stop unchanged        231 tr · added  58% · +0.855R win 38.5% PF 1.84 · max risk 2.16R · +0.396R per risk · 2014-19 +0.905 / 2020-26 +0.816 · years > 0 11/12
+    W3 add at the pole-high break        231 tr · added  66% · +0.844R win 39.4% PF 1.75 · max risk 2.16R · +0.390R per risk · 2014-19 +0.826 / 2020-26 +0.858 · years > 0 11/12
+    L1 add at −0.5R                    231 tr · added  76% · +0.649R win 41.6% PF 1.64 · max risk 1.38R · +0.471R per risk · 2014-19 +0.693 / 2020-26 +0.615 · years > 0 10/12
+    L2 add at −0.75R                   231 tr · added  67% · +0.595R win 41.1% PF 1.69 · max risk 1.17R · +0.509R per risk · 2014-19 +0.543 / 2020-26 +0.635 · years > 0 10/12
+
+######## every flag
+    BASE one unit (the rule)            2050 tr · added   0% · +0.123R win 29.6% PF 1.16 · max risk 1.00R · +0.123R per risk · 2014-19 +0.020 / 2020-26 +0.221 · years > 0 11/13
+    BASE2 two units from the start      2050 tr · added 100% · +0.245R win 29.6% PF 1.16 · max risk 2.00R · +0.123R per risk · 2014-19 +0.041 / 2020-26 +0.443 · years > 0 11/13
+    W1 add at +1R, stop to entry        2171 tr · added  54% · +0.128R win 18.5% PF 1.13 · max risk 1.00R · +0.128R per risk · 2014-19 -0.012 / 2020-26 +0.266 · years > 0  9/13
+    W2 add at +1R, stop unchanged       2050 tr · added  54% · +0.222R win 28.2% PF 1.17 · max risk 2.08R · +0.107R per risk · 2014-19 +0.052 / 2020-26 +0.386 · years > 0 11/13
+    W3 add at the pole-high break       2050 tr · added  60% · +0.226R win 28.7% PF 1.17 · max risk 2.07R · +0.109R per risk · 2014-19 +0.048 / 2020-26 +0.397 · years > 0 10/13
+    L1 add at −0.5R                   2050 tr · added  83% · +0.136R win 30.0% PF 1.11 · max risk 1.41R · +0.096R per risk · 2014-19 -0.072 / 2020-26 +0.336 · years > 0  8/13
+    L2 add at −0.75R                  2050 tr · added  75% · +0.069R win 30.0% PF 1.07 · max risk 1.19R · +0.058R per risk · 2014-19 -0.104 / 2020-26 +0.235 · years > 0  7/13

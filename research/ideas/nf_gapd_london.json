@@ -1,0 +1,35 @@
+{
+ "id": "nf_gapd_london",
+ "name": "Gap built in London (open - 03:00 carries >= f of the gap) \u2192 follow the gap",
+ "why": "A gap built by European institutions is informed; one built in Asia is thin-liquidity drift. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "f": [
+   0.6,
+   0.8
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "rr": [
+   0,
+   2
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:35",
+   "when": "!rollwin && abs(gap) >= 0.15 && ((open - at(3,0))/atr)*sign(gap) >= f*abs(gap)",
+   "dir": "sign(gap)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr"
+}

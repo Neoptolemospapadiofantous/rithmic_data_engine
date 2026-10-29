@@ -1,0 +1,17 @@
+Shallow / reversal flags S1 — NQ, 3311 NY days, 3191 flags (1-5m). Fixed cost 1.5 pts, target = measured move. Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg R (n) · all: R, win %, PF · vs same-day twin · periods > 0.
+
+######## BULL 3-5m · HIGH AND TIGHT (pullback 5-15 %)
+    break (page entry)     -0.01 ( 386) | +0.71 ( 300) | +0.39 ( 206) | -0.60 (  64) | all +0.263 win 29% PF 1.28 · twin +0.061 · 2/4 · 59/yr
+    flag-mid limit         +0.20 ( 331) | +0.87 ( 248) | +0.41 ( 176) | -0.52 (  58) | all +0.401 win 41% PF 1.57 · twin +0.210 · 3/4 · 50/yr
+
+######## BULL 1-2m · HIGH AND TIGHT (pullback 5-15 %)
+    break (page entry)     -0.20 ( 313) | +0.39 ( 275) | -0.13 ( 205) | -0.60 (  57) | all -0.019 win 24% PF 0.98 · twin -0.048 · 1/4 · 52/yr
+    flag-mid limit         -0.10 ( 294) | +0.17 ( 246) | +0.16 ( 155) | -0.13 (  47) | all +0.039 win 32% PF 1.05 · twin -0.016 · 2/4 · 46/yr
+
+######## BEAR 3-5m · HIGH AND TIGHT (pullback 5-15 %)
+    break (page entry)     +0.10 ( 106) | -0.42 (  52) | +0.29 (  79) | -0.56 (  18) | all +0.006 win 20% PF 1.01 · twin +0.107 · 2/4 · 16/yr
+    flag-mid limit         -0.00 (  90) | -0.62 (  41) | +0.35 (  64) | +0.92 (  16) | all +0.053 win 26% PF 1.06 · twin -0.036 · 2/4 · 13/yr
+
+######## BEAR 1-2m · HIGH AND TIGHT (pullback 5-15 %)
+    break (page entry)     -0.25 ( 207) | -0.38 (  78) | -0.10 (  97) | +1.17 (  12) | all -0.197 win 21% PF 0.82 · twin +0.174 · 1/4 · 24/yr
+    flag-mid limit         -0.15 ( 178) | -0.34 (  67) | -0.09 (  75) | -0.28 (  11) | all -0.180 win 24% PF 0.82 · twin +0.028 · 0/4 · 20/yr

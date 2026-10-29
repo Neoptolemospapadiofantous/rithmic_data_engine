@@ -1,0 +1,42 @@
+{
+ "id": "nf_bkv_cxl_so_v3",
+ "name": "Strong-open follow on fragile-book days (relative cancel-to-add >= 1.0)",
+ "why": "A thin resting book lets an institutional move extend; depth within 10 bp is the measure. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "k1": [
+   0.2,
+   0.25
+  ],
+  "k2": [
+   0.25,
+   0.3
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "flow && (abs(px-open) > k1*atr) && (bkrel(cxl,15) >= 1.0)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "10:30",
+   "when": "flow && (abs(px-open) > k2*atr) && (bkrel(cxl,15) >= 1.0)",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "from": "2023-03-01",
+ "train_months": 6
+}

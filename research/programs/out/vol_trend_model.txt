@@ -1,0 +1,61 @@
+SIZE MODELS — NQ, walk-forward 2014-26 (2583 test days), points scaled to ATR now 307 (20261015)
+
+  M1 range model: R² 0.213 out of sample (vs the earlier years' average: R² -0.001)
+     by predicted range, fifths (actual range / ATR): 0.76 0.92 0.99 1.13 1.35
+  M2 trend-day model: AUC 0.671 (0.5 = chance) · trend days 42% of all, 59% of the top third (870 days)
+
+  per MNQ unit, cost 1.5 pts + $1.82, 2014-26 (a day with both trades counts once):
+    U1 weak day, flat size                        344 days (27/yr, 2.2/month) · $ +100 a day · win 62% · PF 1.70 · $ +2677 a year · 12/12 years > 0 · 61/75 months with a trade > 0 · max DD $3023
+    U1 weak day, sized by M1                      248 days (19/yr, 1.6/month) · $  +71 a day · win 62% · PF 1.61 · $ +1376 a year · 10/12 years > 0 · 46/64 months with a trade > 0 · max DD $2761
+    U2 trend trade, every day                    2583 days (202/yr, 16.8/month) · $  +12 a day · win 53% · PF 1.10 · $ +2453 a year · 9/13 years > 0 · 81/147 months with a trade > 0 · max DD $9423
+    U2 trend trade, M2 top third                  870 days (68/yr, 5.7/month) · $  +21 a day · win 56% · PF 1.17 · $ +1458 a year · 9/13 years > 0 · 77/144 months with a trade > 0 · max DD $6447
+    U2 trend trade, M2 top third, sized by M1     749 days (59/yr, 4.9/month) · $  +29 a day · win 56% · PF 1.26 · $ +1716 a year · 10/13 years > 0 · 79/144 months with a trade > 0 · max DD $4183
+    U3 BOTH (U1 M1 + U2 M2 M1)                    895 days (70/yr, 5.8/month) · $  +44 a day · win 55% · PF 1.38 · $ +3092 a year · 12/13 years > 0 · 89/145 months with a trade > 0 · max DD $5090
+
+  Tradeify Select Daily 50K (12-month windows from every month 2014-01 … 2025-10; a dead account replaced the next day, $165 each):
+    U1 weak day, flat size                       1 MNQ 1 acct: pass 39% · funded pays $793 · net a month mean $   -3, median $  -14, 10th $  -41 · >= $500/month/acct in   0% · > 0 in   8% · months with a payout (of 12) median 0 · worst running loss $-660
+    U1 weak day, flat size                       2 MNQ 1 acct: pass 32% · funded pays $908 · net a month mean $  +17, median $  -28, 10th $  -69 · >= $500/month/acct in   1% · > 0 in  23% · months with a payout (of 12) median 0 · worst running loss $-1650
+    U1 weak day, flat size                       3 MNQ 1 acct: pass 21% · funded pays $916 · net a month mean $   +5, median $  -28, 10th $ -106 · >= $500/month/acct in   0% · > 0 in  25% · months with a payout (of 12) median 0 · worst running loss $-2310
+    U1 weak day, sized by M1                     1 MNQ 1 acct: pass 79% · funded pays $3913 · net a month mean $  -10, median $  -14, 10th $  -28 · >= $500/month/acct in   0% · > 0 in   6% · months with a payout (of 12) median 0 · worst running loss $-330
+    U1 weak day, sized by M1                     2 MNQ 1 acct: pass 48% · funded pays $7205 · net a month mean $   +4, median $  -14, 10th $  -55 · >= $500/month/acct in   0% · > 0 in  11% · months with a payout (of 12) median 0 · worst running loss $-1320
+    U1 weak day, sized by M1                     3 MNQ 1 acct: pass 48% · funded pays $1675 · net a month mean $   +4, median $  -14, 10th $  -82 · >= $500/month/acct in   0% · > 0 in  19% · months with a payout (of 12) median 0 · worst running loss $-2145
+    U2 trend trade, every day                    1 MNQ 1 acct: pass 33% · funded pays $994 · net a month mean $  +11, median $  -49, 10th $  -82 · >= $500/month/acct in   1% · > 0 in  30% · months with a payout (of 12) median 0 · worst running loss $-1320
+    U2 trend trade, every day                    2 MNQ 1 acct: pass 25% · funded pays $893 · net a month mean $  +25, median $  -27, 10th $ -206 · >= $500/month/acct in   3% · > 0 in  46% · months with a payout (of 12) median 1 · worst running loss $-2970
+    U2 trend trade, every day                    3 MNQ 1 acct: pass 19% · funded pays $422 · net a month mean $ -141, median $ -165, 10th $ -302 · >= $500/month/acct in   0% · > 0 in  14% · months with a payout (of 12) median 1 · worst running loss $-4455
+    U2 trend trade, M2 top third                 1 MNQ 1 acct: pass 37% · funded pays $1217 · net a month mean $  -28, median $  -28, 10th $  -41 · >= $500/month/acct in   0% · > 0 in   1% · months with a payout (of 12) median 0 · worst running loss $-660
+    U2 trend trade, M2 top third                 2 MNQ 1 acct: pass 30% · funded pays $492 · net a month mean $  -12, median $  -40, 10th $  -82 · >= $500/month/acct in   0% · > 0 in  30% · months with a payout (of 12) median 0 · worst running loss $-1320
+    U2 trend trade, M2 top third                 3 MNQ 1 acct: pass 21% · funded pays $504 · net a month mean $  -21, median $  -69, 10th $ -124 · >= $500/month/acct in   0% · > 0 in  25% · months with a payout (of 12) median 0 · worst running loss $-1980
+    U2 trend trade, M2 top third, sized by M1    1 MNQ 1 acct: pass 49% · funded pays $792 · net a month mean $  -21, median $  -28, 10th $  -28 · >= $500/month/acct in   0% · > 0 in   4% · months with a payout (of 12) median 0 · worst running loss $-495
+    U2 trend trade, M2 top third, sized by M1    2 MNQ 1 acct: pass 40% · funded pays $791 · net a month mean $   +9, median $  -28, 10th $  -69 · >= $500/month/acct in   0% · > 0 in  27% · months with a payout (of 12) median 0 · worst running loss $-1155
+    U2 trend trade, M2 top third, sized by M1    3 MNQ 1 acct: pass 30% · funded pays $705 · net a month mean $   +5, median $  -54, 10th $  -96 · >= $500/month/acct in   0% · > 0 in  27% · months with a payout (of 12) median 0 · worst running loss $-1815
+    U3 BOTH (U1 M1 + U2 M2 M1)                   1 MNQ 1 acct: pass 65% · funded pays $892 · net a month mean $  -15, median $  -14, 10th $  -41 · >= $500/month/acct in   0% · > 0 in  16% · months with a payout (of 12) median 0 · worst running loss $-660
+    U3 BOTH (U1 M1 + U2 M2 M1)                   1 MNQ 3 acct:  net a month mean $  -45, median $  -41, 10th $ -124 · >= $500/month/acct in   0% · > 0 in  16% · months with a payout (of 12) median 0 · worst running loss $-1980
+    U3 BOTH (U1 M1 + U2 M2 M1)                   1 MNQ 5 acct:  net a month mean $  -75, median $  -69, 10th $ -206 · >= $500/month/acct in   0% · > 0 in  16% · months with a payout (of 12) median 0 · worst running loss $-3300
+    U3 BOTH (U1 M1 + U2 M2 M1)                   2 MNQ 1 acct: pass 41% · funded pays $1114 · net a month mean $  +38, median $  -28, 10th $  -82 · >= $500/month/acct in   0% · > 0 in  38% · months with a payout (of 12) median 0 · worst running loss $-2310
+    U3 BOTH (U1 M1 + U2 M2 M1)                   2 MNQ 3 acct:  net a month mean $ +114, median $  -82, 10th $ -248 · >= $500/month/acct in   0% · > 0 in  38% · months with a payout (of 12) median 0 · worst running loss $-6930
+    U3 BOTH (U1 M1 + U2 M2 M1)                   2 MNQ 5 acct:  net a month mean $ +190, median $ -138, 10th $ -412 · >= $500/month/acct in   0% · > 0 in  38% · months with a payout (of 12) median 0 · worst running loss $-11550
+    U3 BOTH (U1 M1 + U2 M2 M1)                   3 MNQ 1 acct: pass 30% · funded pays $687 · net a month mean $  -11, median $  -41, 10th $ -192 · >= $500/month/acct in   4% · > 0 in  37% · months with a payout (of 12) median 0 · worst running loss $-3465
+    U3 BOTH (U1 M1 + U2 M2 M1)                   3 MNQ 3 acct:  net a month mean $  -33, median $ -124, 10th $ -578 · >= $500/month/acct in   4% · > 0 in  37% · months with a payout (of 12) median 0 · worst running loss $-10395
+    U3 BOTH (U1 M1 + U2 M2 M1)                   3 MNQ 5 acct:  net a month mean $  -56, median $ -206, 10th $ -962 · >= $500/month/acct in   4% · > 0 in  37% · months with a payout (of 12) median 0 · worst running loss $-17325
+
+  FAST — buy an eval, buy a new one the day after each fails, from every trading day; first payout and 60-day money (Select Daily 50K):
+    U2 trend trade, every day                     2 MNQ: first payout within 20 days   1% · 40  10% · 60  18% (median day 39) · in 60 days: fees $ 673, payouts $  390, net mean $ -283, median $ -660
+    U2 trend trade, every day                     4 MNQ: first payout within 20 days   6% · 40  17% · 60  28% (median day 36) · in 60 days: fees $1416, payouts $  492, net mean $ -924, median $-1320
+    U2 trend trade, every day                     6 MNQ: first payout within 20 days   6% · 40  17% · 60  26% (median day 34) · in 60 days: fees $1895, payouts $  457, net mean $-1438, median $-1815
+    U2 trend trade, every day                    10 MNQ: first payout within 20 days   9% · 40  21% · 60  31% (median day 31) · in 60 days: fees $2388, payouts $  601, net mean $-1788, median $-2145
+    U2 trend trade, every day                    20 MNQ: first payout within 20 days   5% · 40  11% · 60  17% (median day 32) · in 60 days: fees $3095, payouts $  388, net mean $-2707, median $-3135
+    U2 trend trade, M2 top third                  2 MNQ: first payout within 20 days   0% · 40   0% · 60   2% (median day 47) · in 60 days: fees $ 322, payouts $   14, net mean $ -308, median $ -330
+    U2 trend trade, M2 top third                  4 MNQ: first payout within 20 days   1% · 40   5% · 60   8% (median day 37) · in 60 days: fees $ 589, payouts $  131, net mean $ -457, median $ -660
+    U2 trend trade, M2 top third                  6 MNQ: first payout within 20 days   1% · 40   4% · 60   7% (median day 38) · in 60 days: fees $ 780, payouts $   85, net mean $ -695, median $ -825
+    U2 trend trade, M2 top third                 10 MNQ: first payout within 20 days   1% · 40   7% · 60  12% (median day 37) · in 60 days: fees $1075, payouts $  159, net mean $ -916, median $ -990
+    U2 trend trade, M2 top third                 20 MNQ: first payout within 20 days   1% · 40   4% · 60   7% (median day 38) · in 60 days: fees $1384, payouts $  112, net mean $-1272, median $-1320
+    U2 trend trade, M2 top third, sized by M1     2 MNQ: first payout within 20 days   0% · 40   0% · 60   2% (median day 50) · in 60 days: fees $ 271, payouts $   12, net mean $ -259, median $ -330
+    U2 trend trade, M2 top third, sized by M1     4 MNQ: first payout within 20 days   1% · 40   3% · 60   7% (median day 44) · in 60 days: fees $ 512, payouts $  131, net mean $ -381, median $ -495
+    U2 trend trade, M2 top third, sized by M1     6 MNQ: first payout within 20 days   2% · 40   6% · 60  10% (median day 36) · in 60 days: fees $ 678, payouts $  185, net mean $ -493, median $ -660
+    U2 trend trade, M2 top third, sized by M1    10 MNQ: first payout within 20 days   2% · 40   8% · 60  14% (median day 36) · in 60 days: fees $ 924, payouts $  210, net mean $ -714, median $ -825
+    U2 trend trade, M2 top third, sized by M1    20 MNQ: first payout within 20 days   1% · 40   4% · 60   7% (median day 39) · in 60 days: fees $1251, payouts $   90, net mean $-1161, median $-1155
+    U3 BOTH (U1 M1 + U2 M2 M1)                    2 MNQ: first payout within 20 days   0% · 40   0% · 60   2% (median day 51) · in 60 days: fees $ 328, payouts $   21, net mean $ -307, median $ -330
+    U3 BOTH (U1 M1 + U2 M2 M1)                    4 MNQ: first payout within 20 days   1% · 40   3% · 60   8% (median day 45) · in 60 days: fees $ 598, payouts $  169, net mean $ -430, median $ -495
+    U3 BOTH (U1 M1 + U2 M2 M1)                    6 MNQ: first payout within 20 days   1% · 40   4% · 60   8% (median day 38) · in 60 days: fees $ 759, payouts $  180, net mean $ -579, median $ -660
+    U3 BOTH (U1 M1 + U2 M2 M1)                   10 MNQ: first payout within 20 days   2% · 40   6% · 60  10% (median day 36) · in 60 days: fees $ 998, payouts $  160, net mean $ -838, median $ -825
+    U3 BOTH (U1 M1 + U2 M2 M1)                   20 MNQ: first payout within 20 days   0% · 40   3% · 60   6% (median day 40) · in 60 days: fees $1428, payouts $   72, net mean $-1356, median $-1320

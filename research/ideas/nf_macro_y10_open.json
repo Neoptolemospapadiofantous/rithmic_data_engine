@@ -1,0 +1,31 @@
+{
+ "id": "nf_macro_y10_open",
+ "name": "10-year yield shock yesterday \u2192 trade against it from 09:35",
+ "why": "The plain next-day effect of a rates shock, no intraday condition. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "b": [
+   7,
+   10
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:35",
+   "when": "abs(y10c) >= b",
+   "dir": "-sign(y10c)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0"
+}

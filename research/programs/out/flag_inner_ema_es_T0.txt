@@ -1,0 +1,33 @@
+Inner / main flags with a local-trend check T0 — ES, 3347 NY days, 25439 flags (1-5m). Fixed cost 0.5 pts, target = measured move. Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg R (n) · all: R, win %, PF · vs same-day twin · periods > 0.
+
+######## BULL 3-5m · main flags
+    break · all           -0.21 (1003) | -0.06 (1029) | +0.17 ( 873) | -0.03 ( 291) | all -0.042 win 28% PF 0.95 · twin -0.016 · 1/4 · 196/yr
+    break · local uptrend -0.21 ( 948) | -0.08 ( 948) | +0.16 ( 788) | -0.06 ( 275) | all -0.058 win 28% PF 0.93 · twin -0.031 · 1/4 · 182/yr
+    break · NOT uptrend   -0.20 (  55) | +0.18 (  81) | +0.31 (  85) | +0.55 (  16) | all +0.164 win 30% PF 1.20 · twin +0.168 · 3/4 · 15/yr
+    flag-mid · all        -0.01 (1020) | +0.11 (1000) | +0.26 ( 826) | +0.14 ( 273) | all +0.113 win 34% PF 1.15 · twin +0.105 · 3/4 · 191/yr
+    flag-mid · local uptrend -0.02 ( 964) | +0.10 ( 920) | +0.27 ( 746) | +0.10 ( 257) | all +0.106 win 34% PF 1.14 · twin +0.099 · 3/4 · 177/yr
+    flag-mid · NOT uptrend +0.07 (  56) | +0.23 (  80) | +0.12 (  80) | +0.74 (  16) | all +0.189 win 33% PF 1.24 · twin +0.187 · 4/4 · 14/yr
+
+######## BULL 1-2m · main flags
+    break · all           -0.28 ( 841) | -0.14 ( 889) | +0.23 ( 783) | -0.01 ( 249) | all -0.064 win 30% PF 0.92 · twin -0.054 · 1/4 · 169/yr
+    break · local uptrend -0.29 ( 808) | -0.14 ( 841) | +0.22 ( 735) | +0.01 ( 227) | all -0.071 win 30% PF 0.91 · twin -0.058 · 2/4 · 160/yr
+    break · NOT uptrend   +0.03 (  33) | -0.09 (  48) | +0.38 (  48) | -0.26 (  22) | all +0.062 win 39% PF 1.09 · twin +0.022 · 2/4 · 9/yr
+    flag-mid · all        -0.09 (1194) | -0.02 (1229) | +0.31 (1002) | +0.02 ( 327) | all +0.050 win 32% PF 1.06 · twin +0.060 · 2/4 · 230/yr
+    flag-mid · local uptrend -0.09 (1122) | -0.02 (1122) | +0.35 ( 889) | +0.06 ( 282) | all +0.061 win 32% PF 1.08 · twin +0.072 · 2/4 · 210/yr
+    flag-mid · NOT uptrend -0.06 (  72) | -0.03 ( 107) | -0.01 ( 113) | -0.20 (  45) | all -0.053 win 28% PF 0.94 · twin -0.062 · 0/4 · 21/yr
+
+######## BEAR 3-5m · main flags
+    break · all           -0.23 (1040) | -0.14 ( 918) | -0.14 ( 761) | -0.26 ( 240) | all -0.180 win 21% PF 0.80 · twin +0.003 · 0/4 · 182/yr
+    break · local uptrend -0.22 ( 977) | -0.10 ( 840) | -0.13 ( 679) | -0.19 ( 210) | all -0.156 win 21% PF 0.83 · twin +0.017 · 0/4 · 166/yr
+    break · NOT uptrend   -0.39 (  63) | -0.62 (  78) | -0.17 (  82) | -0.74 (  30) | all -0.432 win 19% PF 0.54 · twin -0.149 · 0/4 · 16/yr
+    flag-mid · all        -0.09 (1021) | -0.09 ( 962) | +0.07 ( 750) | +0.09 ( 248) | all -0.034 win 23% PF 0.96 · twin +0.100 · 2/4 · 183/yr
+    flag-mid · local uptrend -0.06 ( 956) | -0.07 ( 873) | +0.11 ( 659) | +0.16 ( 207) | all -0.006 win 24% PF 0.99 · twin +0.108 · 2/4 · 165/yr
+    flag-mid · NOT uptrend -0.41 (  65) | -0.33 (  89) | -0.20 (  91) | -0.27 (  41) | all -0.300 win 17% PF 0.68 · twin +0.025 · 0/4 · 18/yr
+
+######## BEAR 1-2m · main flags
+    break · all           -0.32 (1020) | -0.31 ( 993) | -0.07 ( 848) | +0.10 ( 276) | all -0.212 win 26% PF 0.75 · twin -0.065 · 1/4 · 192/yr
+    break · local uptrend -0.34 ( 964) | -0.32 ( 921) | -0.07 ( 779) | +0.08 ( 253) | all -0.224 win 25% PF 0.74 · twin -0.068 · 1/4 · 179/yr
+    break · NOT uptrend   -0.05 (  56) | -0.09 (  72) | -0.15 (  69) | +0.37 (  23) | all -0.048 win 35% PF 0.93 · twin -0.023 · 1/4 · 13/yr
+    flag-mid · all        -0.25 (1467) | -0.20 (1397) | -0.01 (1089) | +0.07 ( 363) | all -0.146 win 23% PF 0.84 · twin +0.027 · 1/4 · 265/yr
+    flag-mid · local uptrend -0.27 (1341) | -0.22 (1214) | -0.01 ( 940) | -0.02 ( 309) | all -0.169 win 23% PF 0.81 · twin +0.001 · 0/4 · 233/yr
+    flag-mid · NOT uptrend -0.09 ( 126) | -0.04 ( 183) | +0.00 ( 149) | +0.58 (  54) | all +0.026 win 22% PF 1.03 · twin +0.220 · 2/4 · 31/yr

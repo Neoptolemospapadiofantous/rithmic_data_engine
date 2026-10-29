@@ -1,0 +1,528 @@
+Flags: entry timing × stop placement × walk-forward selection — ES, 3347 NY days, 10010 flags (3-5m, researched tier). Fixed cost 0.5 pts. Target = measured move.
+Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg pts at today's ATR (n) · all: pts/trade, win %, PF, avg loser, worst drawdown (pts, 1 contract, whole history) · twin = trade minus a random minute in the hour after the flag, same TP / stop · periods > 0.
+
+######## NY bull 3-5m — entry × stop
+    E0 page · S0 flag low              +0.55 (1003) |  +0.73 (1029) |  +1.22 ( 873) |  +0.28 ( 291) | all  +0.77 pts win 28.8% PF 1.16 · avg loser    -6.9 · worst drawdown    823 pts · twin -0.16 · 4/4
+    E0 page · TP .02ATR SL 10x         -0.67 (1416) |  -0.36 (1443) |  -0.54 (1204) |  -0.63 ( 392) | all  -0.53 pts win 90.6% PF 0.51 · avg loser   -11.5 · worst drawdown   2376 pts · twin -0.34 · 0/4
+    E0 page · TP .02ATR SL 20x         -0.51 (1394) |  -0.45 (1428) |  -0.46 (1193) |  -0.68 ( 388) | all  -0.49 pts win 94.5% PF 0.54 · avg loser   -19.5 · worst drawdown   2197 pts · twin -0.30 · 0/4
+    E0 page · TP .02ATR no SL          -0.52 (1393) |  -0.36 (1428) |  -0.92 (1190) |  -0.45 ( 385) | all  -0.57 pts win 95.7% PF 0.50 · avg loser   -27.0 · worst drawdown   2553 pts · twin -0.24 · 0/4
+    E0 page · TP .03ATR SL 10x         -0.53 (1379) |  -0.22 (1406) |  -0.23 (1174) |  -0.76 ( 388) | all  -0.37 pts win 91.2% PF 0.74 · avg loser   -16.2 · worst drawdown   1650 pts · twin -0.30 · 0/4
+    E0 page · TP .03ATR SL 20x         -0.60 (1377) |  -0.41 (1401) |  -0.16 (1168) |  -0.41 ( 382) | all  -0.40 pts win 93.6% PF 0.73 · avg loser   -23.1 · worst drawdown   1812 pts · twin -0.26 · 0/4
+    E0 page · TP .03ATR no SL          -0.55 (1377) |  -0.45 (1401) |  -0.62 (1168) |  -0.63 ( 382) | all  -0.54 pts win 93.9% PF 0.67 · avg loser   -27.0 · worst drawdown   2412 pts · twin -0.27 · 0/4
+    E0 page · TP .05ATR SL 10x         -0.27 (1336) |  -0.19 (1358) |  -0.20 (1135) |  -0.34 ( 366) | all  -0.23 pts win 89.3% PF 0.90 · avg loser   -21.1 · worst drawdown   1077 pts · twin -0.32 · 0/4
+    E0 page · TP .05ATR SL 20x         -0.53 (1336) |  -0.29 (1358) |  -0.40 (1132) |  -0.21 ( 363) | all  -0.39 pts win 90.1% PF 0.84 · avg loser   -24.5 · worst drawdown   1738 pts · twin -0.34 · 0/4
+    E0 page · TP .05ATR no SL          -0.18 (1336) |  -0.34 (1358) |  -0.66 (1132) |  -0.08 ( 363) | all  -0.35 pts win 90.2% PF 0.85 · avg loser   -24.6 · worst drawdown   1664 pts · twin -0.19 · 0/4
+    E0 page · TP last high, SL flag    +0.28 ( 938) |  +0.35 ( 915) |  -0.34 ( 775) |  +1.02 ( 260) | all  +0.20 pts win 71.3% PF 1.07 · avg loser   -10.5 · worst drawdown    664 pts · twin -0.16 · 3/4
+    E0 page · TP last high SL 10x      -0.43 ( 935) |  -0.44 ( 911) |  -0.77 ( 766) |  +0.68 ( 260) | all  -0.43 pts win 82.6% PF 0.90 · avg loser   -25.1 · worst drawdown   1733 pts · twin -0.43 · 1/4
+    E0 page · TP last high SL 20x      -0.37 ( 935) |  -0.83 ( 911) |  -1.21 ( 766) |  +0.81 ( 260) | all  -0.64 pts win 82.9% PF 0.86 · avg loser   -26.8 · worst drawdown   2373 pts · twin -0.55 · 1/4
+    E2 flag-mid limit · S2 flag low-0.1ATR  +1.35 (1020) |  +1.64 (1000) |  +2.03 ( 826) |  +1.45 ( 273) | all  +1.63 pts win 34.5% PF 1.31 · avg loser    -8.0 · worst drawdown    672 pts · twin +0.75 · 4/4
+    E2 flag-mid limit · TP .02ATR SL 10x  -0.27 (1530) |  -0.37 (1508) |  -0.33 (1205) |  -0.32 ( 393) | all  -0.32 pts win 92.3% PF 0.63 · avg loser   -11.5 · worst drawdown   1542 pts · twin -0.06 · 0/4
+    E2 flag-mid limit · TP .02ATR SL 20x  -0.27 (1530) |  -0.37 (1507) |  -0.42 (1204) |  -0.35 ( 393) | all  -0.35 pts win 95.4% PF 0.63 · avg loser   -20.2 · worst drawdown   1667 pts · twin -0.09 · 0/4
+    E2 flag-mid limit · TP .02ATR no SL  -0.24 (1530) |  -0.44 (1507) |  -0.53 (1200) |  +0.12 ( 391) | all  -0.35 pts win 96.6% PF 0.63 · avg loser   -27.6 · worst drawdown   1767 pts · twin +0.06 · 1/4
+    E2 flag-mid limit · TP .03ATR SL 10x  -0.14 (1530) |  -0.31 (1506) |  -0.07 (1205) |  -0.15 ( 393) | all  -0.18 pts win 92.3% PF 0.86 · avg loser   -16.2 · worst drawdown   1018 pts · twin -0.03 · 0/4
+    E2 flag-mid limit · TP .03ATR SL 20x  -0.35 (1530) |  -0.48 (1504) |  -0.17 (1200) |  +0.17 ( 391) | all  -0.30 pts win 94.3% PF 0.78 · avg loser   -24.5 · worst drawdown   1659 pts · twin -0.07 · 1/4
+    E2 flag-mid limit · TP .03ATR no SL  -0.38 (1530) |  -0.57 (1504) |  -0.50 (1200) |  +0.38 ( 391) | all  -0.41 pts win 94.7% PF 0.73 · avg loser   -28.6 · worst drawdown   2290 pts · twin -0.04 · 1/4
+    E2 flag-mid limit · TP .05ATR SL 10x  -0.02 (1528) |  +0.03 (1493) |  +0.06 (1196) |  +0.06 ( 385) | all  +0.02 pts win 90.7% PF 1.01 · avg loser   -21.9 · worst drawdown    484 pts · twin +0.13 · 3/4
+    E2 flag-mid limit · TP .05ATR SL 20x  -0.12 (1528) |  -0.11 (1493) |  -0.25 (1194) |  -0.08 ( 385) | all  -0.15 pts win 91.3% PF 0.93 · avg loser   -25.5 · worst drawdown   1068 pts · twin +0.09 · 0/4
+    E2 flag-mid limit · TP .05ATR no SL  -0.19 (1528) |  -0.15 (1493) |  -0.34 (1194) |  +0.16 ( 385) | all  -0.19 pts win 91.5% PF 0.92 · avg loser   -26.7 · worst drawdown   1404 pts · twin +0.20 · 1/4
+    E2 flag-mid limit · TP last high, SL flag  +0.83 (1530) |  +0.40 (1508) |  +0.09 (1206) |  +1.09 ( 393) | all  +0.52 pts win 67.8% PF 1.20 · avg loser    -8.0 · worst drawdown    375 pts · twin +0.23 · 4/4
+    E2 flag-mid limit · TP last high SL 10x  +0.01 (1525) |  -0.00 (1483) |  +0.08 (1184) |  +1.58 ( 388) | all  +0.15 pts win 85.5% PF 1.04 · avg loser   -27.7 · worst drawdown    947 pts · twin +0.14 · 3/4
+    E2 flag-mid limit · TP last high SL 20x  +0.27 (1525) |  -0.37 (1483) |  -0.05 (1183) |  +1.94 ( 388) | all  +0.12 pts win 85.8% PF 1.03 · avg loser   -28.7 · worst drawdown   1278 pts · twin +0.28 · 2/4
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x) — entry × stop
+    E0 page · S0 flag low              +0.47 (  75) |  +2.25 ( 100) |  -0.17 ( 103) |  -1.68 (  23) | all  +0.68 pts win 33.2% PF 1.15 · avg loser    -6.9 · worst drawdown    311 pts · twin -0.36 · 2/4
+    E0 page · TP .02ATR SL 10x         -0.37 (  75) |  -0.00 ( 100) |  -0.58 ( 103) |  +0.61 (  23) | all  -0.24 pts win 93.0% PF 0.70 · avg loser   -11.6 · worst drawdown    105 pts · twin -0.22 · 1/4
+    E0 page · TP .02ATR SL 20x         -0.48 (  75) |  +0.06 ( 100) |  +0.16 ( 103) |  +0.61 (  23) | all  +0.00 pts win 96.7% PF 1.00 · avg loser   -17.6 · worst drawdown     59 pts · twin +0.04 · 3/4
+    E0 page · TP .02ATR no SL          -0.26 (  75) |  +0.23 ( 100) |  -0.99 ( 103) |  +0.61 (  23) | all  -0.28 pts win 97.0% PF 0.68 · avg loser   -29.1 · worst drawdown    163 pts · twin +0.08 · 2/4
+    E0 page · TP .03ATR SL 10x         +0.02 (  75) |  +0.25 ( 100) |  +0.27 ( 103) |  +1.16 (  23) | all  +0.27 pts win 94.4% PF 1.33 · avg loser   -14.6 · worst drawdown     63 pts · twin +0.11 · 4/4
+    E0 page · TP .03ATR SL 20x         -0.01 (  75) |  +0.35 ( 100) |  +0.34 ( 103) |  +1.16 (  23) | all  +0.32 pts win 96.0% PF 1.40 · avg loser   -20.0 · worst drawdown     79 pts · twin +0.08 · 3/4
+    E0 page · TP .03ATR no SL          -0.75 (  75) |  +0.66 ( 100) |  -0.59 ( 103) |  +1.16 (  23) | all  -0.08 pts win 96.0% PF 0.93 · avg loser   -29.9 · worst drawdown    175 pts · twin -0.11 · 2/4
+    E0 page · TP .05ATR SL 10x         +1.17 (  75) |  +0.70 ( 100) |  -0.10 ( 103) |  +2.27 (  23) | all  +0.67 pts win 93.0% PF 1.46 · avg loser   -20.7 · worst drawdown    130 pts · twin -0.07 · 3/4
+    E0 page · TP .05ATR SL 20x         +0.43 (  75) |  +0.91 ( 100) |  -0.99 ( 103) |  +2.27 (  23) | all  +0.24 pts win 93.0% PF 1.13 · avg loser   -26.7 · worst drawdown    206 pts · twin -0.29 · 3/4
+    E0 page · TP .05ATR no SL          +0.29 (  75) |  +0.91 ( 100) |  -1.10 ( 103) |  +2.27 (  23) | all  +0.17 pts win 93.0% PF 1.09 · avg loser   -27.8 · worst drawdown    217 pts · twin -0.48 · 3/4
+    E0 page · TP last high, SL flag    +1.75 (  47) |  +2.37 (  72) |  -1.29 (  69) |  +1.10 (  13) | all  +0.89 pts win 75.1% PF 1.32 · avg loser   -11.2 · worst drawdown    188 pts · twin +0.16 · 3/4
+    E0 page · TP last high SL 10x      +0.11 (  47) |  +0.95 (  72) |  -2.31 (  69) |  +5.18 (  13) | all  -0.09 pts win 84.6% PF 0.98 · avg loser   -29.3 · worst drawdown    282 pts · twin -0.20 · 3/4
+    E0 page · TP last high SL 20x      +0.35 (  47) |  +1.16 (  72) |  -3.26 (  69) |  +5.18 (  13) | all  -0.29 pts win 84.6% PF 0.94 · avg loser   -30.5 · worst drawdown    348 pts · twin -0.71 · 3/4
+    E2 flag-mid limit · S2 flag low-0.1ATR  +2.68 (  76) |  +3.21 (  99) |  +2.68 (  91) |  +2.75 (  19) | all  +2.87 pts win 43.2% PF 1.62 · avg loser    -8.2 · worst drawdown    173 pts · twin +1.51 · 4/4
+    E2 flag-mid limit · TP .02ATR SL 10x  +0.13 (  76) |  -0.13 (  99) |  +0.07 (  91) |  -0.03 (  19) | all  +0.01 pts win 95.1% PF 1.02 · avg loser   -11.6 · worst drawdown     35 pts · twin +0.22 · 2/4
+    E2 flag-mid limit · TP .02ATR SL 20x  -0.00 (  76) |  -0.10 (  99) |  +0.35 (  91) |  -0.62 (  19) | all  +0.04 pts win 97.5% PF 1.06 · avg loser   -22.6 · worst drawdown     57 pts · twin +0.13 · 1/4
+    E2 flag-mid limit · TP .02ATR no SL  +0.61 (  76) |  -0.49 (  99) |  +0.18 (  91) |  +0.61 (  19) | all  +0.09 pts win 98.6% PF 1.17 · avg loser   -36.4 · worst drawdown     99 pts · twin +0.34 · 3/4
+    E2 flag-mid limit · TP .03ATR SL 10x  +0.44 (  76) |  +0.16 (  99) |  +0.76 (  91) |  +0.20 (  19) | all  +0.43 pts win 95.8% PF 1.63 · avg loser   -16.2 · worst drawdown     41 pts · twin +0.23 · 4/4
+    E2 flag-mid limit · TP .03ATR SL 20x  -0.22 (  76) |  +0.02 (  99) |  +0.78 (  91) |  -0.67 (  19) | all  +0.15 pts win 96.8% PF 1.16 · avg loser   -30.7 · worst drawdown     88 pts · twin +0.02 · 2/4
+    E2 flag-mid limit · TP .03ATR no SL  +0.32 (  76) |  -0.04 (  99) |  +0.73 (  91) |  +1.16 (  19) | all  +0.38 pts win 97.9% PF 1.50 · avg loser   -35.9 · worst drawdown     94 pts · twin +0.43 · 3/4
+    E2 flag-mid limit · TP .05ATR SL 10x  +1.07 (  76) |  +0.64 (  99) |  +0.93 (  91) |  +0.67 (  19) | all  +0.85 pts win 95.1% PF 1.65 · avg loser   -26.6 · worst drawdown    114 pts · twin +0.14 · 4/4
+    E2 flag-mid limit · TP .05ATR SL 20x  +1.50 (  76) |  +0.13 (  99) |  +0.39 (  91) |  -0.79 (  19) | all  +0.52 pts win 95.8% PF 1.31 · avg loser   -39.3 · worst drawdown    183 pts · twin +0.56 · 3/4
+    E2 flag-mid limit · TP .05ATR no SL  +1.41 (  76) |  +0.32 (  99) |  +0.29 (  91) |  +2.27 (  19) | all  +0.73 pts win 96.1% PF 1.50 · avg loser   -37.6 · worst drawdown    174 pts · twin +0.64 · 4/4
+    E2 flag-mid limit · TP last high, SL flag  +2.35 (  76) |  +1.31 (  99) |  +0.95 (  91) |  +4.13 (  19) | all  +1.66 pts win 72.6% PF 1.74 · avg loser    -8.2 · worst drawdown     97 pts · twin +1.01 · 4/4
+    E2 flag-mid limit · TP last high SL 10x  +2.10 (  76) |  +1.56 (  98) |  -1.71 (  91) |  +2.75 (  19) | all  +0.74 pts win 87.7% PF 1.18 · avg loser   -34.0 · worst drawdown    400 pts · twin +0.41 · 3/4
+    E2 flag-mid limit · TP last high SL 20x  +2.25 (  76) |  +1.53 (  98) |  -1.37 (  91) |  +6.27 (  19) | all  +1.11 pts win 88.0% PF 1.29 · avg loser   -32.0 · worst drawdown    350 pts · twin +0.48 · 3/4
+
+######## NY bear 3-5m — entry × stop
+    E0 page · S0 flag low              -0.39 (1040) |  -0.33 ( 918) |  -0.76 ( 761) |  -0.98 ( 240) | all  -0.51 pts win 21.4% PF 0.93 · avg loser    -9.1 · worst drawdown   2029 pts · twin -0.05 · 0/4
+    E0 page · TP .02ATR SL 10x         -0.77 (1499) |  -0.86 (1294) |  -0.39 (1082) |  -0.80 ( 329) | all  -0.70 pts win 89.2% PF 0.44 · avg loser   -11.6 · worst drawdown   2963 pts · twin -0.26 · 0/4
+    E0 page · TP .02ATR SL 20x         -0.39 (1477) |  -0.62 (1286) |  -0.29 (1072) |  -0.86 ( 324) | all  -0.47 pts win 95.1% PF 0.55 · avg loser   -21.6 · worst drawdown   2111 pts · twin -0.05 · 0/4
+    E0 page · TP .02ATR no SL          -0.36 (1476) |  -0.45 (1284) |  -0.57 (1072) |  -0.99 ( 324) | all  -0.49 pts win 96.3% PF 0.54 · avg loser   -29.3 · worst drawdown   2229 pts · twin -0.11 · 0/4
+    E0 page · TP .03ATR SL 10x         -0.72 (1469) |  -0.57 (1279) |  -0.30 (1064) |  -0.94 ( 324) | all  -0.58 pts win 90.3% PF 0.64 · avg loser   -16.8 · worst drawdown   2495 pts · twin -0.34 · 0/4
+    E0 page · TP .03ATR SL 20x         -0.64 (1461) |  -0.53 (1265) |  -0.09 (1058) |  -1.03 ( 322) | all  -0.50 pts win 94.0% PF 0.69 · avg loser   -26.6 · worst drawdown   2124 pts · twin -0.19 · 0/4
+    E0 page · TP .03ATR no SL          -0.66 (1460) |  -0.47 (1262) |  -0.44 (1058) |  -0.64 ( 322) | all  -0.54 pts win 94.3% PF 0.67 · avg loser   -29.0 · worst drawdown   2289 pts · twin -0.21 · 0/4
+    E0 page · TP .05ATR SL 10x         -0.51 (1427) |  -0.27 (1233) |  +0.24 (1029) |  -0.83 ( 319) | all  -0.27 pts win 90.4% PF 0.88 · avg loser   -24.3 · worst drawdown   1212 pts · twin -0.13 · 1/4
+    E0 page · TP .05ATR SL 20x         -0.59 (1426) |  -0.35 (1227) |  -0.24 (1029) |  -0.23 ( 319) | all  -0.40 pts win 91.5% PF 0.84 · avg loser   -29.2 · worst drawdown   1879 pts · twin -0.16 · 0/4
+    E0 page · TP .05ATR no SL          -0.54 (1426) |  -0.35 (1227) |  -0.63 (1029) |  -0.24 ( 319) | all  -0.48 pts win 91.5% PF 0.81 · avg loser   -30.2 · worst drawdown   2169 pts · twin -0.28 · 0/4
+    E0 page · TP last high, SL flag    -0.08 ( 989) |  -1.22 ( 819) |  +0.16 ( 656) |  +0.80 ( 204) | all  -0.30 pts win 62.0% PF 0.94 · avg loser   -12.4 · worst drawdown   1884 pts · twin -0.57 · 2/4
+    E0 page · TP last high SL 10x      -0.83 ( 985) |  -0.87 ( 814) |  -0.66 ( 656) |  +2.58 ( 203) | all  -0.54 pts win 76.2% PF 0.91 · avg loser   -26.3 · worst drawdown   2702 pts · twin -0.59 · 1/4
+    E0 page · TP last high SL 20x      -0.76 ( 985) |  -0.81 ( 814) |  -0.62 ( 656) |  +2.82 ( 203) | all  -0.47 pts win 76.7% PF 0.92 · avg loser   -26.6 · worst drawdown   2529 pts · twin -0.41 · 1/4
+    E2 flag-mid limit · S2 flag low-0.1ATR  +0.53 (1021) |  +0.01 ( 962) |  +0.46 ( 750) |  +0.77 ( 248) | all  +0.36 pts win 23.7% PF 1.05 · avg loser    -9.0 · worst drawdown   1326 pts · twin +0.82 · 4/4
+    E2 flag-mid limit · TP .02ATR SL 10x  -0.60 (1568) |  -0.95 (1430) |  -0.83 (1139) |  -0.75 ( 341) | all  -0.78 pts win 88.6% PF 0.41 · avg loser   -11.5 · worst drawdown   3526 pts · twin -0.28 · 0/4
+    E2 flag-mid limit · TP .02ATR SL 20x  -0.60 (1567) |  -1.10 (1430) |  -0.93 (1139) |  -0.62 ( 340) | all  -0.85 pts win 93.5% PF 0.40 · avg loser   -21.7 · worst drawdown   3840 pts · twin -0.43 · 0/4
+    E2 flag-mid limit · TP .02ATR no SL  -0.87 (1566) |  -0.84 (1428) |  -1.26 (1139) |  -0.01 ( 339) | all  -0.89 pts win 95.4% PF 0.39 · avg loser   -32.1 · worst drawdown   4101 pts · twin -0.45 · 0/4
+    E2 flag-mid limit · TP .03ATR SL 10x  -0.49 (1566) |  -0.87 (1429) |  -0.58 (1139) |  -0.83 ( 340) | all  -0.66 pts win 89.9% PF 0.61 · avg loser   -16.8 · worst drawdown   3006 pts · twin -0.29 · 0/4
+    E2 flag-mid limit · TP .03ATR SL 20x  -0.66 (1565) |  -0.59 (1427) |  -0.94 (1139) |  -0.44 ( 340) | all  -0.69 pts win 93.5% PF 0.61 · avg loser   -27.4 · worst drawdown   3203 pts · twin -0.26 · 0/4
+    E2 flag-mid limit · TP .03ATR no SL  -0.73 (1564) |  -0.59 (1426) |  -1.23 (1139) |  +0.12 ( 339) | all  -0.75 pts win 94.2% PF 0.59 · avg loser   -31.7 · worst drawdown   3493 pts · twin -0.25 · 1/4
+    E2 flag-mid limit · TP .05ATR SL 10x  -0.37 (1564) |  -0.22 (1426) |  -0.40 (1138) |  -0.06 ( 338) | all  -0.31 pts win 90.2% PF 0.87 · avg loser   -23.9 · worst drawdown   1548 pts · twin +0.08 · 0/4
+    E2 flag-mid limit · TP .05ATR SL 20x  -0.54 (1562) |  -0.28 (1424) |  -0.89 (1138) |  +0.55 ( 336) | all  -0.47 pts win 91.3% PF 0.82 · avg loser   -29.2 · worst drawdown   2359 pts · twin -0.02 · 1/4
+    E2 flag-mid limit · TP .05ATR no SL  -0.61 (1562) |  -0.33 (1424) |  -0.94 (1138) |  +0.67 ( 336) | all  -0.51 pts win 91.3% PF 0.80 · avg loser   -29.7 · worst drawdown   2569 pts · twin +0.03 · 1/4
+    E2 flag-mid limit · TP last high, SL flag  -0.02 (1567) |  -0.39 (1429) |  +0.35 (1139) |  -0.08 ( 340) | all  -0.05 pts win 54.9% PF 0.99 · avg loser    -8.8 · worst drawdown   1029 pts · twin +0.23 · 1/4
+    E2 flag-mid limit · TP last high SL 10x  -0.68 (1553) |  -0.55 (1405) |  -0.68 (1134) |  +2.87 ( 334) | all  -0.37 pts win 78.2% PF 0.94 · avg loser   -29.0 · worst drawdown   3076 pts · twin +0.22 · 1/4
+    E2 flag-mid limit · TP last high SL 20x  -0.66 (1553) |  -0.64 (1405) |  -0.69 (1134) |  +2.87 ( 334) | all  -0.40 pts win 78.2% PF 0.94 · avg loser   -29.2 · worst drawdown   3103 pts · twin +0.18 · 1/4
+
+######## bull 3-5m + VOL (flag volume dries up) — entry × stop
+    E0 page · S0 flag low              -0.09 ( 538) |  +0.19 ( 509) |  +2.13 ( 366) |  -0.20 ( 110) | all  +0.53 pts win 28.8% PF 1.10 · avg loser    -7.1 · worst drawdown    477 pts · twin -0.36 · 2/4
+    E0 page · TP .02ATR SL 10x         -0.57 ( 760) |  -0.30 ( 676) |  -0.46 ( 493) |  -0.82 ( 155) | all  -0.48 pts win 91.0% PF 0.54 · avg loser   -11.5 · worst drawdown   1011 pts · twin -0.31 · 0/4
+    E0 page · TP .02ATR SL 20x         -0.27 ( 747) |  -0.37 ( 666) |  -0.26 ( 485) |  -1.16 ( 151) | all  -0.36 pts win 95.3% PF 0.61 · avg loser   -19.9 · worst drawdown    766 pts · twin -0.17 · 0/4
+    E0 page · TP .02ATR no SL          -0.36 ( 746) |  -0.38 ( 666) |  -0.58 ( 485) |  -1.15 ( 150) | all  -0.48 pts win 96.3% PF 0.55 · avg loser   -29.0 · worst drawdown   1001 pts · twin -0.23 · 0/4
+    E0 page · TP .03ATR SL 10x         -0.38 ( 741) |  -0.04 ( 655) |  +0.04 ( 474) |  -1.12 ( 151) | all  -0.22 pts win 92.2% PF 0.83 · avg loser   -16.7 · worst drawdown    494 pts · twin -0.20 · 1/4
+    E0 page · TP .03ATR SL 20x         -0.33 ( 740) |  -0.47 ( 650) |  +0.41 ( 471) |  -0.57 ( 147) | all  -0.22 pts win 94.7% PF 0.83 · avg loser   -25.0 · worst drawdown    599 pts · twin -0.18 · 1/4
+    E0 page · TP .03ATR no SL          -0.31 ( 740) |  -0.50 ( 650) |  -0.03 ( 471) |  -1.64 ( 147) | all  -0.40 pts win 95.1% PF 0.73 · avg loser   -30.5 · worst drawdown    851 pts · twin -0.11 · 0/4
+    E0 page · TP .05ATR SL 10x         -0.01 ( 720) |  -0.35 ( 624) |  +0.45 ( 452) |  -0.47 ( 134) | all  -0.04 pts win 90.5% PF 0.98 · avg loser   -22.0 · worst drawdown    431 pts · twin -0.25 · 1/4
+    E0 page · TP .05ATR SL 20x         -0.28 ( 720) |  -0.32 ( 624) |  -0.00 ( 452) |  -0.85 ( 133) | all  -0.27 pts win 91.2% PF 0.89 · avg loser   -26.6 · worst drawdown    651 pts · twin -0.25 · 0/4
+    E0 page · TP .05ATR no SL          +0.04 ( 720) |  -0.42 ( 624) |  -0.19 ( 452) |  -1.19 ( 133) | all  -0.25 pts win 91.4% PF 0.89 · avg loser   -27.0 · worst drawdown    761 pts · twin -0.13 · 1/4
+    E0 page · TP last high, SL flag    +0.42 ( 488) |  +0.21 ( 425) |  +0.41 ( 296) |  +0.49 ( 102) | all  +0.36 pts win 72.7% PF 1.12 · avg loser   -10.6 · worst drawdown    229 pts · twin -0.08 · 4/4
+    E0 page · TP last high SL 10x      -0.38 ( 486) |  -0.88 ( 423) |  -0.46 ( 292) |  -0.13 ( 102) | all  -0.54 pts win 83.3% PF 0.88 · avg loser   -26.7 · worst drawdown   1323 pts · twin -0.26 · 0/4
+    E0 page · TP last high SL 20x      -0.41 ( 486) |  -1.22 ( 423) |  -0.76 ( 292) |  -1.49 ( 102) | all  -0.84 pts win 83.6% PF 0.82 · avg loser   -29.0 · worst drawdown   1524 pts · twin -0.45 · 0/4
+    E2 flag-mid limit · S2 flag low-0.1ATR  +1.41 ( 544) |  +1.91 ( 488) |  +3.17 ( 329) |  +2.07 ( 100) | all  +2.02 pts win 35.3% PF 1.39 · avg loser    -8.1 · worst drawdown    346 pts · twin +1.07 · 4/4
+    E2 flag-mid limit · TP .02ATR SL 10x  -0.20 ( 810) |  -0.52 ( 697) |  -0.15 ( 480) |  -0.32 ( 158) | all  -0.30 pts win 92.5% PF 0.65 · avg loser   -11.5 · worst drawdown    692 pts · twin -0.08 · 0/4
+    E2 flag-mid limit · TP .02ATR SL 20x  -0.32 ( 810) |  -0.53 ( 696) |  -0.17 ( 479) |  -0.20 ( 158) | all  -0.35 pts win 95.6% PF 0.63 · avg loser   -20.9 · worst drawdown    800 pts · twin -0.14 · 0/4
+    E2 flag-mid limit · TP .02ATR no SL  -0.39 ( 810) |  -0.75 ( 696) |  -0.13 ( 478) |  -0.12 ( 158) | all  -0.43 pts win 96.7% PF 0.58 · avg loser   -31.0 · worst drawdown   1004 pts · twin -0.05 · 0/4
+    E2 flag-mid limit · TP .03ATR SL 10x  +0.15 ( 810) |  -0.42 ( 696) |  +0.13 ( 480) |  -0.53 ( 158) | all  -0.09 pts win 92.9% PF 0.92 · avg loser   -16.4 · worst drawdown    496 pts · twin -0.01 · 2/4
+    E2 flag-mid limit · TP .03ATR SL 20x  -0.10 ( 810) |  -0.72 ( 694) |  +0.36 ( 478) |  +0.10 ( 158) | all  -0.18 pts win 95.0% PF 0.86 · avg loser   -25.7 · worst drawdown    688 pts · twin -0.10 · 2/4
+    E2 flag-mid limit · TP .03ATR no SL  -0.26 ( 810) |  -0.93 ( 694) |  +0.20 ( 478) |  -0.27 ( 158) | all  -0.37 pts win 95.2% PF 0.75 · avg loser   -31.0 · worst drawdown   1016 pts · twin +0.05 · 1/4
+    E2 flag-mid limit · TP .05ATR SL 10x  +0.23 ( 808) |  -0.37 ( 690) |  +0.73 ( 474) |  +0.50 ( 154) | all  +0.17 pts win 91.5% PF 1.09 · avg loser   -22.5 · worst drawdown    523 pts · twin +0.19 · 3/4
+    E2 flag-mid limit · TP .05ATR SL 20x  -0.01 ( 808) |  -0.60 ( 690) |  +0.56 ( 474) |  -0.05 ( 154) | all  -0.08 pts win 92.1% PF 0.96 · avg loser   -27.4 · worst drawdown    668 pts · twin +0.14 · 1/4
+    E2 flag-mid limit · TP .05ATR no SL  +0.00 ( 808) |  -0.78 ( 690) |  +0.49 ( 474) |  +0.01 ( 154) | all  -0.14 pts win 92.2% PF 0.94 · avg loser   -28.7 · worst drawdown    820 pts · twin +0.23 · 3/4
+    E2 flag-mid limit · TP last high, SL flag  +1.27 ( 810) |  +0.21 ( 697) |  +0.22 ( 480) |  +1.35 ( 158) | all  +0.70 pts win 69.5% PF 1.29 · avg loser    -8.0 · worst drawdown    408 pts · twin +0.32 · 4/4
+    E2 flag-mid limit · TP last high SL 10x  +0.45 ( 807) |  -0.55 ( 681) |  +0.51 ( 473) |  +1.46 ( 158) | all  +0.22 pts win 86.9% PF 1.06 · avg loser   -30.0 · worst drawdown    951 pts · twin +0.26 · 3/4
+    E2 flag-mid limit · TP last high SL 20x  +0.78 ( 807) |  -1.04 ( 681) |  +0.42 ( 472) |  +1.13 ( 158) | all  +0.14 pts win 87.2% PF 1.04 · avg loser   -31.2 · worst drawdown   1332 pts · twin +0.33 · 3/4
+
+######## bull 3-5m, flow days (2023-03+) — entry × stop
+
+######## bull 3-5m + OF-S (sellers in the flag) — entry × stop
+
+######## bull 3-5m + OF-B (buyers in the pole) — entry × stop
+
+######## bull 3-5m + VOL + OF-S — entry × stop
+
+######## TAKE + VOL — entry × stop
+    E0 page · S0 flag low              +1.75 (  43) |  +0.61 (  42) |  +0.92 (  51) |   —    (   7) | all  +0.99 pts win 35.0% PF 1.22 · avg loser    -6.9 · worst drawdown    100 pts · twin -0.78 · 3/3
+    E0 page · TP .02ATR SL 10x         +0.32 (  43) |  -0.26 (  42) |  +0.13 (  51) |   —    (   7) | all  +0.10 pts win 95.8% PF 1.20 · avg loser   -11.6 · worst drawdown     30 pts · twin +0.21 · 2/3
+    E0 page · TP .02ATR SL 20x         +0.61 (  43) |  -0.13 (  42) |  +0.61 (  51) |   —    (   7) | all  +0.39 pts win 98.6% PF 2.87 · avg loser   -14.9 · worst drawdown     29 pts · twin +0.38 · 2/3
+    E0 page · TP .02ATR no SL          +0.61 (  43) |  +0.34 (  42) |  +0.61 (  51) |   —    (   7) | all  +0.53 pts win 98.6% PF 8.72 · avg loser    -4.9 · worst drawdown      9 pts · twin +0.42 · 3/3
+    E0 page · TP .03ATR SL 10x         +1.16 (  43) |  +0.09 (  42) |  +0.80 (  51) |   —    (   7) | all  +0.72 pts win 97.2% PF 2.76 · avg loser   -14.6 · worst drawdown     25 pts · twin +0.38 · 3/3
+    E0 page · TP .03ATR SL 20x         +1.16 (  43) |  +0.13 (  42) |  +1.16 (  51) |   —    (   7) | all  +0.86 pts win 98.6% PF 4.00 · avg loser   -20.5 · worst drawdown     40 pts · twin +0.23 · 3/3
+    E0 page · TP .03ATR no SL          +1.16 (  43) |  +0.87 (  42) |  +1.16 (  51) |   —    (   7) | all  +1.08 pts win 98.6% PF 16.68 · avg loser    -4.9 · worst drawdown      9 pts · twin +0.88 · 3/3
+    E0 page · TP .05ATR SL 10x         +2.27 (  43) |  +1.32 (  42) |  +0.48 (  51) |   —    (   7) | all  +1.35 pts win 96.5% PF 2.61 · avg loser   -24.0 · worst drawdown     56 pts · twin +0.30 · 3/3
+    E0 page · TP .05ATR SL 20x         +2.27 (  43) |  +1.93 (  42) |  +0.09 (  51) |   —    (   7) | all  +1.39 pts win 96.5% PF 2.74 · avg loser   -22.8 · worst drawdown     70 pts · twin +0.64 · 3/3
+    E0 page · TP .05ATR no SL          +2.27 (  43) |  +1.93 (  42) |  +0.48 (  51) |   —    (   7) | all  +1.53 pts win 96.5% PF 3.32 · avg loser   -18.8 · worst drawdown     50 pts · twin +0.45 · 3/3
+    E0 page · TP last high, SL flag    +3.16 (  27) |  +3.49 (  28) |  +0.75 (  35) |   —    (   3) | all  +2.23 pts win 82.8% PF 2.32 · avg loser    -9.8 · worst drawdown     47 pts · twin +0.82 · 3/3
+    E0 page · TP last high SL 10x      +1.39 (  27) |  +2.20 (  28) |  +2.00 (  35) |   —    (   3) | all  +2.07 pts win 89.2% PF 1.84 · avg loser   -22.8 · worst drawdown     61 pts · twin +0.95 · 3/3
+    E0 page · TP last high SL 20x      +1.39 (  27) |  +2.20 (  28) |  +2.00 (  35) |   —    (   3) | all  +2.07 pts win 89.2% PF 1.84 · avg loser   -22.8 · worst drawdown     61 pts · twin -0.05 · 3/3
+    E2 flag-mid limit · S2 flag low-0.1ATR  +4.56 (  41) |  +2.22 (  42) |  +6.00 (  45) |   —    (   6) | all  +4.22 pts win 47.8% PF 2.00 · avg loser    -8.1 · worst drawdown     62 pts · twin +2.45 · 3/3
+    E2 flag-mid limit · TP .02ATR SL 10x  +0.31 (  41) |  -0.26 (  42) |  +0.07 (  45) |   —    (   6) | all  -0.03 pts win 94.8% PF 0.95 · avg loser   -11.6 · worst drawdown     43 pts · twin +0.13 · 2/3
+    E2 flag-mid limit · TP .02ATR SL 20x  +0.61 (  41) |  -0.50 (  42) |  +0.09 (  45) |   —    (   6) | all  -0.09 pts win 97.0% PF 0.87 · avg loser   -22.6 · worst drawdown     63 pts · twin +0.02 · 2/3
+    E2 flag-mid limit · TP .02ATR no SL  +0.61 (  41) |  -1.09 (  42) |  -0.26 (  45) |   —    (   6) | all  -0.21 pts win 97.8% PF 0.73 · avg loser   -36.1 · worst drawdown     88 pts · twin +0.02 · 1/3
+    E2 flag-mid limit · TP .03ATR SL 10x  +0.72 (  41) |  -0.33 (  42) |  +0.75 (  45) |   —    (   6) | all  +0.28 pts win 94.8% PF 1.35 · avg loser   -15.6 · worst drawdown     41 pts · twin -0.10 · 2/3
+    E2 flag-mid limit · TP .03ATR SL 20x  +0.31 (  41) |  -0.69 (  42) |  +0.39 (  45) |   —    (   6) | all  -0.20 pts win 95.5% PF 0.85 · avg loser   -29.2 · worst drawdown     88 pts · twin -0.53 · 2/3
+    E2 flag-mid limit · TP .03ATR no SL  -0.41 (  41) |  -0.74 (  42) |  +0.28 (  45) |   —    (   6) | all  -0.21 pts win 96.3% PF 0.84 · avg loser   -35.6 · worst drawdown     77 pts · twin -0.19 · 1/3
+    E2 flag-mid limit · TP .05ATR SL 10x  +1.53 (  41) |  +0.60 (  42) |  +0.24 (  45) |   —    (   6) | all  +0.61 pts win 94.0% PF 1.40 · avg loser   -25.5 · worst drawdown     76 pts · twin -0.41 · 3/3
+    E2 flag-mid limit · TP .05ATR SL 20x  +0.85 (  41) |  +0.28 (  42) |  -0.23 (  45) |   —    (   6) | all  -0.06 pts win 94.0% PF 0.97 · avg loser   -36.8 · worst drawdown    138 pts · twin -0.93 · 2/3
+    E2 flag-mid limit · TP .05ATR no SL  +0.67 (  41) |  +0.28 (  42) |  +0.16 (  45) |   —    (   6) | all  +0.45 pts win 94.8% PF 1.26 · avg loser   -32.6 · worst drawdown     92 pts · twin -0.16 · 3/3
+    E2 flag-mid limit · TP last high, SL flag  +4.38 (  41) |  +0.82 (  42) |  +1.64 (  45) |   —    (   6) | all  +2.26 pts win 77.6% PF 2.25 · avg loser    -8.0 · worst drawdown     44 pts · twin +0.90 · 3/3
+    E2 flag-mid limit · TP last high SL 10x  +3.72 (  41) |  +0.91 (  42) |  +2.85 (  45) |   —    (   6) | all  +2.12 pts win 91.0% PF 1.74 · avg loser   -32.1 · worst drawdown    100 pts · twin +0.73 · 3/3
+    E2 flag-mid limit · TP last high SL 20x  +3.72 (  41) |  +0.91 (  42) |  +3.20 (  45) |   —    (   6) | all  +2.73 pts win 91.8% PF 2.19 · avg loser   -28.0 · worst drawdown    100 pts · twin +0.66 · 3/3
+
+######## WALK-FORWARD TOP THIRD (bull, test years 2014-26) — the A-like selection with the tiny-target exits
+    TOP E0 page · S0 flag low          +2.40 ( 150) |  +0.91 ( 345) |  +1.44 ( 273) |  +0.18 (  97) | all  +1.25 pts win 31.4% PF 1.24 · avg loser    -7.6 · worst drawdown    326 pts · twin -0.28 · 4/4
+    TOP E2 flag-mid limit · S2 flag low-0.1ATR  +2.19 ( 150) |  +2.69 ( 338) |  +3.67 ( 250) |  +1.34 (  90) | all  +2.75 pts win 37.0% PF 1.52 · avg loser    -8.4 · worst drawdown    241 pts · twin +1.17 · 4/4
+    TOP E2 flag-mid limit · TP .02ATR SL 10x  -0.20 ( 166) |  -0.33 ( 377) |  -0.11 ( 272) |  -0.44 ( 105) | all  -0.25 pts win 92.9% PF 0.69 · avg loser   -11.6 · worst drawdown    290 pts · twin +0.10 · 0/4
+    TOP E2 flag-mid limit · TP .02ATR SL 20x  -0.59 ( 166) |  -0.32 ( 377) |  -0.11 ( 272) |  -0.72 ( 105) | all  -0.35 pts win 95.8% PF 0.62 · avg loser   -22.0 · worst drawdown    380 pts · twin +0.13 · 0/4
+    TOP E2 flag-mid limit · TP .02ATR no SL  -0.16 ( 166) |  -0.53 ( 377) |  +0.05 ( 272) |  +0.46 ( 105) | all  -0.18 pts win 97.4% PF 0.77 · avg loser   -29.6 · worst drawdown    329 pts · twin +0.52 · 2/4
+    TOP E2 flag-mid limit · TP .03ATR SL 10x  -0.27 ( 166) |  -0.24 ( 377) |  +0.13 ( 272) |  -0.41 ( 105) | all  -0.16 pts win 92.7% PF 0.87 · avg loser   -16.9 · worst drawdown    266 pts · twin +0.16 · 1/4
+    TOP E2 flag-mid limit · TP .03ATR SL 20x  -0.10 ( 166) |  -0.78 ( 377) |  +0.37 ( 272) |  -0.24 ( 105) | all  -0.26 pts win 95.2% PF 0.81 · avg loser   -28.4 · worst drawdown    401 pts · twin +0.09 · 1/4
+    TOP E2 flag-mid limit · TP .03ATR no SL  -0.68 ( 166) |  -0.80 ( 377) |  +0.06 ( 272) |  +1.00 ( 105) | all  -0.32 pts win 95.8% PF 0.78 · avg loser   -33.8 · worst drawdown    483 pts · twin +0.32 · 2/4
+    TOP E2 flag-mid limit · TP .05ATR SL 10x  -0.63 ( 166) |  -0.05 ( 377) |  +0.64 ( 270) |  -0.18 ( 105) | all  +0.03 pts win 91.6% PF 1.02 · avg loser   -24.4 · worst drawdown    315 pts · twin +0.20 · 1/4
+    TOP E2 flag-mid limit · TP .05ATR SL 20x  -0.74 ( 166) |  -0.28 ( 377) |  +0.54 ( 270) |  -0.71 ( 105) | all  -0.17 pts win 92.6% PF 0.93 · avg loser   -30.6 · worst drawdown    336 pts · twin +0.46 · 1/4
+    TOP E2 flag-mid limit · TP .05ATR no SL  -1.02 ( 166) |  -0.26 ( 377) |  +0.49 ( 270) |  +0.35 ( 105) | all  -0.11 pts win 93.1% PF 0.95 · avg loser   -32.3 · worst drawdown    388 pts · twin +0.92 · 2/4
+    TOP E2 flag-mid limit · TP last high, SL flag  +1.52 ( 166) |  +0.60 ( 377) |  +0.16 ( 272) |  +1.78 ( 105) | all  +0.77 pts win 66.4% PF 1.27 · avg loser    -8.3 · worst drawdown    171 pts · twin +0.53 · 4/4
+    TOP E2 flag-mid limit · TP last high SL 10x  -0.50 ( 166) |  -0.11 ( 375) |  -0.75 ( 271) |  +0.54 ( 105) | all  -0.29 pts win 85.8% PF 0.94 · avg loser   -35.8 · worst drawdown    672 pts · twin +0.31 · 1/4
+    TOP E2 flag-mid limit · TP last high SL 20x  -0.58 ( 166) |  -0.62 ( 375) |  -0.69 ( 271) |  +1.55 ( 105) | all  -0.38 pts win 86.3% PF 0.93 · avg loser   -37.8 · worst drawdown    889 pts · twin +0.36 · 1/4
+
+######## PROP PAYOUTS — flag-mid entry, bull 3-5m flags (one position at a time across charts), Tradeify 50K plans, 2014 → 2025-10
+  all bull 3-5m flags                    S2 flag low-0.1ATR     1 MNQ (33.4% win, 1074 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    S2 flag low-0.1ATR     1 MNQ (33.4% win, 1074 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    S2 flag low-0.1ATR     2 MNQ (33.4% win, 1074 trades) select_flex_50k  eval pass 100% (median 1946 days) · funded: paid in 10d   0% 20d   0% ever  86% · $   39 a funded acct · net/eval $ -126
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    S2 flag low-0.1ATR     2 MNQ (33.4% win, 1074 trades) select_daily_50k eval pass 100% (median 1946 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    S2 flag low-0.1ATR     3 MNQ (33.4% win, 1074 trades) select_flex_50k  eval pass  47% (median 1131 days) · funded: paid in 10d   0% 20d   0% ever  77% · $  483 a funded acct · net/eval $  +61
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    S2 flag low-0.1ATR     3 MNQ (33.4% win, 1074 trades) select_daily_50k eval pass  47% (median 1131 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    S2 flag low-0.1ATR     5 MNQ (33.4% win, 1074 trades) select_flex_50k  eval pass  59% (median 392 days) · funded: paid in 10d   0% 20d   0% ever  83% · $  383 a funded acct · net/eval $  +61
+      5 accounts together  12 months: net mean $  -857 · median $  -825 · 10th pct $  -825 ·   2% of years > 0 · fees $  912 · payouts $    55
+      5 accounts one/week  12 months: net mean $  -852 · median $  -825 · 10th pct $  -825 ·   2% of years > 0 · fees $  902 · payouts $    50
+  all bull 3-5m flags                    S2 flag low-0.1ATR     5 MNQ (33.4% win, 1074 trades) select_daily_50k eval pass  59% (median 392 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -906 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  906 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -901 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  901 · payouts $     0
+  all bull 3-5m flags                    S2 flag low-0.1ATR     10 MNQ (33.4% win, 1074 trades) select_flex_50k  eval pass  44% (median 129 days) · funded: paid in 10d   0% 20d   0% ever  78% · $ 1017 a funded acct · net/eval $ +284
+      5 accounts together  12 months: net mean $   -55 · median $ -1650 · 10th pct $ -2475 ·  23% of years > 0 · fees $ 1586 · payouts $  1531
+      5 accounts one/week  12 months: net mean $  -212 · median $ -1485 · 10th pct $ -2475 ·  23% of years > 0 · fees $ 1533 · payouts $  1320
+  all bull 3-5m flags                    S2 flag low-0.1ATR     10 MNQ (33.4% win, 1074 trades) select_daily_50k eval pass  44% (median 129 days) · funded: paid in 10d   0% 20d   0% ever  37% · $  505 a funded acct · net/eval $  +58
+      5 accounts together  12 months: net mean $  -831 · median $ -1650 · 10th pct $ -2475 ·  11% of years > 0 · fees $ 1569 · payouts $   738
+      5 accounts one/week  12 months: net mean $  -883 · median $ -1650 · 10th pct $ -2475 ·  10% of years > 0 · fees $ 1521 · payouts $   638
+  all bull 3-5m flags                    TP .02ATR SL 20x       1 MNQ ( 0.0% win, 2526 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       1 MNQ ( 0.0% win, 2526 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       2 MNQ ( 0.0% win, 2526 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       2 MNQ ( 0.0% win, 2526 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       3 MNQ ( 0.0% win, 2526 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1075 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1075 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -998 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  998 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       3 MNQ ( 0.0% win, 2526 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1075 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1075 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -998 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  998 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       5 MNQ ( 0.0% win, 2526 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1609 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1609 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1565 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1565 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       5 MNQ ( 0.0% win, 2526 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1609 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1609 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1565 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1565 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       10 MNQ ( 0.0% win, 2526 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -2789 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2789 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -2664 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2664 · payouts $     0
+  all bull 3-5m flags                    TP .02ATR SL 20x       10 MNQ ( 0.0% win, 2526 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -2789 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2789 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -2664 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2664 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       1 MNQ (92.3% win, 2353 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       1 MNQ (92.3% win, 2353 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       2 MNQ (92.3% win, 2353 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       2 MNQ (92.3% win, 2353 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       3 MNQ (92.3% win, 2353 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -877 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  877 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -868 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  868 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       3 MNQ (92.3% win, 2353 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -877 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  877 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -868 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  868 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       5 MNQ (92.3% win, 2353 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1447 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1447 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1391 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1391 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       5 MNQ (92.3% win, 2353 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1447 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1447 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1391 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1391 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       10 MNQ (92.3% win, 2353 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -2370 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2370 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -2272 · median $ -2475 · 10th pct $ -2970 ·   0% of years > 0 · fees $ 2272 · payouts $     0
+  all bull 3-5m flags                    TP .03ATR SL 10x       10 MNQ (92.3% win, 2353 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -2370 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2370 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -2272 · median $ -2475 · 10th pct $ -2970 ·   0% of years > 0 · fees $ 2272 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       1 MNQ (90.7% win, 2071 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       1 MNQ (90.7% win, 2071 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       2 MNQ (90.7% win, 2071 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       2 MNQ (90.7% win, 2071 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       3 MNQ (90.7% win, 2071 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -918 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  918 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -896 · median $  -825 · 10th pct $  -990 ·   0% of years > 0 · fees $  896 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       3 MNQ (90.7% win, 2071 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -918 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  918 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -896 · median $  -825 · 10th pct $  -990 ·   0% of years > 0 · fees $  896 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       5 MNQ (90.7% win, 2071 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1301 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1301 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1247 · median $  -990 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1247 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       5 MNQ (90.7% win, 2071 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1301 · median $ -1650 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1301 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1247 · median $  -990 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1247 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       10 MNQ (90.7% win, 2071 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -2417 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2417 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -2318 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2318 · payouts $     0
+  all bull 3-5m flags                    TP .05ATR SL 10x       10 MNQ (90.7% win, 2071 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -2417 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2417 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -2318 · median $ -2475 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 2318 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  1 MNQ (66.7% win, 1974 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  1 MNQ (66.7% win, 1974 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  2 MNQ (66.7% win, 1974 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  2 MNQ (66.7% win, 1974 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  3 MNQ (66.7% win, 1974 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  3 MNQ (66.7% win, 1974 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  5 MNQ (66.7% win, 1974 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1075 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1075 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1047 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1047 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  5 MNQ (66.7% win, 1974 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1075 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1075 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1047 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1047 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  10 MNQ (66.7% win, 1974 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1795 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1795 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1721 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1721 · payouts $     0
+  all bull 3-5m flags                    TP last high, SL flag  10 MNQ (66.7% win, 1974 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1795 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1795 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1721 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1721 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    1 MNQ (84.8% win, 1887 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    1 MNQ (84.8% win, 1887 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    2 MNQ (84.8% win, 1887 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -895 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  895 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -890 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  890 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    2 MNQ (84.8% win, 1887 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -895 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  895 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -890 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  890 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    3 MNQ (84.8% win, 1887 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1145 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1145 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1109 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1109 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    3 MNQ (84.8% win, 1887 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1145 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1145 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1109 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1109 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    5 MNQ (84.8% win, 1887 trades) select_flex_50k  eval pass   1% (median 222 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1696 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1696 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1653 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1653 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    5 MNQ (84.8% win, 1887 trades) select_daily_50k eval pass   1% (median 222 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1696 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1696 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1653 · median $ -1650 · 10th pct $ -2475 ·   0% of years > 0 · fees $ 1653 · payouts $     0
+  all bull 3-5m flags                    TP last high SL 20x    10 MNQ (84.8% win, 1887 trades) select_flex_50k  eval pass   9% (median  78 days) · funded: paid in 10d   0% 20d  13% ever  70% · $  330 a funded acct · net/eval $ -135
+      5 accounts together  12 months: net mean $ -3100 · median $ -3300 · 10th pct $ -4950 ·   7% of years > 0 · fees $ 3445 · payouts $   345
+      5 accounts one/week  12 months: net mean $ -3026 · median $ -3300 · 10th pct $ -4290 ·   6% of years > 0 · fees $ 3330 · payouts $   304
+  all bull 3-5m flags                    TP last high SL 20x    10 MNQ (84.8% win, 1887 trades) select_daily_50k eval pass   9% (median  78 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -3371 · median $ -3300 · 10th pct $ -4950 ·   1% of years > 0 · fees $ 3428 · payouts $    57
+      5 accounts one/week  12 months: net mean $ -3270 · median $ -3300 · 10th pct $ -4290 ·   0% of years > 0 · fees $ 3310 · payouts $    40
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     1 MNQ (33.8% win, 474 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     1 MNQ (33.8% win, 474 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     2 MNQ (33.8% win, 474 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     2 MNQ (33.8% win, 474 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     3 MNQ (33.8% win, 474 trades) select_flex_50k  eval pass 100% (median 1053 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     3 MNQ (33.8% win, 474 trades) select_daily_50k eval pass 100% (median 1053 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     5 MNQ (33.8% win, 474 trades) select_flex_50k  eval pass  82% (median 761 days) · funded: paid in 10d   0% 20d   0% ever  97% · $ 1089 a funded acct · net/eval $ +729
+      5 accounts together  12 months: net mean $  -842 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  842 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -835 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  835 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     5 MNQ (33.8% win, 474 trades) select_daily_50k eval pass  82% (median 761 days) · funded: paid in 10d   0% 20d   0% ever   8% · $   19 a funded acct · net/eval $ -149
+      5 accounts together  12 months: net mean $  -842 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  842 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -835 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  835 · payouts $     0
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     10 MNQ (33.8% win, 474 trades) select_flex_50k  eval pass  23% (median 136 days) · funded: paid in 10d   0% 20d   0% ever  97% · $ 1233 a funded acct · net/eval $ +118
+      5 accounts together  12 months: net mean $  -736 · median $  -825 · 10th pct $ -1650 ·   9% of years > 0 · fees $ 1162 · payouts $   426
+      5 accounts one/week  12 months: net mean $  -718 · median $  -825 · 10th pct $ -1650 ·   9% of years > 0 · fees $ 1139 · payouts $   421
+  walk-forward top third (A-like, 2014+) S2 flag low-0.1ATR     10 MNQ (33.8% win, 474 trades) select_daily_50k eval pass  23% (median 136 days) · funded: paid in 10d   0% 20d   0% ever  45% · $  447 a funded acct · net/eval $  -63
+      5 accounts together  12 months: net mean $  -951 · median $  -825 · 10th pct $ -1650 ·   4% of years > 0 · fees $ 1145 · payouts $   193
+      5 accounts one/week  12 months: net mean $  -954 · median $  -825 · 10th pct $ -1650 ·   4% of years > 0 · fees $ 1122 · payouts $   168
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       1 MNQ ( 0.0% win, 741 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       1 MNQ ( 0.0% win, 741 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       2 MNQ ( 0.0% win, 741 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       2 MNQ ( 0.0% win, 741 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       3 MNQ ( 0.0% win, 741 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       3 MNQ ( 0.0% win, 741 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       5 MNQ ( 0.0% win, 741 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       5 MNQ ( 0.0% win, 741 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       10 MNQ ( 0.0% win, 741 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1121 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1121 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1090 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1090 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .02ATR SL 20x       10 MNQ ( 0.0% win, 741 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1121 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1121 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1090 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1090 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       1 MNQ (92.4% win, 709 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       1 MNQ (92.4% win, 709 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       2 MNQ (92.4% win, 709 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       2 MNQ (92.4% win, 709 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       3 MNQ (92.4% win, 709 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       3 MNQ (92.4% win, 709 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       5 MNQ (92.4% win, 709 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       5 MNQ (92.4% win, 709 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       10 MNQ (92.4% win, 709 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1075 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1075 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1050 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1050 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .03ATR SL 10x       10 MNQ (92.4% win, 709 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1075 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1075 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1050 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1050 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       1 MNQ (91.4% win, 653 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       1 MNQ (91.4% win, 653 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       2 MNQ (91.4% win, 653 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       2 MNQ (91.4% win, 653 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       3 MNQ (91.4% win, 653 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       3 MNQ (91.4% win, 653 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       5 MNQ (91.4% win, 653 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       5 MNQ (91.4% win, 653 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       10 MNQ (91.4% win, 653 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1185 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1185 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1152 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1152 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP .05ATR SL 10x       10 MNQ (91.4% win, 653 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1185 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1185 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1152 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1152 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  1 MNQ (64.8% win, 616 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  1 MNQ (64.8% win, 616 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  2 MNQ (64.8% win, 616 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  2 MNQ (64.8% win, 616 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  3 MNQ (64.8% win, 616 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  3 MNQ (64.8% win, 616 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  5 MNQ (64.8% win, 616 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  5 MNQ (64.8% win, 616 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  10 MNQ (64.8% win, 616 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -976 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  976 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -947 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  947 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high, SL flag  10 MNQ (64.8% win, 616 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -976 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  976 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -947 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $  947 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    1 MNQ (86.1% win, 603 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    1 MNQ (86.1% win, 603 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -825 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  825 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    2 MNQ (86.1% win, 603 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -854 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  854 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -851 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  851 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    2 MNQ (86.1% win, 603 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -854 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  854 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -851 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  851 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    3 MNQ (86.1% win, 603 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -895 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  895 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -890 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  890 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    3 MNQ (86.1% win, 603 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $  -895 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  895 · payouts $     0
+      5 accounts one/week  12 months: net mean $  -890 · median $  -825 · 10th pct $  -825 ·   0% of years > 0 · fees $  890 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    5 MNQ (86.1% win, 603 trades) select_flex_50k  eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1057 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1057 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1036 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1036 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    5 MNQ (86.1% win, 603 trades) select_daily_50k eval pass   0% (median  -1 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1057 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1057 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1036 · median $  -825 · 10th pct $ -1650 ·   0% of years > 0 · fees $ 1036 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    10 MNQ (86.1% win, 603 trades) select_flex_50k  eval pass   4% (median 252 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1929 · median $ -1650 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 1929 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1872 · median $ -1650 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 1872 · payouts $     0
+  walk-forward top third (A-like, 2014+) TP last high SL 20x    10 MNQ (86.1% win, 603 trades) select_daily_50k eval pass   4% (median 252 days) · funded: paid in 10d   0% 20d   0% ever   0% · $    0 a funded acct · net/eval $ -165
+      5 accounts together  12 months: net mean $ -1929 · median $ -1650 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 1929 · payouts $     0
+      5 accounts one/week  12 months: net mean $ -1872 · median $ -1650 · 10th pct $ -3300 ·   0% of years > 0 · fees $ 1872 · payouts $     0

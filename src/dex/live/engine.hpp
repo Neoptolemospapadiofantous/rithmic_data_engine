@@ -33,6 +33,7 @@
 
 #include "dex/lighter_feed.hpp"
 #include "dex/mm_paper.hpp"
+#include "dex/bn_pull.hpp"
 #include "dex/live/account_feed.hpp"
 #include "dex/live/alerts.hpp"
 #include "dex/live/gateway.hpp"
@@ -53,6 +54,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cctype>
 #include <cmath>
 #include <deque>
 #include <filesystem>
@@ -123,6 +125,11 @@ private:
 struct StrategyOverride {
     double half_width_ticks = -1, min_spread_ticks = -1, imb_pull = -1, pause_move_ticks = -1, requote_ticks = -1;
     int64_t pause_ms = -1;
+    // Binance-lead pull (src/dex/bn_pull.hpp, 2026-10-28): 0 = off. Not a hl::Params knob — the engine drives the
+    // quoter's overlay from a Binance bookTicker stream (Driver's reference WebSocket).
+    int64_t bn_pull_w_ms = 0, bn_pull_hold_ms = 0;
+    double bn_pull_x_bps = 0;
+    bnpull::Params bn_pull() const { bnpull::Params b; b.w_ms = bn_pull_w_ms; b.x_bps = bn_pull_x_bps; b.hold_ms = bn_pull_hold_ms; return b; }
     void apply(hl::Params& p) const {
         if (half_width_ticks >= 0) p.half_width_ticks = half_width_ticks;
         if (min_spread_ticks >= 0) p.min_spread_ticks = min_spread_ticks;
@@ -150,6 +157,11 @@ struct EngineConfig {
     int max_txs_per_batch = 15;
     int64_t ack_timeout_ms = 3'000;
     int64_t reconcile_every_ms = 10'000, reconcile_down_every_ms = 5'000, reconcile_min_gap_ms = 2'000;
+    // A periodic reconcile runs its REST reads on the engine thread: one slow read (2.6–3.7 s, 10 times on
+    // 2026-10-28) tripped the 2 s stall guard and cost 10 s without quotes. Periodic reconciles use this per-read
+    // timeout instead of the client's 8 s; after this many consecutive timed-out ones the next uses the full timeout,
+    // so the REST equity the loss stops run on can never go stale. 0 = off.
+    int reconcile_fast_timeout_ms = 800, reconcile_fast_max_fails = 3;
     int64_t deadman_rearm_ms = 20'000;
     int64_t deadman_window_ms = 315'000;                // ≥ Lighter's 5 min MinOrderCancelAllPeriod + margin
     int64_t order_expiry_ms = 600'000;                  // post-only quotes expire after 10 min (2nd dead-man layer)
@@ -201,7 +213,7 @@ public:
                 RestGate{[this] { return limiter_.can_send(d_.clock.now_ms(), true); },
                          [this] { limiter_.record(d_.clock.now_ms()); persist_rate(d_.clock.now_ms()); },
                          [this] { on_rate_limited(d_.clock.now_ms(), "REST"); }}),
-          sender_(d_.http), quoter_(quoter_params()) {
+          sender_(d_.http), quoter_(quoter_params()), bn_(cfg_.strategy.bn_pull()) {
         sizing_.quote_micro = cfg_.risk.quote_micro;
         sizing_.cap_micro = cfg_.risk.max_order_micro;
         d_.risk.register_market(cfg_.spec.market_index);
@@ -391,6 +403,26 @@ public:
         if (started_) set_condition("public_feed", true, false, Pull::CancelAll, "public order-book stream down", now);
     }
     std::vector<std::string> take_public_out() { auto v = std::move(public_out_); public_out_.clear(); return v; }
+
+    // ── Binance reference stream (bn_pull; only when engine.strategy.bn_pull_* is set) ─────────────────────────
+    // Fail-open: with the stream down or stale the pull is simply never on, and the strategy quotes as before.
+    bool ref_wanted() const { return bn_.params().on(); }
+    std::string ref_ws_path() const {
+        std::string s = cfg_.spec.symbol + "usdt";
+        for (auto& c : s) c = char(std::tolower(static_cast<unsigned char>(c)));
+        return "/stream?streams=" + s + "@bookTicker";
+    }
+    void on_ref_frame(const std::string& text, int64_t now) {
+        auto j = nlohmann::json::parse(text, nullptr, false);
+        if (j.is_discarded() || !j.is_object() || !j.contains("data") || !j["data"].is_object()) return;
+        const auto& d = j["data"];
+        if (d.value("e", "") != "bookTicker") return;
+        auto num = [](const nlohmann::json& v) { return v.is_string() ? std::strtod(v.get<std::string>().c_str(), nullptr) : v.is_number() ? v.get<double>() : 0.0; };
+        const double b = num(d.value("b", nlohmann::json())), a = num(d.value("a", nlohmann::json()));
+        if (b > 0 && a >= b) { bn_.on_price(now, (a + b) / 2); ++ref_frames_; }
+    }
+    void on_ref_open(int64_t now) { ++ref_opens_; log("[BN] Binance reference stream open (" + ref_ws_path() + ")"); (void)now; }
+    void on_ref_closed(int64_t now) { log("[BN] Binance reference stream closed: no pulls until it is back"); (void)now; }
     bool public_reconnect_wanted() const { return public_reconnect_; }
     void clear_public_reconnect() { public_reconnect_ = false; }
 
@@ -452,6 +484,8 @@ public:
     int64_t last_trade_id() const { return last_trade_id_; }
     int64_t sends() const { return sender_.requests(); }
     int64_t sequencer_rejects() const { return seq_rejects_; }
+    int64_t cancel_races() const { return cancel_races_; }
+    int64_t fast_reconcile_fails() const { return fast_rec_fails_; }
     const ClockOffset& clock_offset() const { return offset_; }
     nlohmann::json status(int64_t now) const { return status_json(now); }
     void request_reconcile(int64_t now) { next_reconcile_ms_ = std::min(next_reconcile_ms_, now); }
@@ -500,6 +534,44 @@ private:
         try { jrec({{"ev", "refuse"}, {"why", why}}, true); } catch (...) {}
         refused_ = why;
         return false;
+    }
+
+    // The Binance-lead pull → the quoter's overlay, read by quote_allowed (the same flags requote() honours in paper).
+    void apply_bn_pull(int64_t now) {
+        if (!bn_.params().on()) return;
+        const bnpull::Lead::Out prev = bn_.last();
+        const bnpull::Lead::Out o = bn_.at(now);
+        auto ov = quoter_.overlay();
+        ov.pull_bid = o.bid; ov.pull_ask = o.ask;
+        quoter_.set_overlay(ov);
+        if ((o.bid && !prev.bid) || (o.ask && !prev.ask))
+            jrec_soft({{"ev", "bn_pull"}, {"bid", o.bid}, {"ask", o.ask}, {"lead_bps", std::isfinite(o.lead_bps) ? nlohmann::json(o.lead_bps) : nlohmann::json(nullptr)}});
+        const bool stale = bn_.last_sample_ms() < 0 || now - bn_.last_sample_ms() > bn_.params().stale_ms;
+        if (stale != ref_stale_ && started_) {
+            ref_stale_ = stale;
+            log(stale ? "[BN] Binance reference stale: pulls off (quoting as without it)" : "[BN] Binance reference fresh: pulls on");
+        }
+    }
+
+    // The day's fills from EARLIER runs (today's journal), so the 00:00 UTC "day" alert and status fills_today count the
+    // whole UTC day, not just this run (2026-10-28: the midnight summary said "0 fills" after a restart). Best effort.
+    void seed_day_from_journal(const std::string& day) {
+        const std::string f = cfg_.journal_dir + "/" + cfg_.label + "-" + day + ".jsonl";
+        std::ifstream in(f);
+        std::string line;
+        int64_t n = 0, vol = 0;
+        while (std::getline(in, line)) {
+            if (line.find("\"ev\":\"fill\"") == std::string::npos) continue;
+            auto j = nlohmann::json::parse(line, nullptr, false);
+            if (j.is_discarded() || j.value("run", int64_t{-1}) == run_id_) continue;
+            ++n;
+            vol += cfg_.spec.notional_micro_floor(j.value("qty", int64_t{0}), j.value("price", int64_t{0}));
+        }
+        if (n == 0) return;
+        fills_day_ += n;
+        volume_day_micro_ += vol;
+        first_fill_alerted_ = true;
+        log("[DAY] " + std::to_string(n) + " fill(s) earlier today in previous runs counted in the day summary");
     }
 
     hl::Params quoter_params() const {
@@ -856,8 +928,21 @@ private:
         if (o == TxOutcome::SequencerFailedApplying && s.intent.kind == IntentKind::Cancel) request_reconcile(now);   // filled or gone
         if (o == TxOutcome::SequencerRejectedBefore) {
             ++seq_rejects_;
-            alert("seq_reject", "sequencer rejected nonce " + std::to_string(nonce) + " before applying (code " +
-                                std::to_string(code) + "): it and every later tx failed; resyncing", now);
+            // A cancel that lost the race to a fill: the fill is already known (order terminal) when the sequencer
+            // rejects the cancel. On 2026-10-28 every one of 31 rejects was this — one per fill. The nonce resync
+            // below still runs (later txs of the request failed too) and dispatch stays blocked until it completes;
+            // only the halt + Telegram alert are skipped. Any other reject keeps the loud path.
+            bool race = s.intent.kind == IntentKind::Cancel && tracker_.has(s.intent.order_ref) &&
+                        is_terminal(tracker_.get(s.intent.order_ref).state);
+            if (race) {
+                ++cancel_races_;
+                if (!halts_.count("nonce_frozen")) { quiet_freeze_ = true; quiet_since_ms_ = now; batcher_.drop_quoting(); }   // as the halt would; never quieten a loud freeze
+                jrec_soft({{"ev", "cancel_race"}, {"nonce", nonce}, {"coi", s.intent.order_ref}, {"code", code}});
+            } else {
+                quiet_freeze_ = false;
+                alert("seq_reject", "sequencer rejected nonce " + std::to_string(nonce) + " before applying (code " +
+                                    std::to_string(code) + "): it and every later tx failed; resyncing", now);
+            }
             resign.insert(resign.begin(), nonce);
             for (int64_t n : resign) {
                 auto jt = sent_.find(n);
@@ -1067,6 +1152,16 @@ private:
             QuoteSize q;
             try { q = size_quote(cfg_.spec, sizing_, target); }
             catch (const SpecError& e) { ++size_refusals_; continue; }
+            // A quote that CLOSES the position is sized to the position itself when the two differ by less than the
+            // smallest valid order (2026-10-28 live: bought 1.24 AVAX, the $11 sell came out 1.23 at the higher price
+            // and left 0.01 of dust no order can ever sell). Only when that size is itself a valid order within the cap.
+            if (const int64_t pos = tracker_.position(m); is_ask ? pos > 0 : pos < 0) {
+                const int64_t p = pos > 0 ? pos : -pos;
+                if (p != q.base && std::llabs(p - q.base) < smallest_valid(cfg_.spec, sizing_, target).base &&
+                    validate_order(cfg_.spec, sizing_, p, target).empty() &&
+                    cfg_.spec.notional_micro_ceil(p, target) <= sizing_.cap_micro)
+                    q = {p, cfg_.spec.notional_micro_floor(p, target)};
+            }
             RiskGovernor::OrderCheck c;
             c.market = m; c.is_ask = is_ask; c.qty = q.base;
             c.notional_micro = cfg_.spec.notional_micro_ceil(q.base, target);
@@ -1172,7 +1267,7 @@ private:
             auto again = rest_.next_nonce(cfg_.api_key_index);
             if (again) { try { nm_.resync(*again); } catch (const NonceError& e) { sticky_halt("nonce", e.what(), now); } }
         }
-        if (!nm_.frozen()) { set_condition("nonce_frozen", false, false, Pull::None, "", now); flush_safety(now); }
+        if (!nm_.frozen()) { quiet_freeze_ = false; set_condition("nonce_frozen", false, false, Pull::None, "", now); flush_safety(now); }
         request_reconcile(now);
     }
 
@@ -1187,12 +1282,23 @@ private:
     }
 
     void reconcile(int64_t now, const std::string& reason) {
+        bool fast = reason == "periodic" && cfg_.reconcile_fast_timeout_ms > 0 && fast_rec_fails_ < cfg_.reconcile_fast_max_fails;
+        int full = rest_.timeout_ms();
+        if (fast) rest_.set_timeout_ms(cfg_.reconcile_fast_timeout_ms);
+        bool ok = reconcile_inner(now, reason);
+        rest_.set_timeout_ms(full);
+        if (ok) fast_rec_fails_ = 0;
+        else if (fast) ++fast_rec_fails_;
+    }
+
+    // false = the account or open-order read failed (nothing applied)
+    bool reconcile_inner(int64_t now, const std::string& reason) {
         ++reconciles_;
         last_reconcile_ms_ = now;
         auto acct = rest_.account();
-        if (!acct) { log("[REC] account unavailable: " + rest_.last_error()); return; }
+        if (!acct) { log("[REC] account unavailable: " + rest_.last_error()); return false; }
         auto open = rest_.active_orders(mkt());
-        if (!open) { log("[REC] active orders unavailable: " + rest_.last_error()); return; }
+        if (!open) { log("[REC] active orders unavailable: " + rest_.last_error()); return false; }
         collateral_ = acct->collateral_micro;
         // Loss stops run on ONE measure: REST total asset value (incl. unrealised) — the start baseline's measure too.
         equity_ = acct->portfolio_micro;
@@ -1267,6 +1373,7 @@ private:
             }
         }
         if (feed_.live() && halts_.count("account_feed")) set_condition("account_feed", false, false, Pull::None, "", now);
+        return true;
     }
 
     void unknown_exchange_order(const AcctOrder& o, int64_t now, const std::string& where) {
@@ -1369,7 +1476,8 @@ private:
             }
         // nonce stream
         if (nm_.frozen()) {
-            set_condition("nonce_frozen", true, false, Pull::None, "nonce stream frozen: resyncing from nextNonce", now);
+            if (quiet_freeze_ && now - quiet_since_ms_ > 10'000) quiet_freeze_ = false;   // a race freeze that will not clear is a real one
+            if (!quiet_freeze_) set_condition("nonce_frozen", true, false, Pull::None, "nonce stream frozen: resyncing from nextNonce", now);
             resolve_nonce(now);
         } else if (nm_.accepted_pending() > 0) {
             int64_t oldest = INT64_MAX;
@@ -1394,11 +1502,11 @@ private:
         flush_safety(now);
         flatten_step(now);
         if (cfg_.mode == Mode::Probe) probe_step(now);
-        else quote(now);
+        else { apply_bn_pull(now); quote(now); }
         flush_batcher(now);
         // day roll
         std::string day = utc_day_of_ms(now);
-        if (day_.empty()) day_ = day;
+        if (day_.empty()) { day_ = day; seed_day_from_journal(day); }
         if (day != day_) {
             alert("daily", "day " + day_ + ": " + std::to_string(fills_day_) + " fills, $" + usd(volume_day_micro_) + " traded, position " +
                            fmt_base(tracker_.position(mkt())) + ", equity $" + usd(equity_), now);
@@ -1549,10 +1657,19 @@ private:
                 {"account_stream_live", feed_.live()}, {"token_deadline_s", feed_.token_deadline_s()},
                 {"book_age_ms", last_book_change_ms_ ? now - last_book_change_ms_ : -1}, {"server_offset_ms", offset_.offset()},
                 {"fills", fills_}, {"fills_today", fills_day_}, {"reconciles", reconciles_}, {"mismatch_acts", mismatch_acts_},
-                {"unknown_orders_cancelled", foreign_cancels_}, {"sequencer_rejects", seq_rejects_}, {"gaps", gaps_},
+                {"unknown_orders_cancelled", foreign_cancels_}, {"sequencer_rejects", seq_rejects_}, {"cancel_races", cancel_races_}, {"gaps", gaps_},
                 {"risk_refusals", risk_refusals_}, {"last_risk_refusal", last_risk_refusal_}, {"size_refusals", size_refusals_},
                 {"journal", d_.journal.path()}, {"journal_bytes", d_.journal.bytes()}, {"journal_failed", journal_failed_},
-                {"alerts_sent", d_.alerts.sent()}};
+                {"alerts_sent", d_.alerts.sent()},
+                {"bn_pull", bn_status(now)}};
+    }
+    nlohmann::json bn_status(int64_t now) const {
+        if (!bn_.params().on()) return {{"on", false}};
+        const auto& o = bn_.last();
+        return {{"on", true}, {"w_ms", bn_.params().w_ms}, {"x_bps", bn_.params().x_bps}, {"hold_ms", bn_.params().hold_ms},
+                {"age_ms", bn_.last_sample_ms() < 0 ? -1 : now - bn_.last_sample_ms()}, {"frames", ref_frames_}, {"opens", ref_opens_},
+                {"lead_bps", std::isfinite(o.lead_bps) ? nlohmann::json(o.lead_bps) : nlohmann::json(nullptr)},
+                {"pull_bid", o.bid}, {"pull_ask", o.ask}, {"pulls_bid", bn_.pulls_bid()}, {"pulls_ask", bn_.pulls_ask()}};
     }
     void write_status(int64_t now, bool force) {
         if (cfg_.status_file.empty()) return;
@@ -1581,6 +1698,9 @@ private:
     RestApi rest_;
     Sender sender_;
     hl::Simulator quoter_;
+    bnpull::Lead bn_;
+    int64_t ref_frames_ = 0, ref_opens_ = 0;
+    bool ref_stale_ = true;
     SizingRules sizing_;
     lighter::Book book_;
     ClockOffset offset_;
@@ -1622,7 +1742,10 @@ private:
     bool flatten_requested_ = false, flatten_gave_up_ = false;
     int flatten_tries_ = 0;
     int64_t last_flatten_ms_ = 0;
-    int64_t rate_limited_events_ = 0, fills_ = 0, fills_day_ = 0, volume_day_micro_ = 0, foreign_cancels_ = 0, seq_rejects_ = 0;
+    int64_t rate_limited_events_ = 0, fills_ = 0, fills_day_ = 0, volume_day_micro_ = 0, foreign_cancels_ = 0, seq_rejects_ = 0, cancel_races_ = 0;
+    bool quiet_freeze_ = false;   // the current nonce freeze came from a cancel-vs-fill race: no halt/alert
+    int64_t quiet_since_ms_ = 0;
+    int fast_rec_fails_ = 0;
     int64_t gaps_ = 0, books_ = 0, risk_refusals_ = 0, size_refusals_ = 0;
     std::string last_risk_refusal_, last_block_, day_;
     bool first_fill_alerted_ = false;

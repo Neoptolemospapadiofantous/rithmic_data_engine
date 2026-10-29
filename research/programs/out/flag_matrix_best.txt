@@ -1,0 +1,61 @@
+Best scenarios on the Flag Matrix — 9216 combinations searched (charts × pole × pullback × grade × structure × break × side), NQ and ES 2014-01 → 2026-10.
+
+######## ALL YEARS — ranked by the worse market's avg R; >= 60 trades on each market, both halves > 0 on both (best case: picked with hindsight)
+   1. 3m · pole 5-∞× · pullback 15-25 % · A-list · 5m HH/HL · any break · both sides
+      NQ   60 tr ( 4.7/yr) +0.826R win 35.0% PF 2.12 · ES   64 tr ( 5.0/yr) +0.810R win 32.8% PF 2.10
+   2. 4m · pole 5-7× · pullback 5-25 % · A-list · 5m HH/HL · with the break · both sides
+      NQ   77 tr ( 6.0/yr) +0.843R win 44.2% PF 2.33 · ES   66 tr ( 5.2/yr) +0.778R win 39.4% PF 2.23
+   3. 4m · pole 5-∞× · pullback 15-25 % · A-list · 5m HH/HL · with the break · both sides
+      NQ   72 tr ( 5.6/yr) +0.805R win 38.9% PF 2.20 · ES   64 tr ( 5.0/yr) +0.749R win 39.1% PF 2.15
+   4. 4m · pole 5-7× · pullback 15-25 % · A-list · 5m HH/HL · with the break · both sides
+      NQ   66 tr ( 5.2/yr) +0.713R win 37.9% PF 2.02 · ES   61 tr ( 4.8/yr) +0.840R win 41.0% PF 2.33
+   5. 3m · pole 5-7× · pullback 5-25 % · A-list · 5m HH/HL · any break · both sides
+      NQ   74 tr ( 5.8/yr) +0.824R win 36.5% PF 2.17 · ES   72 tr ( 5.6/yr) +0.697R win 31.9% PF 1.93
+   6. 4m · pole 5-7× · pullback 5-25 % · A-list · any structure · any break · bull only
+      NQ  161 tr (12.6/yr) +0.772R win 45.3% PF 2.26 · ES  128 tr (10.0/yr) +0.690R win 42.2% PF 2.13
+   7. 3m · pole 5-∞× · pullback 5-25 % · A-list · 5m HH/HL · any break · both sides
+      NQ   84 tr ( 6.6/yr) +0.681R win 35.7% PF 1.94 · ES   77 tr ( 6.0/yr) +0.677R win 31.2% PF 1.89
+   8. 4m · pole 5-7× · pullback 15-50 % · A-list · 5m HH/HL · with the break · both sides
+      NQ  109 tr ( 8.5/yr) +0.671R win 34.9% PF 1.94 · ES  127 tr ( 9.9/yr) +0.683R win 37.0% PF 1.99
+   9. 4m · pole 5-7× · pullback 5-50 % · A-list · 5m HH/HL · with the break · both sides
+      NQ  120 tr ( 9.4/yr) +0.759R win 39.2% PF 2.13 · ES  132 tr (10.3/yr) +0.659R win 36.4% PF 1.96
+  10. 4m · pole 5-7× · pullback 5-38 % · A-list · 5m HH/HL · with the break · both sides
+      NQ  118 tr ( 9.2/yr) +0.695R win 39.0% PF 2.03 · ES  122 tr ( 9.5/yr) +0.645R win 36.1% PF 1.93
+  11. 4m · pole 5-7× · pullback 5-25 % · A or B · 5m HH/HL · with the break · both sides
+      NQ  103 tr ( 8.0/yr) +0.815R win 43.7% PF 2.27 · ES   99 tr ( 7.7/yr) +0.645R win 39.4% PF 1.99
+  12. 4m · pole 5-7× · pullback 5-25 % · A or B · any structure · any break · bull only
+      NQ  190 tr (14.8/yr) +0.701R win 44.7% PF 2.12 · ES  187 tr (14.6/yr) +0.644R win 44.9% PF 2.09
+  13. 3m · pole 5-7× · pullback 5-50 % · A-list · 5m HH/HL · with the break · both sides
+      NQ   88 tr ( 6.9/yr) +0.637R win 34.1% PF 1.87 · ES   97 tr ( 7.6/yr) +0.656R win 30.9% PF 1.86
+  14. 4m · pole 5-7× · pullback 15-25 % · A-list · 5m HH/HL · any break · both sides
+      NQ   98 tr ( 7.7/yr) +0.637R win 34.7% PF 1.87 · ES   76 tr ( 5.9/yr) +0.699R win 40.8% PF 2.10
+  15. 4m · pole 5-7× · pullback 5-25 % · any grade · any structure · any break · bull only
+      NQ  190 tr (14.8/yr) +0.701R win 44.7% PF 2.12 · ES  189 tr (14.8/yr) +0.623R win 44.4% PF 2.04
+  (5721 combinations meet the conditions)
+
+######## PICK ON 2014-2021, TEST ON 2022-2026 (the honest view) — top 10 by the worse market on 2014-21, then their unseen 2022-26 results
+   1. 4m · pole 5-7× · pullback 5-25 % · A-list · any structure · with the break · bull only
+      picked on 2014-21: NQ +0.850R ( 85) · ES +1.002R ( 52)   →   2022-26: NQ +0.095R ( 40, PF 1.13) · ES +0.497R ( 42, PF 1.77)
+   2. 4m · pole 5-7× · pullback 5-25 % · A-list · any structure · any break · bull only
+      picked on 2014-21: NQ +1.020R (107) · ES +0.820R ( 72)   →   2022-26: NQ +0.280R ( 54, PF 1.40) · ES +0.523R ( 56, PF 1.85)
+   3. 4m · pole 5-7× · pullback 5-25 % · any grade · any structure · with the break · bull only
+      picked on 2014-21: NQ +0.801R (100) · ES +0.851R ( 81)   →   2022-26: NQ +0.127R ( 45, PF 1.18) · ES +0.365R ( 55, PF 1.56)
+   4. 4m · pole 5-7× · pullback 5-25 % · A or B · any structure · with the break · bull only
+      picked on 2014-21: NQ +0.801R (100) · ES +0.906R ( 79)   →   2022-26: NQ +0.127R ( 45, PF 1.18) · ES +0.365R ( 55, PF 1.56)
+   5. 4m · pole 5-7× · pullback 5-25 % · A or B · any structure · any break · bull only
+      picked on 2014-21: NQ +0.897R (129) · ES +0.790R (112)   →   2022-26: NQ +0.288R ( 61, PF 1.42) · ES +0.426R ( 75, PF 1.71)
+   6. 4m · pole 5-∞× · pullback 5-25 % · A-list · any structure · with the break · bull only
+      picked on 2014-21: NQ +0.784R (103) · ES +0.874R ( 61)   →   2022-26: NQ +0.160R ( 49, PF 1.22) · ES +0.378R ( 48, PF 1.56)
+   7. 4m · pole 5-∞× · pullback 5-25 % · A or B · any structure · with the break · bull only
+      picked on 2014-21: NQ +0.762R (119) · ES +0.798R ( 91)   →   2022-26: NQ +0.136R ( 56, PF 1.19) · ES +0.285R ( 61, PF 1.42)
+   8. 4m · pole 5-∞× · pullback 5-25 % · any grade · any structure · with the break · bull only
+      picked on 2014-21: NQ +0.762R (119) · ES +0.753R ( 93)   →   2022-26: NQ +0.136R ( 56, PF 1.19) · ES +0.285R ( 61, PF 1.42)
+   9. 4m · pole 5-7× · pullback 5-25 % · any grade · any structure · any break · bull only
+      picked on 2014-21: NQ +0.897R (129) · ES +0.753R (114)   →   2022-26: NQ +0.288R ( 61, PF 1.42) · ES +0.426R ( 75, PF 1.71)
+  10. 4m · pole 5-7× · pullback 15-25 % · A-list · any structure · any break · bull only
+      picked on 2014-21: NQ +0.745R ( 76) · ES +0.945R ( 57)   →   2022-26: NQ +0.206R ( 44, PF 1.28) · ES +0.660R ( 44, PF 2.12)
+  reference — today's rule (3-5m, pole >= 4×, 15-50 %, A, HH/HL, break, both sides)
+      2014-21: NQ +0.420R (282) · ES +0.234R (278)   →   2022-26: NQ +0.352R (198) · ES +0.256R (184)
+  reference — bull rule
+      2014-21: NQ +0.453R (166) · ES +0.379R (159)   →   2022-26: NQ +0.123R ( 98) · ES +0.132R ( 97)
+  average 2022-26 R of the top 10 early picks: +0.303R

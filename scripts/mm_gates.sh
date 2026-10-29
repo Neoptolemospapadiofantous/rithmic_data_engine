@@ -251,5 +251,12 @@ LINE=$(jq -r '"MM gates " + (.generated|.[0:10]) + " · " + (.gates | map("\(.id
 log "$LINE"
 if [ "$NOTIFY" = 1 ] && command -v grid-notify >/dev/null 2>&1; then grid-notify "$LINE" >/dev/null 2>&1 || true; fi
 
+# Binance-pull A/B (paper_bn vs paper_opt + live execution): $OUT/ab.{json,txt}, one Telegram line (fail-open)
+if [ -x scripts/mm_ab.sh ]; then
+  scripts/mm_ab.sh --json > "$OUT/ab.json.tmp" 2>/dev/null && mv "$OUT/ab.json.tmp" "$OUT/ab.json" || rm -f "$OUT/ab.json.tmp"
+  scripts/mm_ab.sh > "$OUT/ab.txt" 2>/dev/null || true
+  [ "$NOTIFY" = 1 ] && { scripts/mm_ab.sh --notify > /dev/null 2>&1 || true; }
+fi
+
 # all-data view for the /mm page (history + every live recording + regime filters; fail-open)
 [ -x scripts/mm_alldata.sh ] && scripts/mm_alldata.sh || true

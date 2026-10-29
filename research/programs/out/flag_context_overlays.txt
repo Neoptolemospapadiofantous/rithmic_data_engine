@@ -1,0 +1,21 @@
+BOOK2 trades with context: 6320 (NQ 3239, ES 3081); 2014-19 thresholds: ATR5/price terciles 0.0073/0.0107, first-30/ATR5 median 0.424; 'with the day' is true for 100% of trades (built into the export)
+
+BASE: 6320 trades, net R 2014-19 +0.068 / 2020-26 +0.207, $7,434/yr, eval pass 23%, fee/pass $723
+
+filter                          kept | kept R 14-19   20-26 | dropped 14-19   20-26 |    $/yr  pass fee/pass  verdict
+L1a ATR5 not low                 78% |        0.140   0.199 |        -0.076   0.264 |   7,586   18%      900     fail
+L1b gap <= 0.5 ATR               69% |       -0.007   0.150 |         0.242   0.330 |   3,865   15%    1,102     fail
+L1c with gap on big-gap days     85% |        0.034   0.225 |         0.272   0.109 |   6,343   25%      671     fail
+L2a hot open                     49% |        0.143   0.261 |        -0.006   0.157 |   4,920   22%      740     fail
+L2b quiet open                   51% |       -0.006   0.157 |         0.143   0.261 |   2,514   16%    1,023     fail
+L2c room (range<=F)              70% |        0.092   0.197 |         0.009   0.228 |   4,608   25%      651     fail
+L2d with the day                100% | not separable (dropped set 0 trades)
+L2e with VWAP                   100% | not separable (dropped set 26 trades)
+L2f fill before 11:00            49% |        0.115   0.318 |         0.021   0.103 |   5,701   33%      499     PASS
+Holm-significant kept-vs-dropped separations (one-sided, kept > dropped): ['L2f fill before 11:00', 'L1a ATR5 not low']
+
+sizing (2 micros when …)          $/yr  pass fee/pass  verdict
+S1 ATR5 top tercile             12,898   17%      955     fail
+S2 hot open                     12,353   17%      944     fail
+S3 room and with the day        12,042   17%      955     fail
+(flat 2 micros, reference)      14,867   15%    1,126

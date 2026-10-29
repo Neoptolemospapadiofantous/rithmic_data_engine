@@ -1,0 +1,22 @@
+ONE SIGNAL PER ACCOUNT at max size vs the 6-MNQ rotation. Funded stage identical (1 MNQ, rotation, $750 lock, NQ flags + cascade). 143 start dates 2020-26, 168 sessions.
+plan  N  fees eval mode                    | P(≥1 fund) funded/set 1st funded evals used/funded fee/funded | paid≤30   ≤45   ≤60  ever 1st pay med 8mo $ med    mean
+25K   4   259 one signal/acct, 2 NQ, flags only |       0.70       1.29          2               3.1        200 |    0.16  0.22  0.27  0.31          30         0     858
+25K   4   259 one signal/acct, 2 NQ, flags+casc |       0.69       1.28          2               3.1        203 |    0.14  0.22  0.27  0.29          31         0     742
+25K   4   259 rotation 6 MNQ lock $1000    |       0.91       2.09          2               1.9        124 |    0.19  0.36  0.39  0.44          33         0   1,134
+25K   6   389 one signal/acct, 2 NQ, flags only |       0.83       1.99          3               3.0        195 |    0.20  0.34  0.40  0.45          34         0   1,342
+25K   6   389 one signal/acct, 2 NQ, flags+casc |       0.85       2.10          2               2.9        185 |    0.21  0.35  0.44  0.47          33         0   1,238
+25K   6   389 rotation 6 MNQ lock $1000    |       0.95       3.18          2               1.9        122 |    0.27  0.43  0.52  0.62          36       900   1,833
+25K   8   518 one signal/acct, 2 NQ, flags only |       0.92       2.69          3               3.0        193 |    0.17  0.31  0.41  0.49          35         0   1,546
+25K   8   518 one signal/acct, 2 NQ, flags+casc |       0.92       2.80          2               2.9        185 |    0.23  0.36  0.46  0.55          33       900   1,701
+25K   8   518 rotation 6 MNQ lock $1000    |       0.99       4.16          3               1.9        125 |    0.17  0.41  0.57  0.71          41     2,025   2,445
+
+50K   4   200 one signal/acct, 4 NQ, flags only |       0.69       1.29          2               3.1        155 |    0.11  0.24  0.31  0.41          38         0   1,582
+50K   4   200 one signal/acct, 4 NQ, flags+casc |       0.68       1.27          1               3.2        158 |    0.12  0.24  0.30  0.40          37         0   1,515
+50K   4   200 rotation 6 MNQ lock $1000    |       0.82       1.80          4               2.2        111 |    0.14  0.24  0.32  0.50          46         0   2,128
+50K   6   300 one signal/acct, 4 NQ, flags only |       0.82       1.98          3               3.0        152 |    0.17  0.29  0.40  0.55          44     1,646   2,345
+50K   6   300 one signal/acct, 4 NQ, flags+casc |       0.84       2.08          2               2.9        144 |    0.15  0.31  0.40  0.55          44     1,445   2,404
+50K   6   300 rotation 6 MNQ lock $1000    |       0.94       2.97          5               2.0        101 |    0.14  0.33  0.44  0.69          48     3,005   3,100
+50K   8   400 one signal/acct, 4 NQ, flags only |       0.92       2.66          3               3.0        151 |    0.14  0.27  0.43  0.68          51     1,984   3,042
+50K   8   400 one signal/acct, 4 NQ, flags+casc |       0.92       2.78          2               2.9        144 |    0.17  0.31  0.45  0.67          48     2,140   3,128
+50K   8   400 rotation 6 MNQ lock $1000    |       0.96       3.91          5               2.0        102 |    0.09  0.29  0.47  0.82          54     4,583   4,269
+

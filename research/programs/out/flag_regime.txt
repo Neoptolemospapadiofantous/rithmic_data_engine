@@ -1,0 +1,52 @@
+Market conditions vs the flag trade — EXPLORATORY. NQ 4610 flags, ES 4796, 2014-01 → 2026-10, flag-mid trade, R clipped to [−1.5, 5]. Conditions known before the session.
+bottom fifth → top fifth (no → yes for y/n) avg R; consistent = same sign in NQ 2014-19, NQ 2020-26 and ES. Directional ones on the trade's side.
+
+######## every flag — NQ 4610, ES 4796
+    condition                          | NQ 2014-19                | NQ 2020-26                | ES                        | consistent
+    price vs 200-day avg (side, ATR)   | -0.57 → +0.16 (+0.73)     | -0.05 → +0.31 (+0.37)    | -0.25 → +0.10 (+0.34)    | YES, higher is better
+    price vs 50-day avg (side, ATR)    | -0.55 → +0.10 (+0.65)     | +0.05 → +0.31 (+0.26)    | -0.24 → +0.06 (+0.30)    | YES, higher is better
+    FOMC day                           | -0.00 → -1.21 (-1.21) y/n | +0.17 → -0.08 (-0.25)    | +0.02 → -0.74 (-0.76)    | YES, lower is better
+    last 20 sessions (side, ATR)       | -0.47 → +0.08 (+0.55)     | +0.09 → +0.25 (+0.17)    | -0.17 → +0.02 (+0.19)    | YES, higher is better
+    gap (side, ATR)                    | +0.02 → +0.19 (+0.16)     | +0.06 → +0.52 (+0.46)    | -0.04 → +0.23 (+0.27)    | YES, higher is better
+    ATR ÷ ATR 20 sessions ago         | -0.11 → +0.03 (+0.15)     | +0.09 → +0.27 (+0.18)    | -0.14 → +0.16 (+0.30)    | YES, higher is better
+    VIX level                          | -0.12 → +0.21 (+0.33)     | +0.08 → +0.17 (+0.09)    | -0.13 → +0.11 (+0.24)    | YES, higher is better
+    overnight range (ATR)              | -0.37 → -0.03 (+0.34)     | +0.06 → +0.33 (+0.27)    | -0.03 → +0.04 (+0.07)    | YES, higher is better
+    CPI day                            | -0.01 → -0.35 (-0.34) y/n | +0.17 → +0.08 (-0.09)    | +0.01 → -0.06 (-0.07)    | YES, lower is better
+    month to date (side)               | -0.11 → +0.11 (+0.22)     | -0.01 → +0.29 (+0.30)    | +0.02 → +0.05 (+0.03)    | YES, higher is better
+    VIX 1-day change                   | -0.06 → -0.09 (-0.03)     | +0.44 → -0.08 (-0.51)    | +0.02 → -0.14 (-0.16)    | YES, lower is better
+    day before a holiday               | -0.02 → -0.01 (+0.01) y/n | +0.14 → +0.56 (+0.42)    | -0.00 → +0.19 (+0.19)    | YES, higher is better
+    20-session straightness            | +0.23 → -0.38 (-0.61)     | +0.01 → +0.13 (+0.12)    | +0.09 → -0.02 (-0.11)    | no
+    10-session straightness            | +0.06 → -0.18 (-0.24)     | +0.16 → +0.17 (+0.01)    | -0.04 → -0.02 (+0.01)    | no
+    yesterday close in range (side)    | -0.30 → +0.01 (+0.31)     | +0.06 → +0.18 (+0.12)    | -0.02 → -0.16 (-0.14)    | no
+    weekday (Mon 1 → Fri 5)          | +0.08 → -0.02 (-0.10)     | +0.05 → +0.16 (+0.11)    | +0.07 → +0.02 (-0.05)    | no
+    trading day of month               | +0.06 → -0.05 (-0.11)     | +0.14 → +0.26 (+0.12)    | +0.01 → -0.02 (-0.03)    | no
+    last 5 sessions (side, ATR)        | -0.18 → +0.04 (+0.22)     | -0.00 → +0.14 (+0.14)    | +0.03 → -0.04 (-0.06)    | no
+    VIX ÷ VIX3M                       | -0.23 → +0.02 (+0.25)     | +0.33 → +0.02 (-0.32)    | -0.17 → +0.08 (+0.25)    | no
+    VIX percentile                     | -0.35 → +0.16 (+0.51)     | +0.30 → +0.11 (-0.19)    | -0.10 → +0.06 (+0.16)    | no
+    NFP day                            | -0.07 → +0.92 (+1.00) y/n | +0.18 → -0.09 (-0.27)    | +0.01 → -0.08 (-0.09)    | no (yes: 246 NQ)
+    options expiry day                 | -0.02 → -0.22 (-0.20) y/n | +0.16 → +0.26 (+0.09)    | +0.01 → -0.03 (-0.04)    | no (yes: 147 NQ)
+
+######## A-list + 5m HH/HL + with the break — NQ 745, ES 714
+    condition                          | NQ 2014-19                | NQ 2020-26                | ES                        | consistent
+    last 20 sessions (side, ATR)       | -0.15 → +0.32 (+0.48)     | +0.31 → +0.56 (+0.25)    | +0.08 → +0.33 (+0.25)    | YES, higher is better
+    weekday (Mon 1 → Fri 5)          | +0.23 → -0.01 (-0.23)     | +0.66 → +0.31 (-0.35)    | +0.53 → +0.10 (-0.44)    | YES, lower is better
+    ATR ÷ ATR 20 sessions ago         | -0.22 → -0.03 (+0.20)     | -0.07 → +0.40 (+0.46)    | -0.02 → +0.19 (+0.21)    | YES, higher is better
+    price vs 50-day avg (side, ATR)    | -0.80 → +0.20 (+1.00)     | +0.39 → +0.53 (+0.14)    | -0.07 → +0.41 (+0.48)    | YES, higher is better
+    VIX 1-day change                   | +0.23 → +0.12 (-0.11)     | +0.74 → +0.59 (-0.15)    | +0.33 → +0.08 (-0.25)    | YES, lower is better
+    price vs 200-day avg (side, ATR)   | -0.61 → +0.59 (+1.20)     | +0.77 → +0.79 (+0.02)    | -0.11 → +0.55 (+0.66)    | YES, higher is better
+    day before a holiday               | +0.13 → -0.13 (-0.26) y/n | +0.48 → +0.65 (+0.18)    | +0.16 → +0.25 (+0.09)    | no (yes: 38 NQ)
+    VIX level                          | -0.24 → +0.22 (+0.45)     | +0.77 → +0.65 (-0.11)    | +0.13 → +0.28 (+0.15)    | no
+    options expiry day                 | +0.13 → -0.89 (-1.02) y/n | +0.50 → -0.07 (-0.57)    | +0.16 → +0.28 (+0.12)    | no (yes: 18 NQ)
+    NFP day                            | +0.02 → +1.39 (+1.37) y/n | +0.50 → +0.14 (-0.36)    | +0.18 → -0.05 (-0.23)    | no (yes: 44 NQ)
+    CPI day                            | +0.15 → -1.19 (-1.34) y/n | +0.46 → +1.27 (+0.81)    | +0.19 → -0.62 (-0.81)    | no (yes: 20 NQ)
+    FOMC day                           | +0.13 → -1.30 (-1.43) y/n | +0.46 → +1.37 (+0.91)    | +0.17 → -0.30 (-0.47)    | no (yes: 17 NQ)
+    month to date (side)               | -0.04 → -0.18 (-0.14)     | +0.45 → +0.61 (+0.16)    | +0.11 → +0.01 (-0.10)    | no
+    trading day of month               | +0.23 → +0.36 (+0.13)     | +0.59 → +0.38 (-0.22)    | +0.28 → -0.07 (-0.34)    | no
+    yesterday close in range (side)    | -0.42 → +0.65 (+1.07)     | +0.71 → +0.55 (-0.16)    | +0.25 → -0.20 (-0.44)    | no
+    overnight range (ATR)              | +0.26 → -0.23 (-0.49)     | +0.18 → +0.64 (+0.46)    | +0.04 → +0.19 (+0.15)    | no
+    gap (side, ATR)                    | +0.03 → -0.38 (-0.41)     | -0.06 → +0.84 (+0.90)    | +0.07 → +0.33 (+0.27)    | no
+    20-session straightness            | +0.14 → -0.13 (-0.28)     | +0.65 → +0.69 (+0.05)    | -0.02 → +0.49 (+0.51)    | no
+    10-session straightness            | +0.11 → +0.09 (-0.03)     | +0.23 → +0.40 (+0.17)    | +0.17 → +0.30 (+0.12)    | no
+    last 5 sessions (side, ATR)        | -0.27 → +0.34 (+0.61)     | +0.75 → +0.42 (-0.33)    | +0.26 → +0.07 (-0.19)    | no
+    VIX ÷ VIX3M                       | -0.33 → +0.11 (+0.44)     | +0.88 → +0.19 (-0.70)    | -0.00 → +0.04 (+0.04)    | no
+    VIX percentile                     | -0.18 → +0.37 (+0.54)     | +0.85 → +0.30 (-0.55)    | -0.05 → +0.24 (+0.30)    | no

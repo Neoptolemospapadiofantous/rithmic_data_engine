@@ -1,0 +1,26 @@
+ORB first, then the flag — NQ, 2581 NY days 2014-01 → 2026-10. Flags: 3-5m bull / bear (flag_tiny_tp rules), flag-mid limit, stop flag low − 0.1 ATR, measured-move target, flat 15:55, cost 1.5 pts,
+one position at a time. Points at today's ATR (307). Cells: 2014-17 | 2018-21 | 2022-24 | 2025-26 avg R (n) · all: R, win %, PF, pts/trade, trades a year, worst drawdown R, periods > 0.
+
+######## 5-minute opening range — breaks on 100% of days
+    ORB break trade alone (stop other side)         -0.09 ( 825) |  +0.06 ( 855) |  +0.15 ( 642) |  +0.14 ( 259) | all +0.044R win 31.6% PF 1.06 ·   +7.1 pts · 252.0/yr · DD  95.0R · 3/4
+    F0 every flag (no ORB)                          -0.05 ( 647) |  +0.18 ( 678) |  +0.26 ( 515) |  +0.13 ( 211) | all +0.123R win 29.6% PF 1.16 ·   +9.6 pts · 200.3/yr · DD  73.7R · 3/4 · 51% bull
+    F1 flag on the break side, after the break      -0.07 ( 496) |  +0.24 ( 533) |  +0.33 ( 401) |  +0.12 ( 170) | all +0.152R win 30.2% PF 1.19 ·  +11.0 pts · 156.2/yr · DD  80.8R · 3/4 · 53% bull
+    F2 only the first flag after the break          -0.11 ( 391) |  +0.31 ( 416) |  +0.37 ( 315) |  +0.21 ( 131) | all +0.187R win 30.3% PF 1.24 ·  +12.0 pts · 122.3/yr · DD  78.5R · 3/4 · 54% bull
+    F3 flag AGAINST the break side                  +0.03 ( 151) |  -0.02 ( 145) |  +0.02 ( 114) |  +0.17 (  41) | all +0.022R win 27.7% PF 1.03 ·   +4.6 pts ·  44.0/yr · DD  38.4R · 3/4 · 43% bull
+    F4 F1 + A-list                                  +0.04 ( 230) |  +0.38 ( 236) |  +0.40 ( 200) |  +0.10 ( 105) | all +0.245R win 32.0% PF 1.32 ·  +15.6 pts ·  75.3/yr · DD  49.5R · 4/4 · 51% bull
+    F5 F1 + 5m HH/HL (LH/LL)                        +0.13 ( 295) |  +0.14 ( 336) |  +0.31 ( 279) |  +0.22 ( 102) | all +0.190R win 31.2% PF 1.25 ·  +12.4 pts ·  98.8/yr · DD  49.3R · 4/4 · 53% bull
+    F6 F1 + A-list + 5m HH/HL                       +0.31 ( 132) |  +0.46 ( 139) |  +0.49 ( 131) |  +0.22 (  54) | all +0.396R win 34.6% PF 1.55 ·  +21.3 pts ·  44.5/yr · DD  33.8R · 4/4 · 51% bull
+       F1 bull only (break up)                      +0.11 ( 249) |  +0.26 ( 295) |  +0.29 ( 208) |  +0.09 (  92) | all +0.204R win 34.1% PF 1.28 ·  +12.8 pts ·  82.4/yr · DD  31.6R · 4/4 · 100% bull
+       F1 bear only (break down)                    -0.26 ( 247) |  +0.22 ( 238) |  +0.37 ( 193) |  +0.14 (  78) | all +0.093R win 25.8% PF 1.11 ·   +8.9 pts ·  73.8/yr · DD  81.4R · 3/4 · 0% bull
+
+######## 15-minute opening range — breaks on 99% of days
+    ORB break trade alone (stop other side)         -0.10 ( 819) |  +0.04 ( 850) |  +0.11 ( 639) |  +0.11 ( 259) | all +0.024R win 40.6% PF 1.04 ·   +6.5 pts · 250.6/yr · DD  88.2R · 3/4
+    F0 every flag (no ORB)                          -0.05 ( 647) |  +0.18 ( 678) |  +0.26 ( 515) |  +0.13 ( 211) | all +0.123R win 29.6% PF 1.16 ·   +9.6 pts · 200.3/yr · DD  73.7R · 3/4 · 51% bull
+    F1 flag on the break side, after the break      -0.06 ( 552) |  +0.22 ( 587) |  +0.30 ( 449) |  +0.11 ( 183) | all +0.142R win 29.8% PF 1.18 ·  +10.1 pts · 172.9/yr · DD  74.4R · 3/4 · 52% bull
+    F2 only the first flag after the break          -0.10 ( 435) |  +0.28 ( 472) |  +0.33 ( 347) |  +0.20 ( 141) | all +0.164R win 29.7% PF 1.21 ·  +10.4 pts · 136.2/yr · DD  61.8R · 3/4 · 54% bull
+    F3 flag AGAINST the break side                  -0.01 (  88) |  -0.01 (  82) |  +0.02 (  63) |  +0.22 (  28) | all +0.022R win 28.4% PF 1.03 ·   +5.4 pts ·  25.5/yr · DD  25.4R · 2/4 · 41% bull
+    F4 F1 + A-list                                  +0.16 ( 244) |  +0.45 ( 260) |  +0.31 ( 222) |  +0.13 ( 113) | all +0.288R win 33.0% PF 1.39 ·  +17.5 pts ·  81.9/yr · DD  40.9R · 4/4 · 51% bull
+    F5 F1 + 5m HH/HL (LH/LL)                        +0.12 ( 346) |  +0.14 ( 377) |  +0.29 ( 319) |  +0.21 ( 115) | all +0.183R win 30.9% PF 1.24 ·  +12.0 pts · 113.0/yr · DD  44.9R · 4/4 · 53% bull
+    F6 F1 + A-list + 5m HH/HL                       +0.45 ( 141) |  +0.47 ( 155) |  +0.39 ( 151) |  +0.24 (  64) | all +0.412R win 35.2% PF 1.58 ·  +22.7 pts ·  49.9/yr · DD  32.5R · 4/4 · 52% bull
+       F1 bull only (break up)                      +0.10 ( 267) |  +0.30 ( 322) |  +0.26 ( 228) |  +0.11 (  99) | all +0.211R win 34.1% PF 1.29 ·  +12.6 pts ·  89.4/yr · DD  41.0R · 4/4 · 100% bull
+       F1 bear only (break down)                    -0.20 ( 285) |  +0.12 ( 265) |  +0.33 ( 221) |  +0.12 (  84) | all +0.067R win 25.3% PF 1.08 ·   +7.5 pts ·  83.5/yr · DD  81.8R · 3/4 · 0% bull

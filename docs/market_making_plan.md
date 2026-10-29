@@ -155,3 +155,32 @@ Leverage is never used to reach a size: losses scale with position size, not mar
 - 2026-10-25 — Plan written; gate numbers set from the holdout evidence. Paper engine restarted on the
   Hyperliquid tick unit at 14:55 UTC+2 after validation found Lighter's grid differs on 8/24 markets; the
   paper record starts there. Frozen delay 250 → 300 ms (the backtests' value).
+
+- 2026-10-28 — `paper_100` (unit `mm-paper-100-local`): the optimised setting at **$100 quotes** beside `paper_opt` at $11, same
+  measured live delays (314/614 ms) and rate limit. Question: do fills and markout scale with size? ($1–2k/month at +0.5 bps
+  needs ~$600k–1.2M filled per day ≈ $100–200 quotes × 30 markets; if fills scale < 50 % the plan's volume doubles.) Judge after
+  10 paper days on fills/day, net bps and 10 s markout vs `paper_opt`; a worse markout at $100 means size is adverse selection,
+  not income. Paper only, no money.
+
+## RL phase 1 — contextual bandit on counterfactual labels (2026-10-28, founder: "lets build it")
+Built: `mm_rl_label` (one row per 10-s window: the state at the window start + the markout-adjusted $ each quoting action — always
+quote at 4/5/6/8 ticks, defences off, and the frozen policy — earned from its fills inside the window; honest fill model, Lighter's
+grid) and `mm_rl_judge` (per side × action ridge on the state; policy = argmax over actions ∪ pull; walk-forward by day and unseen-coin
+splits; a shuffled-train control). Rule stated before the run (chat, 2026-10-28 22:40 EET): the learned policy counts as information
+only if its gain over "always width 5" on the test split EXCEEDS the gain of the same policy fitted on shuffled labels by more than the
+noise, on BOTH the walk-forward and an unseen-coin split; otherwise the state carries nothing and only the action set does.
+**Result (6 Lighter coins × 2026-10-26…28, 145,701 windows):** walk-forward (train 26–27, test 28): learned +$0.08 vs always-5 −$0.72 —
+but the shuffled-train control scores +$0.34 (gain +0.80 real vs +1.06 shuffled). Unseen coins CRV/OP: +0.35 vs +0.42; UNI/DOT: +1.36
+vs +1.36. The policy's edge is entirely "pick width 8 and pull a third of the time" — the best single action in hindsight is 8 on every
+split — and the state features (spread, imbalance, depth, tape, range, 1 s/5 s move, time since jump, hour) add nothing the shuffle
+does not. The per-window oracle (perfect foresight) is only +$4.5 on $11k filled ≈ 4 bps — the ceiling for ANY state policy on this
+action set. **Verdict: state-dependence NOT demonstrated; the dataset says "quote wider" (8 vs 5 ticks), which is a one-knob change
+to test on paper, not a learner.** Re-run when the Lighter archive holds ≥ 20 days and the Binance-gap feature (the only signal the
+fair-price lab found, R² ~1 %) is in the row.
+**HL history (Tardis, 24 month-first days 2024-11 → 2026-10, AAVE/AVAX/DOT/OP, 829k windows, 1.5 bps maker fee):** every quoting
+action loses on the test days (always-5 −$543 = −20 bps of $268k filled; best single action, width 8, −$386; the frozen policy −$62);
+the learner's answer is to PULL 94–98 % of the time (reward 0), and the shuffled-train control does exactly the same (+$538 vs +$541
+over always-5). The oracle is +$204 on 138k windows ≈ 8 bps — the most ANY state policy could extract. Same reading as the Lighter
+days: no state signal in these features; on a venue with a maker fee the right action is not to quote, which the simulator already
+said in October. Two artefacts worth knowing: Tardis has no UNI/CRV history (the "CRV,OP" split tested OP alone), and the Tardis
+books are 5 levels deep (the depth features are truncated there).

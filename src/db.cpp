@@ -976,6 +976,17 @@ int64_t TickDB::row_count() {
     return n;
 }
 
+// 2026-10-20: summary() ran COUNT(*) every 60 s on the collector's io thread; at 144M rows / 44 GB it took ~31 s,
+// so the Rithmic read loop stalled 18-27 s every ~80 s (live consumers saw "last tick 17s ago", the database
+// itself had no gaps because ticks keep their exchange time). The status line only needs a magnitude.
+int64_t TickDB::row_estimate() {
+    PGresult* res = PQexec(conn_, "SELECT GREATEST(reltuples, 0)::bigint FROM pg_class WHERE oid = 'ticks'::regclass");
+    pg_check(res, "row_estimate");
+    int64_t n = PQntuples(res) > 0 ? std::stoll(PQgetvalue(res, 0, 0)) : 0;
+    PQclear(res);
+    return n;
+}
+
 std::optional<double> TickDB::latest_price() {
     PGresult* res = PQexec(conn_,
         "SELECT price FROM ticks ORDER BY ts_event DESC LIMIT 1");
@@ -990,7 +1001,7 @@ std::optional<double> TickDB::latest_price() {
 DBSummary TickDB::summary() {
     DBSummary s;
     s.connstr    = redact_pg_password(connstr_);
-    s.tick_count = row_count();
+    s.tick_count = row_estimate();
     s.price      = latest_price();
 
     PGresult* res = PQexec(conn_,

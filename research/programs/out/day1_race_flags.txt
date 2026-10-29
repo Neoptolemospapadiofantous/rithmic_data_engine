@@ -1,0 +1,9 @@
+BOOK2 NQ flags 3239, first-of-day 1621; race +37.5 before -12.5 pts at today's price, scaled by entry/29800; twin = same day, same side, random minute in the next hour (x5)
+all BOOK2             | 14-19: n 1578 flag  26.4% twin  26.3% diff  +0.0 p 0.4977 | 20-26: n 1661 flag  24.7% twin  24.9% diff  -0.2 p 0.5832
+first flag of the day | 14-19: n  787 flag  25.5% twin  27.0% diff  -1.4 p 0.8263 | 20-26: n  834 flag  24.7% twin  26.2% diff  -1.5 p 0.8488
+grade A only          | 14-19: n 1016 flag  27.1% twin  27.4% diff  -0.3 p 0.5973 | 20-26: n 1103 flag  25.0% twin  24.5% diff  +0.5 p 0.3606
+first + grade A       | 14-19: n  562 flag  25.6% twin  26.4% diff  -0.8 p 0.6872 | 20-26: n  592 flag  25.7% twin  24.8% diff  +0.9 p 0.3204
+bull flags only       | 14-19: n  852 flag  28.5% twin  28.8% diff  -0.2 p 0.5750 | 20-26: n  928 flag  24.2% twin  27.0% diff  -2.8 p 0.9741
+bear flags only       | 14-19: n  726 flag  23.8% twin  26.2% diff  -2.4 p 0.9324 | 20-26: n  733 flag  25.2% twin  24.8% diff  +0.5 p 0.4020
+first flag, by 10:30  | 14-19: n  318 flag  24.8% twin  27.3% diff  -2.5 p 0.8519 | 20-26: n  306 flag  25.2% twin  24.8% diff  +0.4 p 0.4631
+Holm-adjusted p<0.05 cells: none (cell index = row*2 + half)

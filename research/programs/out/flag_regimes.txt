@@ -1,0 +1,106 @@
+
+W  walk-forward A list 2014-26 (honest) · halves 2014-19 / 2020-26 — 337 trades
+  all: +0.466R · win 41% · PF 1.71
+  G1 VIX prior close                 spread 0.390R · permutation p 0.712
+      <15                   129  +0.411R  win 42%  PF 1.60   halves +0.44R (99) / +0.31R (30)
+      15-20                 116  +0.439R  win 41%  PF 1.69   halves +0.60R (42) / +0.35R (74)
+      20-25                  57  +0.438R  win 35%  PF 1.64   halves +0.87R (10) / +0.35R (47)
+      >=25                   35  +0.802R  win 49%  PF 2.49   halves +0.42R (2) / +0.83R (33)
+  G2 VIX last daily change           spread 0.456R · permutation p 0.239
+      fell >3%              118  +0.556R  win 45%  PF 1.92   halves +0.38R (57) / +0.72R (61)
+      flat                  122  +0.214R  win 36%  PF 1.30   halves +0.43R (51) / +0.06R (71)
+      rose >3%               97  +0.671R  win 43%  PF 2.09   halves +0.77R (45) / +0.58R (52)
+  G3 ATR14 vs prior 250 sessions     spread 0.159R · permutation p 0.841
+      low third              90  +0.565R  win 40%  PF 1.81   halves +0.26R (39) / +0.80R (51)
+      mid third             112  +0.406R  win 38%  PF 1.59   halves +0.35R (53) / +0.46R (59)
+      high third            135  +0.449R  win 44%  PF 1.76   halves +0.81R (61) / +0.15R (74)
+  G4 prior close vs SMA50            spread 0.043R · permutation p 0.864
+      below                 100  +0.491R  win 45%  PF 1.82   halves +0.85R (46) / +0.19R (54)
+      above                 232  +0.448R  win 40%  PF 1.66   halves +0.35R (102) / +0.53R (130)
+  G5 prior close vs SMA200           spread 0.355R · permutation p 0.352
+      below                  37  +0.769R  win 49%  PF 2.41   halves +0.09R (10) / +1.02R (27)
+      above                 279  +0.414R  win 41%  PF 1.63   halves +0.53R (122) / +0.33R (157)
+  G6 20-session path e20             spread 0.489R · permutation p 0.216
+      choppy <0.2           158  +0.489R  win 42%  PF 1.78   halves +0.59R (68) / +0.41R (90)
+      mixed                  80  +0.174R  win 35%  PF 1.24   halves -0.06R (37) / +0.37R (43)
+      trending >=0.35        99  +0.664R  win 44%  PF 2.05   halves +0.84R (48) / +0.50R (51)
+  G7 20-session direction r20        spread 0.267R · permutation p 0.252
+      down                  120  +0.638R  win 46%  PF 2.09   halves +0.96R (60) / +0.32R (60)
+      up                    217  +0.370R  win 39%  PF 1.54   halves +0.22R (93) / +0.48R (124)
+  G8 prior day IBS                   spread 0.253R · permutation p 0.640
+      weak <0.3              96  +0.598R  win 43%  PF 1.94   halves +0.69R (46) / +0.52R (50)
+      middle                113  +0.490R  win 44%  PF 1.79   halves +0.83R (47) / +0.24R (66)
+      strong >0.7           128  +0.345R  win 38%  PF 1.50   halves +0.12R (60) / +0.54R (68)
+  G9 gap at 09:30 vs ATR             spread   n/a · permutation p n/a
+      down <-0.1             19  +0.809R  win 47%  PF 2.46   halves +3.45R (1) / +0.66R (18)   (thin)
+      flat                    8  -0.348R  win 25%  PF 0.56   halves -1.08R (1) / -0.24R (7)   (thin)
+      up >0.1               310  +0.466R  win 41%  PF 1.71   halves +0.50R (151) / +0.43R (159)
+  G10 weekday                        spread 0.489R · permutation p 0.676
+      Mon                    80  +0.555R  win 42%  PF 1.87   halves +0.35R (36) / +0.72R (44)
+      Tue                    73  +0.490R  win 42%  PF 1.74   halves +0.78R (41) / +0.12R (32)
+      Wed                    58  +0.159R  win 34%  PF 1.22   halves +0.34R (24) / +0.03R (34)
+      Thu                    59  +0.648R  win 44%  PF 2.04   halves +0.39R (26) / +0.85R (33)
+      Fri                    67  +0.437R  win 42%  PF 1.68   halves +0.59R (26) / +0.34R (41)
+  G11 event day                      spread 0.590R · permutation p 0.119
+      none                  303  +0.406R  win 40%  PF 1.61   halves +0.45R (139) / +0.37R (164)
+      FOMC/CPI/NFP/opex      34  +0.996R  win 53%  PF 2.91   halves +1.10R (14) / +0.92R (20)
+  G12 year                           spread 0.680R · permutation p 0.369
+      2010-13                 0
+      2014-16                74  +0.542R  win 46%  PF 1.82   halves +0.54R (74) / +nanR (0)
+      2017-19                79  +0.482R  win 43%  PF 1.71   halves +0.48R (79) / +nanR (0)
+      2020-22                76  +0.740R  win 49%  PF 2.37   halves +nanR (0) / +0.74R (76)
+      2023-24                69  +0.293R  win 30%  PF 1.40   halves +nanR (0) / +0.29R (69)
+      2025-26                39  +0.059R  win 33%  PF 1.09   halves +nanR (0) / +0.06R (39)
+
+F  frozen page rule 2010-26 (in-sample weights) · halves 2010-19 / 2020-26 — 382 trades
+  all: +0.656R · win 44% · PF 2.02
+  G1 VIX prior close                 spread 0.338R · permutation p 0.812
+      <15                   127  +0.720R  win 45%  PF 2.09   halves +0.73R (105) / +0.68R (22)
+      15-20                 146  +0.626R  win 45%  PF 2.00   halves +0.77R (76) / +0.47R (70)
+      20-25                  70  +0.500R  win 37%  PF 1.72   halves +0.37R (28) / +0.59R (42)
+      >=25                   39  +0.838R  win 46%  PF 2.41   halves +0.01R (10) / +1.12R (29)
+  G2 VIX last daily change           spread 0.511R · permutation p 0.193
+      fell >3%              129  +0.567R  win 45%  PF 1.91   halves +0.28R (68) / +0.89R (61)
+      flat                  145  +0.482R  win 39%  PF 1.68   halves +0.73R (85) / +0.13R (60)
+      rose >3%              108  +0.994R  win 48%  PF 2.69   halves +0.98R (66) / +1.01R (42)
+  G3 ATR14 vs prior 250 sessions     spread 0.189R · permutation p 0.793
+      low third             103  +0.700R  win 41%  PF 1.99   halves +0.44R (53) / +0.98R (50)
+      mid third             132  +0.778R  win 46%  PF 2.25   halves +0.83R (81) / +0.70R (51)
+      high third            138  +0.589R  win 45%  PF 1.97   halves +0.80R (76) / +0.33R (62)
+  G4 prior close vs SMA50            spread 0.176R · permutation p 0.524
+      below                 114  +0.775R  win 50%  PF 2.39   halves +1.05R (62) / +0.44R (52)
+      above                 262  +0.598R  win 41%  PF 1.88   halves +0.50R (151) / +0.74R (111)
+  G5 prior close vs SMA200           spread 0.201R · permutation p 0.592
+      below                  45  +0.850R  win 49%  PF 2.52   halves +0.34R (18) / +1.19R (27)
+      above                 295  +0.649R  win 43%  PF 2.01   halves +0.75R (159) / +0.54R (136)
+  G6 20-session path e20             spread 0.180R · permutation p 0.824
+      choppy <0.2           183  +0.712R  win 45%  PF 2.19   halves +0.91R (101) / +0.47R (82)
+      mixed                 100  +0.532R  win 41%  PF 1.77   halves +0.33R (61) / +0.84R (39)
+      trending >=0.35        98  +0.696R  win 44%  PF 2.04   halves +0.63R (56) / +0.79R (42)
+  G7 20-session direction r20        spread 0.331R · permutation p 0.169
+      down                  142  +0.869R  win 49%  PF 2.57   halves +1.15R (82) / +0.48R (60)
+      up                    239  +0.537R  win 41%  PF 1.77   halves +0.39R (136) / +0.74R (103)
+  G8 prior day IBS                   spread 0.234R · permutation p 0.703
+      weak <0.3             106  +0.816R  win 46%  PF 2.31   halves +0.82R (63) / +0.81R (43)
+      middle                137  +0.582R  win 45%  PF 1.90   halves +0.75R (79) / +0.35R (58)
+      strong >0.7           139  +0.607R  win 41%  PF 1.92   halves +0.45R (77) / +0.80R (62)
+  G9 gap at 09:30 vs ATR             spread 0.597R · permutation p 0.188
+      down <-0.1             28  +1.204R  win 54%  PF 3.21   halves +1.43R (17) / +0.85R (11)
+      flat                   12  +0.776R  win 42%  PF 2.12   halves -0.50R (7) / +2.57R (5)   (thin)
+      up >0.1               342  +0.607R  win 43%  PF 1.93   halves +0.64R (195) / +0.56R (147)
+  G10 weekday                        spread 0.612R · permutation p 0.491
+      Mon                    85  +0.475R  win 40%  PF 1.69   halves +0.16R (45) / +0.83R (40)
+      Tue                    83  +0.717R  win 46%  PF 2.11   halves +0.98R (55) / +0.20R (28)
+      Wed                    60  +0.401R  win 38%  PF 1.59   halves +0.50R (33) / +0.28R (27)
+      Thu                    76  +1.014R  win 49%  PF 2.71   halves +0.80R (44) / +1.30R (32)
+      Fri                    78  +0.635R  win 45%  PF 2.02   halves +0.78R (42) / +0.47R (36)
+  G11 event day                      spread 0.577R · permutation p 0.155
+      none                  346  +0.601R  win 43%  PF 1.92   halves +0.61R (199) / +0.59R (147)
+      FOMC/CPI/NFP/opex      36  +1.179R  win 53%  PF 3.22   halves +1.23R (20) / +1.12R (16)
+  G12 year                           spread 0.808R · permutation p 0.414
+      2010-13                75  +0.371R  win 40%  PF 1.48   halves +0.37R (75) / +nanR (0)
+      2014-16                64  +0.886R  win 52%  PF 2.49   halves +0.89R (64) / +nanR (0)
+      2017-19                80  +0.764R  win 46%  PF 2.21   halves +0.76R (80) / +nanR (0)
+      2020-22                71  +0.892R  win 49%  PF 2.67   halves +nanR (0) / +0.89R (71)
+      2023-24                57  +0.678R  win 35%  PF 2.00   halves +nanR (0) / +0.68R (57)
+      2025-26                35  +0.083R  win 34%  PF 1.13   halves +nanR (0) / +0.08R (35)

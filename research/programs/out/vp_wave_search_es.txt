@@ -1,0 +1,26 @@
+Volume-profile wave search — ES, 881109 signals. Cost 0.5. Points at today's ATR (55). Selected on 2010-2020 (n >= 150, PF >= 1.15, both halves > 0):
+level  trig   tf  window  exit  | IS n   pts   PF  | VAL21-24 n  pts   PF | HO25-26 n  pts   PF | twin
+vwap2  ema    3   NYmid   2R    |   421  +1.37 1.16 |   151  +1.64 1.20 ok |   45  -7.86 0.44 -- |  +0.83
+pVA    ema    1   NYmid   mean  |   530  +0.67 1.16 |   230  +0.60 1.14 ok |   82  -1.15 0.75 -- |  +0.72
+pVA    ema    5   NYopen  1R    |   217  +1.77 1.20 |   101  +0.26 1.03 -- |   31  +2.41 1.29 ok |  +2.24
+pVA    close  3   NYmid   1R    |  1093  +0.86 1.16 |   586  -1.01 0.79 -- |  170  -0.48 0.91 -- |  +0.85
+pVA    close  3   NYmid   2R    |   984  +1.30 1.19 |   521  -1.02 0.84 -- |  145  -1.60 0.77 -- |  +0.58
+pVA    close  3   NYmid   3R    |   960  +1.19 1.17 |   496  -0.45 0.93 -- |  137  -1.52 0.79 -- |  +0.40
+pVA    close  5   NYmid   1R    |  1031  +0.91 1.16 |   527  -1.52 0.72 -- |  168  +0.01 1.00 ok |  +0.42
+pVA    close  5   NYmid   2R    |   932  +1.37 1.20 |   473  -1.59 0.76 -- |  137  -1.36 0.81 -- |  +0.63
+pVA    close  5   NYmid   3R    |   907  +1.13 1.16 |   462  -1.43 0.80 -- |  133  -1.06 0.86 -- |  +0.49
+dVA    ema    3   NYopen  2R    |   160  +1.71 1.19 |    74  +1.30 1.14 ok |   24  +1.63 1.19 ok |  +2.13
+dVA    ema    3   NYopen  3R    |   160  +1.51 1.16 |    74  +0.25 1.03 -- |   24  -1.28 0.87 -- |  +1.31
+dVA    ema    3   NYmid   2R    |   419  +1.37 1.16 |   167  +0.89 1.11 ok |   46  -2.47 0.77 -- |  +1.40
+dVA    ema    5   NYmid   1R    |   161  +5.05 1.84 |    58  -1.90 0.79 -- |   11  -9.90 0.43 -- |  +2.80
+dVA    ema    5   NYmid   2R    |   159  +5.35 1.74 |    58  -3.93 0.62 -- |   11  -8.41 0.56 -- |  +1.91
+dVA    ema    5   NYmid   3R    |   158  +5.42 1.74 |    58  -4.83 0.54 -- |   11  -3.50 0.82 -- |  +3.23
+dVA    ema    5   NYmid   mean  |   164  +0.18 1.17 |    61  -1.16 0.51 -- |   11  -6.52 0.32 -- |  -0.13
+
+Per level (120 configs each): selected on 2010-20 / also pass 2021-24 / also positive 2025-26 · average net pts/trade over ALL its configs 2010-20 | 2021-26
+  vwap2    1 /   1 /   0   ·  -0.61 |  -0.51
+  pVA      8 /   1 /   0   ·  -0.44 |  -0.45
+  dVA      7 /   2 /   1   ·  -0.68 |  -0.51
+  pPOC     0 /   0 /   0   ·  -0.88 |  -0.52
+  nPOC     0 /   0 /   0   ·  -0.69 |  -0.51
+  conf     0 /   0 /   0   ·  -0.71 |  -0.76

@@ -1,0 +1,6 @@
+FINAL PIPELINE — Lucid Pro 50K exact rules (40% rule on CYCLE profit: since funding, then since the last payout), 6 accounts ($300), rotation one-at-a-time + profit lock in BOTH stages, NQ flags + cascade, DLL on, 168 sessions (~8 months), 143 start dates 2020-26
+eval        funded      | P(≥1 funded) 1st funded | P(paid ≤30)   ≤45   ≤60   ≤90  ever 1st payout med | payouts/set $ 8mo p10     p25  median    mean     p90 P(net>fees)
+6mq $1000   1mq $750    |         0.94          5 |        0.14  0.33  0.44  0.60  0.69             48 |        2.03         0       0   3,005   3,100   6,911        0.69
+6mq $1000   2mq $750    |         0.94          5 |        0.27  0.43  0.50  0.55  0.55             31 |        2.00         0       0   1,800   3,760  11,511        0.55
+6mq $1000   2mq $1000   |         0.94          5 |        0.24  0.38  0.51  0.57  0.58             34 |        1.87         0       0   1,800   3,652  10,350        0.58
+6mq $1000   3mq $1000   |         0.94          5 |        0.27  0.40  0.51  0.52  0.52             29 |        1.88         0       0   1,167   3,734  12,150        0.52

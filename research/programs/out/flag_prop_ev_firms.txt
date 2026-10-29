@@ -1,0 +1,21 @@
+BOOK2 through every prop plan in payout_sim.hpp — $ of payouts per eval bought (before fees and the split), starts every 5th trading day 2014-01 → 2025-04, eval <= 60 days, funded 120.
+  select_flex_25k    | 2 micros stop $150: $ 1253 pass  44% paid  65% | 2 micros stop $200: $ 1302 pass  43% paid  61% | BEST 2 micros stop $200: $ 1302 (2014-19 $ 1381 / 2020-25 $ 1215) pass  43%
+  select_flex_50k    | 2 micros stop $150: $ 3428 pass  54% paid  87% | 2 micros stop $200: $ 3821 pass  54% paid  83% | BEST 2 micros stop $200: $ 3821 (2014-19 $ 3663 / 2020-25 $ 3993) pass  54%
+  select_daily_25k   | 2 micros stop $150: $ 1763 pass  44% paid  66% | 2 micros stop $200: $ 1739 pass  43% paid  64% | BEST 2 micros stop $150: $ 1763 (2014-19 $ 1662 / 2020-25 $ 1873) pass  44%
+  select_daily_50k   | 2 micros stop $150: $ 4577 pass  54% paid  83% | 2 micros stop $200: $ 4738 pass  54% paid  81% | BEST 3 micros stop $150: $ 5363 (2014-19 $ 6144 / 2020-25 $ 4511) pass  53%
+  select_flex_100k   | 2 micros stop $150: $ 3793 pass  50% paid  97% | 2 micros stop $200: $ 4436 pass  52% paid  96% | BEST 4 micros stop $200: $ 5237 (2014-19 $ 6287 / 2020-25 $ 4092) pass  54%
+  select_flex_150k   | 2 micros stop $150: $ 2552 pass  33% paid  99% | 2 micros stop $200: $ 3375 pass  36% paid  99% | BEST 4 micros stop $200: $ 6318 (2014-19 $ 7418 / 2020-25 $ 5118) pass  53%
+  select_daily_100k  | 2 micros stop $150: $ 4577 pass  50% paid  89% | 2 micros stop $200: $ 5256 pass  52% paid  85% | BEST 3 micros stop $150: $ 7278 (2014-19 $ 8573 / 2020-25 $ 5864) pass  54%
+  select_daily_150k  | 2 micros stop $150: $ 2776 pass  33% paid  90% | 2 micros stop $200: $ 3726 pass  36% paid  94% | BEST 4 micros stop $200: $ 9522 (2014-19 $10991 / 2020-25 $ 7918) pass  52%
+  growth_25k         | 2 micros stop $150: $  267 pass  67% paid  27% | 2 micros stop $200: $  234 pass  62% paid  26% | BEST 1 micros stop $150: $  423 (2014-19 $  400 / 2020-25 $  448) pass  66%
+  growth_50k         | 2 micros stop $150: $ 1219 pass  78% paid  60% | 2 micros stop $200: $ 1330 pass  73% paid  70% | BEST 2 micros stop $200: $ 1330 (2014-19 $ 1330 / 2020-25 $ 1330) pass  73%
+  mff_rapid_50k      | 2 micros stop $150: $ 5572 pass  65% paid  80% | 2 micros stop $200: $ 5462 pass  64% paid  73% | BEST 3 micros stop $150: $ 6767 (2014-19 $ 6948 / 2020-25 $ 6569) pass  64%
+  mff_rapid_eod_50k  | 2 micros stop $150: $ 2832 pass  30% paid  83% | 2 micros stop $200: $ 3110 pass  33% paid  81% | BEST 3 micros stop $150: $ 3764 (2014-19 $ 3385 / 2020-25 $ 4177) pass  29%
+  apex_eod_50k       | 2 micros stop $150: $ 2681 pass  78% paid  78% | 2 micros stop $200: $ 2640 pass  73% paid  79% | BEST 3 micros stop $150: $ 2761 (2014-19 $ 2999 / 2020-25 $ 2502) pass  83%
+  apex_intraday_50k  | 2 micros stop $150: $ 2340 pass  78% paid  70% | 2 micros stop $200: $ 2556 pass  73% paid  76% | BEST 2 micros stop $200: $ 2556 (2014-19 $ 2571 / 2020-25 $ 2539) pass  73%
+  topstep_50k        | 2 micros stop $150: $ 5184 pass  65% paid  91% | 2 micros stop $200: $ 5860 pass  64% paid  84% | BEST 3 micros stop $150: $ 6528 (2014-19 $ 7523 / 2020-25 $ 5442) pass  64%
+  lucid_flex_50k     | 2 micros stop $150: $ 3479 pass  65% paid  90% | 2 micros stop $200: $ 3767 pass  64% paid  84% | BEST 2 micros stop $200: $ 3767 (2014-19 $ 3588 / 2020-25 $ 3963) pass  64%
+
+real	0m1.907s
+user	0m1.001s
+sys	0m0.173s

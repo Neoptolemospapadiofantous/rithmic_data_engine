@@ -1,0 +1,28 @@
+
+################ BOOK2 4-5m A or B, pb <= 38 %, 2 open (~2/day) — 2 micros each market, daily stop $150, NQ + ES, 2014-01 → 2026-10, $ at today's ATR
+  TRADES: 6291 (2.44 a day) · win 31.8% · avg +0.220R · R percentiles 10/25/50/75/90: -1.07 / -1.05 / -1.03 / +1.23 / +3.49 · >= +1R 26.7% · >= +2R 20.2% · longest losing streak 30
+  chance of >= 5 / 8 / 10 losses in a row within 50 trades: 100%  88%  73%
+  DAYS: trades on 77.4% of sessions · traded days > 0: 26.1% · traded-day $ percentiles 10/25/50/75/90:  -150 /  -150 /  -150 /   +61 / +1033 · worst  -150 · best +5581
+  WEEKS : > 0 in 49.6% · $ percentiles 10/50/90:   -600 /     +0 /  +2219 · worst   -750 · longest losing run 8 weeks
+  MONTHS: > 0 in 78.2% · $ percentiles 10/50/90:   -985 /  +1434 /  +5810 · worst  -2400 · longest losing run 2 months
+  BOOTSTRAP (200 resampled 12-month paths): $ a month 5/50/95%:  +817 / +2013 / +3229 · 12-month max drawdown 50/90/95%: $ 2470 / $ 3830 / $ 4655
+  chance a 60-day stretch dips past $1,000 / $2,000 / $3,000 from its high:  82% /  26% /   6%
+  avg R a trade, 90% range (month bootstrap): +0.149 … +0.294 (median +0.222)
+  PAPER TEST of 20 sessions (~49 trades): avg >= +0.05R in  60% of windows with the real edge ·  44% if the edge were zero (luck)
+  PAPER TEST of 40 sessions (~97 trades): avg >= +0.05R in  67% of windows with the real edge ·  43% if the edge were zero (luck)
+  PAPER TEST of 60 sessions (~146 trades): avg >= +0.05R in  71% of windows with the real edge ·  40% if the edge were zero (luck)
+  ACCOUNT EV select_daily_50k (eval and funded 2 micros, $150 stop), 100 resampled histories: 5/25/50/75/95%: $ 2846 / $ 3831 / $ 4593 / $ 5265 / $ 6694 per eval bought
+  ACCOUNT EV apex_eod_50k (eval and funded 2 micros, $150 stop), 100 resampled histories: 5/25/50/75/95%: $ 1819 / $ 2401 / $ 2772 / $ 3006 / $ 3574 per eval bought
+
+################ RULE  A-list + HH/HL + break, 1 open — 2 micros each market, no daily stop, NQ + ES, 2014-01 → 2026-10, $ at today's ATR
+  TRADES: 938 (0.36 a day) · win 32.1% · avg +0.394R · R percentiles 10/25/50/75/90: -1.07 / -1.05 / -1.03 / +1.43 / +4.06 · >= +1R 27.6% · >= +2R 21.6% · longest losing streak 14
+  chance of >= 5 / 8 / 10 losses in a row within 50 trades:  96%  67%  42%
+  DAYS: trades on 28.3% of sessions · traded days > 0: 33.4% · traded-day $ percentiles 10/25/50/75/90:  -254 /  -179 /   -91 /  +198 /  +678 · worst  -616 · best +2895
+  WEEKS : > 0 in 31.8% · $ percentiles 10/50/90:   -341 /     +0 /   +744 · worst  -1185 · longest losing run 7 weeks
+  MONTHS: > 0 in 52.4% · $ percentiles 10/50/90:   -562 /    +84 /  +1509 · worst  -1467 · longest losing run 9 months
+  BOOTSTRAP (200 resampled 12-month paths): $ a month 5/50/95%:   +11 /  +339 /  +841 · 12-month max drawdown 50/90/95%: $ 1540 / $ 2601 / $ 2890
+  chance a 60-day stretch dips past $1,000 / $2,000 / $3,000 from its high:  41% /   3% /   0%
+  avg R a trade, 90% range (month bootstrap): +0.273 … +0.531 (median +0.410)
+  PAPER TEST of 20 sessions (~8 trades): avg >= +0.05R in  59% of windows with the real edge ·  43% if the edge were zero (luck)
+  PAPER TEST of 40 sessions (~15 trades): avg >= +0.05R in  68% of windows with the real edge ·  42% if the edge were zero (luck)
+  PAPER TEST of 60 sessions (~22 trades): avg >= +0.05R in  72% of windows with the real edge ·  44% if the edge were zero (luck)

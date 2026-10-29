@@ -1,0 +1,36 @@
+base |   TRADES: 6291 (2.44 a day) · win 31.8% · avg +0.220R
+base |   $ a month 5/50/95%:  +817 / +2013 / +3229 · 12-month max drawdown 50/90/95%: $ 2470 / $ 3830 / $ 4655
+base |   select_daily_50k $ 2846 / $ 3831 / $ 4593 / $ 5265 / $ 6694 per eval bought
+base |   apex_eod_50k $ 1819 / $ 2401 / $ 2772 / $ 3006 / $ 3574 per eval bought
+T1break |   TRADES: 7078 (2.74 a day) · win 34.4% · avg +0.201R
+T1break |   $ a month 5/50/95%: +1066 / +2385 / +3758 · 12-month max drawdown 50/90/95%: $ 2400 / $ 3893 / $ 4493
+T1break |   select_daily_50k $ 4015 / $ 5155 / $ 6050 / $ 7278 / $ 8622 per eval bought
+T1break |   apex_eod_50k $ 2282 / $ 2898 / $ 3189 / $ 3586 / $ 4119 per eval bought
+T2reentry |   TRADES: 6800 (2.63 a day) · win 33.8% · avg +0.196R
+T2reentry |   $ a month 5/50/95%:  +922 / +2089 / +3364 · 12-month max drawdown 50/90/95%: $ 2476 / $ 3783 / $ 4363
+T2reentry |   select_daily_50k $ 3188 / $ 4194 / $ 4950 / $ 5611 / $ 7255 per eval bought
+T2reentry |   apex_eod_50k $ 1980 / $ 2417 / $ 2858 / $ 3162 / $ 3743 per eval bought
+T4tf3 |   TRADES: 7751 (3.00 a day) · win 30.3% · avg +0.188R
+T4tf3 |   $ a month 5/50/95%: +1218 / +2241 / +3627 · 12-month max drawdown 50/90/95%: $ 2353 / $ 3868 / $ 4528
+T4tf3 |   select_daily_50k $ 3829 / $ 5136 / $ 6071 / $ 6941 / $ 8105 per eval bought
+T4tf3 |   apex_eod_50k $ 2477 / $ 2916 / $ 3309 / $ 3615 / $ 4204 per eval bought
+T5book_CASCADE |   TRADES: 7228 (2.80 a day) · win 33.8% · avg +0.177R
+T5book_CASCADE |   $ a month 5/50/95%:  +778 / +2106 / +3415 · 12-month max drawdown 50/90/95%: $ 2550 / $ 3890 / $ 4651
+T5book_CASCADE |   select_daily_50k $ 3103 / $ 3979 / $ 4785 / $ 5431 / $ 6967 per eval bought
+T5book_CASCADE |   apex_eod_50k $ 1953 / $ 2414 / $ 2849 / $ 3144 / $ 3739 per eval bought
+T5book_WEAKDAY |   TRADES: 6433 (2.49 a day) · win 33.0% · avg +0.218R
+T5book_WEAKDAY |   $ a month 5/50/95%:  +761 / +2068 / +3299 · 12-month max drawdown 50/90/95%: $ 2525 / $ 3922 / $ 4387
+T5book_WEAKDAY |   select_daily_50k $ 1834 / $ 2273 / $ 2868 / $ 3384 / $ 4562 per eval bought
+T5book_WEAKDAY |   apex_eod_50k $ 1135 / $ 1483 / $ 1861 / $ 2150 / $ 2590 per eval bought
+T5book_MONDAY |   TRADES: 6596 (2.56 a day) · win 33.0% · avg +0.207R
+T5book_MONDAY |   $ a month 5/50/95%:  +826 / +1983 / +3138 · 12-month max drawdown 50/90/95%: $ 2583 / $ 3701 / $ 4102
+T5book_MONDAY |   select_daily_50k $ 2374 / $ 3259 / $ 3967 / $ 4732 / $ 6080 per eval bought
+T5book_MONDAY |   apex_eod_50k $ 1684 / $ 2048 / $ 2360 / $ 2682 / $ 3267 per eval bought
+T5book_ALL |   TRADES: 7584 (2.94 a day) · win 35.8% · avg +0.172R
+T5book_ALL |   $ a month 5/50/95%:  +931 / +2077 / +3167 · 12-month max drawdown 50/90/95%: $ 2933 / $ 4135 / $ 4411
+T5book_ALL |   select_daily_50k $ 1508 / $ 2380 / $ 2892 / $ 3714 / $ 4803 per eval bought
+T5book_ALL |   apex_eod_50k $ 1258 / $ 1532 / $ 1869 / $ 2228 / $ 2723 per eval bought
+T10nonews |   TRADES: 5100 (1.98 a day) · win 31.9% · avg +0.201R
+T10nonews |   $ a month 5/50/95%:  +588 / +1577 / +2699 · 12-month max drawdown 50/90/95%: $ 2148 / $ 3237 / $ 3605
+T10nonews |   select_daily_50k $ 1696 / $ 2455 / $ 2988 / $ 3617 / $ 4521 per eval bought
+T10nonews |   apex_eod_50k $ 1366 / $ 1797 / $ 2050 / $ 2387 / $ 2695 per eval bought

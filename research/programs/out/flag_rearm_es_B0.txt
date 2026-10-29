@@ -1,0 +1,17 @@
+Re-arm B0 — ES, 3347 NY days, 25439 flags (1-5m). Fixed cost 0.5 pts, target = measured move. Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg R (n) · all: R, win %, PF · vs same-day twin · periods > 0.
+
+######## BULL 3-5m
+    break (page entry)     -0.21 (1003) | -0.06 (1029) | +0.17 ( 873) | -0.03 ( 291) | all -0.042 win 28% PF 0.95 · twin -0.016 · 1/4 · 196/yr
+    flag-mid limit         -0.01 (1020) | +0.11 (1000) | +0.26 ( 826) | +0.14 ( 273) | all +0.113 win 34% PF 1.15 · twin +0.105 · 3/4 · 191/yr
+
+######## BULL 1-2m
+    break (page entry)     -0.28 ( 841) | -0.14 ( 889) | +0.23 ( 783) | -0.01 ( 249) | all -0.064 win 30% PF 0.92 · twin -0.054 · 1/4 · 169/yr
+    flag-mid limit         -0.09 (1194) | -0.02 (1229) | +0.31 (1002) | +0.02 ( 327) | all +0.050 win 32% PF 1.06 · twin +0.060 · 2/4 · 230/yr
+
+######## BEAR 3-5m
+    break (page entry)     -0.23 (1040) | -0.14 ( 918) | -0.14 ( 761) | -0.26 ( 240) | all -0.180 win 21% PF 0.80 · twin +0.003 · 0/4 · 182/yr
+    flag-mid limit         -0.09 (1021) | -0.09 ( 962) | +0.07 ( 750) | +0.09 ( 248) | all -0.034 win 23% PF 0.96 · twin +0.100 · 2/4 · 183/yr
+
+######## BEAR 1-2m
+    break (page entry)     -0.32 (1020) | -0.31 ( 993) | -0.07 ( 848) | +0.10 ( 276) | all -0.212 win 26% PF 0.75 · twin -0.065 · 1/4 · 192/yr
+    flag-mid limit         -0.25 (1467) | -0.20 (1397) | -0.01 (1089) | +0.07 ( 363) | all -0.146 win 23% PF 0.84 · twin +0.027 · 1/4 · 265/yr

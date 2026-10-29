@@ -30,6 +30,7 @@
 #include "config.hpp"
 #include "crypto/crypto_feed.hpp"
 #include "tick_fanout.hpp"
+#include "zstd_daily.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
@@ -372,75 +373,6 @@ private:
     PgConn conn_;
 };
 
-// ── raw MBO archive: one zstd stream per pair, rolled at UTC midnight ───────
-// Appending to an existing day file after a restart starts a new zstd frame; concatenated
-// frames decode as one stream (zstdcat). Flushed every 2 s → a crash loses ~2 s at most.
-// Retention: forever — nothing here ever deletes.
-class ZstdDaily {
-public:
-    explicit ZstdDaily(std::filesystem::path dir) : dir_(std::move(dir)) {}
-    ~ZstdDaily() { close(); }
-    ZstdDaily(const ZstdDaily&) = delete;
-    ZstdDaily& operator=(const ZstdDaily&) = delete;
-
-    void write_line(const std::string& line, int64_t at_us) {
-        const std::string day = utc_date(at_us);
-        if (day != day_) { close(); open(day); }
-        if (!fp_) return;
-        ZSTD_inBuffer in{line.data(), line.size(), 0};
-        while (in.pos < in.size) drive(in, ZSTD_e_continue);
-        static const char nl = '\n';
-        ZSTD_inBuffer in2{&nl, 1, 0};
-        drive(in2, ZSTD_e_continue);
-    }
-    void flush() {
-        if (!fp_) return;
-        ZSTD_inBuffer in{nullptr, 0, 0};
-        while (drive(in, ZSTD_e_flush) != 0) {}
-        std::fflush(fp_);
-    }
-    void close() {
-        if (fp_) {
-            ZSTD_inBuffer in{nullptr, 0, 0};
-            while (drive(in, ZSTD_e_end) != 0) {}
-            std::fclose(fp_); fp_ = nullptr;
-        }
-        if (cctx_) { ZSTD_freeCCtx(cctx_); cctx_ = nullptr; }
-        day_.clear();
-    }
-    std::filesystem::path current() const { return dir_ / (day_ + ".jsonl.zst"); }
-
-    static std::string utc_date(int64_t us) {
-        time_t s = static_cast<time_t>(us / 1'000'000); struct tm t; gmtime_r(&s, &t);
-        char b[16]; std::strftime(b, sizeof b, "%Y-%m-%d", &t); return b;
-    }
-
-private:
-    void open(const std::string& day) {
-        std::error_code ec;
-        std::filesystem::create_directories(dir_, ec);
-        day_ = day;
-        fp_ = std::fopen(current().c_str(), "ab");
-        if (!fp_) { logf("raw archive: cannot open %s", current().c_str()); day_.clear(); return; }
-        cctx_ = ZSTD_createCCtx();
-        ZSTD_CCtx_setParameter(cctx_, ZSTD_c_compressionLevel, 9);
-        ZSTD_CCtx_setParameter(cctx_, ZSTD_c_checksumFlag, 1);
-        out_.resize(ZSTD_CStreamOutSize());
-        logf("raw archive: writing %s", current().c_str());
-    }
-    size_t drive(ZSTD_inBuffer& in, ZSTD_EndDirective mode) {
-        ZSTD_outBuffer o{out_.data(), out_.size(), 0};
-        size_t rem = ZSTD_compressStream2(cctx_, &o, &in, mode);
-        if (ZSTD_isError(rem)) { logf("zstd error: %s", ZSTD_getErrorName(rem)); return 0; }
-        if (o.pos) std::fwrite(out_.data(), 1, o.pos, fp_);
-        return rem;
-    }
-    std::filesystem::path dir_;
-    std::string day_;
-    std::FILE* fp_ = nullptr;
-    ZSTD_CCtx* cctx_ = nullptr;
-    std::vector<char> out_;
-};
 
 // ── options ──────────────────────────────────────────────────────────────────
 struct Opts {
@@ -738,7 +670,8 @@ int main(int argc, char** argv) {
         p->symbol = p->pair; for (auto& c : p->symbol) c = static_cast<char>(std::toupper(c));
         p->book = crypto::MboBook("BITSTAMP", p->symbol);
         if (!g_opt.dry_run && g_opt.bitstamp)
-            p->raw = std::make_unique<ZstdDaily>(std::filesystem::path("data/mbo/bitstamp") / p->pair);
+            p->raw = std::make_unique<ZstdDaily>(std::filesystem::path("data/mbo/bitstamp") / p->pair,
+                                                 [](const std::string& s) { logf("%s", s.c_str()); });
         g_pairs.push_back(std::move(p));
     }
 

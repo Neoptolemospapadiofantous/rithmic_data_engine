@@ -239,7 +239,7 @@ public:
             if (n.slot == V_rvol) m_.rvol();                 // build once, before threads start
             return;
         }
-        if (n.kind == Node::Call && n.name == "bk") { bind_bk(n); return; }
+        if (n.kind == Node::Call && (n.name == "bk" || n.name == "bkrel")) { bind_bk(n); return; }
         for (auto& c : n.a) bind(*c);
         if (n.kind != Node::Call) return;
         static const std::vector<std::string> pure = {"abs", "sign", "min", "max", "hm", "floor", "ceil"};
@@ -304,10 +304,14 @@ public:
         static const std::vector<std::string> fields = {"qimb", "cxl", "bidq", "askq"};
         if (n.a.size() != 2 || n.a[0]->kind != Node::Var || std::find(fields.begin(), fields.end(), n.a[0]->name) == fields.end()
             || n.a[1]->kind != Node::Num || n.a[1]->v < 1)
-            throw std::runtime_error("bk(field, n): field is qimb / cxl / bidq / askq, n a constant ≥ 1");
+            throw std::runtime_error(n.name + "(field, n): field is qimb / cxl / bidq / askq, n a constant ≥ 1");
         n.a[0]->slot = (int)(std::find(fields.begin(), fields.end(), n.a[0]->name) - fields.begin());
-        if (m_.s().qimb.size() != m_.s().size()) throw std::runtime_error("bk(): no order-book data loaded for " + m_.s().sym);
+        if (m_.s().qimb.size() != m_.s().size()) throw std::runtime_error(n.name + "(): no order-book data loaded for " + m_.s().sym);
     }
+    // bkrel(field, n) (2026-10-28, research/preregistered/2026-10-28_new_families.md F2): bk(field, n) at this bar divided
+    // by the mean of the same n-minute window at the same wall-clock minute over the previous 20 trading days that have
+    // book data — "thin / fragile vs what this minute usually looks like", since resting depth rises through every
+    // morning and a same-day baseline cannot fire. NaN when fewer than 5 prior days have the window.
 
     double eval(const Node& n, int i, DayCache& dc) {
         switch (n.kind) {
@@ -344,13 +348,31 @@ private:
         }
         if (f == "rhi" || f == "rlo" || f == "at" || f == "hi_since" || f == "lo_since") return day_fn(n, i, dc);
         if (is_smc(f)) return smc_fn(n, i, dc);
-        if (f == "bk") {
+        if (f == "bk" || f == "bkrel") {
             const Series& s = m_.s();
             const std::vector<float>& src = n.a[0]->slot == 0 ? s.qimb : n.a[0]->slot == 1 ? s.cxl : n.a[0]->slot == 2 ? s.bidq : s.askq;
             const int k = (int)n.a[1]->v, d = s.day_of[i];
-            double sum = 0; int c = 0;
-            for (int j = i - 1; j >= 0 && j >= i - k && s.day_of[j] == d; --j) if (!std::isnan(src[j])) { sum += src[j]; ++c; }
-            return c ? sum / c : NAN;
+            auto win = [&](int at, int dd) {   // mean of src over the k minutes before bar `at`, inside day dd
+                double sum = 0; int c = 0;
+                for (int j = at - 1; j >= 0 && j >= at - k && s.day_of[j] == dd; --j) if (!std::isnan(src[j])) { sum += src[j]; ++c; }
+                return c ? sum / c : NAN;
+            };
+            const double now = win(i, d);
+            if (f == "bk" || std::isnan(now) || d < 0) return now;
+            // the same wall-clock minute on each of the previous 20 trading days (ET epoch: shift by whole days)
+            double bsum = 0; int bc = 0;
+            for (int dd = d - 1; dd >= 0 && dd >= d - 20; --dd) {
+                const Day& pd = s.days[dd];
+                const int64_t want = s.t[i] - (timegm_ymd(s.days[d].date) - timegm_ymd(pd.date));
+                auto it = std::lower_bound(s.t.begin() + pd.b0, s.t.begin() + pd.b1, want);
+                if (it == s.t.begin() + pd.b1) continue;
+                const int j = (int)(it - s.t.begin());
+                if (s.t[j] - want > 120) continue;               // no bar within 2 minutes of that minute
+                const double b = win(j, dd);
+                if (!std::isnan(b)) { bsum += b; ++bc; }
+            }
+            if (bc < 5 || !(bsum > 0)) return NAN;
+            return now / (bsum / bc);
         }
         if (f == "eqhi" || f == "eqlo") {
             // the highest high (lowest low) of the last n completed tf bars, when another of those bars came within
@@ -713,6 +735,11 @@ struct Spec {
     std::vector<std::string> claims;
     std::map<std::string, double> cost{{"NQ", 1.0}, {"ES", 0.35}};          // real round trip, points per contract
     std::string prop_plan = "select_daily_50k"; std::vector<int> prop_sizes{2, 4, 6}; double prop_fee = 150;
+    // Eval-phase policy (2026-10-28, research/preregistered/2026-10-28_new_families.md "Eval policy"): eval_size (0 = the funded
+    // size), eval_days = any | fear (prior VIX ≥ 20) | weak (prior IBS ≤ 0.3) | fear_or_weak | straight (e5 ≥ 0.55) — the EVAL
+    // trades only those days, the funded account trades every day; eval_atr_frac f > 0 sizes each eval day so that f × one
+    // prior ATR pays the target (clamped to [1, eval_size or size]).
+    int prop_eval_size = 0; std::string prop_eval_days = "any"; double prop_eval_atr_frac = 0;
     // The prop chain trades the symbol's micro: MNQ $2/pt at 1.5 pts real round trip, MES $5/pt at 0.6 pts.
     std::string micro = "MNQ"; double micro_pv = 2, micro_cost = 1.5;
     // Monthly view (diversification): ideas whose month-by-month net is compared with these earlier ideas' (their
@@ -767,6 +794,8 @@ inline Spec parse_spec(const json& j) {
         s.prop_plan = p.value("plan", s.prop_plan); s.prop_fee = p.value("fee", s.prop_fee);
         if (p.contains("sizes")) s.prop_sizes = p["sizes"].get<std::vector<int>>();
         s.micro_cost = p.value("micro_cost", s.micro_cost);
+        s.prop_eval_size = p.value("eval_size", s.prop_eval_size); s.prop_eval_days = p.value("eval_days", s.prop_eval_days);
+        s.prop_eval_atr_frac = p.value("eval_atr_frac", s.prop_eval_atr_frac);
     }
     if (j.contains("corr_with")) s.corr_with = j["corr_with"].get<std::vector<std::string>>();
     return s;
@@ -1072,31 +1101,47 @@ inline Controls controls(const Series& s, const std::vector<Trade>& tr, double c
 }
 
 // Prop chain: eval → funded until breach → buy a new eval; trades in the symbol's micro × size ($ per point, real cost).
-struct PropOut { int size = 0; int evals = 0, passes = 0, payouts = 0; double paid = 0, years = 0, be_fee = 0; };
-inline PropOut prop_chain(const Series& s, const std::vector<Trade>& tr, const std::string& plan_name, int size, double micro_cost, double micro_pv) {
-    PropOut o; o.size = size;
+struct PropOut { int size = 0, eval_size = 0; int evals = 0, passes = 0, payouts = 0; double paid = 0, years = 0, be_fee = 0; };
+inline bool eval_day_ok(const Day& D, const std::string& cls) {   // day classes known before the open (NaN = not that class)
+    if (cls == "any") return true;
+    const bool fear = D.vix >= 20, weak = D.pibs <= 0.3, straight = D.e5 >= 0.55;
+    if (cls == "fear") return fear;
+    if (cls == "weak") return weak;
+    if (cls == "fear_or_weak") return fear || weak;
+    if (cls == "straight") return straight;
+    throw std::runtime_error("prop.eval_days: any | fear | weak | fear_or_weak | straight");
+}
+inline PropOut prop_chain(const Series& s, const std::vector<Trade>& tr, const std::string& plan_name, int size, double micro_cost, double micro_pv,
+                          int eval_size = 0, const std::string& eval_days = "any", double eval_atr_frac = 0) {
+    PropOut o; o.size = size; o.eval_size = eval_size > 0 ? eval_size : size;
     const payout::Plan* plan = nullptr;
     for (auto& p : payout::plans()) if (p.name == plan_name) plan = &p;
     if (!plan || tr.empty()) return o;
-    std::map<int, std::vector<payout::Trade>> by_day;
+    std::map<int, std::vector<payout::Trade>> by_day, by_day_eval;
     for (const Trade& t : tr) {
+        const Day& Dy = s.days[t.day];
         const double k = micro_pv * size;
         by_day[t.day].push_back({(t.pts - micro_cost) * k, (t.mae - micro_cost) * k, std::max(0.0, t.mfe) * k});
+        if (!eval_day_ok(Dy, eval_days)) continue;
+        int es = o.eval_size;
+        if (eval_atr_frac > 0 && Dy.atr > 0) es = std::max(1, std::min(o.eval_size, (int)std::lround(eval_atr_frac * plan->eval_target / (Dy.atr * micro_pv))));
+        const double ke = micro_pv * es;
+        by_day_eval[t.day].push_back({(t.pts - micro_cost) * ke, (t.mae - micro_cost) * ke, std::max(0.0, t.mfe) * ke});
     }
-    // calendar = every ok day from the first OOS trade's day to the last
+    // calendar = every ok day from the first OOS trade's day to the last (the eval calendar carries only its policy's trades)
     const int d0 = tr.front().day, d1 = tr.back().day;
-    std::vector<const std::vector<payout::Trade>*> cal;
+    std::vector<const std::vector<payout::Trade>*> cal, cal_eval;
     for (int d = d0; d <= d1; ++d) {
         if (!s.days[d].ok) continue;
-        auto it = by_day.find(d);
-        cal.push_back(it == by_day.end() ? nullptr : &it->second);
+        auto it = by_day.find(d); cal.push_back(it == by_day.end() ? nullptr : &it->second);
+        auto ie = by_day_eval.find(d); cal_eval.push_back(ie == by_day_eval.end() ? nullptr : &ie->second);
     }
     const int D = (int)cal.size();
     o.years = D / 252.0;
     int i = 0;
     while (i < D) {
         ++o.evals;
-        payout::EvalOut e = payout::run_eval(*plan, cal, i, D - i);
+        payout::EvalOut e = payout::run_eval(*plan, cal_eval, i, D - i);
         i += std::max(1, e.days);
         if (!e.passed) continue;
         ++o.passes;

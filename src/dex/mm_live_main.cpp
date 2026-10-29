@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include <atomic>
+#include <memory>
 #include <csignal>
 #include <cstdarg>
 #include <cstdio>
@@ -117,6 +118,11 @@ int main(int argc, char** argv) {
             std::snprintf(b, sizeof b, "strategy: half width %.2f, min spread %.2f, imbalance pull %.2f, pause %.2f ticks / %lld ms, requote %.2f ticks",
                           p.half_width_ticks, p.min_spread_ticks, p.imb_pull, p.pause_move_ticks, (long long)p.pause_ms, p.requote_ticks);
             logline(b);
+            const auto bn = mc.engine.strategy.bn_pull();
+            if (bn.on()) std::snprintf(b, sizeof b, "Binance-lead pull: on — %lld ms window, %.2f bps, hold %lld ms (wss://fstream.binance.com bookTicker)",
+                                       (long long)bn.w_ms, bn.x_bps, (long long)bn.hold_ms);
+            else std::snprintf(b, sizeof b, "Binance-lead pull: off");
+            logline(b);
         }
         return 0;
     }
@@ -196,10 +202,13 @@ int main(int argc, char** argv) {
         BeastHttps http(Endpoint{});
         BeastWs account_ws(Endpoint{});
         BeastWs public_ws(Endpoint{});
+        Endpoint bn_ep; bn_ep.host = kReferenceFeedHost; bn_ep.reference_feed = true;   // Binance-lead pull (read-only, only if configured)
+        std::unique_ptr<BeastWs> ref_ws;
         Engine eng(mc.engine, Engine::Deps{signer, http, clock, risk, journal, alerts,
                                            [&gate](int64_t now_s) { return gate.armed(now_s); }, logline}, run_id);
         if (!eng.start()) { logline("start refused — exiting"); return 1; }
-        Driver drv(eng, account_ws, public_ws, clock, logline);
+        if (eng.ref_wanted()) ref_ws = std::make_unique<BeastWs>(bn_ep, eng.ref_ws_path(), 1'500);   // < the 2 s stall guard
+        Driver drv(eng, account_ws, public_ws, clock, logline, ref_ws.get());
         logline(std::string("running (") + mode_name(mc.gw.mode) + ")");
         while (!g_stop) {
             drv.step();
@@ -210,6 +219,7 @@ int main(int argc, char** argv) {
         for (int k = 0; k < 10; ++k) { drv.step(); clock.sleep_ms(100); }   // let the last confirmations arrive
         account_ws.close();
         public_ws.close();
+        if (ref_ws) ref_ws->close();
         if (mc.gw.mode == Mode::Probe) {
             std::ofstream(mc.engine.state_dir + "/probe_report.json") << eng.probe_report().dump(1) << "\n";
             logline("probe report: " + eng.probe_report().dump());

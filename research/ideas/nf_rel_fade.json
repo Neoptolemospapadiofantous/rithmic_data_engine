@@ -1,0 +1,32 @@
+{
+ "id": "nf_rel_fade",
+ "name": "08:30 release: fade the 10-minute reaction into the cash open (flat 10:30)",
+ "why": "The knee-jerk overshoots and is faded by the cash-session participants. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "10:30",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "k": [
+   0.1,
+   0.2,
+   0.3
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "checks": [
+  {
+   "at": "08:40",
+   "when": "(cpi || ppi || nfp) && abs(px - at(8,30)) >= k*atr",
+   "dir": "-sign(px - at(8,30))"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0"
+}

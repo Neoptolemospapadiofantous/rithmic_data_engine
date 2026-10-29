@@ -1,0 +1,24 @@
+candidates 8714 (NQ 4417, ES 4297); mean overlap count 1.84; first-of-day share 0.48; early stop-outs (<=15 min) 0.203 of candidates
+
+== baseline selections
+  BOOK2 (grade A or B)                         n  6320 ( 486/yr) netR +0.138 | 2014-19 n 3122 +0.068 | 2020-26 n 3198 +0.207
+  every candidate                              n  6730 ( 518/yr) netR +0.119 | 2014-19 n 3338 +0.052 | 2020-26 n 3392 +0.184
+  grade A only                                 n  4045 ( 311/yr) netR +0.193 | 2014-19 n 1981 +0.114 | 2020-26 n 2064 +0.268
+
+== G1 ridge grader, walk-forward, top third by training cut
+  (a) equal weights                            n  2504 ( 193/yr) netR +0.208 | 2014-19 n 1272 +0.116 | 2020-26 n 1232 +0.304
+  (b) uniqueness-weighted 1/overlap            n  2505 ( 193/yr) netR +0.239 | 2014-19 n 1255 +0.160 | 2020-26 n 1250 +0.318
+  (c) first flag of the day only               n  2395 ( 184/yr) netR +0.213 | 2014-19 n 1173 +0.134 | 2020-26 n 1222 +0.289
+
+== G2 early stop-out classifier on top of BOOK2 (skip if P(early stop) > training 75th pct)
+  BOOK2 kept (low early-stop risk)             n  4718 ( 363/yr) netR +0.134 | 2014-19 n 2366 +0.122 | 2020-26 n 2352 +0.146
+  BOOK2 dropped (high early-stop risk)         n  1602 ( 123/yr) netR +0.151 | 2014-19 n  756 -0.098 | 2020-26 n  846 +0.374
+
+== G3 order flow in the pattern, BOOK2 trades on flow days (x16=1), 2023-03 → 2026-10
+  all flow-day BOOK2                           n  828 netR +0.183 | 23-03→24-09 n  428 +0.289 | 24-10→26-10 n  400 +0.069
+  buyers in the pole (x15=1)                   n    5 netR -0.819 | 23-03→24-09 n    5 -0.819 | 24-10→26-10 n    0 +nan
+  no buyers in the pole                        n  823 netR +0.189 | 23-03→24-09 n  423 +0.302 | 24-10→26-10 n  400 +0.069
+  sellers in the flag (x13=1)                  n  456 netR +0.206 | 23-03→24-09 n  247 +0.302 | 24-10→26-10 n  209 +0.092
+  no sellers in the flag                       n  372 netR +0.154 | 23-03→24-09 n  181 +0.271 | 24-10→26-10 n  191 +0.044
+  volume dry-up (x14=1)                        n  410 netR +0.151 | 23-03→24-09 n  223 +0.224 | 24-10→26-10 n  187 +0.064
+  no dry-up                                    n  418 netR +0.214 | 23-03→24-09 n  205 +0.360 | 24-10→26-10 n  213 +0.073

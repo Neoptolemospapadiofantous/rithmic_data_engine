@@ -1,0 +1,36 @@
+{
+ "id": "es_mom1000_k15",
+ "name": "CONTROL: NQ's own move from the open at 10:00 (no ES) \u2014 same grid as nf_xm_rs_follow",
+ "why": "Relative strength: the index that leads keeps leading into the close. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "ES",
+ "confirm": "NQ",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "z": [
+   0.15,
+   0.25,
+   0.35
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ],
+  "rr": [
+   0,
+   2
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:00",
+   "when": "abs((px-open)/atr) >= z",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "rr"
+}

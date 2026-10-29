@@ -407,7 +407,8 @@ public:
     double quote_target(bool bid_side, double inv) const { return target_price_for(bid_side, inv); }
     bool quote_allowed(bool bid_side, double inv, int64_t now, bool halted) const {
         const Gates g = gates_for(bid_side, inv, now);
-        return !halted && g.spread_ok && !g.paused && !g.toxic && g.inv_ok;
+        const bool pulled = bid_side ? ov_.pull_bid : ov_.pull_ask;   // the overlay's pulls, as requote() applies them
+        return !halted && !pulled && g.spread_ok && !g.paused && !g.toxic && g.inv_ok;
     }
     double strategy_tick() const { return strat_tick(book_); }
     double requote_band() const { return p_.requote_ticks * strat_tick(book_); }

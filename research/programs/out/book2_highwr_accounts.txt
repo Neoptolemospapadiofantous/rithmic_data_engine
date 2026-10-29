@@ -1,0 +1,18 @@
+== V0_base | mean 52.8|sd 583.7|winning_days 22.0% | total 136401|dd_eod 10403|worst_month -5856
+topstep_50k|ev 1192|h1 1404|h2 960|pass 38|paid 24|days_pass 26|days_first_pay 44
+lucid_flex_50k|ev 1008|h1 1133|h2 871|pass 38|paid 24|days_pass 26|days_first_pay 45
+== V1_BE1 | mean 44.8|sd 481.6|winning_days 29.0% | total 115560|dd_eod 7784|worst_month -4213
+topstep_50k|ev 1245|h1 1476|h2 993|pass 36|paid 26|days_pass 32|days_first_pay 63
+lucid_flex_50k|ev 1038|h1 1217|h2 842|pass 36|paid 25|days_pass 32|days_first_pay 63
+== V2_PARTIAL1 | mean 30.8|sd 343.4|winning_days 31.4% | total 79488|dd_eod 5513|worst_month -3423
+topstep_50k|ev 976|h1 1247|h2 680|pass 37|paid 32|days_pass 34|days_first_pay 58
+lucid_flex_50k|ev 907|h1 1198|h2 589|pass 37|paid 30|days_pass 34|days_first_pay 57
+== V3_PARTIAL1_2R | mean 21.1|sd 287.0|winning_days 32.5% | total 54492|dd_eod 4980|worst_month -3705
+topstep_50k|ev 442|h1 587|h2 285|pass 27|paid 24|days_pass 39|days_first_pay 58
+lucid_flex_50k|ev 457|h1 597|h2 304|pass 27|paid 23|days_pass 39|days_first_pay 59
+== V4_TRAIL1 | mean 29.9|sd 352.8|winning_days 31.7% | total 77069|dd_eod 6063|worst_month -4021
+topstep_50k|ev 698|h1 756|h2 635|pass 35|paid 28|days_pass 35|days_first_pay 56
+lucid_flex_50k|ev 670|h1 765|h2 567|pass 35|paid 27|days_pass 35|days_first_pay 57
+== V5_BE05 | mean 30.7|sd 367.7|winning_days 35.7% | total 79156|dd_eod 7002|worst_month -2246
+topstep_50k|ev 472|h1 560|h2 377|pass 26|paid 19|days_pass 41|days_first_pay 78
+lucid_flex_50k|ev 453|h1 532|h2 367|pass 26|paid 19|days_pass 41|days_first_pay 79

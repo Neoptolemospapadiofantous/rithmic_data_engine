@@ -1,0 +1,47 @@
+base    6320 trades
+T2a     4818 trades
+T2b     4818 trades
+T2c     1854 trades
+T3a     3812 trades
+T3b     2634 trades
+T3c     2634 trades
+T4a     5860 trades
+T4b     3581 trades
+T5m1    6305 trades
+T5m2    6265 trades
+T5p1    6324 trades
+T5p2    6330 trades
+T6m     6309 trades
+T7a     4763 trades
+T7b     3116 trades
+matrix: 16 variants × 2024 days (20140102 → 20261015), 16 blocks
+
+name    meanR/d       sd   SR/day    skew    kurt
+base     0.4318   6.1993   0.0697    2.36   12.46
+T2a      0.3537   4.8668   0.0727    2.10    9.23
+T2b      0.3537   4.8668   0.0727    2.10    9.23
+T2c      0.1882   2.7522   0.0684    3.23   19.28
+T3a      0.2390   3.6130   0.0661    2.09   10.23
+T3b      0.1126   2.4037   0.0468    1.68    7.85
+T3c      0.1126   2.4037   0.0468    1.68    7.85
+T4a      0.3755   5.9542   0.0631    2.48   13.69
+T4b      0.2955   4.8466   0.0610    3.58   26.85
+T5m1     0.4294   6.2336   0.0689    2.34   12.25
+T5m2     0.4592   6.2993   0.0729    2.32   11.97
+T5p1     0.4165   6.1647   0.0676    2.38   12.69
+T5p2     0.4151   6.1434   0.0676    2.39   12.78
+T6m      0.4289   6.1874   0.0693    2.37   12.63
+T7a      0.3957   5.5713   0.0710    2.73   16.18
+T7b      0.3325   4.5273   0.0734    3.31   24.10
+
+== CSCV over 12870 splits
+ PBO = 0.864  (share of splits where the in-sample winner ranks at or below the OOS median)
+ P(OOS Sharpe of the IS winner < 0) = 0.004
+ logit(ω) of the IS winner: median -1.18, mean -1.27, share < 0 = 0.864
+ IS winner's Sharpe: mean 0.0835 → its OOS Sharpe: mean 0.0567  (degradation slope -0.995; negative = anti-persistent)
+ in-sample winner by variant: base 0.4% T2a 19.8% T2c 24.3% T3a 4.1% T4a 0.0% T4b 7.7% T5m1 0.0% T5m2 8.6% T5p1 0.2% T5p2 0.2% T6m 0.3% T7a 7.8% T7b 26.6%
+ candidate base: mean OOS relative rank 0.620 (1 = best), median 0.588, share of splits in the top half 0.862
+
+== deflated Sharpe (N = 16 trials, var of daily SRs 6.86e-05, E[max SR] = 0.0149/day, T = 2024 days)
+ base   SR 0.0697/day (annualised 1.11)  DSR = 0.996  > 0.95
+ T7b    SR 0.0734/day (annualised 1.17)  DSR = 0.998  > 0.95  (full-sample winner)

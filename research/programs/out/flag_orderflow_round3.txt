@@ -1,0 +1,17 @@
+trades 790  base mean R 0.181 (23-24 0.301 / 25-26 -0.009)
+
+rule                                          n  mean R  win %   twin      p  23-24 rule/twin  25-26 rule/twin
+ADD on flush (delta <= -0.15)               711   0.143   32.1 -0.324  0.000   0.271/-0.265  -0.071/-0.425
+ADD on flush (delta <= -0.3)                244   0.223   42.6 -0.004  0.000   0.319/ 0.012   0.016/-0.030
+ADD on flow (delta >= +0.15)  [contrast]    628   0.213   37.7 -0.236  0.000   0.385/-0.162  -0.055/-0.349
+ADD on flow (delta >= +0.3)  [contrast]     232   0.107   48.3  0.065  0.212   0.118/ 0.084   0.083/ 0.030
+ENTRY on exhaustion (>= +0.1)               414   0.153   26.3  0.234  0.997   0.293/ 0.326  -0.059/ 0.096
+ENTRY on exhaustion (>= +0.2)               179   0.173   26.3  0.086  0.040   0.165/ 0.104   0.189/ 0.053
+  ENTRY on exhaustion (>= +0.1): same flags base -0.313 vs rule 0.153; total R rule 63.2 on 414 trades vs base 142.8 on 790 (376 flags with no signal)
+  ENTRY on exhaustion (>= +0.2): same flags base -0.513 vs rule 0.173; total R rule 31.0 on 179 trades vs base 142.8 on 790 (611 flags with no signal)
+
+verdicts (pre-registered: twin p<0.05, Holm over 4, better than comparison in both halves):
+  ADD on flush (delta <= -0.15)              p 0.000 Holm 0.002 -> PASS
+  ADD on flush (delta <= -0.3)               p 0.000 Holm 0.002 -> PASS
+  ENTRY on exhaustion (>= +0.1)              p 0.997 Holm 0.997 -> fail
+  ENTRY on exhaustion (>= +0.2)              p 0.040 Holm 0.080 -> fail

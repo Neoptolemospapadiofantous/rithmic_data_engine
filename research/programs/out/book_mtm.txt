@@ -1,0 +1,130 @@
+== BOOK2 — marked at the minute's extreme
+  daily stop $1000000000000, 2 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  598 per eval (2014-19 $  540 / 2020-25 $  661) · pass  27%
+    apex_eod_50k       $  544 per eval (2014-19 $  424 / 2020-25 $  675) · pass  47%
+  daily stop $150, 2 open per market: days stopped 1494 vs one-trade-at-a-time 1290
+    select_daily_50k   $  137 per eval (2014-19 $  107 / 2020-25 $  169) · pass  11%
+    apex_eod_50k       $  217 per eval (2014-19 $  296 / 2020-25 $  131) · pass  41%
+  daily stop $300, 2 open per market: days stopped 990 vs one-trade-at-a-time 842
+    select_daily_50k   $  557 per eval (2014-19 $  266 / 2020-25 $  875) · pass  19%
+    apex_eod_50k       $  488 per eval (2014-19 $  408 / 2020-25 $  576) · pass  43%
+  daily stop $500, 2 open per market: days stopped 438 vs one-trade-at-a-time 380
+    select_daily_50k   $  665 per eval (2014-19 $  450 / 2020-25 $  900) · pass  26%
+    apex_eod_50k       $  633 per eval (2014-19 $  632 / 2020-25 $  634) · pass  48%
+== BOOK2 — marked at the minute's close
+  daily stop $1000000000000, 2 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  633 per eval (2014-19 $  607 / 2020-25 $  661) · pass  27%
+    apex_eod_50k       $  561 per eval (2014-19 $  456 / 2020-25 $  675) · pass  47%
+  daily stop $150, 2 open per market: days stopped 1414 vs one-trade-at-a-time 1290
+    select_daily_50k   $ 1405 per eval (2014-19 $ 1666 / 2020-25 $ 1121) · pass  32%
+    apex_eod_50k       $  930 per eval (2014-19 $ 1198 / 2020-25 $  637) · pass  60%
+  daily stop $300, 2 open per market: days stopped 951 vs one-trade-at-a-time 842
+    select_daily_50k   $  754 per eval (2014-19 $  569 / 2020-25 $  955) · pass  26%
+    apex_eod_50k       $  701 per eval (2014-19 $  640 / 2020-25 $  768) · pass  49%
+  daily stop $500, 2 open per market: days stopped 419 vs one-trade-at-a-time 380
+    select_daily_50k   $  863 per eval (2014-19 $  736 / 2020-25 $ 1002) · pass  27%
+    apex_eod_50k       $  733 per eval (2014-19 $  776 / 2020-25 $  686) · pass  50%
+== BOOK3 — marked at the minute's extreme
+  daily stop $1000000000000, 2 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  224 per eval (2014-19 $  108 / 2020-25 $  351) · pass  23%
+    apex_eod_50k       $  278 per eval (2014-19 $  128 / 2020-25 $  441) · pass  39%
+  daily stop $150, 2 open per market: days stopped 1819 vs one-trade-at-a-time 1545
+    select_daily_50k   $  398 per eval (2014-19 $  310 / 2020-25 $  494) · pass  10%
+    apex_eod_50k       $  296 per eval (2014-19 $  152 / 2020-25 $  454) · pass  39%
+  daily stop $300, 2 open per market: days stopped 1341 vs one-trade-at-a-time 1095
+    select_daily_50k   $  261 per eval (2014-19 $  321 / 2020-25 $  195) · pass  17%
+    apex_eod_50k       $  342 per eval (2014-19 $  352 / 2020-25 $  331) · pass  39%
+  daily stop $500, 2 open per market: days stopped 793 vs one-trade-at-a-time 659
+    select_daily_50k   $  399 per eval (2014-19 $  355 / 2020-25 $  446) · pass  23%
+    apex_eod_50k       $  400 per eval (2014-19 $  311 / 2020-25 $  498) · pass  42%
+== BOOK3 — marked at the minute's close
+  daily stop $1000000000000, 2 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  235 per eval (2014-19 $  128 / 2020-25 $  351) · pass  24%
+    apex_eod_50k       $  315 per eval (2014-19 $  168 / 2020-25 $  476) · pass  41%
+  daily stop $150, 2 open per market: days stopped 1743 vs one-trade-at-a-time 1545
+    select_daily_50k   $ 1239 per eval (2014-19 $ 1461 / 2020-25 $  997) · pass  24%
+    apex_eod_50k       $  924 per eval (2014-19 $  987 / 2020-25 $  856) · pass  58%
+  daily stop $300, 2 open per market: days stopped 1288 vs one-trade-at-a-time 1095
+    select_daily_50k   $  378 per eval (2014-19 $  331 / 2020-25 $  430) · pass  23%
+    apex_eod_50k       $  496 per eval (2014-19 $  496 / 2020-25 $  497) · pass  45%
+  daily stop $500, 2 open per market: days stopped 750 vs one-trade-at-a-time 659
+    select_daily_50k   $  644 per eval (2014-19 $  480 / 2020-25 $  823) · pass  28%
+    apex_eod_50k       $  617 per eval (2014-19 $  496 / 2020-25 $  748) · pass  48%
+== BOOK3 3 open — marked at the minute's extreme
+  daily stop $1000000000000, 3 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  348 per eval (2014-19 $  232 / 2020-25 $  474) · pass  18%
+    apex_eod_50k       $  263 per eval (2014-19 $  192 / 2020-25 $  341) · pass  37%
+  daily stop $150, 3 open per market: days stopped 1912 vs one-trade-at-a-time 1590
+    select_daily_50k   $  145 per eval (2014-19 $    0 / 2020-25 $  304) · pass   5%
+    apex_eod_50k       $   88 per eval (2014-19 $   64 / 2020-25 $  114) · pass  35%
+  daily stop $300, 3 open per market: days stopped 1516 vs one-trade-at-a-time 1203
+    select_daily_50k   $  194 per eval (2014-19 $  105 / 2020-25 $  292) · pass  10%
+    apex_eod_50k       $  234 per eval (2014-19 $  288 / 2020-25 $  175) · pass  38%
+  daily stop $500, 3 open per market: days stopped 1081 vs one-trade-at-a-time 844
+    select_daily_50k   $  257 per eval (2014-19 $  124 / 2020-25 $  402) · pass  14%
+    apex_eod_50k       $  255 per eval (2014-19 $  240 / 2020-25 $  271) · pass  37%
+== BOOK3 3 open — marked at the minute's close
+  daily stop $1000000000000, 3 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  368 per eval (2014-19 $  255 / 2020-25 $  492) · pass  19%
+    apex_eod_50k       $  276 per eval (2014-19 $  216 / 2020-25 $  341) · pass  37%
+  daily stop $150, 3 open per market: days stopped 1842 vs one-trade-at-a-time 1590
+    select_daily_50k   $  800 per eval (2014-19 $  607 / 2020-25 $ 1011) · pass  15%
+    apex_eod_50k       $  568 per eval (2014-19 $  720 / 2020-25 $  402) · pass  55%
+  daily stop $300, 3 open per market: days stopped 1457 vs one-trade-at-a-time 1203
+    select_daily_50k   $  612 per eval (2014-19 $  415 / 2020-25 $  828) · pass  19%
+    apex_eod_50k       $  486 per eval (2014-19 $  412 / 2020-25 $  568) · pass  46%
+  daily stop $500, 3 open per market: days stopped 1022 vs one-trade-at-a-time 844
+    select_daily_50k   $  379 per eval (2014-19 $  189 / 2020-25 $  587) · pass  19%
+    apex_eod_50k       $  422 per eval (2014-19 $  456 / 2020-25 $  384) · pass  42%
+== BOOK3 1 open — marked at the minute's extreme
+  daily stop $1000000000000, 1 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  836 per eval (2014-19 $  328 / 2020-25 $ 1391) · pass  34%
+    apex_eod_50k       $  665 per eval (2014-19 $  237 / 2020-25 $ 1133) · pass  45%
+  daily stop $150, 1 open per market: days stopped 1493 vs one-trade-at-a-time 1365
+    select_daily_50k   $  215 per eval (2014-19 $  105 / 2020-25 $  336) · pass  16%
+    apex_eod_50k       $  236 per eval (2014-19 $   84 / 2020-25 $  401) · pass  32%
+  daily stop $300, 1 open per market: days stopped 664 vs one-trade-at-a-time 613
+    select_daily_50k   $  689 per eval (2014-19 $  372 / 2020-25 $ 1035) · pass  30%
+    apex_eod_50k       $  663 per eval (2014-19 $  376 / 2020-25 $  976) · pass  43%
+  daily stop $500, 1 open per market: days stopped 192 vs one-trade-at-a-time 176
+    select_daily_50k   $  663 per eval (2014-19 $  320 / 2020-25 $ 1037) · pass  32%
+    apex_eod_50k       $  544 per eval (2014-19 $  343 / 2020-25 $  763) · pass  43%
+== BOOK3 1 open — marked at the minute's close
+  daily stop $1000000000000, 1 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  838 per eval (2014-19 $  328 / 2020-25 $ 1394) · pass  35%
+    apex_eod_50k       $  690 per eval (2014-19 $  237 / 2020-25 $ 1185) · pass  46%
+  daily stop $150, 1 open per market: days stopped 1422 vs one-trade-at-a-time 1365
+    select_daily_50k   $  816 per eval (2014-19 $  570 / 2020-25 $ 1086) · pass  28%
+    apex_eod_50k       $  651 per eval (2014-19 $  457 / 2020-25 $  863) · pass  46%
+  daily stop $300, 1 open per market: days stopped 626 vs one-trade-at-a-time 613
+    select_daily_50k   $  938 per eval (2014-19 $  587 / 2020-25 $ 1321) · pass  35%
+    apex_eod_50k       $  850 per eval (2014-19 $  627 / 2020-25 $ 1093) · pass  49%
+  daily stop $500, 1 open per market: days stopped 184 vs one-trade-at-a-time 176
+    select_daily_50k   $  846 per eval (2014-19 $  327 / 2020-25 $ 1412) · pass  34%
+    apex_eod_50k       $  666 per eval (2014-19 $  349 / 2020-25 $ 1011) · pass  45%
+== BOOK2 1 open — marked at the minute's extreme
+  daily stop $1000000000000, 1 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  808 per eval (2014-19 $  680 / 2020-25 $  948) · pass  30%
+    apex_eod_50k       $  682 per eval (2014-19 $  693 / 2020-25 $  671) · pass  45%
+  daily stop $150, 1 open per market: days stopped 1199 vs one-trade-at-a-time 1125
+    select_daily_50k   $  398 per eval (2014-19 $  355 / 2020-25 $  445) · pass  21%
+    apex_eod_50k       $  358 per eval (2014-19 $  408 / 2020-25 $  303) · pass  35%
+  daily stop $300, 1 open per market: days stopped 388 vs one-trade-at-a-time 365
+    select_daily_50k   $  865 per eval (2014-19 $  730 / 2020-25 $ 1013) · pass  29%
+    apex_eod_50k       $  703 per eval (2014-19 $  648 / 2020-25 $  764) · pass  46%
+  daily stop $500, 1 open per market: days stopped 67 vs one-trade-at-a-time 62
+    select_daily_50k   $  799 per eval (2014-19 $  732 / 2020-25 $  871) · pass  29%
+    apex_eod_50k       $  663 per eval (2014-19 $  677 / 2020-25 $  647) · pass  45%
+== BOOK2 1 open — marked at the minute's close
+  daily stop $1000000000000, 1 open per market: days stopped 0 vs one-trade-at-a-time 0
+    select_daily_50k   $  851 per eval (2014-19 $  741 / 2020-25 $  971) · pass  30%
+    apex_eod_50k       $  686 per eval (2014-19 $  693 / 2020-25 $  680) · pass  45%
+  daily stop $150, 1 open per market: days stopped 1148 vs one-trade-at-a-time 1125
+    select_daily_50k   $ 1212 per eval (2014-19 $ 1298 / 2020-25 $ 1118) · pass  33%
+    apex_eod_50k       $  889 per eval (2014-19 $ 1002 / 2020-25 $  766) · pass  52%
+  daily stop $300, 1 open per market: days stopped 366 vs one-trade-at-a-time 365
+    select_daily_50k   $ 1010 per eval (2014-19 $  822 / 2020-25 $ 1216) · pass  31%
+    apex_eod_50k       $  887 per eval (2014-19 $  685 / 2020-25 $ 1108) · pass  50%
+  daily stop $500, 1 open per market: days stopped 63 vs one-trade-at-a-time 62
+    select_daily_50k   $  863 per eval (2014-19 $  732 / 2020-25 $ 1005) · pass  30%
+    apex_eod_50k       $  696 per eval (2014-19 $  677 / 2020-25 $  717) · pass  46%

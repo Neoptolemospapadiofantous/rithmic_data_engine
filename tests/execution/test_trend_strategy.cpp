@@ -293,6 +293,55 @@ int main() {
         auto gf = run_gr(20030, 20038, 20045, sd, true, 0.8);
         CHECK(gf.size() == 1 && gf[0].sig == OrbSignal::BUY, "gap_or_retest + flow: buyers ahead (RTH delta > 0) → LONG");
 
+        // gr_min_eff (2026-10-28, gap_or_retest_eff): the 09:45 retest bar opens at open+11 with the RTH range so far
+        // = (open+16) − (open−5) = 21 → efficiency 11/21 = 0.52: refused at 0.55, taken at 0.5
+        auto run_gre = [&](double eff, double& sd) {
+            TrendConfig tc; tc.mode = "gap_or_retest"; tc.tf_min = 5; tc.win_start = 930; tc.win_end = 1555;
+            tc.lf_stop_atr = 0.35; tc.gr_min_eff = eff;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session();
+            for (int mm = 9 * 60 + 30; mm < 16 * 60; ++mm) bar1(s, -1, mm / 60, mm % 60, 20000, 20001, 19999, 20000, 0.5);
+            s.reset_session(); s.set_day_atr(100.0);
+            const double open = 20030;
+            for (int mm = 0; mm < 15; ++mm) bar1(s, 0, 9, 30 + mm, open, mm == 7 ? open + 10 : open + 1, mm == 3 ? open - 5 : open - 1, open, 0.5);
+            for (int mm = 0; mm < 5; ++mm) bar1(s, 0, 9, 45 + mm, open + 11, open + 16, mm == 2 ? 20038 : open + 11, mm == 4 ? 20045 : open + 12, 0.5);
+            bar1(s, 0, 9, 50, 20045, 20046, 20044, 20045, 0.5); bar1(s, 0, 9, 51, 20045, 20046, 20044, 20045, 0.5);
+            sd = s.take_stop_dist(); return out;
+        };
+        CHECK(run_gre(0.55, sd).empty(), "gap_or_retest_eff: session efficiency 0.52 < 0.55 → the retest is refused");
+        auto ge = run_gre(0.5, sd);
+        CHECK(ge.size() == 1 && ge[0].sig == OrbSignal::BUY && std::fabs(sd - 35.0) < 1e-9, "gap_or_retest_eff: efficiency 0.52 ≥ 0.5 → LONG as before");
+
+        // m1_10am_all (2026-10-28, tod_momentum + tod_min_er / tod_vwap_agree / tod_open_agree / tod_stop_atr):
+        // 10:15 decision, 40-minute lookback. straight: +1/min from 09:35 → efficiency 1, above VWAP and the open → LONG, stop 0.25 ATR
+        auto run_tod = [&](bool straight, bool below_open, bool open_agree, double& sd) {
+            TrendConfig tc; tc.mode = "tod_momentum"; tc.tf_min = 1; tc.win_start = 930; tc.win_end = 1555;
+            tc.tod_hhmm = 1015; tc.tod_window_min = 1; tc.tod_lookback_min = 40; tc.tod_min_atr = 0.0; tc.tod_min_er = 0.3;
+            tc.tod_vwap_agree = true; tc.tod_open_agree = open_agree; tc.tod_stop_atr = 0.25;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session();
+            for (int mm = 9 * 60 + 30; mm < 16 * 60; ++mm) bar1(s, -1, mm / 60, mm % 60, 20000, 20001, 19999, 20000, 0.5);
+            s.reset_session(); s.set_day_atr(100.0);
+            const double o930 = 20000, base = below_open ? 19900 : 20000;   // below_open: a fast drop to 19900 by 09:34, then the climb
+            for (int mm = 0; mm < 5; ++mm) { const double px = below_open ? o930 - 25 * (mm + 1) : o930; bar1(s, 0, 9, 30 + mm, px + 1, px + 2, px - 1, px, 0.5); }
+            double px = base;
+            for (int mm = 9 * 60 + 35; mm <= 10 * 60 + 15; ++mm) {
+                const int k = mm - (9 * 60 + 35);
+                px = straight ? base + k : base + (k % 2 ? 6 : 0) + k * 0.1;   // straight: +1/min; chop: ±6 with a 0.1/min drift
+                bar1(s, 0, mm / 60, mm % 60, px - 0.5, px + 0.5, px - 1, px, 0.5);
+            }
+            sd = s.take_stop_dist(); return out;
+        };
+        auto tl = run_tod(true, false, true, sd);
+        CHECK(tl.size() == 1 && tl[0].sig == OrbSignal::BUY && tl[0].why == "tod_continuation_long" && std::fabs(sd - 25.0) < 1e-9,
+              "m1_10am_all: straight 40-minute climb above VWAP and the open → LONG at 10:15, stop 0.25 × ATR");
+        CHECK(run_tod(false, false, true, sd).empty(), "m1_10am_all: a choppy lookback (efficiency < 0.3) → no trade");
+        CHECK(run_tod(true, true, true, sd).empty(), "m1_10am_all: the climb is still BELOW the 09:30 open → open-agreement refuses it");
+        auto tb = run_tod(true, true, false, sd);
+        CHECK(tb.size() == 1 && tb[0].sig == OrbSignal::BUY, "m1_10am_all: the same climb with tod_open_agree off → LONG");
+
         // box_go (2026-10-17): overnight high 20050, yesterday's close 20000, open 20040 (gap +0.4 ATR at ATR 100 → long side)
         //   09:30 bar breaks the overnight high (o 20040 c 20060, range 24); 09:35 box stays above it (20052–20065, range 13 ≤ 0.75 × 24);
         //   09:40 bar closes 20068 above the box → LONG, stop = 20068 − 20052 + 0.25 = 16.25
@@ -415,6 +464,36 @@ int main() {
               "flag_take: a lower 2m high, then a 2m close above the previous 2m high under the top → LONG at that 2m close (10:29)");
         auto ft2 = run_ft(0, ft_tgt, ft_hint, 20003, false);
         CHECK(ft2.empty(), "flag_take: the same flag without a gap up (> 0.1 ATR) is not TAKE → no entry");
+        // 2026-10-22 tilts (paper only): ft_take=false arms every registered flag; ft_min_pole_atr gates on pole / day ATR (the pole here is
+        // 61 pts on a 100-pt ATR = 0.61); ft_flow_max gates on the aggressor-buy share of the two flag bars
+        auto run_ft2 = [&](double min_pole, double flow_max, double flag_share) {
+            TrendConfig tc; tc.mode = "flag_take"; tc.ft_take = false; tc.tf_min = 1; tc.win_start = 930; tc.win_end = 1555; tc.ft_tf = 5;
+            tc.ft_min_pole_atr = min_pole; tc.ft_flow_max = flow_max;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out;
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) { out.push_back({g, p, w}); });
+            s.reset_session();
+            for (int mm = 9 * 60 + 30; mm < 16 * 60; ++mm) bar1(s, -1, mm / 60, mm % 60, 20000, 20000.25, 19999.75, 20000, 0.5);
+            s.reset_session(); s.set_day_atr(100.0);
+            for (int mm = 8 * 60 + 30; mm < 9 * 60 + 30; ++mm) bar1(s, 0, mm / 60, mm % 60, 20030, 20030.25, 20029.75, 20030, 0.5);
+            auto feed5 = [&](int idx, double o, double hi, double lo, double c, double share) {
+                const int m0 = 9 * 60 + 30 + 5 * idx;
+                bar1(s, 0, m0 / 60, m0 % 60, o, o, lo, lo, share);
+                bar1(s, 0, (m0 + 1) / 60, (m0 + 1) % 60, lo, hi, lo, hi, share);
+                bar1(s, 0, (m0 + 2) / 60, (m0 + 2) % 60, hi, hi, c, c, share);
+                for (int j = 3; j < 5; ++j) bar1(s, 0, (m0 + j) / 60, (m0 + j) % 60, c, c, c, c, share);
+            };
+            for (int i = 0; i < 6; ++i) feed5(i, 20030 + 2 * i, 20033 + 2 * i, 20029 + 2 * i, 20032 + 2 * i, 0.5);
+            feed5(6, 20042, 20060, 20041, 20058, 0.5); feed5(7, 20058, 20075, 20056, 20073, 0.5); feed5(8, 20073, 20090, 20071, 20088, 0.5);
+            feed5(9, 20088, 20089, 20078, 20080, flag_share); feed5(10, 20080, 20084, 20076, 20082, flag_share);
+            bar1(s, 0, 10, 25, 20082, 20091, 20081, 20090.5, 0.5); bar1(s, 0, 10, 26, 20090.5, 20092, 20090, 20091, 0.5);   // pole-top break
+            return out;
+        };
+        auto fa = run_ft2(0.0, 0.0, 0.5);
+        CHECK(fa.size() == 1 && fa[0].why == "flag_take_pole_top" && std::fabs(fa[0].px - 20090.25) < 1e-9, "flag_take ft_take=false: every registered flag arms → the pole-top break enters");
+        CHECK(run_ft2(0.7, 0.0, 0.5).empty(), "flag_take ft_min_pole_atr 0.7: a 0.61-ATR pole is not armed → no entry");
+        CHECK(run_ft2(0.4, 0.0, 0.5).size() == 1, "flag_take ft_min_pole_atr 0.4: a 0.61-ATR pole arms");
+        CHECK(run_ft2(0.4, 0.5, 0.9).empty(), "flag_take ft_flow_max 0.5: flag bars 88 % aggressor buys (buyers already in the pullback) → not armed");
+        CHECK(run_ft2(0.4, 0.5, 0.3).size() == 1, "flag_take ft_flow_max 0.5: flag bars 25 % aggressor buys (counter-flow absorbed) → armed, enters");
 
         auto lost = run_mom(rise, false, 1, -50.0, sd);
         CHECK(lost.size() == 1, "mom_dir: after a losing trade (notify_trade_filled with P&L < 0) no more entries that day");
@@ -1830,6 +1909,46 @@ int main() {
         st = s.tcf_status(at(t / 60, t % 60, 1));
         CHECK(st.stage == "trigger_ready" && st.flow_ok && st.trigger_dist > 0, "tcf_status: flow back, trigger pending → trigger_ready");
         CHECK(out.empty(), "tcf_status: no signal while a stage is incomplete");
+    }
+
+    // ── vwap_wave (2026-10-27): pierce VWAP + 2 SD, close back inside, EMA cross toward VWAP → fade; sign -1 = the buy mirror ──
+    {
+        // 40 heavy two-sided bars pin VWAP at 20000 (SD ~5, 2 SD band ~20010), a light ramp through the band, a close-back
+        // bar with the wave top at 20030, then lower closes until EMA3 crosses below EMA8. `fall_to` = the final close.
+        auto ww_run = [&](int sign, double fall_to, int last_entry, double& stop_pts, std::string& why, bool skip_fomc = false, bool fomc_day = false) {
+            TrendConfig tc; tc.mode = "vwap_wave"; tc.tf_min = 1; tc.ema_fast = 3; tc.ema_slow = 8; tc.ww_k = 2.0;
+            tc.ww_last_entry = last_entry; tc.win_start = 930; tc.win_end = 1555; tc.skip_fomc_day = skip_fomc;
+            TrendStrategy s(tc, risk_cfg()); std::vector<Rec> out; stop_pts = 0; why.clear();
+            s.set_signal_callback([&](OrbSignal g, double p, const std::string& w) {
+                out.push_back({g, p, w}); if (g == OrbSignal::BUY || g == OrbSignal::SELL) stop_pts = s.take_stop_dist(); });
+            s.reset_session();
+            s.set_event_day(fomc_day, fomc_day);
+            int t = 9 * 60 + 30;
+            auto B = [&](double o, double h, double l, double c, int v) {
+                auto m = [&](double x) { return sign > 0 ? x : 40000 - x; };
+                if (sign > 0) az_bar(s, t / 60, t % 60, m(o), m(h), m(l), m(c), v, 0.5);
+                else          az_bar(s, t / 60, t % 60, m(o), m(l), m(h), m(c), v, 0.5);
+                ++t;
+            };
+            for (int i = 0; i < 40; ++i) B(20000, 20005, 19995, i % 2 ? 20005 : 19995, 2000);
+            B(20000, 20016, 20000, 20015, 8); B(20015, 20026, 20015, 20025, 8);   // through the band, closing beyond it
+            B(20025, 20030, 20005, 20005, 8);                                     // wave top 20030, closes back inside
+            B(20005, 20006, 20003, 20003, 8); B(20003, 20004, fall_to, fall_to, 8);
+            s.on_tick(OrbTick{at(t / 60, t % 60, 0), sign > 0 ? fall_to : 40000 - fall_to, 1, true});
+            int n = 0; for (const Rec& r : out) if (r.sig == OrbSignal::BUY || r.sig == OrbSignal::SELL) { ++n; why = r.why; }
+            return n;
+        };
+        double sd = 0; std::string why;
+        CHECK(ww_run(+1, 20002, 0, sd, why) == 1 && why == "vwap_wave_short", "vwap_wave: SELL the EMA cross after the close back inside the upper band");
+        CHECK(std::fabs(sd - (20030 - 20002 + 0.25)) < 1e-6, "vwap_wave: stop distance = the wave top + 1 tick");
+        CHECK(ww_run(-1, 20002, 0, sd, why) == 1 && why == "vwap_wave_long", "vwap_wave: BUY the mirror at the lower band");
+        CHECK(std::fabs(sd - 28.25) < 1e-6, "vwap_wave: buy stop below the wave low + 1 tick");
+        CHECK(ww_run(+1, 19990, 0, sd, why) == 0, "vwap_wave: silent when the cross bar already closed through VWAP");
+        CHECK(ww_run(+1, 20002, 1000, sd, why) == 0, "vwap_wave: silent after ww_last_entry");
+        // FOMC skip (2026-10-28, founder: the London wave lost on FOMC days in every period — ww_ldn5_* set skip_fomc_day)
+        CHECK(ww_run(+1, 20002, 0, sd, why, true, true) == 0, "vwap_wave: skip_fomc_day → no entry on an FOMC decision day");
+        CHECK(ww_run(+1, 20002, 0, sd, why, true, false) == 1, "vwap_wave: skip_fomc_day → a normal day still trades");
+        CHECK(ww_run(+1, 20002, 0, sd, why, false, true) == 1, "vwap_wave: skip_fomc_day off → an FOMC day trades (default unchanged)");
     }
 
     std::printf(g_fail ? "FAILED (%d)\n" : "ALL PASSED\n", g_fail);

@@ -1,0 +1,27 @@
+BOOK2 flags registered after 09:35: 6320 (NQ+ES 2014-2026), mean R 0.138
+
+         size   mean
+rel                 
+against  1618  0.101
+agree    4688  0.146
+none       14  1.840
+
+by period:
+          mean         size      
+early    False  True  False True 
+rel                              
+against  0.220 -0.032   854   764
+agree    0.197  0.096  2337  2351
+none     1.857  1.823     7     7
+
+ORB break AGREES vs AGAINST the flag: diff +0.045 R | 2014-19 +0.127 | 2020-26 -0.023 | 90% low -0.092 p 0.287 -> fail
+
+Order-flow add-on, NQ 2023-03 → (opening-range delta vs flag side): 825 flags
+                 size   mean
+of      rel                 
+against against   134  0.323
+        agree     162  0.177
+agree   against    90 -0.038
+        agree     436  0.186
+        none        3  1.477
+opening delta AGREES vs AGAINST: diff -0.088 R | 2023-24 -0.057 | 2025-26 -0.097 | 90% low -0.423 p 0.667

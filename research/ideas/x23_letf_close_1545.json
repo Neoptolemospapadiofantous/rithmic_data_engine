@@ -1,0 +1,4 @@
+{"id":"x23_letf_close_1545","name":"Leveraged-ETF close rebalance: follow today's move from 15:45","why":"Daily-reset leveraged and inverse ETFs must buy into the close after an up day and sell after a down day, in proportion to today's return from the prior close; the flow is forced and price-insensitive. Pre-registered 2026-10-23 (research/preregistered/2026-10-23_starnet_open_items.md X1).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"p":[0.5,0.75,1.0]},
+ "checks":[{"at":"15:45","when":"!rollwin && abs(px-pc) >= p*atr","dir":"sign(px-pc)"}],
+ "stop":"0.15*atr","target":"0","flat":"15:55","min_trades":100}

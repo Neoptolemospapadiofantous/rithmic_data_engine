@@ -1,0 +1,37 @@
+book minutes loaded (NQ): 1058329 · event days flagged: 1436
+
+Reference
+  BOOK2 trades (every qualifying flag)           NQ 14-21 n  2084 R +0.166 edge +0.143 · 22-26 n  1155 R +0.208 edge +0.075 | ES 14-21 n  2010 R +0.034 edge +0.096 · 22-26 n  1071 R +0.205 edge +0.153 |
+
+T1 BREAKOUT FALLBACK (limit never filled, pole top broke) — 3019 trades added on BOOK2-qualifying flags
+  added trades                                   NQ 14-21 n   967 R +0.081 edge +0.043 · 22-26 n   615 R +0.244 edge +0.077 | ES 14-21 n   875 R -0.014 edge +0.043 · 22-26 n   562 R +0.155 edge +0.008 |
+
+T2 RE-ENTRY at the pole top within 60 min after a stop-out — 818 trades added on BOOK2-qualifying flags
+  added trades                                   NQ 14-21 n   248 R -0.065 edge -0.007 · 22-26 n   155 R +0.010 edge -0.019 | ES 14-21 n   249 R +0.039 edge +0.029 · 22-26 n   166 R -0.048 edge -0.015 |
+
+T4 3m CHARTS IN BOOK2 — 3503 3m trades would join
+  3m trades meeting BOOK2's other rules          NQ 14-21 n  1146 R +0.134 edge +0.098 · 22-26 n   654 R +0.206 edge +0.080 | ES 14-21 n  1100 R -0.004 edge +0.060 · 22-26 n   603 R +0.166 edge +0.054 |
+
+T5 STREAMS on NQ (fixed middle parameters; WEAK DAY / MONDAY have no twin — edge column = R)
+  CASCADE (2367 trades 2010-26)                  NQ 14-21 n  1178 R +0.027 edge +0.014 · 22-26 n   653 R +0.119 edge -0.003 | ES 14-21 n     0 R   +nan edge   +nan · 22-26 n     0 R   +nan edge   +nan |
+  WEAKDAY (322 trades 2010-26)                   NQ 14-21 n   139 R +0.186 edge +0.186 · 22-26 n   120 R +0.122 edge +0.122 | ES 14-21 n     0 R   +nan edge   +nan · 22-26 n     0 R   +nan edge   +nan |
+  MONDAY (612 trades 2010-26)                    NQ 14-21 n   313 R +0.083 edge +0.083 · 22-26 n   163 R +0.142 edge +0.142 | ES 14-21 n     0 R   +nan edge   +nan · 22-26 n     0 R   +nan edge   +nan |
+
+T6 OVERLAP with BOOK2 (daily sums of R, 2014-26 sessions; every qualifying BOOK2 flag, no booking)
+  CASCADE  daily correlation +0.461 · on BOOK2's 1311 losing days the stream also lost on 733 (55.9 %) · on the stream's 1055 losing days BOOK2 also lost on 733 (69.5 %)
+  WEAKDAY  daily correlation +0.012 · on BOOK2's 1311 losing days the stream also lost on 49 (3.7 %) · on the stream's 98 losing days BOOK2 also lost on 49 (50.0 %)
+  MONDAY   daily correlation +0.138 · on BOOK2's 1311 losing days the stream also lost on 131 (10.0 %) · on the stream's 230 losing days BOOK2 also lost on 131 (57.0 %)
+
+T10 NEWS DAYS — skip variant drops 1196 BOOK2 trades
+  BOOK2 on CPI days                              NQ 14-21 n    83 R -0.098 edge -0.032 · 22-26 n    36 R +0.218 edge -0.006 | ES 14-21 n    80 R +0.183 edge +0.036 · 22-26 n    41 R +0.406 edge +0.433 |
+  BOOK2 on NFP days                              NQ 14-21 n   122 R +0.676 edge +0.107 · 22-26 n    73 R -0.229 edge -0.271 | ES 14-21 n   115 R +0.331 edge +0.170 · 22-26 n    72 R -0.529 edge -0.281 |
+  BOOK2 on big-tech earnings days                NQ 14-21 n   231 R +0.065 edge +0.065 · 22-26 n   126 R +0.575 edge -0.193 | ES 14-21 n   209 R -0.108 edge +0.204 · 22-26 n   120 R +0.545 edge +0.435 |
+  BOOK2 on other days                            NQ 14-21 n  1676 R +0.145 edge +0.152 · 22-26 n   953 R +0.177 edge +0.132 | ES 14-21 n  1626 R +0.013 edge +0.074 · 22-26 n   869 R +0.193 edge +0.138 |
+
+T11 RESTING-BOOK IMBALANCE in the minute before the fill, mirrored to the trade side (NQ, book minutes only)
+  every flag   all book days        with: n  2137 R +0.097 edge +0.084 · against: n  2561 R +0.027 edge +0.003 · against − with -0.081
+  every flag   before 2024-10       with: n  1116 R +0.205 edge +0.148 · against: n  1326 R +0.002 edge -0.037 · against − with -0.185
+  every flag   2024-10 →          with: n  1021 R -0.020 edge +0.014 · against: n  1235 R +0.053 edge +0.046 · against − with +0.032
+  BOOK2        all book days        with: n   384 R +0.369 edge +0.153 · against: n   422 R -0.005 edge -0.021 · against − with -0.174
+  BOOK2        before 2024-10       with: n   218 R +0.522 edge +0.240 · against: n   204 R +0.035 edge -0.141 · against − with -0.381
+  BOOK2        2024-10 →          with: n   166 R +0.169 edge +0.038 · against: n   218 R -0.044 edge +0.090 · against − with +0.053

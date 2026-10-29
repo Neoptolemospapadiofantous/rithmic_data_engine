@@ -1,0 +1,42 @@
+Flag quality (preregistered/2026-10-22_flag_quality.md): walk-forward 2017-2026, a filter is used in a year only if it beat no filter by >= +0.05R over the earlier years.
+Columns per market: filtered trades a year, avg R, PF · unfiltered avg R, PF · difference (2017-21 / 2022-26) · years the filter was used.
+
+######## main rule (A-list + 5m HH/HL + with the break)
+  QUALITY (DT50 + CLEAN + no FOMC)   | NQ  13.1/yr +0.571R PF 1.82 · raw +0.432R PF 1.63 · +0.139R (+0.085 / +0.234) · used  8/10 | ES  17.4/yr +0.178R PF 1.23 · raw +0.301R PF 1.40 · -0.123R (-0.096 / -0.140) · used  6/10
+  DT50                               | NQ  19.1/yr +0.390R PF 1.55 · raw +0.432R PF 1.63 · -0.042R (-0.093 / +0.006) · used 10/10 | ES  17.3/yr +0.362R PF 1.49 · raw +0.301R PF 1.40 · +0.061R (+0.248 / -0.244) · used 10/10
+  DT200                              | NQ  19.7/yr +0.487R PF 1.76 · raw +0.432R PF 1.63 · +0.055R (+0.199 / -0.060) · used 10/10 | ES  19.4/yr +0.447R PF 1.64 · raw +0.301R PF 1.40 · +0.146R (+0.122 / +0.182) · used 10/10
+  CLEAN                              | NQ  14.5/yr +0.710R PF 2.17 · raw +0.432R PF 1.63 · +0.278R (+0.489 / +0.099) · used 10/10 | ES  29.4/yr +0.315R PF 1.42 · raw +0.301R PF 1.40 · +0.015R (+0.035 / +0.000) · used  3/10
+  no FOMC                            | NQ  36.2/yr +0.432R PF 1.63 · raw +0.432R PF 1.63 · +0.000R (+0.000 / +0.000) · used  0/10 | ES  35.5/yr +0.301R PF 1.40 · raw +0.301R PF 1.40 · +0.000R (+0.000 / +0.000) · used  0/10
+  DT50 + no FOMC                     | NQ  20.6/yr +0.365R PF 1.52 · raw +0.432R PF 1.63 · -0.067R (-0.093 / -0.043) · used  8/10 | ES  17.1/yr +0.356R PF 1.48 · raw +0.301R PF 1.40 · +0.056R (+0.243 / -0.244) · used 10/10
+
+######## bull rule
+  QUALITY (DT50 + CLEAN + no FOMC)   | NQ   7.6/yr +0.710R PF 2.16 · raw +0.477R PF 1.75 · +0.233R (+0.232 / +0.176) · used  8/10 | ES  11.4/yr +0.524R PF 1.74 · raw +0.410R PF 1.60 · +0.115R (+0.061 / +0.122) · used  7/10
+  DT50                               | NQ  18.2/yr +0.420R PF 1.64 · raw +0.477R PF 1.75 · -0.057R (-0.052 / -0.062) · used  2/10 | ES  19.5/yr +0.410R PF 1.60 · raw +0.410R PF 1.60 · +0.000R (+0.000 / +0.000) · used  0/10
+  DT200                              | NQ  17.7/yr +0.445R PF 1.69 · raw +0.477R PF 1.75 · -0.032R (+0.000 / -0.076) · used  3/10 | ES  19.5/yr +0.410R PF 1.60 · raw +0.410R PF 1.60 · +0.000R (+0.000 / +0.000) · used  0/10
+  CLEAN                              | NQ   9.8/yr +0.736R PF 2.24 · raw +0.477R PF 1.75 · +0.260R (+0.323 / +0.138) · used  8/10 | ES  19.5/yr +0.410R PF 1.60 · raw +0.410R PF 1.60 · +0.000R (+0.000 / +0.000) · used  0/10
+  no FOMC                            | NQ  18.7/yr +0.477R PF 1.75 · raw +0.477R PF 1.75 · +0.000R (+0.000 / +0.000) · used  0/10 | ES  19.5/yr +0.410R PF 1.60 · raw +0.410R PF 1.60 · +0.000R (+0.000 / +0.000) · used  0/10
+  DT50 + no FOMC                     | NQ  18.5/yr +0.450R PF 1.70 · raw +0.477R PF 1.75 · -0.027R (-0.052 / +0.000) · used  1/10 | ES  19.5/yr +0.410R PF 1.60 · raw +0.410R PF 1.60 · +0.000R (+0.000 / +0.000) · used  0/10
+
+######## every 3-5m flag
+  QUALITY (DT50 + CLEAN + no FOMC)   | NQ  41.6/yr +0.298R PF 1.42 · raw +0.165R PF 1.22 · +0.133R (+0.201 / +0.057) · used 10/10 | ES  49.0/yr +0.098R PF 1.13 · raw +0.095R PF 1.12 · +0.003R (+0.086 / -0.094) · used 10/10
+  DT50                               | NQ  96.7/yr +0.170R PF 1.22 · raw +0.165R PF 1.22 · +0.005R (-0.026 / +0.039) · used  8/10 | ES 103.5/yr +0.078R PF 1.10 · raw +0.095R PF 1.12 · -0.017R (+0.002 / -0.045) · used  7/10
+  DT200                              | NQ  80.6/yr +0.215R PF 1.30 · raw +0.165R PF 1.22 · +0.050R (+0.119 / -0.030) · used 10/10 | ES  91.5/yr +0.118R PF 1.16 · raw +0.095R PF 1.12 · +0.023R (+0.003 / +0.072) · used  9/10
+  CLEAN                              | NQ  79.3/yr +0.289R PF 1.40 · raw +0.165R PF 1.22 · +0.124R (+0.153 / +0.088) · used 10/10 | ES  89.7/yr +0.183R PF 1.25 · raw +0.095R PF 1.12 · +0.088R (+0.099 / +0.072) · used 10/10
+  no FOMC                            | NQ 156.9/yr +0.165R PF 1.22 · raw +0.165R PF 1.22 · +0.000R (+0.000 / +0.000) · used  0/10 | ES 163.6/yr +0.095R PF 1.12 · raw +0.095R PF 1.12 · +0.000R (+0.000 / +0.000) · used  0/10
+  DT50 + no FOMC                     | NQ  88.0/yr +0.172R PF 1.23 · raw +0.165R PF 1.22 · +0.007R (-0.020 / +0.055) · used  9/10 | ES  93.4/yr +0.068R PF 1.09 · raw +0.095R PF 1.12 · -0.027R (+0.001 / -0.053) · used  8/10
+
+######## FRESH 1-2m flags (never used to find the filters), 2015-2026: filtered vs the rest
+  every 1-2m flag  QUALITY (DT50 + CLEAN + no FOMC)   | NQ +0.182R (  793) vs rest -0.001R ( 3018) → +0.184R | ES -0.004R (  927) vs rest -0.022R ( 3271) → +0.018R
+  every 1-2m flag  DT50                               | NQ +0.067R ( 1690) vs rest -0.036R ( 1739) → +0.103R | ES -0.046R ( 1860) vs rest -0.011R ( 1923) → -0.035R
+  every 1-2m flag  DT200                              | NQ +0.062R ( 1749) vs rest -0.035R ( 1680) → +0.097R | ES +0.043R ( 1805) vs rest -0.092R ( 1978) → +0.135R
+  every 1-2m flag  CLEAN                              | NQ +0.075R ( 1617) vs rest +0.021R ( 2578) → +0.054R | ES -0.008R ( 1920) vs rest -0.004R ( 2704) → -0.005R
+  every 1-2m flag  no FOMC                            | NQ +0.023R ( 3364) vs rest -0.388R (   65) → +0.411R | ES -0.024R ( 3719) vs rest -0.267R (   64) → +0.244R
+  every 1-2m flag  DT50 + no FOMC                     | NQ +0.069R ( 1662) vs rest -0.037R ( 1767) → +0.106R | ES -0.040R ( 1838) vs rest -0.016R ( 1945) → -0.024R
+  A-list 1-2m      QUALITY (DT50 + CLEAN + no FOMC)   | NQ +0.302R (  254) vs rest +0.081R (  950) → +0.221R | ES +0.064R (  254) vs rest +0.025R (  854) → +0.039R
+  A-list 1-2m      DT50                               | NQ +0.156R (  549) vs rest +0.047R (  574) → +0.109R | ES -0.006R (  482) vs rest +0.081R (  563) → -0.087R
+  A-list 1-2m      DT200                              | NQ +0.130R (  590) vs rest +0.067R (  533) → +0.063R | ES +0.066R (  482) vs rest +0.019R (  563) → +0.047R
+  A-list 1-2m      CLEAN                              | NQ +0.188R (  520) vs rest +0.081R (  759) → +0.107R | ES +0.107R (  546) vs rest -0.029R (  628) → +0.136R
+  A-list 1-2m      no FOMC                            | NQ +0.111R ( 1101) vs rest -0.467R (   22) → +0.579R | ES +0.052R ( 1029) vs rest -0.721R (   16) → +0.773R
+  A-list 1-2m      DT50 + no FOMC                     | NQ +0.156R (  538) vs rest +0.049R (  585) → +0.107R | ES +0.008R (  476) vs rest +0.068R (  569) → -0.061R
+
+PASS (QUALITY): (1) walk-forward >= +0.05R and higher PF, main rule and every flag, both markets: no · (2) every flag better in both halves, both markets: no · (3) fresh 1-2m >= +0.05R, both: no → QUALITY is not adopted

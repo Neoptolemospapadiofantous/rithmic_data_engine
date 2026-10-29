@@ -1,0 +1,31 @@
+wave_entries shuffle control 2026-10-28 — configs passing each gate (price/volume filters, n>=150): 2010-20 | +2021-24 | +2025-26 | +ES overall net>0 PF>=1.05
+== real
+atrHi 2 2 0 0
+atrLo 36 6 5 0
+lvlAny 8 3 1 0
+lvlHr 12 5 1 0
+lvlPD 24 15 6 0
+lvlPW 17 5 1 0
+lvlRnd 61 5 0 0
+lvlVP 30 9 6 0
+none 8 4 1 0
+TOTAL 300 87 28 2
+vixHi 48 18 6 2
+vixLo 16 3 0 0
+volHi 23 4 1 0
+volLo 15 8 0 0
+== filters shuffled across signals, mean of seeds 1-3
+atrHi 15 6 2 0.3
+atrLo 17 5 1 0.0
+lvlAny 8 3 1 0.0
+lvlHr 11 5 1 0.0
+lvlPD 24 6 2 0.3
+lvlPW 17 6 2 0.3
+lvlRnd 22 6 3 1.0
+lvlVP 16 5 2 0.3
+none 8 4 1 0.0
+TOTAL 181 61 20 3.3
+vixHi 13 6 1 0.7
+vixLo 9 4 1 0.0
+volHi 5 4 1 0.0
+volLo 15 3 2 0.3

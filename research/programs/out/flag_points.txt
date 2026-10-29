@@ -1,0 +1,30 @@
+Points per day — NQ, NY bull 3-5m flag-mid (E2 · S2), score walk-forward 2014-26, fixed cost 1.5 pts.
+
+  real score: top third +0.466R (898) vs the rest +0.140R (1429) — gap +0.327R; before 12:00 only: +0.551 vs +0.142 — gap +0.409R
+  A1 permutation (200 shuffles of R within each year, weights relearned): shuffled gaps median -0.013, 95th pct +0.120, max +0.233 · runs >= the real gap: 0 / 200 (p ≈ 0.005)
+  A2 (in-sample 2010-2025 weights — NOT an independent test) ES's weights on NQ: top third +0.384R (739) vs the rest +0.211R — gap +0.173; before 12:00: +0.403 (723) vs +0.234
+  ONE POSITION across charts (headline): 336 trades (0.5 a week) · +0.465R · win 41% · PF 1.71 · same-day twin +0.462R → flag minus twin +0.003R
+  every chart counted (old headline): 708 trades (1.1 a week) · +0.551R · win 44% · PF 1.88 · same-day twin +0.481R → flag minus twin +0.070R
+
+  POINTS PER DAY (net, 1 contract; trading days 2014-19 1252, 2020-26 1331; registered before 12:00):
+                                                   2014-19                              | 2020-26                             
+    top 10 % · measured move · one position        11/yr  +4.8 pts +0.40R PF 2.00 +0.24 pt/day dd   41 |   14/yr +12.9 pts +0.43R PF 1.61 +0.90 pt/day dd  392 |
+    top 20 % · measured move · one position        19/yr  +4.1 pts +0.45R PF 1.74 +0.37 pt/day dd   92 |   19/yr +10.6 pts +0.39R PF 1.48 +1.04 pt/day dd  560 |
+    top third · measured move · one position       25/yr  +4.1 pts +0.51R PF 1.74 +0.50 pt/day dd   87 |   27/yr +12.7 pts +0.43R PF 1.58 +1.76 pt/day dd  555 |
+    top half · measured move · one position        38/yr  +3.1 pts +0.35R PF 1.52 +0.56 pt/day dd  158 |   37/yr  +8.8 pts +0.34R PF 1.37 +1.66 pt/day dd  919 |
+    all flags · measured move · one position       65/yr  +2.6 pts +0.28R PF 1.39 +0.81 pt/day dd  283 |   62/yr  +3.2 pts +0.14R PF 1.13 +1.01 pt/day dd 1468 |
+    top 10 % · hold to 15:55 · one position        11/yr  +5.0 pts +0.44R PF 2.06 +0.26 pt/day dd   41 |   14/yr +13.8 pts +0.49R PF 1.65 +0.96 pt/day dd  398 |
+    top 20 % · hold to 15:55 · one position        19/yr  +4.1 pts +0.44R PF 1.72 +0.37 pt/day dd   90 |   19/yr +10.9 pts +0.44R PF 1.49 +1.06 pt/day dd  566 |
+    top third · hold to 15:55 · one position       25/yr  +4.0 pts +0.48R PF 1.72 +0.49 pt/day dd   87 |   27/yr +13.6 pts +0.50R PF 1.62 +1.87 pt/day dd  561 |
+    top half · hold to 15:55 · one position        38/yr  +2.1 pts +0.26R PF 1.34 +0.38 pt/day dd  158 |   37/yr  +9.2 pts +0.38R PF 1.39 +1.74 pt/day dd  887 |
+    all flags · hold to 15:55 · one position       65/yr  +2.7 pts +0.27R PF 1.40 +0.84 pt/day dd  228 |   62/yr  +2.9 pts +0.15R PF 1.11 +0.93 pt/day dd 1473 |
+    top 10 % · measured move · pyramid             17/yr  +3.8 pts +0.35R PF 1.76 +0.31 pt/day dd  114 |   24/yr +17.1 pts +0.58R PF 1.89 +2.06 pt/day dd  728 |
+    top 20 % · measured move · pyramid             37/yr  +5.5 pts +0.58R PF 2.10 +0.99 pt/day dd  170 |   35/yr +17.5 pts +0.58R PF 1.88 +3.16 pt/day dd  918 |
+    top third · measured move · pyramid            57/yr  +5.1 pts +0.58R PF 1.97 +1.39 pt/day dd  181 |   54/yr +16.4 pts +0.52R PF 1.82 +4.48 pt/day dd  956 |
+    top half · measured move · pyramid             83/yr  +4.3 pts +0.51R PF 1.78 +1.71 pt/day dd  280 |   76/yr +12.8 pts +0.45R PF 1.58 +4.97 pt/day dd 1528 |
+    all flags · measured move · pyramid           147/yr  +3.6 pts +0.40R PF 1.57 +2.55 pt/day dd  583 |  137/yr  +6.0 pts +0.21R PF 1.25 +4.19 pt/day dd 3197 |
+    top 10 % · hold to 15:55 · pyramid             17/yr  +3.7 pts +0.33R PF 1.75 +0.31 pt/day dd  114 |   24/yr +17.7 pts +0.61R PF 1.92 +2.13 pt/day dd  735 |
+    top 20 % · hold to 15:55 · pyramid             37/yr  +5.4 pts +0.57R PF 2.08 +0.97 pt/day dd  170 |   35/yr +17.5 pts +0.61R PF 1.88 +3.16 pt/day dd  925 |
+    top third · hold to 15:55 · pyramid            57/yr  +4.9 pts +0.54R PF 1.94 +1.35 pt/day dd  181 |   54/yr +16.9 pts +0.56R PF 1.84 +4.63 pt/day dd  963 |
+    top half · hold to 15:55 · pyramid             83/yr  +3.5 pts +0.44R PF 1.62 +1.40 pt/day dd  280 |   76/yr +12.5 pts +0.46R PF 1.57 +4.86 pt/day dd 1555 |
+    all flags · hold to 15:55 · pyramid           147/yr  +3.5 pts +0.39R PF 1.55 +2.48 pt/day dd  528 |  137/yr  +5.6 pts +0.21R PF 1.23 +3.95 pt/day dd 3230 |

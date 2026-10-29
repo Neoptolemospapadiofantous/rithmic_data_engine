@@ -1,0 +1,59 @@
+Higher highs + higher lows and the A-list flag — NQ, 2581 NY days 2014-26, flag-mid limit · stop flag low − 0.1 ATR · measured move · flat 15:55, one position at a time across 3-5m, fixed cost 1.5 pts.
+Structure at the flag's registration (closed bars only): bull flags in HH/HL on 5m 55%, on 15m 40% · bear flags in LH/LL on 5m 55%, on 15m 37%.
+Cells: 2014-17 | 2018-21 | 2022-24 | 2025-26 avg R (n) · all: R, win %, PF, points/trade at today's ATR (307), trades a year / a day, worst drawdown R, periods > 0.
+
+######## BULL 3-5m — structure HH/HL (S5 = 5m, S15 = 15m)
+    every flag                                +0.17 ( 309) |  +0.27 ( 362) |  +0.23 ( 255) |  +0.08 ( 110) | all +0.211R win 34.6% PF 1.29 ·  +12.7 pts · 101.2/yr 0.40/day · DD  34.6R · 4/4
+    every flag + S5                           +0.28 ( 190) |  +0.14 ( 232) |  +0.18 ( 180) |  +0.05 (  66) | all +0.182R win 35.0% PF 1.25 ·  +11.3 pts ·  65.2/yr 0.26/day · DD  24.3R · 4/4
+    every flag + S15                          +0.13 ( 139) |  +0.25 ( 148) |  +0.12 (  98) |  +0.43 (  47) | all +0.202R win 36.8% PF 1.29 ·  +12.2 pts ·  42.2/yr 0.17/day · DD  18.6R · 4/4
+    every flag + S5 + S15                     +0.28 (  84) |  +0.16 (  92) |  +0.30 (  63) |  +0.46 (  30) | all +0.263R win 39.0% PF 1.39 ·  +14.1 pts ·  26.3/yr 0.10/day · DD  15.6R · 4/4
+    every flag WITHOUT S5                     +0.12 ( 177) |  +0.38 ( 182) |  +0.28 ( 121) |  +0.02 (  62) | all +0.231R win 34.3% PF 1.32 ·  +13.9 pts ·  52.9/yr 0.21/day · DD  30.7R · 4/4
+
+    A (top third)                             +0.34 ( 129) |  +0.39 ( 155) |  +0.20 ( 122) |  +0.16 (  70) | all +0.295R win 37.2% PF 1.43 ·  +17.3 pts ·  46.5/yr 0.18/day · DD  30.5R · 4/4
+    A (top third) + S5                        +0.74 (  69) |  +0.44 ( 101) |  +0.38 (  82) |  +0.09 (  38) | all +0.447R win 40.7% PF 1.69 ·  +22.5 pts ·  28.3/yr 0.11/day · DD  18.2R · 4/4
+    A (top third) + S15                       +0.37 (  51) |  +0.25 (  61) |  -0.02 (  51) |  +0.39 (  30) | all +0.233R win 36.8% PF 1.33 ·  +13.1 pts ·  18.8/yr 0.07/day · DD  14.7R · 3/4
+    A (top third) + S5 + S15                  +0.59 (  27) |  +0.36 (  38) |  +0.30 (  29) |  +0.43 (  16) | all +0.410R win 40.0% PF 1.62 ·  +19.8 pts ·  10.7/yr 0.04/day · DD  13.3R · 4/4
+    A (top third) WITHOUT S5                  +0.13 (  75) |  +0.30 (  71) |  +0.11 (  55) |  +0.18 (  40) | all +0.182R win 34.9% PF 1.25 ·  +13.7 pts ·  23.5/yr 0.09/day · DD  18.6R · 4/4
+
+    B (middle third)                          +0.23 ( 150) |  +0.25 ( 171) |  +0.34 ( 117) |  +0.18 (  49) | all +0.256R win 36.3% PF 1.36 ·  +15.0 pts ·  47.5/yr 0.19/day · DD  30.6R · 4/4
+    B (middle third) + S5                     +0.30 (  87) |  +0.30 (  96) |  +0.07 (  72) |  +0.23 (  27) | all +0.233R win 37.9% PF 1.34 ·  +13.6 pts ·  27.5/yr 0.11/day · DD  21.8R · 4/4
+    B (middle third) + S15                    +0.17 (  62) |  +0.25 (  80) |  +0.02 (  46) |  +0.48 (  20) | all +0.197R win 38.5% PF 1.28 ·  +13.2 pts ·  20.3/yr 0.08/day · DD  17.2R · 4/4
+    B (middle third) + S5 + S15               +0.29 (  39) |  +0.28 (  47) |  +0.17 (  27) |  +0.46 (  12) | all +0.278R win 40.8% PF 1.42 ·  +13.4 pts ·  12.2/yr 0.05/day · DD  17.3R · 4/4
+    B (middle third) WITHOUT S5               +0.22 (  73) |  +0.06 (  83) |  +0.63 (  51) |  +0.05 (  26) | all +0.231R win 33.0% PF 1.30 ·  +14.7 pts ·  22.7/yr 0.09/day · DD  25.6R · 4/4
+
+    C (bottom third)                          +0.14 ( 144) |  +0.16 ( 157) |  -0.04 ( 107) |  -0.44 (  34) | all +0.060R win 30.3% PF 1.08 ·   +6.2 pts ·  43.2/yr 0.17/day · DD  34.7R · 2/4
+    C (bottom third) + S5                     +0.08 (  87) |  -0.10 ( 100) |  -0.13 (  68) |  -0.03 (  17) | all -0.045R win 30.1% PF 0.94 ·   +3.2 pts ·  26.6/yr 0.11/day · DD  36.9R · 1/4
+    C (bottom third) + S15                    +0.12 (  62) |  +0.28 (  56) |  -0.15 (  32) |  -0.02 (  15) | all +0.109R win 34.5% PF 1.15 ·   +8.7 pts ·  16.1/yr 0.06/day · DD  16.4R · 2/4
+    C (bottom third) + S5 + S15               +0.24 (  38) |  -0.04 (  38) |  -0.19 (  19) |   —    (   9) | all +0.077R win 36.5% PF 1.11 ·   +8.5 pts ·  10.2/yr 0.04/day · DD  13.5R · 1/3
+    C (bottom third) WITHOUT S5               +0.09 (  74) |  +0.49 (  70) |  +0.06 (  51) |  -0.85 (  18) | all +0.134R win 29.6% PF 1.17 ·   +8.2 pts ·  20.8/yr 0.08/day · DD  17.1R · 3/4
+
+    A + (B with S5)                           +0.29 ( 193) |  +0.31 ( 209) |  +0.24 ( 170) |  +0.21 (  83) | all +0.275R win 37.3% PF 1.40 ·  +15.8 pts ·  64.0/yr 0.25/day · DD  26.7R · 4/4
+    A + (B with S5 + S15)                     +0.34 ( 159) |  +0.34 ( 182) |  +0.26 ( 140) |  +0.20 (  76) | all +0.303R win 38.1% PF 1.44 ·  +17.0 pts ·  54.4/yr 0.22/day · DD  25.7R · 4/4
+
+######## BEAR 3-5m — structure LH/LL (S5 = 5m, S15 = 15m)
+    every flag                                -0.25 ( 338) |  +0.08 ( 316) |  +0.29 ( 260) |  +0.18 ( 101) | all +0.033R win 24.6% PF 1.04 ·   +6.4 pts ·  99.1/yr 0.39/day · DD 114.4R · 3/4
+    every flag + S5                           -0.10 ( 202) |  +0.07 ( 200) |  +0.35 ( 178) |  +0.43 (  62) | all +0.129R win 25.9% PF 1.16 ·  +10.5 pts ·  62.7/yr 0.25/day · DD  61.6R · 3/4
+    every flag + S15                          -0.05 ( 131) |  -0.18 ( 107) |  +0.19 ( 109) |  +0.20 (  43) | all +0.010R win 25.4% PF 1.01 ·   +6.2 pts ·  38.1/yr 0.15/day · DD  52.1R · 2/4
+    every flag + S5 + S15                     +0.02 (  77) |  -0.36 (  66) |  +0.33 (  68) |  +0.35 (  27) | all +0.041R win 24.4% PF 1.05 ·   +7.2 pts ·  23.2/yr 0.09/day · DD  31.1R · 3/4
+    every flag WITHOUT S5                     -0.28 ( 185) |  +0.03 ( 167) |  +0.26 ( 142) |  -0.36 (  56) | all -0.054R win 24.2% PF 0.94 ·   +2.1 pts ·  53.7/yr 0.21/day · DD  83.8R · 2/4
+
+    A (top third)                             -0.13 ( 151) |  +0.38 ( 141) |  +0.40 ( 116) |  +0.07 (  50) | all +0.183R win 27.7% PF 1.22 ·  +14.0 pts ·  44.7/yr 0.18/day · DD  37.3R · 3/4
+    A (top third) + S5                        +0.09 (  87) |  +0.49 (  74) |  +0.40 (  76) |  +0.42 (  27) | all +0.324R win 29.2% PF 1.41 ·  +20.5 pts ·  25.8/yr 0.10/day · DD  19.6R · 4/4
+    A (top third) + S15                       +0.24 (  65) |  +0.03 (  49) |  +0.20 (  42) |  +0.19 (  17) | all +0.166R win 28.9% PF 1.21 ·  +13.4 pts ·  16.9/yr 0.07/day · DD  18.3R · 4/4
+    A (top third) + S5 + S15                  +0.59 (  35) |  +0.14 (  28) |  +0.16 (  23) |   —    (   9) | all +0.301R win 28.4% PF 1.38 ·  +19.1 pts ·   9.3/yr 0.04/day · DD  11.6R · 3/3
+    A (top third) WITHOUT S5                  -0.40 (  86) |  +0.16 (  80) |  +0.41 (  55) |  -0.29 (  28) | all -0.027R win 24.9% PF 0.97 ·   +4.4 pts ·  24.3/yr 0.10/day · DD  45.6R · 2/4
+
+    B (middle third)                          -0.15 ( 172) |  -0.05 ( 152) |  +0.42 ( 110) |  +0.02 (  49) | all +0.029R win 24.6% PF 1.03 ·   +5.3 pts ·  47.2/yr 0.19/day · DD  74.7R · 2/4
+    B (middle third) + S5                     -0.16 (  94) |  +0.06 (  90) |  +0.53 (  68) |  +0.75 (  28) | all +0.167R win 26.4% PF 1.20 ·  +12.7 pts ·  27.3/yr 0.11/day · DD  41.6R · 3/4
+    B (middle third) + S15                    +0.01 (  66) |  -0.05 (  53) |  +0.12 (  47) |  -0.05 (  19) | all +0.015R win 25.9% PF 1.02 ·   +6.6 pts ·  18.1/yr 0.07/day · DD  35.3R · 2/4
+    B (middle third) + S5 + S15               +0.21 (  33) |  +0.09 (  28) |  +0.31 (  31) |  +0.53 (  12) | all +0.245R win 27.9% PF 1.31 ·  +15.7 pts ·  10.2/yr 0.04/day · DD   9.5R · 4/4
+    B (middle third) WITHOUT S5               -0.11 (  85) |  -0.18 (  68) |  +0.20 (  65) |  -0.96 (  22) | all -0.123R win 23.3% PF 0.86 ·   -3.6 pts ·  23.4/yr 0.09/day · DD  64.9R · 1/4
+
+    C (bottom third)                          -0.46 ( 146) |  -0.13 ( 128) |  -0.08 (  89) |  +0.15 (  32) | all -0.217R win 20.3% PF 0.76 ·   -5.7 pts ·  38.6/yr 0.15/day · DD 110.7R · 1/4
+    C (bottom third) + S5                     -0.38 (  86) |  -0.26 (  91) |  +0.03 (  65) |  -0.02 (  22) | all -0.208R win 20.1% PF 0.77 ·   -4.1 pts ·  25.8/yr 0.10/day · DD  84.9R · 1/4
+    C (bottom third) + S15                    -0.21 (  54) |  -0.54 (  37) |  -0.02 (  33) |  +0.16 (  15) | all -0.214R win 20.9% PF 0.76 ·   -5.6 pts ·  13.6/yr 0.05/day · DD  48.0R · 1/4
+    C (bottom third) + S5 + S15               -0.12 (  34) |  -0.84 (  27) |  +0.17 (  22) |  +0.17 (  11) | all -0.225R win 21.3% PF 0.74 ·   -3.5 pts ·   9.2/yr 0.04/day · DD  37.6R · 2/4
+    C (bottom third) WITHOUT S5               -0.43 (  67) |  +0.02 (  47) |  -0.01 (  41) |  +0.15 (  13) | all -0.155R win 22.0% PF 0.82 ·   -4.4 pts ·  16.4/yr 0.07/day · DD  39.7R · 2/4
+
+    A + (B with S5)                           -0.13 ( 216) |  +0.30 ( 192) |  +0.48 ( 164) |  +0.37 (  66) | all +0.208R win 27.6% PF 1.25 ·  +14.3 pts ·  62.3/yr 0.25/day · DD  48.1R · 3/4
+    A + (B with S5 + S15)                     -0.11 ( 171) |  +0.30 ( 155) |  +0.43 ( 140) |  +0.22 (  59) | all +0.193R win 27.8% PF 1.24 ·  +13.9 pts ·  51.3/yr 0.20/day · DD  37.3R · 3/4

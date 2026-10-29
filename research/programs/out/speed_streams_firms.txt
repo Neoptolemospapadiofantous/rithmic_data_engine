@@ -1,0 +1,44 @@
+=== firm 0 streams F
+trades after the 2-open rule: 3740 of 3744
+Lucid Pro 50K · streams flags only · Lucid rules · live fills · $ at today's ATR · lock $750 · day stop $1000 · fee $50 · 160 sessions · starts every 5th session 2014-01 → 2025-04
+config (groups × size, gap) | starts | P(paid) ≤30 ≤45 ≤60 ≤90 | median 1st | paid/prog | E[payouts] fees  net | 2020-25: P(paid) net
+4 × 1, 10 sessions apart |    479 |  46.1%   1%   4%  11%  28% |         84 |      1.35 |     2254  200  2054 |  59.4%   2650
+6 × 1, 10 sessions apart |    475 |  53.5%   1%   4%  11%  28% |         89 |      2.03 |     3393  300  3093 |  69.3%   4094
+=== firm 0 streams FC
+trades after the 2-open rule: 3740 of 3744
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_cas_nq.trades.csv: 1751 of 2580 trades on the calendar
+Lucid Pro 50K · streams flags + extra · Lucid rules · live fills · $ at today's ATR · lock $750 · day stop $1000 · fee $50 · 160 sessions · starts every 5th session 2014-01 → 2025-04
+config (groups × size, gap) | starts | P(paid) ≤30 ≤45 ≤60 ≤90 | median 1st | paid/prog | E[payouts] fees  net | 2020-25: P(paid) net
+4 × 1, 10 sessions apart |    479 |  38.4%   4%   9%  14%  28% |         72 |      0.97 |     1688  200  1488 |  49.8%   2023
+6 × 1, 10 sessions apart |    475 |  46.1%   4%   9%  14%  29% |         78 |      1.45 |     2521  300  2221 |  60.4%   3106
+=== firm 0 streams FB
+trades after the 2-open rule: 3740 of 3744
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_cas_nq.trades.csv: 1751 of 2580 trades on the calendar
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_grt_nq.trades.csv: 1333 of 1710 trades on the calendar
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_g10_nq.trades.csv: 435 of 543 trades on the calendar
+Lucid Pro 50K · streams flags + extra · Lucid rules · live fills · $ at today's ATR · lock $750 · day stop $1000 · fee $50 · 160 sessions · starts every 5th session 2014-01 → 2025-04
+config (groups × size, gap) | starts | P(paid) ≤30 ≤45 ≤60 ≤90 | median 1st | paid/prog | E[payouts] fees  net | 2020-25: P(paid) net
+4 × 1, 10 sessions apart |    479 |  45.1%   5%  13%  22%  39% |         62 |      1.15 |     2071  200  1871 |  58.1%   2551
+6 × 1, 10 sessions apart |    475 |  55.2%   5%  13%  22%  43% |         68 |      1.72 |     3096  300  2796 |  70.2%   3868
+=== firm 1 streams F
+trades after the 2-open rule: 3740 of 3744
+Lucid Flex 50K · streams flags only · Lucid rules · live fills · $ at today's ATR · lock $750 · day stop $1000 · fee $50 · 160 sessions · starts every 5th session 2014-01 → 2025-04
+config (groups × size, gap) | starts | P(paid) ≤30 ≤45 ≤60 ≤90 | median 1st | paid/prog | E[payouts] fees  net | 2020-25: P(paid) net
+4 × 1, 10 sessions apart |    479 |  43.2%   0%   4%  13%  33% |         71 |      1.29 |     1519  200  1319 |  55.5%   1571
+6 × 1, 10 sessions apart |    475 |  49.5%   0%   4%  13%  34% |         76 |      1.91 |     2239  300  1939 |  63.6%   2345
+=== firm 1 streams FC
+trades after the 2-open rule: 3740 of 3744
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_cas_nq.trades.csv: 1751 of 2580 trades on the calendar
+Lucid Flex 50K · streams flags + extra · Lucid rules · live fills · $ at today's ATR · lock $750 · day stop $1000 · fee $50 · 160 sessions · starts every 5th session 2014-01 → 2025-04
+config (groups × size, gap) | starts | P(paid) ≤30 ≤45 ≤60 ≤90 | median 1st | paid/prog | E[payouts] fees  net | 2020-25: P(paid) net
+4 × 1, 10 sessions apart |    479 |  39.0%   3%  13%  22%  35% |         56 |      1.00 |     1125  200   925 |  46.7%   1149
+6 × 1, 10 sessions apart |    475 |  46.9%   3%  13%  22%  38% |         62 |      1.49 |     1667  300  1367 |  56.9%   1756
+=== firm 1 streams FB
+trades after the 2-open rule: 3740 of 3744
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_cas_nq.trades.csv: 1751 of 2580 trades on the calendar
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_grt_nq.trades.csv: 1333 of 1710 trades on the calendar
+stream /tmp/claude-1000/-home-theone-Desktop-rithmic-engine/a26e89af-cb19-4ad4-8552-a473ea327b66/scratchpad/conf/out/reports/cf_g10_nq.trades.csv: 435 of 543 trades on the calendar
+Lucid Flex 50K · streams flags + extra · Lucid rules · live fills · $ at today's ATR · lock $750 · day stop $1000 · fee $50 · 160 sessions · starts every 5th session 2014-01 → 2025-04
+config (groups × size, gap) | starts | P(paid) ≤30 ≤45 ≤60 ≤90 | median 1st | paid/prog | E[payouts] fees  net | 2020-25: P(paid) net
+4 × 1, 10 sessions apart |    479 |  38.0%   3%  15%  25%  37% |         52 |      0.96 |     1242  200  1042 |  52.0%   1590
+6 × 1, 10 sessions apart |    475 |  46.1%   3%  15%  25%  40% |         57 |      1.43 |     1842  300  1542 |  63.1%   2428

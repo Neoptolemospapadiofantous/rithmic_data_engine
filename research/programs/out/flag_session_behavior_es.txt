@@ -1,0 +1,290 @@
+Flag behaviour per session window — ES 2010-07 → 2026-10, 3347 days, 444748 flags (1-5m, researched + inner tiers). Fixed cost 0.5 pts.
+Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg R (n) · all: avg R, PF, vs same-day twin. Twin = random minute in the hour after registration, same distances.
+
+######## Asia 18:00-03:00
+  session: 3340 days · trend 38 % · continues the previous window n/a · first-15-min break holds to the close: up 54 %, down 45 %
+           by period trend %: 36 40 37 43 · continues %: 0 0 0 0
+  BULL 3-5m · 12130 flags (744/yr) · break 55 % · after the break: held to +1R 47 %, failed to the flag low 53 %
+      FOLLOW MM              -0.611 (1939) | -0.338 (2148) | -0.400 (1657) | -0.273 ( 445) | all -0.435 PF 0.58 · vs twin -0.083 · 0/4 periods > 0
+      FOLLOW 1R              -0.545 (1939) | -0.372 (2148) | -0.273 (1657) | -0.191 ( 445) | all -0.386 PF 0.45 · vs twin -0.085 · 0/4 periods > 0
+      FADE 1:1               -0.248 (2167) | -0.221 (2246) | -0.139 (1756) | -0.137 ( 452) | all -0.203 PF 0.66 · vs twin +0.150 · 0/4 periods > 0
+      MM with window move    -0.611 (1939) | -0.338 (2148) | -0.400 (1657) | -0.273 ( 445) | all -0.435 PF 0.58 · vs twin -0.083 · 0/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       -0.611 (1939) | -0.338 (2148) | -0.400 (1657) | -0.273 ( 445) | all -0.435 PF 0.58 · vs twin -0.083 · 0/4 periods > 0
+      MM not straight        (0 trades)
+      MM with prev window    (0 trades)
+      MM against prev        (0 trades)
+      FADE against window    (0 trades)
+  BULL 1-2m · 95372 flags (5851/yr) · break 52 % · after the break: held to +1R 43 %, failed to the flag low 57 %
+      FOLLOW MM              -0.726 (9818) | -0.553 (9830) | -0.434 (8016) | -0.277 (2331) | all -0.556 PF 0.38 · vs twin -0.152 · 0/4 periods > 0
+      FOLLOW 1R              -0.735 (9818) | -0.553 (9830) | -0.418 (8016) | -0.305 (2331) | all -0.557 PF 0.31 · vs twin -0.156 · 0/4 periods > 0
+      FADE 1:1               -0.356 (15781) | -0.300 (16150) | -0.245 (13492) | -0.232 (4103) | all -0.297 PF 0.52 · vs twin +0.147 · 0/4 periods > 0
+      MM with window move    -0.726 (9818) | -0.553 (9830) | -0.434 (8016) | -0.277 (2331) | all -0.556 PF 0.38 · vs twin -0.152 · 0/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       -0.732 (4585) | -0.573 (5059) | -0.421 (3973) | -0.261 (1259) | all -0.555 PF 0.38 · vs twin -0.147 · 0/4 periods > 0
+      MM not straight        -0.721 (5233) | -0.532 (4771) | -0.445 (4043) | -0.295 (1072) | all -0.557 PF 0.37 · vs twin -0.157 · 0/4 periods > 0
+      MM with prev window    (0 trades)
+      MM against prev        (0 trades)
+      FADE against window    (0 trades)
+  BEAR 3-5m · 10960 flags (672/yr) · break 54 % · after the break: held to +1R 43 %, failed to the flag low 57 %
+      FOLLOW MM              -0.755 (1878) | -0.522 (1720) | -0.388 (1717) | -0.186 ( 425) | all -0.534 PF 0.50 · vs twin -0.086 · 0/4 periods > 0
+      FOLLOW 1R              -0.600 (1878) | -0.408 (1720) | -0.307 (1717) | -0.153 ( 425) | all -0.422 PF 0.42 · vs twin -0.107 · 0/4 periods > 0
+      FADE 1:1               -0.104 (2059) | -0.113 (1759) | -0.089 (1710) | -0.203 ( 433) | all -0.110 PF 0.79 · vs twin +0.178 · 0/4 periods > 0
+      MM with window move    -0.755 (1878) | -0.522 (1720) | -0.388 (1717) | -0.186 ( 425) | all -0.534 PF 0.50 · vs twin -0.086 · 0/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       -0.755 (1878) | -0.522 (1720) | -0.388 (1717) | -0.186 ( 425) | all -0.534 PF 0.50 · vs twin -0.086 · 0/4 periods > 0
+      MM not straight        (0 trades)
+      MM with prev window    (0 trades)
+      MM against prev        (0 trades)
+      FADE against window    (0 trades)
+  BEAR 1-2m · 85143 flags (5223/yr) · break 52 % · after the break: held to +1R 42 %, failed to the flag low 58 %
+      FOLLOW MM              -0.762 (9582) | -0.558 (8317) | -0.423 (7345) | -0.269 (2186) | all -0.570 PF 0.37 · vs twin -0.145 · 0/4 periods > 0
+      FOLLOW 1R              -0.779 (9582) | -0.551 (8317) | -0.385 (7345) | -0.264 (2186) | all -0.563 PF 0.31 · vs twin -0.144 · 0/4 periods > 0
+      FADE 1:1               -0.283 (15322) | -0.263 (13246) | -0.222 (11746) | -0.202 (3562) | all -0.254 PF 0.57 · vs twin +0.146 · 0/4 periods > 0
+      MM with window move    -0.762 (9582) | -0.558 (8317) | -0.423 (7345) | -0.269 (2186) | all -0.570 PF 0.37 · vs twin -0.145 · 0/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       -0.779 (4725) | -0.573 (3855) | -0.431 (3587) | -0.276 (1077) | all -0.584 PF 0.37 · vs twin -0.143 · 0/4 periods > 0
+      MM not straight        -0.745 (4857) | -0.544 (4462) | -0.415 (3758) | -0.263 (1109) | all -0.557 PF 0.37 · vs twin -0.147 · 0/4 periods > 0
+      MM with prev window    (0 trades)
+      MM against prev        (0 trades)
+      FADE against window    (0 trades)
+
+######## London 03:00-09:30
+  session: 3368 days · trend 37 % · continues the previous window 50 % · first-15-min break holds to the close: up 53 %, down 46 %
+           by period trend %: 36 35 40 36 · continues %: 50 50 51 43
+  BULL 3-5m · 12314 flags (755/yr) · break 56 % · after the break: held to +1R 42 %, failed to the flag low 51 %
+      FOLLOW MM              -0.540 (2071) | -0.468 (1680) | -0.287 (1548) | -0.526 ( 409) | all -0.449 PF 0.52 · vs twin -0.090 · 0/4 periods > 0
+      FOLLOW 1R              -0.490 (2071) | -0.414 (1680) | -0.208 (1548) | -0.287 ( 409) | all -0.376 PF 0.45 · vs twin -0.101 · 0/4 periods > 0
+      FADE 1:1               -0.186 (2421) | -0.142 (2076) | -0.149 (1881) | +0.079 ( 457) | all -0.145 PF 0.73 · vs twin +0.145 · 1/4 periods > 0
+      MM with window move    -0.560 (1882) | -0.470 (1513) | -0.313 (1445) | -0.572 ( 346) | all -0.466 PF 0.50 · vs twin -0.102 · 0/4 periods > 0
+      MM against window      -0.343 ( 189) | -0.453 ( 167) | +0.073 ( 103) | -0.272 (  63) | all -0.288 PF 0.68 · vs twin +0.029 · 1/4 periods > 0
+      MM straight path       -0.607 (1035) | -0.517 ( 870) | -0.343 ( 870) | -0.605 ( 199) | all -0.503 PF 0.46 · vs twin -0.126 · 0/4 periods > 0
+      MM not straight        -0.474 (1036) | -0.416 ( 810) | -0.216 ( 678) | -0.451 ( 210) | all -0.391 PF 0.58 · vs twin -0.051 · 0/4 periods > 0
+      MM with prev window    -0.510 (1867) | -0.518 (1569) | -0.282 (1422) | -0.522 ( 393) | all -0.451 PF 0.52 · vs twin -0.096 · 0/4 periods > 0
+      MM against prev        -0.823 ( 204) | +0.240 ( 111) | -0.349 ( 126) | -0.614 (  16) | all -0.427 PF 0.51 · vs twin -0.020 · 1/4 periods > 0
+      FADE against window    -0.101 ( 207) | -0.121 ( 203) | -0.427 ( 113) | -0.018 (  54) | all -0.164 PF 0.71 · vs twin +0.137 · 0/4 periods > 0
+  BULL 1-2m · 71099 flags (4362/yr) · break 55 % · after the break: held to +1R 43 %, failed to the flag low 55 %
+      FOLLOW MM              -0.583 (8009) | -0.537 (7550) | -0.342 (6100) | -0.373 (1868) | all -0.489 PF 0.43 · vs twin -0.129 · 0/4 periods > 0
+      FOLLOW 1R              -0.581 (8009) | -0.526 (7550) | -0.321 (6100) | -0.349 (1868) | all -0.478 PF 0.37 · vs twin -0.135 · 0/4 periods > 0
+      FADE 1:1               -0.313 (13334) | -0.271 (12552) | -0.218 (10226) | -0.141 (3027) | all -0.261 PF 0.57 · vs twin +0.123 · 0/4 periods > 0
+      MM with window move    -0.596 (6437) | -0.546 (5922) | -0.348 (4991) | -0.352 (1420) | all -0.496 PF 0.42 · vs twin -0.134 · 0/4 periods > 0
+      MM against window      -0.528 (1572) | -0.501 (1628) | -0.311 (1109) | -0.440 ( 448) | all -0.460 PF 0.45 · vs twin -0.111 · 0/4 periods > 0
+      MM straight path       -0.605 (3012) | -0.548 (2708) | -0.363 (2414) | -0.377 ( 752) | all -0.502 PF 0.42 · vs twin -0.133 · 0/4 periods > 0
+      MM not straight        -0.569 (4997) | -0.530 (4842) | -0.328 (3686) | -0.370 (1116) | all -0.480 PF 0.43 · vs twin -0.127 · 0/4 periods > 0
+      MM with prev window    -0.583 (6079) | -0.559 (6084) | -0.338 (4653) | -0.341 (1481) | all -0.493 PF 0.42 · vs twin -0.128 · 0/4 periods > 0
+      MM against prev        -0.583 (1930) | -0.444 (1466) | -0.352 (1447) | -0.495 ( 387) | all -0.474 PF 0.44 · vs twin -0.132 · 0/4 periods > 0
+      FADE against window    -0.379 (2182) | -0.278 (2364) | -0.244 (1569) | -0.127 ( 638) | all -0.288 PF 0.54 · vs twin +0.102 · 0/4 periods > 0
+  BEAR 3-5m · 10062 flags (617/yr) · break 56 % · after the break: held to +1R 44 %, failed to the flag low 49 %
+      FOLLOW MM              -0.464 (1725) | -0.396 (1268) | -0.226 (1295) | -0.113 ( 300) | all -0.355 PF 0.60 · vs twin -0.080 · 0/4 periods > 0
+      FOLLOW 1R              -0.377 (1725) | -0.372 (1268) | -0.144 (1295) | -0.051 ( 300) | all -0.288 PF 0.55 · vs twin -0.068 · 0/4 periods > 0
+      FADE 1:1               -0.217 (2123) | -0.092 (1546) | -0.092 (1587) | -0.060 ( 351) | all -0.137 PF 0.74 · vs twin +0.128 · 0/4 periods > 0
+      MM with window move    -0.483 (1592) | -0.399 (1171) | -0.232 (1206) | -0.125 ( 270) | all -0.365 PF 0.60 · vs twin -0.087 · 0/4 periods > 0
+      MM against window      -0.238 ( 133) | -0.359 (  97) | -0.158 (  89) | -0.009 (  30) | all -0.232 PF 0.72 · vs twin +0.007 · 0/4 periods > 0
+      MM straight path       -0.480 ( 961) | -0.307 ( 698) | -0.238 ( 732) | +0.028 ( 151) | all -0.333 PF 0.63 · vs twin -0.096 · 1/4 periods > 0
+      MM not straight        -0.445 ( 764) | -0.504 ( 570) | -0.211 ( 563) | -0.257 ( 149) | all -0.383 PF 0.58 · vs twin -0.061 · 0/4 periods > 0
+      MM with prev window    -0.433 (1508) | -0.380 (1163) | -0.238 (1167) | -0.067 ( 279) | all -0.338 PF 0.62 · vs twin -0.089 · 0/4 periods > 0
+      MM against prev        -0.684 ( 217) | -0.565 ( 105) | -0.123 ( 128) | -0.727 (  21) | all -0.507 PF 0.46 · vs twin -0.007 · 0/4 periods > 0
+      FADE against window    -0.227 ( 142) | -0.219 ( 118) | -0.309 (  89) | +0.136 (  26) | all -0.219 PF 0.63 · vs twin +0.078 · 1/4 periods > 0
+  BEAR 1-2m · 53138 flags (3260/yr) · break 55 % · after the break: held to +1R 43 %, failed to the flag low 55 %
+      FOLLOW MM              -0.599 (6624) | -0.473 (5630) | -0.262 (4573) | -0.268 (1331) | all -0.451 PF 0.47 · vs twin -0.100 · 0/4 periods > 0
+      FOLLOW 1R              -0.585 (6624) | -0.469 (5630) | -0.268 (4573) | -0.245 (1331) | all -0.444 PF 0.40 · vs twin -0.113 · 0/4 periods > 0
+      FADE 1:1               -0.254 (10744) | -0.229 (8997) | -0.180 (7133) | -0.143 (2094) | all -0.220 PF 0.62 · vs twin +0.109 · 0/4 periods > 0
+      MM with window move    -0.594 (5584) | -0.466 (4588) | -0.289 (3871) | -0.292 (1053) | all -0.456 PF 0.46 · vs twin -0.105 · 0/4 periods > 0
+      MM against window      -0.627 (1040) | -0.504 (1042) | -0.119 ( 702) | -0.177 ( 278) | all -0.428 PF 0.48 · vs twin -0.072 · 0/4 periods > 0
+      MM straight path       -0.579 (2683) | -0.430 (2186) | -0.294 (1881) | -0.292 ( 488) | all -0.441 PF 0.49 · vs twin -0.107 · 0/4 periods > 0
+      MM not straight        -0.612 (3941) | -0.501 (3444) | -0.240 (2692) | -0.254 ( 843) | all -0.458 PF 0.45 · vs twin -0.095 · 0/4 periods > 0
+      MM with prev window    -0.585 (4706) | -0.468 (4280) | -0.258 (3382) | -0.272 (1065) | all -0.441 PF 0.47 · vs twin -0.103 · 0/4 periods > 0
+      MM against prev        -0.632 (1918) | -0.488 (1350) | -0.276 (1191) | -0.253 ( 266) | all -0.480 PF 0.45 · vs twin -0.091 · 0/4 periods > 0
+      FADE against window    -0.327 (1424) | -0.246 (1463) | -0.309 ( 942) | -0.226 ( 362) | all -0.286 PF 0.54 · vs twin +0.099 · 0/4 periods > 0
+
+######## NY open 09:30-10:30
+  session: 3375 days · trend 39 % · continues the previous window 50 % · first-15-min break holds to the close: up 54 %, down 47 %
+           by period trend %: 39 38 40 41 · continues %: 50 50 51 47
+  BULL 3-5m · 975 flags (60/yr) · break 66 % · after the break: held to +1R 52 %, failed to the flag low 47 %
+      FOLLOW MM              +0.062 ( 284) | -0.062 ( 276) | +0.105 ( 190) | +0.230 (  66) | all +0.044 PF 1.05 · vs twin -0.028 · 3/4 periods > 0
+      FOLLOW 1R              -0.145 ( 284) | -0.137 ( 276) | -0.163 ( 190) | +0.086 (  66) | all -0.128 PF 0.77 · vs twin -0.050 · 1/4 periods > 0
+      FADE 1:1               -0.301 ( 224) | -0.157 ( 211) | -0.075 ( 154) | -0.115 (  56) | all -0.184 PF 0.69 · vs twin +0.126 · 0/4 periods > 0
+      MM with window move    +0.062 ( 284) | -0.062 ( 276) | +0.105 ( 190) | +0.230 (  66) | all +0.044 PF 1.05 · vs twin -0.028 · 3/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       +0.062 ( 284) | -0.062 ( 276) | +0.105 ( 190) | +0.230 (  66) | all +0.044 PF 1.05 · vs twin -0.028 · 3/4 periods > 0
+      MM not straight        (0 trades)
+      MM with prev window    +0.037 ( 158) | -0.267 ( 135) | +0.140 ( 102) | +0.386 (  41) | all -0.000 PF 1.00 · vs twin -0.015 · 3/4 periods > 0
+      MM against prev        +0.094 ( 126) | +0.135 ( 141) | +0.063 (  88) | -0.027 (  25) | all +0.094 PF 1.12 · vs twin -0.044 · 3/4 periods > 0
+      FADE against window    (0 trades)
+  BULL 1-2m · 11382 flags (698/yr) · break 61 % · after the break: held to +1R 48 %, failed to the flag low 52 %
+      FOLLOW MM              -0.305 (1707) | -0.225 (1473) | +0.041 (1255) | +0.056 ( 357) | all -0.163 PF 0.80 · vs twin -0.108 · 2/4 periods > 0
+      FOLLOW 1R              -0.328 (1707) | -0.205 (1473) | -0.124 (1255) | -0.104 ( 357) | all -0.220 PF 0.64 · vs twin -0.104 · 0/4 periods > 0
+      FADE 1:1               -0.172 (2475) | -0.205 (2127) | -0.140 (1794) | -0.073 ( 496) | all -0.167 PF 0.71 · vs twin +0.097 · 0/4 periods > 0
+      MM with window move    -0.305 (1707) | -0.225 (1473) | +0.041 (1255) | +0.056 ( 357) | all -0.163 PF 0.80 · vs twin -0.108 · 2/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       -0.259 ( 798) | -0.216 ( 734) | +0.172 ( 692) | +0.025 ( 186) | all -0.100 PF 0.88 · vs twin -0.098 · 2/4 periods > 0
+      MM not straight        -0.346 ( 909) | -0.234 ( 739) | -0.120 ( 563) | +0.091 ( 171) | all -0.227 PF 0.72 · vs twin -0.118 · 1/4 periods > 0
+      MM with prev window    -0.221 ( 883) | -0.268 ( 769) | +0.211 ( 678) | +0.256 ( 173) | all -0.085 PF 0.89 · vs twin -0.069 · 2/4 periods > 0
+      MM against prev        -0.396 ( 824) | -0.178 ( 704) | -0.159 ( 577) | -0.132 ( 184) | all -0.248 PF 0.70 · vs twin -0.149 · 0/4 periods > 0
+      FADE against window    (0 trades)
+  BEAR 3-5m · 753 flags (46/yr) · break 60 % · after the break: held to +1R 53 %, failed to the flag low 46 %
+      FOLLOW MM              -0.355 ( 226) | -0.066 ( 184) | +0.160 ( 148) | -0.567 (  43) | all -0.155 PF 0.83 · vs twin +0.048 · 1/4 periods > 0
+      FOLLOW 1R              -0.206 ( 226) | -0.094 ( 184) | +0.009 ( 148) | -0.128 (  43) | all -0.113 PF 0.79 · vs twin +0.009 · 1/4 periods > 0
+      FADE 1:1               -0.206 ( 161) | -0.168 ( 143) | -0.106 ( 117) | -0.373 (  30) | all -0.179 PF 0.69 · vs twin +0.006 · 0/4 periods > 0
+      MM with window move    -0.355 ( 226) | -0.066 ( 184) | +0.160 ( 148) | -0.567 (  43) | all -0.155 PF 0.83 · vs twin +0.048 · 1/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       -0.355 ( 226) | -0.066 ( 184) | +0.160 ( 148) | -0.567 (  43) | all -0.155 PF 0.83 · vs twin +0.048 · 1/4 periods > 0
+      MM not straight        (0 trades)
+      MM with prev window    -0.188 (  97) | +0.184 (  84) | +0.186 (  79) | -0.812 (  15) | all -0.001 PF 1.00 · vs twin -0.016 · 2/4 periods > 0
+      MM against prev        -0.480 ( 129) | -0.276 ( 100) | +0.131 (  69) | -0.435 (  28) | all -0.284 PF 0.70 · vs twin +0.102 · 1/4 periods > 0
+      FADE against window    (0 trades)
+  BEAR 1-2m · 10346 flags (635/yr) · break 57 % · after the break: held to +1R 46 %, failed to the flag low 54 %
+      FOLLOW MM              -0.362 (1531) | -0.217 (1389) | -0.088 (1070) | +0.159 ( 296) | all -0.211 PF 0.74 · vs twin -0.061 · 1/4 periods > 0
+      FOLLOW 1R              -0.337 (1531) | -0.270 (1389) | -0.137 (1070) | -0.115 ( 296) | all -0.250 PF 0.61 · vs twin -0.111 · 0/4 periods > 0
+      FADE 1:1               -0.137 (2163) | -0.093 (1870) | -0.077 (1486) | -0.086 ( 423) | all -0.105 PF 0.81 · vs twin +0.105 · 0/4 periods > 0
+      MM with window move    -0.362 (1531) | -0.217 (1389) | -0.088 (1070) | +0.159 ( 296) | all -0.211 PF 0.74 · vs twin -0.061 · 1/4 periods > 0
+      MM against window      (0 trades)
+      MM straight path       -0.342 ( 750) | -0.172 ( 650) | -0.037 ( 533) | +0.238 ( 161) | all -0.167 PF 0.80 · vs twin -0.044 · 1/4 periods > 0
+      MM not straight        -0.382 ( 781) | -0.256 ( 739) | -0.139 ( 537) | +0.066 ( 135) | all -0.252 PF 0.69 · vs twin -0.077 · 1/4 periods > 0
+      MM with prev window    -0.378 ( 716) | -0.226 ( 595) | -0.115 ( 538) | +0.112 ( 121) | all -0.230 PF 0.72 · vs twin -0.096 · 1/4 periods > 0
+      MM against prev        -0.349 ( 815) | -0.210 ( 794) | -0.061 ( 532) | +0.192 ( 175) | all -0.194 PF 0.76 · vs twin -0.031 · 1/4 periods > 0
+      FADE against window    (0 trades)
+
+######## NY mid 10:30-12:00
+  session: 3375 days · trend 41 % · continues the previous window 51 % · first-15-min break holds to the close: up 55 %, down 47 %
+           by period trend %: 40 40 42 44 · continues %: 51 51 53 53
+  BULL 3-5m · 2693 flags (165/yr) · break 62 % · after the break: held to +1R 52 %, failed to the flag low 45 %
+      FOLLOW MM              -0.246 ( 499) | +0.210 ( 505) | +0.298 ( 478) | -0.032 ( 150) | all +0.074 PF 1.09 · vs twin +0.059 · 2/4 periods > 0
+      FOLLOW 1R              -0.212 ( 499) | -0.083 ( 505) | +0.006 ( 478) | -0.098 ( 150) | all -0.098 PF 0.82 · vs twin -0.001 · 1/4 periods > 0
+      FADE 1:1               -0.227 ( 506) | -0.349 ( 528) | -0.108 ( 464) | +0.039 ( 159) | all -0.207 PF 0.65 · vs twin +0.172 · 1/4 periods > 0
+      MM with window move    -0.310 ( 362) | +0.119 ( 406) | +0.228 ( 375) | -0.276 ( 123) | all -0.010 PF 0.99 · vs twin -0.006 · 2/4 periods > 0
+      MM against window      -0.076 ( 137) | +0.585 (  99) | +0.554 ( 103) | +1.081 (  27) | all +0.365 PF 1.48 · vs twin +0.282 · 3/4 periods > 0
+      MM straight path       -0.314 ( 213) | +0.183 ( 257) | +0.181 ( 212) | -0.267 (  67) | all +0.001 PF 1.00 · vs twin +0.073 · 2/4 periods > 0
+      MM not straight        -0.195 ( 286) | +0.238 ( 248) | +0.391 ( 266) | +0.158 (  83) | all +0.137 PF 1.17 · vs twin +0.047 · 3/4 periods > 0
+      MM with prev window    -0.233 ( 489) | +0.257 ( 472) | +0.336 ( 456) | -0.007 ( 141) | all +0.102 PF 1.12 · vs twin +0.068 · 2/4 periods > 0
+      MM against prev        -0.866 (  10) | -0.454 (  33) | -0.493 (  22) |   —    (   9) | all -0.518 PF 0.44 · vs twin -0.146 · 0/3 periods > 0
+      FADE against window    -0.348 ( 122) | -0.441 (  87) | -0.377 (  82) | -0.195 (  36) | all -0.363 PF 0.47 · vs twin +0.141 · 0/4 periods > 0
+  BULL 1-2m · 16705 flags (1025/yr) · break 60 % · after the break: held to +1R 46 %, failed to the flag low 53 %
+      FOLLOW MM              -0.438 (1588) | -0.225 (1829) | -0.040 (1349) | -0.232 ( 394) | all -0.243 PF 0.71 · vs twin -0.138 · 0/4 periods > 0
+      FOLLOW 1R              -0.454 (1588) | -0.289 (1829) | -0.157 (1349) | -0.243 ( 394) | all -0.302 PF 0.54 · vs twin -0.170 · 0/4 periods > 0
+      FADE 1:1               -0.160 (3103) | -0.204 (3575) | -0.155 (2571) | -0.047 ( 789) | all -0.165 PF 0.71 · vs twin +0.158 · 0/4 periods > 0
+      MM with window move    -0.473 (1242) | -0.224 (1528) | -0.062 (1109) | -0.168 ( 319) | all -0.251 PF 0.70 · vs twin -0.147 · 0/4 periods > 0
+      MM against window      -0.312 ( 346) | -0.230 ( 301) | +0.062 ( 240) | -0.505 (  75) | all -0.208 PF 0.74 · vs twin -0.098 · 1/4 periods > 0
+      MM straight path       -0.490 ( 680) | -0.182 ( 811) | -0.132 ( 584) | -0.221 ( 157) | all -0.266 PF 0.69 · vs twin -0.184 · 0/4 periods > 0
+      MM not straight        -0.399 ( 908) | -0.260 (1018) | +0.031 ( 765) | -0.239 ( 237) | all -0.225 PF 0.72 · vs twin -0.103 · 1/4 periods > 0
+      MM with prev window    -0.435 (1156) | -0.198 (1340) | -0.011 (1050) | -0.272 ( 305) | all -0.224 PF 0.73 · vs twin -0.132 · 0/4 periods > 0
+      MM against prev        -0.446 ( 432) | -0.299 ( 489) | -0.140 ( 299) | -0.095 (  89) | all -0.298 PF 0.66 · vs twin -0.155 · 0/4 periods > 0
+      FADE against window    -0.256 ( 544) | -0.227 ( 509) | -0.106 ( 396) | +0.044 ( 114) | all -0.187 PF 0.68 · vs twin +0.143 · 1/4 periods > 0
+  BEAR 3-5m · 2430 flags (149/yr) · break 60 % · after the break: held to +1R 47 %, failed to the flag low 51 %
+      FOLLOW MM              +0.008 ( 524) | -0.243 ( 466) | -0.210 ( 352) | -0.137 ( 108) | all -0.136 PF 0.85 · vs twin +0.060 · 1/4 periods > 0
+      FOLLOW 1R              -0.229 ( 524) | -0.172 ( 466) | -0.151 ( 352) | -0.118 ( 108) | all -0.184 PF 0.69 · vs twin -0.032 · 0/4 periods > 0
+      FADE 1:1               -0.148 ( 538) | -0.095 ( 420) | +0.046 ( 395) | +0.023 (  95) | all -0.068 PF 0.87 · vs twin +0.159 · 2/4 periods > 0
+      MM with window move    -0.049 ( 433) | -0.309 ( 378) | -0.191 ( 282) | -0.070 (  80) | all -0.168 PF 0.82 · vs twin +0.070 · 0/4 periods > 0
+      MM against window      +0.278 (  91) | +0.041 (  88) | -0.284 (  70) | -0.329 (  28) | all -0.001 PF 1.00 · vs twin +0.021 · 2/4 periods > 0
+      MM straight path       +0.054 ( 269) | -0.416 ( 214) | -0.229 ( 172) | -0.162 (  44) | all -0.173 PF 0.81 · vs twin +0.116 · 1/4 periods > 0
+      MM not straight        -0.041 ( 255) | -0.096 ( 252) | -0.191 ( 180) | -0.120 (  64) | all -0.102 PF 0.89 · vs twin +0.009 · 0/4 periods > 0
+      MM with prev window    +0.016 ( 493) | -0.221 ( 430) | -0.189 ( 315) | -0.279 ( 103) | all -0.131 PF 0.86 · vs twin +0.033 · 1/4 periods > 0
+      MM against prev        -0.130 (  31) | -0.511 (  36) | -0.385 (  37) |   —    (   5) | all -0.208 PF 0.78 · vs twin +0.400 · 0/3 periods > 0
+      FADE against window    -0.389 (  75) | -0.161 (  75) | +0.179 (  63) | +0.362 (  17) | all -0.104 PF 0.81 · vs twin +0.163 · 2/4 periods > 0
+  BEAR 1-2m · 13895 flags (852/yr) · break 57 % · after the break: held to +1R 46 %, failed to the flag low 54 %
+      FOLLOW MM              -0.330 (1619) | -0.305 (1382) | -0.247 (1201) | -0.012 ( 361) | all -0.276 PF 0.67 · vs twin -0.056 · 0/4 periods > 0
+      FOLLOW 1R              -0.297 (1619) | -0.253 (1382) | -0.188 (1201) | -0.027 ( 361) | all -0.234 PF 0.62 · vs twin -0.061 · 0/4 periods > 0
+      FADE 1:1               -0.193 (2841) | -0.141 (2364) | +0.023 (2057) | -0.131 ( 656) | all -0.116 PF 0.79 · vs twin +0.085 · 1/4 periods > 0
+      MM with window move    -0.351 (1375) | -0.304 (1146) | -0.224 (1049) | +0.070 ( 285) | all -0.271 PF 0.68 · vs twin -0.048 · 1/4 periods > 0
+      MM against window      -0.213 ( 244) | -0.311 ( 236) | -0.408 ( 152) | -0.319 (  76) | all -0.299 PF 0.64 · vs twin -0.104 · 0/4 periods > 0
+      MM straight path       -0.367 ( 782) | -0.306 ( 602) | -0.164 ( 529) | +0.106 ( 140) | all -0.265 PF 0.69 · vs twin -0.037 · 1/4 periods > 0
+      MM not straight        -0.296 ( 837) | -0.304 ( 780) | -0.313 ( 672) | -0.086 ( 221) | all -0.285 PF 0.66 · vs twin -0.072 · 0/4 periods > 0
+      MM with prev window    -0.297 (1181) | -0.355 ( 999) | -0.241 ( 879) | -0.041 ( 286) | all -0.278 PF 0.67 · vs twin -0.073 · 0/4 periods > 0
+      MM against prev        -0.419 ( 438) | -0.173 ( 383) | -0.264 ( 322) | +0.099 (  75) | all -0.269 PF 0.68 · vs twin -0.009 · 1/4 periods > 0
+      FADE against window    -0.234 ( 387) | -0.181 ( 351) | +0.112 ( 229) | +0.043 ( 100) | all -0.116 PF 0.79 · vs twin +0.057 · 2/4 periods > 0
+
+######## NY lunch 12:00-13:30
+  session: 3375 days · trend 37 % · continues the previous window 49 % · first-15-min break holds to the close: up 53 %, down 45 %
+           by period trend %: 39 35 37 40 · continues %: 47 50 49 51
+  BULL 3-5m · 1069 flags (66/yr) · break 59 % · after the break: held to +1R 44 %, failed to the flag low 53 %
+      FOLLOW MM              -0.396 ( 159) | -0.585 ( 192) | -0.039 ( 151) | -0.350 (  53) | all -0.360 PF 0.61 · vs twin -0.172 · 0/4 periods > 0
+      FOLLOW 1R              -0.225 ( 159) | -0.353 ( 192) | -0.232 ( 151) | -0.119 (  53) | all -0.261 PF 0.59 · vs twin -0.077 · 0/4 periods > 0
+      FADE 1:1               -0.174 ( 153) | +0.002 ( 225) | -0.120 ( 189) | +0.150 (  64) | all -0.062 PF 0.88 · vs twin +0.230 · 2/4 periods > 0
+      MM with window move    -0.525 ( 128) | -0.574 ( 168) | +0.021 ( 105) | -0.446 (  44) | all -0.407 PF 0.56 · vs twin -0.174 · 1/4 periods > 0
+      MM against window      +0.138 (  31) | -0.667 (  24) | -0.178 (  46) |   —    (   9) | all -0.171 PF 0.81 · vs twin -0.163 · 1/3 periods > 0
+      MM straight path       -0.439 (  92) | -0.495 ( 116) | +0.130 (  60) | -0.220 (  27) | all -0.325 PF 0.63 · vs twin -0.132 · 1/4 periods > 0
+      MM not straight        -0.336 (  67) | -0.723 (  76) | -0.151 (  91) | -0.486 (  26) | all -0.400 PF 0.59 · vs twin -0.218 · 0/4 periods > 0
+      MM with prev window    -0.381 ( 124) | -0.483 ( 164) | -0.018 ( 127) | -0.204 (  39) | all -0.301 PF 0.67 · vs twin -0.099 · 0/4 periods > 0
+      MM against prev        -0.448 (  35) | -1.183 (  28) | -0.153 (  24) | -0.758 (  14) | all -0.625 PF 0.37 · vs twin -0.500 · 0/4 periods > 0
+      FADE against window    -0.527 (  22) | +0.011 (  29) | -0.010 (  42) | +0.114 (  10) | all -0.103 PF 0.81 · vs twin +0.259 · 2/4 periods > 0
+  BULL 1-2m · 13006 flags (798/yr) · break 58 % · after the break: held to +1R 45 %, failed to the flag low 54 %
+      FOLLOW MM              -0.503 (1174) | -0.420 (1234) | -0.168 (1118) | -0.150 ( 354) | all -0.348 PF 0.60 · vs twin -0.163 · 0/4 periods > 0
+      FOLLOW 1R              -0.489 (1174) | -0.418 (1234) | -0.209 (1118) | -0.127 ( 354) | all -0.353 PF 0.49 · vs twin -0.177 · 0/4 periods > 0
+      FADE 1:1               -0.222 (2198) | -0.166 (2488) | -0.156 (2111) | -0.127 ( 694) | all -0.176 PF 0.69 · vs twin +0.163 · 0/4 periods > 0
+      MM with window move    -0.510 ( 903) | -0.452 ( 944) | -0.175 ( 836) | -0.205 ( 273) | all -0.368 PF 0.58 · vs twin -0.167 · 0/4 periods > 0
+      MM against window      -0.481 ( 271) | -0.317 ( 290) | -0.147 ( 282) | +0.032 (  81) | all -0.282 PF 0.65 · vs twin -0.148 · 1/4 periods > 0
+      MM straight path       -0.528 ( 487) | -0.348 ( 501) | -0.273 ( 421) | -0.174 ( 148) | all -0.367 PF 0.59 · vs twin -0.195 · 0/4 periods > 0
+      MM not straight        -0.486 ( 687) | -0.470 ( 733) | -0.104 ( 697) | -0.134 ( 206) | all -0.335 PF 0.60 · vs twin -0.141 · 0/4 periods > 0
+      MM with prev window    -0.505 ( 861) | -0.384 ( 919) | -0.140 ( 866) | -0.159 ( 261) | all -0.327 PF 0.62 · vs twin -0.151 · 0/4 periods > 0
+      MM against prev        -0.497 ( 313) | -0.524 ( 315) | -0.265 ( 252) | -0.125 (  93) | all -0.410 PF 0.54 · vs twin -0.198 · 0/4 periods > 0
+      FADE against window    -0.270 ( 441) | -0.220 ( 500) | -0.098 ( 436) | -0.365 ( 123) | all -0.211 PF 0.65 · vs twin +0.140 · 0/4 periods > 0
+  BEAR 3-5m · 1359 flags (83/yr) · break 53 % · after the break: held to +1R 46 %, failed to the flag low 53 %
+      FOLLOW MM              -0.502 ( 199) | +0.017 ( 227) | -0.390 ( 198) | -0.393 (  74) | all -0.290 PF 0.69 · vs twin -0.114 · 1/4 periods > 0
+      FOLLOW 1R              -0.321 ( 199) | -0.183 ( 227) | -0.239 ( 198) | -0.065 (  74) | all -0.226 PF 0.63 · vs twin -0.091 · 0/4 periods > 0
+      FADE 1:1               -0.140 ( 204) | -0.123 ( 214) | +0.115 ( 219) | +0.154 (  79) | all -0.025 PF 0.95 · vs twin +0.201 · 2/4 periods > 0
+      MM with window move    -0.470 ( 160) | +0.135 ( 182) | -0.393 ( 164) | -0.306 (  62) | all -0.236 PF 0.74 · vs twin -0.093 · 1/4 periods > 0
+      MM against window      -0.634 (  39) | -0.463 (  45) | -0.378 (  34) | -0.844 (  12) | all -0.527 PF 0.47 · vs twin -0.206 · 0/4 periods > 0
+      MM straight path       -0.348 (  85) | +0.502 ( 111) | -0.359 ( 101) | -0.208 (  42) | all -0.056 PF 0.94 · vs twin +0.051 · 1/4 periods > 0
+      MM not straight        -0.616 ( 114) | -0.448 ( 116) | -0.423 (  97) | -0.635 (  32) | all -0.511 PF 0.48 · vs twin -0.270 · 0/4 periods > 0
+      MM with prev window    -0.545 ( 168) | +0.105 ( 192) | -0.515 ( 172) | -0.424 (  55) | all -0.312 PF 0.67 · vs twin -0.113 · 1/4 periods > 0
+      MM against prev        -0.270 (  31) | -0.470 (  35) | +0.434 (  26) | -0.304 (  19) | all -0.174 PF 0.81 · vs twin -0.117 · 1/4 periods > 0
+      FADE against window    -0.147 (  37) | +0.095 (  44) | -0.276 (  27) | +0.427 (  11) | all -0.034 PF 0.93 · vs twin +0.188 · 2/4 periods > 0
+  BEAR 1-2m · 11000 flags (675/yr) · break 56 % · after the break: held to +1R 46 %, failed to the flag low 54 %
+      FOLLOW MM              -0.448 (1118) | -0.386 (1075) | -0.153 ( 964) | -0.095 ( 324) | all -0.314 PF 0.63 · vs twin -0.091 · 0/4 periods > 0
+      FOLLOW 1R              -0.430 (1118) | -0.313 (1075) | -0.159 ( 964) | -0.094 ( 324) | all -0.287 PF 0.56 · vs twin -0.083 · 0/4 periods > 0
+      FADE 1:1               -0.167 (1967) | -0.174 (1897) | -0.112 (1728) | -0.105 ( 528) | all -0.148 PF 0.74 · vs twin +0.072 · 0/4 periods > 0
+      MM with window move    -0.447 ( 859) | -0.410 ( 826) | -0.146 ( 783) | -0.022 ( 263) | all -0.308 PF 0.64 · vs twin -0.097 · 0/4 periods > 0
+      MM against window      -0.450 ( 259) | -0.306 ( 249) | -0.186 ( 181) | -0.409 (  61) | all -0.335 PF 0.60 · vs twin -0.072 · 0/4 periods > 0
+      MM straight path       -0.405 ( 465) | -0.370 ( 439) | -0.188 ( 459) | -0.185 ( 124) | all -0.310 PF 0.64 · vs twin -0.129 · 0/4 periods > 0
+      MM not straight        -0.478 ( 653) | -0.396 ( 636) | -0.122 ( 505) | -0.039 ( 200) | all -0.318 PF 0.62 · vs twin -0.063 · 0/4 periods > 0
+      MM with prev window    -0.447 ( 799) | -0.371 ( 806) | -0.262 ( 687) | -0.138 ( 230) | all -0.344 PF 0.60 · vs twin -0.091 · 0/4 periods > 0
+      MM against prev        -0.451 ( 319) | -0.429 ( 269) | +0.117 ( 277) | +0.010 (  94) | all -0.236 PF 0.72 · vs twin -0.092 · 2/4 periods > 0
+      FADE against window    -0.134 ( 389) | -0.270 ( 382) | -0.008 ( 273) | +0.090 (  94) | all -0.131 PF 0.76 · vs twin +0.103 · 1/4 periods > 0
+
+######## NY pm 13:30-14:00
+  session: 3375 days · trend 38 % · continues the previous window 50 % · first-15-min break holds to the close: up 55 %, down 45 %
+           by period trend %: 37 36 42 34 · continues %: 51 50 52 47
+  BULL 3-5m · 341 flags (21/yr) · break 63 % · after the break: held to +1R 38 %, failed to the flag low 53 %
+      FOLLOW MM              -0.698 (  61) | -0.705 (  56) | -0.137 (  54) | -0.039 (  22) | all -0.468 PF 0.49 · vs twin -0.046 · 0/4 periods > 0
+      FOLLOW 1R              -0.495 (  61) | -0.342 (  56) | -0.196 (  54) | -0.198 (  22) | all -0.333 PF 0.51 · vs twin -0.150 · 0/4 periods > 0
+      FADE 1:1               -0.222 (  74) | +0.316 (  63) | -0.171 (  56) | -0.033 (  21) | all -0.032 PF 0.93 · vs twin +0.225 · 1/4 periods > 0
+      MM with window move    -0.495 (  35) | -0.415 (  31) | +0.017 (  35) | -0.124 (  15) | all -0.271 PF 0.68 · vs twin -0.016 · 1/4 periods > 0
+      MM against window      -0.971 (  26) | -1.065 (  25) | -0.420 (  19) |   —    (   7) | all -0.764 PF 0.23 · vs twin -0.091 · 0/3 periods > 0
+      MM straight path       -0.459 (  14) | -0.308 (  12) | +0.369 (  22) | -1.126 (  10) | all -0.229 PF 0.73 · vs twin -0.101 · 1/4 periods > 0
+      MM not straight        -0.769 (  47) | -0.814 (  44) | -0.484 (  32) | +0.866 (  12) | all -0.571 PF 0.40 · vs twin -0.022 · 1/4 periods > 0
+      MM with prev window    -0.721 (  57) | -0.886 (  48) | -0.147 (  43) | -0.067 (  16) | all -0.555 PF 0.40 · vs twin -0.054 · 0/4 periods > 0
+      MM against prev        (29 trades)
+      FADE against window    -0.215 (  35) | +0.215 (  31) | -0.086 (  13) |   —    (   7) | all -0.051 PF 0.89 · vs twin +0.298 · 1/3 periods > 0
+  BULL 1-2m · 4562 flags (280/yr) · break 59 % · after the break: held to +1R 47 %, failed to the flag low 53 %
+      FOLLOW MM              -0.455 ( 454) | -0.247 ( 430) | -0.077 ( 401) | -0.288 ( 103) | all -0.269 PF 0.68 · vs twin -0.029 · 0/4 periods > 0
+      FOLLOW 1R              -0.478 ( 454) | -0.325 ( 430) | -0.172 ( 401) | -0.292 ( 103) | all -0.328 PF 0.51 · vs twin -0.120 · 0/4 periods > 0
+      FADE 1:1               -0.207 ( 849) | -0.268 ( 843) | -0.189 ( 765) | -0.083 ( 219) | all -0.211 PF 0.65 · vs twin +0.132 · 0/4 periods > 0
+      MM with window move    -0.427 ( 337) | -0.225 ( 331) | -0.065 ( 301) | -0.166 (  87) | all -0.239 PF 0.71 · vs twin +0.000 · 0/4 periods > 0
+      MM against window      -0.538 ( 117) | -0.319 (  99) | -0.113 ( 100) | -0.952 (  16) | all -0.365 PF 0.57 · vs twin -0.123 · 0/4 periods > 0
+      MM straight path       -0.465 ( 168) | -0.101 ( 157) | +0.028 ( 153) | -0.233 (  49) | all -0.192 PF 0.77 · vs twin +0.013 · 1/4 periods > 0
+      MM not straight        -0.450 ( 286) | -0.330 ( 273) | -0.142 ( 248) | -0.339 (  54) | all -0.316 PF 0.61 · vs twin -0.055 · 0/4 periods > 0
+      MM with prev window    -0.470 ( 304) | -0.309 ( 268) | +0.037 ( 265) | -0.358 (  66) | all -0.265 PF 0.68 · vs twin -0.050 · 1/4 periods > 0
+      MM against prev        -0.427 ( 150) | -0.143 ( 162) | -0.299 ( 136) | -0.163 (  37) | all -0.276 PF 0.66 · vs twin +0.010 · 0/4 periods > 0
+      FADE against window    -0.134 ( 201) | -0.228 ( 179) | -0.220 ( 152) | +0.149 (  33) | all -0.170 PF 0.70 · vs twin +0.217 · 1/4 periods > 0
+  BEAR 3-5m · 390 flags (24/yr) · break 56 % · after the break: held to +1R 47 %, failed to the flag low 49 %
+      FOLLOW MM              -0.679 (  91) | -0.170 (  41) | +0.368 (  63) | +0.418 (  15) | all -0.187 PF 0.78 · vs twin +0.064 · 2/4 periods > 0
+      FOLLOW 1R              -0.242 (  91) | -0.333 (  41) | +0.282 (  63) | +0.515 (  15) | all -0.049 PF 0.91 · vs twin +0.086 · 2/4 periods > 0
+      FADE 1:1               -0.051 (  78) | +0.240 (  49) | -0.303 (  70) | -0.195 (  22) | all -0.081 PF 0.84 · vs twin +0.128 · 1/4 periods > 0
+      MM with window move    -0.554 (  71) | -0.919 (  20) | +0.657 (  38) |   —    (   9) | all -0.278 PF 0.68 · vs twin -0.003 · 1/3 periods > 0
+      MM against window      -1.124 (  20) | +0.544 (  21) | -0.072 (  25) |   —    (   6) | all -0.014 PF 0.98 · vs twin +0.191 · 1/3 periods > 0
+      MM straight path       -0.565 (  33) |   —    (   6) | +0.834 (  21) |   —    (   1) | all -0.063 PF 0.92 · vs twin +0.130 · 1/2 periods > 0
+      MM not straight        -0.744 (  58) | -0.152 (  35) | +0.135 (  42) | +0.524 (  14) | all -0.238 PF 0.73 · vs twin +0.037 · 2/4 periods > 0
+      MM with prev window    -0.755 (  87) | -0.148 (  40) | +0.391 (  62) | +0.528 (  14) | all -0.197 PF 0.77 · vs twin +0.061 · 2/4 periods > 0
+      MM against prev        (7 trades)
+      FADE against window    -0.078 (  11) | +0.100 (  17) | -0.303 (  18) | -0.042 (  12) | all -0.088 PF 0.84 · vs twin +0.078 · 1/4 periods > 0
+  BEAR 1-2m · 3624 flags (222/yr) · break 57 % · after the break: held to +1R 48 %, failed to the flag low 52 %
+      FOLLOW MM              -0.449 ( 446) | -0.291 ( 407) | +0.052 ( 330) | -0.210 (  96) | all -0.252 PF 0.69 · vs twin -0.045 · 1/4 periods > 0
+      FOLLOW 1R              -0.400 ( 446) | -0.312 ( 407) | -0.049 ( 330) | -0.184 (  96) | all -0.265 PF 0.59 · vs twin -0.083 · 0/4 periods > 0
+      FADE 1:1               -0.231 ( 715) | -0.160 ( 640) | -0.213 ( 558) | -0.144 ( 167) | all -0.198 PF 0.67 · vs twin +0.085 · 0/4 periods > 0
+      MM with window move    -0.460 ( 337) | -0.323 ( 307) | +0.108 ( 261) | -0.162 (  70) | all -0.244 PF 0.71 · vs twin -0.037 · 1/4 periods > 0
+      MM against window      -0.416 ( 109) | -0.192 ( 100) | -0.159 (  69) | -0.337 (  26) | all -0.277 PF 0.66 · vs twin -0.068 · 0/4 periods > 0
+      MM straight path       -0.599 ( 184) | -0.266 ( 154) | +0.000 ( 145) | +0.219 (  32) | all -0.280 PF 0.68 · vs twin -0.031 · 2/4 periods > 0
+      MM not straight        -0.344 ( 262) | -0.306 ( 253) | +0.092 ( 185) | -0.424 (  64) | all -0.233 PF 0.71 · vs twin -0.054 · 1/4 periods > 0
+      MM with prev window    -0.484 ( 297) | -0.304 ( 280) | -0.050 ( 238) | -0.191 (  61) | all -0.288 PF 0.66 · vs twin -0.099 · 0/4 periods > 0
+      MM against prev        -0.380 ( 149) | -0.263 ( 127) | +0.315 (  92) | -0.242 (  35) | all -0.172 PF 0.78 · vs twin +0.073 · 1/4 periods > 0
+      FADE against window    -0.229 ( 160) | -0.287 ( 146) | -0.032 ( 102) | -0.076 (  39) | all -0.190 PF 0.68 · vs twin +0.119 · 0/4 periods > 0

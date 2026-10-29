@@ -328,8 +328,13 @@ int main(int argc, char** argv) {
         if (vix.reload_if_changed("data/regime")) LOG("[PAPER] VIX regime reloaded (%zu closes)", vix.size());
         const paper::VixDay x = vix.before(d);
         for (auto& r : runners) if (r->trend) r->trend->set_vix(x.level, x.chg5, x.pct, x.known, x.chg1);
-        if (x.known) LOG("[PAPER] VIX regime for %s: level %.2f chg1 %+.3f chg5 %+.2f pct %.2f", d.c_str(), x.level, x.chg1, x.chg5, x.pct);
-        else LOG("[PAPER] VIX regime for %s: UNKNOWN (no close within 5 days before it — run scripts/vix_fetch.sh) — VIX-gated variants stay out", d.c_str());
+        // apply_vix runs once per poll of the main loop (~10/s); log only when the day or the values change
+        // (2026-10-23: the unconditional line wrote ~1 GB/day across the fleet logs and filled the root disk).
+        char msg[256];
+        if (x.known) std::snprintf(msg, sizeof msg, "[PAPER] VIX regime for %s: level %.2f chg1 %+.3f chg5 %+.2f pct %.2f", d.c_str(), x.level, x.chg1, x.chg5, x.pct);
+        else std::snprintf(msg, sizeof msg, "[PAPER] VIX regime for %s: UNKNOWN (no close within 5 days before it — run scripts/vix_fetch.sh) — VIX-gated variants stay out", d.c_str());
+        static std::string last_vix_msg;
+        if (last_vix_msg != msg) { last_vix_msg = msg; LOG("%s", msg); }
     };
     double acct_total_pnl = 0.0, acct_day_pnl = 0.0;
 

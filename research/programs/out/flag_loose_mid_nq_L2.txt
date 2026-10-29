@@ -1,0 +1,259 @@
+Loosened detection L2 · entry timing × stop placement × walk-forward selection — NQ, 3311 NY days, 31551 flags (3-5m). Fixed cost 1.5 pts. Target = measured move.
+Cells: 2010-15 | 2016-20 | 2021-24 | 2025-26 avg R (n) · all: R, win %, PF, pts/trade · vs twin (same day, random minute in the hour after the flag, same distances) · periods > 0.
+
+######## NY bull 3-5m — entry × stop
+    E0 page · S0 flag low                     -0.38 (2913) | -0.07 (2871) | +0.19 (2136) | -0.07 ( 655) | all -0.110 win 26% PF 0.88 +0.7 pts · twin +0.005 · 1/4
+    E0 page · S1 flag low-0.05ATR             -0.22 (2661) | -0.03 (2603) | +0.17 (1952) | +0.06 ( 569) | all -0.037 win 35% PF 0.95 +1.5 pts · twin -0.026 · 2/4
+    E0 page · S2 flag low-0.1ATR              -0.15 (2505) | +0.03 (2431) | +0.17 (1818) | +0.03 ( 541) | all +0.002 win 42% PF 1.00 +2.4 pts · twin +0.000 · 3/4
+    E0 page · S3 pole 50%                     -0.24 (2546) | -0.07 (2462) | +0.13 (1895) | +0.05 ( 548) | all -0.071 win 38% PF 0.90 +1.2 pts · twin -0.028 · 2/4
+    E0 page · S4 pole 61.8%                   -0.15 (2426) | -0.03 (2357) | +0.13 (1781) | +0.05 ( 520) | all -0.025 win 44% PF 0.95 +2.3 pts · twin -0.006 · 2/4
+    E0 page · S5 pole low                     -0.10 (2279) | +0.01 (2202) | +0.10 (1629) | +0.06 ( 482) | all -0.002 win 52% PF 0.99 +3.3 pts · twin +0.002 · 3/4
+    E0 page · S6 entry-0.1ATR                 -0.38 (3112) | -0.11 (3006) | +0.18 (2232) | -0.20 ( 717) | all -0.136 win 25% PF 0.85 -0.1 pts · twin -0.050 · 1/4
+    E0 page · S7 entry-0.2ATR                 -0.16 (2581) | +0.00 (2495) | +0.16 (1888) | -0.01 ( 569) | all -0.014 win 40% PF 0.98 +1.5 pts · twin -0.011 · 2/4
+    E1 retest limit · S0 flag low             -0.27 (1863) | -0.03 (1909) | +0.17 (1484) | -0.06 ( 448) | all -0.059 win 32% PF 0.92 +0.6 pts · twin -0.095 · 1/4
+    E1 retest limit · S1 flag low-0.05ATR     -0.16 (1754) | +0.00 (1794) | +0.16 (1391) | -0.02 ( 412) | all -0.013 win 39% PF 0.98 +1.2 pts · twin -0.082 · 2/4
+    E1 retest limit · S2 flag low-0.1ATR      -0.11 (1703) | +0.02 (1739) | +0.16 (1336) | -0.04 ( 395) | all +0.011 win 45% PF 1.02 +1.9 pts · twin -0.050 · 2/4
+    E1 retest limit · S3 pole 50%             -0.13 (1702) | -0.01 (1747) | +0.11 (1367) | +0.01 ( 391) | all -0.020 win 44% PF 0.96 +1.2 pts · twin -0.074 · 2/4
+    E1 retest limit · S4 pole 61.8%           -0.11 (1671) | +0.02 (1703) | +0.10 (1318) | +0.01 ( 385) | all -0.003 win 48% PF 0.99 +1.4 pts · twin -0.054 · 3/4
+    E1 retest limit · S5 pole low             -0.09 (1624) | +0.02 (1631) | +0.08 (1267) | +0.03 ( 372) | all +0.002 win 53% PF 1.01 +2.2 pts · twin -0.019 · 3/4
+    E1 retest limit · S6 entry-0.1ATR         -0.29 (1975) | -0.14 (2046) | +0.21 (1562) | -0.20 ( 510) | all -0.104 win 26% PF 0.88 -0.2 pts · twin -0.163 · 1/4
+    E1 retest limit · S7 entry-0.2ATR         -0.11 (1751) | -0.01 (1795) | +0.15 (1378) | -0.08 ( 423) | all -0.006 win 41% PF 0.99 +1.1 pts · twin -0.079 · 1/4
+    E2 flag-mid limit · S0 flag low           -1.00 (3399) | -0.49 (3626) | -0.08 (2871) | -0.15 ( 831) | all -0.515 win 11% PF 0.66 -0.8 pts · twin +0.032 · 0/4
+    E2 flag-mid limit · S1 flag low-0.05ATR   -0.40 (3284) | -0.04 (3194) | +0.11 (2418) | +0.03 ( 720) | all -0.119 win 22% PF 0.88 +0.3 pts · twin +0.025 · 2/4
+    E2 flag-mid limit · S2 flag low-0.1ATR    -0.17 (2994) | +0.03 (2874) | +0.13 (2199) | +0.08 ( 656) | all -0.011 win 31% PF 0.99 +1.3 pts · twin +0.035 · 3/4
+    E2 flag-mid limit · S3 pole 50%           -0.28 (2960) | -0.06 (2866) | +0.08 (2194) | +0.02 ( 645) | all -0.094 win 31% PF 0.89 +1.2 pts · twin +0.001 · 2/4
+    E2 flag-mid limit · S4 pole 61.8%         -0.16 (2772) | -0.01 (2703) | +0.11 (2037) | +0.07 ( 602) | all -0.026 win 39% PF 0.96 +2.1 pts · twin +0.012 · 2/4
+    E2 flag-mid limit · S5 pole low           -0.09 (2465) | +0.03 (2392) | +0.11 (1777) | +0.10 ( 523) | all +0.014 win 51% PF 1.04 +3.8 pts · twin +0.024 · 3/4
+    E2 flag-mid limit · S6 entry-0.1ATR       -0.27 (3211) | -0.01 (3109) | +0.13 (2367) | +0.07 ( 710) | all -0.054 win 25% PF 0.94 +0.6 pts · twin +0.049 · 2/4
+    E2 flag-mid limit · S7 entry-0.2ATR       -0.11 (2782) | +0.04 (2663) | +0.13 (2035) | +0.08 ( 610) | all +0.012 win 39% PF 1.02 +1.9 pts · twin +0.023 · 3/4
+    E3 close confirm · S0 flag low            -0.18 (1269) | +0.03 (1294) | +0.20 ( 941) | -0.07 ( 297) | all -0.007 win 40% PF 0.99 +0.9 pts · twin -0.124 · 2/4
+    E3 close confirm · S1 flag low-0.05ATR    -0.13 (1245) | +0.06 (1262) | +0.18 ( 926) | -0.04 ( 286) | all +0.015 win 46% PF 1.03 +1.4 pts · twin -0.109 · 2/4
+    E3 close confirm · S2 flag low-0.1ATR     -0.09 (1233) | +0.06 (1243) | +0.19 ( 909) | -0.01 ( 280) | all +0.034 win 50% PF 1.08 +2.4 pts · twin -0.073 · 2/4
+    E3 close confirm · S3 pole 50%            -0.11 (1232) | +0.01 (1246) | +0.14 ( 916) | +0.00 ( 281) | all +0.004 win 49% PF 1.01 +1.7 pts · twin -0.106 · 3/4
+    E3 close confirm · S4 pole 61.8%          -0.10 (1221) | +0.03 (1232) | +0.13 ( 906) | +0.01 ( 278) | all +0.010 win 52% PF 1.02 +2.0 pts · twin -0.075 · 3/4
+    E3 close confirm · S5 pole low            -0.08 (1210) | +0.02 (1201) | +0.08 ( 889) | +0.04 ( 274) | all +0.004 win 56% PF 1.02 +2.4 pts · twin -0.049 · 3/4
+    E3 close confirm · S6 entry-0.1ATR        -0.28 (1368) | +0.01 (1373) | +0.35 (1007) | -0.11 ( 330) | all -0.013 win 29% PF 0.98 +0.8 pts · twin -0.179 · 2/4
+    E3 close confirm · S7 entry-0.2ATR        -0.14 (1258) | +0.06 (1276) | +0.21 ( 941) | -0.00 ( 292) | all +0.027 win 44% PF 1.05 +1.9 pts · twin -0.142 · 2/4
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x) — entry × stop
+    E0 page · S0 flag low                     -0.63 ( 102) | +0.84 ( 130) | +1.00 (  95) | -0.17 (  31) | all +0.377 win 32% PF 1.44 +6.5 pts · twin +0.352 · 2/4
+    E0 page · S1 flag low-0.05ATR             -0.46 ( 102) | +0.53 ( 130) | +0.60 (  95) | +0.00 (  31) | all +0.219 win 40% PF 1.32 +7.8 pts · twin +0.065 · 3/4
+    E0 page · S2 flag low-0.1ATR              -0.39 ( 102) | +0.59 ( 130) | +0.44 (  95) | -0.01 (  31) | all +0.222 win 46% PF 1.39 +9.6 pts · twin +0.084 · 2/4
+    E0 page · S3 pole 50%                     -0.30 ( 102) | +0.36 ( 130) | +0.25 (  95) | +0.03 (  31) | all +0.113 win 51% PF 1.23 +8.5 pts · twin +0.051 · 3/4
+    E0 page · S4 pole 61.8%                   -0.17 ( 102) | +0.24 ( 130) | +0.25 (  95) | +0.02 (  31) | all +0.109 win 55% PF 1.29 +9.4 pts · twin +0.043 · 3/4
+    E0 page · S5 pole low                     -0.10 ( 102) | +0.14 ( 130) | +0.12 (  95) | -0.05 (  31) | all +0.053 win 59% PF 1.23 +7.9 pts · twin +0.017 · 2/4
+    E0 page · S6 entry-0.1ATR                 -0.26 ( 102) | +0.66 ( 130) | +0.63 (  95) | -0.20 (  31) | all +0.313 win 32% PF 1.37 +6.9 pts · twin +0.069 · 2/4
+    E0 page · S7 entry-0.2ATR                 -0.33 ( 102) | +0.56 ( 130) | +0.43 (  95) | -0.07 (  31) | all +0.218 win 46% PF 1.38 +9.8 pts · twin +0.101 · 2/4
+    E1 retest limit · S0 flag low             +0.06 (  51) | +0.63 (  77) | +0.45 (  62) | +0.17 (  16) | all +0.397 win 44% PF 1.64 +8.1 pts · twin +0.034 · 4/4
+    E1 retest limit · S1 flag low-0.05ATR     -0.03 (  51) | +0.45 (  77) | +0.42 (  62) | -0.08 (  16) | all +0.282 win 50% PF 1.54 +8.8 pts · twin -0.032 · 2/4
+    E1 retest limit · S2 flag low-0.1ATR      -0.10 (  51) | +0.45 (  77) | +0.30 (  62) | -0.07 (  16) | all +0.230 win 53% PF 1.52 +10.2 pts · twin -0.052 · 2/4
+    E1 retest limit · S3 pole 50%             -0.12 (  51) | +0.34 (  77) | +0.20 (  62) | -0.07 (  16) | all +0.151 win 57% PF 1.42 +9.2 pts · twin -0.057 · 2/4
+    E1 retest limit · S4 pole 61.8%           -0.10 (  51) | +0.24 (  77) | +0.18 (  62) | -0.05 (  16) | all +0.117 win 58% PF 1.38 +8.7 pts · twin -0.041 · 2/4
+    E1 retest limit · S5 pole low             -0.11 (  51) | +0.14 (  77) | +0.10 (  62) | -0.08 (  16) | all +0.049 win 59% PF 1.23 +7.1 pts · twin -0.032 · 2/4
+    E1 retest limit · S6 entry-0.1ATR         +0.34 (  51) | +0.97 (  77) | +0.40 (  62) | +0.08 (  16) | all +0.573 win 39% PF 1.78 +9.1 pts · twin -0.007 · 4/4
+    E1 retest limit · S7 entry-0.2ATR         -0.05 (  51) | +0.52 (  77) | +0.33 (  62) | -0.27 (  16) | all +0.261 win 50% PF 1.49 +12.1 pts · twin -0.002 · 2/4
+    E2 flag-mid limit · S0 flag low           -0.26 (  87) | +1.05 ( 116) | -0.08 (  87) | -0.31 (  30) | all +0.260 win 18% PF 1.19 +2.5 pts · twin +0.697 · 1/4
+    E2 flag-mid limit · S1 flag low-0.05ATR   -0.37 ( 101) | +0.99 ( 122) | +0.64 (  87) | -0.18 (  30) | all +0.394 win 29% PF 1.43 +5.8 pts · twin +0.192 · 2/4
+    E2 flag-mid limit · S2 flag low-0.1ATR    -0.38 ( 101) | +0.96 ( 122) | +0.50 (  87) | -0.04 (  30) | all +0.354 win 38% PF 1.49 +8.0 pts · twin +0.166 · 2/4
+    E2 flag-mid limit · S3 pole 50%           -0.21 ( 101) | +0.58 ( 122) | +0.28 (  87) | -0.03 (  30) | all +0.216 win 49% PF 1.43 +9.4 pts · twin +0.138 · 2/4
+    E2 flag-mid limit · S4 pole 61.8%         -0.12 ( 101) | +0.39 ( 122) | +0.27 (  87) | +0.03 (  30) | all +0.179 win 54% PF 1.46 +10.7 pts · twin +0.125 · 3/4
+    E2 flag-mid limit · S5 pole low           -0.08 ( 101) | +0.21 ( 122) | +0.12 (  87) | -0.05 (  30) | all +0.077 win 58% PF 1.32 +8.9 pts · twin +0.055 · 2/4
+    E2 flag-mid limit · S6 entry-0.1ATR       -0.24 ( 101) | +0.87 ( 122) | +0.57 (  87) | -0.52 (  30) | all +0.339 win 31% PF 1.39 +5.8 pts · twin +0.229 · 2/4
+    E2 flag-mid limit · S7 entry-0.2ATR       -0.28 ( 101) | +0.60 ( 122) | +0.34 (  87) | +0.02 (  30) | all +0.220 win 44% PF 1.37 +8.4 pts · twin +0.140 · 3/4
+    E3 close confirm · S0 flag low            -0.05 (  26) | +0.63 (  68) | +0.51 (  36) |   —   (   4) | all +0.478 win 53% PF 1.98 +11.6 pts · twin -0.069 · 2/3
+    E3 close confirm · S1 flag low-0.05ATR    -0.09 (  26) | +0.44 (  68) | +0.54 (  36) |   —   (   4) | all +0.367 win 57% PF 1.88 +12.3 pts · twin -0.113 · 2/3
+    E3 close confirm · S2 flag low-0.1ATR     -0.12 (  26) | +0.42 (  68) | +0.44 (  36) |   —   (   4) | all +0.320 win 60% PF 1.91 +14.7 pts · twin -0.075 · 2/3
+    E3 close confirm · S3 pole 50%            -0.15 (  26) | +0.33 (  68) | +0.28 (  36) |   —   (   4) | all +0.223 win 60% PF 1.79 +14.4 pts · twin -0.079 · 2/3
+    E3 close confirm · S4 pole 61.8%          -0.16 (  26) | +0.25 (  68) | +0.32 (  36) |   —   (   4) | all +0.189 win 63% PF 1.79 +16.4 pts · twin -0.059 · 2/3
+    E3 close confirm · S5 pole low            -0.11 (  26) | +0.14 (  68) | +0.19 (  36) |   —   (   4) | all +0.102 win 63% PF 1.59 +14.7 pts · twin -0.031 · 2/3
+    E3 close confirm · S6 entry-0.1ATR        -0.19 (  26) | +1.16 (  68) | +0.94 (  36) |   —   (   4) | all +0.838 win 42% PF 2.19 +11.9 pts · twin +0.095 · 2/3
+    E3 close confirm · S7 entry-0.2ATR        -0.08 (  26) | +0.56 (  68) | +0.57 (  36) |   —   (   4) | all +0.436 win 54% PF 1.91 +14.0 pts · twin -0.119 · 2/3
+
+######## NY bear 3-5m — entry × stop
+    E0 page · S0 flag low                     -0.28 (2553) | -0.22 (2352) | -0.02 (1992) | -0.05 ( 557) | all -0.175 win 23% PF 0.81 -0.0 pts · twin +0.050 · 0/4
+    E0 page · S1 flag low-0.05ATR             -0.20 (2360) | -0.15 (2176) | -0.01 (1800) | -0.03 ( 521) | all -0.120 win 29% PF 0.85 -0.0 pts · twin -0.003 · 0/4
+    E0 page · S2 flag low-0.1ATR              -0.16 (2227) | -0.10 (2025) | +0.02 (1691) | +0.07 ( 491) | all -0.074 win 35% PF 0.89 +0.7 pts · twin +0.019 · 2/4
+    E0 page · S3 pole 50%                     -0.21 (2261) | -0.17 (2061) | -0.03 (1718) | -0.04 ( 503) | all -0.135 win 31% PF 0.82 +0.4 pts · twin -0.004 · 0/4
+    E0 page · S4 pole 61.8%                   -0.14 (2136) | -0.11 (1972) | +0.02 (1633) | +0.09 ( 471) | all -0.071 win 38% PF 0.89 +1.2 pts · twin +0.016 · 2/4
+    E0 page · S5 pole low                     -0.07 (2011) | -0.07 (1841) | +0.06 (1513) | +0.07 ( 443) | all -0.026 win 46% PF 0.93 +1.7 pts · twin +0.013 · 2/4
+    E0 page · S6 entry-0.1ATR                 -0.34 (2822) | -0.24 (2595) | -0.03 (2181) | -0.25 ( 659) | all -0.221 win 18% PF 0.78 -1.4 pts · twin -0.006 · 0/4
+    E0 page · S7 entry-0.2ATR                 -0.13 (2318) | -0.10 (2166) | +0.02 (1770) | +0.10 ( 528) | all -0.065 win 31% PF 0.91 +0.4 pts · twin +0.021 · 2/4
+    E1 retest limit · S0 flag low             -0.21 (1605) | -0.17 (1413) | -0.01 (1302) | -0.01 ( 358) | all -0.127 win 30% PF 0.84 -0.8 pts · twin -0.055 · 0/4
+    E1 retest limit · S1 flag low-0.05ATR     -0.16 (1545) | -0.14 (1373) | +0.04 (1204) | -0.02 ( 346) | all -0.088 win 35% PF 0.87 -0.6 pts · twin -0.072 · 1/4
+    E1 retest limit · S2 flag low-0.1ATR      -0.13 (1504) | -0.09 (1309) | +0.03 (1162) | -0.02 ( 341) | all -0.063 win 39% PF 0.90 -0.5 pts · twin -0.072 · 1/4
+    E1 retest limit · S3 pole 50%             -0.12 (1496) | -0.10 (1315) | +0.03 (1163) | +0.03 ( 341) | all -0.063 win 39% PF 0.90 +0.2 pts · twin -0.063 · 2/4
+    E1 retest limit · S4 pole 61.8%           -0.10 (1459) | -0.06 (1282) | +0.04 (1130) | +0.05 ( 332) | all -0.039 win 43% PF 0.93 +0.8 pts · twin -0.049 · 2/4
+    E1 retest limit · S5 pole low             -0.07 (1429) | -0.03 (1241) | +0.06 (1092) | +0.04 ( 324) | all -0.013 win 49% PF 0.96 +1.9 pts · twin -0.020 · 2/4
+    E1 retest limit · S6 entry-0.1ATR         -0.36 (1791) | -0.16 (1589) | -0.06 (1444) | -0.20 ( 421) | all -0.204 win 19% PF 0.80 -1.4 pts · twin -0.110 · 0/4
+    E1 retest limit · S7 entry-0.2ATR         -0.12 (1564) | -0.11 (1393) | +0.06 (1205) | -0.06 ( 357) | all -0.065 win 33% PF 0.91 -0.0 pts · twin -0.071 · 1/4
+    E2 flag-mid limit · S0 flag low           -0.93 (3131) | -0.57 (3232) | -0.02 (2902) | -0.27 ( 773) | all -0.499 win  9% PF 0.66 -1.1 pts · twin +0.168 · 0/4
+    E2 flag-mid limit · S1 flag low-0.05ATR   -0.42 (3117) | -0.34 (3015) | +0.11 (2442) | -0.13 ( 684) | all -0.236 win 16% PF 0.78 -0.7 pts · twin +0.079 · 1/4
+    E2 flag-mid limit · S2 flag low-0.1ATR    -0.20 (2785) | -0.19 (2688) | +0.08 (2199) | +0.06 ( 614) | all -0.100 win 24% PF 0.89 +0.2 pts · twin +0.094 · 2/4
+    E2 flag-mid limit · S3 pole 50%           -0.33 (2727) | -0.24 (2661) | -0.02 (2190) | +0.06 ( 612) | all -0.190 win 24% PF 0.80 +0.4 pts · twin +0.067 · 1/4
+    E2 flag-mid limit · S4 pole 61.8%         -0.17 (2521) | -0.16 (2473) | +0.02 (2027) | +0.14 ( 559) | all -0.095 win 31% PF 0.87 +0.7 pts · twin +0.062 · 2/4
+    E2 flag-mid limit · S5 pole low           -0.10 (2277) | -0.11 (2157) | +0.04 (1744) | +0.11 ( 484) | all -0.048 win 42% PF 0.89 +1.2 pts · twin +0.013 · 2/4
+    E2 flag-mid limit · S6 entry-0.1ATR       -0.35 (3065) | -0.26 (2988) | +0.04 (2463) | -0.05 ( 685) | all -0.196 win 17% PF 0.81 -0.7 pts · twin +0.073 · 1/4
+    E2 flag-mid limit · S7 entry-0.2ATR       -0.15 (2592) | -0.10 (2499) | +0.07 (2036) | +0.02 ( 585) | all -0.062 win 30% PF 0.92 +0.6 pts · twin +0.067 · 2/4
+    E3 close confirm · S0 flag low            -0.09 (1075) | -0.10 ( 972) | +0.05 ( 859) | -0.05 ( 231) | all -0.050 win 38% PF 0.92 +0.7 pts · twin -0.086 · 1/4
+    E3 close confirm · S1 flag low-0.05ATR    -0.07 (1059) | -0.09 ( 956) | +0.06 ( 837) | -0.03 ( 226) | all -0.036 win 42% PF 0.94 +1.0 pts · twin -0.104 · 1/4
+    E3 close confirm · S2 flag low-0.1ATR     -0.06 (1047) | -0.08 ( 938) | +0.07 ( 826) | -0.03 ( 223) | all -0.029 win 44% PF 0.94 +1.1 pts · twin -0.083 · 1/4
+    E3 close confirm · S3 pole 50%            -0.09 (1050) | -0.09 ( 936) | +0.07 ( 827) | -0.01 ( 225) | all -0.040 win 43% PF 0.92 +1.6 pts · twin -0.106 · 1/4
+    E3 close confirm · S4 pole 61.8%          -0.07 (1036) | -0.05 ( 929) | +0.10 ( 813) | +0.04 ( 219) | all -0.009 win 47% PF 0.98 +3.1 pts · twin -0.068 · 2/4
+    E3 close confirm · S5 pole low            -0.05 (1027) | -0.03 ( 925) | +0.07 ( 805) | +0.05 ( 215) | all -0.006 win 51% PF 0.98 +3.1 pts · twin -0.044 · 2/4
+    E3 close confirm · S6 entry-0.1ATR        -0.41 (1211) | -0.16 (1092) | +0.18 ( 956) | -0.07 ( 259) | all -0.150 win 21% PF 0.85 +0.5 pts · twin -0.188 · 1/4
+    E3 close confirm · S7 entry-0.2ATR        -0.07 (1091) | -0.12 (1001) | +0.07 ( 880) | -0.16 ( 236) | all -0.051 win 34% PF 0.93 +0.1 pts · twin -0.143 · 1/4
+
+######## NY bull 3-5m — TIMED EXITS (target MM)
+    E0 page · S0 flag low · MM (no time rule)                    -0.38 (2913) | -0.07 (2871) | +0.19 (2136) | -0.07 ( 655) | all -0.110 win 26% PF 0.88 · twin +0.008 · 1/4
+    E0 page · S0 flag low · time stop 30 min (< +1R → out)     -0.39 (2913) | -0.08 (2871) | +0.18 (2136) | -0.07 ( 655) | all -0.122 win 27% PF 0.85 · twin +0.013 · 1/4
+    E0 page · S0 flag low · time stop 60 min (< +1R → out)     -0.37 (2913) | -0.07 (2871) | +0.20 (2136) | -0.07 ( 655) | all -0.107 win 26% PF 0.88 · twin +0.007 · 1/4
+    E0 page · S0 flag low · after 30 min trail under last 3 bars -0.47 (2913) | -0.23 (2871) | +0.08 (2136) | -0.15 ( 655) | all -0.225 win 35% PF 0.67 · twin -0.007 · 1/4
+    E0 page · S0 flag low · after 15 min BE if in profit         -0.41 (2913) | -0.18 (2871) | +0.15 (2136) | -0.10 ( 655) | all -0.171 win 12% PF 0.73 · twin -0.007 · 1/4
+    E0 page · S3 pole 50% · MM (no time rule)                    -0.24 (2546) | -0.07 (2462) | +0.13 (1895) | +0.05 ( 548) | all -0.071 win 38% PF 0.90 · twin -0.029 · 2/4
+    E0 page · S3 pole 50% · time stop 30 min (< +1R → out)     -0.28 (2546) | -0.14 (2462) | +0.06 (1895) | +0.00 ( 548) | all -0.127 win 36% PF 0.74 · twin -0.038 · 2/4
+    E0 page · S3 pole 50% · time stop 60 min (< +1R → out)     -0.24 (2546) | -0.11 (2462) | +0.07 (1895) | +0.03 ( 548) | all -0.097 win 37% PF 0.83 · twin -0.024 · 2/4
+    E0 page · S3 pole 50% · after 30 min trail under last 3 bars -0.30 (2546) | -0.14 (2462) | +0.05 (1895) | +0.01 ( 548) | all -0.136 win 39% PF 0.70 · twin -0.022 · 2/4
+    E0 page · S3 pole 50% · after 15 min BE if in profit         -0.26 (2546) | -0.13 (2462) | +0.08 (1895) | +0.04 ( 548) | all -0.111 win 13% PF 0.72 · twin -0.018 · 2/4
+    E0 page · S4 pole 61.8% · MM (no time rule)                  -0.15 (2426) | -0.03 (2357) | +0.13 (1781) | +0.05 ( 520) | all -0.025 win 44% PF 0.95 · twin -0.011 · 2/4
+    E0 page · S4 pole 61.8% · time stop 30 min (< +1R → out)   -0.18 (2426) | -0.12 (2357) | +0.02 (1781) | +0.03 ( 520) | all -0.093 win 41% PF 0.73 · twin -0.023 · 2/4
+    E0 page · S4 pole 61.8% · time stop 60 min (< +1R → out)   -0.16 (2426) | -0.09 (2357) | +0.06 (1781) | +0.05 ( 520) | all -0.067 win 43% PF 0.84 · twin -0.020 · 2/4
+    E0 page · S4 pole 61.8% · after 30 min trail under last 3 bars -0.19 (2426) | -0.09 (2357) | +0.04 (1781) | +0.00 ( 520) | all -0.086 win 42% PF 0.74 · twin -0.011 · 2/4
+    E0 page · S4 pole 61.8% · after 15 min BE if in profit       -0.15 (2426) | -0.10 (2357) | +0.06 (1781) | +0.04 ( 520) | all -0.066 win 13% PF 0.77 · twin -0.010 · 2/4
+    E0 page · S5 pole low · MM (no time rule)                    -0.10 (2279) | +0.01 (2202) | +0.10 (1629) | +0.06 ( 482) | all -0.002 win 52% PF 0.99 · twin +0.003 · 3/4
+    E0 page · S5 pole low · time stop 30 min (< +1R → out)     -0.10 (2279) | -0.05 (2202) | +0.02 (1629) | +0.02 ( 482) | all -0.047 win 46% PF 0.71 · twin -0.009 · 2/4
+    E0 page · S5 pole low · time stop 60 min (< +1R → out)     -0.10 (2279) | -0.04 (2202) | +0.04 (1629) | +0.02 ( 482) | all -0.035 win 49% PF 0.83 · twin -0.004 · 2/4
+    E0 page · S5 pole low · after 30 min trail under last 3 bars -0.10 (2279) | -0.04 (2202) | +0.03 (1629) | +0.00 ( 482) | all -0.040 win 44% PF 0.78 · twin -0.006 · 2/4
+    E0 page · S5 pole low · after 15 min BE if in profit         -0.08 (2279) | -0.04 (2202) | +0.04 (1629) | +0.03 ( 482) | all -0.030 win 14% PF 0.81 · twin +0.002 · 2/4
+    E2 flag-mid limit · S0 flag low · MM (no time rule)          -1.00 (3399) | -0.49 (3626) | -0.08 (2871) | -0.15 ( 831) | all -0.515 win 11% PF 0.66 · twin +0.014 · 0/4
+    E2 flag-mid limit · S0 flag low · time stop 30 min (< +1R → out) -0.99 (3399) | -0.50 (3626) | -0.08 (2871) | -0.16 ( 831) | all -0.517 win 11% PF 0.65 · twin +0.042 · 0/4
+    E2 flag-mid limit · S0 flag low · time stop 60 min (< +1R → out) -1.00 (3399) | -0.49 (3626) | -0.08 (2871) | -0.15 ( 831) | all -0.515 win 11% PF 0.66 · twin -0.002 · 0/4
+    E2 flag-mid limit · S0 flag low · after 30 min trail under last 3 bars -1.10 (3399) | -0.69 (3626) | -0.17 (2871) | -0.33 ( 831) | all -0.653 win 19% PF 0.51 · twin +0.004 · 0/4
+    E2 flag-mid limit · S0 flag low · after 15 min BE if in profit -1.02 (3399) | -0.57 (3626) | -0.10 (2871) | -0.20 ( 831) | all -0.558 win  7% PF 0.58 · twin +0.005 · 0/4
+    E2 flag-mid limit · S3 pole 50% · MM (no time rule)          -0.28 (2960) | -0.06 (2866) | +0.08 (2194) | +0.02 ( 645) | all -0.094 win 31% PF 0.89 · twin -0.005 · 2/4
+    E2 flag-mid limit · S3 pole 50% · time stop 30 min (< +1R → out) -0.29 (2960) | -0.11 (2866) | +0.02 (2194) | +0.05 ( 645) | all -0.129 win 31% PF 0.81 · twin +0.009 · 2/4
+    E2 flag-mid limit · S3 pole 50% · time stop 60 min (< +1R → out) -0.29 (2960) | -0.07 (2866) | +0.06 (2194) | +0.01 ( 645) | all -0.103 win 31% PF 0.86 · twin +0.010 · 2/4
+    E2 flag-mid limit · S3 pole 50% · after 30 min trail under last 3 bars -0.33 (2960) | -0.14 (2866) | -0.02 (2194) | -0.06 ( 645) | all -0.167 win 38% PF 0.71 · twin +0.020 · 0/4
+    E2 flag-mid limit · S3 pole 50% · after 15 min BE if in profit -0.31 (2960) | -0.10 (2866) | +0.02 (2194) | -0.05 ( 645) | all -0.138 win 12% PF 0.73 · twin +0.012 · 1/4
+    E2 flag-mid limit · S4 pole 61.8% · MM (no time rule)        -0.16 (2772) | -0.01 (2703) | +0.11 (2037) | +0.07 ( 602) | all -0.026 win 39% PF 0.96 · twin +0.017 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · time stop 30 min (< +1R → out) -0.20 (2772) | -0.08 (2703) | +0.03 (2037) | +0.04 ( 602) | all -0.085 win 38% PF 0.81 · twin +0.010 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · time stop 60 min (< +1R → out) -0.19 (2772) | -0.06 (2703) | +0.07 (2037) | +0.07 ( 602) | all -0.061 win 38% PF 0.89 · twin +0.015 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · after 30 min trail under last 3 bars -0.21 (2772) | -0.08 (2703) | +0.02 (2037) | +0.01 ( 602) | all -0.093 win 42% PF 0.77 · twin +0.014 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · after 15 min BE if in profit -0.19 (2772) | -0.05 (2703) | +0.03 (2037) | -0.00 ( 602) | all -0.074 win 13% PF 0.80 · twin +0.015 · 1/4
+    E2 flag-mid limit · S5 pole low · MM (no time rule)          -0.09 (2465) | +0.03 (2392) | +0.11 (1777) | +0.10 ( 523) | all +0.014 win 51% PF 1.04 · twin +0.022 · 3/4
+    E2 flag-mid limit · S5 pole low · time stop 30 min (< +1R → out) -0.09 (2465) | -0.03 (2392) | +0.00 (1777) | +0.03 ( 523) | all -0.040 win 46% PF 0.79 · twin +0.017 · 2/4
+    E2 flag-mid limit · S5 pole low · time stop 60 min (< +1R → out) -0.08 (2465) | -0.04 (2392) | +0.03 (1777) | +0.04 ( 523) | all -0.030 win 47% PF 0.88 · twin +0.011 · 2/4
+    E2 flag-mid limit · S5 pole low · after 30 min trail under last 3 bars -0.09 (2465) | -0.03 (2392) | +0.01 (1777) | +0.03 ( 523) | all -0.036 win 45% PF 0.83 · twin +0.015 · 2/4
+    E2 flag-mid limit · S5 pole low · after 15 min BE if in profit -0.08 (2465) | -0.01 (2392) | +0.04 (1777) | +0.03 ( 523) | all -0.019 win 14% PF 0.89 · twin +0.023 · 2/4
+
+######## TAKE (bull 4/5m, 1st pb, broke, gap with, pole >= 5x) — TIMED EXITS (target MM)
+    E0 page · S0 flag low · MM (no time rule)                    -0.63 ( 102) | +0.84 ( 130) | +1.00 (  95) | -0.17 (  31) | all +0.377 win 32% PF 1.44 · twin +0.231 · 2/4
+    E0 page · S0 flag low · time stop 30 min (< +1R → out)     -0.62 ( 102) | +0.68 ( 130) | +1.01 (  95) | -0.06 (  31) | all +0.335 win 34% PF 1.43 · twin +0.289 · 2/4
+    E0 page · S0 flag low · time stop 60 min (< +1R → out)     -0.63 ( 102) | +0.85 ( 130) | +1.01 (  95) | -0.12 (  31) | all +0.390 win 33% PF 1.47 · twin +0.239 · 2/4
+    E0 page · S0 flag low · after 30 min trail under last 3 bars -0.65 ( 102) | +0.22 ( 130) | +0.22 (  95) | -0.07 (  31) | all -0.054 win 40% PF 0.91 · twin +0.134 · 2/4
+    E0 page · S0 flag low · after 15 min BE if in profit         -0.63 ( 102) | +0.65 ( 130) | +0.86 (  95) | -0.13 (  31) | all +0.275 win 17% PF 1.47 · twin +0.252 · 2/4
+    E0 page · S3 pole 50% · MM (no time rule)                    -0.30 ( 102) | +0.36 ( 130) | +0.25 (  95) | +0.03 (  31) | all +0.113 win 51% PF 1.23 · twin +0.058 · 3/4
+    E0 page · S3 pole 50% · time stop 30 min (< +1R → out)     -0.18 ( 102) | +0.09 ( 130) | +0.04 (  95) | +0.04 (  31) | all -0.004 win 49% PF 0.98 · twin +0.031 · 3/4
+    E0 page · S3 pole 50% · time stop 60 min (< +1R → out)     -0.22 ( 102) | +0.17 ( 130) | +0.04 (  95) | -0.02 (  31) | all +0.008 win 46% PF 1.02 · twin +0.041 · 2/4
+    E0 page · S3 pole 50% · after 30 min trail under last 3 bars -0.25 ( 102) | +0.04 ( 130) | +0.01 (  95) | -0.03 (  31) | all -0.056 win 45% PF 0.80 · twin -0.010 · 2/4
+    E0 page · S3 pole 50% · after 15 min BE if in profit         -0.21 ( 102) | +0.23 ( 130) | +0.16 (  95) | -0.04 (  31) | all +0.061 win 19% PF 1.25 · twin +0.061 · 2/4
+    E0 page · S4 pole 61.8% · MM (no time rule)                  -0.17 ( 102) | +0.24 ( 130) | +0.25 (  95) | +0.02 (  31) | all +0.109 win 55% PF 1.29 · twin +0.044 · 3/4
+    E0 page · S4 pole 61.8% · time stop 30 min (< +1R → out)   -0.15 ( 102) | +0.01 ( 130) | +0.03 (  95) | +0.03 (  31) | all -0.027 win 51% PF 0.85 · twin +0.016 · 3/4
+    E0 page · S4 pole 61.8% · time stop 60 min (< +1R → out)   -0.16 ( 102) | +0.11 ( 130) | +0.10 (  95) | +0.07 (  31) | all +0.026 win 49% PF 1.11 · twin +0.037 · 3/4
+    E0 page · S4 pole 61.8% · after 30 min trail under last 3 bars -0.18 ( 102) | +0.04 ( 130) | +0.02 (  95) | -0.02 (  31) | all -0.035 win 46% PF 0.83 · twin +0.007 · 2/4
+    E0 page · S4 pole 61.8% · after 15 min BE if in profit       -0.16 ( 102) | +0.18 ( 130) | +0.13 (  95) | +0.05 (  31) | all +0.058 win 19% PF 1.34 · twin +0.060 · 3/4
+    E0 page · S5 pole low · MM (no time rule)                    -0.10 ( 102) | +0.14 ( 130) | +0.12 (  95) | -0.05 (  31) | all +0.053 win 59% PF 1.23 · twin +0.017 · 2/4
+    E0 page · S5 pole low · time stop 30 min (< +1R → out)     -0.08 ( 102) | +0.01 ( 130) | +0.01 (  95) | +0.00 (  31) | all -0.017 win 52% PF 0.83 · twin -0.001 · 3/4
+    E0 page · S5 pole low · time stop 60 min (< +1R → out)     -0.10 ( 102) | +0.06 ( 130) | +0.01 (  95) | +0.01 (  31) | all -0.002 win 51% PF 0.98 · twin +0.022 · 3/4
+    E0 page · S5 pole low · after 30 min trail under last 3 bars -0.11 ( 102) | +0.03 ( 130) | -0.00 (  95) | -0.02 (  31) | all -0.023 win 46% PF 0.81 · twin -0.000 · 1/4
+    E0 page · S5 pole low · after 15 min BE if in profit         -0.13 ( 102) | +0.11 ( 130) | +0.07 (  95) | +0.02 (  31) | all +0.023 win 19% PF 1.21 · twin +0.020 · 3/4
+    E2 flag-mid limit · S0 flag low · MM (no time rule)          -0.26 (  87) | +1.05 ( 116) | -0.08 (  87) | -0.31 (  30) | all +0.260 win 18% PF 1.19 · twin +0.184 · 1/4
+    E2 flag-mid limit · S0 flag low · time stop 30 min (< +1R → out) -0.22 (  87) | +1.06 ( 116) | -0.08 (  87) | -0.31 (  30) | all +0.273 win 19% PF 1.20 · twin +0.500 · 1/4
+    E2 flag-mid limit · S0 flag low · time stop 60 min (< +1R → out) -0.26 (  87) | +1.05 ( 116) | -0.08 (  87) | -0.31 (  30) | all +0.260 win 18% PF 1.19 · twin +0.388 · 1/4
+    E2 flag-mid limit · S0 flag low · after 30 min trail under last 3 bars -0.62 (  87) | -0.06 ( 116) | -0.32 (  87) | -0.58 (  30) | all -0.334 win 28% PF 0.72 · twin +0.257 · 0/4
+    E2 flag-mid limit · S0 flag low · after 15 min BE if in profit -0.32 (  87) | +1.02 ( 116) | -0.04 (  87) | -0.11 (  30) | all +0.261 win 14% PF 1.22 · twin +0.396 · 1/4
+    E2 flag-mid limit · S3 pole 50% · MM (no time rule)          -0.21 ( 101) | +0.58 ( 122) | +0.28 (  87) | -0.03 (  30) | all +0.216 win 49% PF 1.43 · twin +0.131 · 2/4
+    E2 flag-mid limit · S3 pole 50% · time stop 30 min (< +1R → out) -0.06 ( 101) | +0.26 ( 122) | +0.15 (  87) | +0.05 (  30) | all +0.118 win 49% PF 1.48 · twin +0.116 · 3/4
+    E2 flag-mid limit · S3 pole 50% · time stop 60 min (< +1R → out) -0.10 ( 101) | +0.37 ( 122) | +0.11 (  87) | +0.11 (  30) | all +0.139 win 48% PF 1.41 · twin +0.124 · 3/4
+    E2 flag-mid limit · S3 pole 50% · after 30 min trail under last 3 bars -0.15 ( 101) | +0.22 ( 122) | +0.00 (  87) | -0.09 (  30) | all +0.026 win 49% PF 1.10 · twin +0.083 · 2/4
+    E2 flag-mid limit · S3 pole 50% · after 15 min BE if in profit -0.12 ( 101) | +0.39 ( 122) | +0.16 (  87) | +0.09 (  30) | all +0.156 win 20% PF 1.63 · twin +0.143 · 3/4
+    E2 flag-mid limit · S4 pole 61.8% · MM (no time rule)        -0.12 ( 101) | +0.39 ( 122) | +0.27 (  87) | +0.03 (  30) | all +0.179 win 54% PF 1.46 · twin +0.092 · 3/4
+    E2 flag-mid limit · S4 pole 61.8% · time stop 30 min (< +1R → out) -0.06 ( 101) | +0.13 ( 122) | +0.08 (  87) | -0.04 (  30) | all +0.045 win 50% PF 1.26 · twin +0.077 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · time stop 60 min (< +1R → out) -0.09 ( 101) | +0.25 ( 122) | +0.13 (  87) | +0.06 (  30) | all +0.101 win 51% PF 1.43 · twin +0.103 · 3/4
+    E2 flag-mid limit · S4 pole 61.8% · after 30 min trail under last 3 bars -0.11 ( 101) | +0.15 ( 122) | +0.04 (  87) | -0.08 (  30) | all +0.027 win 50% PF 1.14 · twin +0.070 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · after 15 min BE if in profit -0.09 ( 101) | +0.29 ( 122) | +0.16 (  87) | +0.07 (  30) | all +0.125 win 20% PF 1.73 · twin +0.124 · 3/4
+    E2 flag-mid limit · S5 pole low · MM (no time rule)          -0.08 ( 101) | +0.21 ( 122) | +0.12 (  87) | -0.05 (  30) | all +0.077 win 58% PF 1.32 · twin +0.062 · 2/4
+    E2 flag-mid limit · S5 pole low · time stop 30 min (< +1R → out) -0.04 ( 101) | +0.05 ( 122) | +0.04 (  87) | -0.04 (  30) | all +0.012 win 50% PF 1.14 · twin +0.035 · 2/4
+    E2 flag-mid limit · S5 pole low · time stop 60 min (< +1R → out) -0.07 ( 101) | +0.11 ( 122) | +0.02 (  87) | -0.00 (  30) | all +0.020 win 52% PF 1.16 · twin +0.040 · 2/4
+    E2 flag-mid limit · S5 pole low · after 30 min trail under last 3 bars -0.06 ( 101) | +0.09 ( 122) | +0.02 (  87) | -0.06 (  30) | all +0.014 win 50% PF 1.13 · twin +0.037 · 2/4
+    E2 flag-mid limit · S5 pole low · after 15 min BE if in profit -0.06 ( 101) | +0.17 ( 122) | +0.07 (  87) | +0.02 (  30) | all +0.064 win 20% PF 1.65 · twin +0.079 · 3/4
+
+######## NY bear 3-5m — TIMED EXITS (target MM)
+    E0 page · S0 flag low · MM (no time rule)                    -0.28 (2553) | -0.22 (2352) | -0.02 (1992) | -0.05 ( 557) | all -0.175 win 23% PF 0.81 · twin +0.042 · 0/4
+    E0 page · S0 flag low · time stop 30 min (< +1R → out)     -0.31 (2553) | -0.20 (2352) | -0.03 (1992) | -0.06 ( 557) | all -0.181 win 23% PF 0.79 · twin +0.053 · 0/4
+    E0 page · S0 flag low · time stop 60 min (< +1R → out)     -0.29 (2553) | -0.22 (2352) | -0.03 (1992) | -0.08 ( 557) | all -0.182 win 22% PF 0.80 · twin +0.055 · 0/4
+    E0 page · S0 flag low · after 30 min trail under last 3 bars -0.32 (2553) | -0.25 (2352) | -0.06 (1992) | -0.03 ( 557) | all -0.207 win 32% PF 0.71 · twin -0.001 · 0/4
+    E0 page · S0 flag low · after 15 min BE if in profit         -0.30 (2553) | -0.18 (2352) | -0.05 (1992) | -0.03 ( 557) | all -0.175 win 12% PF 0.73 · twin +0.045 · 0/4
+    E0 page · S3 pole 50% · MM (no time rule)                    -0.21 (2261) | -0.17 (2061) | -0.03 (1718) | -0.04 ( 503) | all -0.135 win 31% PF 0.82 · twin +0.006 · 0/4
+    E0 page · S3 pole 50% · time stop 30 min (< +1R → out)     -0.22 (2261) | -0.14 (2061) | -0.06 (1718) | -0.04 ( 503) | all -0.141 win 31% PF 0.77 · twin +0.020 · 0/4
+    E0 page · S3 pole 50% · time stop 60 min (< +1R → out)     -0.22 (2261) | -0.15 (2061) | -0.04 (1718) | -0.05 ( 503) | all -0.138 win 31% PF 0.80 · twin +0.001 · 0/4
+    E0 page · S3 pole 50% · after 30 min trail under last 3 bars -0.23 (2261) | -0.16 (2061) | -0.06 (1718) | -0.01 ( 503) | all -0.146 win 37% PF 0.72 · twin -0.019 · 0/4
+    E0 page · S3 pole 50% · after 15 min BE if in profit         -0.19 (2261) | -0.12 (2061) | -0.05 (1718) | -0.03 ( 503) | all -0.119 win 13% PF 0.74 · twin +0.023 · 0/4
+    E0 page · S4 pole 61.8% · MM (no time rule)                  -0.14 (2136) | -0.11 (1972) | +0.02 (1633) | +0.09 ( 471) | all -0.071 win 38% PF 0.89 · twin +0.021 · 2/4
+    E0 page · S4 pole 61.8% · time stop 30 min (< +1R → out)   -0.15 (2136) | -0.07 (1972) | -0.03 (1633) | +0.01 ( 471) | all -0.080 win 37% PF 0.81 · twin +0.016 · 1/4
+    E0 page · S4 pole 61.8% · time stop 60 min (< +1R → out)   -0.15 (2136) | -0.09 (1972) | -0.03 (1633) | +0.02 ( 471) | all -0.084 win 36% PF 0.83 · twin +0.003 · 1/4
+    E0 page · S4 pole 61.8% · after 30 min trail under last 3 bars -0.15 (2136) | -0.10 (1972) | -0.04 (1633) | +0.03 ( 471) | all -0.090 win 40% PF 0.77 · twin -0.003 · 1/4
+    E0 page · S4 pole 61.8% · after 15 min BE if in profit       -0.13 (2136) | -0.07 (1972) | -0.03 (1633) | +0.03 ( 471) | all -0.071 win 14% PF 0.78 · twin +0.024 · 1/4
+    E0 page · S5 pole low · MM (no time rule)                    -0.07 (2011) | -0.07 (1841) | +0.06 (1513) | +0.07 ( 443) | all -0.026 win 46% PF 0.93 · twin +0.010 · 2/4
+    E0 page · S5 pole low · time stop 30 min (< +1R → out)     -0.06 (2011) | -0.04 (1841) | +0.01 (1513) | +0.03 ( 443) | all -0.029 win 43% PF 0.84 · twin +0.012 · 2/4
+    E0 page · S5 pole low · time stop 60 min (< +1R → out)     -0.07 (2011) | -0.04 (1841) | +0.00 (1513) | +0.03 ( 443) | all -0.034 win 43% PF 0.86 · twin +0.007 · 2/4
+    E0 page · S5 pole low · after 30 min trail under last 3 bars -0.08 (2011) | -0.05 (1841) | -0.01 (1513) | +0.02 ( 443) | all -0.044 win 41% PF 0.79 · twin -0.001 · 1/4
+    E0 page · S5 pole low · after 15 min BE if in profit         -0.07 (2011) | -0.04 (1841) | +0.00 (1513) | +0.04 ( 443) | all -0.036 win 14% PF 0.80 · twin +0.015 · 2/4
+    E2 flag-mid limit · S0 flag low · MM (no time rule)          -0.93 (3131) | -0.57 (3232) | -0.02 (2902) | -0.27 ( 773) | all -0.499 win  9% PF 0.66 · twin +0.184 · 0/4
+    E2 flag-mid limit · S0 flag low · time stop 30 min (< +1R → out) -0.93 (3131) | -0.57 (3232) | -0.02 (2902) | -0.27 ( 773) | all -0.499 win  9% PF 0.66 · twin +0.165 · 0/4
+    E2 flag-mid limit · S0 flag low · time stop 60 min (< +1R → out) -0.93 (3131) | -0.57 (3232) | -0.02 (2902) | -0.27 ( 773) | all -0.499 win  9% PF 0.66 · twin +0.164 · 0/4
+    E2 flag-mid limit · S0 flag low · after 30 min trail under last 3 bars -0.95 (3131) | -0.53 (3232) | -0.20 (2902) | -0.10 ( 773) | all -0.533 win 16% PF 0.60 · twin +0.102 · 0/4
+    E2 flag-mid limit · S0 flag low · after 15 min BE if in profit -0.95 (3131) | -0.55 (3232) | -0.06 (2902) | -0.27 ( 773) | all -0.509 win  6% PF 0.61 · twin +0.098 · 0/4
+    E2 flag-mid limit · S3 pole 50% · MM (no time rule)          -0.33 (2727) | -0.24 (2661) | -0.02 (2190) | +0.06 ( 612) | all -0.190 win 24% PF 0.80 · twin +0.069 · 1/4
+    E2 flag-mid limit · S3 pole 50% · time stop 30 min (< +1R → out) -0.31 (2727) | -0.23 (2661) | -0.03 (2190) | -0.01 ( 612) | all -0.189 win 24% PF 0.77 · twin +0.045 · 0/4
+    E2 flag-mid limit · S3 pole 50% · time stop 60 min (< +1R → out) -0.33 (2727) | -0.23 (2661) | -0.02 (2190) | +0.02 ( 612) | all -0.188 win 24% PF 0.79 · twin +0.083 · 1/4
+    E2 flag-mid limit · S3 pole 50% · after 30 min trail under last 3 bars -0.32 (2727) | -0.21 (2661) | -0.07 (2190) | +0.04 ( 612) | all -0.189 win 33% PF 0.73 · twin +0.048 · 1/4
+    E2 flag-mid limit · S3 pole 50% · after 15 min BE if in profit -0.30 (2727) | -0.19 (2661) | -0.07 (2190) | +0.05 ( 612) | all -0.179 win 11% PF 0.71 · twin +0.079 · 1/4
+    E2 flag-mid limit · S4 pole 61.8% · MM (no time rule)        -0.17 (2521) | -0.16 (2473) | +0.02 (2027) | +0.14 ( 559) | all -0.095 win 31% PF 0.87 · twin +0.049 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · time stop 30 min (< +1R → out) -0.14 (2521) | -0.14 (2473) | -0.01 (2027) | +0.07 ( 559) | all -0.091 win 31% PF 0.84 · twin +0.041 · 1/4
+    E2 flag-mid limit · S4 pole 61.8% · time stop 60 min (< +1R → out) -0.17 (2521) | -0.15 (2473) | +0.02 (2027) | +0.09 ( 559) | all -0.094 win 31% PF 0.86 · twin +0.059 · 2/4
+    E2 flag-mid limit · S4 pole 61.8% · after 30 min trail under last 3 bars -0.17 (2521) | -0.13 (2473) | -0.05 (2027) | +0.04 ( 559) | all -0.111 win 37% PF 0.77 · twin +0.027 · 1/4
+    E2 flag-mid limit · S4 pole 61.8% · after 15 min BE if in profit -0.17 (2521) | -0.12 (2473) | -0.06 (2027) | +0.05 ( 559) | all -0.110 win 12% PF 0.74 · twin +0.034 · 1/4
+    E2 flag-mid limit · S5 pole low · MM (no time rule)          -0.10 (2277) | -0.11 (2157) | +0.04 (1744) | +0.11 ( 484) | all -0.048 win 42% PF 0.89 · twin +0.016 · 2/4
+    E2 flag-mid limit · S5 pole low · time stop 30 min (< +1R → out) -0.08 (2277) | -0.06 (2157) | +0.01 (1744) | +0.03 ( 484) | all -0.043 win 41% PF 0.81 · twin +0.025 · 2/4
+    E2 flag-mid limit · S5 pole low · time stop 60 min (< +1R → out) -0.10 (2277) | -0.08 (2157) | +0.02 (1744) | +0.05 ( 484) | all -0.053 win 41% PF 0.82 · twin +0.018 · 2/4
+    E2 flag-mid limit · S5 pole low · after 30 min trail under last 3 bars -0.09 (2277) | -0.06 (2157) | -0.01 (1744) | +0.03 ( 484) | all -0.052 win 40% PF 0.78 · twin +0.015 · 1/4
+    E2 flag-mid limit · S5 pole low · after 15 min BE if in profit -0.10 (2277) | -0.06 (2157) | -0.01 (1744) | +0.05 ( 484) | all -0.055 win 12% PF 0.74 · twin +0.016 · 1/4
+
+######## WALK-FORWARD SELECTION (test years 2014-26 only; top third by the earlier-years score) — page entry, a few stops
+    bull E0 page · S0 flag low · all 2014-26 -0.27 (1001) | -0.07 (2871) | +0.19 (2136) | -0.07 ( 655) | all -0.018 win 27% PF 0.98 +1.2 pts · twin +0.003 · 1/4
+    bull E0 page · S0 flag low · TOP third   +0.15 ( 346) | +0.21 ( 952) | +0.39 ( 818) | +0.06 ( 329) | all +0.239 win 31% PF 1.30 +5.2 pts · twin +0.085 · 4/4
+    bull E0 page · S0 flag low · the rest    -0.50 ( 655) | -0.21 (1919) | +0.06 (1318) | -0.20 ( 326) | all -0.167 win 24% PF 0.82 -1.2 pts · twin -0.045 · 1/4
+    bull E0 page · S3 pole 50% · all 2014-26 -0.20 ( 884) | -0.07 (2462) | +0.13 (1895) | +0.05 ( 548) | all -0.014 win 38% PF 0.98 +1.9 pts · twin -0.036 · 2/4
+    bull E0 page · S3 pole 50% · TOP third   +0.09 ( 333) | +0.12 ( 866) | +0.25 ( 708) | +0.16 ( 271) | all +0.160 win 45% PF 1.28 +7.3 pts · twin +0.007 · 4/4
+    bull E0 page · S3 pole 50% · the rest    -0.37 ( 551) | -0.17 (1596) | +0.06 (1187) | -0.06 ( 277) | all -0.120 win 34% PF 0.83 -1.4 pts · twin -0.061 · 1/4
+    bull E2 flag-mid limit · S2 flag low-0.1ATR · all 2014-26 -0.11 (1027) | +0.03 (2874) | +0.13 (2199) | +0.08 ( 656) | all +0.046 win 32% PF 1.06 +1.8 pts · twin +0.012 · 3/4
+    bull E2 flag-mid limit · S2 flag low-0.1ATR · TOP third +0.15 ( 362) | +0.18 ( 977) | +0.33 ( 829) | +0.20 ( 333) | all +0.229 win 36% PF 1.32 +6.6 pts · twin +0.057 · 4/4
+    bull E2 flag-mid limit · S2 flag low-0.1ATR · the rest -0.26 ( 665) | -0.04 (1897) | +0.01 (1370) | -0.05 ( 323) | all -0.062 win 29% PF 0.92 -1.0 pts · twin -0.014 · 1/4
+    bull E2 flag-mid limit · S3 pole 50% · all 2014-26 -0.24 (1025) | -0.06 (2866) | +0.08 (2194) | +0.02 ( 645) | all -0.033 win 31% PF 0.96 +1.8 pts · twin -0.017 · 2/4
+    bull E2 flag-mid limit · S3 pole 50% · TOP third +0.01 ( 365) | +0.14 ( 974) | +0.26 ( 822) | +0.17 ( 322) | all +0.163 win 38% PF 1.23 +7.1 pts · twin +0.037 · 4/4
+    bull E2 flag-mid limit · S3 pole 50% · the rest -0.37 ( 660) | -0.16 (1892) | -0.02 (1372) | -0.13 ( 323) | all -0.148 win 27% PF 0.82 -1.2 pts · twin -0.048 · 0/4
+    bear E0 page · S0 flag low · all 2014-26 -0.10 ( 842) | -0.22 (2352) | -0.02 (1992) | -0.05 ( 557) | all -0.117 win 22% PF 0.87 +0.4 pts · twin +0.030 · 0/4
+    bear E0 page · S0 flag low · TOP third   -0.19 ( 231) | -0.17 ( 744) | +0.02 ( 645) | -0.01 ( 221) | all -0.086 win 24% PF 0.90 +0.9 pts · twin +0.031 · 1/4
+    bear E0 page · S0 flag low · the rest    -0.07 ( 611) | -0.25 (1608) | -0.04 (1347) | -0.07 ( 336) | all -0.132 win 22% PF 0.85 +0.1 pts · twin +0.030 · 0/4
+    bear E0 page · S3 pole 50% · all 2014-26 -0.08 ( 753) | -0.17 (2061) | -0.03 (1718) | -0.04 ( 503) | all -0.094 win 32% PF 0.87 +0.9 pts · twin -0.010 · 0/4
+    bear E0 page · S3 pole 50% · TOP third   -0.10 ( 220) | -0.11 ( 689) | -0.03 ( 633) | +0.02 ( 213) | all -0.064 win 33% PF 0.91 +2.2 pts · twin -0.018 · 1/4
+    bear E0 page · S3 pole 50% · the rest    -0.07 ( 533) | -0.19 (1372) | -0.03 (1085) | -0.08 ( 290) | all -0.109 win 31% PF 0.85 +0.2 pts · twin -0.006 · 0/4
+    bear E2 flag-mid limit · S2 flag low-0.1ATR · all 2014-26 -0.01 ( 927) | -0.19 (2688) | +0.08 (2199) | +0.06 ( 614) | all -0.045 win 25% PF 0.95 +0.6 pts · twin +0.093 · 2/4
+    bear E2 flag-mid limit · S2 flag low-0.1ATR · TOP third -0.09 ( 290) | -0.18 ( 893) | +0.10 ( 741) | +0.25 ( 244) | all -0.026 win 25% PF 0.97 +1.7 pts · twin +0.120 · 2/4
+    bear E2 flag-mid limit · S2 flag low-0.1ATR · the rest +0.04 ( 637) | -0.19 (1795) | +0.08 (1458) | -0.06 ( 370) | all -0.054 win 25% PF 0.94 +0.1 pts · twin +0.079 · 2/4
+    bear E2 flag-mid limit · S3 pole 50% · all 2014-26 -0.19 ( 918) | -0.24 (2661) | -0.02 (2190) | +0.06 ( 612) | all -0.130 win 24% PF 0.85 +1.0 pts · twin +0.066 · 1/4
+    bear E2 flag-mid limit · S3 pole 50% · TOP third -0.29 ( 289) | -0.24 ( 883) | -0.03 ( 739) | +0.23 ( 241) | all -0.120 win 23% PF 0.87 +1.8 pts · twin +0.073 · 1/4
+    bear E2 flag-mid limit · S3 pole 50% · the rest -0.15 ( 629) | -0.24 (1778) | -0.02 (1451) | -0.06 ( 371) | all -0.135 win 24% PF 0.85 +0.6 pts · twin +0.063 · 0/4
+
+  feature weights learned on 2010-2025 (bull, flag-mid cell E2 · S2): 1st pullback -0.035 · broke a level +0.027 · gap with +0.337 · pole >= 5x +0.271 · 60-min move with +0.017 · before 10:00 +0.323 · 10:00 straight path +0.156 · sellers in flag +0.168 · first leg +0.037 · medium pullback -0.036 · new high of day -0.074 · pole low at VWAP -0.115 · 5m chart +0.037 · 4m chart -0.015 · 
+  score threshold for the TOP third with those weights: 0.255 (8612 bull flag-mid trades 2010-2025)

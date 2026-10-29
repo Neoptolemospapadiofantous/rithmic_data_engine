@@ -1,0 +1,9 @@
+V0_base q2 | mean 52.8|sd 583.7 | dd_eod 10403|worst_month -5856 | ev 1192|h1 1404|h2 960|pass 38|paid 24|days_first_pay 44 | lucid ev 1008|paid 24|days_first_pay 45
+V0_base q3 | mean 74.6|sd 862.1 | dd_eod 14434|worst_month -8697 | ev 833|h1 592|h2 1097|pass 29|paid 13|days_first_pay 43 | lucid ev 530|paid 13|days_first_pay 43
+V1_BE1 q3 | mean 65.9|sd 718.5 | dd_eod 10826|worst_month -5689 | ev 1064|h1 1442|h2 650|pass 29|paid 15|days_first_pay 55 | lucid ev 691|paid 15|days_first_pay 55
+V1_BE1 q4 | mean 87.6|sd 950.2 | dd_eod 13764|worst_month -6734 | ev 1070|h1 1506|h2 594|pass 27|paid 11|days_first_pay 53 | lucid ev 644|paid 11|days_first_pay 53
+V2_PARTIAL1 q3 | mean 45.4|sd 512.3 | dd_eod 8681|worst_month -4504 | ev 895|h1 1290|h2 464|pass 37|paid 23|days_first_pay 41 | lucid ev 858|paid 22|days_first_pay 41
+V2_PARTIAL1 q4 | mean 58.8|sd 676.5 | dd_eod 11474|worst_month -5154 | ev 1076|h1 1477|h2 639|pass 36|paid 22|days_first_pay 38 | lucid ev 977|paid 20|days_first_pay 36
+V2_PARTIAL1 q5 | mean 64.4|sd 822.3 | dd_eod 20247|worst_month -7681 | ev 890|h1 1382|h2 352|pass 31|paid 13|days_first_pay 38 | lucid ev 657|paid 12|days_first_pay 38
+V4_TRAIL1 q3 | mean 43.9|sd 526.1 | dd_eod 8440|worst_month -5402 | ev 612|h1 664|h2 556|pass 38|paid 19|days_first_pay 44 | lucid ev 538|paid 18|days_first_pay 45
+V4_TRAIL1 q4 | mean 56.5|sd 695.1 | dd_eod 10983|worst_month -6351 | ev 715|h1 769|h2 656|pass 38|paid 18|days_first_pay 38 | lucid ev 602|paid 17|days_first_pay 37

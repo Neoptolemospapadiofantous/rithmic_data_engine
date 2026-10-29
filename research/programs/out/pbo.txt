@@ -1,0 +1,5 @@
+E1 overfitting check: 95 variants × 2042 sessions (20140102 → 20261015); candidate FILT_TREND_15m
+CSCV, S = 16 blocks: 12870 splits · PBO = 0.187 (share of splits where the in-sample best is at or below the out-of-sample median) · mean logit 2.15
+in-sample winner most often: FILT_TREND_15m 48.5% · FILT_ROOM_1h 14.5% · FILT_TREND_30m 9.7% · FILT_ROOM_4h 6.7% · O3_maxrisk90 4.4% · FILT_ROOM_30m 3.7%
+the candidate (FILT_TREND_15m) is the in-sample winner in 48.5% of splits
+deflated Sharpe: candidate daily SR 0.1312 (annualised 2.08, rank 1 of 95) · expected max SR of 95 trials 0.0452 · skew 3.05 · kurtosis 17.3 · DSR = 1.000

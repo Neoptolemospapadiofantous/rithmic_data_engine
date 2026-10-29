@@ -1,0 +1,80 @@
+Bigger size in the eval — BOOK2, eval at q micros each market, funded at 2 micros; starts every 5th trading day 2014-01 → 2025-04, eval <= 60 days, funded 120.
+Columns: pass %, median days to pass, buy → 1st payout median days, paid within 2 / 3 months (share of all evals), $ per eval bought (before fees and split).
+
+######## select_flex_50k, funded 2 micros, funded daily stop $150
+    eval  2 micros, eval stop $ 150         : pass  54% in 37 days · buy → payout  60 days · paid in 2 / 3 months   8% /  27% · $ 3428 per eval bought
+    eval  3 micros, eval stop $ 150         : pass  53% in 36 days · buy → payout  60 days · paid in 2 / 3 months   5% /  27% · $ 3247 per eval bought
+    eval  4 micros, eval stop $ 150         : pass  41% in 37 days · buy → payout  61 days · paid in 2 / 3 months   4% /  20% · $ 2555 per eval bought
+    eval  6 micros, eval stop $ 150         : pass  24% in 45 days · buy → payout  71 days · paid in 2 / 3 months   1% /   6% · $ 1386 per eval bought
+    eval  8 micros, eval stop $ 150         : pass  10% in 40 days · buy → payout  71 days · paid in 2 / 3 months   0% /   4% · $  603 per eval bought
+    eval 10 micros, eval stop $ 150         : pass   6% in 42 days · buy → payout  73 days · paid in 2 / 3 months   0% /   2% · $  322 per eval bought
+    eval  3 micros, eval stop $ 225 (scaled): pass  49% in 36 days · buy → payout  59 days · paid in 2 / 3 months   8% /  25% · $ 3097 per eval bought
+    eval  4 micros, eval stop $ 300 (scaled): pass  44% in 36 days · buy → payout  58 days · paid in 2 / 3 months   8% /  23% · $ 2826 per eval bought
+    eval  6 micros, eval stop $ 450 (scaled): pass  36% in 35 days · buy → payout  57 days · paid in 2 / 3 months   6% /  20% · $ 2279 per eval bought
+    eval  8 micros, eval stop $ 600 (scaled): pass  29% in 33 days · buy → payout  56 days · paid in 2 / 3 months   6% /  17% · $ 1838 per eval bought
+    eval 10 micros, eval stop $ 750 (scaled): pass  27% in 33 days · buy → payout  54 days · paid in 2 / 3 months   5% /  16% · $ 1676 per eval bought
+
+######## select_flex_50k, funded 2 micros, funded daily stop $200
+    eval  2 micros, eval stop $ 200         : pass  54% in 33 days · buy → payout  55 days · paid in 2 / 3 months  10% /  32% · $ 3821 per eval bought
+    eval  3 micros, eval stop $ 200         : pass  51% in 37 days · buy → payout  58 days · paid in 2 / 3 months   7% /  27% · $ 3336 per eval bought
+    eval  4 micros, eval stop $ 200         : pass  48% in 35 days · buy → payout  56 days · paid in 2 / 3 months   7% /  28% · $ 3035 per eval bought
+    eval  6 micros, eval stop $ 200         : pass  33% in 40 days · buy → payout  60 days · paid in 2 / 3 months   4% /  16% · $ 2141 per eval bought
+    eval  8 micros, eval stop $ 200         : pass  20% in 45 days · buy → payout  66 days · paid in 2 / 3 months   1% /   8% · $ 1239 per eval bought
+    eval 10 micros, eval stop $ 200         : pass  12% in 41 days · buy → payout  66 days · paid in 2 / 3 months   0% /   4% · $  681 per eval bought
+    eval  3 micros, eval stop $ 300 (scaled): pass  50% in 32 days · buy → payout  53 days · paid in 2 / 3 months  10% /  31% · $ 3572 per eval bought
+    eval  4 micros, eval stop $ 400 (scaled): pass  44% in 31 days · buy → payout  52 days · paid in 2 / 3 months  10% /  28% · $ 2992 per eval bought
+    eval  6 micros, eval stop $ 600 (scaled): pass  35% in 31 days · buy → payout  51 days · paid in 2 / 3 months   9% /  23% · $ 2429 per eval bought
+    eval  8 micros, eval stop $ 800 (scaled): pass  29% in 28 days · buy → payout  49 days · paid in 2 / 3 months   8% /  19% · $ 1981 per eval bought
+    eval 10 micros, eval stop $1000 (scaled): pass  24% in 28 days · buy → payout  48 days · paid in 2 / 3 months   6% /  18% · $ 1709 per eval bought
+
+######## select_daily_50k, funded 2 micros, funded daily stop $150
+    eval  2 micros, eval stop $ 150         : pass  54% in 37 days · buy → payout  52 days · paid in 2 / 3 months  16% /  32% · $ 4577 per eval bought
+    eval  3 micros, eval stop $ 150         : pass  53% in 36 days · buy → payout  53 days · paid in 2 / 3 months  14% /  31% · $ 4183 per eval bought
+    eval  4 micros, eval stop $ 150         : pass  41% in 37 days · buy → payout  54 days · paid in 2 / 3 months   9% /  24% · $ 3322 per eval bought
+    eval  6 micros, eval stop $ 150         : pass  24% in 45 days · buy → payout  61 days · paid in 2 / 3 months   3% /  11% · $ 1700 per eval bought
+    eval  8 micros, eval stop $ 150         : pass  10% in 40 days · buy → payout  48 days · paid in 2 / 3 months   3% /   6% · $  817 per eval bought
+    eval 10 micros, eval stop $ 150         : pass   6% in 42 days · buy → payout  48 days · paid in 2 / 3 months   1% /   3% · $  490 per eval bought
+    eval  3 micros, eval stop $ 225 (scaled): pass  49% in 36 days · buy → payout  53 days · paid in 2 / 3 months  15% /  29% · $ 4137 per eval bought
+    eval  4 micros, eval stop $ 300 (scaled): pass  44% in 36 days · buy → payout  52 days · paid in 2 / 3 months  14% /  27% · $ 3773 per eval bought
+    eval  6 micros, eval stop $ 450 (scaled): pass  36% in 35 days · buy → payout  51 days · paid in 2 / 3 months  12% /  23% · $ 3043 per eval bought
+    eval  8 micros, eval stop $ 600 (scaled): pass  29% in 33 days · buy → payout  48 days · paid in 2 / 3 months  10% /  19% · $ 2506 per eval bought
+    eval 10 micros, eval stop $ 750 (scaled): pass  27% in 33 days · buy → payout  47 days · paid in 2 / 3 months  10% /  18% · $ 2284 per eval bought
+
+######## select_daily_50k, funded 2 micros, funded daily stop $200
+    eval  2 micros, eval stop $ 200         : pass  54% in 33 days · buy → payout  48 days · paid in 2 / 3 months  17% /  36% · $ 4738 per eval bought
+    eval  3 micros, eval stop $ 200         : pass  51% in 37 days · buy → payout  51 days · paid in 2 / 3 months  14% /  32% · $ 4088 per eval bought
+    eval  4 micros, eval stop $ 200         : pass  48% in 35 days · buy → payout  47 days · paid in 2 / 3 months  13% /  30% · $ 3662 per eval bought
+    eval  6 micros, eval stop $ 200         : pass  33% in 40 days · buy → payout  54 days · paid in 2 / 3 months   8% /  20% · $ 2827 per eval bought
+    eval  8 micros, eval stop $ 200         : pass  20% in 45 days · buy → payout  60 days · paid in 2 / 3 months   3% /  10% · $ 1613 per eval bought
+    eval 10 micros, eval stop $ 200         : pass  12% in 41 days · buy → payout  63 days · paid in 2 / 3 months   3% /   5% · $  927 per eval bought
+    eval  3 micros, eval stop $ 300 (scaled): pass  50% in 32 days · buy → payout  47 days · paid in 2 / 3 months  17% /  34% · $ 4503 per eval bought
+    eval  4 micros, eval stop $ 400 (scaled): pass  44% in 31 days · buy → payout  45 days · paid in 2 / 3 months  15% /  29% · $ 3779 per eval bought
+    eval  6 micros, eval stop $ 600 (scaled): pass  35% in 31 days · buy → payout  44 days · paid in 2 / 3 months  13% /  25% · $ 3021 per eval bought
+    eval  8 micros, eval stop $ 800 (scaled): pass  29% in 28 days · buy → payout  43 days · paid in 2 / 3 months  12% /  20% · $ 2462 per eval bought
+    eval 10 micros, eval stop $1000 (scaled): pass  24% in 28 days · buy → payout  42 days · paid in 2 / 3 months  10% /  18% · $ 2158 per eval bought
+
+######## apex_eod_50k, funded 2 micros, funded daily stop $150
+    eval  2 micros, eval stop $ 150         : pass  78% in 20 days · buy → payout  60 days · paid in 2 / 3 months  15% /  34% · $ 2681 per eval bought
+    eval  3 micros, eval stop $ 150         : pass  83% in 15 days · buy → payout  53 days · paid in 2 / 3 months  20% /  45% · $ 2722 per eval bought
+    eval  4 micros, eval stop $ 150         : pass  76% in 12 days · buy → payout  51 days · paid in 2 / 3 months  20% /  43% · $ 2555 per eval bought
+    eval  6 micros, eval stop $ 150         : pass  64% in 10 days · buy → payout  50 days · paid in 2 / 3 months  19% /  39% · $ 2035 per eval bought
+    eval  8 micros, eval stop $ 150         : pass  50% in  7 days · buy → payout  47 days · paid in 2 / 3 months  17% /  32% · $ 1667 per eval bought
+    eval 10 micros, eval stop $ 150         : pass  38% in  6 days · buy → payout  43 days · paid in 2 / 3 months  14% /  23% · $ 1213 per eval bought
+    eval  3 micros, eval stop $ 225 (scaled): pass  70% in 11 days · buy → payout  51 days · paid in 2 / 3 months  20% /  42% · $ 2469 per eval bought
+    eval  4 micros, eval stop $ 300 (scaled): pass  67% in  8 days · buy → payout  48 days · paid in 2 / 3 months  23% /  44% · $ 2408 per eval bought
+    eval  6 micros, eval stop $ 450 (scaled): pass  56% in  4 days · buy → payout  42 days · paid in 2 / 3 months  23% /  38% · $ 1970 per eval bought
+    eval  8 micros, eval stop $ 600 (scaled): pass  48% in  3 days · buy → payout  42 days · paid in 2 / 3 months  21% /  33% · $ 1703 per eval bought
+    eval 10 micros, eval stop $ 750 (scaled): pass  44% in  2 days · buy → payout  39 days · paid in 2 / 3 months  21% /  30% · $ 1584 per eval bought
+
+######## apex_eod_50k, funded 2 micros, funded daily stop $200
+    eval  2 micros, eval stop $ 200         : pass  73% in 17 days · buy → payout  51 days · paid in 2 / 3 months  19% /  39% · $ 2640 per eval bought
+    eval  3 micros, eval stop $ 200         : pass  73% in 12 days · buy → payout  46 days · paid in 2 / 3 months  23% /  45% · $ 2648 per eval bought
+    eval  4 micros, eval stop $ 200         : pass  74% in 10 days · buy → payout  46 days · paid in 2 / 3 months  24% /  44% · $ 2536 per eval bought
+    eval  6 micros, eval stop $ 200         : pass  63% in  7 days · buy → payout  41 days · paid in 2 / 3 months  24% /  37% · $ 2039 per eval bought
+    eval  8 micros, eval stop $ 200         : pass  52% in  6 days · buy → payout  41 days · paid in 2 / 3 months  20% /  32% · $ 1715 per eval bought
+    eval 10 micros, eval stop $ 200         : pass  44% in  6 days · buy → payout  40 days · paid in 2 / 3 months  18% /  27% · $ 1508 per eval bought
+    eval  3 micros, eval stop $ 300 (scaled): pass  69% in 10 days · buy → payout  46 days · paid in 2 / 3 months  24% /  43% · $ 2591 per eval bought
+    eval  4 micros, eval stop $ 400 (scaled): pass  63% in  6 days · buy → payout  41 days · paid in 2 / 3 months  25% /  40% · $ 2263 per eval bought
+    eval  6 micros, eval stop $ 600 (scaled): pass  53% in  3 days · buy → payout  36 days · paid in 2 / 3 months  27% /  37% · $ 1942 per eval bought
+    eval  8 micros, eval stop $ 800 (scaled): pass  45% in  3 days · buy → payout  35 days · paid in 2 / 3 months  23% /  31% · $ 1625 per eval bought
+    eval 10 micros, eval stop $1000 (scaled): pass  40% in  2 days · buy → payout  33 days · paid in 2 / 3 months  22% /  28% · $ 1426 per eval bought

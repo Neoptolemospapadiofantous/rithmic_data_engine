@@ -1,0 +1,14 @@
+4 total 163354 dd_eod 10486 worst_month -5471 ev 930
+5 total 146141 dd_eod 10059 worst_month -6251 ev 991
+6 total 151151 dd_eod 10609 worst_month -5548 ev 1071
+7 total 149112 dd_eod 10166 worst_month -5375 ev 1273
+8 total 150094 dd_eod 10003 worst_month -4910 ev 1002
+9 total 155281 dd_eod 10318 worst_month -5693 ev 1250
+10 total 144306 dd_eod 10295 worst_month -6164 ev 1107
+11 total 152673 dd_eod 10420 worst_month -5543 ev 1272
+12 total 149653 dd_eod 10609 worst_month -5661 ev 752
+13 total 139314 dd_eod 11247 worst_month -6203 ev 1061
+14 total 153845 dd_eod 10200 worst_month -6019 ev 1394
+15 total 146104 dd_eod 10243 worst_month -6406 ev 1139
+16 total 142986 dd_eod 10557 worst_month -5868 ev 1322
+17 total 160751 dd_eod 11239 worst_month -6345 ev 951

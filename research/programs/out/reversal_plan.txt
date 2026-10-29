@@ -1,0 +1,28 @@
+Reversal plan (research/preregistered/2026-10-22_reversal_plan.md) — NQ, 2581 NY days 2014-01 → 2026-10, 7023 reversal signals with a fill. Cost 1.5 pts, one position at a time per setup.
+Columns: trades (a year), avg R, win %, PF, years > 0, 2025-26 R, R at +1× cost, other-day twin R, edge over twin, PASS points 1-6 (NQ rule; ES is point 7, read across files).
+
+######## R1 CHoCH pullback
+    X1 2R               1983 (154.9/yr) -0.125R win 37.0% PF 0.79 · years > 0  2/13 · 2025-26 -0.099R (204) · +1× cost -0.196R · twin -0.076R · edge -0.049R · PASS 100000
+    X2 measured move    1999 (156.2/yr) -0.125R win 39.2% PF 0.79 · years > 0  3/13 · 2025-26 -0.103R (206) · +1× cost -0.196R · twin -0.055R · edge -0.070R · PASS 100000
+    X4 hold 15:55       1937 (151.3/yr) -0.108R win 35.3% PF 0.83 · years > 0  3/13 · 2025-26 -0.146R (199) · +1× cost -0.179R · twin -0.045R · edge -0.063R · PASS 100000
+    slices at X1: bull -0.12 (1133) · bear -0.13 (1206) · signal before 10:30 -0.10 (699) · 10:30-12:00 -0.17 (653) · 12:00-14:00 -0.11 (981) · gap with the trade -0.12 (1106) · gap against -0.12 (1233) · range broke the other way first -0.15 (1466) · range not broken the other way -0.06 (732) · buyers at the low (2023+) -0.22 (41) · sellers at the low (2023+) -0.03 (489) ·
+
+######## R2 sweep and reclaim
+    X1 2R               2103 (164.3/yr) -0.064R win 37.6% PF 0.90 · years > 0  3/13 · 2025-26 +0.032R (207) · +1× cost -0.135R · twin -0.037R · edge -0.027R · PASS 100100
+    X2 measured move    2233 (174.5/yr) -0.049R win 48.0% PF 0.91 · years > 0  4/13 · 2025-26 +0.041R (220) · +1× cost -0.120R · twin -0.065R · edge +0.017R · PASS 100100
+    X3 VWAP             2114 (165.2/yr) -0.056R win 41.9% PF 0.91 · years > 0  5/13 · 2025-26 +0.041R (212) · +1× cost -0.126R · twin -0.055R · edge -0.001R · PASS 100100
+    X4 hold 15:55       1985 (155.1/yr) -0.046R win 33.1% PF 0.93 · years > 0  6/13 · 2025-26 +0.071R (192) · +1× cost -0.116R · twin -0.027R · edge -0.019R · PASS 100100
+    slices at X1: bull -0.02 (1340) · bear -0.07 (1148) · signal before 10:30 -0.05 (1489) · 10:30-12:00 -0.10 (547) · 12:00-14:00 -0.09 (226) · gap with the trade -0.04 (1347) · gap against -0.04 (1141) · range broke the other way first -0.05 (2065) · range not broken the other way -0.37 (80) · buyers at the low (2023+) +0.17 (8) · sellers at the low (2023+) -0.03 (515) ·
+
+######## R3 sweep + CHoCH
+    X1 2R               1247 ( 97.4/yr) -0.175R win 34.8% PF 0.72 · years > 0  3/13 · 2025-26 -0.234R (128) · +1× cost -0.247R · twin -0.067R · edge -0.108R · PASS 100000
+    X2 measured move    1253 ( 97.9/yr) -0.167R win 37.1% PF 0.72 · years > 0  3/13 · 2025-26 -0.199R (128) · +1× cost -0.239R · twin -0.059R · edge -0.108R · PASS 100000
+    X4 hold 15:55       1235 ( 96.5/yr) -0.158R win 33.6% PF 0.75 · years > 0  3/13 · 2025-26 -0.267R (128) · +1× cost -0.230R · twin -0.068R · edge -0.089R · PASS 100000
+    slices at X1: bull -0.19 (592) · bear -0.16 (714) · signal before 10:30 -0.20 (261) · 10:30-12:00 -0.23 (476) · 12:00-14:00 -0.09 (621) · gap with the trade -0.18 (616) · gap against -0.17 (690) · range broke the other way first -0.17 (1195) · range not broken the other way -0.18 (68) · buyers at the low (2023+) -0.30 (24) · sellers at the low (2023+) -0.11 (311) ·
+
+######## R4 exhausted CHoCH
+    X1 2R                106 (  8.3/yr) -0.317R win 29.2% PF 0.56 · years > 0  2/12 · 2025-26 -0.555R ( 10) · +1× cost -0.384R · twin -0.162R · edge -0.156R · PASS 000000
+    X2 measured move     106 (  8.3/yr) -0.247R win 32.1% PF 0.65 · years > 0  5/12 · 2025-26 -0.140R ( 10) · +1× cost -0.313R · twin -0.092R · edge -0.154R · PASS 000000
+    X3 VWAP              106 (  8.3/yr) -0.321R win 32.1% PF 0.54 · years > 0  1/12 · 2025-26 -0.315R ( 10) · +1× cost -0.388R · twin -0.055R · edge -0.267R · PASS 000000
+    X4 hold 15:55        106 (  8.3/yr) -0.251R win 28.3% PF 0.65 · years > 0  4/12 · 2025-26 -0.434R ( 10) · +1× cost -0.318R · twin -0.012R · edge -0.239R · PASS 000000
+    slices at X1: bull -0.32 (66) · bear -0.31 (40) · signal before 10:30 +1.98 (1) · 10:30-12:00 -0.36 (17) · 12:00-14:00 -0.35 (90) · gap with the trade -0.06 (49) · gap against -0.54 (57) · range broke the other way first -0.33 (104) · range not broken the other way +0.46 (2) · buyers at the low (2023+) -0.85 (4) · sellers at the low (2023+) -0.49 (18) ·

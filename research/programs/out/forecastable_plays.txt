@@ -1,0 +1,9 @@
+3002 days; F = 2.09 × first-30-min range (2014-19 median)
+play                         n   netR  twinR   edge     t | 14-19 n   netR   edge | 20-26 n   netR   edge |  win% pts/trade
+P1 exhaustion fade         827 -0.097 -0.132  0.035   1.0 |     385 -0.277 -0.039 |     442  0.060  0.099 |    37      -1.3
+P2 compression break       617 -0.128 -0.145  0.017   1.1 |     330 -0.198  0.005 |     287 -0.046  0.031 |    41      -4.6
+P3 small-gap fade         1617 -0.055 -0.095  0.041   1.7 |     811 -0.125  0.041 |     806  0.016  0.040 |    51      -0.1
+P4 big-gap go              824  0.027 -0.033  0.060   1.3 |     380 -0.011  0.031 |     444  0.060  0.085 |    32       1.7
+P5 first ORB-break fade   2971 -0.109 -0.137  0.027   1.1 |    1440 -0.207  0.002 |    1531 -0.017  0.052 |    37      -0.9
+P6 late continuation      1728 -0.018 -0.044  0.026   2.9 |     809 -0.082  0.009 |     919  0.039  0.041 |    48       1.6
+Holm-adjusted p<0.05 on the twin edge: ['P6 late continuation']

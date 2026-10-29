@@ -1,0 +1,42 @@
+{
+ "id": "nf_bkv_cxl_so",
+ "name": "Strong-open follow only when the book is fragile (cancel-to-add 15m >= c x 90m)",
+ "why": "Quotes pulling faster than they are placed = a book that will not absorb; the move extends. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "k2": [
+   0.25,
+   0.3
+  ],
+  "c": [
+   1.15,
+   1.3
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "checks": [
+  {
+   "at": "10:30",
+   "when": "flow && (abs(px-open) > k2*atr) && (bk(cxl,15) >= c*bk(cxl,60))",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "11:00",
+   "when": "flow && (abs(px-open) > k2*atr) && (bk(cxl,15) >= c*bk(cxl,60))",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "from": "2023-03-01",
+ "train_months": 6
+}

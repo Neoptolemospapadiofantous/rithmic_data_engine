@@ -1,0 +1,42 @@
+===== DAILY states (bull ≥ +0.3 × average range, bear ≤ −0.3 ×, else side)
+  DAILY 2010-2019: (rows = this period, columns = next; % with counts)    chi-square p = 0.0068
+     bull → bull  30.3% (n= 235)  side  43.7% (n= 339)  bear  25.9% (n= 201)
+     side → bull  34.1% (n= 311)  side  40.1% (n= 366)  bear  25.8% (n= 236)
+     bear → bull  37.9% (n= 230)  side  34.3% (n= 208)  bear  27.8% (n= 169)
+    if periods were independent the columns would be: bull 33.8%  side 39.8%  bear 26.4%
+  DAILY 2020-2026: (rows = this period, columns = next; % with counts)    chi-square p = 0.015
+     bull → bull  31.3% (n= 172)  side  39.5% (n= 217)  bear  29.1% (n= 160)
+     side → bull  35.9% (n= 193)  side  32.9% (n= 177)  bear  31.2% (n= 168)
+     bear → bull  40.6% (n= 184)  side  31.8% (n= 144)  bear  27.6% (n= 125)
+    if periods were independent the columns would be: bull 35.6%  side 34.9%  bear 29.4%
+
+===== WEEKLY states (bull ≥ +0.3 × average range, bear ≤ −0.3 ×, else side)
+  WEEKLY 2010-2019: (rows = this period, columns = next; % with counts)    chi-square p = 0.0074
+     bull → bull  34.7% (n=  70)  side  40.6% (n=  82)  bear  24.8% (n=  50)
+     side → bull  43.9% (n=  68)  side  26.5% (n=  41)  bear  29.7% (n=  46)
+     bear → bull  51.2% (n=  63)  side  26.8% (n=  33)  bear  22.0% (n=  27)
+    if periods were independent the columns would be: bull 41.9%  side 32.5%  bear 25.6%
+  WEEKLY 2020-2026: (rows = this period, columns = next; % with counts)    chi-square p = 0.0038
+     bull → bull  33.3% (n=  42)  side  44.4% (n=  56)  bear  22.2% (n=  28)
+     side → bull  37.5% (n=  42)  side  33.9% (n=  38)  bear  28.6% (n=  32)
+     bear → bull  46.7% (n=  42)  side  18.9% (n=  17)  bear  34.4% (n=  31)
+    if periods were independent the columns would be: bull 38.4%  side 33.8%  bear 27.7%
+
+===== BOOK2 NQ flags vs the PREVIOUS day's state
+           mean            size        
+per     2014-19 2020-26 2014-19 2020-26
+day                                    
+against  -0.027   0.149     472     545
+side      0.278   0.498     637     618
+with      0.026   0.041     469     498
+  2020-26 WITH − AGAINST = -0.108 R (90% low -0.375) | 2020-22 -0.379 | 2023-26 +0.151 -> fail
+
+===== BOOK2 NQ flags vs the PREVIOUS week's state
+           mean            size        
+per     2014-19 2020-26 2014-19 2020-26
+week                                   
+against   0.101   0.120     521     511
+side      0.118   0.222     556     561
+with      0.116   0.380     501     589
+  2020-26 WITH − AGAINST = +0.260 R (90% low -0.015) | 2020-22 +0.458 | 2023-26 +0.044 -> fail
+

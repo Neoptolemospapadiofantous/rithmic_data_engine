@@ -261,7 +261,9 @@ inline GatewayConfig parse_config(const nlohmann::json& j, Mode cli_mode, int64_
     if (c.rate_budget_per_min < 1 || c.rate_budget_per_min > 60) throw ConfigError("rate_budget_per_min must be 1..60");
     if (c.risk.max_markets != 1) throw ConfigError("the pilot runs exactly 1 market");
     if (c.risk.daily_stop_micro >= 0 || c.risk.total_stop_micro >= 0) throw ConfigError("loss stops must be negative");
-    if (c.risk.leverage < 1 || c.risk.leverage > 5) throw ConfigError("leverage must be 1..5");
+    // 2026-10-28: pilot cap raised 5 → 20 (founder: "$200 × 20"). The exchange's IMF must still equal risk.leverage or the
+    // engine halts (halt: leverage); the gross ≤ leverage × equity check in risk.hpp is what the cap actually bounds.
+    if (c.risk.leverage < 1 || c.risk.leverage > 20) throw ConfigError("leverage must be 1..20");
     if (c.risk.quote_micro > c.risk.max_order_micro) throw ConfigError("quote_usd above max_order_usd");
     if (c.state_dir.empty()) throw ConfigError("state_dir required");
     if (sends_orders(c.mode)) {

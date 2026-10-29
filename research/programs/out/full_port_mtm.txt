@@ -1,0 +1,1080 @@
+DAILY|base_q1|conc2|q1|stop0|extreme|sessions 2581|mean 34.3|sd 376.9|winning_days 27.0%
+ACCT|base_q1|conc2|q1|stop0|extreme|total 88525|dd_eod 6492|dd_intraday 6593|worst_month -3830|losing_months 60/147|traded_days 1997
+PLAN|base_q1|conc2|q1|stop0|extreme|select_daily_50k|ev 893|h1 955|h2 826|pass 32|paid 21|days_pass 36|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop0|extreme|apex_eod_50k|ev 664|h1 712|h2 611|pass 46|paid 25|days_pass 30|days_first_pay 73
+PLAN|base_q1|conc2|q1|stop0|extreme|builder_50k|ev 605|h1 672|h2 533|pass 46|paid 25|days_pass 30|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop0|extreme|topstep_50k|ev 982|h1 1002|h2 960|pass 40|paid 29|days_pass 33|days_first_pay 55
+PLAN|base_q1|conc2|q1|stop0|extreme|mff_rapid_eod_50k|ev 592|h1 665|h2 512|pass 19|paid 14|days_pass 47|days_first_pay 78
+PLAN|base_q1|conc2|q1|stop0|extreme|lucid_flex_50k|ev 937|h1 931|h2 943|pass 40|paid 28|days_pass 33|days_first_pay 55
+PLAN|base_q1|conc2|q1|stop0|extreme|builder_25k|ev 266|h1 208|h2 330|pass 46|paid 15|days_pass 12|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop0|extreme|select_daily_25k|ev 279|h1 250|h2 311|pass 27|paid 11|days_pass 28|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop0|extreme|select_flex_25k|ev 340|h1 315|h2 367|pass 27|paid 12|days_pass 28|days_first_pay 52
+PLAN|base_q1|conc2|q1|stop0|extreme|select_daily_100k|ev 246|h1 399|h2 79|pass 9|paid 7|days_pass 49|days_first_pay 85
+PLAN|base_q1|conc2|q1|stop0|extreme|select_daily_150k|ev 22|h1 43|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 134
+PLAN|base_q1|conc2|q1|stop0|extreme|select_flex_100k|ev 293|h1 440|h2 133|pass 9|paid 9|days_pass 49|days_first_pay 75
+PLAN|base_q1|conc2|q1|stop0|extreme|select_flex_150k|ev 36|h1 69|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 89
+DAILY|base_q1|conc2|q1|stop300|extreme|sessions 2581|mean 33.2|sd 368.0|winning_days 26.2%
+ACCT|base_q1|conc2|q1|stop300|extreme|total 85802|dd_eod 5293|dd_intraday 5395|worst_month -2811|losing_months 63/147|traded_days 1997
+PLAN|base_q1|conc2|q1|stop300|extreme|select_daily_50k|ev 760|h1 753|h2 768|pass 28|paid 18|days_pass 36|days_first_pay 69
+PLAN|base_q1|conc2|q1|stop300|extreme|apex_eod_50k|ev 587|h1 664|h2 503|pass 45|paid 23|days_pass 32|days_first_pay 76
+PLAN|base_q1|conc2|q1|stop300|extreme|builder_50k|ev 522|h1 628|h2 406|pass 45|paid 23|days_pass 32|days_first_pay 75
+PLAN|base_q1|conc2|q1|stop300|extreme|topstep_50k|ev 797|h1 811|h2 782|pass 38|paid 28|days_pass 36|days_first_pay 56
+PLAN|base_q1|conc2|q1|stop300|extreme|mff_rapid_eod_50k|ev 496|h1 507|h2 483|pass 15|paid 12|days_pass 44|days_first_pay 87
+PLAN|base_q1|conc2|q1|stop300|extreme|lucid_flex_50k|ev 774|h1 781|h2 766|pass 38|paid 26|days_pass 36|days_first_pay 57
+PLAN|base_q1|conc2|q1|stop300|extreme|builder_25k|ev 287|h1 248|h2 329|pass 48|paid 17|days_pass 13|days_first_pay 47
+PLAN|base_q1|conc2|q1|stop300|extreme|select_daily_25k|ev 296|h1 165|h2 440|pass 24|paid 12|days_pass 28|days_first_pay 42
+PLAN|base_q1|conc2|q1|stop300|extreme|select_flex_25k|ev 307|h1 235|h2 386|pass 24|paid 11|days_pass 28|days_first_pay 48
+PLAN|base_q1|conc2|q1|stop300|extreme|select_daily_100k|ev 149|h1 232|h2 59|pass 8|paid 5|days_pass 53|days_first_pay 89
+PLAN|base_q1|conc2|q1|stop300|extreme|select_daily_150k|ev 18|h1 35|h2 0|pass 1|paid 1|days_pass 58|days_first_pay 152
+PLAN|base_q1|conc2|q1|stop300|extreme|select_flex_100k|ev 187|h1 237|h2 133|pass 8|paid 7|days_pass 53|days_first_pay 74
+PLAN|base_q1|conc2|q1|stop300|extreme|select_flex_150k|ev 26|h1 49|h2 0|pass 1|paid 1|days_pass 58|days_first_pay 94
+DAILY|base_q1|conc2|q1|stop600|extreme|sessions 2581|mean 34.6|sd 376.2|winning_days 27.0%
+ACCT|base_q1|conc2|q1|stop600|extreme|total 89405|dd_eod 6171|dd_intraday 6272|worst_month -3509|losing_months 60/147|traded_days 1997
+PLAN|base_q1|conc2|q1|stop600|extreme|select_daily_50k|ev 908|h1 980|h2 829|pass 33|paid 21|days_pass 37|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop600|extreme|apex_eod_50k|ev 670|h1 722|h2 612|pass 46|paid 25|days_pass 30|days_first_pay 73
+PLAN|base_q1|conc2|q1|stop600|extreme|builder_50k|ev 622|h1 701|h2 535|pass 46|paid 25|days_pass 30|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop600|extreme|topstep_50k|ev 1016|h1 1066|h2 962|pass 41|paid 29|days_pass 33|days_first_pay 55
+PLAN|base_q1|conc2|q1|stop600|extreme|mff_rapid_eod_50k|ev 604|h1 687|h2 514|pass 19|paid 14|days_pass 47|days_first_pay 78
+PLAN|base_q1|conc2|q1|stop600|extreme|lucid_flex_50k|ev 980|h1 1011|h2 945|pass 41|paid 29|days_pass 33|days_first_pay 56
+PLAN|base_q1|conc2|q1|stop600|extreme|builder_25k|ev 266|h1 208|h2 330|pass 46|paid 15|days_pass 12|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop600|extreme|select_daily_25k|ev 279|h1 250|h2 311|pass 27|paid 11|days_pass 28|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop600|extreme|select_flex_25k|ev 337|h1 309|h2 367|pass 27|paid 12|days_pass 28|days_first_pay 52
+PLAN|base_q1|conc2|q1|stop600|extreme|select_daily_100k|ev 252|h1 411|h2 79|pass 9|paid 7|days_pass 49|days_first_pay 85
+PLAN|base_q1|conc2|q1|stop600|extreme|select_daily_150k|ev 24|h1 46|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 130
+PLAN|base_q1|conc2|q1|stop600|extreme|select_flex_100k|ev 301|h1 455|h2 133|pass 9|paid 9|days_pass 49|days_first_pay 75
+PLAN|base_q1|conc2|q1|stop600|extreme|select_flex_150k|ev 39|h1 76|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 84
+DAILY|base_q1|conc2|q1|stop0|close|sessions 2581|mean 34.3|sd 376.9|winning_days 27.0%
+ACCT|base_q1|conc2|q1|stop0|close|total 88525|dd_eod 6492|dd_intraday 6570|worst_month -3830|losing_months 60/147|traded_days 1997
+PLAN|base_q1|conc2|q1|stop0|close|select_daily_50k|ev 893|h1 955|h2 826|pass 32|paid 21|days_pass 36|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop0|close|apex_eod_50k|ev 664|h1 712|h2 611|pass 46|paid 25|days_pass 30|days_first_pay 73
+PLAN|base_q1|conc2|q1|stop0|close|builder_50k|ev 605|h1 672|h2 533|pass 46|paid 25|days_pass 30|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop0|close|topstep_50k|ev 982|h1 1002|h2 960|pass 40|paid 29|days_pass 33|days_first_pay 55
+PLAN|base_q1|conc2|q1|stop0|close|mff_rapid_eod_50k|ev 592|h1 665|h2 512|pass 19|paid 14|days_pass 47|days_first_pay 78
+PLAN|base_q1|conc2|q1|stop0|close|lucid_flex_50k|ev 957|h1 962|h2 952|pass 40|paid 28|days_pass 33|days_first_pay 55
+PLAN|base_q1|conc2|q1|stop0|close|builder_25k|ev 275|h1 224|h2 330|pass 47|paid 16|days_pass 12|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop0|close|select_daily_25k|ev 295|h1 280|h2 311|pass 27|paid 11|days_pass 28|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop0|close|select_flex_25k|ev 345|h1 315|h2 377|pass 27|paid 12|days_pass 28|days_first_pay 52
+PLAN|base_q1|conc2|q1|stop0|close|select_daily_100k|ev 246|h1 399|h2 79|pass 9|paid 7|days_pass 49|days_first_pay 85
+PLAN|base_q1|conc2|q1|stop0|close|select_daily_150k|ev 22|h1 43|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 134
+PLAN|base_q1|conc2|q1|stop0|close|select_flex_100k|ev 293|h1 440|h2 133|pass 9|paid 9|days_pass 49|days_first_pay 75
+PLAN|base_q1|conc2|q1|stop0|close|select_flex_150k|ev 36|h1 69|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 89
+DAILY|base_q1|conc2|q1|stop300|close|sessions 2581|mean 35.1|sd 367.9|winning_days 26.4%
+ACCT|base_q1|conc2|q1|stop300|close|total 90467|dd_eod 5275|dd_intraday 5382|worst_month -2806|losing_months 60/147|traded_days 1997
+PLAN|base_q1|conc2|q1|stop300|close|select_daily_50k|ev 810|h1 812|h2 808|pass 29|paid 19|days_pass 37|days_first_pay 67
+PLAN|base_q1|conc2|q1|stop300|close|apex_eod_50k|ev 612|h1 669|h2 550|pass 46|paid 24|days_pass 32|days_first_pay 76
+PLAN|base_q1|conc2|q1|stop300|close|builder_50k|ev 566|h1 678|h2 444|pass 46|paid 24|days_pass 32|days_first_pay 76
+PLAN|base_q1|conc2|q1|stop300|close|topstep_50k|ev 860|h1 860|h2 861|pass 39|paid 30|days_pass 36|days_first_pay 57
+PLAN|base_q1|conc2|q1|stop300|close|mff_rapid_eod_50k|ev 533|h1 566|h2 496|pass 17|paid 13|days_pass 45|days_first_pay 81
+PLAN|base_q1|conc2|q1|stop300|close|lucid_flex_50k|ev 845|h1 846|h2 844|pass 39|paid 28|days_pass 35|days_first_pay 58
+PLAN|base_q1|conc2|q1|stop300|close|builder_25k|ev 324|h1 320|h2 329|pass 48|paid 18|days_pass 13|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop300|close|select_daily_25k|ev 331|h1 223|h2 450|pass 25|paid 12|days_pass 30|days_first_pay 42
+PLAN|base_q1|conc2|q1|stop300|close|select_flex_25k|ev 341|h1 294|h2 393|pass 25|paid 13|days_pass 30|days_first_pay 49
+PLAN|base_q1|conc2|q1|stop300|close|select_daily_100k|ev 229|h1 377|h2 67|pass 9|paid 6|days_pass 53|days_first_pay 85
+PLAN|base_q1|conc2|q1|stop300|close|select_daily_150k|ev 29|h1 55|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 152
+PLAN|base_q1|conc2|q1|stop300|close|select_flex_100k|ev 271|h1 386|h2 145|pass 9|paid 8|days_pass 53|days_first_pay 77
+PLAN|base_q1|conc2|q1|stop300|close|select_flex_150k|ev 32|h1 62|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 91
+DAILY|base_q1|conc2|q1|stop600|close|sessions 2581|mean 34.6|sd 376.2|winning_days 27.0%
+ACCT|base_q1|conc2|q1|stop600|close|total 89407|dd_eod 6171|dd_intraday 6249|worst_month -3509|losing_months 60/147|traded_days 1997
+PLAN|base_q1|conc2|q1|stop600|close|select_daily_50k|ev 908|h1 980|h2 829|pass 33|paid 21|days_pass 37|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop600|close|apex_eod_50k|ev 670|h1 722|h2 612|pass 46|paid 25|days_pass 30|days_first_pay 73
+PLAN|base_q1|conc2|q1|stop600|close|builder_50k|ev 622|h1 701|h2 535|pass 46|paid 25|days_pass 30|days_first_pay 72
+PLAN|base_q1|conc2|q1|stop600|close|topstep_50k|ev 1016|h1 1066|h2 962|pass 41|paid 29|days_pass 33|days_first_pay 55
+PLAN|base_q1|conc2|q1|stop600|close|mff_rapid_eod_50k|ev 605|h1 687|h2 514|pass 19|paid 14|days_pass 47|days_first_pay 78
+PLAN|base_q1|conc2|q1|stop600|close|lucid_flex_50k|ev 1001|h1 1042|h2 955|pass 41|paid 29|days_pass 33|days_first_pay 56
+PLAN|base_q1|conc2|q1|stop600|close|builder_25k|ev 275|h1 224|h2 330|pass 47|paid 16|days_pass 12|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop600|close|select_daily_25k|ev 295|h1 280|h2 311|pass 27|paid 11|days_pass 28|days_first_pay 46
+PLAN|base_q1|conc2|q1|stop600|close|select_flex_25k|ev 342|h1 309|h2 377|pass 27|paid 12|days_pass 28|days_first_pay 52
+PLAN|base_q1|conc2|q1|stop600|close|select_daily_100k|ev 252|h1 411|h2 79|pass 9|paid 7|days_pass 49|days_first_pay 85
+PLAN|base_q1|conc2|q1|stop600|close|select_daily_150k|ev 24|h1 46|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 130
+PLAN|base_q1|conc2|q1|stop600|close|select_flex_100k|ev 301|h1 455|h2 134|pass 9|paid 9|days_pass 49|days_first_pay 75
+PLAN|base_q1|conc2|q1|stop600|close|select_flex_150k|ev 39|h1 76|h2 0|pass 1|paid 1|days_pass 57|days_first_pay 84
+DAILY|base_q2|conc2|q2|stop0|extreme|sessions 2581|mean 68.6|sd 753.8|winning_days 27.0%
+ACCT|base_q2|conc2|q2|stop0|extreme|total 177050|dd_eod 12984|dd_intraday 13186|worst_month -7660|losing_months 60/147|traded_days 1997
+PLAN|base_q2|conc2|q2|stop0|extreme|select_daily_50k|ev 598|h1 540|h2 661|pass 27|paid 12|days_pass 28|days_first_pay 42
+PLAN|base_q2|conc2|q2|stop0|extreme|apex_eod_50k|ev 544|h1 424|h2 675|pass 47|paid 15|days_pass 13|days_first_pay 46
+PLAN|base_q2|conc2|q2|stop0|extreme|builder_50k|ev 537|h1 416|h2 669|pass 47|paid 15|days_pass 13|days_first_pay 46
+PLAN|base_q2|conc2|q2|stop0|extreme|topstep_50k|ev 1054|h1 842|h2 1285|pass 37|paid 18|days_pass 22|days_first_pay 39
+PLAN|base_q2|conc2|q2|stop0|extreme|mff_rapid_eod_50k|ev 257|h1 169|h2 354|pass 15|paid 7|days_pass 43|days_first_pay 58
+PLAN|base_q2|conc2|q2|stop0|extreme|lucid_flex_50k|ev 841|h1 636|h2 1065|pass 37|paid 18|days_pass 22|days_first_pay 39
+PLAN|base_q2|conc2|q2|stop0|extreme|builder_25k|ev 75|h1 44|h2 108|pass 35|paid 5|days_pass 4|days_first_pay 29
+PLAN|base_q2|conc2|q2|stop0|extreme|select_daily_25k|ev 139|h1 115|h2 165|pass 15|paid 6|days_pass 25|days_first_pay 31
+PLAN|base_q2|conc2|q2|stop0|extreme|select_flex_25k|ev 86|h1 78|h2 95|pass 15|paid 4|days_pass 25|days_first_pay 52
+PLAN|base_q2|conc2|q2|stop0|extreme|select_daily_100k|ev 1102|h1 1218|h2 976|pass 28|paid 14|days_pass 33|days_first_pay 53
+PLAN|base_q2|conc2|q2|stop0|extreme|select_daily_150k|ev 1155|h1 1441|h2 843|pass 22|paid 15|days_pass 43|days_first_pay 72
+PLAN|base_q2|conc2|q2|stop0|extreme|select_flex_100k|ev 1233|h1 1354|h2 1100|pass 29|paid 18|days_pass 33|days_first_pay 56
+PLAN|base_q2|conc2|q2|stop0|extreme|select_flex_150k|ev 1281|h1 1643|h2 885|pass 23|paid 19|days_pass 43|days_first_pay 65
+DAILY|base_q2|conc2|q2|stop300|extreme|sessions 2581|mean 47.9|sd 634.9|winning_days 20.2%
+ACCT|base_q2|conc2|q2|stop300|extreme|total 123533|dd_eod 13246|dd_intraday 13396|worst_month -4695|losing_months 71/147|traded_days 1997
+PLAN|base_q2|conc2|q2|stop300|extreme|select_daily_50k|ev 418|h1 22|h2 851|pass 19|paid 9|days_pass 33|days_first_pay 42
+PLAN|base_q2|conc2|q2|stop300|extreme|apex_eod_50k|ev 463|h1 360|h2 575|pass 43|paid 15|days_pass 15|days_first_pay 49
+PLAN|base_q2|conc2|q2|stop300|extreme|builder_50k|ev 459|h1 376|h2 549|pass 43|paid 15|days_pass 15|days_first_pay 48
+PLAN|base_q2|conc2|q2|stop300|extreme|topstep_50k|ev 757|h1 360|h2 1189|pass 29|paid 18|days_pass 25|days_first_pay 47
+PLAN|base_q2|conc2|q2|stop300|extreme|mff_rapid_eod_50k|ev 288|h1 91|h2 503|pass 8|paid 6|days_pass 39|days_first_pay 56
+PLAN|base_q2|conc2|q2|stop300|extreme|lucid_flex_50k|ev 597|h1 267|h2 957|pass 29|paid 17|days_pass 25|days_first_pay 47
+PLAN|base_q2|conc2|q2|stop300|extreme|builder_25k|ev 113|h1 96|h2 131|pass 38|paid 8|days_pass 5|days_first_pay 30
+PLAN|base_q2|conc2|q2|stop300|extreme|select_daily_25k|ev 108|h1 22|h2 201|pass 12|paid 5|days_pass 26|days_first_pay 29
+PLAN|base_q2|conc2|q2|stop300|extreme|select_flex_25k|ev 74|h1 17|h2 136|pass 12|paid 3|days_pass 26|days_first_pay 41
+PLAN|base_q2|conc2|q2|stop300|extreme|select_daily_100k|ev 640|h1 293|h2 1018|pass 19|paid 9|days_pass 35|days_first_pay 47
+PLAN|base_q2|conc2|q2|stop300|extreme|select_daily_150k|ev 501|h1 397|h2 613|pass 14|paid 9|days_pass 41|days_first_pay 72
+PLAN|base_q2|conc2|q2|stop300|extreme|select_flex_100k|ev 704|h1 402|h2 1033|pass 20|paid 14|days_pass 36|days_first_pay 61
+PLAN|base_q2|conc2|q2|stop300|extreme|select_flex_150k|ev 536|h1 412|h2 672|pass 14|paid 11|days_pass 41|days_first_pay 70
+DAILY|base_q2|conc2|q2|stop600|extreme|sessions 2581|mean 66.5|sd 736.0|winning_days 26.2%
+ACCT|base_q2|conc2|q2|stop600|extreme|total 171605|dd_eod 10586|dd_intraday 10789|worst_month -5622|losing_months 63/147|traded_days 1997
+PLAN|base_q2|conc2|q2|stop600|extreme|select_daily_50k|ev 617|h1 351|h2 908|pass 24|paid 12|days_pass 28|days_first_pay 42
+PLAN|base_q2|conc2|q2|stop600|extreme|apex_eod_50k|ev 571|h1 496|h2 652|pass 48|paid 17|days_pass 13|days_first_pay 47
+PLAN|base_q2|conc2|q2|stop600|extreme|builder_50k|ev 575|h1 496|h2 661|pass 48|paid 17|days_pass 13|days_first_pay 47
+PLAN|base_q2|conc2|q2|stop600|extreme|topstep_50k|ev 1081|h1 898|h2 1281|pass 36|paid 19|days_pass 23|days_first_pay 43
+PLAN|base_q2|conc2|q2|stop600|extreme|mff_rapid_eod_50k|ev 374|h1 227|h2 535|pass 14|paid 9|days_pass 41|days_first_pay 57
+PLAN|base_q2|conc2|q2|stop600|extreme|lucid_flex_50k|ev 780|h1 536|h2 1046|pass 35|paid 19|days_pass 23|days_first_pay 42
+PLAN|base_q2|conc2|q2|stop600|extreme|builder_25k|ev 75|h1 44|h2 108|pass 35|paid 5|days_pass 4|days_first_pay 29
+PLAN|base_q2|conc2|q2|stop600|extreme|select_daily_25k|ev 88|h1 42|h2 137|pass 14|paid 4|days_pass 25|days_first_pay 32
+PLAN|base_q2|conc2|q2|stop600|extreme|select_flex_25k|ev 68|h1 15|h2 126|pass 14|paid 2|days_pass 25|days_first_pay 37
+PLAN|base_q2|conc2|q2|stop600|extreme|select_daily_100k|ev 1141|h1 1298|h2 971|pass 24|paid 14|days_pass 33|days_first_pay 51
+PLAN|base_q2|conc2|q2|stop600|extreme|select_daily_150k|ev 1020|h1 1381|h2 627|pass 17|paid 13|days_pass 42|days_first_pay 68
+PLAN|base_q2|conc2|q2|stop600|extreme|select_flex_100k|ev 938|h1 889|h2 992|pass 25|paid 16|days_pass 34|days_first_pay 53
+PLAN|base_q2|conc2|q2|stop600|extreme|select_flex_150k|ev 996|h1 1292|h2 672|pass 18|paid 15|days_pass 42|days_first_pay 62
+DAILY|base_q2|conc2|q2|stop0|close|sessions 2581|mean 68.6|sd 753.8|winning_days 27.0%
+ACCT|base_q2|conc2|q2|stop0|close|total 177050|dd_eod 12984|dd_intraday 13140|worst_month -7660|losing_months 60/147|traded_days 1997
+PLAN|base_q2|conc2|q2|stop0|close|select_daily_50k|ev 633|h1 607|h2 661|pass 27|paid 12|days_pass 28|days_first_pay 42
+PLAN|base_q2|conc2|q2|stop0|close|apex_eod_50k|ev 561|h1 456|h2 675|pass 47|paid 16|days_pass 13|days_first_pay 44
+PLAN|base_q2|conc2|q2|stop0|close|builder_50k|ev 625|h1 584|h2 669|pass 48|paid 17|days_pass 13|days_first_pay 44
+PLAN|base_q2|conc2|q2|stop0|close|topstep_50k|ev 1197|h1 1117|h2 1285|pass 37|paid 18|days_pass 22|days_first_pay 39
+PLAN|base_q2|conc2|q2|stop0|close|mff_rapid_eod_50k|ev 268|h1 169|h2 375|pass 15|paid 7|days_pass 43|days_first_pay 58
+PLAN|base_q2|conc2|q2|stop0|close|lucid_flex_50k|ev 841|h1 636|h2 1065|pass 37|paid 18|days_pass 22|days_first_pay 39
+PLAN|base_q2|conc2|q2|stop0|close|builder_25k|ev 87|h1 52|h2 125|pass 37|paid 6|days_pass 4|days_first_pay 29
+PLAN|base_q2|conc2|q2|stop0|close|select_daily_25k|ev 158|h1 148|h2 169|pass 15|paid 6|days_pass 25|days_first_pay 31
+PLAN|base_q2|conc2|q2|stop0|close|select_flex_25k|ev 86|h1 78|h2 95|pass 15|paid 4|days_pass 25|days_first_pay 52
+PLAN|base_q2|conc2|q2|stop0|close|select_daily_100k|ev 1128|h1 1218|h2 1029|pass 28|paid 15|days_pass 33|days_first_pay 53
+PLAN|base_q2|conc2|q2|stop0|close|select_daily_150k|ev 1155|h1 1441|h2 843|pass 22|paid 15|days_pass 43|days_first_pay 72
+PLAN|base_q2|conc2|q2|stop0|close|select_flex_100k|ev 1247|h1 1354|h2 1131|pass 29|paid 18|days_pass 33|days_first_pay 56
+PLAN|base_q2|conc2|q2|stop0|close|select_flex_150k|ev 1281|h1 1643|h2 885|pass 23|paid 19|days_pass 43|days_first_pay 65
+DAILY|base_q2|conc2|q2|stop300|close|sessions 2581|mean 66.6|sd 651.4|winning_days 21.5%
+ACCT|base_q2|conc2|q2|stop300|close|total 171911|dd_eod 10708|dd_intraday 10819|worst_month -3848|losing_months 63/147|traded_days 1997
+PLAN|base_q2|conc2|q2|stop300|close|select_daily_50k|ev 728|h1 539|h2 933|pass 25|paid 15|days_pass 33|days_first_pay 46
+PLAN|base_q2|conc2|q2|stop300|close|apex_eod_50k|ev 684|h1 608|h2 767|pass 49|paid 21|days_pass 15|days_first_pay 54
+PLAN|base_q2|conc2|q2|stop300|close|builder_50k|ev 688|h1 640|h2 741|pass 49|paid 21|days_pass 15|days_first_pay 53
+PLAN|base_q2|conc2|q2|stop300|close|topstep_50k|ev 1081|h1 793|h2 1397|pass 36|paid 22|days_pass 25|days_first_pay 47
+PLAN|base_q2|conc2|q2|stop300|close|mff_rapid_eod_50k|ev 314|h1 116|h2 530|pass 11|paid 6|days_pass 42|days_first_pay 55
+PLAN|base_q2|conc2|q2|stop300|close|lucid_flex_50k|ev 804|h1 566|h2 1063|pass 36|paid 22|days_pass 24|days_first_pay 47
+PLAN|base_q2|conc2|q2|stop300|close|builder_25k|ev 195|h1 150|h2 245|pass 42|paid 12|days_pass 5|days_first_pay 32
+PLAN|base_q2|conc2|q2|stop300|close|select_daily_25k|ev 165|h1 94|h2 243|pass 17|paid 8|days_pass 26|days_first_pay 34
+PLAN|base_q2|conc2|q2|stop300|close|select_flex_25k|ev 111|h1 59|h2 169|pass 17|paid 5|days_pass 26|days_first_pay 43
+PLAN|base_q2|conc2|q2|stop300|close|select_daily_100k|ev 776|h1 440|h2 1141|pass 27|paid 12|days_pass 37|days_first_pay 50
+PLAN|base_q2|conc2|q2|stop300|close|select_daily_150k|ev 679|h1 734|h2 619|pass 18|paid 11|days_pass 42|days_first_pay 75
+PLAN|base_q2|conc2|q2|stop300|close|select_flex_100k|ev 923|h1 640|h2 1232|pass 29|paid 20|days_pass 37|days_first_pay 65
+PLAN|base_q2|conc2|q2|stop300|close|select_flex_150k|ev 690|h1 698|h2 682|pass 18|paid 14|days_pass 42|days_first_pay 72
+DAILY|base_q2|conc2|q2|stop600|close|sessions 2581|mean 70.1|sd 735.9|winning_days 26.4%
+ACCT|base_q2|conc2|q2|stop600|close|total 180935|dd_eod 10550|dd_intraday 10764|worst_month -5612|losing_months 60/147|traded_days 1997
+PLAN|base_q2|conc2|q2|stop600|close|select_daily_50k|ev 688|h1 470|h2 927|pass 25|paid 13|days_pass 30|days_first_pay 42
+PLAN|base_q2|conc2|q2|stop600|close|apex_eod_50k|ev 646|h1 640|h2 652|pass 48|paid 18|days_pass 13|days_first_pay 46
+PLAN|base_q2|conc2|q2|stop600|close|builder_50k|ev 650|h1 640|h2 661|pass 48|paid 18|days_pass 13|days_first_pay 46
+PLAN|base_q2|conc2|q2|stop600|close|topstep_50k|ev 1182|h1 1061|h2 1314|pass 37|paid 20|days_pass 23|days_first_pay 43
+PLAN|base_q2|conc2|q2|stop600|close|mff_rapid_eod_50k|ev 416|h1 283|h2 561|pass 14|paid 9|days_pass 41|days_first_pay 57
+PLAN|base_q2|conc2|q2|stop600|close|lucid_flex_50k|ev 874|h1 693|h2 1071|pass 37|paid 19|days_pass 23|days_first_pay 42
+PLAN|base_q2|conc2|q2|stop600|close|builder_25k|ev 87|h1 52|h2 125|pass 37|paid 6|days_pass 4|days_first_pay 29
+PLAN|base_q2|conc2|q2|stop600|close|select_daily_25k|ev 118|h1 82|h2 157|pass 15|paid 4|days_pass 26|days_first_pay 34
+PLAN|base_q2|conc2|q2|stop600|close|select_flex_25k|ev 89|h1 50|h2 132|pass 15|paid 3|days_pass 26|days_first_pay 39
+PLAN|base_q2|conc2|q2|stop600|close|select_daily_100k|ev 1273|h1 1488|h2 1037|pass 25|paid 15|days_pass 33|days_first_pay 51
+PLAN|base_q2|conc2|q2|stop600|close|select_daily_150k|ev 1086|h1 1467|h2 670|pass 18|paid 13|days_pass 42|days_first_pay 67
+PLAN|base_q2|conc2|q2|stop600|close|select_flex_100k|ev 1141|h1 1219|h2 1056|pass 26|paid 17|days_pass 34|days_first_pay 53
+PLAN|base_q2|conc2|q2|stop600|close|select_flex_150k|ev 1070|h1 1398|h2 712|pass 20|paid 16|days_pass 42|days_first_pay 63
+DAILY|base_q3|conc2|q3|stop0|extreme|sessions 2581|mean 102.9|sd 1130.8|winning_days 27.0%
+ACCT|base_q3|conc2|q3|stop0|extreme|total 265576|dd_eod 19476|dd_intraday 19779|worst_month -11491|losing_months 60/147|traded_days 1997
+PLAN|base_q3|conc2|q3|stop0|extreme|select_daily_50k|ev 365|h1 361|h2 370|pass 19|paid 9|days_pass 28|days_first_pay 32
+PLAN|base_q3|conc2|q3|stop0|extreme|apex_eod_50k|ev 317|h1 224|h2 418|pass 37|paid 9|days_pass 6|days_first_pay 30
+PLAN|base_q3|conc2|q3|stop0|extreme|builder_50k|ev 303|h1 232|h2 381|pass 36|paid 9|days_pass 6|days_first_pay 30
+PLAN|base_q3|conc2|q3|stop0|extreme|topstep_50k|ev 739|h1 627|h2 861|pass 24|paid 8|days_pass 17|days_first_pay 34
+PLAN|base_q3|conc2|q3|stop0|extreme|mff_rapid_eod_50k|ev 116|h1 166|h2 62|pass 11|paid 3|days_pass 42|days_first_pay 51
+PLAN|base_q3|conc2|q3|stop0|extreme|lucid_flex_50k|ev 404|h1 240|h2 583|pass 26|paid 9|days_pass 19|days_first_pay 34
+PLAN|base_q3|conc2|q3|stop0|extreme|builder_25k|ev 54|h1 52|h2 57|pass 30|paid 3|days_pass 2|days_first_pay 25
+PLAN|base_q3|conc2|q3|stop0|extreme|select_daily_25k|ev 91|h1 35|h2 152|pass 10|paid 3|days_pass 23|days_first_pay 26
+PLAN|base_q3|conc2|q3|stop0|extreme|select_flex_25k|ev 96|h1 85|h2 108|pass 10|paid 2|days_pass 23|days_first_pay 36
+PLAN|base_q3|conc2|q3|stop0|extreme|select_daily_100k|ev 242|h1 298|h2 182|pass 22|paid 8|days_pass 28|days_first_pay 34
+PLAN|base_q3|conc2|q3|stop0|extreme|select_daily_150k|ev 1221|h1 1028|h2 1432|pass 27|paid 13|days_pass 33|days_first_pay 50
+PLAN|base_q3|conc2|q3|stop0|extreme|select_flex_100k|ev 999|h1 867|h2 1142|pass 27|paid 12|days_pass 29|days_first_pay 50
+PLAN|base_q3|conc2|q3|stop0|extreme|select_flex_150k|ev 1684|h1 1694|h2 1674|pass 29|paid 19|days_pass 33|days_first_pay 54
+DAILY|base_q3|conc2|q3|stop300|extreme|sessions 2581|mean 61.7|sd 838.7|winning_days 16.3%
+ACCT|base_q3|conc2|q3|stop300|extreme|total 159346|dd_eod 18432|dd_intraday 18695|worst_month -5036|losing_months 65/147|traded_days 1997
+PLAN|base_q3|conc2|q3|stop300|extreme|select_daily_50k|ev 293|h1 235|h2 355|pass 17|paid 9|days_pass 36|days_first_pay 46
+PLAN|base_q3|conc2|q3|stop300|extreme|apex_eod_50k|ev 330|h1 456|h2 192|pass 42|paid 13|days_pass 10|days_first_pay 52
+PLAN|base_q3|conc2|q3|stop300|extreme|builder_50k|ev 347|h1 472|h2 210|pass 42|paid 13|days_pass 10|days_first_pay 52
+PLAN|base_q3|conc2|q3|stop300|extreme|topstep_50k|ev 770|h1 994|h2 525|pass 25|paid 12|days_pass 27|days_first_pay 48
+PLAN|base_q3|conc2|q3|stop300|extreme|mff_rapid_eod_50k|ev 153|h1 179|h2 125|pass 4|paid 3|days_pass 50|days_first_pay 54
+PLAN|base_q3|conc2|q3|stop300|extreme|lucid_flex_50k|ev 525|h1 644|h2 394|pass 25|paid 12|days_pass 27|days_first_pay 48
+PLAN|base_q3|conc2|q3|stop300|extreme|builder_25k|ev 94|h1 104|h2 83|pass 33|paid 6|days_pass 3|days_first_pay 36
+PLAN|base_q3|conc2|q3|stop300|extreme|select_daily_25k|ev 48|h1 33|h2 65|pass 10|paid 3|days_pass 34|days_first_pay 30
+PLAN|base_q3|conc2|q3|stop300|extreme|select_flex_25k|ev 57|h1 65|h2 49|pass 10|paid 2|days_pass 34|days_first_pay 52
+PLAN|base_q3|conc2|q3|stop300|extreme|select_daily_100k|ev 555|h1 688|h2 410|pass 18|paid 9|days_pass 37|days_first_pay 48
+PLAN|base_q3|conc2|q3|stop300|extreme|select_daily_150k|ev 683|h1 1046|h2 288|pass 16|paid 10|days_pass 42|days_first_pay 64
+PLAN|base_q3|conc2|q3|stop300|extreme|select_flex_100k|ev 659|h1 665|h2 653|pass 19|paid 13|days_pass 38|days_first_pay 63
+PLAN|base_q3|conc2|q3|stop300|extreme|select_flex_150k|ev 678|h1 980|h2 348|pass 16|paid 13|days_pass 42|days_first_pay 74
+DAILY|base_q3|conc2|q3|stop600|extreme|sessions 2581|mean 82.5|sd 1015.8|winning_days 23.4%
+ACCT|base_q3|conc2|q3|stop600|extreme|total 212881|dd_eod 21116|dd_intraday 21341|worst_month -7580|losing_months 68/147|traded_days 1997
+PLAN|base_q3|conc2|q3|stop600|extreme|select_daily_50k|ev 279|h1 185|h2 381|pass 18|paid 7|days_pass 31|days_first_pay 33
+PLAN|base_q3|conc2|q3|stop600|extreme|apex_eod_50k|ev 313|h1 368|h2 252|pass 39|paid 9|days_pass 7|days_first_pay 39
+PLAN|base_q3|conc2|q3|stop600|extreme|builder_50k|ev 325|h1 376|h2 269|pass 39|paid 10|days_pass 7|days_first_pay 39
+PLAN|base_q3|conc2|q3|stop600|extreme|topstep_50k|ev 652|h1 623|h2 683|pass 26|paid 9|days_pass 21|days_first_pay 40
+PLAN|base_q3|conc2|q3|stop600|extreme|mff_rapid_eod_50k|ev 96|h1 62|h2 133|pass 7|paid 3|days_pass 42|days_first_pay 51
+PLAN|base_q3|conc2|q3|stop600|extreme|lucid_flex_50k|ev 393|h1 407|h2 378|pass 26|paid 9|days_pass 21|days_first_pay 40
+PLAN|base_q3|conc2|q3|stop600|extreme|builder_25k|ev 58|h1 60|h2 57|pass 33|paid 3|days_pass 2|days_first_pay 25
+PLAN|base_q3|conc2|q3|stop600|extreme|select_daily_25k|ev 88|h1 54|h2 125|pass 10|paid 3|days_pass 26|days_first_pay 33
+PLAN|base_q3|conc2|q3|stop600|extreme|select_flex_25k|ev 82|h1 69|h2 96|pass 10|paid 3|days_pass 26|days_first_pay 45
+PLAN|base_q3|conc2|q3|stop600|extreme|select_daily_100k|ev 500|h1 387|h2 624|pass 20|paid 9|days_pass 34|days_first_pay 40
+PLAN|base_q3|conc2|q3|stop600|extreme|select_daily_150k|ev 917|h1 1008|h2 819|pass 24|paid 12|days_pass 36|days_first_pay 51
+PLAN|base_q3|conc2|q3|stop600|extreme|select_flex_100k|ev 752|h1 620|h2 895|pass 23|paid 11|days_pass 35|days_first_pay 58
+PLAN|base_q3|conc2|q3|stop600|extreme|select_flex_150k|ev 1242|h1 1048|h2 1455|pass 26|paid 16|days_pass 38|days_first_pay 59
+DAILY|base_q3|conc2|q3|stop0|close|sessions 2581|mean 102.9|sd 1130.8|winning_days 27.0%
+ACCT|base_q3|conc2|q3|stop0|close|total 265576|dd_eod 19476|dd_intraday 19710|worst_month -11491|losing_months 60/147|traded_days 1997
+PLAN|base_q3|conc2|q3|stop0|close|select_daily_50k|ev 406|h1 361|h2 456|pass 20|paid 9|days_pass 28|days_first_pay 33
+PLAN|base_q3|conc2|q3|stop0|close|apex_eod_50k|ev 333|h1 224|h2 452|pass 38|paid 9|days_pass 6|days_first_pay 32
+PLAN|base_q3|conc2|q3|stop0|close|builder_50k|ev 333|h1 232|h2 442|pass 39|paid 9|days_pass 6|days_first_pay 33
+PLAN|base_q3|conc2|q3|stop0|close|topstep_50k|ev 833|h1 627|h2 1057|pass 26|paid 9|days_pass 19|days_first_pay 36
+PLAN|base_q3|conc2|q3|stop0|close|mff_rapid_eod_50k|ev 141|h1 180|h2 98|pass 12|paid 3|days_pass 42|days_first_pay 47
+PLAN|base_q3|conc2|q3|stop0|close|lucid_flex_50k|ev 460|h1 328|h2 603|pass 27|paid 10|days_pass 19|days_first_pay 34
+PLAN|base_q3|conc2|q3|stop0|close|builder_25k|ev 61|h1 56|h2 66|pass 33|paid 3|days_pass 2|days_first_pay 29
+PLAN|base_q3|conc2|q3|stop0|close|select_daily_25k|ev 95|h1 40|h2 154|pass 11|paid 3|days_pass 23|days_first_pay 27
+PLAN|base_q3|conc2|q3|stop0|close|select_flex_25k|ev 96|h1 85|h2 108|pass 11|paid 2|days_pass 23|days_first_pay 36
+PLAN|base_q3|conc2|q3|stop0|close|select_daily_100k|ev 413|h1 298|h2 538|pass 23|paid 9|days_pass 28|days_first_pay 36
+PLAN|base_q3|conc2|q3|stop0|close|select_daily_150k|ev 1264|h1 1028|h2 1522|pass 27|paid 14|days_pass 33|days_first_pay 51
+PLAN|base_q3|conc2|q3|stop0|close|select_flex_100k|ev 999|h1 867|h2 1142|pass 27|paid 12|days_pass 29|days_first_pay 50
+PLAN|base_q3|conc2|q3|stop0|close|select_flex_150k|ev 1708|h1 1694|h2 1723|pass 29|paid 19|days_pass 33|days_first_pay 54
+DAILY|base_q3|conc2|q3|stop300|close|sessions 2581|mean 94.3|sd 884.2|winning_days 17.7%
+ACCT|base_q3|conc2|q3|stop300|close|total 243276|dd_eod 16436|dd_intraday 16659|worst_month -4882|losing_months 56/147|traded_days 1997
+PLAN|base_q3|conc2|q3|stop300|close|select_daily_50k|ev 588|h1 455|h2 733|pass 24|paid 13|days_pass 33|days_first_pay 43
+PLAN|base_q3|conc2|q3|stop300|close|apex_eod_50k|ev 605|h1 824|h2 367|pass 48|paid 20|days_pass 10|days_first_pay 47
+PLAN|base_q3|conc2|q3|stop300|close|builder_50k|ev 601|h1 832|h2 349|pass 48|paid 20|days_pass 10|days_first_pay 46
+PLAN|base_q3|conc2|q3|stop300|close|topstep_50k|ev 1546|h1 1934|h2 1122|pass 32|paid 18|days_pass 25|days_first_pay 48
+PLAN|base_q3|conc2|q3|stop300|close|mff_rapid_eod_50k|ev 270|h1 179|h2 369|pass 9|paid 3|days_pass 46|days_first_pay 56
+PLAN|base_q3|conc2|q3|stop300|close|lucid_flex_50k|ev 925|h1 1116|h2 716|pass 31|paid 18|days_pass 24|days_first_pay 48
+PLAN|base_q3|conc2|q3|stop300|close|builder_25k|ev 148|h1 188|h2 105|pass 39|paid 9|days_pass 3|days_first_pay 34
+PLAN|base_q3|conc2|q3|stop300|close|select_daily_25k|ev 184|h1 152|h2 219|pass 16|paid 6|days_pass 33|days_first_pay 32
+PLAN|base_q3|conc2|q3|stop300|close|select_flex_25k|ev 170|h1 160|h2 180|pass 16|paid 5|days_pass 33|days_first_pay 49
+PLAN|base_q3|conc2|q3|stop300|close|select_daily_100k|ev 992|h1 937|h2 1051|pass 25|paid 14|days_pass 35|days_first_pay 46
+PLAN|base_q3|conc2|q3|stop300|close|select_daily_150k|ev 1281|h1 1637|h2 892|pass 25|paid 14|days_pass 39|days_first_pay 58
+PLAN|base_q3|conc2|q3|stop300|close|select_flex_100k|ev 1122|h1 1058|h2 1193|pass 27|paid 17|days_pass 36|days_first_pay 59
+PLAN|base_q3|conc2|q3|stop300|close|select_flex_150k|ev 1391|h1 1844|h2 897|pass 25|paid 19|days_pass 39|days_first_pay 69
+DAILY|base_q3|conc2|q3|stop600|close|sessions 2581|mean 109.0|sd 1047.4|winning_days 24.3%
+ACCT|base_q3|conc2|q3|stop600|close|total 281388|dd_eod 14852|dd_intraday 15173|worst_month -6868|losing_months 58/147|traded_days 1997
+PLAN|base_q3|conc2|q3|stop600|close|select_daily_50k|ev 361|h1 251|h2 481|pass 21|paid 9|days_pass 28|days_first_pay 33
+PLAN|base_q3|conc2|q3|stop600|close|apex_eod_50k|ev 463|h1 464|h2 462|pass 42|paid 13|days_pass 7|days_first_pay 38
+PLAN|base_q3|conc2|q3|stop600|close|builder_50k|ev 475|h1 472|h2 478|pass 42|paid 14|days_pass 7|days_first_pay 38
+PLAN|base_q3|conc2|q3|stop600|close|topstep_50k|ev 946|h1 838|h2 1064|pass 29|paid 13|days_pass 21|days_first_pay 39
+PLAN|base_q3|conc2|q3|stop600|close|mff_rapid_eod_50k|ev 157|h1 81|h2 241|pass 9|paid 4|days_pass 37|days_first_pay 51
+PLAN|base_q3|conc2|q3|stop600|close|lucid_flex_50k|ev 560|h1 575|h2 543|pass 29|paid 13|days_pass 21|days_first_pay 40
+PLAN|base_q3|conc2|q3|stop600|close|builder_25k|ev 67|h1 64|h2 70|pass 36|paid 4|days_pass 2|days_first_pay 25
+PLAN|base_q3|conc2|q3|stop600|close|select_daily_25k|ev 90|h1 56|h2 127|pass 12|paid 4|days_pass 26|days_first_pay 31
+PLAN|base_q3|conc2|q3|stop600|close|select_flex_25k|ev 100|h1 74|h2 129|pass 12|paid 4|days_pass 26|days_first_pay 48
+PLAN|base_q3|conc2|q3|stop600|close|select_daily_100k|ev 807|h1 508|h2 1134|pass 25|paid 12|days_pass 33|days_first_pay 40
+PLAN|base_q3|conc2|q3|stop600|close|select_daily_150k|ev 1219|h1 1067|h2 1385|pass 28|paid 15|days_pass 37|days_first_pay 51
+PLAN|base_q3|conc2|q3|stop600|close|select_flex_100k|ev 1021|h1 743|h2 1324|pass 27|paid 13|days_pass 33|days_first_pay 52
+PLAN|base_q3|conc2|q3|stop600|close|select_flex_150k|ev 1516|h1 1223|h2 1835|pass 30|paid 18|days_pass 37|days_first_pay 59
+DAILY|base_q4|conc2|q4|stop0|extreme|sessions 2581|mean 137.2|sd 1507.7|winning_days 27.0%
+ACCT|base_q4|conc2|q4|stop0|extreme|total 354101|dd_eod 25967|dd_intraday 26372|worst_month -15321|losing_months 60/147|traded_days 1997
+PLAN|base_q4|conc2|q4|stop0|extreme|select_daily_50k|ev 285|h1 247|h2 326|pass 15|paid 6|days_pass 25|days_first_pay 32
+PLAN|base_q4|conc2|q4|stop0|extreme|apex_eod_50k|ev 208|h1 134|h2 288|pass 37|paid 6|days_pass 4|days_first_pay 25
+PLAN|base_q4|conc2|q4|stop0|extreme|builder_50k|ev 196|h1 152|h2 243|pass 35|paid 7|days_pass 4|days_first_pay 33
+PLAN|base_q4|conc2|q4|stop0|extreme|topstep_50k|ev 589|h1 320|h2 882|pass 20|paid 5|days_pass 17|days_first_pay 38
+PLAN|base_q4|conc2|q4|stop0|extreme|mff_rapid_eod_50k|ev 169|h1 261|h2 68|pass 9|paid 2|days_pass 42|days_first_pay 52
+PLAN|base_q4|conc2|q4|stop0|extreme|lucid_flex_50k|ev 421|h1 276|h2 580|pass 22|paid 6|days_pass 17|days_first_pay 33
+PLAN|base_q4|conc2|q4|stop0|extreme|builder_25k|ev 54|h1 40|h2 70|pass 26|paid 3|days_pass 2|days_first_pay 29
+PLAN|base_q4|conc2|q4|stop0|extreme|select_daily_25k|ev 29|h1 17|h2 43|pass 9|paid 3|days_pass 22|days_first_pay 25
+PLAN|base_q4|conc2|q4|stop0|extreme|select_flex_25k|ev 84|h1 55|h2 115|pass 9|paid 2|days_pass 22|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop0|extreme|select_daily_100k|ev 484|h1 492|h2 476|pass 18|paid 8|days_pass 27|days_first_pay 32
+PLAN|base_q4|conc2|q4|stop0|extreme|select_daily_150k|ev 402|h1 427|h2 375|pass 23|paid 8|days_pass 28|days_first_pay 42
+PLAN|base_q4|conc2|q4|stop0|extreme|select_flex_100k|ev 387|h1 444|h2 324|pass 19|paid 6|days_pass 28|days_first_pay 51
+PLAN|base_q4|conc2|q4|stop0|extreme|select_flex_150k|ev 1503|h1 1250|h2 1780|pass 27|paid 15|days_pass 31|days_first_pay 50
+DAILY|base_q4|conc2|q4|stop300|extreme|sessions 2581|mean 55.4|sd 989.4|winning_days 12.9%
+ACCT|base_q4|conc2|q4|stop300|extreme|total 143014|dd_eod 23879|dd_intraday 23946|worst_month -5194|losing_months 68/147|traded_days 1997
+PLAN|base_q4|conc2|q4|stop300|extreme|select_daily_50k|ev 113|h1 36|h2 196|pass 8|paid 4|days_pass 40|days_first_pay 47
+PLAN|base_q4|conc2|q4|stop300|extreme|apex_eod_50k|ev 96|h1 88|h2 105|pass 38|paid 4|days_pass 8|days_first_pay 48
+PLAN|base_q4|conc2|q4|stop300|extreme|builder_50k|ev 96|h1 88|h2 105|pass 38|paid 4|days_pass 8|days_first_pay 43
+PLAN|base_q4|conc2|q4|stop300|extreme|topstep_50k|ev 233|h1 35|h2 449|pass 16|paid 4|days_pass 31|days_first_pay 59
+PLAN|base_q4|conc2|q4|stop300|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|base_q4|conc2|q4|stop300|extreme|lucid_flex_50k|ev 120|h1 24|h2 226|pass 16|paid 4|days_pass 31|days_first_pay 59
+PLAN|base_q4|conc2|q4|stop300|extreme|builder_25k|ev 29|h1 28|h2 31|pass 27|paid 3|days_pass 3|days_first_pay 44
+PLAN|base_q4|conc2|q4|stop300|extreme|select_daily_25k|ev 20|h1 19|h2 21|pass 4|paid 1|days_pass 36|days_first_pay 42
+PLAN|base_q4|conc2|q4|stop300|extreme|select_flex_25k|ev 13|h1 15|h2 11|pass 4|paid 1|days_pass 36|days_first_pay 78
+PLAN|base_q4|conc2|q4|stop300|extreme|select_daily_100k|ev 166|h1 46|h2 298|pass 9|paid 4|days_pass 41|days_first_pay 47
+PLAN|base_q4|conc2|q4|stop300|extreme|select_daily_150k|ev 225|h1 208|h2 242|pass 8|paid 4|days_pass 45|days_first_pay 61
+PLAN|base_q4|conc2|q4|stop300|extreme|select_flex_100k|ev 168|h1 71|h2 274|pass 10|paid 5|days_pass 41|days_first_pay 78
+PLAN|base_q4|conc2|q4|stop300|extreme|select_flex_150k|ev 197|h1 163|h2 235|pass 8|paid 5|days_pass 45|days_first_pay 80
+DAILY|base_q4|conc2|q4|stop600|extreme|sessions 2581|mean 95.7|sd 1269.7|winning_days 20.2%
+ACCT|base_q4|conc2|q4|stop600|extreme|total 247065|dd_eod 26491|dd_intraday 26792|worst_month -9391|losing_months 71/147|traded_days 1997
+PLAN|base_q4|conc2|q4|stop600|extreme|select_daily_50k|ev 219|h1 45|h2 409|pass 12|paid 5|days_pass 26|days_first_pay 28
+PLAN|base_q4|conc2|q4|stop600|extreme|apex_eod_50k|ev 221|h1 184|h2 262|pass 38|paid 8|days_pass 5|days_first_pay 30
+PLAN|base_q4|conc2|q4|stop600|extreme|builder_50k|ev 230|h1 200|h2 262|pass 38|paid 8|days_pass 5|days_first_pay 30
+PLAN|base_q4|conc2|q4|stop600|extreme|topstep_50k|ev 440|h1 118|h2 791|pass 20|paid 6|days_pass 20|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop600|extreme|mff_rapid_eod_50k|ev 80|h1 62|h2 100|pass 5|paid 3|days_pass 37|days_first_pay 48
+PLAN|base_q4|conc2|q4|stop600|extreme|lucid_flex_50k|ev 275|h1 157|h2 404|pass 20|paid 6|days_pass 20|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop600|extreme|builder_25k|ev 61|h1 52|h2 70|pass 29|paid 4|days_pass 2|days_first_pay 29
+PLAN|base_q4|conc2|q4|stop600|extreme|select_daily_25k|ev 35|h1 12|h2 60|pass 8|paid 3|days_pass 25|days_first_pay 28
+PLAN|base_q4|conc2|q4|stop600|extreme|select_flex_25k|ev 34|h1 0|h2 71|pass 8|paid 1|days_pass 25|days_first_pay 41
+PLAN|base_q4|conc2|q4|stop600|extreme|select_daily_100k|ev 276|h1 44|h2 530|pass 13|paid 6|days_pass 26|days_first_pay 33
+PLAN|base_q4|conc2|q4|stop600|extreme|select_daily_150k|ev 519|h1 23|h2 1061|pass 17|paid 6|days_pass 31|days_first_pay 38
+PLAN|base_q4|conc2|q4|stop600|extreme|select_flex_100k|ev 434|h1 54|h2 849|pass 15|paid 6|days_pass 29|days_first_pay 44
+PLAN|base_q4|conc2|q4|stop600|extreme|select_flex_150k|ev 1109|h1 576|h2 1691|pass 19|paid 13|days_pass 33|days_first_pay 51
+DAILY|base_q4|conc2|q4|stop0|close|sessions 2581|mean 137.2|sd 1507.7|winning_days 27.0%
+ACCT|base_q4|conc2|q4|stop0|close|total 354101|dd_eod 25967|dd_intraday 26280|worst_month -15321|losing_months 60/147|traded_days 1997
+PLAN|base_q4|conc2|q4|stop0|close|select_daily_50k|ev 326|h1 317|h2 336|pass 16|paid 6|days_pass 25|days_first_pay 32
+PLAN|base_q4|conc2|q4|stop0|close|apex_eod_50k|ev 208|h1 134|h2 288|pass 38|paid 6|days_pass 4|days_first_pay 25
+PLAN|base_q4|conc2|q4|stop0|close|builder_50k|ev 300|h1 264|h2 339|pass 38|paid 9|days_pass 4|days_first_pay 33
+PLAN|base_q4|conc2|q4|stop0|close|topstep_50k|ev 862|h1 725|h2 1011|pass 23|paid 6|days_pass 18|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop0|close|mff_rapid_eod_50k|ev 171|h1 265|h2 68|pass 9|paid 3|days_pass 42|days_first_pay 52
+PLAN|base_q4|conc2|q4|stop0|close|lucid_flex_50k|ev 421|h1 276|h2 580|pass 22|paid 6|days_pass 17|days_first_pay 33
+PLAN|base_q4|conc2|q4|stop0|close|builder_25k|ev 65|h1 44|h2 87|pass 29|paid 3|days_pass 2|days_first_pay 25
+PLAN|base_q4|conc2|q4|stop0|close|select_daily_25k|ev 118|h1 26|h2 217|pass 9|paid 3|days_pass 23|days_first_pay 26
+PLAN|base_q4|conc2|q4|stop0|close|select_flex_25k|ev 84|h1 55|h2 115|pass 9|paid 2|days_pass 23|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop0|close|select_daily_100k|ev 549|h1 492|h2 612|pass 18|paid 8|days_pass 26|days_first_pay 32
+PLAN|base_q4|conc2|q4|stop0|close|select_daily_150k|ev 781|h1 779|h2 784|pass 24|paid 10|days_pass 28|days_first_pay 42
+PLAN|base_q4|conc2|q4|stop0|close|select_flex_100k|ev 394|h1 458|h2 324|pass 20|paid 6|days_pass 28|days_first_pay 47
+PLAN|base_q4|conc2|q4|stop0|close|select_flex_150k|ev 1608|h1 1450|h2 1780|pass 28|paid 16|days_pass 31|days_first_pay 50
+DAILY|base_q4|conc2|q4|stop300|close|sessions 2581|mean 129.1|sd 1094.7|winning_days 15.8%
+ACCT|base_q4|conc2|q4|stop300|close|total 333247|dd_eod 15106|dd_intraday 15403|worst_month -5206|losing_months 51/147|traded_days 1997
+PLAN|base_q4|conc2|q4|stop300|close|select_daily_50k|ev 823|h1 977|h2 655|pass 22|paid 13|days_pass 36|days_first_pay 46
+PLAN|base_q4|conc2|q4|stop300|close|apex_eod_50k|ev 543|h1 608|h2 472|pass 48|paid 18|days_pass 8|days_first_pay 47
+PLAN|base_q4|conc2|q4|stop300|close|builder_50k|ev 559|h1 640|h2 472|pass 48|paid 19|days_pass 8|days_first_pay 42
+PLAN|base_q4|conc2|q4|stop300|close|topstep_50k|ev 1663|h1 2161|h2 1120|pass 31|paid 16|days_pass 27|days_first_pay 50
+PLAN|base_q4|conc2|q4|stop300|close|mff_rapid_eod_50k|ev 226|h1 58|h2 409|pass 8|paid 4|days_pass 47|days_first_pay 53
+PLAN|base_q4|conc2|q4|stop300|close|lucid_flex_50k|ev 797|h1 992|h2 584|pass 31|paid 15|days_pass 27|days_first_pay 49
+PLAN|base_q4|conc2|q4|stop300|close|builder_25k|ev 132|h1 144|h2 118|pass 37|paid 9|days_pass 3|days_first_pay 35
+PLAN|base_q4|conc2|q4|stop300|close|select_daily_25k|ev 171|h1 248|h2 87|pass 15|paid 6|days_pass 35|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop300|close|select_flex_25k|ev 140|h1 190|h2 85|pass 15|paid 4|days_pass 35|days_first_pay 61
+PLAN|base_q4|conc2|q4|stop300|close|select_daily_100k|ev 1519|h1 1919|h2 1082|pass 26|paid 18|days_pass 37|days_first_pay 48
+PLAN|base_q4|conc2|q4|stop300|close|select_daily_150k|ev 2361|h1 2760|h2 1924|pass 28|paid 21|days_pass 40|days_first_pay 58
+PLAN|base_q4|conc2|q4|stop300|close|select_flex_100k|ev 1512|h1 1835|h2 1159|pass 28|paid 19|days_pass 37|days_first_pay 63
+PLAN|base_q4|conc2|q4|stop300|close|select_flex_150k|ev 2111|h1 2507|h2 1678|pass 29|paid 22|days_pass 40|days_first_pay 69
+DAILY|base_q4|conc2|q4|stop600|close|sessions 2581|mean 133.2|sd 1302.7|winning_days 21.5%
+ACCT|base_q4|conc2|q4|stop600|close|total 343823|dd_eod 21417|dd_intraday 21639|worst_month -7696|losing_months 63/147|traded_days 1997
+PLAN|base_q4|conc2|q4|stop600|close|select_daily_50k|ev 334|h1 194|h2 487|pass 17|paid 8|days_pass 26|days_first_pay 29
+PLAN|base_q4|conc2|q4|stop600|close|apex_eod_50k|ev 392|h1 304|h2 489|pass 42|paid 12|days_pass 5|days_first_pay 32
+PLAN|base_q4|conc2|q4|stop600|close|builder_50k|ev 395|h1 300|h2 498|pass 42|paid 12|days_pass 5|days_first_pay 32
+PLAN|base_q4|conc2|q4|stop600|close|topstep_50k|ev 609|h1 274|h2 975|pass 26|paid 7|days_pass 20|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop600|close|mff_rapid_eod_50k|ev 121|h1 121|h2 121|pass 8|paid 3|days_pass 38|days_first_pay 47
+PLAN|base_q4|conc2|q4|stop600|close|lucid_flex_50k|ev 375|h1 236|h2 527|pass 25|paid 7|days_pass 20|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop600|close|builder_25k|ev 75|h1 60|h2 92|pass 33|paid 4|days_pass 2|days_first_pay 26
+PLAN|base_q4|conc2|q4|stop600|close|select_daily_25k|ev 87|h1 34|h2 146|pass 10|paid 3|days_pass 25|days_first_pay 29
+PLAN|base_q4|conc2|q4|stop600|close|select_flex_25k|ev 44|h1 15|h2 76|pass 10|paid 2|days_pass 25|days_first_pay 43
+PLAN|base_q4|conc2|q4|stop600|close|select_daily_100k|ev 404|h1 254|h2 567|pass 19|paid 9|days_pass 30|days_first_pay 36
+PLAN|base_q4|conc2|q4|stop600|close|select_daily_150k|ev 884|h1 367|h2 1449|pass 24|paid 10|days_pass 33|days_first_pay 42
+PLAN|base_q4|conc2|q4|stop600|close|select_flex_100k|ev 587|h1 262|h2 943|pass 22|paid 10|days_pass 30|days_first_pay 50
+PLAN|base_q4|conc2|q4|stop600|close|select_flex_150k|ev 1319|h1 819|h2 1864|pass 26|paid 16|days_pass 34|days_first_pay 54
+DAILY|base_q5|conc2|q5|stop0|extreme|sessions 2581|mean 171.5|sd 1884.6|winning_days 27.0%
+ACCT|base_q5|conc2|q5|stop0|extreme|total 442626|dd_eod 32459|dd_intraday 32964|worst_month -19151|losing_months 60/147|traded_days 1997
+PLAN|base_q5|conc2|q5|stop0|extreme|select_daily_50k|ev 196|h1 90|h2 311|pass 12|paid 5|days_pass 25|days_first_pay 31
+PLAN|base_q5|conc2|q5|stop0|extreme|apex_eod_50k|ev 150|h1 72|h2 236|pass 35|paid 4|days_pass 3|days_first_pay 24
+PLAN|base_q5|conc2|q5|stop0|extreme|builder_50k|ev 159|h1 128|h2 192|pass 32|paid 5|days_pass 3|days_first_pay 31
+PLAN|base_q5|conc2|q5|stop0|extreme|topstep_50k|ev 404|h1 160|h2 672|pass 18|paid 4|days_pass 17|days_first_pay 36
+PLAN|base_q5|conc2|q5|stop0|extreme|mff_rapid_eod_50k|ev 117|h1 206|h2 20|pass 8|paid 1|days_pass 43|days_first_pay 51
+PLAN|base_q5|conc2|q5|stop0|extreme|lucid_flex_50k|ev 380|h1 219|h2 557|pass 18|paid 5|days_pass 16|days_first_pay 33
+PLAN|base_q5|conc2|q5|stop0|extreme|builder_25k|ev 27|h1 28|h2 26|pass 23|paid 2|days_pass 2|days_first_pay 31
+PLAN|base_q5|conc2|q5|stop0|extreme|select_daily_25k|ev 20|h1 10|h2 32|pass 7|paid 1|days_pass 22|days_first_pay 24
+PLAN|base_q5|conc2|q5|stop0|extreme|select_flex_25k|ev 39|h1 25|h2 55|pass 7|paid 1|days_pass 22|days_first_pay 34
+PLAN|base_q5|conc2|q5|stop0|extreme|select_daily_100k|ev 388|h1 336|h2 445|pass 15|paid 6|days_pass 25|days_first_pay 32
+PLAN|base_q5|conc2|q5|stop0|extreme|select_daily_150k|ev 517|h1 683|h2 336|pass 19|paid 9|days_pass 28|days_first_pay 32
+PLAN|base_q5|conc2|q5|stop0|extreme|select_flex_100k|ev 365|h1 246|h2 496|pass 17|paid 5|days_pass 26|days_first_pay 41
+PLAN|base_q5|conc2|q5|stop0|extreme|select_flex_150k|ev 1104|h1 1145|h2 1059|pass 24|paid 10|days_pass 28|days_first_pay 51
+DAILY|base_q5|conc2|q5|stop300|extreme|sessions 2581|mean 69.3|sd 1175.3|winning_days 10.8%
+ACCT|base_q5|conc2|q5|stop300|extreme|total 178750|dd_eod 23221|dd_intraday 23304|worst_month -5244|losing_months 75/147|traded_days 1997
+PLAN|base_q5|conc2|q5|stop300|extreme|select_daily_50k|ev 111|h1 15|h2 216|pass 5|paid 3|days_pass 45|days_first_pay 42
+PLAN|base_q5|conc2|q5|stop300|extreme|apex_eod_50k|ev 84|h1 56|h2 114|pass 33|paid 4|days_pass 6|days_first_pay 60
+PLAN|base_q5|conc2|q5|stop300|extreme|builder_50k|ev 96|h1 72|h2 122|pass 33|paid 5|days_pass 6|days_first_pay 58
+PLAN|base_q5|conc2|q5|stop300|extreme|topstep_50k|ev 231|h1 57|h2 420|pass 11|paid 4|days_pass 32|days_first_pay 54
+PLAN|base_q5|conc2|q5|stop300|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass 52|days_first_pay -1
+PLAN|base_q5|conc2|q5|stop300|extreme|lucid_flex_50k|ev 104|h1 40|h2 175|pass 11|paid 4|days_pass 32|days_first_pay 54
+PLAN|base_q5|conc2|q5|stop300|extreme|builder_25k|ev 17|h1 16|h2 17|pass 24|paid 2|days_pass 2|days_first_pay 38
+PLAN|base_q5|conc2|q5|stop300|extreme|select_daily_25k|ev 14|h1 0|h2 29|pass 3|paid 1|days_pass 36|days_first_pay 42
+PLAN|base_q5|conc2|q5|stop300|extreme|select_flex_25k|ev 5|h1 0|h2 11|pass 3|paid 0|days_pass 36|days_first_pay 78
+PLAN|base_q5|conc2|q5|stop300|extreme|select_daily_100k|ev 193|h1 21|h2 380|pass 6|paid 4|days_pass 45|days_first_pay 48
+PLAN|base_q5|conc2|q5|stop300|extreme|select_daily_150k|ev 199|h1 91|h2 317|pass 6|paid 4|days_pass 50|days_first_pay 57
+PLAN|base_q5|conc2|q5|stop300|extreme|select_flex_100k|ev 146|h1 14|h2 290|pass 6|paid 3|days_pass 46|days_first_pay 82
+PLAN|base_q5|conc2|q5|stop300|extreme|select_flex_150k|ev 140|h1 52|h2 237|pass 6|paid 3|days_pass 50|days_first_pay 88
+DAILY|base_q5|conc2|q5|stop600|extreme|sessions 2581|mean 104.6|sd 1472.2|winning_days 17.8%
+ACCT|base_q5|conc2|q5|stop600|extreme|total 269881|dd_eod 31247|dd_intraday 31686|worst_month -9654|losing_months 70/147|traded_days 1997
+PLAN|base_q5|conc2|q5|stop600|extreme|select_daily_50k|ev 97|h1 110|h2 82|pass 9|paid 4|days_pass 28|days_first_pay 31
+PLAN|base_q5|conc2|q5|stop600|extreme|apex_eod_50k|ev 163|h1 200|h2 122|pass 35|paid 6|days_pass 4|days_first_pay 37
+PLAN|base_q5|conc2|q5|stop600|extreme|builder_50k|ev 171|h1 200|h2 140|pass 35|paid 6|days_pass 4|days_first_pay 36
+PLAN|base_q5|conc2|q5|stop600|extreme|topstep_50k|ev 308|h1 328|h2 285|pass 16|paid 4|days_pass 20|days_first_pay 46
+PLAN|base_q5|conc2|q5|stop600|extreme|mff_rapid_eod_50k|ev 125|h1 208|h2 35|pass 4|paid 1|days_pass 44|days_first_pay 53
+PLAN|base_q5|conc2|q5|stop600|extreme|lucid_flex_50k|ev 133|h1 159|h2 104|pass 15|paid 4|days_pass 19|days_first_pay 45
+PLAN|base_q5|conc2|q5|stop600|extreme|builder_25k|ev 35|h1 32|h2 39|pass 28|paid 3|days_pass 2|days_first_pay 36
+PLAN|base_q5|conc2|q5|stop600|extreme|select_daily_25k|ev 40|h1 51|h2 29|pass 6|paid 2|days_pass 26|days_first_pay 31
+PLAN|base_q5|conc2|q5|stop600|extreme|select_flex_25k|ev 56|h1 85|h2 25|pass 6|paid 2|days_pass 26|days_first_pay 51
+PLAN|base_q5|conc2|q5|stop600|extreme|select_daily_100k|ev 173|h1 163|h2 185|pass 13|paid 5|days_pass 28|days_first_pay 33
+PLAN|base_q5|conc2|q5|stop600|extreme|select_daily_150k|ev 276|h1 170|h2 391|pass 15|paid 6|days_pass 32|days_first_pay 41
+PLAN|base_q5|conc2|q5|stop600|extreme|select_flex_100k|ev 243|h1 222|h2 266|pass 14|paid 6|days_pass 30|days_first_pay 53
+PLAN|base_q5|conc2|q5|stop600|extreme|select_flex_150k|ev 704|h1 708|h2 699|pass 18|paid 11|days_pass 36|days_first_pay 56
+DAILY|base_q5|conc2|q5|stop0|close|sessions 2581|mean 171.5|sd 1884.6|winning_days 27.0%
+ACCT|base_q5|conc2|q5|stop0|close|total 442626|dd_eod 32459|dd_intraday 32850|worst_month -19151|losing_months 60/147|traded_days 1997
+PLAN|base_q5|conc2|q5|stop0|close|select_daily_50k|ev 212|h1 115|h2 316|pass 13|paid 5|days_pass 23|days_first_pay 29
+PLAN|base_q5|conc2|q5|stop0|close|apex_eod_50k|ev 180|h1 112|h2 253|pass 36|paid 5|days_pass 3|days_first_pay 24
+PLAN|base_q5|conc2|q5|stop0|close|builder_50k|ev 221|h1 192|h2 253|pass 35|paid 7|days_pass 3|days_first_pay 33
+PLAN|base_q5|conc2|q5|stop0|close|topstep_50k|ev 640|h1 275|h2 1039|pass 20|paid 5|days_pass 17|days_first_pay 36
+PLAN|base_q5|conc2|q5|stop0|close|mff_rapid_eod_50k|ev 131|h1 206|h2 48|pass 8|paid 1|days_pass 42|days_first_pay 51
+PLAN|base_q5|conc2|q5|stop0|close|lucid_flex_50k|ev 389|h1 227|h2 566|pass 19|paid 6|days_pass 16|days_first_pay 33
+PLAN|base_q5|conc2|q5|stop0|close|builder_25k|ev 63|h1 36|h2 92|pass 25|paid 3|days_pass 2|days_first_pay 21
+PLAN|base_q5|conc2|q5|stop0|close|select_daily_25k|ev 48|h1 58|h2 37|pass 8|paid 2|days_pass 22|days_first_pay 25
+PLAN|base_q5|conc2|q5|stop0|close|select_flex_25k|ev 81|h1 85|h2 76|pass 8|paid 1|days_pass 22|days_first_pay 45
+PLAN|base_q5|conc2|q5|stop0|close|select_daily_100k|ev 445|h1 434|h2 458|pass 16|paid 6|days_pass 25|days_first_pay 32
+PLAN|base_q5|conc2|q5|stop0|close|select_daily_150k|ev 597|h1 683|h2 503|pass 20|paid 9|days_pass 28|days_first_pay 32
+PLAN|base_q5|conc2|q5|stop0|close|select_flex_100k|ev 487|h1 478|h2 496|pass 18|paid 5|days_pass 26|days_first_pay 43
+PLAN|base_q5|conc2|q5|stop0|close|select_flex_150k|ev 1257|h1 1438|h2 1059|pass 24|paid 10|days_pass 28|days_first_pay 51
+DAILY|base_q5|conc2|q5|stop300|close|sessions 2581|mean 134.4|sd 1255.0|winning_days 13.4%
+ACCT|base_q5|conc2|q5|stop300|close|total 346892|dd_eod 20586|dd_intraday 20864|worst_month -5250|losing_months 58/147|traded_days 1997
+PLAN|base_q5|conc2|q5|stop300|close|select_daily_50k|ev 369|h1 146|h2 613|pass 16|paid 6|days_pass 36|days_first_pay 46
+PLAN|base_q5|conc2|q5|stop300|close|apex_eod_50k|ev 363|h1 280|h2 454|pass 44|paid 14|days_pass 6|days_first_pay 48
+PLAN|base_q5|conc2|q5|stop300|close|builder_50k|ev 359|h1 271|h2 454|pass 44|paid 14|days_pass 6|days_first_pay 42
+PLAN|base_q5|conc2|q5|stop300|close|topstep_50k|ev 827|h1 677|h2 991|pass 25|paid 11|days_pass 30|days_first_pay 63
+PLAN|base_q5|conc2|q5|stop300|close|mff_rapid_eod_50k|ev 185|h1 36|h2 349|pass 4|paid 2|days_pass 51|days_first_pay 58
+PLAN|base_q5|conc2|q5|stop300|close|lucid_flex_50k|ev 402|h1 341|h2 468|pass 25|paid 11|days_pass 29|days_first_pay 63
+PLAN|base_q5|conc2|q5|stop300|close|builder_25k|ev 69|h1 64|h2 74|pass 34|paid 5|days_pass 3|days_first_pay 35
+PLAN|base_q5|conc2|q5|stop300|close|select_daily_25k|ev 22|h1 5|h2 42|pass 10|paid 1|days_pass 36|days_first_pay 38
+PLAN|base_q5|conc2|q5|stop300|close|select_flex_25k|ev 29|h1 20|h2 38|pass 10|paid 1|days_pass 36|days_first_pay 72
+PLAN|base_q5|conc2|q5|stop300|close|select_daily_100k|ev 590|h1 328|h2 877|pass 19|paid 10|days_pass 37|days_first_pay 51
+PLAN|base_q5|conc2|q5|stop300|close|select_daily_150k|ev 1214|h1 1152|h2 1281|pass 21|paid 14|days_pass 42|days_first_pay 61
+PLAN|base_q5|conc2|q5|stop300|close|select_flex_100k|ev 614|h1 496|h2 744|pass 21|paid 11|days_pass 41|days_first_pay 70
+PLAN|base_q5|conc2|q5|stop300|close|select_flex_150k|ev 1039|h1 811|h2 1288|pass 22|paid 16|days_pass 43|days_first_pay 72
+DAILY|base_q5|conc2|q5|stop600|close|sessions 2581|mean 155.6|sd 1537.7|winning_days 19.3%
+ACCT|base_q5|conc2|q5|stop600|close|total 401703|dd_eod 25858|dd_intraday 26229|worst_month -9641|losing_months 62/147|traded_days 1997
+PLAN|base_q5|conc2|q5|stop600|close|select_daily_50k|ev 293|h1 131|h2 469|pass 16|paid 6|days_pass 28|days_first_pay 33
+PLAN|base_q5|conc2|q5|stop600|close|apex_eod_50k|ev 338|h1 272|h2 410|pass 42|paid 11|days_pass 4|days_first_pay 35
+PLAN|base_q5|conc2|q5|stop600|close|builder_50k|ev 359|h1 272|h2 454|pass 42|paid 12|days_pass 4|days_first_pay 31
+PLAN|base_q5|conc2|q5|stop600|close|topstep_50k|ev 1029|h1 800|h2 1279|pass 22|paid 9|days_pass 20|days_first_pay 45
+PLAN|base_q5|conc2|q5|stop600|close|mff_rapid_eod_50k|ev 194|h1 208|h2 179|pass 6|paid 3|days_pass 41|days_first_pay 47
+PLAN|base_q5|conc2|q5|stop600|close|lucid_flex_50k|ev 456|h1 383|h2 535|pass 21|paid 9|days_pass 20|days_first_pay 45
+PLAN|base_q5|conc2|q5|stop600|close|builder_25k|ev 79|h1 52|h2 109|pass 31|paid 4|days_pass 2|days_first_pay 21
+PLAN|base_q5|conc2|q5|stop600|close|select_daily_25k|ev 116|h1 128|h2 103|pass 11|paid 4|days_pass 26|days_first_pay 34
+PLAN|base_q5|conc2|q5|stop600|close|select_flex_25k|ev 112|h1 90|h2 136|pass 11|paid 3|days_pass 26|days_first_pay 48
+PLAN|base_q5|conc2|q5|stop600|close|select_daily_100k|ev 572|h1 257|h2 916|pass 19|paid 8|days_pass 28|days_first_pay 36
+PLAN|base_q5|conc2|q5|stop600|close|select_daily_150k|ev 848|h1 280|h2 1468|pass 22|paid 10|days_pass 31|days_first_pay 41
+PLAN|base_q5|conc2|q5|stop600|close|select_flex_100k|ev 621|h1 338|h2 931|pass 21|paid 9|days_pass 28|days_first_pay 48
+PLAN|base_q5|conc2|q5|stop600|close|select_flex_150k|ev 1367|h1 871|h2 1909|pass 25|paid 16|days_pass 33|days_first_pay 50
+DAILY|base_q10|conc2|q10|stop0|extreme|sessions 2581|mean 343.0|sd 3769.2|winning_days 27.0%
+ACCT|base_q10|conc2|q10|stop0|extreme|total 885252|dd_eod 64919|dd_intraday 65929|worst_month -38302|losing_months 60/147|traded_days 1997
+PLAN|base_q10|conc2|q10|stop0|extreme|select_daily_50k|ev 42|h1 20|h2 67|pass 7|paid 1|days_pass 22|days_first_pay 24
+PLAN|base_q10|conc2|q10|stop0|extreme|apex_eod_50k|ev 63|h1 32|h2 96|pass 27|paid 2|days_pass 1|days_first_pay 21
+PLAN|base_q10|conc2|q10|stop0|extreme|builder_50k|ev 67|h1 72|h2 61|pass 22|paid 2|days_pass 2|days_first_pay 35
+PLAN|base_q10|conc2|q10|stop0|extreme|topstep_50k|ev 124|h1 237|h2 0|pass 8|paid 0|days_pass 17|days_first_pay 39
+PLAN|base_q10|conc2|q10|stop0|extreme|mff_rapid_eod_50k|ev 76|h1 133|h2 14|pass 5|paid 1|days_pass 42|days_first_pay 46
+PLAN|base_q10|conc2|q10|stop0|extreme|lucid_flex_50k|ev 100|h1 80|h2 122|pass 11|paid 1|days_pass 16|days_first_pay 31
+PLAN|base_q10|conc2|q10|stop0|extreme|builder_25k|ev 4|h1 4|h2 4|pass 14|paid 0|days_pass 1|days_first_pay 46
+PLAN|base_q10|conc2|q10|stop0|extreme|select_daily_25k|ev 1|h1 0|h2 2|pass 4|paid 0|days_pass 23|days_first_pay 43
+PLAN|base_q10|conc2|q10|stop0|extreme|select_flex_25k|ev 13|h1 0|h2 27|pass 4|paid 0|days_pass 23|days_first_pay 51
+PLAN|base_q10|conc2|q10|stop0|extreme|select_daily_100k|ev 87|h1 49|h2 128|pass 9|paid 3|days_pass 23|days_first_pay 25
+PLAN|base_q10|conc2|q10|stop0|extreme|select_daily_150k|ev 295|h1 132|h2 473|pass 11|paid 3|days_pass 23|days_first_pay 27
+PLAN|base_q10|conc2|q10|stop0|extreme|select_flex_100k|ev 365|h1 406|h2 320|pass 10|paid 2|days_pass 23|days_first_pay 36
+PLAN|base_q10|conc2|q10|stop0|extreme|select_flex_150k|ev 543|h1 568|h2 516|pass 13|paid 3|days_pass 25|days_first_pay 45
+DAILY|base_q10|conc2|q10|stop300|extreme|sessions 2581|mean 68.5|sd 1783.0|winning_days 5.9%
+ACCT|base_q10|conc2|q10|stop300|extreme|total 176860|dd_eod 34699|dd_intraday 34865|worst_month -6655|losing_months 84/147|traded_days 1997
+PLAN|base_q10|conc2|q10|stop300|extreme|select_daily_50k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 41|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop300|extreme|apex_eod_50k|ev 13|h1 24|h2 0|pass 25|paid 1|days_pass 5|days_first_pay 76
+PLAN|base_q10|conc2|q10|stop300|extreme|builder_50k|ev 13|h1 24|h2 0|pass 25|paid 1|days_pass 5|days_first_pay 36
+PLAN|base_q10|conc2|q10|stop300|extreme|topstep_50k|ev 63|h1 60|h2 66|pass 4|paid 1|days_pass 37|days_first_pay 146
+PLAN|base_q10|conc2|q10|stop300|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop300|extreme|lucid_flex_50k|ev 25|h1 24|h2 26|pass 4|paid 1|days_pass 37|days_first_pay 146
+PLAN|base_q10|conc2|q10|stop300|extreme|builder_25k|ev 2|h1 4|h2 0|pass 16|paid 0|days_pass 2|days_first_pay 31
+PLAN|base_q10|conc2|q10|stop300|extreme|select_daily_25k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass 56|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop300|extreme|select_flex_25k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass 56|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop300|extreme|select_daily_100k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 41|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop300|extreme|select_daily_150k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 46|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop300|extreme|select_flex_100k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 41|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop300|extreme|select_flex_150k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 46|days_first_pay -1
+DAILY|base_q10|conc2|q10|stop600|extreme|sessions 2581|mean 138.5|sd 2350.6|winning_days 10.8%
+ACCT|base_q10|conc2|q10|stop600|extreme|total 357500|dd_eod 46442|dd_intraday 46608|worst_month -10488|losing_months 75/147|traded_days 1997
+PLAN|base_q10|conc2|q10|stop600|extreme|select_daily_50k|ev 30|h1 0|h2 62|pass 3|paid 1|days_pass 36|days_first_pay 42
+PLAN|base_q10|conc2|q10|stop600|extreme|apex_eod_50k|ev 33|h1 32|h2 35|pass 24|paid 2|days_pass 2|days_first_pay 44
+PLAN|base_q10|conc2|q10|stop600|extreme|builder_50k|ev 33|h1 32|h2 35|pass 24|paid 2|days_pass 2|days_first_pay 38
+PLAN|base_q10|conc2|q10|stop600|extreme|topstep_50k|ev 21|h1 0|h2 44|pass 6|paid 0|days_pass 27|days_first_pay 42
+PLAN|base_q10|conc2|q10|stop600|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass 52|days_first_pay -1
+PLAN|base_q10|conc2|q10|stop600|extreme|lucid_flex_50k|ev 8|h1 0|h2 17|pass 6|paid 0|days_pass 27|days_first_pay 42
+PLAN|base_q10|conc2|q10|stop600|extreme|builder_25k|ev 6|h1 8|h2 4|pass 17|paid 1|days_pass 1|days_first_pay 36
+PLAN|base_q10|conc2|q10|stop600|extreme|select_daily_25k|ev 10|h1 0|h2 21|pass 3|paid 0|days_pass 36|days_first_pay 38
+PLAN|base_q10|conc2|q10|stop600|extreme|select_flex_25k|ev 3|h1 0|h2 5|pass 3|paid 0|days_pass 36|days_first_pay 47
+PLAN|base_q10|conc2|q10|stop600|extreme|select_daily_100k|ev 72|h1 0|h2 151|pass 4|paid 1|days_pass 39|days_first_pay 42
+PLAN|base_q10|conc2|q10|stop600|extreme|select_daily_150k|ev 212|h1 30|h2 412|pass 5|paid 3|days_pass 44|days_first_pay 38
+PLAN|base_q10|conc2|q10|stop600|extreme|select_flex_100k|ev 58|h1 0|h2 122|pass 4|paid 1|days_pass 44|days_first_pay 78
+PLAN|base_q10|conc2|q10|stop600|extreme|select_flex_150k|ev 141|h1 18|h2 275|pass 5|paid 2|days_pass 46|days_first_pay 78
+DAILY|base_q10|conc2|q10|stop0|close|sessions 2581|mean 343.0|sd 3769.2|winning_days 27.0%
+ACCT|base_q10|conc2|q10|stop0|close|total 885252|dd_eod 64919|dd_intraday 65700|worst_month -38302|losing_months 60/147|traded_days 1997
+PLAN|base_q10|conc2|q10|stop0|close|select_daily_50k|ev 102|h1 125|h2 78|pass 8|paid 2|days_pass 22|days_first_pay 25
+PLAN|base_q10|conc2|q10|stop0|close|apex_eod_50k|ev 75|h1 32|h2 122|pass 29|paid 2|days_pass 1|days_first_pay 21
+PLAN|base_q10|conc2|q10|stop0|close|builder_50k|ev 92|h1 88|h2 96|pass 24|paid 2|days_pass 2|days_first_pay 23
+PLAN|base_q10|conc2|q10|stop0|close|topstep_50k|ev 178|h1 250|h2 99|pass 10|paid 1|days_pass 16|days_first_pay 33
+PLAN|base_q10|conc2|q10|stop0|close|mff_rapid_eod_50k|ev 90|h1 136|h2 40|pass 5|paid 1|days_pass 42|days_first_pay 51
+PLAN|base_q10|conc2|q10|stop0|close|lucid_flex_50k|ev 167|h1 80|h2 262|pass 12|paid 2|days_pass 15|days_first_pay 33
+PLAN|base_q10|conc2|q10|stop0|close|builder_25k|ev 15|h1 20|h2 9|pass 19|paid 1|days_pass 1|days_first_pay 28
+PLAN|base_q10|conc2|q10|stop0|close|select_daily_25k|ev 1|h1 0|h2 2|pass 5|paid 0|days_pass 23|days_first_pay 43
+PLAN|base_q10|conc2|q10|stop0|close|select_flex_25k|ev 44|h1 60|h2 27|pass 5|paid 1|days_pass 23|days_first_pay 50
+PLAN|base_q10|conc2|q10|stop0|close|select_daily_100k|ev 264|h1 74|h2 473|pass 9|paid 3|days_pass 23|days_first_pay 26
+PLAN|base_q10|conc2|q10|stop0|close|select_daily_150k|ev 384|h1 152|h2 637|pass 11|paid 4|days_pass 23|days_first_pay 28
+PLAN|base_q10|conc2|q10|stop0|close|select_flex_100k|ev 365|h1 406|h2 320|pass 10|paid 2|days_pass 23|days_first_pay 36
+PLAN|base_q10|conc2|q10|stop0|close|select_flex_150k|ev 616|h1 568|h2 668|pass 14|paid 4|days_pass 25|days_first_pay 50
+DAILY|base_q10|conc2|q10|stop300|close|sessions 2581|mean 227.6|sd 2171.4|winning_days 8.3%
+ACCT|base_q10|conc2|q10|stop300|close|total 587550|dd_eod 25363|dd_intraday 25404|worst_month -5750|losing_months 69/147|traded_days 1997
+PLAN|base_q10|conc2|q10|stop300|close|select_daily_50k|ev 219|h1 163|h2 281|pass 8|paid 5|days_pass 42|days_first_pay 50
+PLAN|base_q10|conc2|q10|stop300|close|apex_eod_50k|ev 134|h1 168|h2 96|pass 37|paid 6|days_pass 5|days_first_pay 58
+PLAN|base_q10|conc2|q10|stop300|close|builder_50k|ev 146|h1 192|h2 96|pass 37|paid 6|days_pass 5|days_first_pay 53
+PLAN|base_q10|conc2|q10|stop300|close|topstep_50k|ev 306|h1 264|h2 352|pass 14|paid 5|days_pass 37|days_first_pay 86
+PLAN|base_q10|conc2|q10|stop300|close|mff_rapid_eod_50k|ev 33|h1 0|h2 70|pass 1|paid 0|days_pass 45|days_first_pay 51
+PLAN|base_q10|conc2|q10|stop300|close|lucid_flex_50k|ev 134|h1 120|h2 148|pass 14|paid 5|days_pass 37|days_first_pay 86
+PLAN|base_q10|conc2|q10|stop300|close|builder_25k|ev 31|h1 44|h2 17|pass 27|paid 3|days_pass 2|days_first_pay 44
+PLAN|base_q10|conc2|q10|stop300|close|select_daily_25k|ev 27|h1 12|h2 44|pass 5|paid 1|days_pass 42|days_first_pay 47
+PLAN|base_q10|conc2|q10|stop300|close|select_flex_25k|ev 23|h1 15|h2 33|pass 5|paid 1|days_pass 42|days_first_pay 81
+PLAN|base_q10|conc2|q10|stop300|close|select_daily_100k|ev 371|h1 246|h2 507|pass 10|paid 6|days_pass 44|days_first_pay 52
+PLAN|base_q10|conc2|q10|stop300|close|select_daily_150k|ev 619|h1 516|h2 731|pass 12|paid 7|days_pass 45|days_first_pay 55
+PLAN|base_q10|conc2|q10|stop300|close|select_flex_100k|ev 322|h1 266|h2 382|pass 10|paid 6|days_pass 44|days_first_pay 93
+PLAN|base_q10|conc2|q10|stop300|close|select_flex_150k|ev 620|h1 578|h2 665|pass 13|paid 9|days_pass 46|days_first_pay 98
+DAILY|base_q10|conc2|q10|stop600|close|sessions 2581|mean 268.8|sd 2509.9|winning_days 13.4%
+ACCT|base_q10|conc2|q10|stop600|close|total 693785|dd_eod 41173|dd_intraday 41728|worst_month -10500|losing_months 58/147|traded_days 1997
+PLAN|base_q10|conc2|q10|stop600|close|select_daily_50k|ev 47|h1 11|h2 87|pass 10|paid 1|days_pass 36|days_first_pay 38
+PLAN|base_q10|conc2|q10|stop600|close|apex_eod_50k|ev 134|h1 120|h2 148|pass 34|paid 5|days_pass 3|days_first_pay 39
+PLAN|base_q10|conc2|q10|stop600|close|builder_50k|ev 138|h1 128|h2 148|pass 34|paid 5|days_pass 3|days_first_pay 35
+PLAN|base_q10|conc2|q10|stop600|close|topstep_50k|ev 275|h1 300|h2 248|pass 16|paid 3|days_pass 29|days_first_pay 63
+PLAN|base_q10|conc2|q10|stop600|close|mff_rapid_eod_50k|ev 125|h1 96|h2 157|pass 3|paid 1|days_pass 47|days_first_pay 52
+PLAN|base_q10|conc2|q10|stop600|close|lucid_flex_50k|ev 112|h1 120|h2 104|pass 16|paid 3|days_pass 29|days_first_pay 63
+PLAN|base_q10|conc2|q10|stop600|close|builder_25k|ev 29|h1 40|h2 17|pass 25|paid 2|days_pass 2|days_first_pay 35
+PLAN|base_q10|conc2|q10|stop600|close|select_daily_25k|ev 31|h1 22|h2 42|pass 6|paid 1|days_pass 36|days_first_pay 38
+PLAN|base_q10|conc2|q10|stop600|close|select_flex_25k|ev 23|h1 20|h2 27|pass 6|paid 1|days_pass 36|days_first_pay 76
+PLAN|base_q10|conc2|q10|stop600|close|select_daily_100k|ev 106|h1 72|h2 143|pass 12|paid 2|days_pass 36|days_first_pay 43
+PLAN|base_q10|conc2|q10|stop600|close|select_daily_150k|ev 524|h1 151|h2 931|pass 15|paid 4|days_pass 37|days_first_pay 41
+PLAN|base_q10|conc2|q10|stop600|close|select_flex_100k|ev 136|h1 140|h2 131|pass 14|paid 2|days_pass 36|days_first_pay 72
+PLAN|base_q10|conc2|q10|stop600|close|select_flex_150k|ev 575|h1 414|h2 750|pass 17|paid 7|days_pass 39|days_first_pay 65
+DAILY|S3_q1|conc2|q1|stop0|extreme|sessions 2581|mean 63.0|sd 588.2|winning_days 26.9%
+ACCT|S3_q1|conc2|q1|stop0|extreme|total 162663|dd_eod 9632|dd_intraday 9834|worst_month -5405|losing_months 61/147|traded_days 1997
+PLAN|S3_q1|conc2|q1|stop0|extreme|select_daily_50k|ev 952|h1 945|h2 959|pass 33|paid 17|days_pass 27|days_first_pay 46
+PLAN|S3_q1|conc2|q1|stop0|extreme|apex_eod_50k|ev 830|h1 900|h2 755|pass 48|paid 24|days_pass 17|days_first_pay 48
+PLAN|S3_q1|conc2|q1|stop0|extreme|builder_50k|ev 935|h1 913|h2 959|pass 50|paid 27|days_pass 17|days_first_pay 47
+PLAN|S3_q1|conc2|q1|stop0|extreme|topstep_50k|ev 1456|h1 1502|h2 1406|pass 42|paid 27|days_pass 23|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop0|extreme|mff_rapid_eod_50k|ev 540|h1 563|h2 515|pass 19|paid 11|days_pass 42|days_first_pay 61
+PLAN|S3_q1|conc2|q1|stop0|extreme|lucid_flex_50k|ev 1094|h1 1138|h2 1046|pass 40|paid 25|days_pass 23|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop0|extreme|builder_25k|ev 204|h1 178|h2 234|pass 41|paid 12|days_pass 6|days_first_pay 30
+PLAN|S3_q1|conc2|q1|stop0|extreme|select_daily_25k|ev 237|h1 287|h2 182|pass 23|paid 9|days_pass 23|days_first_pay 33
+PLAN|S3_q1|conc2|q1|stop0|extreme|select_flex_25k|ev 289|h1 293|h2 284|pass 23|paid 8|days_pass 23|days_first_pay 48
+PLAN|S3_q1|conc2|q1|stop0|extreme|select_daily_100k|ev 1368|h1 1468|h2 1258|pass 30|paid 18|days_pass 37|days_first_pay 61
+PLAN|S3_q1|conc2|q1|stop0|extreme|select_daily_150k|ev 829|h1 1296|h2 320|pass 15|paid 11|days_pass 49|days_first_pay 73
+PLAN|S3_q1|conc2|q1|stop0|extreme|select_flex_100k|ev 1414|h1 1458|h2 1366|pass 31|paid 23|days_pass 37|days_first_pay 63
+PLAN|S3_q1|conc2|q1|stop0|extreme|select_flex_150k|ev 880|h1 1339|h2 380|pass 15|paid 14|days_pass 49|days_first_pay 73
+DAILY|S3_q1|conc2|q1|stop300|extreme|sessions 2581|mean 46.3|sd 525.8|winning_days 22.5%
+ACCT|S3_q1|conc2|q1|stop300|extreme|total 119429|dd_eod 10736|dd_intraday 10886|worst_month -3486|losing_months 58/147|traded_days 1997
+PLAN|S3_q1|conc2|q1|stop300|extreme|select_daily_50k|ev 611|h1 441|h2 796|pass 27|paid 13|days_pass 32|days_first_pay 49
+PLAN|S3_q1|conc2|q1|stop300|extreme|apex_eod_50k|ev 558|h1 524|h2 595|pass 47|paid 20|days_pass 20|days_first_pay 61
+PLAN|S3_q1|conc2|q1|stop300|extreme|builder_50k|ev 547|h1 509|h2 589|pass 47|paid 20|days_pass 20|days_first_pay 61
+PLAN|S3_q1|conc2|q1|stop300|extreme|topstep_50k|ev 998|h1 931|h2 1071|pass 35|paid 25|days_pass 28|days_first_pay 53
+PLAN|S3_q1|conc2|q1|stop300|extreme|mff_rapid_eod_50k|ev 216|h1 79|h2 366|pass 10|paid 6|days_pass 38|days_first_pay 59
+PLAN|S3_q1|conc2|q1|stop300|extreme|lucid_flex_50k|ev 866|h1 764|h2 978|pass 35|paid 24|days_pass 27|days_first_pay 53
+PLAN|S3_q1|conc2|q1|stop300|extreme|builder_25k|ev 234|h1 260|h2 205|pass 41|paid 15|days_pass 7|days_first_pay 30
+PLAN|S3_q1|conc2|q1|stop300|extreme|select_daily_25k|ev 212|h1 179|h2 248|pass 18|paid 6|days_pass 26|days_first_pay 33
+PLAN|S3_q1|conc2|q1|stop300|extreme|select_flex_25k|ev 192|h1 132|h2 257|pass 18|paid 6|days_pass 26|days_first_pay 44
+PLAN|S3_q1|conc2|q1|stop300|extreme|select_daily_100k|ev 553|h1 522|h2 588|pass 19|paid 10|days_pass 39|days_first_pay 67
+PLAN|S3_q1|conc2|q1|stop300|extreme|select_daily_150k|ev 205|h1 220|h2 190|pass 7|paid 6|days_pass 46|days_first_pay 87
+PLAN|S3_q1|conc2|q1|stop300|extreme|select_flex_100k|ev 550|h1 497|h2 608|pass 20|paid 13|days_pass 40|days_first_pay 68
+PLAN|S3_q1|conc2|q1|stop300|extreme|select_flex_150k|ev 234|h1 190|h2 282|pass 7|paid 7|days_pass 46|days_first_pay 75
+DAILY|S3_q1|conc2|q1|stop600|extreme|sessions 2581|mean 62.3|sd 580.4|winning_days 26.5%
+ACCT|S3_q1|conc2|q1|stop600|extreme|total 160860|dd_eod 8582|dd_intraday 8784|worst_month -5014|losing_months 61/147|traded_days 1997
+PLAN|S3_q1|conc2|q1|stop600|extreme|select_daily_50k|ev 1126|h1 1167|h2 1081|pass 34|paid 19|days_pass 31|days_first_pay 46
+PLAN|S3_q1|conc2|q1|stop600|extreme|apex_eod_50k|ev 954|h1 971|h2 935|pass 51|paid 27|days_pass 17|days_first_pay 51
+PLAN|S3_q1|conc2|q1|stop600|extreme|builder_50k|ev 971|h1 968|h2 974|pass 51|paid 28|days_pass 17|days_first_pay 49
+PLAN|S3_q1|conc2|q1|stop600|extreme|topstep_50k|ev 1483|h1 1547|h2 1413|pass 42|paid 27|days_pass 23|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop600|extreme|mff_rapid_eod_50k|ev 661|h1 626|h2 699|pass 19|paid 12|days_pass 42|days_first_pay 58
+PLAN|S3_q1|conc2|q1|stop600|extreme|lucid_flex_50k|ev 1216|h1 1131|h2 1308|pass 42|paid 27|days_pass 23|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop600|extreme|builder_25k|ev 219|h1 194|h2 247|pass 42|paid 12|days_pass 6|days_first_pay 31
+PLAN|S3_q1|conc2|q1|stop600|extreme|select_daily_25k|ev 273|h1 359|h2 180|pass 23|paid 8|days_pass 25|days_first_pay 34
+PLAN|S3_q1|conc2|q1|stop600|extreme|select_flex_25k|ev 341|h1 379|h2 300|pass 23|paid 9|days_pass 25|days_first_pay 46
+PLAN|S3_q1|conc2|q1|stop600|extreme|select_daily_100k|ev 1534|h1 1717|h2 1334|pass 29|paid 19|days_pass 38|days_first_pay 62
+PLAN|S3_q1|conc2|q1|stop600|extreme|select_daily_150k|ev 836|h1 1298|h2 331|pass 14|paid 11|days_pass 49|days_first_pay 76
+PLAN|S3_q1|conc2|q1|stop600|extreme|select_flex_100k|ev 1544|h1 1633|h2 1447|pass 31|paid 24|days_pass 38|days_first_pay 63
+PLAN|S3_q1|conc2|q1|stop600|extreme|select_flex_150k|ev 866|h1 1289|h2 404|pass 14|paid 13|days_pass 49|days_first_pay 73
+DAILY|S3_q1|conc2|q1|stop0|close|sessions 2581|mean 63.0|sd 588.2|winning_days 26.9%
+ACCT|S3_q1|conc2|q1|stop0|close|total 162663|dd_eod 9632|dd_intraday 9789|worst_month -5405|losing_months 61/147|traded_days 1997
+PLAN|S3_q1|conc2|q1|stop0|close|select_daily_50k|ev 1049|h1 945|h2 1162|pass 35|paid 19|days_pass 28|days_first_pay 48
+PLAN|S3_q1|conc2|q1|stop0|close|apex_eod_50k|ev 915|h1 900|h2 933|pass 51|paid 27|days_pass 17|days_first_pay 49
+PLAN|S3_q1|conc2|q1|stop0|close|builder_50k|ev 954|h1 913|h2 999|pass 51|paid 28|days_pass 17|days_first_pay 48
+PLAN|S3_q1|conc2|q1|stop0|close|topstep_50k|ev 1522|h1 1502|h2 1544|pass 43|paid 27|days_pass 23|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop0|close|mff_rapid_eod_50k|ev 564|h1 563|h2 565|pass 20|paid 12|days_pass 43|days_first_pay 65
+PLAN|S3_q1|conc2|q1|stop0|close|lucid_flex_50k|ev 1248|h1 1138|h2 1367|pass 43|paid 27|days_pass 23|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop0|close|builder_25k|ev 221|h1 178|h2 269|pass 43|paid 13|days_pass 6|days_first_pay 30
+PLAN|S3_q1|conc2|q1|stop0|close|select_daily_25k|ev 324|h1 333|h2 314|pass 24|paid 10|days_pass 23|days_first_pay 33
+PLAN|S3_q1|conc2|q1|stop0|close|select_flex_25k|ev 335|h1 293|h2 382|pass 24|paid 9|days_pass 23|days_first_pay 48
+PLAN|S3_q1|conc2|q1|stop0|close|select_daily_100k|ev 1368|h1 1468|h2 1258|pass 30|paid 18|days_pass 37|days_first_pay 61
+PLAN|S3_q1|conc2|q1|stop0|close|select_daily_150k|ev 831|h1 1296|h2 323|pass 15|paid 11|days_pass 49|days_first_pay 73
+PLAN|S3_q1|conc2|q1|stop0|close|select_flex_100k|ev 1418|h1 1458|h2 1375|pass 31|paid 23|days_pass 37|days_first_pay 63
+PLAN|S3_q1|conc2|q1|stop0|close|select_flex_150k|ev 892|h1 1362|h2 380|pass 15|paid 14|days_pass 49|days_first_pay 73
+DAILY|S3_q1|conc2|q1|stop300|close|sessions 2581|mean 55.7|sd 531.5|winning_days 23.4%
+ACCT|S3_q1|conc2|q1|stop300|close|total 143839|dd_eod 8208|dd_intraday 8319|worst_month -3315|losing_months 58/147|traded_days 1997
+PLAN|S3_q1|conc2|q1|stop300|close|select_daily_50k|ev 1079|h1 1256|h2 886|pass 30|paid 19|days_pass 33|days_first_pay 51
+PLAN|S3_q1|conc2|q1|stop300|close|apex_eod_50k|ev 834|h1 957|h2 699|pass 53|paid 25|days_pass 21|days_first_pay 60
+PLAN|S3_q1|conc2|q1|stop300|close|builder_50k|ev 821|h1 941|h2 690|pass 53|paid 26|days_pass 21|days_first_pay 56
+PLAN|S3_q1|conc2|q1|stop300|close|topstep_50k|ev 1403|h1 1604|h2 1183|pass 39|paid 29|days_pass 28|days_first_pay 50
+PLAN|S3_q1|conc2|q1|stop300|close|mff_rapid_eod_50k|ev 315|h1 251|h2 385|pass 13|paid 7|days_pass 42|days_first_pay 63
+PLAN|S3_q1|conc2|q1|stop300|close|lucid_flex_50k|ev 1122|h1 1172|h2 1068|pass 38|paid 29|days_pass 28|days_first_pay 51
+PLAN|S3_q1|conc2|q1|stop300|close|builder_25k|ev 286|h1 352|h2 214|pass 44|paid 16|days_pass 7|days_first_pay 30
+PLAN|S3_q1|conc2|q1|stop300|close|select_daily_25k|ev 359|h1 453|h2 256|pass 22|paid 10|days_pass 28|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop300|close|select_flex_25k|ev 321|h1 379|h2 257|pass 22|paid 10|days_pass 28|days_first_pay 52
+PLAN|S3_q1|conc2|q1|stop300|close|select_daily_100k|ev 795|h1 971|h2 603|pass 23|paid 13|days_pass 41|days_first_pay 67
+PLAN|S3_q1|conc2|q1|stop300|close|select_daily_150k|ev 286|h1 370|h2 194|pass 9|paid 7|days_pass 47|days_first_pay 86
+PLAN|S3_q1|conc2|q1|stop300|close|select_flex_100k|ev 773|h1 915|h2 619|pass 24|paid 16|days_pass 41|days_first_pay 64
+PLAN|S3_q1|conc2|q1|stop300|close|select_flex_150k|ev 332|h1 370|h2 291|pass 9|paid 8|days_pass 47|days_first_pay 71
+DAILY|S3_q1|conc2|q1|stop600|close|sessions 2581|mean 63.7|sd 579.6|winning_days 26.5%
+ACCT|S3_q1|conc2|q1|stop600|close|total 164288|dd_eod 8577|dd_intraday 8734|worst_month -5010|losing_months 59/147|traded_days 1997
+PLAN|S3_q1|conc2|q1|stop600|close|select_daily_50k|ev 1174|h1 1168|h2 1181|pass 35|paid 20|days_pass 30|days_first_pay 48
+PLAN|S3_q1|conc2|q1|stop600|close|apex_eod_50k|ev 982|h1 971|h2 994|pass 53|paid 28|days_pass 18|days_first_pay 52
+PLAN|S3_q1|conc2|q1|stop600|close|builder_50k|ev 1040|h1 968|h2 1119|pass 53|paid 29|days_pass 18|days_first_pay 49
+PLAN|S3_q1|conc2|q1|stop600|close|topstep_50k|ev 1577|h1 1548|h2 1609|pass 43|paid 28|days_pass 24|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop600|close|mff_rapid_eod_50k|ev 673|h1 627|h2 724|pass 19|paid 12|days_pass 42|days_first_pay 58
+PLAN|S3_q1|conc2|q1|stop600|close|lucid_flex_50k|ev 1276|h1 1132|h2 1434|pass 43|paid 28|days_pass 24|days_first_pay 43
+PLAN|S3_q1|conc2|q1|stop600|close|builder_25k|ev 236|h1 194|h2 282|pass 44|paid 13|days_pass 6|days_first_pay 31
+PLAN|S3_q1|conc2|q1|stop600|close|select_daily_25k|ev 360|h1 402|h2 315|pass 24|paid 10|days_pass 25|days_first_pay 36
+PLAN|S3_q1|conc2|q1|stop600|close|select_flex_25k|ev 381|h1 379|h2 382|pass 24|paid 9|days_pass 25|days_first_pay 46
+PLAN|S3_q1|conc2|q1|stop600|close|select_daily_100k|ev 1555|h1 1717|h2 1378|pass 30|paid 19|days_pass 37|days_first_pay 62
+PLAN|S3_q1|conc2|q1|stop600|close|select_daily_150k|ev 851|h1 1298|h2 363|pass 14|paid 11|days_pass 49|days_first_pay 76
+PLAN|S3_q1|conc2|q1|stop600|close|select_flex_100k|ev 1579|h1 1657|h2 1494|pass 31|paid 24|days_pass 38|days_first_pay 63
+PLAN|S3_q1|conc2|q1|stop600|close|select_flex_150k|ev 883|h1 1298|h2 430|pass 14|paid 13|days_pass 49|days_first_pay 73
+DAILY|S3_q2|conc2|q2|stop0|extreme|sessions 2581|mean 126.0|sd 1176.5|winning_days 26.9%
+ACCT|S3_q2|conc2|q2|stop0|extreme|total 325327|dd_eod 19264|dd_intraday 19668|worst_month -10810|losing_months 61/147|traded_days 1997
+PLAN|S3_q2|conc2|q2|stop0|extreme|select_daily_50k|ev 514|h1 611|h2 407|pass 24|paid 11|days_pass 23|days_first_pay 32
+PLAN|S3_q2|conc2|q2|stop0|extreme|apex_eod_50k|ev 432|h1 382|h2 486|pass 42|paid 12|days_pass 6|days_first_pay 31
+PLAN|S3_q2|conc2|q2|stop0|extreme|builder_50k|ev 413|h1 377|h2 452|pass 41|paid 12|days_pass 6|days_first_pay 30
+PLAN|S3_q2|conc2|q2|stop0|extreme|topstep_50k|ev 955|h1 1013|h2 892|pass 29|paid 9|days_pass 20|days_first_pay 39
+PLAN|S3_q2|conc2|q2|stop0|extreme|mff_rapid_eod_50k|ev 213|h1 202|h2 225|pass 14|paid 5|days_pass 40|days_first_pay 56
+PLAN|S3_q2|conc2|q2|stop0|extreme|lucid_flex_50k|ev 709|h1 631|h2 793|pass 30|paid 12|days_pass 19|days_first_pay 36
+PLAN|S3_q2|conc2|q2|stop0|extreme|builder_25k|ev 69|h1 64|h2 74|pass 30|paid 5|days_pass 2|days_first_pay 21
+PLAN|S3_q2|conc2|q2|stop0|extreme|select_daily_25k|ev 79|h1 80|h2 77|pass 15|paid 4|days_pass 22|days_first_pay 26
+PLAN|S3_q2|conc2|q2|stop0|extreme|select_flex_25k|ev 132|h1 180|h2 79|pass 15|paid 3|days_pass 22|days_first_pay 49
+PLAN|S3_q2|conc2|q2|stop0|extreme|select_daily_100k|ev 936|h1 763|h2 1123|pass 26|paid 12|days_pass 26|days_first_pay 36
+PLAN|S3_q2|conc2|q2|stop0|extreme|select_daily_150k|ev 1454|h1 1657|h2 1232|pass 30|paid 18|days_pass 31|days_first_pay 46
+PLAN|S3_q2|conc2|q2|stop0|extreme|select_flex_100k|ev 1263|h1 990|h2 1561|pass 28|paid 16|days_pass 27|days_first_pay 48
+PLAN|S3_q2|conc2|q2|stop0|extreme|select_flex_150k|ev 2414|h1 2342|h2 2493|pass 34|paid 25|days_pass 33|days_first_pay 53
+DAILY|S3_q2|conc2|q2|stop300|extreme|sessions 2581|mean 58.8|sd 841.4|winning_days 16.0%
+ACCT|S3_q2|conc2|q2|stop300|extreme|total 151670|dd_eod 17688|dd_intraday 17754|worst_month -4825|losing_months 71/147|traded_days 1997
+PLAN|S3_q2|conc2|q2|stop300|extreme|select_daily_50k|ev 362|h1 294|h2 435|pass 13|paid 7|days_pass 37|days_first_pay 48
+PLAN|S3_q2|conc2|q2|stop300|extreme|apex_eod_50k|ev 271|h1 344|h2 192|pass 39|paid 10|days_pass 10|days_first_pay 53
+PLAN|S3_q2|conc2|q2|stop300|extreme|builder_50k|ev 284|h1 344|h2 218|pass 39|paid 11|days_pass 10|days_first_pay 46
+PLAN|S3_q2|conc2|q2|stop300|extreme|topstep_50k|ev 705|h1 629|h2 787|pass 21|paid 9|days_pass 31|days_first_pay 54
+PLAN|S3_q2|conc2|q2|stop300|extreme|mff_rapid_eod_50k|ev 74|h1 24|h2 129|pass 4|paid 2|days_pass 49|days_first_pay 48
+PLAN|S3_q2|conc2|q2|stop300|extreme|lucid_flex_50k|ev 425|h1 405|h2 447|pass 20|paid 9|days_pass 31|days_first_pay 54
+PLAN|S3_q2|conc2|q2|stop300|extreme|builder_25k|ev 56|h1 64|h2 47|pass 30|paid 4|days_pass 3|days_first_pay 47
+PLAN|S3_q2|conc2|q2|stop300|extreme|select_daily_25k|ev 79|h1 83|h2 73|pass 8|paid 3|days_pass 35|days_first_pay 42
+PLAN|S3_q2|conc2|q2|stop300|extreme|select_flex_25k|ev 62|h1 74|h2 49|pass 8|paid 3|days_pass 35|days_first_pay 65
+PLAN|S3_q2|conc2|q2|stop300|extreme|select_daily_100k|ev 597|h1 655|h2 534|pass 14|paid 9|days_pass 37|days_first_pay 51
+PLAN|S3_q2|conc2|q2|stop300|extreme|select_daily_150k|ev 664|h1 717|h2 606|pass 13|paid 9|days_pass 41|days_first_pay 59
+PLAN|S3_q2|conc2|q2|stop300|extreme|select_flex_100k|ev 536|h1 578|h2 491|pass 14|paid 10|days_pass 37|days_first_pay 69
+PLAN|S3_q2|conc2|q2|stop300|extreme|select_flex_150k|ev 609|h1 755|h2 449|pass 13|paid 9|days_pass 41|days_first_pay 75
+DAILY|S3_q2|conc2|q2|stop600|extreme|sessions 2581|mean 92.5|sd 1051.6|winning_days 22.5%
+ACCT|S3_q2|conc2|q2|stop600|extreme|total 238857|dd_eod 21471|dd_intraday 21772|worst_month -6971|losing_months 58/147|traded_days 1997
+PLAN|S3_q2|conc2|q2|stop600|extreme|select_daily_50k|ev 481|h1 376|h2 595|pass 19|paid 8|days_pass 26|days_first_pay 33
+PLAN|S3_q2|conc2|q2|stop600|extreme|apex_eod_50k|ev 479|h1 520|h2 434|pass 42|paid 14|days_pass 7|days_first_pay 32
+PLAN|S3_q2|conc2|q2|stop600|extreme|builder_50k|ev 481|h1 520|h2 439|pass 42|paid 15|days_pass 7|days_first_pay 30
+PLAN|S3_q2|conc2|q2|stop600|extreme|topstep_50k|ev 864|h1 713|h2 1030|pass 26|paid 11|days_pass 21|days_first_pay 40
+PLAN|S3_q2|conc2|q2|stop600|extreme|mff_rapid_eod_50k|ev 79|h1 5|h2 159|pass 6|paid 3|days_pass 32|days_first_pay 48
+PLAN|S3_q2|conc2|q2|stop600|extreme|lucid_flex_50k|ev 491|h1 381|h2 610|pass 25|paid 11|days_pass 21|days_first_pay 40
+PLAN|S3_q2|conc2|q2|stop600|extreme|builder_25k|ev 71|h1 64|h2 79|pass 32|paid 5|days_pass 3|days_first_pay 21
+PLAN|S3_q2|conc2|q2|stop600|extreme|select_daily_25k|ev 105|h1 119|h2 90|pass 11|paid 4|days_pass 22|days_first_pay 23
+PLAN|S3_q2|conc2|q2|stop600|extreme|select_flex_25k|ev 86|h1 75|h2 98|pass 11|paid 2|days_pass 22|days_first_pay 45
+PLAN|S3_q2|conc2|q2|stop600|extreme|select_daily_100k|ev 549|h1 403|h2 708|pass 20|paid 7|days_pass 27|days_first_pay 33
+PLAN|S3_q2|conc2|q2|stop600|extreme|select_daily_150k|ev 872|h1 208|h2 1596|pass 22|paid 10|days_pass 34|days_first_pay 47
+PLAN|S3_q2|conc2|q2|stop600|extreme|select_flex_100k|ev 716|h1 394|h2 1067|pass 23|paid 10|days_pass 30|days_first_pay 48
+PLAN|S3_q2|conc2|q2|stop600|extreme|select_flex_150k|ev 1266|h1 1041|h2 1511|pass 24|paid 16|days_pass 37|days_first_pay 58
+DAILY|S3_q2|conc2|q2|stop0|close|sessions 2581|mean 126.0|sd 1176.5|winning_days 26.9%
+ACCT|S3_q2|conc2|q2|stop0|close|total 325327|dd_eod 19264|dd_intraday 19577|worst_month -10810|losing_months 61/147|traded_days 1997
+PLAN|S3_q2|conc2|q2|stop0|close|select_daily_50k|ev 691|h1 706|h2 674|pass 24|paid 11|days_pass 23|days_first_pay 32
+PLAN|S3_q2|conc2|q2|stop0|close|apex_eod_50k|ev 461|h1 406|h2 521|pass 44|paid 13|days_pass 6|days_first_pay 31
+PLAN|S3_q2|conc2|q2|stop0|close|builder_50k|ev 456|h1 401|h2 516|pass 43|paid 13|days_pass 6|days_first_pay 31
+PLAN|S3_q2|conc2|q2|stop0|close|topstep_50k|ev 1525|h1 1438|h2 1620|pass 31|paid 12|days_pass 21|days_first_pay 40
+PLAN|S3_q2|conc2|q2|stop0|close|mff_rapid_eod_50k|ev 233|h1 202|h2 267|pass 15|paid 5|days_pass 40|days_first_pay 56
+PLAN|S3_q2|conc2|q2|stop0|close|lucid_flex_50k|ev 750|h1 631|h2 880|pass 30|paid 12|days_pass 19|days_first_pay 36
+PLAN|S3_q2|conc2|q2|stop0|close|builder_25k|ev 100|h1 100|h2 100|pass 33|paid 6|days_pass 2|days_first_pay 21
+PLAN|S3_q2|conc2|q2|stop0|close|select_daily_25k|ev 90|h1 91|h2 90|pass 16|paid 5|days_pass 22|days_first_pay 26
+PLAN|S3_q2|conc2|q2|stop0|close|select_flex_25k|ev 147|h1 185|h2 106|pass 16|paid 4|days_pass 22|days_first_pay 48
+PLAN|S3_q2|conc2|q2|stop0|close|select_daily_100k|ev 1110|h1 978|h2 1255|pass 27|paid 14|days_pass 26|days_first_pay 37
+PLAN|S3_q2|conc2|q2|stop0|close|select_daily_150k|ev 1459|h1 1666|h2 1232|pass 30|paid 18|days_pass 31|days_first_pay 46
+PLAN|S3_q2|conc2|q2|stop0|close|select_flex_100k|ev 1304|h1 1028|h2 1606|pass 28|paid 17|days_pass 27|days_first_pay 47
+PLAN|S3_q2|conc2|q2|stop0|close|select_flex_150k|ev 2472|h1 2342|h2 2615|pass 35|paid 25|days_pass 33|days_first_pay 53
+DAILY|S3_q2|conc2|q2|stop300|close|sessions 2581|mean 113.2|sd 920.0|winning_days 18.4%
+ACCT|S3_q2|conc2|q2|stop300|close|total 292155|dd_eod 12325|dd_intraday 12622|worst_month -4825|losing_months 54/147|traded_days 1997
+PLAN|S3_q2|conc2|q2|stop300|close|select_daily_50k|ev 764|h1 692|h2 842|pass 27|paid 16|days_pass 32|days_first_pay 44
+PLAN|S3_q2|conc2|q2|stop300|close|apex_eod_50k|ev 739|h1 904|h2 559|pass 51|paid 21|days_pass 10|days_first_pay 42
+PLAN|S3_q2|conc2|q2|stop300|close|builder_50k|ev 756|h1 856|h2 646|pass 51|paid 21|days_pass 10|days_first_pay 39
+PLAN|S3_q2|conc2|q2|stop300|close|topstep_50k|ev 1813|h1 2099|h2 1500|pass 37|paid 20|days_pass 26|days_first_pay 53
+PLAN|S3_q2|conc2|q2|stop300|close|mff_rapid_eod_50k|ev 432|h1 251|h2 631|pass 14|paid 6|days_pass 45|days_first_pay 55
+PLAN|S3_q2|conc2|q2|stop300|close|lucid_flex_50k|ev 999|h1 1172|h2 810|pass 36|paid 20|days_pass 25|days_first_pay 52
+PLAN|S3_q2|conc2|q2|stop300|close|builder_25k|ev 202|h1 232|h2 169|pass 40|paid 11|days_pass 3|days_first_pay 33
+PLAN|S3_q2|conc2|q2|stop300|close|select_daily_25k|ev 252|h1 347|h2 147|pass 17|paid 9|days_pass 30|days_first_pay 39
+PLAN|S3_q2|conc2|q2|stop300|close|select_flex_25k|ev 212|h1 294|h2 123|pass 17|paid 7|days_pass 30|days_first_pay 60
+PLAN|S3_q2|conc2|q2|stop300|close|select_daily_100k|ev 1544|h1 2003|h2 1043|pass 29|paid 19|days_pass 34|days_first_pay 47
+PLAN|S3_q2|conc2|q2|stop300|close|select_daily_150k|ev 2931|h1 3048|h2 2803|pass 32|paid 23|days_pass 39|days_first_pay 62
+PLAN|S3_q2|conc2|q2|stop300|close|select_flex_100k|ev 1928|h1 2196|h2 1635|pass 32|paid 24|days_pass 35|days_first_pay 61
+PLAN|S3_q2|conc2|q2|stop300|close|select_flex_150k|ev 2657|h1 2829|h2 2469|pass 32|paid 28|days_pass 39|days_first_pay 68
+DAILY|S3_q2|conc2|q2|stop600|close|sessions 2581|mean 111.5|sd 1063.0|winning_days 23.4%
+ACCT|S3_q2|conc2|q2|stop600|close|total 287678|dd_eod 16417|dd_intraday 16639|worst_month -6631|losing_months 58/147|traded_days 1997
+PLAN|S3_q2|conc2|q2|stop600|close|select_daily_50k|ev 779|h1 933|h2 611|pass 23|paid 11|days_pass 28|days_first_pay 42
+PLAN|S3_q2|conc2|q2|stop600|close|apex_eod_50k|ev 575|h1 688|h2 451|pass 44|paid 16|days_pass 7|days_first_pay 34
+PLAN|S3_q2|conc2|q2|stop600|close|builder_50k|ev 585|h1 704|h2 456|pass 44|paid 17|days_pass 7|days_first_pay 32
+PLAN|S3_q2|conc2|q2|stop600|close|topstep_50k|ev 1173|h1 1182|h2 1164|pass 29|paid 14|days_pass 21|days_first_pay 41
+PLAN|S3_q2|conc2|q2|stop600|close|mff_rapid_eod_50k|ev 146|h1 133|h2 159|pass 9|paid 3|days_pass 38|days_first_pay 48
+PLAN|S3_q2|conc2|q2|stop600|close|lucid_flex_50k|ev 705|h1 775|h2 629|pass 29|paid 14|days_pass 21|days_first_pay 41
+PLAN|S3_q2|conc2|q2|stop600|close|builder_25k|ev 104|h1 104|h2 105|pass 36|paid 7|days_pass 3|days_first_pay 21
+PLAN|S3_q2|conc2|q2|stop600|close|select_daily_25k|ev 139|h1 159|h2 117|pass 14|paid 5|days_pass 22|days_first_pay 23
+PLAN|S3_q2|conc2|q2|stop600|close|select_flex_25k|ev 109|h1 95|h2 125|pass 14|paid 4|days_pass 22|days_first_pay 40
+PLAN|S3_q2|conc2|q2|stop600|close|select_daily_100k|ev 1004|h1 1086|h2 914|pass 25|paid 11|days_pass 30|days_first_pay 42
+PLAN|S3_q2|conc2|q2|stop600|close|select_daily_150k|ev 1369|h1 1096|h2 1667|pass 26|paid 14|days_pass 36|days_first_pay 49
+PLAN|S3_q2|conc2|q2|stop600|close|select_flex_100k|ev 1055|h1 1038|h2 1072|pass 27|paid 14|days_pass 31|days_first_pay 52
+PLAN|S3_q2|conc2|q2|stop600|close|select_flex_150k|ev 1771|h1 1954|h2 1572|pass 28|paid 20|days_pass 37|days_first_pay 55
+DAILY|S3_q3|conc2|q3|stop0|extreme|sessions 2581|mean 189.1|sd 1764.7|winning_days 26.9%
+ACCT|S3_q3|conc2|q3|stop0|extreme|total 487990|dd_eod 28897|dd_intraday 29503|worst_month -16215|losing_months 61/147|traded_days 1997
+PLAN|S3_q3|conc2|q3|stop0|extreme|select_daily_50k|ev 267|h1 269|h2 266|pass 18|paid 8|days_pass 22|days_first_pay 27
+PLAN|S3_q3|conc2|q3|stop0|extreme|apex_eod_50k|ev 330|h1 320|h2 341|pass 37|paid 8|days_pass 3|days_first_pay 28
+PLAN|S3_q3|conc2|q3|stop0|extreme|builder_50k|ev 203|h1 192|h2 215|pass 35|paid 7|days_pass 3|days_first_pay 25
+PLAN|S3_q3|conc2|q3|stop0|extreme|topstep_50k|ev 771|h1 632|h2 923|pass 19|paid 6|days_pass 19|days_first_pay 38
+PLAN|S3_q3|conc2|q3|stop0|extreme|mff_rapid_eod_50k|ev 240|h1 320|h2 153|pass 11|paid 4|days_pass 38|days_first_pay 43
+PLAN|S3_q3|conc2|q3|stop0|extreme|lucid_flex_50k|ev 464|h1 379|h2 556|pass 23|paid 6|days_pass 17|days_first_pay 32
+PLAN|S3_q3|conc2|q3|stop0|extreme|builder_25k|ev 38|h1 48|h2 26|pass 23|paid 3|days_pass 2|days_first_pay 42
+PLAN|S3_q3|conc2|q3|stop0|extreme|select_daily_25k|ev 57|h1 51|h2 63|pass 10|paid 2|days_pass 22|days_first_pay 28
+PLAN|S3_q3|conc2|q3|stop0|extreme|select_flex_25k|ev 5|h1 0|h2 11|pass 10|paid 0|days_pass 22|days_first_pay 48
+PLAN|S3_q3|conc2|q3|stop0|extreme|select_daily_100k|ev 419|h1 375|h2 468|pass 21|paid 8|days_pass 24|days_first_pay 29
+PLAN|S3_q3|conc2|q3|stop0|extreme|select_daily_150k|ev 1172|h1 1146|h2 1201|pass 25|paid 11|days_pass 25|days_first_pay 34
+PLAN|S3_q3|conc2|q3|stop0|extreme|select_flex_100k|ev 749|h1 846|h2 644|pass 23|paid 8|days_pass 24|days_first_pay 47
+PLAN|S3_q3|conc2|q3|stop0|extreme|select_flex_150k|ev 1734|h1 1403|h2 2096|pass 28|paid 16|days_pass 27|days_first_pay 47
+DAILY|S3_q3|conc2|q3|stop300|extreme|sessions 2581|mean 69.7|sd 1110.4|winning_days 12.4%
+ACCT|S3_q3|conc2|q3|stop300|extreme|total 179829|dd_eod 20572|dd_intraday 20672|worst_month -5218|losing_months 73/147|traded_days 1997
+PLAN|S3_q3|conc2|q3|stop300|extreme|select_daily_50k|ev 54|h1 22|h2 89|pass 5|paid 2|days_pass 52|days_first_pay 43
+PLAN|S3_q3|conc2|q3|stop300|extreme|apex_eod_50k|ev 134|h1 136|h2 131|pass 35|paid 5|days_pass 6|days_first_pay 45
+PLAN|S3_q3|conc2|q3|stop300|extreme|builder_50k|ev 129|h1 136|h2 121|pass 35|paid 5|days_pass 6|days_first_pay 45
+PLAN|S3_q3|conc2|q3|stop300|extreme|topstep_50k|ev 186|h1 151|h2 225|pass 11|paid 3|days_pass 30|days_first_pay 49
+PLAN|S3_q3|conc2|q3|stop300|extreme|mff_rapid_eod_50k|ev 50|h1 16|h2 87|pass 1|paid 1|days_pass 46|days_first_pay 48
+PLAN|S3_q3|conc2|q3|stop300|extreme|lucid_flex_50k|ev 80|h1 67|h2 94|pass 10|paid 3|days_pass 30|days_first_pay 49
+PLAN|S3_q3|conc2|q3|stop300|extreme|builder_25k|ev 29|h1 32|h2 26|pass 27|paid 2|days_pass 3|days_first_pay 34
+PLAN|S3_q3|conc2|q3|stop300|extreme|select_daily_25k|ev 9|h1 5|h2 13|pass 3|paid 0|days_pass 52|days_first_pay 62
+PLAN|S3_q3|conc2|q3|stop300|extreme|select_flex_25k|ev 5|h1 0|h2 11|pass 3|paid 0|days_pass 52|days_first_pay 78
+PLAN|S3_q3|conc2|q3|stop300|extreme|select_daily_100k|ev 84|h1 13|h2 161|pass 5|paid 2|days_pass 48|days_first_pay 48
+PLAN|S3_q3|conc2|q3|stop300|extreme|select_daily_150k|ev 399|h1 356|h2 445|pass 7|paid 5|days_pass 47|days_first_pay 68
+PLAN|S3_q3|conc2|q3|stop300|extreme|select_flex_100k|ev 156|h1 19|h2 306|pass 7|paid 2|days_pass 46|days_first_pay 64
+PLAN|S3_q3|conc2|q3|stop300|extreme|select_flex_150k|ev 265|h1 185|h2 352|pass 8|paid 5|days_pass 47|days_first_pay 77
+DAILY|S3_q3|conc2|q3|stop600|extreme|sessions 2581|mean 128.1|sd 1434.0|winning_days 19.4%
+ACCT|S3_q3|conc2|q3|stop600|extreme|total 330630|dd_eod 26270|dd_intraday 26796|worst_month -9461|losing_months 66/147|traded_days 1997
+PLAN|S3_q3|conc2|q3|stop600|extreme|select_daily_50k|ev 234|h1 264|h2 200|pass 15|paid 6|days_pass 29|days_first_pay 36
+PLAN|S3_q3|conc2|q3|stop600|extreme|apex_eod_50k|ev 270|h1 360|h2 173|pass 37|paid 8|days_pass 4|days_first_pay 39
+PLAN|S3_q3|conc2|q3|stop600|extreme|builder_50k|ev 285|h1 384|h2 178|pass 37|paid 8|days_pass 4|days_first_pay 39
+PLAN|S3_q3|conc2|q3|stop600|extreme|topstep_50k|ev 770|h1 840|h2 694|pass 19|paid 8|days_pass 20|days_first_pay 45
+PLAN|S3_q3|conc2|q3|stop600|extreme|mff_rapid_eod_50k|ev 168|h1 172|h2 164|pass 5|paid 3|days_pass 44|days_first_pay 45
+PLAN|S3_q3|conc2|q3|stop600|extreme|lucid_flex_50k|ev 365|h1 405|h2 321|pass 18|paid 8|days_pass 20|days_first_pay 44
+PLAN|S3_q3|conc2|q3|stop600|extreme|builder_25k|ev 56|h1 72|h2 39|pass 28|paid 4|days_pass 2|days_first_pay 34
+PLAN|S3_q3|conc2|q3|stop600|extreme|select_daily_25k|ev 44|h1 40|h2 47|pass 8|paid 1|days_pass 27|days_first_pay 25
+PLAN|S3_q3|conc2|q3|stop600|extreme|select_flex_25k|ev 42|h1 70|h2 11|pass 8|paid 1|days_pass 27|days_first_pay 41
+PLAN|S3_q3|conc2|q3|stop600|extreme|select_daily_100k|ev 433|h1 547|h2 309|pass 17|paid 8|days_pass 30|days_first_pay 44
+PLAN|S3_q3|conc2|q3|stop600|extreme|select_daily_150k|ev 1243|h1 1814|h2 619|pass 21|paid 12|days_pass 31|days_first_pay 46
+PLAN|S3_q3|conc2|q3|stop600|extreme|select_flex_100k|ev 703|h1 928|h2 457|pass 19|paid 8|days_pass 31|days_first_pay 55
+PLAN|S3_q3|conc2|q3|stop600|extreme|select_flex_150k|ev 1461|h1 1769|h2 1124|pass 23|paid 15|days_pass 32|days_first_pay 55
+DAILY|S3_q3|conc2|q3|stop0|close|sessions 2581|mean 189.1|sd 1764.7|winning_days 26.9%
+ACCT|S3_q3|conc2|q3|stop0|close|total 487990|dd_eod 28897|dd_intraday 29366|worst_month -16215|losing_months 61/147|traded_days 1997
+PLAN|S3_q3|conc2|q3|stop0|close|select_daily_50k|ev 285|h1 279|h2 293|pass 19|paid 8|days_pass 23|days_first_pay 27
+PLAN|S3_q3|conc2|q3|stop0|close|apex_eod_50k|ev 367|h1 360|h2 376|pass 40|paid 9|days_pass 3|days_first_pay 31
+PLAN|S3_q3|conc2|q3|stop0|close|builder_50k|ev 316|h1 248|h2 390|pass 39|paid 10|days_pass 3|days_first_pay 36
+PLAN|S3_q3|conc2|q3|stop0|close|topstep_50k|ev 1033|h1 675|h2 1423|pass 23|paid 7|days_pass 20|days_first_pay 39
+PLAN|S3_q3|conc2|q3|stop0|close|mff_rapid_eod_50k|ev 279|h1 353|h2 199|pass 12|paid 4|days_pass 39|days_first_pay 47
+PLAN|S3_q3|conc2|q3|stop0|close|lucid_flex_50k|ev 502|h1 387|h2 628|pass 24|paid 7|days_pass 18|days_first_pay 32
+PLAN|S3_q3|conc2|q3|stop0|close|builder_25k|ev 52|h1 56|h2 48|pass 26|paid 3|days_pass 2|days_first_pay 28
+PLAN|S3_q3|conc2|q3|stop0|close|select_daily_25k|ev 80|h1 87|h2 73|pass 10|paid 2|days_pass 22|days_first_pay 28
+PLAN|S3_q3|conc2|q3|stop0|close|select_flex_25k|ev 42|h1 70|h2 11|pass 10|paid 1|days_pass 22|days_first_pay 55
+PLAN|S3_q3|conc2|q3|stop0|close|select_daily_100k|ev 561|h1 632|h2 483|pass 22|paid 9|days_pass 23|days_first_pay 29
+PLAN|S3_q3|conc2|q3|stop0|close|select_daily_150k|ev 1487|h1 1146|h2 1860|pass 26|paid 14|days_pass 26|days_first_pay 37
+PLAN|S3_q3|conc2|q3|stop0|close|select_flex_100k|ev 859|h1 846|h2 873|pass 24|paid 9|days_pass 24|days_first_pay 47
+PLAN|S3_q3|conc2|q3|stop0|close|select_flex_150k|ev 1802|h1 1459|h2 2176|pass 28|paid 17|days_pass 27|days_first_pay 44
+DAILY|S3_q3|conc2|q3|stop300|close|sessions 2581|mean 130.1|sd 1200.2|winning_days 14.3%
+ACCT|S3_q3|conc2|q3|stop300|close|total 335716|dd_eod 19372|dd_intraday 19457|worst_month -4957|losing_months 62/147|traded_days 1997
+PLAN|S3_q3|conc2|q3|stop300|close|select_daily_50k|ev 475|h1 538|h2 406|pass 16|paid 8|days_pass 44|days_first_pay 51
+PLAN|S3_q3|conc2|q3|stop300|close|apex_eod_50k|ev 480|h1 664|h2 279|pass 47|paid 15|days_pass 7|days_first_pay 47
+PLAN|S3_q3|conc2|q3|stop300|close|builder_50k|ev 490|h1 664|h2 301|pass 47|paid 15|days_pass 7|days_first_pay 46
+PLAN|S3_q3|conc2|q3|stop300|close|topstep_50k|ev 1049|h1 1045|h2 1054|pass 24|paid 11|days_pass 30|days_first_pay 57
+PLAN|S3_q3|conc2|q3|stop300|close|mff_rapid_eod_50k|ev 231|h1 190|h2 277|pass 4|paid 2|days_pass 53|days_first_pay 53
+PLAN|S3_q3|conc2|q3|stop300|close|lucid_flex_50k|ev 482|h1 510|h2 451|pass 24|paid 11|days_pass 30|days_first_pay 57
+PLAN|S3_q3|conc2|q3|stop300|close|builder_25k|ev 86|h1 96|h2 74|pass 34|paid 6|days_pass 3|days_first_pay 40
+PLAN|S3_q3|conc2|q3|stop300|close|select_daily_25k|ev 93|h1 136|h2 47|pass 10|paid 3|days_pass 42|days_first_pay 50
+PLAN|S3_q3|conc2|q3|stop300|close|select_flex_25k|ev 83|h1 125|h2 38|pass 10|paid 3|days_pass 42|days_first_pay 75
+PLAN|S3_q3|conc2|q3|stop300|close|select_daily_100k|ev 801|h1 859|h2 738|pass 19|paid 10|days_pass 43|days_first_pay 51
+PLAN|S3_q3|conc2|q3|stop300|close|select_daily_150k|ev 1941|h1 2240|h2 1614|pass 20|paid 16|days_pass 44|days_first_pay 62
+PLAN|S3_q3|conc2|q3|stop300|close|select_flex_100k|ev 1059|h1 1309|h2 786|pass 20|paid 14|days_pass 44|days_first_pay 69
+PLAN|S3_q3|conc2|q3|stop300|close|select_flex_150k|ev 1490|h1 1713|h2 1246|pass 21|paid 16|days_pass 44|days_first_pay 73
+DAILY|S3_q3|conc2|q3|stop600|close|sessions 2581|mean 174.5|sd 1508.8|winning_days 20.5%
+ACCT|S3_q3|conc2|q3|stop600|close|total 450469|dd_eod 24086|dd_intraday 24531|worst_month -9461|losing_months 56/147|traded_days 1997
+PLAN|S3_q3|conc2|q3|stop600|close|select_daily_50k|ev 494|h1 689|h2 281|pass 20|paid 10|days_pass 30|days_first_pay 43
+PLAN|S3_q3|conc2|q3|stop600|close|apex_eod_50k|ev 379|h1 456|h2 295|pass 43|paid 11|days_pass 5|days_first_pay 36
+PLAN|S3_q3|conc2|q3|stop600|close|builder_50k|ev 390|h1 472|h2 300|pass 43|paid 11|days_pass 5|days_first_pay 34
+PLAN|S3_q3|conc2|q3|stop600|close|topstep_50k|ev 1121|h1 1118|h2 1125|pass 25|paid 11|days_pass 21|days_first_pay 43
+PLAN|S3_q3|conc2|q3|stop600|close|mff_rapid_eod_50k|ev 305|h1 335|h2 272|pass 9|paid 5|days_pass 46|days_first_pay 51
+PLAN|S3_q3|conc2|q3|stop600|close|lucid_flex_50k|ev 606|h1 639|h2 569|pass 24|paid 11|days_pass 21|days_first_pay 43
+PLAN|S3_q3|conc2|q3|stop600|close|builder_25k|ev 75|h1 88|h2 61|pass 32|paid 5|days_pass 2|days_first_pay 31
+PLAN|S3_q3|conc2|q3|stop600|close|select_daily_25k|ev 66|h1 66|h2 66|pass 11|paid 2|days_pass 27|days_first_pay 28
+PLAN|S3_q3|conc2|q3|stop600|close|select_flex_25k|ev 52|h1 70|h2 33|pass 11|paid 2|days_pass 27|days_first_pay 49
+PLAN|S3_q3|conc2|q3|stop600|close|select_daily_100k|ev 729|h1 962|h2 476|pass 22|paid 11|days_pass 31|days_first_pay 43
+PLAN|S3_q3|conc2|q3|stop600|close|select_daily_150k|ev 1608|h1 2048|h2 1128|pass 27|paid 15|days_pass 31|days_first_pay 47
+PLAN|S3_q3|conc2|q3|stop600|close|select_flex_100k|ev 889|h1 1169|h2 583|pass 25|paid 12|days_pass 31|days_first_pay 57
+PLAN|S3_q3|conc2|q3|stop600|close|select_flex_150k|ev 1861|h1 1967|h2 1745|pass 29|paid 19|days_pass 32|days_first_pay 56
+DAILY|S3_q4|conc2|q4|stop0|extreme|sessions 2581|mean 252.1|sd 2353.0|winning_days 26.9%
+ACCT|S3_q4|conc2|q4|stop0|extreme|total 650654|dd_eod 38529|dd_intraday 39337|worst_month -21620|losing_months 61/147|traded_days 1997
+PLAN|S3_q4|conc2|q4|stop0|extreme|select_daily_50k|ev 168|h1 169|h2 167|pass 15|paid 4|days_pass 22|days_first_pay 26
+PLAN|S3_q4|conc2|q4|stop0|extreme|apex_eod_50k|ev 209|h1 200|h2 218|pass 33|paid 5|days_pass 2|days_first_pay 23
+PLAN|S3_q4|conc2|q4|stop0|extreme|builder_50k|ev 137|h1 152|h2 120|pass 30|paid 5|days_pass 3|days_first_pay 28
+PLAN|S3_q4|conc2|q4|stop0|extreme|topstep_50k|ev 361|h1 502|h2 208|pass 14|paid 3|days_pass 19|days_first_pay 43
+PLAN|S3_q4|conc2|q4|stop0|extreme|mff_rapid_eod_50k|ev 231|h1 304|h2 150|pass 10|paid 3|days_pass 40|days_first_pay 46
+PLAN|S3_q4|conc2|q4|stop0|extreme|lucid_flex_50k|ev 301|h1 320|h2 279|pass 18|paid 4|days_pass 16|days_first_pay 33
+PLAN|S3_q4|conc2|q4|stop0|extreme|builder_25k|ev 15|h1 16|h2 13|pass 20|paid 1|days_pass 1|days_first_pay 47
+PLAN|S3_q4|conc2|q4|stop0|extreme|select_daily_25k|ev 24|h1 36|h2 10|pass 8|paid 1|days_pass 21|days_first_pay 25
+PLAN|S3_q4|conc2|q4|stop0|extreme|select_flex_25k|ev 5|h1 0|h2 11|pass 8|paid 0|days_pass 21|days_first_pay 48
+PLAN|S3_q4|conc2|q4|stop0|extreme|select_daily_100k|ev 311|h1 324|h2 296|pass 17|paid 7|days_pass 22|days_first_pay 25
+PLAN|S3_q4|conc2|q4|stop0|extreme|select_daily_150k|ev 755|h1 902|h2 594|pass 22|paid 9|days_pass 23|days_first_pay 30
+PLAN|S3_q4|conc2|q4|stop0|extreme|select_flex_100k|ev 507|h1 578|h2 429|pass 20|paid 6|days_pass 23|days_first_pay 43
+PLAN|S3_q4|conc2|q4|stop0|extreme|select_flex_150k|ev 1193|h1 1108|h2 1286|pass 25|paid 9|days_pass 25|days_first_pay 47
+DAILY|S3_q4|conc2|q4|stop300|extreme|sessions 2581|mean 65.8|sd 1327.9|winning_days 9.6%
+ACCT|S3_q4|conc2|q4|stop300|extreme|total 169916|dd_eod 24707|dd_intraday 24737|worst_month -5248|losing_months 80/147|traded_days 1997
+PLAN|S3_q4|conc2|q4|stop300|extreme|select_daily_50k|ev 19|h1 27|h2 11|pass 3|paid 1|days_pass 27|days_first_pay 60
+PLAN|S3_q4|conc2|q4|stop300|extreme|apex_eod_50k|ev 42|h1 80|h2 0|pass 31|paid 2|days_pass 5|days_first_pay 62
+PLAN|S3_q4|conc2|q4|stop300|extreme|builder_50k|ev 50|h1 96|h2 0|pass 31|paid 2|days_pass 5|days_first_pay 32
+PLAN|S3_q4|conc2|q4|stop300|extreme|topstep_50k|ev 89|h1 51|h2 131|pass 8|paid 1|days_pass 32|days_first_pay 85
+PLAN|S3_q4|conc2|q4|stop300|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass 45|days_first_pay -1
+PLAN|S3_q4|conc2|q4|stop300|extreme|lucid_flex_50k|ev 38|h1 24|h2 52|pass 7|paid 1|days_pass 32|days_first_pay 85
+PLAN|S3_q4|conc2|q4|stop300|extreme|builder_25k|ev 10|h1 16|h2 4|pass 22|paid 1|days_pass 3|days_first_pay 31
+PLAN|S3_q4|conc2|q4|stop300|extreme|select_daily_25k|ev 0|h1 0|h2 0|pass 2|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q4|conc2|q4|stop300|extreme|select_flex_25k|ev 0|h1 0|h2 0|pass 2|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q4|conc2|q4|stop300|extreme|select_daily_100k|ev 23|h1 31|h2 15|pass 3|paid 1|days_pass 32|days_first_pay 60
+PLAN|S3_q4|conc2|q4|stop300|extreme|select_daily_150k|ev 31|h1 40|h2 22|pass 4|paid 1|days_pass 33|days_first_pay 67
+PLAN|S3_q4|conc2|q4|stop300|extreme|select_flex_100k|ev 29|h1 28|h2 31|pass 3|paid 1|days_pass 32|days_first_pay 115
+PLAN|S3_q4|conc2|q4|stop300|extreme|select_flex_150k|ev 36|h1 33|h2 39|pass 4|paid 1|days_pass 35|days_first_pay 115
+DAILY|S3_q4|conc2|q4|stop600|extreme|sessions 2581|mean 117.5|sd 1682.7|winning_days 16.0%
+ACCT|S3_q4|conc2|q4|stop600|extreme|total 303339|dd_eod 35376|dd_intraday 35509|worst_month -9650|losing_months 71/147|traded_days 1997
+PLAN|S3_q4|conc2|q4|stop600|extreme|select_daily_50k|ev 163|h1 173|h2 153|pass 8|paid 3|days_pass 35|days_first_pay 42
+PLAN|S3_q4|conc2|q4|stop600|extreme|apex_eod_50k|ev 100|h1 128|h2 70|pass 30|paid 4|days_pass 3|days_first_pay 53
+PLAN|S3_q4|conc2|q4|stop600|extreme|builder_50k|ev 112|h1 128|h2 94|pass 30|paid 4|days_pass 3|days_first_pay 47
+PLAN|S3_q4|conc2|q4|stop600|extreme|topstep_50k|ev 214|h1 256|h2 169|pass 12|paid 3|days_pass 26|days_first_pay 51
+PLAN|S3_q4|conc2|q4|stop600|extreme|mff_rapid_eod_50k|ev 75|h1 88|h2 61|pass 2|paid 1|days_pass 45|days_first_pay 47
+PLAN|S3_q4|conc2|q4|stop600|extreme|lucid_flex_50k|ev 100|h1 128|h2 70|pass 12|paid 3|days_pass 26|days_first_pay 51
+PLAN|S3_q4|conc2|q4|stop600|extreme|builder_25k|ev 27|h1 20|h2 35|pass 24|paid 2|days_pass 2|days_first_pay 31
+PLAN|S3_q4|conc2|q4|stop600|extreme|select_daily_25k|ev 37|h1 53|h2 20|pass 5|paid 1|days_pass 34|days_first_pay 42
+PLAN|S3_q4|conc2|q4|stop600|extreme|select_flex_25k|ev 37|h1 55|h2 16|pass 5|paid 1|days_pass 34|days_first_pay 65
+PLAN|S3_q4|conc2|q4|stop600|extreme|select_daily_100k|ev 248|h1 233|h2 265|pass 9|paid 4|days_pass 36|days_first_pay 42
+PLAN|S3_q4|conc2|q4|stop600|extreme|select_daily_150k|ev 561|h1 484|h2 645|pass 11|paid 6|days_pass 36|days_first_pay 44
+PLAN|S3_q4|conc2|q4|stop600|extreme|select_flex_100k|ev 244|h1 255|h2 233|pass 10|paid 4|days_pass 36|days_first_pay 62
+PLAN|S3_q4|conc2|q4|stop600|extreme|select_flex_150k|ev 619|h1 593|h2 648|pass 14|paid 7|days_pass 37|days_first_pay 63
+DAILY|S3_q4|conc2|q4|stop0|close|sessions 2581|mean 252.1|sd 2353.0|winning_days 26.9%
+ACCT|S3_q4|conc2|q4|stop0|close|total 650654|dd_eod 38529|dd_intraday 39154|worst_month -21620|losing_months 61/147|traded_days 1997
+PLAN|S3_q4|conc2|q4|stop0|close|select_daily_50k|ev 192|h1 192|h2 193|pass 16|paid 5|days_pass 22|days_first_pay 26
+PLAN|S3_q4|conc2|q4|stop0|close|apex_eod_50k|ev 255|h1 208|h2 306|pass 35|paid 6|days_pass 2|days_first_pay 23
+PLAN|S3_q4|conc2|q4|stop0|close|builder_50k|ev 196|h1 160|h2 236|pass 32|paid 7|days_pass 3|days_first_pay 25
+PLAN|S3_q4|conc2|q4|stop0|close|topstep_50k|ev 613|h1 491|h2 748|pass 18|paid 5|days_pass 20|days_first_pay 36
+PLAN|S3_q4|conc2|q4|stop0|close|mff_rapid_eod_50k|ev 235|h1 304|h2 159|pass 10|paid 3|days_pass 40|days_first_pay 46
+PLAN|S3_q4|conc2|q4|stop0|close|lucid_flex_50k|ev 381|h1 320|h2 447|pass 19|paid 5|days_pass 16|days_first_pay 31
+PLAN|S3_q4|conc2|q4|stop0|close|builder_25k|ev 52|h1 52|h2 52|pass 24|paid 3|days_pass 1|days_first_pay 27
+PLAN|S3_q4|conc2|q4|stop0|close|select_daily_25k|ev 54|h1 45|h2 64|pass 9|paid 2|days_pass 22|days_first_pay 25
+PLAN|S3_q4|conc2|q4|stop0|close|select_flex_25k|ev 5|h1 0|h2 11|pass 9|paid 0|days_pass 22|days_first_pay 48
+PLAN|S3_q4|conc2|q4|stop0|close|select_daily_100k|ev 359|h1 380|h2 335|pass 18|paid 8|days_pass 22|days_first_pay 26
+PLAN|S3_q4|conc2|q4|stop0|close|select_daily_150k|ev 807|h1 902|h2 703|pass 22|paid 9|days_pass 23|days_first_pay 31
+PLAN|S3_q4|conc2|q4|stop0|close|select_flex_100k|ev 551|h1 578|h2 521|pass 21|paid 6|days_pass 24|days_first_pay 47
+PLAN|S3_q4|conc2|q4|stop0|close|select_flex_150k|ev 1366|h1 1126|h2 1627|pass 25|paid 10|days_pass 25|days_first_pay 47
+DAILY|S3_q4|conc2|q4|stop300|close|sessions 2581|mean 164.2|sd 1495.6|winning_days 12.3%
+ACCT|S3_q4|conc2|q4|stop300|close|total 423744|dd_eod 17445|dd_intraday 17558|worst_month -5297|losing_months 57/147|traded_days 1997
+PLAN|S3_q4|conc2|q4|stop300|close|select_daily_50k|ev 264|h1 322|h2 201|pass 11|paid 5|days_pass 44|days_first_pay 52
+PLAN|S3_q4|conc2|q4|stop300|close|apex_eod_50k|ev 280|h1 384|h2 166|pass 44|paid 11|days_pass 6|days_first_pay 57
+PLAN|S3_q4|conc2|q4|stop300|close|builder_50k|ev 292|h1 408|h2 166|pass 44|paid 11|days_pass 6|days_first_pay 52
+PLAN|S3_q4|conc2|q4|stop300|close|topstep_50k|ev 816|h1 961|h2 657|pass 20|paid 8|days_pass 35|days_first_pay 71
+PLAN|S3_q4|conc2|q4|stop300|close|mff_rapid_eod_50k|ev 79|h1 103|h2 52|pass 2|paid 1|days_pass 52|days_first_pay 60
+PLAN|S3_q4|conc2|q4|stop300|close|lucid_flex_50k|ev 357|h1 428|h2 279|pass 20|paid 8|days_pass 35|days_first_pay 71
+PLAN|S3_q4|conc2|q4|stop300|close|builder_25k|ev 50|h1 64|h2 35|pass 31|paid 4|days_pass 3|days_first_pay 42
+PLAN|S3_q4|conc2|q4|stop300|close|select_daily_25k|ev 66|h1 75|h2 55|pass 8|paid 3|days_pass 44|days_first_pay 52
+PLAN|S3_q4|conc2|q4|stop300|close|select_flex_25k|ev 52|h1 50|h2 55|pass 8|paid 2|days_pass 44|days_first_pay 83
+PLAN|S3_q4|conc2|q4|stop300|close|select_daily_100k|ev 437|h1 604|h2 255|pass 13|paid 6|days_pass 45|days_first_pay 52
+PLAN|S3_q4|conc2|q4|stop300|close|select_daily_150k|ev 1260|h1 1909|h2 552|pass 16|paid 10|days_pass 44|days_first_pay 61
+PLAN|S3_q4|conc2|q4|stop300|close|select_flex_100k|ev 561|h1 747|h2 357|pass 15|paid 8|days_pass 45|days_first_pay 76
+PLAN|S3_q4|conc2|q4|stop300|close|select_flex_150k|ev 931|h1 1261|h2 570|pass 16|paid 12|days_pass 44|days_first_pay 83
+DAILY|S3_q4|conc2|q4|stop600|close|sessions 2581|mean 226.4|sd 1839.9|winning_days 18.4%
+ACCT|S3_q4|conc2|q4|stop600|close|total 584310|dd_eod 24651|dd_intraday 25244|worst_month -9650|losing_months 54/147|traded_days 1997
+PLAN|S3_q4|conc2|q4|stop600|close|select_daily_50k|ev 526|h1 732|h2 302|pass 18|paid 9|days_pass 31|days_first_pay 38
+PLAN|S3_q4|conc2|q4|stop600|close|apex_eod_50k|ev 380|h1 472|h2 279|pass 40|paid 10|days_pass 3|days_first_pay 36
+PLAN|S3_q4|conc2|q4|stop600|close|builder_50k|ev 404|h1 464|h2 339|pass 40|paid 11|days_pass 3|days_first_pay 33
+PLAN|S3_q4|conc2|q4|stop600|close|topstep_50k|ev 1185|h1 1508|h2 832|pass 24|paid 9|days_pass 21|days_first_pay 46
+PLAN|S3_q4|conc2|q4|stop600|close|mff_rapid_eod_50k|ev 367|h1 361|h2 374|pass 9|paid 4|days_pass 45|days_first_pay 51
+PLAN|S3_q4|conc2|q4|stop600|close|lucid_flex_50k|ev 512|h1 639|h2 372|pass 23|paid 9|days_pass 21|days_first_pay 43
+PLAN|S3_q4|conc2|q4|stop600|close|builder_25k|ev 90|h1 76|h2 105|pass 31|paid 5|days_pass 2|days_first_pay 31
+PLAN|S3_q4|conc2|q4|stop600|close|select_daily_25k|ev 93|h1 80|h2 108|pass 11|paid 3|days_pass 29|days_first_pay 32
+PLAN|S3_q4|conc2|q4|stop600|close|select_flex_25k|ev 60|h1 50|h2 71|pass 11|paid 2|days_pass 29|days_first_pay 65
+PLAN|S3_q4|conc2|q4|stop600|close|select_daily_100k|ev 810|h1 1026|h2 574|pass 20|paid 11|days_pass 31|days_first_pay 41
+PLAN|S3_q4|conc2|q4|stop600|close|select_daily_150k|ev 1498|h1 1507|h2 1489|pass 25|paid 15|days_pass 31|days_first_pay 43
+PLAN|S3_q4|conc2|q4|stop600|close|select_flex_100k|ev 692|h1 837|h2 534|pass 22|paid 9|days_pass 31|days_first_pay 58
+PLAN|S3_q4|conc2|q4|stop600|close|select_flex_150k|ev 1776|h1 2014|h2 1517|pass 28|paid 16|days_pass 32|days_first_pay 56
+DAILY|S3_q5|conc2|q5|stop0|extreme|sessions 2581|mean 315.1|sd 2941.2|winning_days 26.9%
+ACCT|S3_q5|conc2|q5|stop0|extreme|total 813317|dd_eod 48161|dd_intraday 49171|worst_month -27024|losing_months 61/147|traded_days 1997
+PLAN|S3_q5|conc2|q5|stop0|extreme|select_daily_50k|ev 154|h1 161|h2 147|pass 12|paid 3|days_pass 23|days_first_pay 28
+PLAN|S3_q5|conc2|q5|stop0|extreme|apex_eod_50k|ev 121|h1 96|h2 148|pass 28|paid 3|days_pass 2|days_first_pay 23
+PLAN|S3_q5|conc2|q5|stop0|extreme|builder_50k|ev 88|h1 104|h2 70|pass 25|paid 3|days_pass 2|days_first_pay 31
+PLAN|S3_q5|conc2|q5|stop0|extreme|topstep_50k|ev 412|h1 574|h2 234|pass 10|paid 2|days_pass 17|days_first_pay 46
+PLAN|S3_q5|conc2|q5|stop0|extreme|mff_rapid_eod_50k|ev 115|h1 95|h2 138|pass 7|paid 2|days_pass 41|days_first_pay 48
+PLAN|S3_q5|conc2|q5|stop0|extreme|lucid_flex_50k|ev 159|h1 224|h2 87|pass 14|paid 2|days_pass 16|days_first_pay 32
+PLAN|S3_q5|conc2|q5|stop0|extreme|builder_25k|ev 10|h1 8|h2 13|pass 18|paid 1|days_pass 1|days_first_pay 27
+PLAN|S3_q5|conc2|q5|stop0|extreme|select_daily_25k|ev 10|h1 14|h2 5|pass 7|paid 1|days_pass 21|days_first_pay 25
+PLAN|S3_q5|conc2|q5|stop0|extreme|select_flex_25k|ev 3|h1 0|h2 5|pass 7|paid 0|days_pass 21|days_first_pay 48
+PLAN|S3_q5|conc2|q5|stop0|extreme|select_daily_100k|ev 268|h1 302|h2 231|pass 15|paid 4|days_pass 23|days_first_pay 27
+PLAN|S3_q5|conc2|q5|stop0|extreme|select_daily_150k|ev 491|h1 503|h2 479|pass 19|paid 8|days_pass 23|days_first_pay 27
+PLAN|S3_q5|conc2|q5|stop0|extreme|select_flex_100k|ev 440|h1 569|h2 300|pass 17|paid 5|days_pass 22|days_first_pay 42
+PLAN|S3_q5|conc2|q5|stop0|extreme|select_flex_150k|ev 710|h1 760|h2 656|pass 22|paid 6|days_pass 23|days_first_pay 44
+DAILY|S3_q5|conc2|q5|stop300|extreme|sessions 2581|mean 77.9|sd 1569.5|winning_days 8.0%
+ACCT|S3_q5|conc2|q5|stop300|extreme|total 201144|dd_eod 29663|dd_intraday 29829|worst_month -6576|losing_months 85/147|traded_days 1997
+PLAN|S3_q5|conc2|q5|stop300|extreme|select_daily_50k|ev 16|h1 0|h2 33|pass 2|paid 0|days_pass 30|days_first_pay 36
+PLAN|S3_q5|conc2|q5|stop300|extreme|apex_eod_50k|ev 42|h1 80|h2 0|pass 28|paid 2|days_pass 5|days_first_pay 76
+PLAN|S3_q5|conc2|q5|stop300|extreme|builder_50k|ev 63|h1 88|h2 35|pass 28|paid 3|days_pass 5|days_first_pay 45
+PLAN|S3_q5|conc2|q5|stop300|extreme|topstep_50k|ev 116|h1 62|h2 175|pass 5|paid 2|days_pass 35|days_first_pay 98
+PLAN|S3_q5|conc2|q5|stop300|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q5|conc2|q5|stop300|extreme|lucid_flex_50k|ev 49|h1 29|h2 70|pass 5|paid 2|days_pass 35|days_first_pay 98
+PLAN|S3_q5|conc2|q5|stop300|extreme|builder_25k|ev 15|h1 16|h2 13|pass 18|paid 1|days_pass 2|days_first_pay 31
+PLAN|S3_q5|conc2|q5|stop300|extreme|select_daily_25k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q5|conc2|q5|stop300|extreme|select_flex_25k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q5|conc2|q5|stop300|extreme|select_daily_100k|ev 21|h1 0|h2 45|pass 2|paid 0|days_pass 30|days_first_pay 36
+PLAN|S3_q5|conc2|q5|stop300|extreme|select_daily_150k|ev 28|h1 0|h2 58|pass 3|paid 0|days_pass 31|days_first_pay 36
+PLAN|S3_q5|conc2|q5|stop300|extreme|select_flex_100k|ev 15|h1 0|h2 31|pass 3|paid 0|days_pass 31|days_first_pay 98
+PLAN|S3_q5|conc2|q5|stop300|extreme|select_flex_150k|ev 19|h1 0|h2 39|pass 3|paid 0|days_pass 32|days_first_pay 98
+DAILY|S3_q5|conc2|q5|stop600|extreme|sessions 2581|mean 124.8|sd 1958.9|winning_days 13.7%
+ACCT|S3_q5|conc2|q5|stop600|extreme|total 322008|dd_eod 37952|dd_intraday 38118|worst_month -10450|losing_months 73/147|traded_days 1997
+PLAN|S3_q5|conc2|q5|stop600|extreme|select_daily_50k|ev 96|h1 107|h2 84|pass 5|paid 2|days_pass 39|days_first_pay 38
+PLAN|S3_q5|conc2|q5|stop600|extreme|apex_eod_50k|ev 100|h1 104|h2 96|pass 29|paid 4|days_pass 3|days_first_pay 36
+PLAN|S3_q5|conc2|q5|stop600|extreme|builder_50k|ev 104|h1 104|h2 105|pass 29|paid 4|days_pass 3|days_first_pay 34
+PLAN|S3_q5|conc2|q5|stop600|extreme|topstep_50k|ev 112|h1 69|h2 159|pass 8|paid 1|days_pass 25|days_first_pay 36
+PLAN|S3_q5|conc2|q5|stop600|extreme|mff_rapid_eod_50k|ev 50|h1 15|h2 87|pass 1|paid 1|days_pass 42|days_first_pay 43
+PLAN|S3_q5|conc2|q5|stop600|extreme|lucid_flex_50k|ev 49|h1 32|h2 67|pass 8|paid 1|days_pass 25|days_first_pay 36
+PLAN|S3_q5|conc2|q5|stop600|extreme|builder_25k|ev 17|h1 16|h2 17|pass 22|paid 1|days_pass 2|days_first_pay 36
+PLAN|S3_q5|conc2|q5|stop600|extreme|select_daily_25k|ev 21|h1 28|h2 13|pass 3|paid 0|days_pass 36|days_first_pay 51
+PLAN|S3_q5|conc2|q5|stop600|extreme|select_flex_25k|ev 10|h1 20|h2 0|pass 3|paid 0|days_pass 36|days_first_pay 75
+PLAN|S3_q5|conc2|q5|stop600|extreme|select_daily_100k|ev 135|h1 148|h2 120|pass 6|paid 2|days_pass 40|days_first_pay 38
+PLAN|S3_q5|conc2|q5|stop600|extreme|select_daily_150k|ev 303|h1 274|h2 335|pass 7|paid 3|days_pass 39|days_first_pay 38
+PLAN|S3_q5|conc2|q5|stop600|extreme|select_flex_100k|ev 136|h1 149|h2 122|pass 6|paid 2|days_pass 40|days_first_pay 65
+PLAN|S3_q5|conc2|q5|stop600|extreme|select_flex_150k|ev 315|h1 261|h2 373|pass 9|paid 4|days_pass 40|days_first_pay 63
+DAILY|S3_q5|conc2|q5|stop0|close|sessions 2581|mean 315.1|sd 2941.2|winning_days 26.9%
+ACCT|S3_q5|conc2|q5|stop0|close|total 813317|dd_eod 48161|dd_intraday 48943|worst_month -27024|losing_months 61/147|traded_days 1997
+PLAN|S3_q5|conc2|q5|stop0|close|select_daily_50k|ev 192|h1 161|h2 227|pass 12|paid 3|days_pass 23|days_first_pay 28
+PLAN|S3_q5|conc2|q5|stop0|close|apex_eod_50k|ev 138|h1 96|h2 183|pass 30|paid 4|days_pass 2|days_first_pay 23
+PLAN|S3_q5|conc2|q5|stop0|close|builder_50k|ev 109|h1 112|h2 105|pass 28|paid 3|days_pass 2|days_first_pay 28
+PLAN|S3_q5|conc2|q5|stop0|close|topstep_50k|ev 464|h1 574|h2 343|pass 13|paid 3|days_pass 17|days_first_pay 43
+PLAN|S3_q5|conc2|q5|stop0|close|mff_rapid_eod_50k|ev 121|h1 95|h2 150|pass 8|paid 2|days_pass 40|days_first_pay 48
+PLAN|S3_q5|conc2|q5|stop0|close|lucid_flex_50k|ev 246|h1 224|h2 271|pass 15|paid 3|days_pass 16|days_first_pay 34
+PLAN|S3_q5|conc2|q5|stop0|close|builder_25k|ev 38|h1 24|h2 52|pass 21|paid 2|days_pass 1|days_first_pay 25
+PLAN|S3_q5|conc2|q5|stop0|close|select_daily_25k|ev 14|h1 14|h2 13|pass 8|paid 1|days_pass 22|days_first_pay 25
+PLAN|S3_q5|conc2|q5|stop0|close|select_flex_25k|ev 3|h1 0|h2 5|pass 8|paid 0|days_pass 22|days_first_pay 48
+PLAN|S3_q5|conc2|q5|stop0|close|select_daily_100k|ev 300|h1 330|h2 267|pass 16|paid 5|days_pass 23|days_first_pay 27
+PLAN|S3_q5|conc2|q5|stop0|close|select_daily_150k|ev 502|h1 523|h2 479|pass 19|paid 8|days_pass 23|days_first_pay 27
+PLAN|S3_q5|conc2|q5|stop0|close|select_flex_100k|ev 440|h1 569|h2 300|pass 18|paid 5|days_pass 22|days_first_pay 42
+PLAN|S3_q5|conc2|q5|stop0|close|select_flex_150k|ev 870|h1 769|h2 981|pass 23|paid 8|days_pass 23|days_first_pay 43
+DAILY|S3_q5|conc2|q5|stop300|close|sessions 2581|mean 173.4|sd 1730.3|winning_days 10.5%
+ACCT|S3_q5|conc2|q5|stop300|close|total 447560|dd_eod 21181|dd_intraday 21201|worst_month -5503|losing_months 70/147|traded_days 1997
+PLAN|S3_q5|conc2|q5|stop300|close|select_daily_50k|ev 134|h1 198|h2 64|pass 8|paid 3|days_pass 50|days_first_pay 60
+PLAN|S3_q5|conc2|q5|stop300|close|apex_eod_50k|ev 192|h1 264|h2 114|pass 39|paid 9|days_pass 5|days_first_pay 59
+PLAN|S3_q5|conc2|q5|stop300|close|builder_50k|ev 205|h1 264|h2 140|pass 39|paid 9|days_pass 5|days_first_pay 55
+PLAN|S3_q5|conc2|q5|stop300|close|topstep_50k|ev 436|h1 420|h2 454|pass 15|paid 5|days_pass 39|days_first_pay 85
+PLAN|S3_q5|conc2|q5|stop300|close|mff_rapid_eod_50k|ev 13|h1 24|h2 0|pass 1|paid 0|days_pass 55|days_first_pay 67
+PLAN|S3_q5|conc2|q5|stop300|close|lucid_flex_50k|ev 184|h1 184|h2 183|pass 15|paid 5|days_pass 39|days_first_pay 85
+PLAN|S3_q5|conc2|q5|stop300|close|builder_25k|ev 46|h1 60|h2 31|pass 29|paid 4|days_pass 3|days_first_pay 53
+PLAN|S3_q5|conc2|q5|stop300|close|select_daily_25k|ev 30|h1 33|h2 26|pass 5|paid 1|days_pass 47|days_first_pay 53
+PLAN|S3_q5|conc2|q5|stop300|close|select_flex_25k|ev 26|h1 20|h2 33|pass 5|paid 1|days_pass 47|days_first_pay 82
+PLAN|S3_q5|conc2|q5|stop300|close|select_daily_100k|ev 196|h1 277|h2 108|pass 10|paid 4|days_pass 50|days_first_pay 60
+PLAN|S3_q5|conc2|q5|stop300|close|select_daily_150k|ev 418|h1 613|h2 206|pass 10|paid 5|days_pass 48|days_first_pay 60
+PLAN|S3_q5|conc2|q5|stop300|close|select_flex_100k|ev 217|h1 276|h2 153|pass 10|paid 3|days_pass 50|days_first_pay 100
+PLAN|S3_q5|conc2|q5|stop300|close|select_flex_150k|ev 380|h1 370|h2 391|pass 12|paid 5|days_pass 48|days_first_pay 93
+DAILY|S3_q5|conc2|q5|stop600|close|sessions 2581|mean 236.5|sd 2110.2|winning_days 16.0%
+ACCT|S3_q5|conc2|q5|stop600|close|total 610495|dd_eod 34059|dd_intraday 34614|worst_month -9818|losing_months 56/147|traded_days 1997
+PLAN|S3_q5|conc2|q5|stop600|close|select_daily_50k|ev 319|h1 399|h2 232|pass 12|paid 4|days_pass 32|days_first_pay 41
+PLAN|S3_q5|conc2|q5|stop600|close|apex_eod_50k|ev 259|h1 256|h2 262|pass 37|paid 8|days_pass 3|days_first_pay 34
+PLAN|S3_q5|conc2|q5|stop600|close|builder_50k|ev 276|h1 264|h2 288|pass 37|paid 8|days_pass 3|days_first_pay 32
+PLAN|S3_q5|conc2|q5|stop600|close|topstep_50k|ev 762|h1 921|h2 589|pass 18|paid 6|days_pass 24|days_first_pay 51
+PLAN|S3_q5|conc2|q5|stop600|close|mff_rapid_eod_50k|ev 171|h1 143|h2 201|pass 5|paid 2|days_pass 45|days_first_pay 46
+PLAN|S3_q5|conc2|q5|stop600|close|lucid_flex_50k|ev 307|h1 384|h2 224|pass 17|paid 5|days_pass 23|days_first_pay 51
+PLAN|S3_q5|conc2|q5|stop600|close|builder_25k|ev 65|h1 48|h2 83|pass 28|paid 4|days_pass 2|days_first_pay 22
+PLAN|S3_q5|conc2|q5|stop600|close|select_daily_25k|ev 87|h1 120|h2 51|pass 7|paid 3|days_pass 26|days_first_pay 37
+PLAN|S3_q5|conc2|q5|stop600|close|select_flex_25k|ev 60|h1 95|h2 22|pass 7|paid 1|days_pass 26|days_first_pay 70
+PLAN|S3_q5|conc2|q5|stop600|close|select_daily_100k|ev 536|h1 651|h2 410|pass 13|paid 7|days_pass 36|days_first_pay 41
+PLAN|S3_q5|conc2|q5|stop600|close|select_daily_150k|ev 1195|h1 1277|h2 1105|pass 16|paid 10|days_pass 35|days_first_pay 44
+PLAN|S3_q5|conc2|q5|stop600|close|select_flex_100k|ev 555|h1 569|h2 540|pass 15|paid 6|days_pass 35|days_first_pay 57
+PLAN|S3_q5|conc2|q5|stop600|close|select_flex_150k|ev 1144|h1 1061|h2 1235|pass 20|paid 11|days_pass 36|days_first_pay 60
+DAILY|S3_q10|conc2|q10|stop0|extreme|sessions 2581|mean 630.2|sd 5882.4|winning_days 26.9%
+ACCT|S3_q10|conc2|q10|stop0|extreme|total 1626634|dd_eod 96322|dd_intraday 98342|worst_month -54049|losing_months 61/147|traded_days 1997
+PLAN|S3_q10|conc2|q10|stop0|extreme|select_daily_50k|ev 22|h1 32|h2 11|pass 7|paid 1|days_pass 21|days_first_pay 25
+PLAN|S3_q10|conc2|q10|stop0|extreme|apex_eod_50k|ev 67|h1 72|h2 61|pass 24|paid 1|days_pass 1|days_first_pay 17
+PLAN|S3_q10|conc2|q10|stop0|extreme|builder_50k|ev 21|h1 16|h2 26|pass 16|paid 1|days_pass 1|days_first_pay 27
+PLAN|S3_q10|conc2|q10|stop0|extreme|topstep_50k|ev 0|h1 0|h2 0|pass 3|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop0|extreme|mff_rapid_eod_50k|ev 21|h1 16|h2 26|pass 4|paid 1|days_pass 40|days_first_pay 48
+PLAN|S3_q10|conc2|q10|stop0|extreme|lucid_flex_50k|ev 75|h1 104|h2 44|pass 9|paid 1|days_pass 13|days_first_pay 33
+PLAN|S3_q10|conc2|q10|stop0|extreme|builder_25k|ev 2|h1 0|h2 4|pass 10|paid 0|days_pass 1|days_first_pay 17
+PLAN|S3_q10|conc2|q10|stop0|extreme|select_daily_25k|ev 4|h1 0|h2 8|pass 4|paid 0|days_pass 19|days_first_pay 28
+PLAN|S3_q10|conc2|q10|stop0|extreme|select_flex_25k|ev 3|h1 0|h2 5|pass 4|paid 0|days_pass 19|days_first_pay 48
+PLAN|S3_q10|conc2|q10|stop0|extreme|select_daily_100k|ev 69|h1 105|h2 31|pass 8|paid 1|days_pass 21|days_first_pay 25
+PLAN|S3_q10|conc2|q10|stop0|extreme|select_daily_150k|ev 360|h1 386|h2 332|pass 10|paid 3|days_pass 22|days_first_pay 28
+PLAN|S3_q10|conc2|q10|stop0|extreme|select_flex_100k|ev 15|h1 0|h2 31|pass 9|paid 0|days_pass 22|days_first_pay 48
+PLAN|S3_q10|conc2|q10|stop0|extreme|select_flex_150k|ev 489|h1 684|h2 275|pass 13|paid 3|days_pass 23|days_first_pay 49
+DAILY|S3_q10|conc2|q10|stop300|extreme|sessions 2581|mean 10.6|sd 1802.0|winning_days 3.8%
+ACCT|S3_q10|conc2|q10|stop300|extreme|total 27477|dd_eod 90087|dd_intraday 90087|worst_month -6900|losing_months 104/147|traded_days 1997
+PLAN|S3_q10|conc2|q10|stop300|extreme|select_daily_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|apex_eod_50k|ev 0|h1 0|h2 0|pass 16|paid 0|days_pass 5|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|builder_50k|ev 0|h1 0|h2 0|pass 16|paid 0|days_pass 5|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|topstep_50k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 44|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|lucid_flex_50k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 44|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|builder_25k|ev 0|h1 0|h2 0|pass 10|paid 0|days_pass 2|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|select_daily_25k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|select_flex_25k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|select_daily_100k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|select_daily_150k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|select_flex_100k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|extreme|select_flex_150k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+DAILY|S3_q10|conc2|q10|stop600|extreme|sessions 2581|mean 155.9|sd 3139.0|winning_days 8.0%
+ACCT|S3_q10|conc2|q10|stop600|extreme|total 402287|dd_eod 59325|dd_intraday 59659|worst_month -13152|losing_months 85/147|traded_days 1997
+PLAN|S3_q10|conc2|q10|stop600|extreme|select_daily_50k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop600|extreme|apex_eod_50k|ev 13|h1 24|h2 0|pass 18|paid 1|days_pass 2|days_first_pay 109
+PLAN|S3_q10|conc2|q10|stop600|extreme|builder_50k|ev 29|h1 32|h2 26|pass 18|paid 1|days_pass 2|days_first_pay 31
+PLAN|S3_q10|conc2|q10|stop600|extreme|topstep_50k|ev 21|h1 0|h2 44|pass 3|paid 0|days_pass 26|days_first_pay 52
+PLAN|S3_q10|conc2|q10|stop600|extreme|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop600|extreme|lucid_flex_50k|ev 8|h1 0|h2 17|pass 3|paid 0|days_pass 26|days_first_pay 52
+PLAN|S3_q10|conc2|q10|stop600|extreme|builder_25k|ev 6|h1 4|h2 9|pass 12|paid 1|days_pass 1|days_first_pay 17
+PLAN|S3_q10|conc2|q10|stop600|extreme|select_daily_25k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop600|extreme|select_flex_25k|ev 0|h1 0|h2 0|pass 1|paid 0|days_pass 25|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop600|extreme|select_daily_100k|ev 11|h1 0|h2 23|pass 1|paid 0|days_pass 25|days_first_pay 31
+PLAN|S3_q10|conc2|q10|stop600|extreme|select_daily_150k|ev 31|h1 0|h2 66|pass 2|paid 0|days_pass 30|days_first_pay 36
+PLAN|S3_q10|conc2|q10|stop600|extreme|select_flex_100k|ev 15|h1 0|h2 31|pass 2|paid 0|days_pass 30|days_first_pay 98
+PLAN|S3_q10|conc2|q10|stop600|extreme|select_flex_150k|ev 19|h1 0|h2 39|pass 2|paid 0|days_pass 30|days_first_pay 98
+DAILY|S3_q10|conc2|q10|stop0|close|sessions 2581|mean 630.2|sd 5882.4|winning_days 26.9%
+ACCT|S3_q10|conc2|q10|stop0|close|total 1626634|dd_eod 96322|dd_intraday 97885|worst_month -54049|losing_months 61/147|traded_days 1997
+PLAN|S3_q10|conc2|q10|stop0|close|select_daily_50k|ev 31|h1 32|h2 29|pass 8|paid 1|days_pass 22|days_first_pay 25
+PLAN|S3_q10|conc2|q10|stop0|close|apex_eod_50k|ev 88|h1 72|h2 105|pass 26|paid 2|days_pass 1|days_first_pay 17
+PLAN|S3_q10|conc2|q10|stop0|close|builder_50k|ev 46|h1 56|h2 35|pass 20|paid 1|days_pass 1|days_first_pay 42
+PLAN|S3_q10|conc2|q10|stop0|close|topstep_50k|ev 63|h1 120|h2 0|pass 6|paid 0|days_pass 26|days_first_pay 65
+PLAN|S3_q10|conc2|q10|stop0|close|mff_rapid_eod_50k|ev 21|h1 16|h2 26|pass 5|paid 1|days_pass 42|days_first_pay 48
+PLAN|S3_q10|conc2|q10|stop0|close|lucid_flex_50k|ev 96|h1 104|h2 87|pass 10|paid 1|days_pass 16|days_first_pay 31
+PLAN|S3_q10|conc2|q10|stop0|close|builder_25k|ev 6|h1 8|h2 4|pass 13|paid 1|days_pass 1|days_first_pay 28
+PLAN|S3_q10|conc2|q10|stop0|close|select_daily_25k|ev 5|h1 0|h2 10|pass 4|paid 0|days_pass 22|days_first_pay 28
+PLAN|S3_q10|conc2|q10|stop0|close|select_flex_25k|ev 3|h1 0|h2 5|pass 4|paid 0|days_pass 22|days_first_pay 48
+PLAN|S3_q10|conc2|q10|stop0|close|select_daily_100k|ev 158|h1 131|h2 187|pass 9|paid 2|days_pass 22|days_first_pay 25
+PLAN|S3_q10|conc2|q10|stop0|close|select_daily_150k|ev 382|h1 398|h2 364|pass 11|paid 3|days_pass 23|days_first_pay 28
+PLAN|S3_q10|conc2|q10|stop0|close|select_flex_100k|ev 88|h1 98|h2 76|pass 10|paid 1|days_pass 22|days_first_pay 48
+PLAN|S3_q10|conc2|q10|stop0|close|select_flex_150k|ev 489|h1 684|h2 275|pass 14|paid 3|days_pass 23|days_first_pay 49
+DAILY|S3_q10|conc2|q10|stop300|close|sessions 2581|mean 302.2|sd 3052.6|winning_days 6.3%
+ACCT|S3_q10|conc2|q10|stop300|close|total 779895|dd_eod 27562|dd_intraday 27603|worst_month -5868|losing_months 80/147|traded_days 1997
+PLAN|S3_q10|conc2|q10|stop300|close|select_daily_50k|ev 58|h1 0|h2 122|pass 3|paid 2|days_pass 42|days_first_pay 47
+PLAN|S3_q10|conc2|q10|stop300|close|apex_eod_50k|ev 46|h1 40|h2 52|pass 30|paid 2|days_pass 5|days_first_pay 72
+PLAN|S3_q10|conc2|q10|stop300|close|builder_50k|ev 54|h1 48|h2 61|pass 30|paid 3|days_pass 5|days_first_pay 47
+PLAN|S3_q10|conc2|q10|stop300|close|topstep_50k|ev 104|h1 0|h2 218|pass 8|paid 1|days_pass 38|days_first_pay 75
+PLAN|S3_q10|conc2|q10|stop300|close|mff_rapid_eod_50k|ev 0|h1 0|h2 0|pass 0|paid 0|days_pass -1|days_first_pay -1
+PLAN|S3_q10|conc2|q10|stop300|close|lucid_flex_50k|ev 42|h1 0|h2 87|pass 8|paid 1|days_pass 38|days_first_pay 75
+PLAN|S3_q10|conc2|q10|stop300|close|builder_25k|ev 15|h1 12|h2 17|pass 21|paid 1|days_pass 2|days_first_pay 42
+PLAN|S3_q10|conc2|q10|stop300|close|select_daily_25k|ev 14|h1 0|h2 28|pass 2|paid 1|days_pass 40|days_first_pay 47
+PLAN|S3_q10|conc2|q10|stop300|close|select_flex_25k|ev 10|h1 0|h2 22|pass 2|paid 0|days_pass 40|days_first_pay 80
+PLAN|S3_q10|conc2|q10|stop300|close|select_daily_100k|ev 108|h1 0|h2 226|pass 4|paid 2|days_pass 42|days_first_pay 47
+PLAN|S3_q10|conc2|q10|stop300|close|select_daily_150k|ev 153|h1 0|h2 320|pass 5|paid 3|days_pass 45|days_first_pay 51
+PLAN|S3_q10|conc2|q10|stop300|close|select_flex_100k|ev 51|h1 0|h2 107|pass 4|paid 1|days_pass 42|days_first_pay 90
+PLAN|S3_q10|conc2|q10|stop300|close|select_flex_150k|ev 75|h1 0|h2 157|pass 5|paid 2|days_pass 42|days_first_pay 95
+DAILY|S3_q10|conc2|q10|stop600|close|sessions 2581|mean 346.8|sd 3460.7|winning_days 10.5%
+ACCT|S3_q10|conc2|q10|stop600|close|total 895121|dd_eod 42361|dd_intraday 42402|worst_month -11005|losing_months 70/147|traded_days 1997
+PLAN|S3_q10|conc2|q10|stop600|close|select_daily_50k|ev 62|h1 69|h2 55|pass 5|paid 1|days_pass 47|days_first_pay 53
+PLAN|S3_q10|conc2|q10|stop600|close|apex_eod_50k|ev 84|h1 112|h2 52|pass 29|paid 4|days_pass 3|days_first_pay 54
+PLAN|S3_q10|conc2|q10|stop600|close|builder_50k|ev 92|h1 120|h2 61|pass 29|paid 4|days_pass 3|days_first_pay 53
+PLAN|S3_q10|conc2|q10|stop600|close|topstep_50k|ev 94|h1 100|h2 87|pass 10|paid 1|days_pass 37|days_first_pay 102
+PLAN|S3_q10|conc2|q10|stop600|close|mff_rapid_eod_50k|ev 33|h1 64|h2 0|pass 1|paid 0|days_pass 55|days_first_pay 67
+PLAN|S3_q10|conc2|q10|stop600|close|lucid_flex_50k|ev 38|h1 40|h2 35|pass 10|paid 1|days_pass 37|days_first_pay 102
+PLAN|S3_q10|conc2|q10|stop600|close|builder_25k|ev 15|h1 16|h2 13|pass 18|paid 1|days_pass 1|days_first_pay 32
+PLAN|S3_q10|conc2|q10|stop600|close|select_daily_25k|ev 5|h1 10|h2 0|pass 3|paid 0|days_pass 50|days_first_pay 62
+PLAN|S3_q10|conc2|q10|stop600|close|select_flex_25k|ev 3|h1 5|h2 0|pass 3|paid 0|days_pass 50|days_first_pay 121
+PLAN|S3_q10|conc2|q10|stop600|close|select_daily_100k|ev 105|h1 139|h2 69|pass 6|paid 1|days_pass 48|days_first_pay 58
+PLAN|S3_q10|conc2|q10|stop600|close|select_daily_150k|ev 270|h1 399|h2 129|pass 8|paid 3|days_pass 50|days_first_pay 60
+PLAN|S3_q10|conc2|q10|stop600|close|select_flex_100k|ev 102|h1 84|h2 122|pass 7|paid 1|days_pass 50|days_first_pay 92
+PLAN|S3_q10|conc2|q10|stop600|close|select_flex_150k|ev 197|h1 198|h2 197|pass 9|paid 3|days_pass 50|days_first_pay 100

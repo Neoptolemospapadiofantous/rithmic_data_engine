@@ -1,0 +1,40 @@
+
+===== NQ, cost 0.005 % per unit of position change
+  chosen on 2011-2019: lookback 20 d, threshold ±3 %, long-only  (first-period Sharpe 0.79, annual +5.1 %)
+  2020-2026 read once:  strategy         annual  Sharpe    vol
+                         VIDEO RECIPE      +8.1%    0.73  11.1%
+                         buy & hold       +24.0%    0.87  27.5%
+                         20d momentum      -0.1%   -0.00  27.6%
+                         random signs 95th-pct Sharpe 0.61;  recipe scaled to buy & hold's vol: +20.2 %/yr vs buy & hold +24.0 %/yr
+  VERDICT: FAIL
+  (post-hoc, best three on the SECOND period: L10 ±3% long-only Sharpe 0.90; L20 ±3% long-only Sharpe 0.73; L20 ±5% long-only Sharpe 0.72)
+
+===== NQ, cost 0.000 % per unit of position change
+  chosen on 2011-2019: lookback 20 d, threshold ±3 %, long-only  (first-period Sharpe 0.81, annual +5.2 %)
+  2020-2026 read once:  strategy         annual  Sharpe    vol
+                         VIDEO RECIPE      +8.2%    0.74  11.1%
+                         buy & hold       +24.0%    0.87  27.5%
+                         20d momentum      +0.1%    0.00  27.6%
+                         random signs 95th-pct Sharpe 0.64;  recipe scaled to buy & hold's vol: +20.5 %/yr vs buy & hold +24.0 %/yr
+  VERDICT: FAIL
+  (post-hoc, best three on the SECOND period: L10 ±3% long-only Sharpe 0.92; L20 ±3% long-only Sharpe 0.74; L20 ±5% long-only Sharpe 0.73)
+
+===== BTC, cost 0.040 % per unit of position change
+  chosen on 2018-2021: lookback 20 d, threshold ±3 %, long-only  (first-period Sharpe 1.45, annual +64.0 %)
+  2022-2026 read once:  strategy         annual  Sharpe    vol
+                         VIDEO RECIPE      +6.0%    0.24  25.4%
+                         buy & hold       +25.1%    0.49  50.8%
+                         20d momentum      +9.9%    0.19  50.8%
+                         random signs 95th-pct Sharpe 0.55;  recipe scaled to buy & hold's vol: +12.0 %/yr vs buy & hold +25.1 %/yr
+  VERDICT: FAIL
+  (post-hoc, best three on the SECOND period: L60 ±10% long-only Sharpe 0.96; L60 ±5% long-only Sharpe 0.91; L60 ±3% long-only Sharpe 0.78)
+
+===== BTC, cost 0.100 % per unit of position change
+  chosen on 2018-2021: lookback 20 d, threshold ±3 %, long-only  (first-period Sharpe 1.41, annual +62.3 %)
+  2022-2026 read once:  strategy         annual  Sharpe    vol
+                         VIDEO RECIPE      +4.2%    0.16  25.4%
+                         buy & hold       +25.1%    0.49  50.8%
+                         20d momentum      +5.0%    0.10  50.8%
+                         random signs 95th-pct Sharpe 0.26;  recipe scaled to buy & hold's vol: +8.3 %/yr vs buy & hold +25.1 %/yr
+  VERDICT: FAIL
+  (post-hoc, best three on the SECOND period: L60 ±10% long-only Sharpe 0.93; L60 ±5% long-only Sharpe 0.87; L60 ±3% long-only Sharpe 0.75)

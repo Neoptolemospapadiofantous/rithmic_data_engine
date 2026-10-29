@@ -1,0 +1,79 @@
+Reversals combined with flags (preregistered/2026-10-22_reversal_plan.md, Part 3). NQ and ES 2014-01 → 2026-10, R after cost, one position at a time per group.
+
+######## C1 FLAG AFTER A SAME-SIDE REVERSAL SIGNAL (<= 120 min before the flag registered)
+  every flag
+    NQ
+      after a reversal signal      534 tr -0.070R win 23.6% PF 0.92 · 2014-19 +0.068 / 2020-26 -0.198
+      no reversal signal before   1571 tr +0.176R win 31.4% PF 1.23 · 2014-19 -0.003 / 2020-26 +0.354
+    ES
+      after a reversal signal      545 tr -0.071R win 22.8% PF 0.92 · 2014-19 -0.132 / 2020-26 -0.024
+      no reversal signal before   1621 tr +0.115R win 30.2% PF 1.15 · 2014-19 +0.009 / 2020-26 +0.221
+    → every flag: NQ difference -0.247R (2014-19 +0.071 / 2020-26 -0.552), ES -0.186R
+  A-list
+    NQ
+      after a reversal signal      195 tr -0.080R win 25.6% PF 0.90 · 2014-19 +0.134 / 2020-26 -0.293
+      no reversal signal before    746 tr +0.316R win 34.2% PF 1.43 · 2014-19 +0.086 / 2020-26 +0.529
+    ES
+      after a reversal signal      208 tr -0.009R win 23.6% PF 0.99 · 2014-19 -0.146 / 2020-26 +0.095
+      no reversal signal before    753 tr +0.200R win 31.2% PF 1.26 · 2014-19 +0.024 / 2020-26 +0.373
+    → A-list: NQ difference -0.397R (2014-19 +0.049 / 2020-26 -0.822), ES -0.209R
+  A-list + 5m HH/HL
+    NQ
+      after a reversal signal       92 tr +0.300R win 33.7% PF 1.41 · 2014-19 +0.717 / 2020-26 -0.082
+      no reversal signal before    465 tr +0.396R win 35.3% PF 1.55 · 2014-19 +0.185 / 2020-26 +0.565
+    ES
+      after a reversal signal      102 tr -0.033R win 24.5% PF 0.96 · 2014-19 -0.133 / 2020-26 +0.043
+      no reversal signal before    426 tr +0.332R win 33.3% PF 1.44 · 2014-19 +0.234 / 2020-26 +0.418
+    → A-list + 5m HH/HL: NQ difference -0.095R (2014-19 +0.532 / 2020-26 -0.646), ES -0.365R
+  flags WITH the 5m break
+    NQ
+      after a reversal signal      327 tr -0.198R win 21.4% PF 0.77 · 2014-19 -0.134 / 2020-26 -0.255
+      no reversal signal before   1303 tr +0.239R win 32.4% PF 1.32 · 2014-19 +0.082 / 2020-26 +0.394
+    ES
+      after a reversal signal      349 tr -0.123R win 21.5% PF 0.86 · 2014-19 -0.142 / 2020-26 -0.109
+      no reversal signal before   1332 tr +0.141R win 30.2% PF 1.18 · 2014-19 -0.002 / 2020-26 +0.283
+    → flags WITH the 5m break: NQ difference -0.437R (2014-19 -0.216 / 2020-26 -0.649), ES -0.264R
+  flags AGAINST the 5m break (reversal flags)
+    NQ
+      after a reversal signal      207 tr +0.131R win 27.1% PF 1.16 · 2014-19 +0.368 / 2020-26 -0.103
+      no reversal signal before    268 tr -0.127R win 26.9% PF 0.84 · 2014-19 -0.429 / 2020-26 +0.160
+    ES
+      after a reversal signal      196 tr +0.022R win 25.0% PF 1.03 · 2014-19 -0.114 / 2020-26 +0.131
+      no reversal signal before    289 tr -0.001R win 30.4% PF 1.00 · 2014-19 +0.059 / 2020-26 -0.057
+    → flags AGAINST the 5m break (reversal flags): NQ difference +0.259R (2014-19 +0.797 / 2020-26 -0.264), ES +0.023R
+  A-list + HH/HL AGAINST the break
+    NQ
+      after a reversal signal       44 tr +0.707R win 38.6% PF 2.05 · 2014-19 +1.341 / 2020-26 +0.012
+      no reversal signal before     57 tr -0.004R win 35.1% PF 1.00 · 2014-19 -0.658 / 2020-26 +0.324
+    ES
+      after a reversal signal       35 tr -0.494R win 14.3% PF 0.46 · 2014-19 -1.009 / 2020-26 -0.288
+      no reversal signal before     30 tr +0.870R win 46.7% PF 2.45 · 2014-19 +1.273 / 2020-26 +0.668
+    → A-list + HH/HL AGAINST the break: NQ difference +0.710R (2014-19 +1.999 / 2020-26 -0.311), ES -1.364R
+
+######## C2 REVERSAL SIGNAL AFTER AN OPPOSITE-SIDE FLAG WAS STOPPED OUT (<= 60 min before), exit X2
+  R1 CHoCH pullback
+    NQ
+      after a failed flag          208 tr -0.128R win 37.0% PF 0.79 · 2014-19 -0.180 / 2020-26 -0.077
+      no failed flag before       1845 tr -0.128R win 39.2% PF 0.78 · 2014-19 -0.175 / 2020-26 -0.087
+    ES
+      after a failed flag          226 tr +0.035R win 44.2% PF 1.06 · 2014-19 -0.050 / 2020-26 +0.108
+      no failed flag before       1581 tr -0.081R win 40.1% PF 0.86 · 2014-19 -0.113 / 2020-26 -0.057
+    → R1 CHoCH pullback: NQ difference -0.000R (2014-19 -0.005 / 2020-26 +0.011), ES +0.115R
+  R2 sweep and reclaim
+    NQ
+      after a failed flag           28 tr -0.410R win 32.1% PF 0.39 · 2014-19 -0.539 / 2020-26 -0.326
+      no failed flag before       2204 tr -0.045R win 48.2% PF 0.92 · 2014-19 -0.082 / 2020-26 -0.010
+    ES
+      after a failed flag           28 tr -0.081R win 46.4% PF 0.84 · 2014-19 -0.524 / 2020-26 +0.302
+      no failed flag before       2214 tr -0.091R win 46.3% PF 0.84 · 2014-19 -0.109 / 2020-26 -0.075
+    → R2 sweep and reclaim: NQ difference -0.365R (2014-19 -0.457 / 2020-26 -0.316), ES +0.010R
+  D1 double bottom / top
+    NQ
+      after a failed flag          238 tr -0.001R win 66.0% PF 1.00 · 2014-19 +0.034 / 2020-26 -0.035
+      no failed flag before        691 tr -0.077R win 57.5% PF 0.78 · 2014-19 -0.144 / 2020-26 -0.020
+    ES
+      after a failed flag          216 tr -0.080R win 59.7% PF 0.77 · 2014-19 -0.056 / 2020-26 -0.099
+      no failed flag before        603 tr -0.065R win 61.0% PF 0.81 · 2014-19 -0.136 / 2020-26 -0.006
+    → D1 double bottom / top: NQ difference +0.076R (2014-19 +0.179 / 2020-26 -0.016), ES -0.014R
+
+0 of 9 judged combinations pass.

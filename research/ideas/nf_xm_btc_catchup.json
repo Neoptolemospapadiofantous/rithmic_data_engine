@@ -1,0 +1,33 @@
+{
+ "id": "nf_xm_btc_catchup",
+ "name": "BTC moved since NQ's prior close, NQ gap is small \u2192 NQ catches up",
+ "why": "Bitcoin trades through the hours index futures are quiet; a risk move priced there first reaches NQ at the cash open. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "pair": "BTCUSDT",
+ "params": {
+  "z": [
+   0.015,
+   0.025
+  ],
+  "stopk": [
+   0.35,
+   0.5
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "abs(xr) >= z && abs(gap) < 0.15",
+   "dir": "sign(xr)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "0",
+ "from": "2020-01-06"
+}

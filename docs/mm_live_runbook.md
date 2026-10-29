@@ -70,6 +70,23 @@ IMF it read.
 Hyperliquid's size precision for the coin — the frozen strategy's tick unit (`mm_paper.hpp`). The probe uses the
 same file with `"mode": "probe"`. Unknown keys anywhere are refused.
 
+**Binance-lead pull (2026-10-28, `src/dex/bn_pull.hpp`).** `engine.strategy` may carry `bn_pull_w_ms` (100..10000),
+`bn_pull_x_bps` (0.5..100) and `bn_pull_hold_ms` (0..60000); w and x go together. When set, the bot opens a read-only
+WebSocket to `fstream.binance.com` (`<coin>usdt@bookTicker`; the host guard allows exactly that host, for a WebSocket
+only, from code) and pulls the BID while Binance's mid has fallen more than x bps over the last w ms, the ASK when it
+rose, held `hold_ms`. Fail-open: with Binance down or stale (> 5 s) the bot quotes exactly as without it (log `[BN]`).
+Status: `bn_pull` {age_ms, frames, lead_bps, pull_bid/ask, pulls_bid/ask}; journal `bn_pull` on each pull. AVAX runs
+500 / 4 / 1000 (~28 pulls an hour, quotes off ~1 % of the time); its paper twin is `paper_bn` beside `paper_opt`,
+both at the measured live delays (place 314 / cancel 614 ms). First live finding: 25 of the first 27 fills arrived
+while our cancel for that order was already in flight (~310 ms) — the 21727 rejects are those late cancels.
+
+**Also 2026-10-28:** (a) re-opening the account or book stream no longer counts toward the 2 s stall guard (their loss
+already cancelled every quote) — restarts went from ~12 s to ~1 s before quoting; a slow Binance open still counts.
+(b) A quote that closes the position is sized to the position when the two differ by less than the smallest valid
+order (no more 0.01 AVAX dust). (c) The 00:00 UTC "day" alert and status `fills_today` include fills of earlier runs
+the same UTC day (log `[DAY]`). A/B + live execution report: `scripts/mm_ab.sh` (nightly, Telegram); next experiments
+fixed in `research/preregistered/2026-10-28_mm_next.md`.
+
 ### 1.4 Validate without touching the network
 
 ```bash
@@ -111,6 +128,7 @@ ack and cancel latency, the dead-man deadline. Anything else → do not go live;
 | Stop | `systemctl --user stop mm-live@aave` (SIGTERM) | stop quoting → cancel-all → wait ≤ 10 s → the dead-man is aborted ONLY if the cancel-all was applied (server nextNonce past it) AND REST shows 0 open orders; otherwise it is LEFT ARMED (the exchange cancels whatever remains at the deadline), the alert says `NOT clean … dead-man LEFT ARMED`, exit 1. Position kept. Verify with `pgrep -x mm_live` (never `pkill -f`). |
 | Kill | `touch data/mm_live/state/KILL` | sticky halt, cancel-all, flatten with reduce-only IOC capped 0.5 % through the touch (≤ 5 tries, then an alert "FLATTEN FAILED"). Deleting the file does NOT resume: the halt is also persisted (`halt_kill: true` in `<state_dir>/risk_state.json`). To resume: stop the unit, investigate, `rm <state_dir>/KILL`, set `halt_kill` to false and `reason` to "" in risk_state.json (keep mode 0600; nothing else in that file may change — it holds the loss-stop baselines), restart. |
 | Pause | `touch data/mm_live/state/PAUSE` | quotes cancelled, position kept; delete the file to resume. |
+| Down alert | `deploy/mm-live-watch.timer` → `scripts/mm_live_watch.sh` (every minute) | one grid-notify line when an instance's status file is > 60 s old (crash, reboot, unit stopped), one when it is back; names the last position. `NO_DEPLOY_MM` present = not checked. Instances: `MM_LIVE_WATCH_INSTANCES` (default `avax`). |
 | Crash / kill -9 / box down | nothing | the exchange's scheduled cancel-all fires ≤ 5 min 15 s after the last re-arm; post-only quotes also expire after 10 min. On restart: cancel-all, wait for 0 open orders, ADOPT the exchange position, re-arm. |
 | Restart loop | systemd | 3 starts in 10 min stop the unit (StartLimitBurst). |
 
@@ -186,3 +204,19 @@ Replays a recorded day through the whole pipeline against the in-process fake ex
 * Whether a live subscription survives token expiry (renewal re-subscribes every 6 h regardless).
 * That a batch counts as one request against the 60/min Standard limit; 429/405 behaviour.
 * The v1.1.6 signer's signatures being accepted by the current sequencer.
+
+## 4. Stage 1 — $200 × 20 on AVAX, $100 quotes (2026-10-28)
+Founder chose market making over the prop route ("takes too long"). The config cap on `risk.leverage` was raised 5 → 20
+(src/dex/live/gateway_config.hpp; the engine still halts when the market's IMF differs from `risk.leverage`). Configs:
+`config/mm_live_avax_100.json` (live) and `config/mm_live_avax_100_probe.json` — quote $100, one quote of inventory, gross $110,
+daily stop −$10, total stop −$20 (5 % / 10 % of $200), `max_collateral_usd` 250, own `state_dir` (`state_avax100`), label
+`lighter_avax100`, status `data/mm_live/status_avax100.json`. The binary with the new cap is `build-exp/mm_live`; it is copied to
+`build/mm_live` at 23:15 EET by the transient timer `mm-live-swap-20261028b` (refuses while a live maker runs or inside RTH).
+Order of operations, founder's hands:
+1. Lighter app: AVAX leverage → **20×** on account 764037 (the engine reads the IMF and halts on a mismatch); deposit **$200 USDC**.
+2. `systemctl --user stop mm-live@avax` (same market + account — never two engines on one market).
+3. `build/mm_live --config config/mm_live_avax_100_probe.json --mode probe --init-risk` — FIRST start of the new state dir only;
+   expect PASS (one post-only bid ≥ 20 % below, cancel, flat). Then `systemctl --user start mm-live@avax_100`.
+4. Watch `data/logs/mm_live_avax.log` / `status_avax100.json`: `exchange_position` adopts the resting 1.23 AVAX, `halts []`, a bid and ask
+   within ~10 s. A `halt: leverage` means step 1 was not applied to the AVAX market.
+Expected at +0.5 bps: $2–6/day (fills scale less than 9× with size — `paper_100` measures it); at −0.5 bps the stops end it within days.

@@ -1,0 +1,38 @@
+A flags-only book, NQ + ES, 2014-01 → 2026-10 (2583 NY sessions). Flag-mid trade, R after cost, 1 unit per trade on each market.
+Columns: trades a day · days with >= 1 / >= 2 trades · avg R · PF · R a day · worst day R · worst drawdown R · longest below the high (days) · years > 0 · 2025-26 avg R
+
+######## L1 A-list + 5m HH/HL + with the break
+    1 position/market              0.36/day · >=1  28% >=2   7% · +0.337R PF 1.45 · +0.120 R/day · worst day  -4.2R · DD  35.9R · below high 448 d · years > 0 12/13 · 2025-26 +0.403R
+    2 positions/market             0.51/day · >=1  28% >=2  15% · +0.367R PF 1.50 · +0.186 R/day · worst day  -5.4R · DD  53.1R · below high 496 d · years > 0 12/13 · 2025-26 +0.287R
+    pullback <= 38 %, 1 position/market 0.33/day · >=1  26% >=2   6% · +0.355R PF 1.48 · +0.116 R/day · worst day  -4.2R · DD  36.9R · below high 370 d · years > 0 12/13 · 2025-26 +0.332R
+    pullback <= 38 %, 2 positions/market 0.47/day · >=1  26% >=2  14% · +0.390R PF 1.54 · +0.182 R/day · worst day  -5.4R · DD  56.5R · below high 432 d · years > 0 11/13 · 2025-26 +0.229R
+
+######## L2 A-list + with the break
+    1 position/market              0.62/day · >=1  43% >=2  16% · +0.199R PF 1.26 · +0.123 R/day · worst day  -4.8R · DD  77.8R · below high 681 d · years > 0 11/13 · 2025-26 +0.248R
+    2 positions/market             0.95/day · >=1  43% >=2  30% · +0.248R PF 1.33 · +0.236 R/day · worst day  -7.4R · DD  83.0R · below high 375 d · years > 0 12/13 · 2025-26 +0.118R
+    pullback <= 38 %, 1 position/market 0.58/day · >=1  41% >=2  15% · +0.208R PF 1.27 · +0.120 R/day · worst day  -4.8R · DD  76.9R · below high 570 d · years > 0 11/13 · 2025-26 +0.217R
+    pullback <= 38 %, 2 positions/market 0.88/day · >=1  41% >=2  28% · +0.264R PF 1.35 · +0.233 R/day · worst day  -6.6R · DD  87.2R · below high 412 d · years > 0 12/13 · 2025-26 +0.078R
+
+######## L3 A-list
+    1 position/market              0.73/day · >=1  51% >=2  19% · +0.194R PF 1.25 · +0.142 R/day · worst day  -4.8R · DD  68.6R · below high 567 d · years > 0 10/13 · 2025-26 +0.224R
+    2 positions/market             1.12/day · >=1  51% >=2  35% · +0.231R PF 1.30 · +0.259 R/day · worst day  -7.4R · DD  79.7R · below high 313 d · years > 0 11/13 · 2025-26 +0.114R
+    pullback <= 38 %, 1 position/market 0.68/day · >=1  49% >=2  17% · +0.205R PF 1.27 · +0.141 R/day · worst day  -4.8R · DD  65.2R · below high 374 d · years > 0 10/13 · 2025-26 +0.197R
+    pullback <= 38 %, 2 positions/market 1.04/day · >=1  49% >=2  32% · +0.246R PF 1.33 · +0.257 R/day · worst day  -6.6R · DD  80.1R · below high 316 d · years > 0 11/13 · 2025-26 +0.080R
+
+######## L4 A or B + 5m HH/HL
+    1 position/market              0.72/day · >=1  49% >=2  19% · +0.226R PF 1.30 · +0.164 R/day · worst day  -5.3R · DD  40.1R · below high 211 d · years > 0 10/13 · 2025-26 +0.303R
+    2 positions/market             1.09/day · >=1  49% >=2  33% · +0.244R PF 1.32 · +0.265 R/day · worst day  -9.6R · DD  50.3R · below high 213 d · years > 0 12/13 · 2025-26 +0.248R
+    pullback <= 38 %, 1 position/market 0.67/day · >=1  47% >=2  17% · +0.228R PF 1.30 · +0.154 R/day · worst day  -4.4R · DD  44.2R · below high 211 d · years > 0 11/13 · 2025-26 +0.298R
+    pullback <= 38 %, 2 positions/market 1.01/day · >=1  47% >=2  31% · +0.255R PF 1.34 · +0.258 R/day · worst day  -6.7R · DD  53.6R · below high 244 d · years > 0 11/13 · 2025-26 +0.257R
+
+######## L5 A or B
+    1 position/market              1.22/day · >=1  69% >=2  40% · +0.145R PF 1.18 · +0.177 R/day · worst day  -7.6R · DD  79.2R · below high 718 d · years > 0 11/13 · 2025-26 +0.126R
+    2 positions/market             1.99/day · >=1  69% >=2  56% · +0.162R PF 1.21 · +0.323 R/day · worst day -11.9R · DD 116.2R · below high 318 d · years > 0 11/13 · 2025-26 +0.069R
+    pullback <= 38 %, 1 position/market 1.15/day · >=1  67% >=2  37% · +0.149R PF 1.19 · +0.172 R/day · worst day  -7.6R · DD  74.5R · below high 718 d · years > 0 11/13 · 2025-26 +0.145R
+    pullback <= 38 %, 2 positions/market 1.85/day · >=1  67% >=2  53% · +0.173R PF 1.22 · +0.321 R/day · worst day  -9.9R · DD 112.7R · below high 334 d · years > 0 11/13 · 2025-26 +0.071R
+
+######## L6 every flag
+    1 position/market              1.62/day · >=1  78% >=2  54% · +0.092R PF 1.12 · +0.149 R/day · worst day  -8.3R · DD 122.7R · below high 1122 d · years > 0  9/13 · 2025-26 +0.118R
+    2 positions/market             2.79/day · >=1  78% >=2  69% · +0.107R PF 1.14 · +0.300 R/day · worst day -13.1R · DD 196.1R · below high 612 d · years > 0 12/13 · 2025-26 +0.087R
+    pullback <= 38 %, 1 position/market 1.52/day · >=1  76% >=2  50% · +0.099R PF 1.12 · +0.150 R/day · worst day  -7.6R · DD 117.0R · below high 1119 d · years > 0  9/13 · 2025-26 +0.141R
+    pullback <= 38 %, 2 positions/market 2.60/day · >=1  76% >=2  66% · +0.119R PF 1.15 · +0.310 R/day · worst day -10.8R · DD 194.2R · below high 397 d · years > 0 11/13 · 2025-26 +0.107R

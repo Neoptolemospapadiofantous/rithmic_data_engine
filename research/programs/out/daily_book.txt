@@ -1,0 +1,29 @@
+1 micro per trade, today's size (ATR NQ 307 / ES 55.4), live micro cost. Selection used every period incl. 2025-26 — forward sessions are the clean test.
+
+== A CORE intraday, max 1 a day
+   3301 trades, 0.83 a day, a trade on 83% of weekdays · PF 1.13 · $+2523 a year on 1 micro · max drawdown $6385 · worst day $-675 · 13/16 years and 61% of months positive
+   $/trade 2011-15 +18.1 · 2016-20 +7.3 · 2021-24 +15.1 · 2025-26 -4.1
+
+== A CORE intraday, max 2 a day
+   4748 trades, 1.19 a day, a trade on 83% of weekdays · PF 1.12 · $+3378 a year on 1 micro · max drawdown $8917 · worst day $-807 · 14/16 years and 62% of months positive
+   $/trade 2011-15 +11.9 · 2016-20 +8.0 · 2021-24 +15.0 · 2025-26 +4.7
+
+== A CORE intraday, max 3 a day
+   5132 trades, 1.28 a day, a trade on 83% of weekdays · PF 1.11 · $+3524 a year on 1 micro · max drawdown $9924 · worst day $-807 · 14/16 years and 62% of months positive
+   $/trade 2011-15 +11.4 · 2016-20 +7.1 · 2021-24 +14.1 · 2025-26 +8.3
+
+== A WIDE intraday (+ bdh_opt, es_cascade), max 3 a day
+   5573 trades, 1.39 a day, a trade on 86% of weekdays · PF 1.10 · $+3117 a year on 1 micro · max drawdown $9556 · worst day $-807 · 14/16 years and 61% of months positive
+   $/trade 2011-15 +6.4 · 2016-20 +7.5 · 2021-24 +12.2 · 2025-26 +7.2
+
+== B HOLDS only (Monday long, weak-day long)
+   1132 trades, 0.28 a day, a trade on 28% of weekdays · PF 1.20 · $+2237 a year on 1 micro · max drawdown $7848 · worst day $-1694 · 10/16 years and 62% of months positive
+   $/trade 2011-15 +7.5 · 2016-20 +50.5 · 2021-24 +1.5 · 2025-26 +116.3
+
+== A CORE max 3 + B HOLDS (no opposite positions)
+   5731 trades, 1.43 a day, a trade on 84% of weekdays · PF 1.15 · $+5917 a year on 1 micro · max drawdown $10379 · worst day $-2038 · 13/16 years and 64% of months positive
+   $/trade 2011-15 +9.7 · 2016-20 +17.5 · 2021-24 +14.6 · 2025-26 +30.8
+
+== A WIDE max 3 + B HOLDS (no opposite positions)
+   6107 trades, 1.53 a day, a trade on 86% of weekdays · PF 1.14 · $+5349 a year on 1 micro · max drawdown $9389 · worst day $-2038 · 13/16 years and 65% of months positive
+   $/trade 2011-15 +6.0 · 2016-20 +18.4 · 2021-24 +9.2 · 2025-26 +30.8

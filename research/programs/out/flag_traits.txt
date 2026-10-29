@@ -1,0 +1,92 @@
+Flag and reversal traits — EXPLORATORY. NQ and ES 2014-01 → 2026-10, every flag / signal, R after cost (1.5 NQ / 0.5 ES pts).
+
+######## A  POLE SIZE — NQ, pole >= 2× the average bar (grades refit on this set), one position at a time within each cell, both sides
+    pole / average bar             | 2-3×                      | 3-4×                      | 4-5×                      | 5-7×                      | 7× and more               | 4× and more (today's rule)
+    every flag                     | -0.071R PF 0.90 (  983, 76.8/yr) | +0.032R PF 1.04 ( 1636, 127.8/yr) | +0.138R PF 1.18 ( 1333, 104.1/yr) | +0.245R PF 1.32 (  934, 73.0/yr) | -0.045R PF 0.95 (  189, 14.8/yr) | +0.148R PF 1.19 ( 1852, 144.7/yr)
+    A-list                         | +0.035R PF 1.05 (  270, 21.1/yr) | +0.233R PF 1.32 (  615, 48.0/yr) | +0.260R PF 1.36 (  510, 39.8/yr) | +0.357R PF 1.50 (  500, 39.1/yr) | +0.074R PF 1.09 (   68,  5.3/yr) | +0.259R PF 1.35 (  881, 68.8/yr)
+    A-list + 5m HH/HL              | +0.059R PF 1.08 (  144, 11.2/yr) | +0.175R PF 1.24 (  333, 26.0/yr) | +0.329R PF 1.46 (  281, 22.0/yr) | +0.343R PF 1.50 (  252, 19.7/yr) | +0.635R PF 1.93 (   34,  2.7/yr) | +0.332R PF 1.47 (  490, 38.3/yr)
+    A-list + HH/HL + with break    | +0.084R PF 1.11 (  122,  9.5/yr) | +0.157R PF 1.22 (  284, 22.2/yr) | +0.391R PF 1.55 (  229, 17.9/yr) | +0.377R PF 1.55 (  197, 15.4/yr) | +0.972R PF 2.65 (   26,  2.0/yr) | +0.373R PF 1.53 (  394, 30.8/yr)
+
+######## A  POLE SIZE — ES, pole >= 2× the average bar (grades refit on this set), one position at a time within each cell, both sides
+    pole / average bar             | 2-3×                      | 3-4×                      | 4-5×                      | 5-7×                      | 7× and more               | 4× and more (today's rule)
+    every flag                     | -0.049R PF 0.94 ( 1017, 79.5/yr) | -0.046R PF 0.94 ( 1696, 132.5/yr) | +0.049R PF 1.06 ( 1369, 107.0/yr) | +0.152R PF 1.19 (  954, 74.5/yr) | +0.179R PF 1.23 (  184, 14.4/yr) | +0.064R PF 1.08 ( 1916, 149.7/yr)
+    A-list                         | -0.031R PF 0.96 (  303, 23.7/yr) | -0.046R PF 0.94 (  593, 46.3/yr) | +0.045R PF 1.06 (  420, 32.8/yr) | +0.206R PF 1.26 (  566, 44.2/yr) | +0.384R PF 1.50 (   96,  7.5/yr) | +0.122R PF 1.15 (  896, 70.0/yr)
+    A-list + 5m HH/HL              | +0.099R PF 1.14 (  142, 11.1/yr) | +0.038R PF 1.05 (  285, 22.3/yr) | +0.244R PF 1.33 (  190, 14.8/yr) | +0.386R PF 1.51 (  282, 22.0/yr) | -0.215R PF 0.74 (   41,  3.2/yr) | +0.227R PF 1.29 (  451, 35.2/yr)
+    A-list + HH/HL + with break    | +0.110R PF 1.15 (  137, 10.7/yr) | +0.018R PF 1.02 (  273, 21.3/yr) | +0.237R PF 1.31 (  177, 13.8/yr) | +0.410R PF 1.55 (  221, 17.3/yr) | -0.253R PF 0.70 (   29,  2.3/yr) | +0.230R PF 1.30 (  373, 29.1/yr)
+
+######## B  FLAG TRAITS (pole >= 4×, R clipped to [−1.5, 5] so a few runners do not decide it) — NQ 4610, ES 4796
+    trait (bottom fifth → top fifth; no → yes) | NQ 2014-19 bottom → top (diff) | NQ 2020-26 bottom → top (diff) | ES all bottom → top (diff) | consistent
+    pullback depth                     |  +0.29 →  -0.16 ( -0.45)     |  +0.30 →  +0.04 ( -0.26)     |  +0.17 →  -0.04 ( -0.22) | YES, lower is better
+    last 20 sessions (side)            |  -0.48 →  +0.08 ( +0.55)     |  +0.08 →  +0.28 ( +0.20)     |  -0.17 →  +0.02 ( +0.19) | YES, higher is better
+    gap / ATR (with trade)             |  +0.02 →  +0.19 ( +0.16)     |  +0.06 →  +0.52 ( +0.46)     |  -0.04 →  +0.23 ( +0.27) | YES, higher is better
+    flag / pole volume                 |  +0.03 →  -0.18 ( -0.21)     |  +0.24 →  +0.09 ( -0.15)     |  +0.05 →  -0.13 ( -0.18) | YES, lower is better
+    ATR trend (20 sessions)            |  -0.11 →  +0.03 ( +0.15)     |  +0.09 →  +0.27 ( +0.18)     |  -0.14 →  +0.16 ( +0.30) | YES, higher is better
+    volume dries up                    |  -0.17 →  +0.16 ( +0.32) y/n |  +0.10 →  +0.26 ( +0.15)     |  -0.04 →  +0.10 ( +0.14) | YES, higher is better
+    registration time                  |  +0.12 →  -0.18 ( -0.30)     |  +0.26 →  +0.12 ( -0.14)     |  +0.11 →  -0.06 ( -0.17) | YES, lower is better
+    day range / ATR                    |  -0.04 →  -0.15 ( -0.11)     |  +0.20 →  +0.04 ( -0.17)     |  +0.05 →  -0.11 ( -0.16) | YES, lower is better
+    VIX                                |  -0.12 →  +0.21 ( +0.33)     |  +0.08 →  +0.17 ( +0.09)     |  -0.13 →  +0.11 ( +0.24) | YES, higher is better
+    5m range break dir                 |  -0.17 →  +0.02 ( +0.19) y/n |  +0.07 →  +0.19 ( +0.12)     |  -0.06 →  +0.02 ( +0.08) | YES, higher is better
+    day position                       |  +0.07 →  +0.15 ( +0.08)     |  -0.10 →  +0.16 ( +0.27)     |  -0.12 →  +0.13 ( +0.24) | YES, higher is better
+    pole makes new high                |  +0.03 →  -0.05 ( -0.08) y/n |  +0.29 →  +0.10 ( -0.19)     |  +0.04 →  -0.01 ( -0.05) | YES, lower is better
+    side (bull = 1)                    |  -0.28 →  +0.25 ( +0.54) y/n |  +0.14 →  +0.19 ( +0.05)     |  -0.14 →  +0.14 ( +0.28) | YES, higher is better
+    pole / ATR                         |  -0.05 →  -0.22 ( -0.18)     |  +0.09 →  +0.05 ( -0.04)     |  +0.04 →  -0.14 ( -0.18) | YES, lower is better
+    first leg of day                   |  -0.04 →  -0.00 ( +0.04) y/n |  +0.13 →  +0.21 ( +0.07)     |  -0.04 →  +0.06 ( +0.09) | YES, higher is better
+    pole bars                          |  +0.09 →  -0.06 ( -0.15)     |  +0.20 →  +0.17 ( -0.03)     |  +0.05 →  +0.02 ( -0.03) | YES, lower is better
+    VWAP distance / ATR                |  -0.05 →  -0.07 ( -0.02)     |  +0.25 →  +0.10 ( -0.15)     |  +0.12 →  -0.02 ( -0.14) | YES, lower is better
+    last hour / ATR                    |  -0.25 →  -0.18 ( +0.07)     |  +0.01 →  +0.24 ( +0.23)     |  -0.06 →  -0.04 ( +0.02) | YES, higher is better
+    pole straightness                  |  -0.12 →  +0.04 ( +0.16)     |  +0.19 →  +0.20 ( +0.01)     |  -0.03 →  +0.13 ( +0.15) | YES, higher is better
+    5m HH/HL                           |  -0.04 →  -0.00 ( +0.04) y/n |  +0.13 →  +0.19 ( +0.06)     |  -0.00 →  +0.01 ( +0.01) | YES, higher is better
+    15m HH/HL                          |  -0.05 →  +0.02 ( +0.07) y/n |  +0.16 →  +0.17 ( +0.01)     |  -0.03 →  +0.06 ( +0.09) | YES, higher is better
+    pullback > 62 %                    |  +0.01 →  -0.15 ( -0.16) y/n |  +0.18 →  +0.12 ( -0.06)     |  +0.01 →  -0.00 ( -0.01) | YES, lower is better
+    last 5 sessions (side)             |  -0.18 →  +0.04 ( +0.22)     |  -0.00 →  +0.14 ( +0.14)     |  +0.03 →  -0.04 ( -0.06) | no
+    pole / avg bar                     |  -0.13 →  -0.01 ( +0.12)     |  +0.13 →  +0.13 ( -0.00)     |  -0.03 →  +0.00 ( +0.03) | no
+    chart minutes                      |  -0.06 →  +0.05 ( +0.12)     |  +0.18 →  +0.18 ( -0.01)     |  +0.01 →  -0.01 ( -0.02) | no
+    pole low at EMA20                  |  +0.04 →  -0.04 ( -0.08) y/n |  +0.33 →  +0.11 ( -0.21)     |  -0.00 →  +0.01 ( +0.01) | no
+    pole low at VWAP                   |  -0.01 →  -0.02 ( -0.02) y/n |  +0.12 →  +0.18 ( +0.06)     |  -0.14 →  +0.05 ( +0.18) | no
+    pullback 38-62 %                   |  -0.03 →  +0.05 ( +0.09) y/n |  +0.17 →  +0.13 ( -0.04)     |  +0.01 →  -0.01 ( -0.02) | no
+    order flow present                 |  -0.02 →  +0.00 ( +0.02) y/n |  +0.20 →  +0.13 ( -0.07)     |  +0.01 →  -0.06 ( -0.07) | no
+    buyers in pole                     |  -0.02 →  +0.00 ( +0.02) y/n |  +0.17 →  -0.19 ( -0.35)     |  +0.01 →  +0.00 ( -0.01) | no
+    sellers in flag                    |  -0.02 →  +0.00 ( +0.02) y/n |  +0.18 →  +0.15 ( -0.03)     |  +0.01 →  +0.14 ( +0.13) | no
+    straight 09:30-10:00               |  -0.05 →  +0.00 ( +0.06) y/n |  +0.01 →  +0.30 ( +0.28)     |  +0.03 →  -0.02 ( -0.05) | no
+    level inside pole                  |  +0.04 →  -0.02 ( -0.07) y/n |  -0.19 →  +0.17 ( +0.36)     |  +0.17 →  -0.00 ( -0.17) | no
+    pullback number                    |  -0.02 →  -0.04 ( -0.02)     |  +0.18 →  +0.17 ( -0.01)     |  -0.01 →  +0.06 ( +0.07) | no
+    first pullback                     |  -0.04 →  -0.02 ( +0.02) y/n |  +0.11 →  +0.18 ( +0.06)     |  +0.06 →  -0.01 ( -0.07) | no
+
+######## C  REVERSAL TRAITS — R1 CHoCH pullback (X2) — NQ 2551, ES 2100
+    trait (bottom fifth → top fifth; no → yes) | NQ 2014-19 bottom → top (diff) | NQ 2020-26 bottom → top (diff) | ES all bottom → top (diff) | consistent
+    VWAP distance at signal / ATR      |  -0.23 →  -0.16 ( +0.07)     |  -0.08 →  -0.02 ( +0.06)     |  -0.12 →  -0.08 ( +0.04) | YES, higher is better
+    range broke the other way first    |  -0.15 →  -0.21 ( -0.06) y/n |  -0.00 →  -0.14 ( -0.14)     |  -0.06 →  -0.08 ( -0.01) | YES, lower is better
+    signal time                        |  -0.14 →  -0.25 ( -0.12)     |  -0.05 →  -0.11 ( -0.06)     |  -0.11 →  -0.05 ( +0.06) | no
+    minutes from low to signal         |  -0.19 →  -0.10 ( +0.08)     |  -0.05 →  -0.07 ( -0.02)     |  -0.03 →  -0.09 ( -0.06) | no
+    stop size / ATR                    |  -0.14 →  -0.12 ( +0.02)     |  -0.17 →  -0.05 ( +0.12)     |  -0.07 →  -0.10 ( -0.03) | no
+    drop into the low / ATR            |  -0.12 →  -0.15 ( -0.04)     |  -0.01 →  -0.04 ( -0.03)     |  -0.10 →  -0.07 ( +0.03) | no
+    position in day range              |  -0.23 →  -0.20 ( +0.03)     |  -0.14 →  -0.06 ( +0.08)     |  -0.12 →  -0.14 ( -0.02) | no
+    gap with the trade / ATR           |  -0.11 →  -0.16 ( -0.05)     |  -0.02 →  -0.06 ( -0.04)     |  -0.10 →  -0.03 ( +0.07) | no
+    last 5 sessions with trade / ATR   |  -0.24 →  -0.21 ( +0.03)     |  -0.04 →  -0.07 ( -0.03)     |  -0.10 →  -0.19 ( -0.09) | no
+    VIX (prior close)                  |  -0.24 →  -0.09 ( +0.14)     |  -0.04 →  -0.09 ( -0.05)     |  -0.08 →  -0.11 ( -0.03) | no
+
+######## C  REVERSAL TRAITS — R2 sweep and reclaim (X2) — NQ 2976, ES 2924
+    trait (bottom fifth → top fifth; no → yes) | NQ 2014-19 bottom → top (diff) | NQ 2020-26 bottom → top (diff) | ES all bottom → top (diff) | consistent
+    VWAP distance at signal / ATR      |  -0.15 →  -0.11 ( +0.04)     |  -0.10 →  +0.06 ( +0.16)     |  -0.15 →  -0.05 ( +0.10) | YES, higher is better
+    signal time                        |  -0.12 →  -0.07 ( +0.05)     |  +0.07 →  -0.07 ( -0.14)     |  -0.07 →  -0.13 ( -0.06) | no
+    minutes from low to signal         |  -0.08 →  -0.04 ( +0.04)     |  +0.02 →  -0.02 ( -0.04)     |  -0.08 →  -0.06 ( +0.01) | no
+    stop size / ATR                    |  -0.06 →  +0.02 ( +0.08)     |  -0.04 →  +0.01 ( +0.05)     |  -0.05 →  -0.08 ( -0.04) | no
+    drop into the low / ATR            |  -0.18 →  -0.11 ( +0.07)     |  +0.10 →  -0.07 ( -0.17)     |  -0.07 →  -0.14 ( -0.08) | no
+    position in day range              |  -0.01 →  -0.09 ( -0.09)     |  -0.09 →  +0.02 ( +0.12)     |  -0.12 →  -0.05 ( +0.06) | no
+    gap with the trade / ATR           |  -0.04 →  -0.03 ( +0.01)     |  +0.00 →  -0.08 ( -0.08)     |  -0.21 →  -0.06 ( +0.14) | no
+    last 5 sessions with trade / ATR   |  -0.08 →  -0.06 ( +0.02)     |  +0.05 →  +0.01 ( -0.04)     |  -0.04 →  -0.10 ( -0.06) | no
+    VIX (prior close)                  |  -0.09 →  -0.05 ( +0.05)     |  -0.07 →  -0.07 ( -0.01)     |  -0.10 →  +0.01 ( +0.12) | no
+    range broke the other way first    |  -0.04 →  -0.06 ( -0.02) y/n |  -0.05 →  +0.03 ( +0.09)     |  -0.02 →  -0.10 ( -0.08) | no
+
+######## C  REVERSAL TRAITS — D1 double bottom / top (X2) — NQ 1079, ES 922
+    trait (bottom fifth → top fifth; no → yes) | NQ 2014-19 bottom → top (diff) | NQ 2020-26 bottom → top (diff) | ES all bottom → top (diff) | consistent
+    VWAP distance at signal / ATR      |  -0.08 →  +0.01 ( +0.09)     |  -0.05 →  +0.00 ( +0.05)     |  -0.15 →  -0.01 ( +0.14) | YES, higher is better
+    position in day range              |  -0.09 →  -0.01 ( +0.08)     |  -0.06 →  -0.04 ( +0.02)     |  -0.17 →  -0.05 ( +0.12) | YES, higher is better
+    drop into the low / ATR            |  -0.10 →  -0.13 ( -0.03)     |  -0.05 →  -0.05 ( -0.00)     |  +0.00 →  -0.11 ( -0.12) | YES, lower is better
+    signal time                        |  -0.14 →  -0.06 ( +0.08)     |  +0.01 →  +0.04 ( +0.03)     |  -0.05 →  -0.11 ( -0.06) | no
+    minutes from low to signal         |  -0.12 →  -0.01 ( +0.11)     |  -0.02 →  -0.04 ( -0.02)     |  -0.07 →  -0.06 ( +0.01) | no
+    stop size / ATR                    |  -0.26 →  +0.03 ( +0.29)     |  +0.00 →  -0.12 ( -0.12)     |  -0.14 →  -0.02 ( +0.12) | no
+    gap with the trade / ATR           |  -0.16 →  -0.05 ( +0.10)     |  -0.00 →  -0.00 ( +0.00)     |  -0.02 →  -0.08 ( -0.06) | no
+    last 5 sessions with trade / ATR   |  -0.11 →  -0.08 ( +0.03)     |  +0.09 →  -0.05 ( -0.14)     |  -0.04 →  -0.04 ( -0.01) | no
+    VIX (prior close)                  |  -0.12 →  -0.17 ( -0.06)     |  +0.05 →  +0.01 ( -0.04)     |  -0.12 →  -0.05 ( +0.07) | no
+    range broke the other way first    |  -0.13 →  -0.06 ( +0.07) y/n |  -0.00 →  -0.04 ( -0.03)     |  -0.05 →  -0.08 ( -0.03) | no

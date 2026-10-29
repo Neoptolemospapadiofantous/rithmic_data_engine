@@ -1,0 +1,4 @@
+{"id":"x23_intraday_mom","name":"Market intraday momentum: first half hour (incl. overnight) predicts the last half hour","why":"Gao, Han, Li & Zhou (2018): informed traders who act at the open and late-informed / rebalancing traders who act near the close trade the same way, so the return to 10:00 predicts 15:30-16:00. Pre-registered 2026-10-23 (research/preregistered/2026-10-23_starnet_open_items.md X2).","symbol":"NQ","confirm":"ES","to":"2024-12-31",
+ "params":{"k":[0,0.25,0.5]},
+ "checks":[{"at":"15:30","when":"!rollwin && abs(at(10,0)-pc) >= k*atr","dir":"sign(at(10,0)-pc)"}],
+ "stop":"0.15*atr","target":"0","flat":"15:55","min_trades":100}

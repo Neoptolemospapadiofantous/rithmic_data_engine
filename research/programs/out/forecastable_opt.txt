@@ -1,0 +1,21 @@
+P4 grid: 120 variants, 60 with >=200 in-sample trades; luck bar sqrt(2 ln N) ≈ 2.9 t
+  in-sample best: P4 09:35 gap>0.3 stop 0.15 tgt None  2014-19 net +0.201R edge +0.196 (n 694)
+  → 2020-26 OUT OF SAMPLE: net +0.089R  edge +0.053  t 0.7  n 790  +2.0 pts/trade
+  top-5 in-sample and their OOS:
+    P4 09:35 gap>0.3 stop 0.15 tgt None    IS +0.201 → OOS +0.089 (edge +0.053, n 790)
+    P4 09:35 gap>0.3 stop 0.15 tgt 1.5     IS +0.185 → OOS +0.101 (edge +0.059, n 790)
+    P4 09:35 gap>0.3 stop 0.15 tgt 1.0     IS +0.122 → OOS +0.091 (edge +0.082, n 790)
+    P4 09:35 gap>0.3 stop 0.25 tgt None    IS +0.100 → OOS +0.062 (edge +0.093, n 790)
+    P4 09:35 gap>0.3 stop 0.15 tgt 0.75    IS +0.095 → OOS +0.070 (edge +0.068, n 790)
+  share of variants positive OOS: 33/60; median OOS net +0.010
+
+P6 grid: 27 variants, 27 with >=200 in-sample trades; luck bar ≈ 2.6 t
+  in-sample best: P6 15:00 q0.9 stop 0.5  2014-19 net -0.050R edge +0.020 (n 348)
+  → 2020-26 OUT OF SAMPLE: net +0.026R  edge +0.022  t 2.1  n 470  +2.1 pts/trade
+  top-5 in-sample and their OOS:
+    P6 15:00 q0.9 stop 0.5                 IS -0.050 → OOS +0.026 (edge +0.022, n 470)
+    P6 15:00 q0.7 stop 0.5                 IS -0.050 → OOS +0.015 (edge +0.025, n 1047)
+    P6 14:30 q0.7 stop 0.5                 IS -0.052 → OOS +0.017 (edge +0.009, n 1060)
+    P6 15:15 q0.9 stop 0.5                 IS -0.053 → OOS -0.016 (edge +0.002, n 452)
+    P6 15:00 q0.9 stop mid                 IS -0.054 → OOS +0.028 (edge +0.022, n 470)
+  share of variants positive OOS: 24/27; median OOS net +0.025

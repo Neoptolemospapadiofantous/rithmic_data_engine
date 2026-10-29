@@ -1,0 +1,4 @@
+V6 half-off 0.5R q2 | mean 19.2|sd 247.9 | dd_eod 5888|worst_month -1982 | ev 194|h1 284|h2 95|pass 19|paid 15|days_first_pay 82 | lucid ev 186|paid 15|days_first_pay 82
+V6 half-off 0.5R q3 | mean 28.9|sd 370.0 | dd_eod 8795|worst_month -2973 | ev 497|h1 751|h2 221|pass 35|paid 24|days_first_pay 64 | lucid ev 491|paid 23|days_first_pay 66
+V6 half-off 0.5R q4 | mean 34.5|sd 494.6 | dd_eod 11784|worst_month -3858 | ev 554|h1 680|h2 416|pass 30|paid 17|days_first_pay 45 | lucid ev 568|paid 16|days_first_pay 47
+V6 half-off 0.5R q5 | mean 39.5|sd 604.0 | dd_eod 13481|worst_month -4502 | ev 629|h1 833|h2 406|pass 27|paid 15|days_first_pay 40 | lucid ev 536|paid 14|days_first_pay 40

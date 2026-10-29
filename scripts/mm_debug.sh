@@ -43,7 +43,7 @@
 # Options (anywhere on the line; environment variable in brackets; relative paths are from the repo root):
 #   --json                 machine output (one JSON object, "verdict" first)
 #   --label L              [MM_DEBUG_LABEL]       label for trace/why/replay (default paper)
-#   --labels A,B           [MM_DEBUG_LABELS]      labels for status/db (default paper,paper_220,paper_hl,paper_opt)
+#   --labels A,B           [MM_DEBUG_LABELS]      labels for status/db (default paper,paper_220,paper_hl,paper_opt,paper_prem,paper_bn)
 #   --schema S             [MM_DEBUG_SCHEMA]      Postgres search_path (PGOPTIONS) — e.g. mm_selftest; default the server's
 #                                                 (must match ^[a-z_]+$)
 #   --status-dir D         [MM_DEBUG_STATUS_DIR]  where status files + drop ledgers live (default data/mm_paper); the file of
@@ -63,7 +63,7 @@ cd "$(dirname "$0")/.."
 
 JSON=0
 LABEL=${MM_DEBUG_LABEL:-paper}
-LABELS=${MM_DEBUG_LABELS:-paper,paper_220,paper_hl,paper_opt}
+LABELS=${MM_DEBUG_LABELS:-paper,paper_220,paper_hl,paper_opt,paper_prem,paper_bn}
 SCHEMA=${MM_DEBUG_SCHEMA:-}
 STATUS_DIR=${MM_DEBUG_STATUS_DIR:-data/mm_paper}
 ARCHIVE=${MM_DEBUG_ARCHIVE:-/media/theone/381C48C51C48803C/rithmic_dex}
@@ -125,7 +125,7 @@ ms_of() { date -u -d "$1" +%s%3N 2>/dev/null; }
 iso_of_ms() { date -u -d "@$(( $1 / 1000 )).$(printf '%03d' $(( $1 % 1000 )))" +%Y-%m-%dT%H:%M:%S.%3NZ; }
 join() { local o=""; for x in "$@"; do o+="${o:+; }$x"; done; printf '%s' "$o"; }
 status_file() { if [ "$1" = paper ]; then echo "$STATUS_DIR/status.json"; else echo "$STATUS_DIR/status_$1.json"; fi; }
-unit_of() { case "$1" in paper) echo mm-paper-local ;; paper_220) echo mm-paper-fast-local ;; paper_hl) echo mm-paper-hl-local ;; paper_opt) echo mm-paper-opt-local ;; *) echo "" ;; esac; }
+unit_of() { case "$1" in paper) echo mm-paper-local ;; paper_220) echo mm-paper-fast-local ;; paper_hl) echo mm-paper-hl-local ;; paper_opt) echo mm-paper-opt-local ;; paper_prem) echo mm-paper-prem-local ;; paper_bn) echo mm-paper-bn-local ;; *) echo "" ;; esac; }
 # emit VERDICT TEXT_BODY JSON_BODY — text: verdict line + body; json: {"verdict":…} + body object merged
 emit() {
   if [ $JSON = 1 ]; then jq -cn --arg v "$1" --argjson b "${3:-{\}}" '{verdict:$v} + $b'

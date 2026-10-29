@@ -164,6 +164,11 @@ TEST(latest_price) {
     ASSERT(*price == 18520.25);
 }
 
+TEST(row_estimate) {
+    TickDB db(g_connstr);
+    ASSERT(db.row_estimate() >= 0);   // planner estimate: never negative, even before ANALYZE (reltuples = -1)
+}
+
 TEST(summary) {
     TickDB db(g_connstr);
     auto s = db.summary();

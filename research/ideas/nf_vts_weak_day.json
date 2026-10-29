@@ -1,0 +1,29 @@
+{
+ "id": "nf_vts_weak_day",
+ "name": "Weak close + VIX term structure in backwardation (VIX/VIX3M >= v) \u2192 buy 09:30, sell 15:55",
+ "why": "Backwardation is the market's own fear gauge; replaces the VIX >= 20 switch. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "v": [
+   0.9,
+   0.95,
+   1.0,
+   1.05
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:30",
+   "when": "pibs <= 0.3 && vts >= v",
+   "dir": "1"
+  }
+ ],
+ "stop": "0",
+ "target": "0"
+}

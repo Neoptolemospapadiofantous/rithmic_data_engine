@@ -1,0 +1,81 @@
+Book of the surviving strategies — NQ, 3311 NY days 2010-07 → 2026-10, points at today's ATR (307) after 1.5 pts per trade. IN-SAMPLE trade lists.
+
+strategy            trades   /day   pts/tr     PF    win  2010-15  2016-20  2021-24  2025-26 (pts/trade)
+so_cascade            2575   0.78   +12.56   1.28    39%    +9.09    +9.22   +20.99   +13.07
+gap_or_retest         1572   0.47   +16.58   1.34    49%   +12.34   +14.23   +25.10     +nan
+strong_open           1354   0.41   +14.25   1.30    37%   +11.27    +8.46   +25.69   +12.84
+monday_long            564   0.17   +17.93   1.27    57%   +11.31   +19.63   +24.83     +nan
+weak_day_long          455   0.14   +42.16   1.59    60%   +37.22   +64.30   +14.35  +111.22
+pd_hold                776   0.23    +6.48   1.14    47%    -0.00    +9.32   +11.66     +nan
+mom_scan_3            3528   1.07    +9.75   1.20    47%    +7.14    +9.01   +13.74     +nan
+flag_mid              1337   0.40   +12.48   1.45    34%   +14.19   +13.05   +12.03    +4.71
+weak_vix20_day         442   0.13   +40.06   1.55    61%   +17.92   +62.58   +21.89  +131.13
+strong_1030            441   0.13   +17.84   1.55    31%   +14.08   +17.98   +23.34   +15.93
+strong_breakout        380   0.11   +15.63   1.49    33%   +13.49   +12.02   +24.64   +12.50
+
+DAILY P&L CORRELATION (0 on non-trading days)
+                   so_cas gap_or strong monday weak_d pd_hol mom_sc flag_m weak_v strong strong
+so_cascade          +1.00  +0.39  +0.77  +0.03  +0.02  +0.32  +0.53  +0.41  +0.03  +0.26  +0.20
+gap_or_retest       +0.39  +1.00  +0.29  +0.02  +0.05  +0.22  +0.40  +0.26  +0.04  +0.15  +0.12
+strong_open         +0.77  +0.29  +1.00  +0.03  +0.00  +0.21  +0.38  +0.30  -0.00  +0.26  +0.18
+monday_long         +0.03  +0.02  +0.03  +1.00  +0.17  +0.02  +0.03  +0.17  +0.17  +0.07  +0.06
+weak_day_long       +0.02  +0.05  +0.00  +0.17  +1.00  +0.00  +0.05  +0.13  +0.89  +0.03  +0.04
+pd_hold             +0.32  +0.22  +0.21  +0.02  +0.00  +1.00  +0.35  +0.24  -0.01  +0.22  +0.21
+mom_scan_3          +0.53  +0.40  +0.38  +0.03  +0.05  +0.35  +1.00  +0.40  +0.04  +0.25  +0.25
+flag_mid            +0.41  +0.26  +0.30  +0.17  +0.13  +0.24  +0.40  +1.00  +0.11  +0.32  +0.29
+weak_vix20_day      +0.03  +0.04  -0.00  +0.17  +0.89  -0.01  +0.04  +0.11  +1.00  +0.04  +0.05
+strong_1030         +0.26  +0.15  +0.26  +0.07  +0.03  +0.22  +0.25  +0.32  +0.04  +1.00  +0.75
+strong_breakout     +0.20  +0.12  +0.18  +0.06  +0.04  +0.21  +0.25  +0.29  +0.05  +0.75  +1.00
+
+SHARE OF A's TRADING DAYS ON WHICH B ALSO TRADES
+                   so_cas gap_or strong monday weak_d pd_hol mom_sc flag_m weak_v strong strong
+so_cascade           100%    46%    53%    17%    14%    26%    84%    39%    14%    17%    15%
+gap_or_retest         76%   100%    40%    19%    15%    23%    89%    34%    15%    12%    10%
+strong_open          100%    46%   100%    18%    13%    26%    85%    39%    13%    26%    22%
+monday_long           78%    53%    43%   100%    13%    25%    88%    36%    13%    14%    11%
+weak_day_long         79%    53%    39%    16%   100%    22%    83%    36%    83%    14%    12%
+pd_hold               87%    47%    46%    18%    13%   100%    93%    44%    14%    21%    19%
+mom_scan_3            81%    53%    43%    19%    14%    27%   100%    36%    14%    15%    12%
+flag_mid              91%    49%    48%    18%    15%    31%    87%   100%    15%    20%    17%
+weak_vix20_day        81%    55%    40%    16%    86%    24%    84%    36%   100%    13%    12%
+strong_1030          100%    42%    79%    18%    14%    37%    88%    51%    13%   100%    86%
+strong_breakout      100%    43%    79%    16%    14%    39%    87%    51%    13%   100%   100%
+
+BOOK A — every strategy with PF >= 1.25 (correlation ignored): so_cascade gap_or_retest strong_open monday_long weak_day_long flag_mid weak_vix20_day strong_1030 strong_breakout
+   2.75 trades a day (>= 2 trades on 76% of days) · +46.9 pts a day · PF (trades) 1.37 · worst day -1326 pts · max drawdown 4593 pts · 17/17 years positive · max pair correlation 0.89
+
+BOOK — PF >= 1.25 and every pair's daily correlation < 0.30 (greedy by daily mean / sd): so_cascade weak_day_long strong_1030 monday_long
+   1.22 trades a day (>= 2 trades on 32% of days) · +21.0 pts a day · PF (trades) 1.35 · worst day -859 pts · max drawdown 2710 pts · 16/17 years positive · max pair correlation 0.26
+
+BOOK — PF >= 1.25 and every pair's daily correlation < 0.20 (greedy by daily mean / sd): so_cascade weak_day_long strong_breakout monday_long
+   1.20 trades a day (>= 2 trades on 31% of days) · +20.4 pts a day · PF (trades) 1.34 · worst day -859 pts · max drawdown 2690 pts · 16/17 years positive · max pair correlation 0.20
+
+BOOK — PF >= 1.25 and every pair's daily correlation < 0.10 (greedy by daily mean / sd): so_cascade weak_day_long
+   0.92 trades a day (>= 2 trades on 11% of days) · +15.6 pts a day · PF (trades) 1.35 · worst day -615 pts · max drawdown 2476 pts · 17/17 years positive · max pair correlation 0.02
+
+single so_cascade: so_cascade
+   0.78 trades a day (>= 2 trades on 0% of days) · +9.8 pts a day · PF (trades) 1.28 · worst day -80 pts · max drawdown 2709 pts · 15/17 years positive · max pair correlation 0.00
+
+single gap_or_retest: gap_or_retest
+   0.47 trades a day (>= 2 trades on 0% of days) · +7.9 pts a day · PF (trades) 1.34 · worst day -112 pts · max drawdown 2062 pts · 14/17 years positive · max pair correlation 0.00
+
+single strong_open: strong_open
+   0.41 trades a day (>= 2 trades on 0% of days) · +5.8 pts a day · PF (trades) 1.30 · worst day -78 pts · max drawdown 1236 pts · 15/17 years positive · max pair correlation 0.00
+
+single monday_long: monday_long
+   0.17 trades a day (>= 2 trades on 0% of days) · +3.1 pts a day · PF (trades) 1.27 · worst day -764 pts · max drawdown 3156 pts · 12/17 years positive · max pair correlation 0.00
+
+single weak_day_long: weak_day_long
+   0.14 trades a day (>= 2 trades on 0% of days) · +5.8 pts a day · PF (trades) 1.59 · worst day -844 pts · max drawdown 1799 pts · 14/17 years positive · max pair correlation 0.00
+
+single flag_mid: flag_mid
+   0.40 trades a day (>= 2 trades on 6% of days) · +5.0 pts a day · PF (trades) 1.45 · worst day -184 pts · max drawdown 1496 pts · 15/17 years positive · max pair correlation 0.00
+
+single weak_vix20_day: weak_vix20_day
+   0.13 trades a day (>= 2 trades on 0% of days) · +5.3 pts a day · PF (trades) 1.55 · worst day -844 pts · max drawdown 2208 pts · 14/17 years positive · max pair correlation 0.00
+
+single strong_1030: strong_1030
+   0.13 trades a day (>= 2 trades on 0% of days) · +2.4 pts a day · PF (trades) 1.55 · worst day -48 pts · max drawdown 841 pts · 13/17 years positive · max pair correlation 0.00
+
+single strong_breakout: strong_breakout
+   0.11 trades a day (>= 2 trades on 0% of days) · +1.8 pts a day · PF (trades) 1.49 · worst day -48 pts · max drawdown 694 pts · 12/17 years positive · max pair correlation 0.00

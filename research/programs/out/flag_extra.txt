@@ -1,0 +1,13 @@
+Candidate trades (BOOK2 + gap sizing + 15m trend filter): yes = feature present — R / edge over twins (n) vs no R (n)
+E2 halves: early = 2023-03 → 2024-09, late = 2024-10 → 2026-03 (NQ only). E4 halves: early = 2014-19, late = 2020-26.
+  E2 absorption at the flag's low (NQ)   | NQ early yes +1.39/+0.00 (   4) no +0.31 ( 255) | NQ late  yes +1.10/+1.33 (   4) no +0.32 ( 228) | ES early yes +0.00/+0.00 (   0) no +0.00 (   0) | ES late  yes +0.00/+0.00 (   0) no +0.00 (   0) | diff +0.933 shuffle p=0.108
+  E4 kernel detector confirms the flag   | NQ early yes +0.35/-1.84 (   4) no +0.19 ( 796) | NQ late  yes +2.05/+2.84 (   2) no +0.30 ( 874) | ES early yes -0.27/+0.45 (   3) no +0.04 ( 776) | ES late  yes -1.06/-0.00 (   3) no +0.23 ( 760) | diff -0.067 shuffle p=0.427
+
+E3 check: the fixed (k 0.1, m 1.0) re-simulation reproduces the candidate's trades (exit price, exit minute, R within 1 %) on 3827 of 3837
+E3 quarterly picks (2014-26): k 0.00 m 1.00 ×4 · k 0.00 m 1.50 ×1 · k 0.05 m 0.75 ×7 · k 0.05 m 1.00 ×3 · k 0.05 m 1.50 ×7 · k 0.10 m 1.00 ×4 · k 0.10 m 1.25 ×3 · k 0.10 m 1.50 ×11 · k 0.20 m 1.50 ×6 · k 0.30 m 0.75 ×1 · k 0.30 m 1.50 ×3 · 
+E3 best static on 2014-19: k 0.10 m 1.50
+  E3 quarterly re-fit      R per trade NQ -1.751 / +0.270  ES -0.192 / +0.239   (candidate NQ +0.235 / +0.368  ES +0.049 / +0.261; 2014-19 / 2020-26)
+  E3 best static           R per trade NQ +0.236 / +0.386  ES +0.063 / +0.285   (candidate NQ +0.235 / +0.368  ES +0.049 / +0.261; 2014-19 / 2020-26)
+
+variants:
+  wrote E0cand

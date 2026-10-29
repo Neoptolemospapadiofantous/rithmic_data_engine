@@ -1,0 +1,100 @@
+Flag behaviour (preregistered/2026-10-22_flag_behaviour.md) — NQ + ES 2014-01 → 2026-10, mirrored to bull. Re-simulated today's trade vs the export: mean |R difference| NQ 0.001, ES 0.002.
+
+################ BOOK2 (4-5m, pole >= 3×, pullback 5-38 %, A or B)
+  A shape over the first up-to-6 flag bars (descriptive — those bars can come after today's entry): share of flags · breakout rate · today's avg R
+    NQ:  TIGHT BOX 44% · breaks 71% · +0.54R |  DOWN CHANNEL 14% · breaks 38% · -0.30R |  DEEP 13% · breaks  7% · -0.99R |  WEDGE  1% · breaks 34% · -0.35R |  OTHER 28% · breaks 77% · +0.42R |
+    ES:  TIGHT BOX 42% · breaks 72% · +0.40R |  DOWN CHANNEL 12% · breaks 37% · -0.50R |  DEEP 12% · breaks  8% · -1.07R |  WEDGE  2% · breaks 55% · -0.04R |  OTHER 31% · breaks 77% · +0.38R |
+  B / C variants — per market: trades, avg R, PF, 2014-19 / 2020-26, at +1× cost; difference vs today's trade
+    today's trade (early mid entry)              | NQ  1947 +0.153R PF 1.20 (+0.078 / +0.225) cost +0.031 · +0.000 | ES  1865 +0.100R PF 1.13 (+0.010 / +0.190) cost -0.033 · +0.000
+    C X1 time: no new high in 6 bars             | NQ  1952 +0.117R PF 1.17 (+0.034 / +0.195) cost -0.005 · -0.036 | ES  1877 +0.116R PF 1.17 (+0.024 / +0.208) cost -0.018 · +0.016
+    C X2 close below half-way to stop            | NQ  1993 +0.113R PF 1.17 (+0.042 / +0.180) cost -0.011 · -0.041 | ES  1901 +0.069R PF 1.10 (-0.023 / +0.161) cost -0.065 · -0.031
+    C X3 close below the flag low                | NQ  2057 +0.055R PF 1.10 (-0.057 / +0.163) cost -0.069 · -0.098 | ES  1961 +0.040R PF 1.07 (-0.035 / +0.117) cost -0.093 · -0.060
+    C X4 break-even after a new high             | NQ  2059 +0.084R PF 1.17 (+0.029 / +0.136) cost -0.040 · -0.070 | ES  1957 -0.012R PF 0.98 (-0.059 / +0.036) cost -0.146 · -0.112
+    B D1 mid limit after 4 bars, HOLD+QUIET      | NQ   266 -0.053R PF 0.93 (-0.089 / +0.001) cost -0.208 · -0.206 | ES   208 +0.151R PF 1.20 (+0.080 / +0.262) cost -0.008 · +0.050
+    B D2 breakout stop after 4 bars, HOLD+QUIET  | NQ   156 +0.041R PF 1.08 (-0.064 / +0.205) cost -0.050 · -0.112 | ES   130 +0.188R PF 1.39 (+0.015 / +0.411) cost +0.103 · +0.088
+    B D1 mid limit after 4 bars, HOLD only       | NQ  1310 +0.079R PF 1.11 (+0.053 / +0.106) cost -0.041 · -0.074 | ES  1244 +0.065R PF 1.09 (+0.089 / +0.038) cost -0.072 · -0.035
+    B D2 breakout stop after 4 bars, HOLD only   | NQ   677 +0.153R PF 1.35 (+0.127 / +0.177) cost +0.090 · -0.001 | ES   710 +0.033R PF 1.07 (-0.032 / +0.095) cost -0.034 · -0.067
+    D S1 3 min: exit unless +0.5R reached        | NQ  2289 +0.017R PF 1.04 (-0.085 / +0.118) cost -0.107 · -0.136 | ES  2225 -0.015R PF 0.96 (-0.126 / +0.099) cost -0.149 · -0.115
+    D S1 5 min: exit unless +0.5R reached        | NQ  2066 +0.055R PF 1.12 (-0.049 / +0.157) cost -0.069 · -0.098 | ES  1990 -0.002R PF 0.99 (-0.139 / +0.133) cost -0.135 · -0.103
+    D S1 10 min: exit unless +0.5R reached       | NQ  1991 +0.104R PF 1.18 (+0.011 / +0.193) cost -0.020 · -0.050 | ES  1919 +0.043R PF 1.07 (-0.047 / +0.133) cost -0.091 · -0.058
+    D S1 15 min: exit unless +0.5R reached       | NQ  1968 +0.113R PF 1.18 (+0.042 / +0.181) cost -0.010 · -0.040 | ES  1892 +0.068R PF 1.10 (-0.003 / +0.139) cost -0.066 · -0.033
+    D S2 3 min: exit unless in profit            | NQ  2165 +0.075R PF 1.14 (+0.007 / +0.141) cost -0.050 · -0.079 | ES  2078 +0.019R PF 1.03 (-0.080 / +0.120) cost -0.115 · -0.081
+    D S2 5 min: exit unless in profit            | NQ  2038 +0.059R PF 1.10 (-0.029 / +0.146) cost -0.065 · -0.094 | ES  1945 +0.029R PF 1.05 (-0.101 / +0.159) cost -0.105 · -0.072
+    D S2 10 min: exit unless in profit           | NQ  1991 +0.117R PF 1.19 (+0.018 / +0.214) cost -0.006 · -0.036 | ES  1912 +0.057R PF 1.09 (-0.043 / +0.159) cost -0.077 · -0.043
+    D S2 15 min: exit unless in profit           | NQ  1975 +0.137R PF 1.21 (+0.045 / +0.225) cost +0.014 · -0.016 | ES  1907 +0.073R PF 1.11 (+0.007 / +0.140) cost -0.061 · -0.027
+    D Q target +1R                               | NQ  2167 -0.036R PF 0.93 (-0.118 / +0.043) cost -0.160 · -0.189 | ES  2055 -0.041R PF 0.92 (-0.128 / +0.044) cost -0.175 · -0.142
+    D Q target +1.5R                             | NQ  2092 -0.006R PF 0.99 (-0.085 / +0.069) cost -0.130 · -0.160 | ES  1985 +0.012R PF 1.02 (-0.053 / +0.077) cost -0.122 · -0.089
+    D Q target +2R                               | NQ  2036 +0.029R PF 1.04 (-0.052 / +0.106) cost -0.095 · -0.125 | ES  1932 +0.033R PF 1.05 (-0.027 / +0.093) cost -0.101 · -0.068
+
+################ RULE (3-5m, pole >= 4×, 15-50 %, A-list, HH/HL, with the break)
+  A shape over the first up-to-6 flag bars (descriptive — those bars can come after today's entry): share of flags · breakout rate · today's avg R
+    NQ:  TIGHT BOX 46% · breaks 68% · +0.77R |  DOWN CHANNEL 13% · breaks 34% · -0.29R |  DEEP 13% · breaks  7% · -0.84R |  WEDGE  1% · breaks 91% · +1.19R |  OTHER 27% · breaks 71% · +0.77R |
+    ES:  TIGHT BOX 43% · breaks 70% · +0.82R |  DOWN CHANNEL 14% · breaks 36% · -0.38R |  DEEP 10% · breaks  8% · -0.99R |  WEDGE  3% · breaks 80% · -0.13R |  OTHER 30% · breaks 69% · +0.38R |
+  B / C variants — per market: trades, avg R, PF, 2014-19 / 2020-26, at +1× cost; difference vs today's trade
+    today's trade (early mid entry)              | NQ   480 +0.392R PF 1.54 (+0.399 / +0.387) cost +0.278 · +0.000 | ES   462 +0.244R PF 1.32 (+0.246 / +0.242) cost +0.125 · +0.000
+    C X1 time: no new high in 6 bars             | NQ   481 +0.363R PF 1.56 (+0.336 / +0.384) cost +0.248 · -0.030 | ES   464 +0.240R PF 1.38 (+0.186 / +0.281) cost +0.122 · -0.004
+    C X2 close below half-way to stop            | NQ   489 +0.343R PF 1.54 (+0.326 / +0.357) cost +0.229 · -0.049 | ES   471 +0.211R PF 1.33 (+0.228 / +0.199) cost +0.093 · -0.033
+    C X3 close below the flag low                | NQ   506 +0.228R PF 1.43 (+0.123 / +0.314) cost +0.114 · -0.164 | ES   488 +0.162R PF 1.30 (+0.132 / +0.186) cost +0.042 · -0.082
+    C X4 break-even after a new high             | NQ   502 +0.289R PF 1.59 (+0.260 / +0.313) cost +0.174 · -0.103 | ES   480 +0.167R PF 1.34 (+0.123 / +0.200) cost +0.048 · -0.077
+    B D1 mid limit after 4 bars, HOLD+QUIET      | NQ    64 +0.396R PF 1.57 (+0.105 / +0.770) cost +0.267 · +0.004 | ES    42 +0.138R PF 1.18 (-0.092 / +0.597) cost -0.016 · -0.106
+    B D2 breakout stop after 4 bars, HOLD+QUIET  | NQ    40 +0.323R PF 1.77 (+0.064 / +0.675) cost +0.249 · -0.069 | ES    20 +0.188R PF 1.40 (-0.144 / +0.962) cost +0.108 · -0.056
+    B D1 mid limit after 4 bars, HOLD only       | NQ   349 +0.258R PF 1.37 (+0.264 / +0.253) cost +0.150 · -0.134 | ES   338 +0.031R PF 1.04 (+0.045 / +0.020) cost -0.083 · -0.213
+    B D2 breakout stop after 4 bars, HOLD only   | NQ   184 +0.321R PF 1.84 (+0.246 / +0.392) cost +0.265 · -0.071 | ES   182 +0.049R PF 1.10 (+0.079 / +0.028) cost -0.007 · -0.195
+    D S1 3 min: exit unless +0.5R reached        | NQ   539 +0.177R PF 1.45 (+0.150 / +0.199) cost +0.062 · -0.215 | ES   530 +0.133R PF 1.34 (+0.144 / +0.126) cost +0.015 · -0.111
+    D S1 5 min: exit unless +0.5R reached        | NQ   503 +0.226R PF 1.48 (+0.196 / +0.250) cost +0.111 · -0.167 | ES   488 +0.179R PF 1.38 (+0.144 / +0.206) cost +0.061 · -0.065
+    D S1 10 min: exit unless +0.5R reached       | NQ   482 +0.282R PF 1.49 (+0.245 / +0.312) cost +0.168 · -0.110 | ES   466 +0.154R PF 1.26 (+0.197 / +0.121) cost +0.036 · -0.090
+    D S1 15 min: exit unless +0.5R reached       | NQ   481 +0.361R PF 1.58 (+0.393 / +0.334) cost +0.246 · -0.032 | ES   464 +0.181R PF 1.28 (+0.175 / +0.186) cost +0.063 · -0.063
+    D S2 3 min: exit unless in profit            | NQ   514 +0.250R PF 1.46 (+0.245 / +0.254) cost +0.134 · -0.143 | ES   512 +0.168R PF 1.31 (+0.145 / +0.186) cost +0.048 · -0.076
+    D S2 5 min: exit unless in profit            | NQ   500 +0.269R PF 1.47 (+0.224 / +0.307) cost +0.154 · -0.123 | ES   487 +0.202R PF 1.35 (+0.126 / +0.262) cost +0.083 · -0.042
+    D S2 10 min: exit unless in profit           | NQ   491 +0.253R PF 1.41 (+0.218 / +0.282) cost +0.139 · -0.139 | ES   469 +0.159R PF 1.25 (+0.212 / +0.119) cost +0.041 · -0.085
+    D S2 15 min: exit unless in profit           | NQ   489 +0.323R PF 1.50 (+0.332 / +0.317) cost +0.209 · -0.069 | ES   468 +0.245R PF 1.39 (+0.219 / +0.266) cost +0.127 · +0.001
+    D Q target +1R                               | NQ   525 +0.027R PF 1.06 (-0.090 / +0.117) cost -0.086 · -0.365 | ES   506 +0.011R PF 1.02 (-0.070 / +0.073) cost -0.109 · -0.233
+    D Q target +1.5R                             | NQ   511 +0.085R PF 1.15 (+0.020 / +0.136) cost -0.029 · -0.307 | ES   491 +0.086R PF 1.15 (+0.038 / +0.123) cost -0.034 · -0.158
+    D Q target +2R                               | NQ   497 +0.141R PF 1.22 (+0.097 / +0.177) cost +0.026 · -0.251 | ES   483 +0.082R PF 1.13 (+0.062 / +0.096) cost -0.038 · -0.163
+
+################ EVERY (3-5m, pole >= 4×, 15-50 %)
+  A shape over the first up-to-6 flag bars (descriptive — those bars can come after today's entry): share of flags · breakout rate · today's avg R
+    NQ:  TIGHT BOX 45% · breaks 67% · +0.49R |  DOWN CHANNEL 14% · breaks 29% · -0.49R |  DEEP 12% · breaks  5% · -0.96R |  WEDGE  2% · breaks 50% · +0.12R |  OTHER 26% · breaks 71% · +0.45R |
+    ES:  TIGHT BOX 42% · breaks 67% · +0.36R |  DOWN CHANNEL 12% · breaks 28% · -0.53R |  DEEP 12% · breaks  6% · -0.94R |  WEDGE  3% · breaks 54% · -0.06R |  OTHER 30% · breaks 71% · +0.32R |
+  B / C variants — per market: trades, avg R, PF, 2014-19 / 2020-26, at +1× cost; difference vs today's trade
+    today's trade (early mid entry)              | NQ  1761 +0.140R PF 1.18 (+0.064 / +0.213) cost +0.014 · +0.000 | ES  1868 +0.051R PF 1.06 (-0.007 / +0.104) cost -0.083 · +0.000
+    C X1 time: no new high in 6 bars             | NQ  1783 +0.090R PF 1.13 (+0.010 / +0.167) cost -0.036 · -0.050 | ES  1890 +0.052R PF 1.08 (-0.026 / +0.125) cost -0.081 · +0.001
+    C X2 close below half-way to stop            | NQ  1857 +0.103R PF 1.15 (+0.042 / +0.164) cost -0.023 · -0.036 | ES  1967 +0.035R PF 1.05 (-0.009 / +0.075) cost -0.099 · -0.016
+    C X3 close below the flag low                | NQ  1999 +0.041R PF 1.08 (-0.065 / +0.148) cost -0.085 · -0.098 | ES  2115 -0.015R PF 0.97 (-0.068 / +0.037) cost -0.149 · -0.066
+    C X4 break-even after a new high             | NQ  1906 +0.096R PF 1.19 (+0.036 / +0.153) cost -0.030 · -0.044 | ES  2030 -0.005R PF 0.99 (-0.067 / +0.053) cost -0.138 · -0.055
+    B D1 mid limit after 4 bars, HOLD+QUIET      | NQ   232 -0.021R PF 0.97 (+0.012 / -0.074) cost -0.173 · -0.160 | ES   170 +0.002R PF 1.00 (+0.044 / -0.058) cost -0.151 · -0.048
+    B D2 breakout stop after 4 bars, HOLD+QUIET  | NQ   121 +0.099R PF 1.20 (+0.064 / +0.158) cost +0.017 · -0.041 | ES    97 +0.082R PF 1.15 (-0.100 / +0.353) cost -0.006 · +0.031
+    B D1 mid limit after 4 bars, HOLD only       | NQ  1360 +0.124R PF 1.16 (+0.084 / +0.164) cost +0.001 · -0.016 | ES  1451 +0.010R PF 1.01 (-0.006 / +0.025) cost -0.122 · -0.041
+    B D2 breakout stop after 4 bars, HOLD only   | NQ   703 +0.128R PF 1.27 (+0.085 / +0.171) cost +0.068 · -0.011 | ES   782 -0.028R PF 0.95 (-0.089 / +0.027) cost -0.092 · -0.078
+    D S1 3 min: exit unless +0.5R reached        | NQ  2245 -0.016R PF 0.96 (-0.120 / +0.088) cost -0.141 · -0.156 | ES  2419 -0.052R PF 0.88 (-0.097 / -0.010) cost -0.185 · -0.103
+    D S1 5 min: exit unless +0.5R reached        | NQ  2019 +0.023R PF 1.04 (-0.068 / +0.114) cost -0.103 · -0.117 | ES  2140 -0.029R PF 0.94 (-0.107 / +0.044) cost -0.163 · -0.080
+    D S1 10 min: exit unless +0.5R reached       | NQ  1822 +0.063R PF 1.10 (-0.026 / +0.151) cost -0.063 · -0.077 | ES  1934 +0.012R PF 1.02 (-0.022 / +0.044) cost -0.122 · -0.039
+    D S1 15 min: exit unless +0.5R reached       | NQ  1787 +0.103R PF 1.15 (+0.035 / +0.169) cost -0.022 · -0.037 | ES  1903 +0.019R PF 1.03 (+0.003 / +0.034) cost -0.114 · -0.032
+    D S2 3 min: exit unless in profit            | NQ  2088 +0.051R PF 1.09 (-0.015 / +0.117) cost -0.076 · -0.089 | ES  2233 -0.045R PF 0.92 (-0.088 / -0.003) cost -0.180 · -0.096
+    D S2 5 min: exit unless in profit            | NQ  1953 +0.061R PF 1.10 (-0.033 / +0.155) cost -0.066 · -0.079 | ES  2079 +0.016R PF 1.03 (-0.034 / +0.065) cost -0.118 · -0.035
+    D S2 10 min: exit unless in profit           | NQ  1829 +0.078R PF 1.12 (-0.001 / +0.157) cost -0.047 · -0.061 | ES  1942 +0.029R PF 1.04 (-0.014 / +0.070) cost -0.105 · -0.022
+    D S2 15 min: exit unless in profit           | NQ  1811 +0.086R PF 1.13 (+0.002 / +0.168) cost -0.040 · -0.054 | ES  1935 +0.040R PF 1.06 (-0.006 / +0.083) cost -0.094 · -0.011
+    D Q target +1R                               | NQ  2099 -0.047R PF 0.91 (-0.129 / +0.035) cost -0.173 · -0.187 | ES  2196 -0.033R PF 0.94 (-0.097 / +0.027) cost -0.167 · -0.083
+    D Q target +1.5R                             | NQ  2012 -0.010R PF 0.98 (-0.079 / +0.058) cost -0.136 · -0.150 | ES  2097 -0.015R PF 0.98 (-0.057 / +0.025) cost -0.149 · -0.066
+    D Q target +2R                               | NQ  1935 +0.054R PF 1.08 (-0.034 / +0.140) cost -0.071 · -0.085 | ES  2031 -0.013R PF 0.98 (-0.059 / +0.031) cost -0.147 · -0.063
+
+PASS (better by >= 0.05R on BOOK2 AND EVERY, both markets, both halves, and at +1× cost):
+  C X1 time: no new high in 6 bars             no
+  C X2 close below half-way to stop            no
+  C X3 close below the flag low                no
+  C X4 break-even after a new high             no
+  B D1 mid limit after 4 bars, HOLD+QUIET      no
+  B D2 breakout stop after 4 bars, HOLD+QUIET  no
+  B D1 mid limit after 4 bars, HOLD only       no
+  B D2 breakout stop after 4 bars, HOLD only   no
+  D S1 3 min: exit unless +0.5R reached        no
+  D S1 5 min: exit unless +0.5R reached        no
+  D S1 10 min: exit unless +0.5R reached       no
+  D S1 15 min: exit unless +0.5R reached       no
+  D S2 3 min: exit unless in profit            no
+  D S2 5 min: exit unless in profit            no
+  D S2 10 min: exit unless in profit           no
+  D S2 15 min: exit unless in profit           no
+  D Q target +1R                               no
+  D Q target +1.5R                             no
+  D Q target +2R                               no

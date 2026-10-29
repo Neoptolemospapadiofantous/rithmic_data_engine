@@ -1,0 +1,60 @@
+PLAN|base_r0|conc2|q1|stop0|extreme|builder_25k|ev 266|h1 208|h2 330|pass 46|paid 15|days_pass 12|days_first_pay 46
+PROG|base_r0|builder_25k|gap 0|programs 2394|any account paid >= 375: 15.3%|any passed: 46.3%|avg total paid 1387 (after 80% split 1109)|got >= $250 back after split: 15.8%
+PROG|base_r0|builder_25k|gap 1|programs 2390|any account paid >= 375: 19.9%|any passed: 57.1%|avg total paid 1389 (after 80% split 1111)|got >= $250 back after split: 20.5%
+PROG|base_r0|builder_25k|gap 5|programs 2374|any account paid >= 375: 28.9%|any passed: 77.5%|avg total paid 1395 (after 80% split 1116)|got >= $250 back after split: 29.9%
+PROG|base_r0|builder_25k|gap 10|programs 2354|any account paid >= 375: 35.4%|any passed: 85.3%|avg total paid 1395 (after 80% split 1116)|got >= $250 back after split: 35.7%
+PROG|base_r0|builder_25k|gap 20|programs 2314|any account paid >= 375: 46.2%|any passed: 91.1%|avg total paid 1395 (after 80% split 1116)|got >= $250 back after split: 46.2%
+PLAN|S3_r0|conc2|q1|stop0|extreme|builder_25k|ev 204|h1 178|h2 234|pass 41|paid 12|days_pass 6|days_first_pay 30
+PROG|S3_r0|builder_25k|gap 0|programs 2394|any account paid >= 375: 11.2%|any passed: 41.8%|avg total paid 1021 (after 80% split 817)|got >= $250 back after split: 11.8%
+PROG|S3_r0|builder_25k|gap 1|programs 2390|any account paid >= 375: 17.0%|any passed: 58.0%|avg total paid 1022 (after 80% split 817)|got >= $250 back after split: 17.7%
+PROG|S3_r0|builder_25k|gap 5|programs 2374|any account paid >= 375: 29.2%|any passed: 84.4%|avg total paid 1010 (after 80% split 808)|got >= $250 back after split: 30.2%
+PROG|S3_r0|builder_25k|gap 10|programs 2354|any account paid >= 375: 35.5%|any passed: 89.2%|avg total paid 1002 (after 80% split 802)|got >= $250 back after split: 36.2%
+PROG|S3_r0|builder_25k|gap 20|programs 2314|any account paid >= 375: 39.8%|any passed: 93.4%|avg total paid 1000 (after 80% split 800)|got >= $250 back after split: 39.8%
+PLAN|base_r150|conc1|q1|stop0|extreme|builder_25k|ev 247|h1 125|h2 379|pass 43|paid 14|days_pass 14|days_first_pay 36
+PROG|base_r150|builder_25k|gap 0|programs 2394|any account paid >= 375: 13.7%|any passed: 42.8%|avg total paid 1199 (after 80% split 959)|got >= $250 back after split: 14.1%
+PROG|base_r150|builder_25k|gap 1|programs 2390|any account paid >= 375: 17.6%|any passed: 53.4%|avg total paid 1197 (after 80% split 957)|got >= $250 back after split: 18.4%
+PROG|base_r150|builder_25k|gap 5|programs 2374|any account paid >= 375: 26.3%|any passed: 72.9%|avg total paid 1196 (after 80% split 957)|got >= $250 back after split: 27.3%
+PROG|base_r150|builder_25k|gap 10|programs 2354|any account paid >= 375: 33.8%|any passed: 85.6%|avg total paid 1203 (after 80% split 962)|got >= $250 back after split: 35.0%
+PROG|base_r150|builder_25k|gap 20|programs 2314|any account paid >= 375: 42.2%|any passed: 93.2%|avg total paid 1220 (after 80% split 976)|got >= $250 back after split: 43.3%
+PLAN|S3_r150|conc1|q1|stop0|extreme|builder_25k|ev 284|h1 160|h2 418|pass 40|paid 13|days_pass 7|days_first_pay 32
+PROG|S3_r150|builder_25k|gap 0|programs 2394|any account paid >= 375: 12.4%|any passed: 39.7%|avg total paid 1391 (after 80% split 1113)|got >= $250 back after split: 12.4%
+PROG|S3_r150|builder_25k|gap 1|programs 2390|any account paid >= 375: 18.2%|any passed: 54.9%|avg total paid 1393 (after 80% split 1114)|got >= $250 back after split: 18.2%
+PROG|S3_r150|builder_25k|gap 5|programs 2374|any account paid >= 375: 28.9%|any passed: 81.0%|avg total paid 1384 (after 80% split 1107)|got >= $250 back after split: 28.9%
+PROG|S3_r150|builder_25k|gap 10|programs 2354|any account paid >= 375: 34.3%|any passed: 86.3%|avg total paid 1389 (after 80% split 1111)|got >= $250 back after split: 34.3%
+PROG|S3_r150|builder_25k|gap 20|programs 2314|any account paid >= 375: 41.8%|any passed: 89.2%|avg total paid 1411 (after 80% split 1129)|got >= $250 back after split: 41.8%
+PLAN|base_r250|conc1|q1|stop0|extreme|builder_25k|ev 124|h1 69|h2 183|pass 35|paid 8|days_pass 6|days_first_pay 21
+PROG|base_r250|builder_25k|gap 0|programs 2394|any account paid >= 375: 7.6%|any passed: 35.0%|avg total paid 641 (after 80% split 513)|got >= $250 back after split: 8.1%
+PROG|base_r250|builder_25k|gap 1|programs 2390|any account paid >= 375: 12.6%|any passed: 52.5%|avg total paid 642 (after 80% split 514)|got >= $250 back after split: 13.1%
+PROG|base_r250|builder_25k|gap 5|programs 2374|any account paid >= 375: 22.7%|any passed: 80.5%|avg total paid 638 (after 80% split 510)|got >= $250 back after split: 24.0%
+PROG|base_r250|builder_25k|gap 10|programs 2354|any account paid >= 375: 28.4%|any passed: 85.7%|avg total paid 636 (after 80% split 509)|got >= $250 back after split: 30.5%
+PROG|base_r250|builder_25k|gap 20|programs 2314|any account paid >= 375: 31.1%|any passed: 90.2%|avg total paid 640 (after 80% split 512)|got >= $250 back after split: 33.2%
+PLAN|S3_r250|conc1|q1|stop0|extreme|builder_25k|ev 183|h1 118|h2 253|pass 32|paid 8|days_pass 3|days_first_pay 23
+PROG|S3_r250|builder_25k|gap 0|programs 2394|any account paid >= 375: 7.7%|any passed: 32.8%|avg total paid 822 (after 80% split 658)|got >= $250 back after split: 7.7%
+PROG|S3_r250|builder_25k|gap 1|programs 2390|any account paid >= 375: 14.1%|any passed: 55.8%|avg total paid 823 (after 80% split 659)|got >= $250 back after split: 14.1%
+PROG|S3_r250|builder_25k|gap 5|programs 2374|any account paid >= 375: 25.9%|any passed: 82.8%|avg total paid 818 (after 80% split 654)|got >= $250 back after split: 25.9%
+PROG|S3_r250|builder_25k|gap 10|programs 2354|any account paid >= 375: 29.9%|any passed: 85.5%|avg total paid 814 (after 80% split 652)|got >= $250 back after split: 29.9%
+PROG|S3_r250|builder_25k|gap 20|programs 2314|any account paid >= 375: 32.1%|any passed: 85.4%|avg total paid 819 (after 80% split 655)|got >= $250 back after split: 32.1%
+PLAN|base_r350|conc1|q1|stop0|extreme|builder_25k|ev 122|h1 82|h2 166|pass 33|paid 6|days_pass 3|days_first_pay 21
+PROG|base_r350|builder_25k|gap 0|programs 2394|any account paid >= 375: 7.1%|any passed: 34.0%|avg total paid 661 (after 80% split 529)|got >= $250 back after split: 7.1%
+PROG|base_r350|builder_25k|gap 1|programs 2390|any account paid >= 375: 12.2%|any passed: 56.2%|avg total paid 661 (after 80% split 529)|got >= $250 back after split: 12.2%
+PROG|base_r350|builder_25k|gap 5|programs 2374|any account paid >= 375: 24.3%|any passed: 84.3%|avg total paid 652 (after 80% split 522)|got >= $250 back after split: 24.3%
+PROG|base_r350|builder_25k|gap 10|programs 2354|any account paid >= 375: 29.6%|any passed: 86.7%|avg total paid 648 (after 80% split 519)|got >= $250 back after split: 29.6%
+PROG|base_r350|builder_25k|gap 20|programs 2314|any account paid >= 375: 30.6%|any passed: 88.4%|avg total paid 650 (after 80% split 520)|got >= $250 back after split: 30.6%
+PLAN|S3_r350|conc1|q1|stop0|extreme|builder_25k|ev 81|h1 56|h2 109|pass 28|paid 4|days_pass 2|days_first_pay 17
+PROG|S3_r350|builder_25k|gap 0|programs 2394|any account paid >= 375: 3.6%|any passed: 29.2%|avg total paid 382 (after 80% split 306)|got >= $250 back after split: 3.6%
+PROG|S3_r350|builder_25k|gap 1|programs 2390|any account paid >= 375: 8.6%|any passed: 56.8%|avg total paid 383 (after 80% split 306)|got >= $250 back after split: 8.6%
+PROG|S3_r350|builder_25k|gap 5|programs 2374|any account paid >= 375: 16.2%|any passed: 81.7%|avg total paid 383 (after 80% split 306)|got >= $250 back after split: 16.2%
+PROG|S3_r350|builder_25k|gap 10|programs 2354|any account paid >= 375: 16.6%|any passed: 83.7%|avg total paid 379 (after 80% split 303)|got >= $250 back after split: 16.6%
+PROG|S3_r350|builder_25k|gap 20|programs 2314|any account paid >= 375: 16.2%|any passed: 82.7%|avg total paid 379 (after 80% split 303)|got >= $250 back after split: 16.2%
+PLAN|base_r500|conc1|q1|stop0|extreme|builder_25k|ev 52|h1 12|h2 96|pass 30|paid 2|days_pass 2|days_first_pay 15
+PROG|base_r500|builder_25k|gap 0|programs 2394|any account paid >= 375: 3.0%|any passed: 29.4%|avg total paid 305 (after 80% split 244)|got >= $250 back after split: 3.0%
+PROG|base_r500|builder_25k|gap 1|programs 2390|any account paid >= 375: 6.9%|any passed: 60.3%|avg total paid 305 (after 80% split 244)|got >= $250 back after split: 6.9%
+PROG|base_r500|builder_25k|gap 5|programs 2374|any account paid >= 375: 11.7%|any passed: 83.3%|avg total paid 305 (after 80% split 244)|got >= $250 back after split: 11.7%
+PROG|base_r500|builder_25k|gap 10|programs 2354|any account paid >= 375: 14.0%|any passed: 84.2%|avg total paid 307 (after 80% split 245)|got >= $250 back after split: 14.0%
+PROG|base_r500|builder_25k|gap 20|programs 2314|any account paid >= 375: 14.1%|any passed: 82.7%|avg total paid 308 (after 80% split 246)|got >= $250 back after split: 14.1%
+PLAN|S3_r500|conc1|q1|stop0|extreme|builder_25k|ev 23|h1 12|h2 35|pass 23|paid 2|days_pass 1|days_first_pay 22
+PROG|S3_r500|builder_25k|gap 0|programs 2394|any account paid >= 375: 1.5%|any passed: 23.9%|avg total paid 109 (after 80% split 87)|got >= $250 back after split: 1.5%
+PROG|S3_r500|builder_25k|gap 1|programs 2390|any account paid >= 375: 3.8%|any passed: 57.4%|avg total paid 109 (after 80% split 87)|got >= $250 back after split: 3.8%
+PROG|S3_r500|builder_25k|gap 5|programs 2374|any account paid >= 375: 7.2%|any passed: 73.9%|avg total paid 110 (after 80% split 88)|got >= $250 back after split: 7.2%
+PROG|S3_r500|builder_25k|gap 10|programs 2354|any account paid >= 375: 7.1%|any passed: 74.5%|avg total paid 110 (after 80% split 88)|got >= $250 back after split: 7.1%
+PROG|S3_r500|builder_25k|gap 20|programs 2314|any account paid >= 375: 6.8%|any passed: 74.3%|avg total paid 107 (after 80% split 86)|got >= $250 back after split: 6.8%

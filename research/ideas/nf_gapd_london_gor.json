@@ -1,0 +1,31 @@
+{
+ "id": "nf_gapd_london_gor",
+ "name": "gap_or_retest only on London-built gaps",
+ "why": "The retest of a London-built gap is the one that holds. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 100,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "f": [
+   0.6,
+   0.8
+  ],
+  "stopk": [
+   0.35
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "09:35",
+  "to": "14:00",
+  "when": "!rollwin && abs(gap) >= 0.1 && ((sign(gap) > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (sign(gap) < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15))) && ((open - at(3,0))/atr)*sign(gap) >= f*abs(gap)",
+  "dir": "sign(gap)"
+ },
+ "max_trades": 1,
+ "stop": "stopk*atr",
+ "target": "2"
+}

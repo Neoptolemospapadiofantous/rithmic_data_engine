@@ -15,7 +15,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 WorkingDirectory=/home/theone/Desktop/rithmic_engine
-ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_opt --latency-ms 300 --place-latency-ms 145 --cancel-latency-ms 445 --rate-limit 60 --pause-move-ticks 1 --pause-ms 4000 --min-spread-ticks 5 --max-inv 1 --tick-rule hl --status data/mm_paper/status_paper_opt.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
+ExecStart=/home/theone/Desktop/rithmic_engine/build/mm_paper --label paper_opt --latency-ms 300 --place-latency-ms 314 --cancel-latency-ms 614 --rate-limit 60 --pause-move-ticks 1 --pause-ms 4000 --min-spread-ticks 5 --max-inv 1 --tick-rule hl --status data/mm_paper/status_paper_opt.json --symbols AAVE,BNB,ONDO,AVAX,DOT,XLM,ASTER,TRUMP,FIL,OP,CC,POL,WIF,EIGEN,BERA,AZTEC,APEX,UNI,CRV,PYTH,ETHFI,SEI,2Z,GMX
 StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_opt.log
 StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_paper_opt.log
 Restart=always

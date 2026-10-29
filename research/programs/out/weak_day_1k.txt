@@ -1,0 +1,91 @@
+WEAK DAY on Tradeify — yesterday weak AND VIX >= 20 → long 09:30 → 15:55 ET, NQ 2011-01 … 2026-10-16, points scaled to ATR now 307 (20261015)
+
+  W1 realistic cost 1.5 pts: 415 trades (26.3 a year, 2.2 a month) · $+79 per MNQ a trade · win 60% · PF 1.53 · 13/15 years > 0 · 72/94 trading months > 0 · max drawdown $4593 per MNQ
+     by year $/MNQ: 2011 -1920 2012 +977 2013 -353 2014 +408 2015 +2718 2016 +1824 2018 +4102 2019 +2699 2020 +7005 2021 +3606 2022 +1742 2023 +1250 2024 +324 2025 +6230 2026 +2356
+
+  W1 STRESS cost 3 pts: 415 trades (26.3 a year, 2.2 a month) · $+76 per MNQ a trade · win 60% · PF 1.50 · 13/15 years > 0 · 71/94 trading months > 0 · max drawdown $4743 per MNQ
+     by year $/MNQ: 2011 -2076 2012 +926 2013 -359 2014 +390 2015 +2685 2016 +1752 2018 +4018 2019 +2675 2020 +6816 2021 +3486 2022 +1451 2023 +1178 2024 +291 2025 +6152 2026 +2338
+
+REALISTIC (cost 1.5 pts)
+  W2 Select Daily 50K  2 MNQ (+2 at VIX>=25): pass  23% · median  79 trading days to pass · funded pays $  215 over  24 days alive
+     W3 1 account : net a month mean $  -33 · median $  -28 · 10th pct $  -84 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $ -2310
+     W3 3 accounts: net a month mean $  -98 · median $  -82 · 10th pct $ -253 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $ -6930
+     W3 5 accounts: net a month mean $ -163 · median $ -138 · 10th pct $ -421 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-11550
+  W2 Select Daily 50K  4 MNQ (+4 at VIX>=25): pass  15% · median  68 trading days to pass · funded pays $ 1108 over  30 days alive
+     W3 1 account : net a month mean $  -32 · median $  -41 · 10th pct $ -165 · >= $500/month per account in   1% · >= $1,000/month per account in   0% · > 0 in  15% · worst running loss $ -4125
+     W3 3 accounts: net a month mean $  -97 · median $ -124 · 10th pct $ -495 · >= $500/month per account in   1% · >= $1,000/month per account in   0% · > 0 in  15% · worst running loss $-12375
+     W3 5 accounts: net a month mean $ -162 · median $ -206 · 10th pct $ -825 · >= $500/month per account in   1% · >= $1,000/month per account in   0% · > 0 in  15% · worst running loss $-20625
+  W2 Select Daily 50K  6 MNQ (+6 at VIX>=25): pass  13% · median  74 trading days to pass · funded pays $ 1432 over  31 days alive
+     W3 1 account : net a month mean $  -66 · median $  -55 · 10th pct $ -206 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $ -4290
+     W3 3 accounts: net a month mean $ -198 · median $ -165 · 10th pct $ -619 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-12870
+     W3 5 accounts: net a month mean $ -331 · median $ -275 · 10th pct $-1031 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-21450
+  W2 Select Daily 50K  8 MNQ (+8 at VIX>=25): pass  11% · median  81 trading days to pass · funded pays $ 1428 over  34 days alive
+     W3 1 account : net a month mean $  -92 · median $  -71 · 10th pct $ -261 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $ -5445
+     W3 3 accounts: net a month mean $ -277 · median $ -214 · 10th pct $ -784 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $-16335
+     W3 5 accounts: net a month mean $ -461 · median $ -356 · 10th pct $-1306 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $-27225
+  W2 Select Daily 50K 10 MNQ (+10 at VIX>=25): pass   9% · median  86 trading days to pass · funded pays $ 1175 over  35 days alive
+     W3 1 account : net a month mean $ -101 · median $  -58 · 10th pct $ -245 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $ -6270
+     W3 3 accounts: net a month mean $ -302 · median $ -174 · 10th pct $ -736 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-18810
+     W3 5 accounts: net a month mean $ -504 · median $ -289 · 10th pct $-1227 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-31350
+  W2 Select Flex 50K   2 MNQ (+2 at VIX>=25): pass  23% · median  79 trading days to pass · funded pays $  232 over  28 days alive
+     W3 1 account : net a month mean $  -26 · median $  -28 · 10th pct $  -96 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $ -2310
+     W3 3 accounts: net a month mean $  -77 · median $  -82 · 10th pct $ -289 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $ -6930
+     W3 5 accounts: net a month mean $ -128 · median $ -138 · 10th pct $ -481 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $-11550
+  W2 Select Flex 50K   4 MNQ (+4 at VIX>=25): pass  15% · median  68 trading days to pass · funded pays $  647 over  37 days alive
+     W3 1 account : net a month mean $  -59 · median $  -41 · 10th pct $ -165 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $ -4125
+     W3 3 accounts: net a month mean $ -178 · median $ -124 · 10th pct $ -495 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $-12375
+     W3 5 accounts: net a month mean $ -297 · median $ -206 · 10th pct $ -825 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $-20625
+  W2 Select Flex 50K   6 MNQ (+6 at VIX>=25): pass  13% · median  74 trading days to pass · funded pays $  672 over  39 days alive
+     W3 1 account : net a month mean $  -69 · median $  -69 · 10th pct $ -234 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $ -4290
+     W3 3 accounts: net a month mean $ -207 · median $ -206 · 10th pct $ -701 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-12870
+     W3 5 accounts: net a month mean $ -344 · median $ -344 · 10th pct $-1169 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-21450
+  W2 Select Flex 50K   8 MNQ (+8 at VIX>=25): pass  11% · median  81 trading days to pass · funded pays $  703 over  39 days alive
+     W3 1 account : net a month mean $  -85 · median $  -69 · 10th pct $ -248 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $ -5445
+     W3 3 accounts: net a month mean $ -255 · median $ -206 · 10th pct $ -742 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-16335
+     W3 5 accounts: net a month mean $ -425 · median $ -344 · 10th pct $-1238 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-27225
+  W2 Select Flex 50K  10 MNQ (+10 at VIX>=25): pass   9% · median  86 trading days to pass · funded pays $  346 over  36 days alive
+     W3 1 account : net a month mean $  -99 · median $  -69 · 10th pct $ -261 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $ -6270
+     W3 3 accounts: net a month mean $ -298 · median $ -206 · 10th pct $ -784 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-18810
+     W3 5 accounts: net a month mean $ -497 · median $ -344 · 10th pct $-1306 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-31350
+
+STRESS (cost 3 pts)
+  W2 Select Daily 50K  2 MNQ (+2 at VIX>=25): pass  23% · median  79 trading days to pass · funded pays $  211 over  24 days alive
+     W3 1 account : net a month mean $  -37 · median $  -28 · 10th pct $  -82 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $ -2310
+     W3 3 accounts: net a month mean $ -111 · median $  -82 · 10th pct $ -248 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $ -6930
+     W3 5 accounts: net a month mean $ -185 · median $ -138 · 10th pct $ -412 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-11550
+  W2 Select Daily 50K  4 MNQ (+4 at VIX>=25): pass  15% · median  68 trading days to pass · funded pays $ 1081 over  30 days alive
+     W3 1 account : net a month mean $  -33 · median $  -41 · 10th pct $ -165 · >= $500/month per account in   1% · >= $1,000/month per account in   0% · > 0 in  14% · worst running loss $ -4125
+     W3 3 accounts: net a month mean $  -99 · median $ -124 · 10th pct $ -495 · >= $500/month per account in   1% · >= $1,000/month per account in   0% · > 0 in  14% · worst running loss $-12375
+     W3 5 accounts: net a month mean $ -166 · median $ -206 · 10th pct $ -825 · >= $500/month per account in   1% · >= $1,000/month per account in   0% · > 0 in  14% · worst running loss $-20625
+  W2 Select Daily 50K  6 MNQ (+6 at VIX>=25): pass  12% · median  73 trading days to pass · funded pays $ 1462 over  29 days alive
+     W3 1 account : net a month mean $  -68 · median $  -55 · 10th pct $ -206 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $ -4620
+     W3 3 accounts: net a month mean $ -205 · median $ -165 · 10th pct $ -619 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-13860
+     W3 5 accounts: net a month mean $ -342 · median $ -275 · 10th pct $-1031 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-23100
+  W2 Select Daily 50K  8 MNQ (+8 at VIX>=25): pass  10% · median  83 trading days to pass · funded pays $ 1442 over  35 days alive
+     W3 1 account : net a month mean $  -93 · median $  -71 · 10th pct $ -261 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $ -5610
+     W3 3 accounts: net a month mean $ -279 · median $ -214 · 10th pct $ -784 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $-16830
+     W3 5 accounts: net a month mean $ -466 · median $ -356 · 10th pct $-1306 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $-28050
+  W2 Select Daily 50K 10 MNQ (+10 at VIX>=25): pass   9% · median  86 trading days to pass · funded pays $  779 over  32 days alive
+     W3 1 account : net a month mean $ -107 · median $  -69 · 10th pct $ -275 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $ -6270
+     W3 3 accounts: net a month mean $ -320 · median $ -206 · 10th pct $ -825 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $-18810
+     W3 5 accounts: net a month mean $ -533 · median $ -344 · 10th pct $-1375 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   7% · worst running loss $-31350
+  W2 Select Flex 50K   2 MNQ (+2 at VIX>=25): pass  23% · median  79 trading days to pass · funded pays $  234 over  28 days alive
+     W3 1 account : net a month mean $  -26 · median $  -28 · 10th pct $  -96 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $ -2310
+     W3 3 accounts: net a month mean $  -77 · median $  -82 · 10th pct $ -289 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $ -6930
+     W3 5 accounts: net a month mean $ -129 · median $ -138 · 10th pct $ -481 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $-11550
+  W2 Select Flex 50K   4 MNQ (+4 at VIX>=25): pass  15% · median  68 trading days to pass · funded pays $  657 over  35 days alive
+     W3 1 account : net a month mean $  -60 · median $  -41 · 10th pct $ -165 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $ -4125
+     W3 3 accounts: net a month mean $ -179 · median $ -124 · 10th pct $ -495 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $-12375
+     W3 5 accounts: net a month mean $ -298 · median $ -206 · 10th pct $ -825 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  11% · worst running loss $-20625
+  W2 Select Flex 50K   6 MNQ (+6 at VIX>=25): pass  12% · median  73 trading days to pass · funded pays $  647 over  35 days alive
+     W3 1 account : net a month mean $  -76 · median $  -69 · 10th pct $ -234 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $ -4620
+     W3 3 accounts: net a month mean $ -229 · median $ -206 · 10th pct $ -701 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-13860
+     W3 5 accounts: net a month mean $ -381 · median $ -344 · 10th pct $-1169 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-23100
+  W2 Select Flex 50K   8 MNQ (+8 at VIX>=25): pass  10% · median  83 trading days to pass · funded pays $  738 over  40 days alive
+     W3 1 account : net a month mean $  -86 · median $  -69 · 10th pct $ -248 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $ -5610
+     W3 3 accounts: net a month mean $ -258 · median $ -206 · 10th pct $ -742 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-16830
+     W3 5 accounts: net a month mean $ -430 · median $ -344 · 10th pct $-1238 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in  10% · worst running loss $-28050
+  W2 Select Flex 50K  10 MNQ (+10 at VIX>=25): pass   9% · median  86 trading days to pass · funded pays $  346 over  36 days alive
+     W3 1 account : net a month mean $  -97 · median $  -69 · 10th pct $ -261 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $ -6270
+     W3 3 accounts: net a month mean $ -292 · median $ -206 · 10th pct $ -784 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-18810
+     W3 5 accounts: net a month mean $ -486 · median $ -344 · 10th pct $-1306 · >= $500/month per account in   0% · >= $1,000/month per account in   0% · > 0 in   8% · worst running loss $-31350

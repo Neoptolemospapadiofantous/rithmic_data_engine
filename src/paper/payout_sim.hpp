@@ -61,6 +61,16 @@ inline const std::vector<Plan>& plans() {
         {"select_flex_50k",  50000, 2000, 100, 0,    150, 5, 0,    0,    0.5, {2500}, false, 0,    0, 0,   4, 3000, 0.40, 3, 0},
         {"select_daily_25k", 25000, 1000, 100, 500,  0,   0, 0,    0,    0,   {600},  false, 1100, 2, 250, 1, 1500, 0.40, 3, 0},
         {"select_daily_50k", 50000, 2000, 100, 1000, 0,   0, 0,    0,    0,   {1250}, false, 2100, 2, 250, 4, 3000, 0.40, 3, 0},
+        // Select 100K / 150K (help.tradeify.co 12853966 "Select Flex and Select Daily Payout Policies", read 2026-10-20; caps are the
+        // post-2026-09-01 schedule; Daily: EOD trail $2,500 / $3,500, DLL $1,250 / $1,750, buffer $2,600 / $3,600, 2× cycle profit capped
+        // $1,750 / $2,500, min $250; Flex: EOD trail $3,000 / $4,500, 5 winning days ≥ $200 / $250, 50 % of total profit capped $3,500 /
+        // $4,500). Contracts: funded Select STARTS at 3 minis (30 micros) and scales to 8 / 12 — max_minis is the starting size.
+        // Evaluation: target $6,000 / $9,000, EOD trail $3,000 / $4,500 (third-party tables, 2026-10-20 — the official page does not
+        // print the amounts), 40 % consistency, 3 days, no DLL.
+        {"select_flex_100k", 100000, 3000, 100, 0,    200, 5, 0,    0,    0.5, {3500}, false, 0,    0, 0,   3, 6000, 0.40, 3, 0},
+        {"select_flex_150k", 150000, 4500, 100, 0,    250, 5, 0,    0,    0.5, {4500}, false, 0,    0, 0,   3, 9000, 0.40, 3, 0},
+        {"select_daily_100k",100000, 2500, 100, 1250, 0,   0, 0,    0,    0,   {1750}, false, 2600, 2, 250, 3, 6000, 0.40, 3, 0},
+        {"select_daily_150k",150000, 3500, 100, 1750, 0,   0, 0,    0,    0,   {2500}, false, 3600, 2, 250, 3, 9000, 0.40, 3, 0},
         {"growth_25k",       25000, 1000, 100, 600,  100, 5, 1500, 0.35, 0.5, {1000}, true,  0,    0, 0,   1, 1500, 0,    1, 600},
         {"growth_50k",       50000, 2000, 100, 1250, 150, 5, 3000, 0.35, 0.5, {1500, 2000, 2500, 3000}, true, 0, 0, 0, 4, 3000, 0, 1, 1250},
         // Other firms, re-read 2026-10-12 from each firm's own help centre (Apex blocks automated reads — its numbers are

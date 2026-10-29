@@ -1,0 +1,20 @@
+ORB trades 2352 | discovery (all, <2025-03) 1167 mean \$-4.98/MNQ | confirmation (live-like, >=2025-03) 722 mean \$-4.68/MNQ, win 3.5%
+
+feature                                rho       p   BH q
+minutes range end → break           +0.073  0.0128  0.085  <- shortlist
+approach delta                      -0.075  0.0131  0.085  <- shortlist
+approach large-trade delta          -0.056  0.0511  0.221
+opening spread                      -0.052  0.0762  0.247
+opening large-trade delta           +0.040  0.1374  0.357
+microprice lead at break            -0.025  0.3851  0.695
+session delta since 09:30           -0.024  0.4070  0.695
+opening volume vs pre-open          +0.022  0.4736  0.695
+opening-range delta                 +0.020  0.4810  0.695
+book imbalance at break             -0.015  0.6054  0.709
+spread at break                     +0.014  0.6292  0.709
+opening book imbalance              -0.014  0.6546  0.709
+last-minute delta before break      +0.004  0.8888  0.889
+
+CONFIRMATION (live-like ORB trades 2025-03 → 2026-03), base \$-4.68/MNQ per trade
+  approach delta                     n  264 \$ -5.80 vs rest diff \$ -1.76 | 90% low  -4.72 p 0.850 Holm 0.85 | 2025  -1.38 2026  -3.06 | win 3.4%  fail
+  minutes range end → break          n  210 \$ -4.12 vs rest diff \$ +0.78 | 90% low  -2.32 p 0.373 Holm 0.75 | 2025  -1.63 2026 +12.48 | win 3.3%  fail

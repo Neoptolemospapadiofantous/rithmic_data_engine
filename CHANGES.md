@@ -7,6 +7,431 @@ Dates are in ISO-8601 order (newest first).
 
 ---
 
+
+## 2026-10-29 — mm_live: three fixes from the 2026-10-28 live day (AVAX, $5)
+
+- **Cancel lost to a fill = quiet resync.** All 31 sequencer rejects (21727) on 10-28 were a cancel that reached the
+  exchange after its order had filled (fill always streamed first, < 1.5 s). Each raised a `nonce_frozen` HALT + alert.
+  Now, when the rejected tx is a cancel of an order the tracker already holds terminal, the engine journals
+  `cancel_race`, drops pending quoting and resyncs exactly as before, without the halt/alert; a race freeze still
+  frozen after 10 s goes loud. Status gains `cancel_races`. Test `cancel_lost_to_a_known_fill_resyncs_quietly`.
+- **Periodic reconcile: 800 ms REST timeout.** All 10 `stall` halts followed a periodic reconcile whose REST reads
+  blocked the engine thread 2.6–3.7 s (stall guard 2 s → 10 s without quotes). Periodic reconciles now send their
+  reads with `reconcile_fast_timeout_ms` 800 (client default 8 s); after `reconcile_fast_max_fails` 3 failed ones in
+  a row the next uses the full timeout, so the REST equity the loss stops use cannot go stale. Not a full fix: the
+  reads are still on the engine thread. Test `periodic_reconcile_uses_a_short_timeout_and_falls_back`.
+- **Down alert.** The box reset at 12:24 UTC; `mm-live@avax` (disabled, started by hand) did not return and sat
+  ~9 h holding 1.23 AVAX unreported. New `scripts/mm_live_watch.sh` + `deploy/mm-live-watch.{service,timer}`.
+
+## 2026-10-28 — dashboard /mm: every market-making system on one page, logged (bot repo: ui/routers/mm.py, frontend mm page)
+
+- Backend (`bot/ui/routers/mm.py`): `GET /api/mm/health` — one row per system (6 recorders incl. Binance, 7 paper engines incl.
+  `paper_100`, the live maker's instances `mm-live@avax` / `@avax_100`, the nightly `mm-gates` and `mm-desk-cycle` timers, the RL
+  artefacts, missing binaries) with unit state, status / log / archive ages, the last ALERT/ERROR/HALT line of its log and a verdict
+  ok / warn / down; every read appends one line to `data/logs/mm_dash.log` (≤ 1/min). `GET /api/mm/rl` serves `data/mm_rl/results.json`.
+  `GET /api/mm/live` now reports every configured instance (newest status first) with its unit state. `/api/mm/system` gains `live`
+  and `rl` blocks. Log map fixed: `mm_live` → `data/logs/mm_live_avax.log` (the old key pointed at a file that never existed);
+  `mm_paper_100`, `binance_recorder`, `mm_live_probe`, `mm_desk_cycle`, `mm_dash` added. 13/13 router tests (4 new).
+- Frontend: `MmSystems` (the health table, open by default when anything is warn/down), `MmRlPanel` (RL phase 1 splits vs the
+  shuffled control and the oracle), system map: Binance recorder, `paper_100`, an RL node, and the LIVE lane now greys only while no
+  mm-live unit runs. `tsc --noEmit` clean. Backend restarted (dashboard-api-local); the frontend dev server (:3000) was found DOWN
+  since the 14:25 reboot and started again (`pnpm dev`, nohup, log bot/frontend/dev.log).
+- Found by the health row on first run: both live-maker instances down (the reboot; pilot units are not enabled by design).
+
+## 2026-10-28 — mm_rl_label + mm_rl_judge: counterfactual quoting dataset and a contextual-bandit judge (RL phase 1)
+
+- `src/dex/mm_rl_label_main.cpp` (build-exp target `mm_rl_label`): replays each coin-day archive through `hl::Simulator` once per
+  action (always quote at 4/5/6/8 ticks, defences off) plus the frozen `--params` policy; writes one row per `--step-ms` window with
+  the state at the window start (spread bps, top imbalance, depth within 10 bps, trades / buy share / $ in 60 s, 60-s range, 1 s and
+  5 s mid change, ms since a ≥ 1 strategy-tick jump, hour) and each action's markout-adjusted $ from its fills in the window.
+  Honest fill model (NoCross), Lighter grid via the params file's tick rule. 6 coins × 3 days ≈ 65 s.
+- `src/dex/mm_rl_judge_main.cpp` (`mm_rl_judge`): per side × action ridge on the standardised state, policy = argmax ∪ pull,
+  `--test-days` / `--test-coins` splits, shuffled-train control, oracle bound; reports $ and bps of filled notional.
+- Result: no state information (learned ≈ shuffled on every split, Lighter and HL history); width 8 > 5 on Lighter; on Hyperliquid
+  with its fee the learned action is "pull". Details and the rule in docs/market_making_plan.md ("RL phase 1").
+- Data: `data/mm_rl/labels_v1.csv` (Lighter 2026-10-26…28), `labels_hist.csv` (Tardis 2024-11 → 2026-10), `params_hl_frozen.json`.
+
+## 2026-10-28 — mm_live: leverage cap 5 → 20, $100 AVAX configs, stage-2 per-market configs (founder: "$200 × 20")
+
+- `src/dex/live/gateway_config.hpp`: `risk.leverage` accepted 1..20 (was 1..5). Unchanged: the engine halts while the market's IMF
+  differs from the config (`halt: leverage`), and risk.hpp's gross ≤ leverage × equity check. test_mm_live 64/64 (build-exp).
+- `config/mm_live_avax_100{,_probe}.json`: $100 quotes, gross $110, stops −$10 / −$20, collateral cap 250, own state dir / label /
+  status. `--check-config` OK with build-exp/mm_live. Binary copy to build/ at 23:15 EET (timer `mm-live-swap-20261028b`).
+- `config/mm_live_markets/`: 10 per-market stage-2 configs (2 per account, budgets 15 + 12 req/min) + README; account/key fields
+  to be filled from the app; nothing started. Runbook §4 has the founder's order of operations.
+- Paper: `mm-paper-100-local` (label `paper_100`) = the optimised setting at $100 quotes beside `paper_opt` — the fill-scaling test.
+
+## 2026-10-28 — trend engine: `gr_min_eff` and the 10:00-momentum knobs (two edge_lab PASS ideas become paper-expressible)
+
+- `gap_or_retest` gains `gr_min_eff` (0 = off): the retest bar is taken only when |bar open − 09:30 open| / (RTH range so far) ≥ x —
+  edge_lab `gap_or_retest_eff` (PASS +11.2 pts/trade, PF 1.61, 12/14 years) at 0.55.
+- `tod_momentum` gains `tod_min_er` (efficiency of the lookback move, |net| / Σ|Δclose|), `tod_vwap_agree`, `tod_open_agree` and
+  `tod_stop_atr` (stop = x × prior-day ATR via `take_stop_dist`, target `tp_r` × that) — edge_lab `m1_10am_all` (PASS +13.7, PF 1.66,
+  11/14 years): 10:00, 45-minute lookback, er ≥ 0.3, both agreements, stop 0.25 ATR, 2R.
+- Tests: 6 new `test_trend_strategy` cases (efficiency refused/taken; straight climb → LONG with the ATR stop; chop refused;
+  below-the-open refused; open-agreement off → LONG). Built and run in build-exp only (RTH) — `build/` untouched.
+- NOT yet on the fleet: replay check (label `exp_newmodes`, after the close) against edge_lab's walk-forward trades first, then the
+  binary swap + ids `gap_or_retest_eff` / `m1_10am_all` at a 23:10 restart. Pre-registered in
+  research/preregistered/2026-10-28_new_families.md (arsenal section).
+
+## 2026-10-28 — FOMC skip on the London VWAP-SD wave (paper)
+
+- `config/paper_fleet.json`: `skip_fomc_day: true` on `ww_ldn5_2sd`, `ww_ldn5_25sd`, `ww_ldn5_15sd` (founder: "yes add the FOMC
+  skip after close"). The London wave lost on FOMC days in every period (NQ −47 / −13 / −38 pts per trade, `wave_days.cpp`);
+  on 2026-10-28, an FOMC day, `ww_ldn5_2sd` had taken a paper trade at 03:50 ET. The switch already existed in
+  `TrendStrategy::can_enter()` and the paper engine sets the FOMC flag on its 18:00 ET day roll, so no engine code changed.
+- `tests/execution/test_trend_strategy.cpp`: three `vwap_wave` cases (FOMC day + skip → no entry; normal day → entry; skip off
+  → entry). Passed in `build-exp/`. The NQ paper engine restarts after the close (one-shot user timer
+  `fomc-skip-after-close`, 16:10 ET) to load it. `make hermes` was deliberately not run: it rebuilds every `build/` binary,
+  including the live `mm-live@avax` market maker, from other uncommitted work in the tree.
+
+## 2026-10-28 — readiness standard v1 + scorecard
+
+- `docs/readiness_standard.md`: one standard for every setup before it is traded — gates R1-R12 with PASS / WARN / FAIL
+  thresholds fixed before the first scorecard, and levels RESEARCH-READY / BUILD-READY / LIVE-READY.
+- `scripts/readiness.sh` + `research/programs/readiness.cpp`: reruns the 18 edge_lab setups of the trading book on the full
+  history (`build-exp/edge_lab`, second-market check added where a spec had none) plus the London wave, and writes
+  `data/readiness/scorecard.{md,csv}` (copy of the first run: `research/programs/out/readiness_2026-10-28.md`).
+- First result: 1 of 19 RESEARCH-READY (gap_or_retest), none BUILD- or LIVE-READY. The live-cost stress (R5) and the risk fit
+  (R11) fail most setups; bdh_opt now fails its random-direction control on the full history (0.98 vs 0.99 needed).
+
+## 2026-10-28 — edge_lab `--trades` also writes walk-forward trades; combined-book research
+
+- `src/research/edge_lab_main.cpp`: with `--trades`, `edge_lab run` now also writes `reports/<id>.wf_trades.csv` — the
+  walk-forward trades (each month traded with the variant best on the months before it), columns
+  `date,entry_epoch,exit_epoch,dir,gross_pts,net_pts,mae,mfe,var,stop_pts,atr` (stop 0 = none). Reports are otherwise unchanged. Rebuilt in `build-exp/` only.
+- Research (`research/README.md`): `wave_entries.cpp` (8 entry triggers × 15 filters on the VWAP-SD wave + shuffle control:
+  nothing beats the EMA cross, nothing gives 2-3 trades a day with an edge) and `combo_book.cpp` (18 passed setups combined:
+  ~2-2.7 trades a day, PF ~1.2 in 2016-24, flat in 2011-15).
+
+## 2026-10-27 — trend mode `vwap_wave` (founder's VWAP-SD wave fade) on paper
+
+- **New trend mode `vwap_wave`** (`src/execution/trend_strategy.hpp`): a tf bar trades through the anchor-session VWAP ±
+  `ww_k` × VWAP SD and closes back inside → armed; the EMA `ema_fast`/`ema_slow` cross toward VWAP (close still on the band
+  side) enters; stop = the wave's extreme + 1 tick (`stop_dist`, min `ww_min_stop`), target `tp_r` × that. Keys `ww_k`,
+  `ww_min_stop`, `ww_expire_min`, `ww_last_entry`. Uses only `stop_dist` + `tp_r`, so it is live-runnable (not enabled live).
+- **Paper fleet**: `ww_ldn5_2sd` (the research lead: 5m, 18:00 VWAP, 2 SD, closes 03:05–09:30 ET, 2R, flat 16:40),
+  `ww_ldn5_25sd` (2.5 SD sibling), `ww_ldn5_15sd` (1.5 SD control, not selected by the search). Registered in
+  `paper_strategies`; `paper-engine-local` rebuilt and restarted 2026-10-27 06:20 ET (collector: no dropped batches).
+- Tests: six `vwap_wave` cases in `test_trend_strategy` (sell, buy mirror, both stop distances, silent through VWAP, silent
+  after `ww_last_entry`). Replay 2026-09-20 → 10-23 (label `ww_check`): 22 trades on the 2 SD id, 5 at target — too few to judge.
+- Research `research/programs/vp_wave_search.cpp`: volume-profile levels are not better than the VWAP band; found that
+  `Day::npoca/npocb` (bars.hpp) pick sides of the 09:30 open — look-ahead for any entry before 09:30 (research/README.md).
+
+
+## 2026-10-26 — market maker: honest fill model, archive-reader fixes
+
+- `src/dex/hl_mm.hpp`: `hl::FillModel {Legacy, NoCross, Full}` (env `MM_FILLS`, default NoCross). NoCross fixes three
+  optimistic flaws: a trade through our price fills at most the trade's size; an order arriving before a book update is
+  checked against the book in force when it arrived; `finish().flat_pnl` pays the half spread to close. Full adds fills
+  when a book runs over our resting quote — a stress bound, not an estimate. `MM_FILLS=legacy` reproduces every earlier
+  result byte for byte (checked on both history sets). test_hl_mm 34/34 under every model.
+- `src/zstd_daily.hpp` `ZstdLines`: a truncated frame (writer killed mid-frame) no longer ends the file — complete lines
+  are kept, the cut line dropped, reading resumes at the next frame (`skipped_frames()`). Lighter BNB 2026-10-25:
+  236,949 → 321,384 lines; Hyperliquid AAVE 2026-10-25: 0 → 98,061.
+- `src/dex/lighter_feed.hpp`, `src/dex/venue_feeds.hpp` (Extended, Paradex): an update whose nonce/seq equals the book's
+  is the recorder's day-roll repeat and is ignored, not a gap (replays lost hours after 00:00 UTC). A real gap or a step
+  back still is one. test_lighter 11/11, test_venues 11/11.
+- Rebuilt in build/: mm_sim, mm_robust, mm_regime, mm_opt (the 00:10 UTC gates now use them). NOT rebuilt: mm_paper and
+  the recorders (running) — the paper engine still runs the Legacy model until its own audit fixes land.
+- Results and decision: docs/market_making_plan.md §8 (2026-10-26).
+- MM research loop (founder 2026-10-26): `mm_lab` judge (25a787e; honest NoCross fills, same-size baseline, Lighter
+  60 req/min always on, frozen holdout per venue, alpha spending α/(k(k+1)), one counted holdout look per id; reviewed)
+  + `scripts/starnet/desk_mm.sh` + `scripts/starnet/mm_desk_cycle.sh` / `mm-desk-cycle.timer` (every 4 h). StarNet resumed
+  as the MM desk (7 Opus jobs, 40 calls/h, 300/day; NQ jobs disabled). First positive in-sample idea (HL guard + 5 s pause,
+  +1.20 bps) still FAIL on coins/t-stat. Live probe PASSED on mainnet (acct 764037, AVAX; ack 538 ms, cancel 776 ms).
+- Paper MM (550cac7, founder decision): $11 quotes with Lighter's size grid, inventory carried across 00:00 UTC
+  (mark-to-market day rows; a restart records `position_discarded`), `paper_hl` shadow with an HL-anchored fair (k=1,
+  causal, off when stale / > 200 bps), gates re-based ×0.11 (G2 range $0.99..$7.48, fail −$33, paper daily stop $16.50,
+  G1 replays at $11). Deploy scheduled after US close (mm-paper-deploy-20261026.timer, 16:15 ET).
+- Lighter live engine `mm_live` merged (src/dex/mm_live_main.cpp + src/dex/live/{transport,net,account_feed,sender,rest_api,
+  journal,alerts,instance_lock,engine,driver,mm_live_config,offline,fake_exchange,fake_venue}.hpp; runbook
+  docs/mm_live_runbook.md; unit deploy/mm-live@.service NOT installed): modes offline (full-day soak against an
+  in-process fake venue, per-step invariants) / probe (one post-only order ≥ 20% below best bid, ack, cancel, dead-man
+  check) / live (mainnet only, arming file required). Three adversarial reviews: dead-man health only from a confirmed
+  schedule ≥ 60 s ahead, never aborted unless a cancel-all is confirmed with zero open orders; gross cap on worst-case
+  exposure (closing orders allowed); persisted rate windows; account+key flock; unconfirmed Lighter codes treated as
+  Unknown. test_mm_live 54/54 (soak at $12/$24, zero violations), test_lighter_gateway 57/57. hl_mm.hpp gained a
+  pure extraction (quote_target/quote_allowed), mm_sim output byte-identical. No order has been sent yet.
+- Observability for the paper MM (reviewed, merged, deployed 06:50 ET; both units restarted): `hl::QuoteReason` per side
+  (quoting, no_book, halted, spread_narrow, jump_pause, imbalance_pull, inv_cap, kept — observational only, mm_sim
+  output byte-identical before/after); new table `mm_paper_quotes` (migration `20261026_mm_paper_quotes.sql`) written on
+  change ≤ 1/s/market + 60 s keepalive through its OWN bounded queue and drop ledger (`db_quote_drops_<label>.json`,
+  never read by the gates); status.json `components{feed,reorder,sim,db,risk}` + per-market quotes, reasons and engine
+  params; `scripts/mm_debug.sh` (read-only, --json: status | trace fill | trace market | why | replay | archive | db |
+  gates) and `build/archive_check`; mm_sim `--t0-ms/--t1-ms`. Dashboard (bot repo, uncommitted patch applied): /mm
+  sections A quotes + why lanes, B money waterfall + fill inspector + fill models, C system map with debug drawers,
+  D live-test placeholders. Quote rows ≈ 180 MB/day per label, kept (founder rule).
+- Lighter live gateway, OFFLINE core merged (`src/dex/live/`: signer wrapper — dlopen of the sha256-pinned v1.1.6 .so from
+  a memfd, allowlisted symbols only (withdraw/transfer/change-pubkey never resolved), range checks before every call,
+  explicit nonces, requires GODEBUG=asyncpreemptoff=1 at process start; mainnet-only config guard + arming file + 0600
+  key file opened O_NOFOLLOW; order sizing to Lighter's min base/quote; nonce manager that freezes instead of guessing;
+  60 s rolling rate limiter (54/min, 6 reserved for cancels) and cancels-first batcher; order state machine where
+  Unknown/CancelPending count as live exposure and late fills are never lost; risk governor for the $5 pilot with
+  persisted HWM/day baselines; far-from-market probe plan) + `tests/dex/test_lighter_gateway.cpp` 57/57 against a
+  FakeExchange, 0 network syscalls under strace. Two adversarial reviews; all 9 reviewer cases are regression tests.
+  Nothing sends anything yet: no account feed, sender, journal or binary.
+- Paper engine audit fixes (reviewed adversarially, merged, deployed 05:50 ET; both units restarted): per-statement DB
+  writes with retry from the in-flight statement and an idempotent `uid` on fills/events (migration
+  `20261026_mm_paper_uid.sql`, applied with lock_timeout 2s; DDL failure → reconnect with backoff, never write on that
+  connection); every dropped row counted per UTC day in a persisted `db_drops_<label>.json` (status.json gains
+  db_dropped/db_errors/db_retries/db_queue/reorder_ms/late_trades); 250 ms reorder buffer releasing events in the
+  backtest's order (no phantom book-before-trade fills); halts/requotes on exchange time, stale check on receive time;
+  day roll lagged by the buffer; re-flatten after a halt once the cancel latency has passed; stricter gates (G1 ≥ 23.5 h
+  and no gap > 15 min; G2 ≥ 23.5 h, every market present, no outage > 30 min — an outage = kill switch or ≥ half the
+  markets halted at once — and zero DB drops). The engine now runs the NoCross fill model. Verified before deploy:
+  old + new binaries side by side against an isolated schema `mm_selftest` with the new engine's connection cut
+  mid-run → 1 retry, 0 drops, 0 duplicates, the old binary unaffected by the new column/index.
+
+## 2026-10-25 — market maker: Lighter execution rules replayed (rate limit, split delays)
+
+- `hl::Params::place_latency_ms / cancel_latency_ms` and `hl::Simulator::set_send_gate` (additive, `src/dex/hl_mm.hpp`):
+  unset = identical output (mm_sim on tardis_extra byte-identical; test_hl_mm 28/28, test_lighter 10/10, test_venues 10/10
+  in build-exp). build/ not rebuilt (the paper engine runs from it).
+- `research/programs/mm_quote_rate.cpp`: the frozen setting sends ~410 transactions/min on 24 Lighter markets (p95 ~570).
+- `research/programs/mm_rate_limit.cpp` + `research/preregistered/2026-10-25_mm_rate_limit.md`: Lighter Standard (60
+  requests/min, ≤ 15 tx per batch, post-only 0 ms, cancel 300 ms) — one account loses on both history sets; main + 4
+  sub-accounts keep 99–122 % of the no-limit result → the live path is built for 5 accounts.
+- Lighter signer v1.1.6 pinned in `third_party/lighter_signer/` (gitignored .so; sha256 in the pre-registration notes).
+
+## 2026-10-25 — market maker: "all data" view, regime filters on every dataset, days-to-skip test
+
+- `scripts/mm_alldata.sh` (new, called at the end of `scripts/mm_gates.sh`, fail-open) writes `data/mm_gates/alldata.json`:
+  Tardis history (tuned + never-tuned coins, `mm_robust --dash`, recomputed only when missing or the binary is newer), our
+  Hyperliquid recording, Lighter's G1 rows, Extended/Aster/Paradex day rows, the regime filters on every dataset and the
+  history split by weekday. Shown on the dashboard /mm page ("All data" section) and the 3D explainer (live Lighter mode).
+- `mm_regime --params FILE` (additive): per-coin tick unit / venue grid / fees / delay from the mm_sim params format, so the
+  regime test runs on Lighter in the strategy's tick unit. Without it the output is byte-identical (checked on tardis_extra).
+  `build/mm_regime` rebuilt alone (Sunday, market closed).
+- Pre-registered `research/preregistered/2026-10-25_mm_skip_days.md`: no day to skip (weekends positive in every set);
+  the pre-registered regime rule changes nothing on history and does not rescue Lighter's first partial day.
+
+## 2026-10-25 — Every zero-maker-fee venue recorded: Extended, Aster, Paradex (+ regime-filter study)
+- Venue survey (fee ≤ 0.5 bps maker = the measured break-even; order book with a depth feed; account from Cyprus):
+  only Lighter, Extended (0 maker + rebate by maker share, taker 2.5 bps), Aster (0 maker, Binance-shaped API) and
+  Paradex (retail 0/0, API "Pro" maker 0.3 bps, AWS Tokyo) pass. Every regulated route a Cyprus resident can use
+  (Backpack EU in Limassol, OKX X-Perps Malta, Kraken EEA derivatives) charges 1.5–2 bps maker; Hyperliquid 1.5 bps,
+  dYdX 1.0, edgeX 1.2, MEXC 1.0 for API orders (and no MiCA licence); Binance ~2 bps and withdrew its MiCA application.
+- `src/dex/venue_feeds.hpp` (pure parsers: Extended snapshot/delta books with seq, Aster depth20 snapshots + aggTrade,
+  a Paradex SBE decoder for BookEvent/TradeEvent — Paradex has required SBE binary on public channels since
+  2026-09-21 and refuses the plain `/v1` URL with HTTP 400) + `src/dex/dex_ws.hpp` (one TLS websocket to any host,
+  User-Agent decorator — Extended refuses handshakes without one) + `src/dex/dex_recorder_main.cpp`
+  (`dex_recorder --venue … --out DIR --symbols COINS`): archive lines `{"r","v":"<venue>","m"}` per Hyperliquid
+  coin name; synthetic day-opening snapshots for the delta venues; sequence gap → reconnect; `DIR/markets.json`
+  (venue market + price tick per coin). Extended's publicTrades stream opens with the market's RECENT trades (hours
+  old on a quiet market) — tagged `"snap":true` and dropped by the loader, like Hyperliquid's. Measured live:
+  Extended deltas carry `q` = change and `c` = absolute size; Paradex `deltas` takes no `@depth@rate` parameters.
+- `hl_events.hpp::load_archive` dispatches on the `v` tag, so `mm_sim` / `mm_opt` / `mm_robust` / `mm_regime` replay
+  the new archives unchanged. `tests/dex/test_venues.cpp` (10 tests incl. hand-built SBE frames). Units
+  `deploy/{extended,aster,paradex}-recorder-local.service` installed and running (32 / 37 / 23 markets);
+  `scripts/vps_setup.sh` takes the three venues; `scripts/lag_check.sh` reads every archive layout.
+- `scripts/mm_venues.sh` (called by `mm_gates.sh` daily): the frozen setting replayed flat-to-flat on each venue's
+  archive at its REAL maker fee (Extended 0, Aster 0, Paradex 0.3 bps) and its own grid, 100 ms delay (none imposes
+  Lighter's 200 ms) → `data/mm_gates/venues.json` + dash tables + a section in `report.md`.
+- FOUND on the first Paradex minutes: the API-visible book is a shell — AAVE-USD-PERP best bid 129.13 / ask 168.79
+  (0.11 / 0.08 size) and 24 h volume 0 while the UI shows 135.92 / 135.99; SOL's API book 100.03 / 101.83 (1.8%)
+  with its last trade 30 min earlier. The tight book is the interactive/RPI tier that API ("Pro") orders cannot
+  rest in or match against; `market_summary.bid/ask` reports that tier. The recorder archives what an API maker
+  sees (`order_book.<M>.deltas`), which is the honest input for G1 there — expect few fills.
+- `mm_regime` (`src/dex/mm_regime_main.cpp`): regime filters as a pre-registered test — time of day (4 h blocks),
+  5-min range in bps, trades/min, spread in bps; per bucket the setting quotes only in that regime (`set_halted`
+  outside it); buckets with positive tuning net bps form the filter, judged on the holdout year against the
+  unfiltered setting. RESULTS (`research/mm_regime/2026-10-25.md`): run 1 (buckets chosen on tuning) — activity filter
+  +$598 vs +$446 unfiltered on the holdout year, spread filter +$519, all four +$577/0.84 bps; the volatility filter
+  HURT (+$358: its low-vol buckets flipped from negative in tuning to the best on holdout — noise), time of day had no
+  tuning signal. Pre-registered rule (written after seeing run 1, so the tuned-coin holdout +$709/0.97 bps, 10/12 days,
+  worst −$18 is NOT clean): quote only while trades/min ≤ 20 and spread ≥ 2 bps. Clean test on the 15 UNSEEN coins:
+  +$344 vs +$341 (0.64 vs 0.60 bps) on 17% less quoting time — same dollars, better per dollar, worst day −$52 vs −$41.
+  Robust in all three sets: spread < 2 bps loses (−5.9/−2.0/−5.3 bps), a tape over 20 trades/min loses
+  (−0.7/−3.7/−6.7 bps). Decision: a toxicity gate (busy tape, sub-2-bps spread) is a candidate for the frozen setting
+  via the plan's door (pre-register → holdout → paper), not a change today; expected effect = less time at risk for the
+  same money, not more money.
+- Dashboard `/mm` (bot repo: `ui/routers/mm.py`, `frontend/src/app/mm/page.tsx`, nav "Maker"): gates, both paper engines,
+  venue comparison, recorders, regime study and the documents, read from the files and tables above. Two accuracy fixes
+  made while wiring it: (1) the paper equity curve reads the engine's `_total` row (summing the per-market rows double
+  counted it), and "today" is scoped to the current run (`run_id` of the latest `start` event) because every engine
+  start resets the simulators — 5 starts on 2026-10-25 (tick-unit fix, label/300 ms restart); (2) `mm_gates.sh` G2 no
+  longer counts a day with a `start` event as complete (its daily row would cover only the hours after the last
+  start) — plan §3 updated. Also: `build/mm_sim` had been built before `hl_events.hpp` learned the venue tag, so the
+  first venue replays were empty; rebuilt (mm_sim, mm_opt, mm_robust) — any binary that replays archives must be
+  rebuilt after a loader change.
+---
+
+## 2026-10-25 — Market-making plan with stage gates + the daily gate job (Phase 2 overview)
+- `docs/market_making_plan.md`: objective, four stage gates with pass/fail numbers set from the holdout evidence
+  (G1 Lighter re-test ≥ 10 complete days, ≥ +0.25 bps, 10 s markout ≥ −1 bps · G2 paper ≥ 20 days, cum > 0, ≥ 55%
+  positive days, mean day inside +$9…+$68, ≤ 1 loss stop · G3 $250 pilot · G4 scale $2k/$5k/$10k), capital per gate,
+  weekly cadence, append-only decision log. Past performance of the frozen setting: 24 sample days +$1,090, holdout
+  +$446 (mean day +$37, 8/12 positive, max DD $63, daily Sharpe 0.68), 15 unseen coins +$341.
+- `scripts/mm_gates.sh` + `deploy/mm-gates.{service,timer}` (00:10 UTC): computes the gates from the Lighter archive
+  (`mm_sim --daily`, Hyperliquid tick unit, Lighter grid, complete UTC days only, never today) and the paper engine's
+  Postgres rows → `data/mm_gates/gates.json`, `report.md`, flat tables in `data/mm_gates/dash/`, one Telegram line via
+  grid-notify. `mm_sim --daily FILE`: flat-to-flat mode (fresh simulator per coin-day, taker flatten at the end).
+- Dashboard "Market-Maker Gates" (claude.ai): past performance + one card per gate with live metrics and charts.
+- Latency grid (mm_robust, holdout year, $100 quotes, Lighter fees; tuned 30 coins / 15 unseen coins): 20 ms +$853/+$475,
+  50 ms +$864/+$474, 100 ms +$750/+$440, 150 ms +$655/+$372, 200 ms +$637/+$390, 250 ms +$595/+$403, 300 ms (today)
+  +$446/+$341, 350 ms +$314/+$349, 500 ms +$194/+$201, 1 s −$78/−$78. Flat below 100 ms: a VPS in the venue's region
+  is enough, colocation buys nothing. Lighter Standard from its region ≈ 200–220 ms → +35–40% (tuned) / +13% (unseen)
+  over today; a zero-fee venue with no imposed delay (Paradex retail tier, if the edge transfers) ≈ 20–50 ms → ×1.9 / ×1.4.
+- `mm_paper --label NAME` + `label` column on all four `mm_paper_*` tables (`migrations/20261025_mm_paper_label.sql`,
+  PKs now include label): several instances share the tables. New unit `mm-paper-fast-local` = the SHADOW at 220 ms
+  (label `paper_220`, status_paper_220.json) beside the official 300 ms engine (label `paper`), so the value of a
+  server in Lighter's region is measured on the same live days; the gates read label `paper` only. Location does not
+  change paper results — the model works in exchange time and the delay is a parameter — which is why a shadow with
+  the server's delay, not a relocated engine, answers the question.
+- `scripts/vps_setup.sh <venue>`: one-command bootstrap of a fresh Ubuntu 24.04 VPS as a venue recorder (toolchain,
+  chrony, clone, build recorders + mm_sim + tests, /data/rithmic_dex/<venue>, user unit `dex-recorder-<venue>`, linger);
+  `scripts/lag_check.sh DIR [day]`: p50/p90 exchange→box lag per market from an archive — the number that picks a region.
+  Venues with recorders: lighter, hyperliquid; aster/paradex/extended stop with a message until their recorders exist.
+- `docs/market_making_architecture.md` + the Claude Doc "Lighter Market Maker: Architecture and Shipping Plan"
+  (with drawings): two-site architecture, server plan (region by measurement — Lighter and Hyperliquid both resolve
+  to AWS CloudFront Frankfurt edges from here; 53 ms RTT, 142 ms exchange→box lag), live path (signer sidecar, dead
+  man's switch, reconciliation), operations, the one-door optimization loop, KPIs per engine, sustainability checklist.
+
+## 2026-10-25 — Lighter paper market maker, Phase 1: recorder + 24/7 paper engine (no keys, no orders)
+- Founder: "create a system of all angles where we can run it and daily overview it". Venue = Lighter Standard
+  account (0 fees; 200 ms maker/cancel delay imposed by the venue, so a close server cannot remove it): in
+  `mm_robust` it beat Premium (0.4 bps, ~0 ms) on both coin sets (+$637 vs +$516-528; unseen coins +$390 vs +$251).
+  Cyprus is not on Lighter's restricted list (lighter.xyz/terms, 2026-10-25); 214 perps, $10 minimum order.
+- `src/dex/lighter_feed.hpp`: Lighter books (full "subscribed/order_book", then changed levels, size 0 removes;
+  begin_nonce ≠ previous nonce = gap → untrusted until a new snapshot) and trades (the "subscribed/trade" replay is
+  skipped; is_maker_ask = taker bought; deleverage / market-settlement skipped). `hl_events.hpp` replays Lighter
+  archives, so mm_sim / mm_opt / mm_robust run on Lighter's own books. `src/dex/lighter_ws.hpp`: shared network code.
+- `build/lighter_recorder` + `deploy/lighter-recorder-local.service`: 24 markets (the ones also tested on
+  Hyperliquid) → `rithmic_dex/lighter/<SYM>/<day>.jsonl.zst`; each day file opens with a synthetic full snapshot.
+- `build/mm_paper` + `deploy/mm-paper-local.service`: its own Lighter connection, the frozen setting
+  (`mmpaper::frozen_params`: width 5, spread ≥ 4, imbalance 0.6, 2 s pause on 2-tick jumps, keep queue; 0 fees,
+  250 ms) through `mmpaper::Portfolio`: 00:00 UTC flat-to-flat day roll, feed-down halt (no message 15 s or
+  disconnected), per-market stale pull (120 s — quiet Lighter books are silent, not dead), daily loss stop $150,
+  kill switch file `data/mm_paper/KILL`. Postgres `mm_paper_fills/_equity/_daily/_events`
+  (`migrations/20261025_mm_paper.sql`), status `data/mm_paper/status.json`. Simulator gained `set_halted`,
+  `flatten_now` (taker exit, excluded from markouts), `equity`, `inventory_usd`.
+- Validation on the recorded ticks (same day): archive integrity 0 gaps / 0 crossed / 0 out-of-order across 24
+  Lighter markets; live engine vs replay of its own archive 120 vs 122 fills, −$7.10 vs −$7.49; 3 replays of a frozen
+  copy identical; equity rows continuous; NTP-synced, exchange→box lag 142–145 ms. **Found and fixed: the tick
+  unit.** Every backtest measured width/spread/pause/requote in Hyperliquid ticks (5 significant figures, decimals
+  capped by szDecimals — reproduced on 12/12 live HL coins); Lighter's grid is 100× finer on BNB, 10× on AAVE/DOT and
+  3–10× coarser on 2Z/APEX/PYTH/SEI, so the engine had been quoting AAVE 10× too close. `hl::Params` gains
+  `venue_tick` (Lighter's `supported_price_decimals`), `strat_tick_rule` (Book | Hyperliquid) and `hl_sz_decimals`
+  (HL meta, fetched at start); distances use the strategy tick, rounding/post-only the venue grid. `mm_paper` flags
+  `--tick-rule hl|book` and `--latency-ms` (frozen delay 250 → 300, the backtests' value); `mmpaper::Config::per_market`.
+  Replay of 1.46 h of Lighter, old → corrected unit: 124 → 130 fills, AAVE 10 → 0, BNB 19 → 26, SEI 0 → 5, PYTH 0 → 3.
+  Tests 28/28 + 10/10.
+- Docs: `docs/market_making_system.md` (services, data formats, strategy + fill model, risk controls, evidence,
+  runbook, limits, roadmap); visual explainer with 3D system map + queue model: claude.ai artifact "Lighter Market Maker".
+- Tests: `test_lighter` 9/9 (book + gaps + synthetic snapshot round trip, trades, Lighter replay through the loader,
+  halt/flatten, day roll, loss stop, feed-down, stale, kill switch); `test_hl_mm` 25/25.
+
+## 2026-10-25 — DEX market-making research: Hyperliquid recorder + queue-aware MM simulator (research only)
+- Founder, after the "algorithmic market-making" video: build, run and test a market maker where it could pay.
+  BTC/ETH (Binance, Bitstamp, Hyperliquid) spreads are 0.001–0.4 bps against 1.5–30 bps resting-order fees, so
+  the only candidates are mid/small Hyperliquid perps (2–10 bps spreads measured 2026-10-25) and Lighter (0 fee,
+  ~200–300 ms delay on standard accounts). No orders, no keys, no Postgres anywhere in this change.
+- `build/hl_recorder` (`src/dex/hl_recorder_main.cpp`): public websocket, l2Book **with `fast:true`** (default
+  pushes a book every ~5 s; fast ≈ 0.55 s) + trades for 30 coins → `<out>/<COIN>/<UTC date>.jsonl.zst`,
+  lines `{"r":recv µs,"snap":bool,"m":raw}`; `snap` = Hyperliquid's replay of recent trades on subscribe (must
+  never fill). Refuses a missing `--out` (an unmounted second drive must not fill the root disk). zstd level 3:
+  level 9 × 30 streams peaked at 326 MB and was killed by the unit's MemoryMax; level 3 peaks at 42 MB, ~350 MB/day.
+  Unit `deploy/hl-recorder-local.service`, output `/media/theone/381C48C51C48803C/rithmic_dex/hyperliquid`.
+- `build/mm_sim` (`src/dex/hl_mm.hpp`, `src/dex/mm_sim_main.cpp`): one post-only order at each best price, $ size,
+  inventory cap; back-of-queue position on the aggregated book (trades at our price eat the queue first, trades
+  through it fill us), cancels bounded Pessimistic (from behind us) / Optimistic (pro rata), latency on orders and
+  cancels, post-only rejection, markouts 1/10/60 s, maker fee per fill + taker flatten. Four configs per coin:
+  Hyperliquid (1.5/4.5 bps, 200 ms) and Lighter-on-Hyperliquid's-book (0/0, 300 ms) × both queue bounds.
+  `--sweep` adds Hyperliquid at 50 / 500 ms; `--dash DIR` writes configs/equity/coins/markets.json (`{"rows":[…]}`)
+  for the claude.ai dashboard "DEX Market-Making Sim" (minute equity per setup, markout curve 1/5/10/30/60 s).
+- The video's strategy, not just its mechanics (`hl::Params`): quote around OUR fair price (`fair` mid or
+  microprice) at a chosen `half_width_ticks` (0.5 on a one-tick market = join; small on a wide market = inside
+  the spread, first in queue; larger = behind the best), leaning `skew_ticks` per order-size of inventory; tick
+  read from the book. Quotes deeper than the visible book keep the deepest visible level's size as their queue
+  (only trades shrink it).
+- History: `scripts/hl_history_download.sh` (Tardis.dev free sample days — the 1st of each month, 2024-11 →,
+  book_snapshot_25 = 5 levels + trades) → `rithmic_dex/tardis/raw/`. `src/dex/hl_events.hpp` loads either the
+  live archive or Tardis CSV into one order: exchange time, a block's trades BEFORE its book (the snapshot
+  already shows the traded size — book-first counts it twice).
+- `build/mm_opt` (`src/dex/mm_opt_main.cpp`): every coin-day × 30 strategies (width 0.5/1/1.5/2.5/3.5 × skew 0/1/2 ×
+  mid/micro) × 2 venues × 2 queue bounds from flat; walk-forward picks each coin's strategy from its previous 6
+  sample days (pessimistic queue, ≥3 days, stand aside if not positive) vs "join" and "hindsight" (look-ahead
+  ceiling). `--best-dir` writes best_<venue>.json for `mm_sim --params` (forward test of the frozen choice).
+- Results, rounds 1-2 (width × skew × mid/micro): nothing profitable anywhere; skew and microprice only hurt.
+  Round 3 adds defences against adverse selection (`hl::Params`): `min_spread_ticks`, `imb_pull` (pull the side the
+  top-of-book imbalance leans against), `pause_move_ticks`/`pause_ms` (no quotes for 2 s after a ≥2-tick mid jump),
+  `requote_ticks` (keep a resting order and its queue place for a 1-tick target change); grid = join + 120 settings,
+  pessimistic queue. Two stricter tests: "one-setting" (one setting for all coins, re-chosen daily from the previous
+  6 days) and "holdout" (one setting chosen on 2024-11..2025-10, judged on 2025-11..2026-10). At Lighter's zero fee:
+  holdout +$446 (+0.52 bps, 8/12 days), one-setting +$495 (+0.30 bps, 14/18), per-coin +$188 (+0.11) — per-coin choice
+  overfits; at Hyperliquid's 1.5 bps maker fee every method loses (best −$132). Holdout setting at both fees:
+  width 5, spread ≥ 4 ticks, imbalance pull, pause, keep queue. Live forward test (1.4 h): +0.43 bps Lighter, −0.63
+  Hyperliquid. Caveats: Lighter is simulated on Hyperliquid's book, 1st-of-month days only, coins picked by today's
+  volume rank (survivorship), funding not modelled. `--best-dir` also writes best_<venue>_one.json.
+- `build/mm_robust` (`src/dex/mm_robust_main.cpp`): the frozen holdout setting + 34 one-at-a-time variants, holdout year.
+  Plateau: widths 3.5-7, spread filters 3-6, imbalance 0.5-0.8 all positive. Load-bearing: the jump pause (off →
+  −$321), order delay (100 ms +$750, 500 ms +$194, 1 s −$78) and maker fee (0.5 bps ≈ break-even, ≥1 bp loses).
+  18/30 coins positive, +$131 without the best 3. Mean holdout day $37, day-resampled 95% interval $9..$68 (12 days).
+  On 15 coins never used in tuning (`rithmic_dex/tardis_extra`): +$341, +0.60 bps, 10/12 days, interval $8..$50.
+- Validation `mm_sim --max-levels 5` on the live archive: 20 → 5 visible levels moves a 3.5-tick-wide strategy by
+  0.01 bps — the thin history is fit for the test.
+- `src/zstd_daily.hpp`: `ZstdDaily` moved out of crypto_collector (unchanged behaviour, optional level) + `ZstdLines`
+  reader that treats a still-open file's unfinished frame as end of data. crypto_collector tests 18/18.
+- Tests: `test_hl_mm` 11/11 (parsing, queue, trade-through, latency, cancel bounds, inventory cap, post-only, requote,
+  capture/markout/fees/P&L, zstd round trip incl. an unfinished file). First 2-minute Sunday smoke: 7–9 fills, 10 s
+  markout ≈ −2 bps — means nothing yet; a verdict needs weeks of recording.
+
+## 2026-10-23 — paper_engine: the VIX regime line is logged only when it changes (log spam filled the root disk)
+- Since 2026-10-15 (70723d6) `apply_vix(cur_date)` sits inside the main poll loop, so every paper engine wrote the same
+  "[PAPER] VIX regime for …" line ~10 times a second — ~1 GB/day across the fleet logs; on 2026-10-23 the root disk fell to 1.4 GB
+  free (logs compressed to `data/logs/*.upto-20261023.gz` and emptied in place, founder-approved). `apply_vix` now logs only when the
+  day or the values change; set_vix is still applied on every call, so behaviour is unchanged. Built and unit-tested in `build-exp/`
+  only; the running engines pick it up after `build/` is rebuilt and they are restarted (founder's call).
+
+## 2026-10-22 — /flags page: the flag book (BOOK2 + RULE, NQ + ES) live, matched to the research (dashboard only; no engine change)
+- Founder: "update a dedicated page on localhost. the flags page … has to be everything you suggested so far". The dashboard /flags page
+  (bot repo, `frontend/src/lib/flags.ts` + `src/app/flags/page.tsx`) gains the FLAG BOOK: the wide candidate set of `flag_hhhl.cpp export
+  … wide15` on the 1-5m charts, graded with the walk-forward 14-feature score (weights frozen for 2026, fitted 2014-2025), tagged BOOK2
+  (4-5m, pole >= 3x, pullback 5-38 %, A/B, 2 open per market, $150 daily stop) and RULE (3-5m, pole >= 4x, 15-50 %, A, 5m HH/HL, with the
+  09:30-09:35 break), traded with the flag-mid limit / 0.1-ATR stop / measured move / 15:55 at 2 micros, booked like `flag_prop_ev.cpp`.
+  Shows: what limit to place now, fills, exits, $ after costs, the automatic daily stop, the flag's shape (flag_behavior Part A), the
+  hold-don't-manage result (Parts B-D), the account numbers (flag_prop_ev prob / timing / dd / budget) and what was tested and dropped.
+  Book alerts (desktop / Telegram / beep) for a limit to place, a fill, an exit, the daily stop. ES bars come from /api/history/bars and
+  ES context from /api/ops2/sessions (no backend change). The old A-grade / TAKE box is folded as "Earlier setups".
+- Validated: new `bot/frontend/scripts/flag-parity/book.js` — every NQ and ES day 2014-01 → 2026-10-16: research 3-5m wide flags
+  19,684 NQ / 20,822 ES all found, 0 differences in the 14 features, HH/HL, ORB side, pullback, pole multiple, flag-mid entry, stop
+  and net R; 2026 grades identical; 2026 BOOK2 / RULE booked trades identical (78/10 NQ, 61/13 ES; only x.125 print rounding).
+  `scripts/flag_parity.sh` still PASS. Page-only flags (29 NQ / 43 ES) are ones the research drops because no entry could trade.
+- Fixed in the shared page detector: a bear pole whose raw low sits exactly on a round 100 counted as "broke a level" (the research
+  uses raw prices) — matters for the score; found by the book parity.
+- Research tools: `flag_hhhl.cpp` prints the frozen 2026 weights with `FH_WEIGHTS=1` (stderr; exports unchanged, verified byte-equal);
+  `flag_parity.cpp` takes `FP_SYM=ES` and now writes each day's `pre` bars (18:00 → 09:30) and the 1m buy volume (7th column;
+  compare.js reads 6). flag_behavior Part D (short-horizon exits) recorded: nothing passes.
+
+## 2026-10-22 — paper flag tilts: ft_min_pole_atr / ft_flow_max, sig_flag_3m(+__imb/__flow), working-fleet rows (paper only; swap scheduled 23:10 Cyprus)
+- TrendStrategy mode flag_take gains two paper-only knobs (founder: "do all", research 2026-10-21 layer5.txt / flag_rank.cpp):
+  `ft_min_pole_atr` arms a registered flag only when its pole is >= that × the prior-day ATR (the 3m standing rule uses 0.4);
+  `ft_flow_max` arms only when the aggressor-BUY share of the flag bars' volume is <= that (0.5 = the pullback is counter-flow being
+  absorbed: +0.39R vs +0.03R on 2023-26 3m flags, shuffle p = 0.015). FtBar carries bv; the registration log line now prints pole/ATR
+  and the flag buy share and says why a flag is not armed. The executor refuses both keys (paper-only, like ft_tf).
+- Fleet: `sig_flag_3m` (3m, ft_take false, pole >= 0.4 ATR, no Telegram), `sig_flag_3m__imb` (+ imbalance_min 0.5 — the book on our
+  side at the break, +0.54R vs +0.18R, p = 0.028) and `sig_flag_3m__flow` (+ ft_flow_max 0.5). config/working_fleet.json gains
+  candidate rows for sig_flag_take_4m/5m (missing since 10-20) and these three (variant rows point at sig_flag_3m as core).
+- Tests: 5 flag_take cases for the knobs (every flag arms with ft_take=false; 0.61-ATR pole refused at 0.7, armed at 0.4; 88 %
+  buyers in the flag refused, 25 % armed). test_trend_strategy ALL PASSED (build-exp).
+- NOT yet running: built in build-exp during the pre-RTH window; a transient user timer `paper-engine-swap-20261022` installs
+  build-exp/paper_engine into build/ and restarts paper-engine-local at 23:10 Cyprus (16:10 ET), refusing inside RTH. The new ids
+  are upserted into paper_strategies at that start. `make hermes` not run (it rebuilds build/ — run it after the close).
+- Research the same day (scratchpad, not committed): flag rank v2 pre-registered (4-check rank + creeping pauses) — rank-4 of the
+  4-check rank +0.19 / +0.17 / −0.02R by era on 3m (FAILS the 2025-26 leg; clean pauses +0.20 / +0.24 / +0.15 pass, creeping pauses
+  −0.06 in 2025-26 are what broke); levels (prior POC/VAH/VAL, prior/week/month H-L, naked POCs): BREAK +0.4 pts vs the same-day
+  random-timing twin +3.3, REJECT −0.9 — FAIL, levels never beat a random entry in the same direction on the same day.
+
+## 2026-10-20 — collector: the 60-s status line froze the Rithmic feed for ~20 s every ~80 s (fixed, deployed 10:01 ET)
+- Symptom: /flags (and every live consumer) showed "last tick 17s ago"; the fan-out went silent for 16-27 s, then burst. The database had
+  no gaps afterwards because ticks keep their exchange time, so it only showed live.
+- Cause: `TickDB::summary()` ran `SELECT COUNT(*) FROM ticks` on the collector's io_context thread every 60 s. At 144M rows / 44 GB it
+  took ~31 s, so the WebSocket read loop stopped for that long (log gaps of 18-27 s, each ending at the fan-out status line).
+- Fix: new `TickDB::row_estimate()` (pg_class.reltuples, instant) for the status line and the startup log; `row_count()` (exact) kept
+  for the tests and the one-off client path. Test `row_estimate` in tests/test_db.cpp (26/26). Rebuilt build/ and restarted
+  rithmic-collector-local mid-session on the founder's word ("fix it now"); after it: 100 s sample, 3,753 NQ ticks, 0 silent seconds.
+
 ## 2026-10-18 — path × direction: confirmed rules, paper mode `path_dir`, pages; course indicators as filters (nothing adopted)
 - research/preregistered/2026-10-18_path_direction_map.md: map 2010–18 → picks → 2019–24 confirmation → 2025+ holdout. CONFIRMED: the gap
   side (+28.26/trade) and the 45-min momentum side (+22.16) at the 10:00 candle close on a straight path (eff ≥ 0.55); cascade fails.

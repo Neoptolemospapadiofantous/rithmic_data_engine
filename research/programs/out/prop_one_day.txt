@@ -1,0 +1,113 @@
+ONE TRADE A DAY, NO STOP, HOLD UNTIL PASS — NQ, 10:30 entry, points at today's ATR (307), cost 1.5 pts + $1.82 / MNQ
+
+TRADEIFY GROWTH 50K eval (intraday trail, $1,250 daily loss)
+  D0 coin flip, every day        10 MNQ: PASS  28% (on the first trade  20%) · FAIL  72% · still open after 60 days   0% · median 1 trades to pass
+  D0 coin flip, every day        20 MNQ: PASS  29% (on the first trade  26%) · FAIL  71% · still open after 60 days   0% · median 1 trades to pass
+  D0 coin flip, every day        30 MNQ: PASS  30% (on the first trade  28%) · FAIL  70% · still open after 60 days   0% · median 1 trades to pass
+  D0 coin flip, every day        40 MNQ: PASS  30% (on the first trade  29%) · FAIL  70% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       10 MNQ: PASS  30% (on the first trade  21%) · FAIL  70% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       20 MNQ: PASS  30% (on the first trade  27%) · FAIL  70% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       30 MNQ: PASS  31% (on the first trade  29%) · FAIL  69% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       40 MNQ: PASS  32% (on the first trade  30%) · FAIL  68% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    10 MNQ: PASS  32% (on the first trade  24%) · FAIL  68% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    20 MNQ: PASS  34% (on the first trade  29%) · FAIL  66% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    30 MNQ: PASS  35% (on the first trade  32%) · FAIL  65% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    40 MNQ: PASS  34% (on the first trade  32%) · FAIL  66% · still open after 60 days   0% · median 1 trades to pass
+
+APEX 50K EOD eval (end-of-day trail, no daily loss)
+  D0 coin flip, every day        10 MNQ: PASS  38% (on the first trade  27%) · FAIL  62% · still open after 60 days   0% · median 1 trades to pass
+  D0 coin flip, every day        20 MNQ: PASS  38% (on the first trade  37%) · FAIL  62% · still open after 60 days   0% · median 1 trades to pass
+  D0 coin flip, every day        30 MNQ: PASS  37% (on the first trade  37%) · FAIL  63% · still open after 60 days   0% · median 1 trades to pass
+  D0 coin flip, every day        40 MNQ: PASS  36% (on the first trade  36%) · FAIL  64% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       10 MNQ: PASS  41% (on the first trade  28%) · FAIL  59% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       20 MNQ: PASS  41% (on the first trade  40%) · FAIL  59% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       30 MNQ: PASS  40% (on the first trade  40%) · FAIL  60% · still open after 60 days   0% · median 1 trades to pass
+  D1 first hour, every day       40 MNQ: PASS  38% (on the first trade  38%) · FAIL  62% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    10 MNQ: PASS  43% (on the first trade  30%) · FAIL  57% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    20 MNQ: PASS  45% (on the first trade  45%) · FAIL  55% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    30 MNQ: PASS  44% (on the first trade  44%) · FAIL  56% · still open after 60 days   0% · median 1 trades to pass
+  D2 straight first hour only    40 MNQ: PASS  43% (on the first trade  43%) · FAIL  57% · still open after 60 days   0% · median 1 trades to pass
+
+FUNDED growth_50k (payout_sim.hpp rules), same trade held to 15:55, 60 trading days:
+  D0 coin flip, every day         1 MNQ: paid within 60 days  14% (avg payout $1533) · blown before a payout  75% · paid per funded account $277
+  D0 coin flip, every day         2 MNQ: paid within 60 days  10% (avg payout $1584) · blown before a payout  89% · paid per funded account $228
+  D0 coin flip, every day         4 MNQ: paid within 60 days   3% (avg payout $1523) · blown before a payout  97% · paid per funded account $44
+  D0 coin flip, every day        10 MNQ: paid within 60 days   0% (avg payout $1500) · blown before a payout 100% · paid per funded account $1
+  D1 first hour, every day        1 MNQ: paid within 60 days  18% (avg payout $1536) · blown before a payout  67% · paid per funded account $344
+  D1 first hour, every day        2 MNQ: paid within 60 days  14% (avg payout $1548) · blown before a payout  85% · paid per funded account $267
+  D1 first hour, every day        4 MNQ: paid within 60 days   5% (avg payout $1526) · blown before a payout  95% · paid per funded account $78
+  D1 first hour, every day       10 MNQ: paid within 60 days   0% (avg payout $0) · blown before a payout 100% · paid per funded account $0
+  D2 straight first hour only     1 MNQ: paid within 60 days   5% (avg payout $1500) · blown before a payout  38% · paid per funded account $78
+  D2 straight first hour only     2 MNQ: paid within 60 days   9% (avg payout $1529) · blown before a payout  81% · paid per funded account $153
+  D2 straight first hour only     4 MNQ: paid within 60 days   4% (avg payout $1560) · blown before a payout  94% · paid per funded account $85
+  D2 straight first hour only    10 MNQ: paid within 60 days   0% (avg payout $1500) · blown before a payout 100% · paid per funded account $1
+
+FUNDED apex_eod_50k (payout_sim.hpp rules), same trade held to 15:55, 60 trading days:
+  D0 coin flip, every day         1 MNQ: paid within 60 days  20% (avg payout $1452) · blown before a payout  67% · paid per funded account $378
+  D0 coin flip, every day         2 MNQ: paid within 60 days  21% (avg payout $1704) · blown before a payout  79% · paid per funded account $543
+  D0 coin flip, every day         4 MNQ: paid within 60 days  15% (avg payout $1937) · blown before a payout  85% · paid per funded account $426
+  D0 coin flip, every day        10 MNQ: paid within 60 days   8% (avg payout $1998) · blown before a payout  92% · paid per funded account $237
+  D1 first hour, every day        1 MNQ: paid within 60 days  28% (avg payout $1441) · blown before a payout  55% · paid per funded account $530
+  D1 first hour, every day        2 MNQ: paid within 60 days  27% (avg payout $1707) · blown before a payout  72% · paid per funded account $727
+  D1 first hour, every day        4 MNQ: paid within 60 days  17% (avg payout $1933) · blown before a payout  83% · paid per funded account $513
+  D1 first hour, every day       10 MNQ: paid within 60 days   9% (avg payout $2000) · blown before a payout  90% · paid per funded account $307
+  D2 straight first hour only     1 MNQ: paid within 60 days  10% (avg payout $1412) · blown before a payout  29% · paid per funded account $136
+  D2 straight first hour only     2 MNQ: paid within 60 days  26% (avg payout $1693) · blown before a payout  61% · paid per funded account $496
+  D2 straight first hour only     4 MNQ: paid within 60 days  18% (avg payout $1942) · blown before a payout  80% · paid per funded account $442
+  D2 straight first hour only    10 MNQ: paid within 60 days  11% (avg payout $2000) · blown before a payout  88% · paid per funded account $299
+
+FUNDED apex_intraday_50k (payout_sim.hpp rules), same trade held to 15:55, 60 trading days:
+  D0 coin flip, every day         1 MNQ: paid within 60 days  20% (avg payout $1446) · blown before a payout  73% · paid per funded account $394
+  D0 coin flip, every day         2 MNQ: paid within 60 days  14% (avg payout $1669) · blown before a payout  86% · paid per funded account $371
+  D0 coin flip, every day         4 MNQ: paid within 60 days   4% (avg payout $1921) · blown before a payout  96% · paid per funded account $113
+  D0 coin flip, every day        10 MNQ: paid within 60 days   0% (avg payout $2000) · blown before a payout 100% · paid per funded account $5
+  D1 first hour, every day        1 MNQ: paid within 60 days  27% (avg payout $1434) · blown before a payout  64% · paid per funded account $516
+  D1 first hour, every day        2 MNQ: paid within 60 days  21% (avg payout $1685) · blown before a payout  79% · paid per funded account $558
+  D1 first hour, every day        4 MNQ: paid within 60 days   7% (avg payout $1877) · blown before a payout  93% · paid per funded account $190
+  D1 first hour, every day       10 MNQ: paid within 60 days   0% (avg payout $2000) · blown before a payout 100% · paid per funded account $2
+  D2 straight first hour only     1 MNQ: paid within 60 days  11% (avg payout $1405) · blown before a payout  36% · paid per funded account $160
+  D2 straight first hour only     2 MNQ: paid within 60 days  17% (avg payout $1661) · blown before a payout  77% · paid per funded account $346
+  D2 straight first hour only     4 MNQ: paid within 60 days   7% (avg payout $1906) · blown before a payout  93% · paid per funded account $175
+  D2 straight first hour only    10 MNQ: paid within 60 days   0% (avg payout $2000) · blown before a payout 100% · paid per funded account $2
+
+FUNDED mff_rapid_50k (payout_sim.hpp rules), same trade held to 15:55, 60 trading days:
+  D0 coin flip, every day         1 MNQ: paid within 60 days  21% (avg payout $709) · blown before a payout  73% · paid per funded account $392
+  D0 coin flip, every day         2 MNQ: paid within 60 days  15% (avg payout $932) · blown before a payout  85% · paid per funded account $450
+  D0 coin flip, every day         4 MNQ: paid within 60 days   7% (avg payout $1170) · blown before a payout  93% · paid per funded account $232
+  D0 coin flip, every day        10 MNQ: paid within 60 days   0% (avg payout $1631) · blown before a payout 100% · paid per funded account $9
+  D1 first hour, every day        1 MNQ: paid within 60 days  27% (avg payout $722) · blown before a payout  63% · paid per funded account $451
+  D1 first hour, every day        2 MNQ: paid within 60 days  23% (avg payout $897) · blown before a payout  77% · paid per funded account $725
+  D1 first hour, every day        4 MNQ: paid within 60 days  11% (avg payout $1154) · blown before a payout  89% · paid per funded account $299
+  D1 first hour, every day       10 MNQ: paid within 60 days   0% (avg payout $1496) · blown before a payout 100% · paid per funded account $9
+  D2 straight first hour only     1 MNQ: paid within 60 days  13% (avg payout $719) · blown before a payout  36% · paid per funded account $125
+  D2 straight first hour only     2 MNQ: paid within 60 days  22% (avg payout $1002) · blown before a payout  74% · paid per funded account $543
+  D2 straight first hour only     4 MNQ: paid within 60 days  10% (avg payout $1294) · blown before a payout  90% · paid per funded account $368
+  D2 straight first hour only    10 MNQ: paid within 60 days   0% (avg payout $1659) · blown before a payout 100% · paid per funded account $5
+
+FUNDED lucid_flex_50k (payout_sim.hpp rules), same trade held to 15:55, 60 trading days:
+  D0 coin flip, every day         1 MNQ: paid within 60 days  55% (avg payout $561) · blown before a payout  44% · paid per funded account $723
+  D0 coin flip, every day         2 MNQ: paid within 60 days  38% (avg payout $950) · blown before a payout  62% · paid per funded account $723
+  D0 coin flip, every day         4 MNQ: paid within 60 days  20% (avg payout $1597) · blown before a payout  80% · paid per funded account $662
+  D0 coin flip, every day        10 MNQ: paid within 60 days   9% (avg payout $1976) · blown before a payout  91% · paid per funded account $454
+  D1 first hour, every day        1 MNQ: paid within 60 days  70% (avg payout $535) · blown before a payout  29% · paid per funded account $877
+  D1 first hour, every day        2 MNQ: paid within 60 days  47% (avg payout $958) · blown before a payout  53% · paid per funded account $964
+  D1 first hour, every day        4 MNQ: paid within 60 days  23% (avg payout $1660) · blown before a payout  77% · paid per funded account $842
+  D1 first hour, every day       10 MNQ: paid within 60 days  12% (avg payout $1984) · blown before a payout  88% · paid per funded account $621
+  D2 straight first hour only     1 MNQ: paid within 60 days  61% (avg payout $528) · blown before a payout  23% · paid per funded account $424
+  D2 straight first hour only     2 MNQ: paid within 60 days  52% (avg payout $937) · blown before a payout  47% · paid per funded account $757
+  D2 straight first hour only     4 MNQ: paid within 60 days  24% (avg payout $1691) · blown before a payout  76% · paid per funded account $649
+  D2 straight first hour only    10 MNQ: paid within 60 days  13% (avg payout $1992) · blown before a payout  87% · paid per funded account $456
+
+FUNDED topstep_50k (payout_sim.hpp rules), same trade held to 15:55, 60 trading days:
+  D0 coin flip, every day         1 MNQ: paid within 60 days  59% (avg payout $481) · blown before a payout  40% · paid per funded account $718
+  D0 coin flip, every day         2 MNQ: paid within 60 days  37% (avg payout $919) · blown before a payout  63% · paid per funded account $692
+  D0 coin flip, every day         4 MNQ: paid within 60 days  17% (avg payout $1832) · blown before a payout  83% · paid per funded account $597
+  D0 coin flip, every day        10 MNQ: paid within 60 days   5% (avg payout $4176) · blown before a payout  95% · paid per funded account $312
+  D1 first hour, every day        1 MNQ: paid within 60 days  73% (avg payout $475) · blown before a payout  27% · paid per funded account $862
+  D1 first hour, every day        2 MNQ: paid within 60 days  48% (avg payout $854) · blown before a payout  52% · paid per funded account $837
+  D1 first hour, every day        4 MNQ: paid within 60 days  21% (avg payout $1866) · blown before a payout  79% · paid per funded account $779
+  D1 first hour, every day       10 MNQ: paid within 60 days   5% (avg payout $4280) · blown before a payout  95% · paid per funded account $393
+  D2 straight first hour only     1 MNQ: paid within 60 days  70% (avg payout $439) · blown before a payout  21% · paid per funded account $419
+  D2 straight first hour only     2 MNQ: paid within 60 days  51% (avg payout $888) · blown before a payout  49% · paid per funded account $717
+  D2 straight first hour only     4 MNQ: paid within 60 days  21% (avg payout $2146) · blown before a payout  79% · paid per funded account $666
+  D2 straight first hour only    10 MNQ: paid within 60 days   6% (avg payout $4535) · blown before a payout  94% · paid per funded account $284

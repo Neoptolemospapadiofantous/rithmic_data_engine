@@ -141,6 +141,8 @@ public:
     int last_status() const { return last_status_; }
     const std::string& last_error() const { return last_error_; }
     int64_t calls() const { return calls_; }
+    int timeout_ms() const { return timeout_ms_; }
+    void set_timeout_ms(int ms) { timeout_ms_ = ms; }
 
 private:
     std::optional<nlohmann::json> get(const std::string& target, bool auth) {

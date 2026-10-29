@@ -1,0 +1,25 @@
+NQ 2014-01-02 → 2026-10-15, 2984 sessions, 1 MNQ at today's price ($2.0/pt × 29800/price). FLAG = BOOK2 NQ (3239 trades); CASCADE = edge_lab so_cascade (2275 trades, its own 1-pt cost); HEDGE = long + short at 09:30, 50-pt stop each, flat 15:55, 0.5 pt cost.
+Eval model: Select-50K-like — target $3,000, EOD trailing $2,000, daily loss $1,000 (day P&L capped), best day ≤ 40 %, fee $165, start every 3rd session, 120-day cap.
+
+strategy               days/yr   $/year Sharpe   max DD  worst d |  pass   days fee/pass
+FLAG book (NQ)            137    6,324   1.01    8,050   -1,220 |    25%     52      651
+CASCADE                   192    4,518   0.94   11,524     -980 |    43%     56      385
+HEDGE long leg            252    2,417   0.50    7,583     -109 |    18%     65      906
+HEDGE short leg           252      495   0.11   19,439     -109 |    19%     53      852
+HEDGE pair (2 accts)      252    2,913   0.47   11,963     -217 |    23%     48      703
+FLAG+CASCADE              207   10,842   1.15   12,024   -1,763 |    29%     33      575
+
+daily P&L correlation (0 on days a strategy is flat)
+                       FLAG book (NQ)        CASCADE HEDGE long leg HEDGE short le
+FLAG book (NQ)                   1.00           0.45           0.28           0.21
+CASCADE                          0.45           1.00           0.26           0.31
+HEDGE long leg                   0.28           0.26           1.00          -0.13
+HEDGE short leg                  0.21           0.31          -0.13           1.00
+
+$/year by half:
+  FLAG book (NQ)         2014-19 $   2,548   2020-26 $   8,764
+  CASCADE                2014-19 $   1,265   2020-26 $   6,751
+  HEDGE long leg         2014-19 $   1,608   2020-26 $   2,790
+  HEDGE short leg        2014-19 $    -334   2020-26 $   1,157
+  HEDGE pair (2 accts)   2014-19 $   1,274   2020-26 $   3,947
+  FLAG+CASCADE           2014-19 $   3,813   2020-26 $  15,515

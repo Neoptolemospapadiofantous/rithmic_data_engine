@@ -1,0 +1,48 @@
+== base
+select_flex_50k, daily stop $150	 → $ 3428 ($ 3337 / $ 3527) · cost $ 3187 · pass  54%
+select_daily_50k, daily stop $150	 → $ 4577 ($ 4169 / $ 5022) · cost $ 4100 · pass  54%
+apex_eod_50k, daily stop $150	 → $ 2681 ($ 2484 / $ 2897) · cost $ 2440 · pass  78%
+select_flex_50k, daily stop $200	 → $ 3821 ($ 3663 / $ 3993) · cost $ 3574 · pass  54%
+select_daily_50k, daily stop $200	 → $ 4738 ($ 4429 / $ 5076) · cost $ 4130 · pass  54%
+apex_eod_50k, daily stop $200	 → $ 2640 ($ 2603 / $ 2679) · cost $ 2346 · pass  73%
+ADOPTED (better than FIXED2 at both stops, all three plans, both halves, with cost): RISK$ $40 a trade no · RISK$ $60 a trade no · RISK$ $80 a trade no · CUSHION 1 → 2 at +$500 no · CUSHION 1 → 2 at +$1,000 no · GRADE A 2 / B 1 no ·	
+  BY MARKET × HALF (avg R, trades) 2014-19 / 2020-26: NQ +0.279 (1578) / +0.261 (1661) · ES +0.161 (1515) / +0.173 (1537)
+  TRADES: 6291 (2.44 a day) · win 31.8% · avg +0.220R
+  ACCOUNT EV select_daily_50k 5/25/50/75/95%: $ 2846 / $ 3831 / $ 4593 / $ 5265 / $ 6694 per eval bought
+  ACCOUNT EV apex_eod_50k 5/25/50/75/95%: $ 1819 / $ 2401 / $ 2772 / $ 3006 / $ 3574 per eval bought
+== T1break
+select_flex_50k, daily stop $150	 → $ 4297 ($ 4322 / $ 4270) · cost $ 4066 · pass  60%
+select_daily_50k, daily stop $150	 → $ 5956 ($ 5780 / $ 6148) · cost $ 5588 · pass  60%
+apex_eod_50k, daily stop $150	 → $ 3217 ($ 3364 / $ 3056) · cost $ 3078 · pass  81%
+select_flex_50k, daily stop $200	 → $ 4821 ($ 4703 / $ 4950) · cost $ 4547 · pass  59%
+select_daily_50k, daily stop $200	 → $ 6283 ($ 6187 / $ 6388) · cost $ 5713 · pass  59%
+apex_eod_50k, daily stop $200	 → $ 3160 ($ 2945 / $ 3395) · cost $ 2955 · pass  77%
+ADOPTED (better than FIXED2 at both stops, all three plans, both halves, with cost): RISK$ $40 a trade no · RISK$ $60 a trade no · RISK$ $80 a trade no · CUSHION 1 → 2 at +$500 no · CUSHION 1 → 2 at +$1,000 no · GRADE A 2 / B 1 no ·	
+  BY MARKET × HALF (avg R, trades) 2014-19 / 2020-26: NQ +0.253 (1742) / +0.235 (1881) · ES +0.137 (1675) / +0.175 (1770)
+  TRADES: 7068 (2.74 a day) · win 34.3% · avg +0.201R
+  ACCOUNT EV select_daily_50k 5/25/50/75/95%: $ 4106 / $ 5182 / $ 6066 / $ 7163 / $ 8711 per eval bought
+  ACCOUNT EV apex_eod_50k 5/25/50/75/95%: $ 2240 / $ 2898 / $ 3215 / $ 3586 / $ 4107 per eval bought
+== T4tf3
+select_flex_50k, daily stop $150	 → $ 4132 ($ 4291 / $ 3958) · cost $ 3515 · pass  63%
+select_daily_50k, daily stop $150	 → $ 5029 ($ 4902 / $ 5168) · cost $ 4117 · pass  63%
+apex_eod_50k, daily stop $150	 → $ 3230 ($ 3313 / $ 3139) · cost $ 2806 · pass  81%
+select_flex_50k, daily stop $200	 → $ 4125 ($ 3677 / $ 4615) · cost $ 3584 · pass  63%
+select_daily_50k, daily stop $200	 → $ 5120 ($ 4130 / $ 6201) · cost $ 4505 · pass  63%
+apex_eod_50k, daily stop $200	 → $ 3070 ($ 2844 / $ 3317) · cost $ 2808 · pass  77%
+ADOPTED (better than FIXED2 at both stops, all three plans, both halves, with cost): RISK$ $40 a trade no · RISK$ $60 a trade no · RISK$ $80 a trade no · CUSHION 1 → 2 at +$500 no · CUSHION 1 → 2 at +$1,000 no · GRADE A 2 / B 1 no ·	
+  BY MARKET × HALF (avg R, trades) 2014-19 / 2020-26: NQ +0.242 (1931) / +0.226 (2041) · ES +0.112 (1865) / +0.166 (1914)
+  TRADES: 7751 (3.00 a day) · win 30.3% · avg +0.188R
+  ACCOUNT EV select_daily_50k 5/25/50/75/95%: $ 3829 / $ 5136 / $ 6071 / $ 6941 / $ 8105 per eval bought
+  ACCOUNT EV apex_eod_50k 5/25/50/75/95%: $ 2477 / $ 2916 / $ 3309 / $ 3615 / $ 4204 per eval bought
+== T14
+select_flex_50k, daily stop $150	 → $ 4546 ($ 5224 / $ 3807) · cost $ 4158 · pass  65%
+select_daily_50k, daily stop $150	 → $ 6098 ($ 6376 / $ 5795) · cost $ 5356 · pass  65%
+apex_eod_50k, daily stop $150	 → $ 3755 ($ 4236 / $ 3229) · cost $ 3393 · pass  86%
+select_flex_50k, daily stop $200	 → $ 4636 ($ 4520 / $ 4763) · cost $ 4030 · pass  65%
+select_daily_50k, daily stop $200	 → $ 6238 ($ 5666 / $ 6863) · cost $ 5136 · pass  65%
+apex_eod_50k, daily stop $200	 → $ 3552 ($ 3574 / $ 3527) · cost $ 3026 · pass  81%
+ADOPTED (better than FIXED2 at both stops, all three plans, both halves, with cost): RISK$ $40 a trade no · RISK$ $60 a trade no · RISK$ $80 a trade no · CUSHION 1 → 2 at +$500 no · CUSHION 1 → 2 at +$1,000 no · GRADE A 2 / B 1 no ·	
+  BY MARKET × HALF (avg R, trades) 2014-19 / 2020-26: NQ +0.232 (2046) / +0.213 (2210) · ES +0.100 (1995) / +0.161 (2095)
+  TRADES: 8346 (3.23 a day) · win 32.0% · avg +0.178R
+  ACCOUNT EV select_daily_50k 5/25/50/75/95%: $ 5131 / $ 6318 / $ 7288 / $ 8559 / $ 9873 per eval bought
+  ACCOUNT EV apex_eod_50k 5/25/50/75/95%: $ 2988 / $ 3414 / $ 3797 / $ 4108 / $ 4749 per eval bought

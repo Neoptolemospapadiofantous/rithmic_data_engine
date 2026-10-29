@@ -1,0 +1,46 @@
+{
+ "id": "nf_bkv_thin_so_v2",
+ "name": "Strong-open follow only when the resting book is thin (depth 15m <= d x 90m)",
+ "why": "A thin resting book lets an institutional move extend; depth within 10 bp is the measure. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "k1": [
+   0.2,
+   0.25
+  ],
+  "k2": [
+   0.25,
+   0.3
+  ],
+  "d": [
+   0.7,
+   0.85
+  ],
+  "stopk": [
+   0.25,
+   0.35
+  ]
+ },
+ "checks": [
+  {
+   "at": "09:50",
+   "when": "flow && (abs(px-open) > k1*atr) && ((bkrel(bidq,15) + bkrel(askq,15))/2 <= d)",
+   "dir": "sign(px-open)"
+  },
+  {
+   "at": "10:30",
+   "when": "flow && (abs(px-open) > k2*atr) && ((bkrel(bidq,15) + bkrel(askq,15))/2 <= d)",
+   "dir": "sign(px-open)"
+  }
+ ],
+ "stop": "stopk*atr",
+ "target": "2",
+ "from": "2023-03-01",
+ "train_months": 6
+}

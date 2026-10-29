@@ -1,0 +1,24 @@
+DAILY|COMBO|conc2|q1|stop500|extreme|sessions 2581|mean 47.7|sd 492.2|winning_days 27.7%
+ACCT|COMBO|conc2|q1|stop500|extreme|total 123146|dd_eod 6695|dd_intraday 6814|worst_month -3087|losing_months 59/147|traded_days 2031
+PLAN|COMBO|conc2|q1|stop500|extreme|select_daily_50k|ev 1092|h1 1319|h2 845|pass 31|paid 16|days_pass 31|days_first_pay 54
+PLAN|COMBO|conc2|q1|stop500|extreme|apex_eod_50k|ev 828|h1 1112|h2 519|pass 53|paid 24|days_pass 23|days_first_pay 65
+PLAN|COMBO|conc2|q1|stop500|extreme|builder_50k|ev 823|h1 1111|h2 510|pass 53|paid 24|days_pass 23|days_first_pay 64
+PLAN|COMBO|conc2|q1|stop500|extreme|topstep_50k|ev 1244|h1 1428|h2 1042|pass 43|paid 28|days_pass 28|days_first_pay 47
+PLAN|COMBO|conc2|q1|stop500|extreme|mff_rapid_eod_50k|ev 814|h1 1178|h2 417|pass 16|paid 11|days_pass 39|days_first_pay 68
+PLAN|COMBO|conc2|q1|stop500|extreme|lucid_flex_50k|ev 1122|h1 1268|h2 963|pass 43|paid 27|days_pass 28|days_first_pay 47
+PLAN|COMBO|conc2|q1|stop500|extreme|select_daily_100k|ev 910|h1 1190|h2 605|pass 23|paid 15|days_pass 43|days_first_pay 71
+PLAN|COMBO|conc2|q1|stop500|extreme|select_daily_150k|ev 207|h1 388|h2 10|pass 4|paid 4|days_pass 51|days_first_pay 85
+PLAN|COMBO|conc2|q1|stop500|extreme|select_flex_100k|ev 969|h1 1195|h2 723|pass 24|paid 19|days_pass 44|days_first_pay 64
+PLAN|COMBO|conc2|q1|stop500|extreme|select_flex_150k|ev 222|h1 395|h2 32|pass 4|paid 4|days_pass 51|days_first_pay 69
+DAILY|COMBO|conc2|q1|stop500|close|sessions 2581|mean 48.2|sd 491.9|winning_days 27.7%
+ACCT|COMBO|conc2|q1|stop500|close|total 124522|dd_eod 6297|dd_intraday 6414|worst_month -3087|losing_months 59/147|traded_days 2031
+PLAN|COMBO|conc2|q1|stop500|close|select_daily_50k|ev 1092|h1 1319|h2 845|pass 31|paid 16|days_pass 31|days_first_pay 54
+PLAN|COMBO|conc2|q1|stop500|close|apex_eod_50k|ev 837|h1 1128|h2 519|pass 53|paid 24|days_pass 23|days_first_pay 65
+PLAN|COMBO|conc2|q1|stop500|close|builder_50k|ev 832|h1 1127|h2 510|pass 53|paid 24|days_pass 23|days_first_pay 64
+PLAN|COMBO|conc2|q1|stop500|close|topstep_50k|ev 1264|h1 1434|h2 1078|pass 43|paid 28|days_pass 28|days_first_pay 47
+PLAN|COMBO|conc2|q1|stop500|close|mff_rapid_eod_50k|ev 814|h1 1178|h2 417|pass 16|paid 11|days_pass 39|days_first_pay 68
+PLAN|COMBO|conc2|q1|stop500|close|lucid_flex_50k|ev 1122|h1 1268|h2 963|pass 43|paid 27|days_pass 28|days_first_pay 47
+PLAN|COMBO|conc2|q1|stop500|close|select_daily_100k|ev 940|h1 1247|h2 605|pass 24|paid 16|days_pass 43|days_first_pay 69
+PLAN|COMBO|conc2|q1|stop500|close|select_daily_150k|ev 207|h1 388|h2 10|pass 4|paid 4|days_pass 51|days_first_pay 85
+PLAN|COMBO|conc2|q1|stop500|close|select_flex_100k|ev 969|h1 1195|h2 723|pass 24|paid 19|days_pass 44|days_first_pay 64
+PLAN|COMBO|conc2|q1|stop500|close|select_flex_150k|ev 222|h1 395|h2 33|pass 4|paid 4|days_pass 51|days_first_pay 69

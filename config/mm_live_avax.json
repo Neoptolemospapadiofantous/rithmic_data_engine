@@ -34,7 +34,10 @@
     "strategy": {
       "pause_move_ticks": 1,
       "pause_ms": 4000,
-      "min_spread_ticks": 5
+      "min_spread_ticks": 5,
+      "bn_pull_w_ms": 500,
+      "bn_pull_x_bps": 4,
+      "bn_pull_hold_ms": 1000
     }
   }
 }

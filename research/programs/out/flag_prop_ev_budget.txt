@@ -1,0 +1,18 @@
+Four evals with a $300 budget — BOOK2, funded at 2 micros each market, daily stop $200. Every historical first-purchase day (every 5th trading day 2014-01 → 2025-03).
+Total payouts = everything the 4 accounts pay over their 120 funded days; 'any payout by N months' counts from the first purchase. $ before the trader's split.
+
+  select_daily_50k, eval 2 micros, 4 evals ALL ON THE SAME DAY:
+    any payout by 2 / 3 / 6 months:  17% /  36% /  44% · accounts paid out of 4: 1.8 on average
+    total payouts from the 4: mean $19113 · median $    0 · 25th pct $    0 · 75th pct $41749 · $0 in  56% of cases · >= $300 back in  44%
+
+  select_daily_50k, eval 2 micros, 4 evals ONE A WEEK:
+    any payout by 2 / 3 / 6 months:  20% /  42% /  58% · accounts paid out of 4: 1.8 on average
+    total payouts from the 4: mean $18870 · median $ 3986 · 25th pct $    0 · 75th pct $36241 · $0 in  42% of cases · >= $300 back in  58%
+
+  apex_eod_50k, eval 3 micros, 4 evals ALL ON THE SAME DAY:
+    any payout by 2 / 3 / 6 months:  23% /  45% /  56% · accounts paid out of 4: 2.2 on average
+    total payouts from the 4: mean $10667 · median $ 8000 · 25th pct $    0 · 75th pct $22079 · $0 in  44% of cases · >= $300 back in  56%
+
+  apex_eod_50k, eval 3 micros, 4 evals ONE A WEEK:
+    any payout by 2 / 3 / 6 months:  25% /  53% /  68% · accounts paid out of 4: 2.2 on average
+    total payouts from the 4: mean $10576 · median $ 8000 · 25th pct $    0 · 75th pct $18000 · $0 in  31% of cases · >= $300 back in  69%

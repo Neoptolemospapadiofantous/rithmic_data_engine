@@ -1,0 +1,77 @@
+NQ: 3239 qualifying, 3239 taken under 2-open
+ES: 3081 qualifying, 3081 taken under 2-open
+
+== D1 day clustering (mean net R, naive vs day-clustered SE)
+set           n    meanR  SE_naive  SE_clust t_naive t_clust   design   effN
+NQ         3239   0.1810    0.0384    0.0509    4.72    3.55     1.76   1838
+ES         3081   0.0934    0.0384    0.0497    2.43    1.88     1.68   1838
+pooled     6320   0.1383    0.0271    0.0439    5.10    3.15     2.62   2415
+NQ14-19    1578   0.1118    0.0559    0.0746    2.00    1.50     1.78    887
+NQ20-26    1661   0.2468    0.0527    0.0696    4.68    3.55     1.75    952
+
+== D2 NQ vs ES daily book P&L
+ days both traded: 1155  Pearson 0.615 (p 1.48e-154)  Spearman 0.561 | all NY days (2986, 0 when flat): Pearson 0.534  Spearman 0.415
+ lower tail: P(ES<0 | NQ<0) = 0.831 vs P(ES<0) = 0.618 (n=1155)  | same-day NQ×ES trade pairs on the same side: 95.8% of 5126
+
+== D3 trade k given sign of trade k-1 (same market, same day) — ALL consecutive pairs vs CAUSAL pairs (k-1 exited before k entered)
+ same-day consecutive pairs 3153, overlapping in time 2513 (80%)
+ ALL    NQ all      after loss: mean R -0.7117 (n 1095)  after win: +2.1520 (n  523)  diff -2.8636  perm p 0.067
+ ALL    NQ 2014-19  after loss: mean R -0.8081 (n  539)  after win: +2.1720 (n  252)  diff -2.9801  perm p 0.072
+ ALL    NQ 2020-26  after loss: mean R -0.6182 (n  556)  after win: +2.1333 (n  271)  diff -2.7515  perm p 0.263
+ ALL    ES all      after loss: mean R -0.7264 (n 1047)  after win: +1.8699 (n  488)  diff -2.5963  perm p 0.013
+ ALL    ES 2014-19  after loss: mean R -0.7811 (n  536)  after win: +1.8177 (n  250)  diff -2.5988  perm p 0.037
+ ALL    ES 2020-26  after loss: mean R -0.6689 (n  511)  after win: +1.9247 (n  238)  diff -2.5936  perm p 0.072
+ CAUSAL NQ all      after loss: mean R +0.0812 (n  276)  after win: +0.2179 (n   44)  diff -0.1367  perm p 0.700
+ CAUSAL NQ 2014-19  after loss: mean R -0.1676 (n  132)  after win: +0.3875 (n   21)  diff -0.5550  perm p 0.245
+ CAUSAL NQ 2020-26  after loss: mean R +0.3092 (n  144)  after win: +0.0630 (n   23)  diff +0.2462  perm p 0.634
+ CAUSAL ES all      after loss: mean R +0.2165 (n  257)  after win: -0.1933 (n   63)  diff +0.4098  perm p 0.221
+ CAUSAL ES 2014-19  after loss: mean R +0.1020 (n  135)  after win: -0.1785 (n   37)  diff +0.2805  perm p 0.484
+ CAUSAL ES 2020-26  after loss: mean R +0.3432 (n  122)  after win: -0.2143 (n   26)  diff +0.5575  perm p 0.319
+
+== D4 pooled daily P&L memory (2986 NY days, 0 when flat)
+ ACF: lag1 -0.037 lag2 +0.002 lag3 -0.025 lag4 +0.017 lag5 -0.013
+ Ljung-Box Q(5) = 7.43  p = 0.1908 | runs test (non-zero days 2006: 931 runs, expected 905) z = +1.28 p = 0.199 | variance ratio VR(5) = 0.932 (1 = no memory, >1 trending, <1 mean-reverting)
+
+== D5 12-month max drawdown, R units at 1 unit a trade (2000 paths)
+resampling       median      p95     mean
+iid days          56.10   113.37    62.06
+blocks of 5       55.48   110.69    61.20
+blocks of 20      56.81   111.20    61.66
+
+== D6 stability in time
+ year   NQ n  meanR   ES n  meanR
+ 2014   254 +0.1804   236 +0.1795 +
+ 2015   211 +0.2039   255 -0.0332 +
+ 2016   304 -0.0648   252 -0.0304 -
+ 2017   264 +0.1680   252 +0.1650 +
+ 2018   275 +0.3076   290 +0.0070 +
+ 2019   270 -0.0804   259 -0.1260 -
+ 2020   243 +0.3362   231 -0.0811 +
+ 2021   263 +0.3349   235 +0.2102 +
+ 2022   276 +0.2855   254 +0.2787 +
+ 2023   281 +0.2836   260 +0.1381 +
+ 2024   267 +0.2743   242 +0.2922 +
+ 2025   253 +0.0325   254 +0.1662 +
+ 2026    78 +0.0026    61 +0.0053 +
+ positive years 11 of 13, binomial P(>= 11 | p=0.5) = 0.011
+ Spearman(net R, trade order) = +0.3512  p = 0.000
+ 2014-19 mean R +0.0684 (n 3122)  2020-26 +0.2065 (n 3198)  difference +0.1381  z (clustered) +1.57  p = 0.116
+
+== D7 by VIX tercile (prior close; cuts 14.2 / 18.7)
+ tercile    days trd/day NQ meanR ES meanR     corr P(both<0)
+ low         668    3.14  +0.1357  -0.0208    0.634    0.842
+ mid         665    3.21  +0.2118  +0.0956    0.586    0.845
+ high        673    3.09  +0.1957  +0.2083    0.629    0.810
+
+== D7 by ATR14 tercile (prior close; cuts 67.8 / 204.9)
+ tercile    days trd/day NQ meanR ES meanR     corr P(both<0)
+ low         666    3.18  +0.0977  +0.0100    0.615    0.838
+ mid         666    3.16  +0.2053  +0.1477    0.650    0.837
+ high        666    3.11  +0.2399  +0.1301    0.563    0.820
+
+== judged p-values (raw → Holm-adjusted over 5 tests)
+ D3 causal NQ     0.6997 → 0.6997 
+ D3 causal ES     0.2209 → 0.5724 
+ D4 Ljung-Box     0.1908 → 0.5724 
+ D6 trend         0.0000 → 0.0000 SIGNIFICANT
+ D6 split         0.1158 → 0.4634 

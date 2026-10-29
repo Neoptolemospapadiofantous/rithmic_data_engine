@@ -1,0 +1,33 @@
+{
+ "id": "nf_bkv_thin_gor",
+ "name": "gap_or_retest only when the resting book is thin at the retest",
+ "why": "The retest holds when the book on the other side is thin. Pre-registered 2026-10-28 (research/preregistered/2026-10-28_new_families.md).",
+ "symbol": "NQ",
+ "confirm": "ES",
+ "to": "2024-12-31",
+ "flat": "15:55",
+ "min_trades": 60,
+ "control_pct": 0.99,
+ "control_seeds": 400,
+ "params": {
+  "d": [
+   0.7,
+   0.85
+  ],
+  "stopk": [
+   0.35
+  ]
+ },
+ "scan": {
+  "tf": 5,
+  "from": "10:35",
+  "to": "14:00",
+  "when": "!rollwin && abs(gap) >= 0.1 && ((sign(gap) > 0 && lo(5,1) <= rhi(15) && cl(5,1) > rhi(15)) || (sign(gap) < 0 && hi(5,1) >= rlo(15) && cl(5,1) < rlo(15))) && flow && (bk(bidq,15)+bk(askq,15)) <= d*(bk(bidq,60)+bk(askq,60))",
+  "dir": "sign(gap)"
+ },
+ "max_trades": 1,
+ "stop": "stopk*atr",
+ "target": "2",
+ "from": "2023-03-01",
+ "train_months": 6
+}
