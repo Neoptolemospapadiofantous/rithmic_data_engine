@@ -265,6 +265,43 @@ TEST(paper_shares_one_request_limit_across_markets) {
     ASSERT(on.max_wait_ms > 1000 && on.max_wait_ms <= 60'000);   // … for up to one window
 }
 
+// mm_paper --venue extended (2026-10-29): one market's own stream reconnecting pulls THAT market's quotes at once and
+// leaves the others quoting; the halt lifts on the next tick after the link is back. Lighter never calls set_link.
+TEST(portfolio_link_down_pulls_one_market_only) {
+    mmpaper::Portfolio pf(cfg());
+    std::vector<std::string> kinds;
+    pf.on_event([&](int64_t, const std::string& k, const std::string&, const std::string&) { kinds.push_back(k); });
+    pf.book("AAVE", bk(D1 + 1000, 100, 101));
+    pf.book("AVAX", bk(D1 + 1000, 20, 20.1));
+    pf.tick(D1 + 1000, false);
+    auto reason = [&](const std::string& m) { return pf.quote_state(m).bid_reason; };
+    ASSERT(reason("AAVE") == hl::Quoting && reason("AVAX") == hl::Quoting);
+    pf.set_link("AAVE", false, D1 + 1100, "book: closed");
+    ASSERT(pf.link_down("AAVE") && !pf.link_down("AVAX"));
+    ASSERT(reason("AAVE") == hl::Halted);                        // pulled immediately, not at the next tick
+    ASSERT(reason("AVAX") == hl::Quoting);
+    pf.book("AAVE", bk(D1 + 1150, 100, 101));                   // its cancel lands at the next event (latency 0)
+    ASSERT_EQ(pf.quote_state("AAVE").bid_px, 0.0);
+    pf.tick(D1 + 1200, false);
+    ASSERT(reason("AAVE") == hl::Halted);                        // the tick keeps it pulled while the link is down
+    pf.set_link("AAVE", false, D1 + 1250, "again");             // no change: no second event
+    pf.set_link("AAVE", true, D1 + 1300);
+    ASSERT(!pf.link_down("AAVE"));
+    pf.book("AAVE", bk(D1 + 1300, 100, 101));                   // the fresh snapshot …
+    ASSERT(reason("AAVE") == hl::Halted);                        // … but the halt lifts only at the next tick
+    pf.tick(D1 + 1400, false);
+    ASSERT(reason("AAVE") == hl::Quoting);                       // quoting again
+    pf.book("AAVE", bk(D1 + 1450, 100, 101));
+    ASSERT(pf.quote_state("AAVE").bid_px > 0);
+    ASSERT_EQ(std::count(kinds.begin(), kinds.end(), std::string("link_down")), 1);
+    ASSERT_EQ(std::count(kinds.begin(), kinds.end(), std::string("link_up")), 1);
+    // a market whose link is down before its first book never quotes on it
+    pf.set_link("DOT", false, D1 + 1500, "starting");
+    pf.book("DOT", bk(D1 + 1500, 3, 3.01));
+    ASSERT(reason("DOT") == hl::Halted);
+    ASSERT_EQ(pf.quote_state("DOT").bid_px, 0.0);
+}
+
 // Default since 2026-10-26: no flatten at 00:00 UTC — the position and cash carry over, the daily row is the day's
 // mark-to-market P&L (equity at the roll − equity at the previous roll), fills / volume restart per day.
 TEST(portfolio_carries_inventory_across_the_day_roll) {
@@ -945,6 +982,7 @@ int main() {
     RUN(quote_rows_own_queue_sheds_oldest_and_counts);
     RUN(run_batch_reports_on_conflict_no_rows);
     RUN(status_publishes_the_engine_params);
+    RUN(portfolio_link_down_pulls_one_market_only);
     std::cout << "\n" << (tests_run - tests_failed) << "/" << tests_run << " passed\n";
     return tests_failed ? 1 : 0;
 }

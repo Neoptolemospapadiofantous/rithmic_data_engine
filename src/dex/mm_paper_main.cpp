@@ -31,6 +31,16 @@
 //   status.json lighter_skew_ms_p50 (top level) and markets[].skew_ms_p50: Lighter book exchange time − local receive
 //                time, median over the last minute (mmpaper::SkewWindow).
 //
+// --venue lighter|extended (2026-10-29; default lighter, unchanged). extended = the same engine on Extended's public
+//   feed (label paper_ext, deploy/mm-paper-ext-local.service): one book + one publicTrades websocket per market
+//   (src/dex/extended_ws.hpp, the streams dex_recorder archives), converted to books/trades by venue_feeds.hpp exactly as
+//   hl_events.hpp replays that archive for scripts/mm_venues.sh (extended::book_event, 20 levels; each connection's
+//   first publicTrades message — a replay of recent trades — dropped). Price grid = minPriceChange, size grid =
+//   minOrderSizeChange with minOrderSize as the minimum (no minimum notional); maker 0 bps, taker 2.5 bps (flattens
+//   only). A market whose own book or trades stream is reconnecting is pulled on its own (event link_down/link_up);
+//   status.json gains venue, streams_up/streams_total and markets[].link_down. --hl-anchor and --bn-pull are refused
+//   (Lighter-only). lighter_skew_ms_p50 / skew_ms_p50 then measure Extended's exchange − receive time.
+//
 // --label names this instance in every table (column `label`, default 'paper'): the official engine runs as 'paper'
 // at 300 ms; a shadow at the delay a server in Lighter's region would have runs as 'paper_220' beside it, so the
 // value of the server is measured on the same live days instead of estimated from history (2026-10-25).
@@ -67,6 +77,7 @@
 //     for a test schema.
 
 #include "config.hpp"
+#include "dex/extended_ws.hpp"
 #include "dex/lighter_feed.hpp"
 #include "dex/lighter_ws.hpp"
 #include "dex/mm_paper.hpp"
@@ -521,6 +532,7 @@ int main(int argc, char** argv) {
     bnpull::Params bn_pull;                   // --bn-pull W,X,H (label paper_bn)
     double maker_fee_bps = -1;                // --maker-fee-bps: Lighter Premium shadow (Standard = 0, the frozen value)
     bool day_flatten = false;
+    std::string venue_name = "lighter";       // --venue lighter|extended (2026-10-29: the Extended paper engine, label paper_ext)
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
         auto val = [&]() -> std::string { return i + 1 < argc ? argv[++i] : ""; };
@@ -549,6 +561,7 @@ int main(int argc, char** argv) {
         else if (a == "--place-latency-ms") place_ms = std::atoll(val().c_str());
         else if (a == "--cancel-latency-ms") cancel_ms = std::atoll(val().c_str());
         else if (a == "--maker-fee-bps") maker_fee_bps = std::atof(val().c_str());
+        else if (a == "--venue") { venue_name = val(); if (venue_name != "lighter" && venue_name != "extended") { std::fprintf(stderr, "--venue lighter|extended\n"); return 2; } }
         else if (a == "--bn-pull") {
             long long w = 0, h = 0; double x = 0;
             if (std::sscanf(val().c_str(), "%lld,%lf,%lld", &w, &x, &h) != 3 || w < 100 || w > 10'000 || !(x >= 0.5 && x <= 100) || h < 0 || h > 60'000) {
@@ -557,11 +570,16 @@ int main(int argc, char** argv) {
             bn_pull.w_ms = w; bn_pull.x_bps = x; bn_pull.hold_ms = h;
         }
         else {
-            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K] [--bn-pull W,X,H] [--half-width-ticks N]\n");
+            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K] [--bn-pull W,X,H] [--venue lighter|extended] [--half-width-ticks N]\n");
             return 2;
         }
     }
+    const bool is_ext = venue_name == "extended";
     if (symbols.empty()) { std::fprintf(stderr, "--symbols is required\n"); return 2; }
+    // The Hyperliquid anchor and the Binance pull are wired to Lighter's feed and validated there only: refused, not
+    // silently ignored, on another venue.
+    if (is_ext && hl_anchor > 0) { std::fprintf(stderr, "--hl-anchor is Lighter-only (not available with --venue extended)\n"); return 2; }
+    if (is_ext && bn_pull.on()) { std::fprintf(stderr, "--bn-pull is Lighter-only (not available with --venue extended)\n"); return 2; }
     if (!(order_usd > 0) || !(hl_anchor >= 0)) { std::fprintf(stderr, "--order-usd must be > 0 and --hl-anchor >= 0\n"); return 2; }
     if (st_half_width != -1 && !(st_half_width >= 0 && st_half_width <= 50)) { std::fprintf(stderr, "--half-width-ticks 0..50\n"); return 2; }
     if (maker_fee_bps != -1 && !(maker_fee_bps >= 0 && maker_fee_bps <= 10)) { std::fprintf(stderr, "--maker-fee-bps 0..10\n"); return 2; }
@@ -600,6 +618,9 @@ int main(int argc, char** argv) {
     if (st_half_width >= 0) pc.p.half_width_ticks = st_half_width;
     if (st_max_inv >= 1) pc.p.max_inv_units = st_max_inv;
     if (maker_fee_bps >= 0) pc.p.maker_fee_bps = maker_fee_bps;
+    // Extended: maker 0 bps (the frozen value), taker 2.5 bps — paid only by a flatten (loss stop, kill, day flatten);
+    // the costs scripts/mm_venues.sh replays Extended with.
+    if (is_ext) pc.p.taker_fee_bps = 2.5;
     // "300 ms" or "145/445 ms" (place/cancel): part of the start line, so a change of either reads as a setting change
     const std::string delay_txt = (place_ms >= 0 || cancel_ms >= 0)
         ? std::to_string(place_ms >= 0 ? place_ms : latency_ms) + "/" + std::to_string(cancel_ms >= 0 ? cancel_ms : latency_ms) + " ms place/cancel"
@@ -683,15 +704,58 @@ int main(int argc, char** argv) {
         pf.pump(recv / 1000);
     };
 
+    // ── Extended (--venue extended): one book and one trades connection per market (extended_ws.hpp, the recorder's
+    // streams), each message converted by venue_feeds.hpp exactly as hl_events.hpp replays dex_recorder's archive:
+    // books via extended::book_event (snapshot + deltas, 20 levels), trades via extended::parse_trades with the first
+    // publicTrades message of every connection dropped (it replays RECENT trades — the archive's "snap":true lines,
+    // which the replay drops too). A market whose book or trades stream is down is pulled on its own (Portfolio::set_link);
+    // the whole-feed health is "some stream connected and a message within 15 s".
+    struct ExtMkt {
+        std::string coin, market;            // HL coin name (our market key) and Extended's ("AVAX-USD")
+        venue::extended::Book book;
+        bool book_conn = false, trades_conn = false;   // the websocket is open
+        bool book_up = false, trades_up = false, first_trades = true;   // usable: book has a fresh snapshot / trades stream open
+    };
+    std::map<std::string, ExtMkt> ext;       // coin → state (stable addresses: the streams hold references)
+    int ext_streams_up = 0;
+    auto ext_link = [&](ExtMkt& x, const std::string& why) { pf.set_link(x.coin, x.book_up && x.trades_up, lighter::now_us() / 1000, why); };
+    auto ext_msg = [&](ExtMkt& x, bool book, const std::string& raw, bool binary, int64_t recv) {
+        if (binary) return;
+        const json m = json::parse(raw, nullptr, false);
+        if (m.is_discarded() || !m.is_object()) return;
+        last_msg_us = recv;
+        if (book) {
+            venue::Apply r = venue::Apply::Ignored;
+            auto b = venue::extended::book_event(x.book, m, &r);
+            if (r == venue::Apply::Gap) { ++gaps; throw std::runtime_error("sequence gap on " + x.coin); }
+            if (b) {
+                ++books;
+                if (b->t_ms > 0) { skew[x.coin].add(recv / 1000, b->t_ms); skew_all.add(recv / 1000, b->t_ms); }
+                pf.push_book(x.coin, std::move(*b), recv / 1000);
+                if (!x.book_up) { x.book_up = true; ext_link(x, ""); }   // up once the fresh snapshot is in the buffer
+            }
+        } else if (venue::extended::is_trades(m)) {
+            if (x.first_trades) { x.first_trades = false; }          // the connection's replay of recent trades
+            else for (auto& t : venue::extended::parse_trades(m)) { t.coin.clear(); ++trades; pf.push_trade(x.coin, t, recv / 1000); }
+        }
+        pf.pump(recv / 1000);
+    };
+
     asio::co_spawn(ioc, [&]() -> asio::awaitable<void> {
         std::map<std::string, lighter::MarketInfo> ids;
+        std::map<std::string, venue::extended::MarketRule> ext_rules;
         std::map<std::string, int> hl_sz;
-        while (ids.empty()) {
+        while (is_ext ? ext_rules.empty() : ids.empty()) {
             bool failed = false;
-            try { ids = co_await lighter::resolve_markets(ctx, symbols); }
+            try {
+                if (is_ext) ext_rules = co_await venue::extended::resolve(ctx, symbols);
+                else ids = co_await lighter::resolve_markets(ctx, symbols);
+            }
             catch (const std::exception& e) { logf("market lookup failed (%s) — retrying in 30 s", e.what()); failed = true; }
-            if (failed || ids.empty()) co_await lighter::sleep_s(30);   // (no co_await inside a handler)
+            if (failed || (is_ext ? ext_rules.empty() : ids.empty())) co_await lighter::sleep_s(30);   // (no co_await inside a handler)
         }
+        const size_t n_markets = is_ext ? ext_rules.size() : ids.size();
+        const char* vname = is_ext ? "Extended" : "Lighter";
         if (tick_rule_hl || hl_anchor > 0) {      // HL's coin list also decides which markets get an anchor
             for (int attempt = 0; attempt < 5 && hl_sz.empty(); ++attempt) {
                 bool failed = false;
@@ -699,9 +763,29 @@ int main(int argc, char** argv) {
                 catch (const std::exception& e) { logf("Hyperliquid meta failed (%s) — retrying in 15 s", e.what()); failed = true; }
                 if (failed || hl_sz.empty()) co_await lighter::sleep_s(15);
             }
-            if (hl_sz.empty()) logf("Hyperliquid meta unavailable: every market falls back to Lighter's own ticks (--tick-rule book)");
+            if (hl_sz.empty()) logf("Hyperliquid meta unavailable: every market falls back to %s's own ticks (--tick-rule book)", vname);
         }
-        for (const auto& s : symbols) if (!ids.count(s)) logf("not an active Lighter perp, skipped: %s", s.c_str());
+        if (is_ext) {
+            for (const auto& s : symbols) if (!ext_rules.count(s)) logf("not an active Extended perp, skipped: %s", s.c_str());
+            for (const auto& [s, r] : ext_rules) {
+                ext[s].coin = s;
+                ext[s].market = r.market;
+                hl::Params q = pc.p;
+                q.venue_tick = r.tick;                 // minPriceChange — the grid dex_recorder's markets.json + mm_venues.sh replay use
+                auto hz = hl_sz.find(s);
+                if (tick_rule_hl && hz != hl_sz.end()) { q.strat_tick_rule = hl::TickRule::Hyperliquid; q.hl_sz_decimals = hz->second; }
+                else if (tick_rule_hl) logf("%s: not on Hyperliquid — distances in Extended ticks for this market", s.c_str());
+                // Extended's size rules: rounded UP to minOrderSizeChange and at least minOrderSize (no minimum notional)
+                q.size_step = r.size_step;
+                q.min_base = r.min_size;
+                q.min_quote_usd = 0;
+                pc.per_market[s] = q;
+                logf("%s: market %s, Extended grid %g, strategy tick %s, size grid %g, min %g coin", s.c_str(), r.market.c_str(), q.venue_tick,
+                     q.strat_tick_rule == hl::TickRule::Hyperliquid ? ("Hyperliquid (szDecimals " + std::to_string(q.hl_sz_decimals) + ")").c_str() : "Extended grid",
+                     q.size_step, q.min_base);
+            }
+        }
+        for (const auto& s : symbols) if (!is_ext && !ids.count(s)) logf("not an active Lighter perp, skipped: %s", s.c_str());
         for (const auto& [s, info] : ids) {
             mk[info.id] = {s, {}};
             id_list.push_back(info.id);
@@ -761,11 +845,12 @@ int main(int argc, char** argv) {
             }, [](std::exception_ptr e) { if (e) try { std::rethrow_exception(e); } catch (const std::exception& x) { logf("binance task ended: %s", x.what()); } });
         }
         if (db) db->push({"INSERT INTO mm_paper_events (ts, kind, market, detail, label, uid) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (uid) DO NOTHING",
-                          {iso_ms(lighter::now_us() / 1000), "start", "", "paper engine started on " + std::to_string(ids.size()) + " Lighter markets (run " + run_id +
+                          {iso_ms(lighter::now_us() / 1000), "start", "", "paper engine started on " + std::to_string(n_markets) + " " + vname + " markets (run " + run_id +
                            ", " + delay_txt + (rate_per_min > 0 ? ", " + std::to_string(rate_per_min) + " req/min shared" : std::string()) +
                            (modify ? std::string(", modify requotes") : std::string()) +
                            (maker_fee_bps >= 0 ? ", maker fee " + num(maker_fee_bps) + " bps" : std::string()) +
                            (st_half_width >= 0 ? ", half width " + num(pc.p.half_width_ticks) + " ticks" : std::string()) +
+                           (is_ext ? ", taker fee " + num(pc.p.taker_fee_bps) + " bps (flattens only)" : std::string()) +
                            (st_pause_ticks >= 0 || st_pause_ms >= 0 || st_min_spread >= 0 || st_max_inv >= 1
                                 ? ", strategy pause " + num(pc.p.pause_move_ticks) + " ticks/" + std::to_string(pc.p.pause_ms) + " ms, min spread " +
                                   num(pc.p.min_spread_ticks) + ", cap " + std::to_string(pc.p.max_inv_units) : std::string()) + (linger_ms > 0 ? ", batch linger " + std::to_string(linger_ms) + " ms" : std::string()) +
@@ -774,10 +859,43 @@ int main(int argc, char** argv) {
                            (bn_pull.on() ? ", Binance pull " + std::to_string(bn_pull.w_ms) + " ms / " + num(bn_pull.x_bps) + " bps / hold " + std::to_string(bn_pull.hold_ms) + " ms" : std::string()) +
                            "; starts FLAT — paper positions are not carried across a restart)",
                            label, label + ":" + run_id + ":start"}, mmpaper::utc_day(lighter::now_us() / 1000)});
-        logf("paper trading %zu Lighter markets (frozen setting, $%.2f quotes, %s ticks, %lld ms delay, daily loss stop $%.2f, %s%s)", ids.size(),
-             order_usd, tick_rule_hl ? "Hyperliquid" : "Lighter", (long long)latency_ms, daily_loss,
+        logf("paper trading %zu %s markets (frozen setting, $%.2f quotes, %s ticks, %lld ms delay, daily loss stop $%.2f, %s%s)", n_markets, vname,
+             order_usd, tick_rule_hl ? "Hyperliquid" : vname, (long long)latency_ms, daily_loss,
              day_flatten ? "flat at 00:00 UTC" : "inventory carried across 00:00 UTC (daily rows marked to market)",
              hl_anchor > 0 ? (", Hyperliquid anchor k=" + num(hl_anchor) + " on " + std::to_string(hl_coins.size()) + " markets").c_str() : "");
+        if (is_ext) {
+            // Two streams per market, each reconnecting on its own (extended_ws.hpp); this task's work is done.
+            connected = ever_connected = true;
+            last_msg_us = lighter::now_us();
+            auto ex = co_await asio::this_coro::executor;
+            auto on_end = [](std::exception_ptr e) { if (e) try { std::rethrow_exception(e); } catch (const std::exception& x) { logf("extended stream task ended: %s", x.what()); } };
+            for (auto& [coin, x] : ext) {
+                pf.set_link(coin, false, lighter::now_us() / 1000, "starting");   // no quotes until both of its streams are up
+                for (const bool book : {true, false}) {
+                    venue::extended::StreamHooks h;
+                    ExtMkt* px = &x;
+                    h.on_connect = [&, px, book] {
+                        bool& conn = book ? px->book_conn : px->trades_conn;
+                        if (!conn) { conn = true; ++ext_streams_up; }
+                        connected = ext_streams_up > 0;
+                        if (book) px->book = venue::extended::Book{};    // up again only once a fresh snapshot is in (ext_msg)
+                        else { px->first_trades = true; px->trades_up = true; ext_link(*px, ""); }
+                    };
+                    h.on_msg = [&, px, book](const std::string& raw, bool binary, int64_t recv) { ext_msg(*px, book, raw, binary, recv); };
+                    h.on_disconnect = [&, px, book](const std::string& why, int backoff) {
+                        bool& conn = book ? px->book_conn : px->trades_conn;   // false if the connect itself failed
+                        if (conn) { conn = false; --ext_streams_up; }
+                        connected = ext_streams_up > 0;
+                        ++reconnects;
+                        logf("%s %s disconnected (%s) — reconnecting in %d s", px->coin.c_str(), book ? "book" : "trades", why.c_str(), backoff);
+                        if (book) px->book_up = false; else px->trades_up = false;
+                        ext_link(*px, std::string(book ? "book" : "trades") + ": " + why);
+                    };
+                    asio::co_spawn(ex, venue::extended::run_stream(ctx, x.market, book, std::move(h)), on_end);
+                }
+            }
+            co_return;
+        }
         int backoff = 1;
         while (true) {
             const auto t0 = std::chrono::steady_clock::now();
@@ -845,6 +963,12 @@ int main(int argc, char** argv) {
                                         {"reconnects", hl_feed.reconnects}, {"last_ms", hl_feed.last_ms}, {"coins", hl_coins}}},
                            {"bn_feed", {{"enabled", bn_pull.on()}, {"w_ms", bn_pull.w_ms}, {"x_bps", bn_pull.x_bps}, {"hold_ms", bn_pull.hold_ms},
                                         {"connected", bn_feed.connected}, {"books", bn_feed.books}, {"reconnects", bn_feed.reconnects}, {"last_ms", bn_feed.last_ms}}}};
+                if (is_ext) {
+                    st["venue"] = venue_name;          // absent on Lighter: its status file is unchanged
+                    st["streams_up"] = ext_streams_up;
+                    st["streams_total"] = static_cast<int64_t>(ext.size() * 2);
+                    for (auto& m : st["markets"]) m["link_down"] = pf.link_down(m.value("market", ""));
+                }
                 if (bn_pull.on())
                     for (auto& m : st["markets"])
                         if (const bnpull::Lead* L = pf.bn_lead(m.value("market", ""))) {

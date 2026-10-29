@@ -19,6 +19,7 @@
 // second drive, and refusing a missing DIR is what keeps an unmounted drive from filling the root disk.
 
 #include "dex/dex_ws.hpp"
+#include "dex/extended_ws.hpp"
 #include "dex/recorder_status.hpp"
 #include "dex/venue_feeds.hpp"
 #include "zstd_daily.hpp"
@@ -95,13 +96,7 @@ static asio::awaitable<void> backoff_sleep(int& backoff, const std::chrono::stea
 static asio::awaitable<std::map<std::string, std::pair<std::string, double>>> resolve(lighter::ssl::context& ctx, const std::vector<std::string>& coins) {
     std::map<std::string, std::pair<std::string, double>> out;
     if (g_venue == "extended") {
-        auto j = json::parse(co_await lighter::https_request(ctx, venue::extended::HOST, "/api/v1/info/markets"), nullptr, false);
-        std::map<std::string, double> live;
-        if (j.is_object() && j.contains("data"))
-            for (const auto& m : j["data"])
-                if (m.value("status", "") == "ACTIVE" && m.contains("tradingConfig"))
-                    live[m.value("name", "")] = hl::num(m["tradingConfig"].value("minPriceChange", json()));
-        for (const auto& c : coins) if (auto it = live.find(venue::extended::market_for(c)); it != live.end()) out[c] = {it->first, it->second};
+        for (const auto& [c, r] : co_await venue::extended::resolve(ctx, coins)) out[c] = {r.market, r.tick};
     } else if (g_venue == "aster" || g_venue == "binance") {      // Binance futures: the same exchangeInfo shape
         const bool bn = g_venue == "binance";
         auto j = json::parse(co_await lighter::https_request(ctx, bn ? venue::binance::API_HOST : venue::aster::API_HOST, "/fapi/v1/exchangeInfo"), nullptr, false);
@@ -127,36 +122,33 @@ static asio::awaitable<std::map<std::string, std::pair<std::string, double>>> re
 
 // ── Extended: one connection per stream per market ──────────────────────────────────────────────────────
 static asio::awaitable<void> extended_stream(lighter::ssl::context& ctx, Market& x, bool book) {
-    int backoff = 1;
     const std::string who = x.market + (book ? " book" : " trades");
-    while (true) {
-        const auto t0 = std::chrono::steady_clock::now();
-        std::string why;
-        if (book) x.ext = venue::extended::Book{};
-        bool first_trades = true;     // publicTrades opens with the market's RECENT trades (hours old on a quiet market)
-        try {
-            auto ws = co_await dexws::connect(ctx, venue::extended::HOST, book ? venue::extended::book_path(x.market) : venue::extended::trades_path(x.market));
-            co_await dexws::read_loop(ws, [&](const std::string& raw, bool binary, int64_t recv) {
-                if (binary) { ++g_other; return; }
-                auto m = json::parse(raw, nullptr, false);
-                if (m.is_discarded() || !m.is_object()) { ++g_other; return; }
-                if (book) {
-                    const auto r = x.ext.apply(m);
-                    if (r == venue::Apply::Gap) { ++g_gaps; throw std::runtime_error("sequence gap"); }
-                    if (r == venue::Apply::Ignored) { ++g_other; return; }
-                    ++g_books;
-                    archive(x, raw, recv, r == venue::Apply::Snapshot, false);
-                } else {
-                    if (!venue::extended::is_trades(m)) { ++g_other; return; }
-                    ++g_trades;
-                    archive(x, raw, recv, false, true, first_trades ? ",\"snap\":true" : "");
-                    first_trades = false;
-                }
-            });
-            why = "closed";
-        } catch (const std::exception& e) { why = e.what(); }
-        co_await backoff_sleep(backoff, t0, who, why);
-    }
+    auto first_trades = std::make_shared<bool>(true);   // publicTrades opens with the market's RECENT trades (hours old on a quiet market)
+    venue::extended::StreamHooks h;
+    h.on_connect = [&x, book, first_trades] { if (book) x.ext = venue::extended::Book{}; *first_trades = true; };
+    h.on_msg = [&x, book, first_trades](const std::string& raw, bool binary, int64_t recv) {
+        if (binary) { ++g_other; return; }
+        auto m = json::parse(raw, nullptr, false);
+        if (m.is_discarded() || !m.is_object()) { ++g_other; return; }
+        if (book) {
+            const auto r = x.ext.apply(m);
+            if (r == venue::Apply::Gap) { ++g_gaps; throw std::runtime_error("sequence gap"); }
+            if (r == venue::Apply::Ignored) { ++g_other; return; }
+            ++g_books;
+            archive(x, raw, recv, r == venue::Apply::Snapshot, false);
+        } else {
+            if (!venue::extended::is_trades(m)) { ++g_other; return; }
+            ++g_trades;
+            archive(x, raw, recv, false, true, *first_trades ? ",\"snap\":true" : "");
+            *first_trades = false;
+        }
+    };
+    h.on_disconnect = [who](const std::string& why, int backoff) {
+        ++g_reconnects;
+        g_status->on_reconnect();
+        logf("%s disconnected (%s) — reconnecting in %d s", who.c_str(), why.c_str(), backoff);
+    };
+    co_await venue::extended::run_stream(ctx, x.market, book, std::move(h));
 }
 
 // ── Aster / Binance: one connection, combined streams (Binance: bookTicker instead of depth20) ─────────────

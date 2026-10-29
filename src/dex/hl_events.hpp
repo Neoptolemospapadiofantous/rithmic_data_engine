@@ -79,8 +79,7 @@ inline std::vector<Event> load_archive(const std::filesystem::path& file, int64_
             if (j.value("snap", false)) continue;             // a venue's replay of trades from before the recorder listened
             if (v == "extended") {
                 if (venue::extended::is_book(m)) {
-                    const auto r = ebook.apply(m);
-                    if ((r == venue::Apply::Snapshot || r == venue::Apply::Delta) && ebook.valid()) push_book(ebook.top(20));
+                    if (auto b = venue::extended::book_event(ebook, m)) push_book(std::move(*b));   // the paper engine's own call
                 } else if (venue::extended::is_trades(m)) push_trades(venue::extended::parse_trades(m));
                 else if (bad_lines) ++*bad_lines;
             } else if (v == "aster") {

@@ -302,6 +302,110 @@ TEST(loader_replays_every_venue_from_its_tag) {
     std::filesystem::remove_all(dir);
 }
 
+// ── mm_paper --venue extended (2026-10-29): the live paper path must turn Extended's messages into the SAME books and
+// trades the replay (hl_events.hpp load_archive, used by scripts/mm_venues.sh) builds from the archived copy. ────────
+
+TEST(extended_market_rules_from_info_markets) {
+    const json j = json::parse(R"({"status":"OK","data":[
+        {"name":"AVAX-USD","status":"ACTIVE","assetPrecision":1,"tradingConfig":{"minOrderSize":"1","minOrderSizeChange":"0.1","minPriceChange":"0.001"}},
+        {"name":"BTC-USD","status":"ACTIVE","tradingConfig":{"minOrderSize":"0.0001","minOrderSizeChange":"0.00001","minPriceChange":"1"}},
+        {"name":"OLD-USD","status":"DELISTED","tradingConfig":{"minOrderSize":"1","minOrderSizeChange":"1","minPriceChange":"0.1"}},
+        {"name":"BAD-USD","status":"ACTIVE"}]})");
+    const auto r = ext::parse_markets(j);
+    ASSERT_EQ(r.size(), size_t{2});                              // delisted and config-less markets are not tradable
+    const auto& a = r.at("AVAX-USD");
+    ASSERT_NEAR(a.tick, 0.001, 1e-15);
+    ASSERT_NEAR(a.size_step, 0.1, 1e-15);
+    ASSERT_NEAR(a.min_size, 1.0, 1e-15);
+    ASSERT_NEAR(r.at("BTC-USD").size_step, 0.00001, 1e-18);
+    ASSERT(ext::parse_markets(json::parse("[]")).empty());
+    // the paper quote size on those rules: $11 of AVAX at $20 = 0.55 coin → raised to the 1-coin minimum; at $5, 2.2 → 2.2
+    hl::Params p; p.order_usd = 11; p.size_step = a.size_step; p.min_base = a.min_size;
+    ASSERT_NEAR(hl::lot_qty(p, 20), 1.0, 1e-12);
+    ASSERT_NEAR(hl::lot_qty(p, 5), 2.2, 1e-12);
+    ASSERT_NEAR(hl::lot_qty(p, 4.9), 2.3, 1e-12);               // 2.2449 → up to the 0.1 grid, never down
+}
+
+TEST(extended_paper_path_matches_the_replay) {
+    // the wire messages of one connection, in arrival order (book stream and trades stream interleaved)
+    std::vector<std::pair<bool, json>> wire = {
+        {true, ext_snap(1000, 1)},
+        {false, json::parse(R"({"ts":1000,"data":[{"i":0,"m":"AAVE-USD","S":"SELL","tT":"TRADE","T":5,"p":"90","q":"9"}],"seq":1})")},   // the connection's replay
+        {true, ext_delta(1001, 2, R"([{"q":"1","p":"100.5","c":"1"}])", "[]")},
+        {false, json::parse(R"({"ts":1001,"data":[{"i":1,"m":"AAVE-USD","S":"BUY","tT":"TRADE","T":1001,"p":"101","q":"0.5"},{"i":2,"m":"AAVE-USD","S":"SELL","tT":"DELEVERAGE","T":1001,"p":"100","q":"3"}],"seq":2})")},
+        {true, ext_delta(1002, 3, "[]", R"([{"q":"-2","p":"101","c":"0"}])")},
+        {true, ext_delta(1002, 3, "[]", "[]")},                  // exact repeat: no event on either path
+        {false, json::parse(R"({"ts":1003,"data":[{"i":3,"m":"AAVE-USD","S":"SELL","tT":"LIQUIDATION","T":1003,"p":"100.5","q":"0.2"}],"seq":3})")},
+    };
+    // the paper path (mm_paper_main ext_msg): book_event + parse_trades, first trades message of the connection dropped
+    std::vector<hl::Event> paper;
+    {
+        ext::Book book;
+        bool first_trades = true;
+        int64_t seq = 0;
+        for (const auto& [is_book, m] : wire) {
+            if (is_book) {
+                venue::Apply r;
+                if (auto b = ext::book_event(book, m, &r)) { hl::Event e; e.t_ms = b->t_ms; e.seq = seq++; e.is_book = true; e.book = *b; paper.push_back(e); }
+                ASSERT(r != venue::Apply::Gap);
+            } else if (ext::is_trades(m)) {
+                if (first_trades) { first_trades = false; continue; }
+                for (auto& t : ext::parse_trades(m)) { t.coin.clear(); hl::Event e; e.t_ms = t.t_ms; e.seq = seq++; e.trade = t; paper.push_back(e); }
+            }
+        }
+        hl::sort_events(paper);
+    }
+    // the replay path: the same messages as dex_recorder archives them (first trades message tagged "snap":true)
+    auto dir = std::filesystem::temp_directory_path() / ("venues_paper_" + std::to_string(getpid()));
+    std::filesystem::create_directories(dir);
+    {
+        ZstdDaily f(dir / "AAVE", {}, 3);
+        int64_t r = 1'700'000'000'000'000;
+        bool first_trades = true;
+        for (const auto& [is_book, m] : wire) {
+            const bool snap = !is_book && first_trades;
+            if (!is_book) first_trades = false;
+            f.write_line(R"({"r":)" + std::to_string(r) + R"(,"v":"extended")" + (snap ? R"(,"snap":true)" : "") + R"(,"m":)" + m.dump() + "}", r);
+            r += 1000;
+        }
+        f.close();
+    }
+    const auto days = hl::list_days(dir);
+    ASSERT_EQ(days.size(), size_t{1});
+    const auto replay = hl::load_day(days[0]);
+    std::filesystem::remove_all(dir);
+    ASSERT_EQ(paper.size(), replay.size());
+    ASSERT_EQ(paper.size(), size_t{5});                           // 3 books (repeat skipped), 2 trades (replay + DELEVERAGE dropped)
+    for (size_t i = 0; i < paper.size(); ++i) {
+        const auto& a = paper[i];
+        const auto& b = replay[i];
+        ASSERT_EQ(a.is_book, b.is_book);
+        ASSERT_EQ(a.t_ms, b.t_ms);
+        if (a.is_book) {
+            ASSERT_EQ(a.book.bids.size(), b.book.bids.size());
+            ASSERT_EQ(a.book.asks.size(), b.book.asks.size());
+            for (size_t k = 0; k < a.book.bids.size(); ++k) { ASSERT_EQ(a.book.bids[k].px, b.book.bids[k].px); ASSERT_EQ(a.book.bids[k].sz, b.book.bids[k].sz); }
+            for (size_t k = 0; k < a.book.asks.size(); ++k) { ASSERT_EQ(a.book.asks[k].px, b.book.asks[k].px); ASSERT_EQ(a.book.asks[k].sz, b.book.asks[k].sz); }
+        } else {
+            ASSERT_EQ(a.trade.px, b.trade.px);
+            ASSERT_EQ(a.trade.sz, b.trade.sz);
+            ASSERT_EQ(a.trade.buy_aggr, b.trade.buy_aggr);
+            ASSERT_EQ(a.trade.coin, b.trade.coin);
+        }
+    }
+    // spot checks on the converted values
+    ASSERT(paper[0].is_book && paper[0].t_ms == 1000 && paper[0].book.bids[0].px == 100);
+    ASSERT(!paper[1].is_book && paper[1].trade.buy_aggr && paper[1].trade.px == 101);       // trade before the book at 1001
+    ASSERT(paper[2].is_book && paper[2].book.bids[0].px == 100.5);
+    ASSERT(paper[3].is_book && paper[3].book.asks[0].px == 102);                              // the 101 ask removed (c 0)
+    ASSERT(!paper[4].is_book && !paper[4].trade.buy_aggr && paper[4].trade.sz == 0.2);       // LIQUIDATION kept
+    // a gap is reported (mm_paper reconnects) and yields no book
+    ext::Book g;
+    venue::Apply r;
+    ext::book_event(g, ext_snap(1, 1), &r);
+    ASSERT(!ext::book_event(g, ext_delta(2, 5, "[]", "[]"), &r) && r == venue::Apply::Gap);
+}
+
 int main() {
     RUN(extended_snapshot_then_deltas_use_the_absolute_size);
     RUN(extended_seq_gap_invalidates_until_the_next_snapshot);
@@ -315,6 +419,8 @@ int main() {
     RUN(paradex_book_applies_deltas_in_sequence);
     RUN(loader_replays_every_venue_from_its_tag);
     RUN(binance_book_ticker_and_trades_parse_and_replay);
+    RUN(extended_market_rules_from_info_markets);
+    RUN(extended_paper_path_matches_the_replay);
     std::cout << tests_run - tests_failed << "/" << tests_run << " passed\n";
     return tests_failed ? 1 : 0;
 }

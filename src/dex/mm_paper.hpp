@@ -38,6 +38,7 @@
 #include <cmath>
 #include <ctime>
 #include <deque>
+#include <set>
 #include <functional>
 #include <map>
 #include <memory>
@@ -505,6 +506,18 @@ public:
     }
     const Sequencer& sequencer() const { return seq_; }
 
+    // Per-market link (2026-10-29, mm_paper --venue extended): a venue serving one connection per stream per market can
+    // lose ONE market's book or trades while the rest flow — that market's quotes are pulled at once (its book is frozen,
+    // or its fills would go unseen), and the halt lifts on the next tick() after the link is back, by when the fresh
+    // snapshot has passed the re-order buffer. Lighter's single session never calls this (its feed_ok covers it).
+    void set_link(const std::string& m, bool up, int64_t now_ms, const std::string& why = "") {
+        if (up == !link_down_.count(m)) return;
+        if (up) link_down_.erase(m); else link_down_.insert(m);
+        emit(now_ms, up ? "link_up" : "link_down", m, up ? "market streams flowing again" : "market stream reconnecting (" + why + "): quotes pulled");
+        if (auto it = mkts_.find(m); it != mkts_.end() && !up) it->second.sim->set_halted(true, it->second.sim->last_book_ms());
+    }
+    bool link_down(const std::string& m) const { return link_down_.count(m) > 0; }
+
     // Called about once a second with the wall clock: feed health, stale markets, loss stop, kill switch, day roll.
     void tick(int64_t now_ms, bool kill, bool feed_ok = true) {
         // The wall clock only rolls the day once no buffered event of the old day can still be released: events wait
@@ -535,7 +548,7 @@ public:
                 k.stale = stale;
                 emit(now_ms, stale ? "stale" : "fresh", m, stale ? "no book for " + std::to_string(c_.stale_ms / 1000) + " s: quotes pulled" : "book flowing again");
             }
-            k.sim->set_halted(halted() || feed_down_ || k.stale, k.sim->last_book_ms());
+            k.sim->set_halted(halted() || feed_down_ || k.stale || link_down_.count(m), k.sim->last_book_ms());
             drain(m, k);
             recheck_flat(m, k, k.sim->last_book_ms());
         }
@@ -594,7 +607,7 @@ private:
             Mkt k; k.sim = std::make_unique<hl::Simulator>(params_for(m));
             wire_gate(*k.sim);
             it = mkts_.emplace(m, std::move(k)).first;
-            if (halted()) it->second.sim->set_halted(true, 0);
+            if (halted() || link_down_.count(m)) it->second.sim->set_halted(true, 0);
         }
         return it->second;
     }
@@ -645,7 +658,7 @@ private:
             loss_stop_ = false;
             // The loss stop ends with the day; the kill switch, a dead feed and a stale market keep their halt.
             for (auto& [m, k] : mkts_) {
-                const bool h = killed_ || feed_down_ || k.stale;
+                const bool h = killed_ || feed_down_ || k.stale || link_down_.count(m);
                 if (k.sim->halted() != h) k.sim->set_halted(h, k.sim->last_book_ms());
             }
             return;
@@ -696,6 +709,7 @@ private:
     std::map<std::string, HlAnchor> anchors_;   // paper_hl (Config::hl_k > 0): per market, market data only — survives every day roll
     std::string day_;
     bool killed_ = false, loss_stop_ = false, feed_down_ = false;
+    std::set<std::string> link_down_;           // set_link: markets whose own stream is reconnecting (Extended); empty on Lighter
     FillFn fill_fn_;
     EventFn event_fn_;
     DayFn day_fn_;

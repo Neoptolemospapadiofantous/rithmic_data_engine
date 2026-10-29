@@ -26,7 +26,30 @@ After the 2026-10-28 box reset stranded 1.23 AVAX for ~20 h (−$0.36 on $5; the
   (label `paper_w7` = paper_opt + half width 7). Started ahead of E1's 7 days on the founder's word; rule unchanged.
 - **Tokyo** `scripts/aws_tokyo_launch.sh`: paste into CloudShell — imports the home SSH key, SSH-only security group from
   the home IP, latest Ubuntu 24.04, `--launch` starts a t3.medium (≈ $40/month) and prints the Lighter latency from there.
-- Live: `mm-live` enabled on boot and restarted 2026-10-29 08:55 UTC; `mm-live-watch.timer` installed.
+- Live: `mm-live@avax` enabled on boot and restarted 2026-10-29 08:55 UTC; `mm-live-watch.timer` installed.
+
+## 2026-10-29 — mm_paper --venue extended: the paper market maker on Extended's live feed (label paper_ext)
+
+Extended is the only venue whose nightly replay is net positive (+2.28 bps over 3 complete days, `scripts/mm_venues.sh`),
+so it gets a 24/7 forward test on live data.
+
+- `mm_paper --venue lighter|extended` (default `lighter`: every existing unit runs exactly as before). `extended` opens one
+  book and one publicTrades websocket per market (new `src/dex/extended_ws.hpp`, now also used by `dex_recorder`) and
+  converts them with the replay's own code: `venue::extended::book_event` (20 levels, shared with `hl_events.hpp`
+  `load_archive`) and `parse_trades`, dropping each connection's first publicTrades message (a replay of recent trades —
+  the archive's `"snap":true` lines). Price grid = `minPriceChange`, size grid = `minOrderSizeChange`, minimum =
+  `minOrderSize` (`venue::extended::parse_markets`); maker 0 bps, taker 2.5 bps (flattens only). Strategy ticks stay
+  Hyperliquid ticks, as in the replay.
+- A market whose own book or trades stream is reconnecting is pulled on its own (`Portfolio::set_link`, events
+  `link_down` / `link_up`); its halt lifts at the next tick once a fresh snapshot is in. Lighter never calls it.
+- `--hl-anchor` and `--bn-pull` are refused with `--venue extended` (Lighter-only).
+- status.json (extended only) gains `venue`, `streams_up` / `streams_total`, `markets[].link_down`.
+- `deploy/mm-paper-ext-local.service` (written, NOT installed): frozen setting, 100 ms, `$11` quotes, the 32 coins
+  dex_recorder records on Extended.
+- Tests: `test_venues` — Extended market rules + the paper path yields the same books and trades as the replay of the
+  archived copy; `test_lighter` — a link-down market is pulled alone.
+- Known difference from the replay: the replay sizes $100 quotes continuously; the paper engine uses Extended's real size
+  grid and minimums (e.g. AZTEC/PUMP 1,000 coins, ADA/ARB/DOGE 100), so some quotes are far above $11.
 
 ## 2026-10-29 — mm_live: three fixes from the 2026-10-28 live day (AVAX, $5)
 

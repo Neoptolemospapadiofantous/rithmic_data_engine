@@ -89,6 +89,7 @@ enum class Apply { Snapshot, Delta, Gap, Ignored };
 namespace extended {
 
 inline const char* HOST = "api.starknet.extended.exchange";
+inline const char* MARKETS_PATH = "/api/v1/info/markets";
 inline std::string market_for(const std::string& coin) { return coin + "-USD"; }
 inline std::string coin_of_market(const std::string& m) { const auto p = m.find("-USD"); return p == std::string::npos ? m : m.substr(0, p); }
 inline std::string book_path(const std::string& market) { return "/stream.extended.exchange/v1/orderbooks/" + market; }
@@ -161,6 +162,39 @@ inline std::vector<hl::Trade> parse_trades(const json& m) {
 }
 inline bool is_trades(const json& m) { return m.is_object() && m.contains("data") && m["data"].is_array(); }
 inline bool is_book(const json& m) { return m.is_object() && m.contains("data") && m["data"].is_object() && m["data"].contains("b"); }
+
+// The depth both the replay (hl_events.hpp load_archive) and the live paper engine (mm_paper --venue extended) hand
+// to the simulator: one book event per applied message while the rebuilt book is consistent. ONE function, so paper
+// and replay see the same books from the same messages.
+inline constexpr size_t BOOK_LEVELS = 20;
+inline std::optional<hl::Book> book_event(Book& book, const json& m, Apply* result = nullptr) {
+    const Apply r = book.apply(m);
+    if (result) *result = r;
+    if ((r == Apply::Snapshot || r == Apply::Delta) && book.valid()) return book.top(BOOK_LEVELS);
+    return std::nullopt;
+}
+
+// GET /api/v1/info/markets → every ACTIVE market's order rules, keyed by market name ("AVAX-USD"):
+//   {"data":[{"name":"AVAX-USD","status":"ACTIVE","tradingConfig":{"minOrderSize":"1","minOrderSizeChange":"0.1",
+//             "minPriceChange":"0.001",...}},...]}   (measured 2026-10-29)
+// tick = minPriceChange (the price grid dex_recorder writes to markets.json and mm_venues.sh replays with),
+// size_step = minOrderSizeChange, min_size = minOrderSize (coin). Extended publishes no minimum notional.
+struct MarketRule { std::string market; double tick = 0, size_step = 0, min_size = 0; };
+inline std::map<std::string, MarketRule> parse_markets(const json& j) {
+    std::map<std::string, MarketRule> out;
+    if (!j.is_object() || !j.contains("data") || !j["data"].is_array()) return out;
+    for (const auto& m : j["data"]) {
+        if (!m.is_object() || m.value("status", "") != "ACTIVE" || !m.contains("tradingConfig") || !m["tradingConfig"].is_object()) continue;
+        const json& tc = m["tradingConfig"];
+        MarketRule r;
+        r.market = m.value("name", "");
+        r.tick = hl::num(tc.value("minPriceChange", json()));
+        r.size_step = hl::num(tc.value("minOrderSizeChange", json()));
+        r.min_size = hl::num(tc.value("minOrderSize", json()));
+        if (!r.market.empty()) out[r.market] = r;
+    }
+    return out;
+}
 
 }  // namespace extended
 
