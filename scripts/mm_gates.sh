@@ -258,5 +258,8 @@ if [ -x scripts/mm_ab.sh ]; then
   [ "$NOTIFY" = 1 ] && { scripts/mm_ab.sh --notify > /dev/null 2>&1 || true; }
 fi
 
+# market ranking (which markets tomorrow; walk-forward check of the block rule): $OUT/markets.{json,md} (fail-open)
+[ -x scripts/mm_market_rank.sh ] && { MM_RANK_OUT="$OUT" scripts/mm_market_rank.sh > /dev/null 2>&1 || true; }
+
 # all-data view for the /mm page (history + every live recording + regime filters; fail-open)
 [ -x scripts/mm_alldata.sh ] && scripts/mm_alldata.sh || true

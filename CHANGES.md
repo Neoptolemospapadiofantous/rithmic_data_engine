@@ -8,6 +8,26 @@ Dates are in ISO-8601 order (newest first).
 ---
 
 
+## 2026-10-29 — mm: guardian flatten, market ranking, E2 wider-quotes paper twin, Tokyo launch script
+
+After the 2026-10-28 box reset stranded 1.23 AVAX for ~20 h (−$0.36 on $5; the quoting itself was ≈ +$0.02), founder: "do all".
+
+- **Guardian** `scripts/mm_guardian.sh` + `deploy/mm-guardian.{service,timer}` + `config/mm_live_avax_guardian.example.json`: on a
+  second machine with its own API key, when the main engine's status file is > 120 s old for 3 runs AND Lighter's public
+  account endpoint shows a position with 0 open orders, it runs mm_live with a KILL file already in its own state dir
+  (cancel-all, adopt, reduce-only IOC flatten, sticky halt), waits for flat, stops it and latches until `--reset`.
+  `PAUSE` file = hold on purpose. New test `guardian_start_with_kill_file_flattens_and_never_quotes` (67/67). Needs the
+  founder: a second Lighter API key and the timer install.
+- **Market ranking** `scripts/mm_market_rank.sh` (nightly from `mm_gates.sh`) → `data/mm_gates/markets.{json,md}`: blocks a
+  market for the next day when, over the last 3 complete days, fills ≥ 20, net < 0 and 10 s markout < −2 bps; a
+  walk-forward check scores the rule on earlier days only. Adoption rule (fixed now): ≥ 7 scored days, allowed-only ahead
+  on ≥ 5. Report only — no engine reads the list yet.
+- **E2 wider quotes**: `mm_paper --half-width-ticks N` (0..50; in the start line) and `deploy/mm-paper-w7-local.service`
+  (label `paper_w7` = paper_opt + half width 7). Started ahead of E1's 7 days on the founder's word; rule unchanged.
+- **Tokyo** `scripts/aws_tokyo_launch.sh`: paste into CloudShell — imports the home SSH key, SSH-only security group from
+  the home IP, latest Ubuntu 24.04, `--launch` starts a t3.medium (≈ $40/month) and prints the Lighter latency from there.
+- Live: `mm-live` enabled on boot and restarted 2026-10-29 08:55 UTC; `mm-live-watch.timer` installed.
+
 ## 2026-10-29 — mm_live: three fixes from the 2026-10-28 live day (AVAX, $5)
 
 - **Cancel lost to a fill = quiet resync.** All 31 sequencer rejects (21727) on 10-28 were a cancel that reached the

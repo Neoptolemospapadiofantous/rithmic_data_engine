@@ -184,3 +184,9 @@ over always-5). The oracle is +$204 on 138k windows ≈ 8 bps — the most ANY s
 days: no state signal in these features; on a venue with a maker fee the right action is not to quote, which the simulator already
 said in October. Two artefacts worth knowing: Tardis has no UNI/CRV history (the "CRV,OP" split tested OP alone), and the Tardis
 books are 5 levels deep (the depth features are truncated there).
+
+- 2026-10-29 — **Founder: "do all"** after the 10-28 box reset stranded 1.23 AVAX (~20 h, −$0.36): guardian flatten on a
+  second machine (`scripts/mm_guardian.sh`), nightly market ranking with a walk-forward check (`scripts/mm_market_rank.sh`,
+  adopt rule in the 10-28 pre-registration amendment), E2 wider-quotes paper twin `paper_w7`, Tokyo launch script
+  (`scripts/aws_tokyo_launch.sh`; Lighter's origin is AWS Tokyo, 10 ms vs 240 ms from home). Extended live paper engine
+  (`mm_paper --venue extended`) in progress. Live `mm-live@avax` enabled on boot.

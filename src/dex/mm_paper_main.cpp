@@ -514,7 +514,7 @@ int main(int argc, char** argv) {
     int64_t place_ms = -1, cancel_ms = -1;    // --place-/--cancel-latency-ms: override --latency-ms per direction
     bool modify = false;                      // --modify: requote with one modify tx instead of cancel + create (research)
     // strategy overrides of the frozen setting (2026-10-27: the paper twin of the live pilot's engine.strategy); −1 = frozen
-    double st_pause_ticks = -1, st_min_spread = -1;
+    double st_pause_ticks = -1, st_min_spread = -1, st_half_width = -1;
     int64_t st_pause_ms = -1;
     int st_max_inv = -1;
     int64_t linger_ms = 0;                    // --batch-linger-ms: a new request waits this long for more tx (research)
@@ -543,6 +543,7 @@ int main(int argc, char** argv) {
         else if (a == "--pause-move-ticks") st_pause_ticks = std::atof(val().c_str());
         else if (a == "--pause-ms") st_pause_ms = std::atoll(val().c_str());
         else if (a == "--min-spread-ticks") st_min_spread = std::atof(val().c_str());
+        else if (a == "--half-width-ticks") st_half_width = std::atof(val().c_str());
         else if (a == "--max-inv") st_max_inv = std::atoi(val().c_str());
         else if (a == "--batch-linger-ms") linger_ms = std::atoll(val().c_str());
         else if (a == "--place-latency-ms") place_ms = std::atoll(val().c_str());
@@ -556,12 +557,13 @@ int main(int argc, char** argv) {
             bn_pull.w_ms = w; bn_pull.x_bps = x; bn_pull.hold_ms = h;
         }
         else {
-            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K] [--bn-pull W,X,H]\n");
+            std::fprintf(stderr, "usage: mm_paper --symbols A,B,C [--kill-file F] [--status F] [--daily-loss USD] [--latency-ms N] [--tick-rule hl|book] [--label NAME] [--reorder-ms N] [--no-db] [--duration S] [--env FILE] [--order-usd USD] [--day-flatten] [--hl-anchor K] [--bn-pull W,X,H] [--half-width-ticks N]\n");
             return 2;
         }
     }
     if (symbols.empty()) { std::fprintf(stderr, "--symbols is required\n"); return 2; }
     if (!(order_usd > 0) || !(hl_anchor >= 0)) { std::fprintf(stderr, "--order-usd must be > 0 and --hl-anchor >= 0\n"); return 2; }
+    if (st_half_width != -1 && !(st_half_width >= 0 && st_half_width <= 50)) { std::fprintf(stderr, "--half-width-ticks 0..50\n"); return 2; }
     if (maker_fee_bps != -1 && !(maker_fee_bps >= 0 && maker_fee_bps <= 10)) { std::fprintf(stderr, "--maker-fee-bps 0..10\n"); return 2; }
     if (rate_per_min < 0 || rate_per_min > 6000 || place_ms < -1 || cancel_ms < -1 || linger_ms < 0 || linger_ms > 2000) { std::fprintf(stderr, "--rate-limit 0..6000, latencies ≥ 0\n"); return 2; }
     std::error_code ec;
@@ -595,6 +597,7 @@ int main(int argc, char** argv) {
     if (st_pause_ticks >= 0) pc.p.pause_move_ticks = st_pause_ticks;
     if (st_pause_ms >= 0) pc.p.pause_ms = st_pause_ms;
     if (st_min_spread >= 0) pc.p.min_spread_ticks = st_min_spread;
+    if (st_half_width >= 0) pc.p.half_width_ticks = st_half_width;
     if (st_max_inv >= 1) pc.p.max_inv_units = st_max_inv;
     if (maker_fee_bps >= 0) pc.p.maker_fee_bps = maker_fee_bps;
     // "300 ms" or "145/445 ms" (place/cancel): part of the start line, so a change of either reads as a setting change
@@ -762,6 +765,7 @@ int main(int argc, char** argv) {
                            ", " + delay_txt + (rate_per_min > 0 ? ", " + std::to_string(rate_per_min) + " req/min shared" : std::string()) +
                            (modify ? std::string(", modify requotes") : std::string()) +
                            (maker_fee_bps >= 0 ? ", maker fee " + num(maker_fee_bps) + " bps" : std::string()) +
+                           (st_half_width >= 0 ? ", half width " + num(pc.p.half_width_ticks) + " ticks" : std::string()) +
                            (st_pause_ticks >= 0 || st_pause_ms >= 0 || st_min_spread >= 0 || st_max_inv >= 1
                                 ? ", strategy pause " + num(pc.p.pause_move_ticks) + " ticks/" + std::to_string(pc.p.pause_ms) + " ms, min spread " +
                                   num(pc.p.min_spread_ticks) + ", cap " + std::to_string(pc.p.max_inv_units) : std::string()) + (linger_ms > 0 ? ", batch linger " + std::to_string(linger_ms) + " ms" : std::string()) +

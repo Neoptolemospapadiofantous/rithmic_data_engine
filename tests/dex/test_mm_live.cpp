@@ -913,6 +913,21 @@ TEST(kill_file_halts_flattens_and_never_auto_resumes) {
     ASSERT_EQ(r.ex.open_orders(), 0);
 }
 
+// The guardian (scripts/mm_guardian.sh, 2026-10-29): started with a KILL file already in a fresh state dir while the
+// exchange holds a position the main engine left behind. It must flatten and must never rest a quote, not even once.
+TEST(guardian_start_with_kill_file_flattens_and_never_quotes) {
+    Rig r("guardian");
+    r.ex.set_position(kMkt, 123);
+    std::ofstream(r.cfg.state_dir + "/KILL") << "x";
+    ASSERT(r.start());
+    int max_open = 0;
+    for (int i = 0; i < 200; ++i) { r.step(100); max_open = std::max(max_open, r.ex.open_orders()); }
+    ASSERT_EQ(max_open, 0);                                   // IOC only: nothing ever rested
+    ASSERT(r.eng->halted("kill"));
+    ASSERT_EQ(r.ex.position(kMkt), int64_t{0});
+    ASSERT_EQ(r.eng->position(), int64_t{0});
+}
+
 TEST(pause_file_pulls_quotes_and_keeps_the_position) {
     Rig r("pause");
     ASSERT(r.start());
@@ -1738,6 +1753,7 @@ int main(int, char** argv) {
     RUN(periodic_reconcile_uses_a_short_timeout_and_falls_back);
     RUN(public_stream_sends_its_own_ping_every_minute);
     RUN(kill_file_halts_flattens_and_never_auto_resumes);
+    RUN(guardian_start_with_kill_file_flattens_and_never_quotes);
     RUN(pause_file_pulls_quotes_and_keeps_the_position);
     RUN(disarming_stops_new_orders_but_not_cancels);
     RUN(book_gap_pulls_the_markets_quotes_before_resubscribing);

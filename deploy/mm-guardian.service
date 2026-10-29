@@ -1,0 +1,15 @@
+# mm-guardian.service — flattens the live Lighter maker's position when the main engine has gone silent
+# (scripts/mm_guardian.sh; run it on a DIFFERENT machine from the main engine, with its own API key).
+# Install (after the setup steps in the script header):
+#   cp deploy/mm-guardian.{service,timer} ~/.config/systemd/user/ && systemctl --user daemon-reload
+#   systemctl --user enable --now mm-guardian.timer
+# Main engine on another host: add  Environment=GUARD_MAIN_SSH=user@host  and  Environment=GUARD_MAIN_STATUS=/path/status.json
+[Unit]
+Description=Live Lighter market maker guardian (silent main + stranded position → flatten)
+[Service]
+Type=oneshot
+WorkingDirectory=/home/theone/Desktop/rithmic_engine
+ExecStart=/home/theone/Desktop/rithmic_engine/scripts/mm_guardian.sh
+StandardOutput=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_guardian.log
+StandardError=append:/home/theone/Desktop/rithmic_engine/data/logs/mm_guardian.log
+TimeoutStartSec=180
