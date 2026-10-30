@@ -928,6 +928,49 @@ TEST(guardian_start_with_kill_file_flattens_and_never_quotes) {
     ASSERT_EQ(r.eng->position(), int64_t{0});
 }
 
+TEST(position_stop_flattens_a_losing_position_and_resumes_after_the_cooldown) {
+    Rig r("posstop");
+    r.cfg.risk.position_stop_micro = -300'000;               // −$0.30
+    r.cfg.risk.position_cooldown_s = 60;
+    ASSERT(r.start());
+    r.run(2'000);
+    r.ex.hit(r.resting(false), 82);                            // our bid fills: long 0.082 at 135.000
+    r.venue.entry_px[kMkt] = 135'000;
+    r.run(12'000);                                             // a reconcile reads the entry
+    ASSERT(!r.eng->halted("position_stop"));                   // flat market: no loss
+    ASSERT_EQ(r.ex.position(kMkt), int64_t{82});
+    r.bid = 130'000; r.ask = 130'100;                          // −5.000 × 0.082 = −$0.41
+    r.run(3'000);
+    ASSERT(r.eng->halted("position_stop"));
+    ASSERT_EQ(r.ex.position(kMkt), int64_t{0});                // flattened reduce-only
+    int max_open = 0;
+    for (int i = 0; i < 500; ++i) { r.step(100); max_open = std::max(max_open, r.ex.open_orders()); }   // 50 s of cooldown
+    ASSERT_EQ(max_open, 0);
+    r.run(15'000);                                             // past the 60 s cooldown
+    ASSERT(!r.eng->halted("position_stop"));
+    ASSERT(r.resting(false) != 0);                             // quoting again
+    ASSERT(r.alerted("position_stop"));
+}
+
+TEST(position_stop_ignores_a_stale_entry_and_the_max_hold_closes_a_stuck_position) {
+    Rig r("posstop_hold");
+    r.cfg.risk.position_stop_micro = -300'000;
+    r.cfg.risk.position_max_hold_s = 60;
+    ASSERT(r.start());
+    r.run(2'000);
+    r.venue.entry_px[kMkt] = 200'000;                          // an entry for a position we do not hold
+    r.ex.hit(r.resting(false), 82);
+    r.run(500);                                                // before any reconcile: the old entry must not be used
+    ASSERT(!r.eng->halted("position_stop"));
+    r.venue.entry_px[kMkt] = 135'000;
+    r.run(40'000);
+    ASSERT(!r.eng->halted("position_stop"));
+    ASSERT_EQ(r.ex.position(kMkt), int64_t{82});
+    r.run(25'000);                                             // 60 s held
+    ASSERT(r.eng->halted("position_stop"));
+    ASSERT_EQ(r.ex.position(kMkt), int64_t{0});
+}
+
 TEST(pause_file_pulls_quotes_and_keeps_the_position) {
     Rig r("pause");
     ASSERT(r.start());
@@ -1754,6 +1797,8 @@ int main(int, char** argv) {
     RUN(public_stream_sends_its_own_ping_every_minute);
     RUN(kill_file_halts_flattens_and_never_auto_resumes);
     RUN(guardian_start_with_kill_file_flattens_and_never_quotes);
+    RUN(position_stop_flattens_a_losing_position_and_resumes_after_the_cooldown);
+    RUN(position_stop_ignores_a_stale_entry_and_the_max_hold_closes_a_stuck_position);
     RUN(pause_file_pulls_quotes_and_keeps_the_position);
     RUN(disarming_stops_new_orders_but_not_cancels);
     RUN(book_gap_pulls_the_markets_quotes_before_resubscribing);

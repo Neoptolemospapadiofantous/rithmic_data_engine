@@ -78,6 +78,7 @@ public:
     std::vector<int> rest_timeouts;             // the timeout each GET was sent with (in order)
     bool hold_account_events = false;           // queue stream events instead of delivering them
     bool suppress_tx_stream = false;            // never emit account_tx updates
+    std::map<int64_t, int64_t> entry_px;        // market → avg entry (price int) reported on positions (tests)
     bool suppress_stats = false;                // never emit user_stats updates (equity then only via REST)
     int drop_next_stream_fills = 0;             // the stream silently loses the next N fills (trade + position + order frames)
     int64_t counterparty = 999;
@@ -271,6 +272,8 @@ private:
                             {"position", format_decimal(std::llabs(pos), market == spec_.market_index ? spec_.size_decimals : 3)},
                             {"sign", pos < 0 ? -1 : 1}, {"open_order_count", 0}};
         if (market == spec_.market_index && imf_present) p["initial_margin_fraction"] = imf;
+        if (auto it = entry_px.find(market); it != entry_px.end() && pos != 0)
+            p["avg_entry_price"] = format_decimal(it->second, spec_.price_decimals);
         return p;
     }
     nlohmann::json order_json(const OrderView& o) const {

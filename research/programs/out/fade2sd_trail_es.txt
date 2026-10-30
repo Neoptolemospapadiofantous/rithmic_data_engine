@@ -1,0 +1,722 @@
+VWAP 2 SD stretch → EMA 7/9 reversal entry + trailing exits, fade + VWAP-side pullback — ES 1m, all sessions, 2010-07 → 2026-10-23. Cost 0.50 pts. Points at today's ATR (55). signals 1086190
+CSV: anchor,trigger,arm,setup,stop,target,session,trail,n,net,raw,win,pf,per_yr,e1015,e1620,e2124,e2526,twin
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R0 no trail,1182,-0.384,0.116,37.8,0.90,73,0.466268,-0.107882,-0.404723,-2.375894,0.217
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R1 BE at 1R,1246,-0.386,0.114,31.5,0.88,76,0.287840,-0.144762,-0.381503,-2.088636,0.200
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R2 trail 1R,1246,-0.390,0.110,46.1,0.87,76,0.340259,-0.094366,-0.546189,-1.876785,0.220
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R3 trail 0.5R,1246,-0.524,-0.024,51.1,0.83,76,-0.165736,-0.347969,-0.467210,-1.821470,0.090
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R4 EMA9 close,2355,-0.652,-0.152,21.2,0.40,144,-0.626035,-0.723524,-0.541909,-0.645217,-0.119
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R5 EMA9 after 1R,1246,-0.467,0.033,50.5,0.85,76,-0.118541,-0.220281,-0.484366,-1.835022,0.060
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R0 no trail,1425,-0.295,0.205,36.6,0.93,87,-1.151538,-0.199679,-0.100012,-0.688466,0.219
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R1 BE at 1R,1475,-0.393,0.107,29.7,0.89,90,-1.192895,-0.341534,-0.246637,-0.463600,0.051
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R2 trail 1R,1475,-0.587,-0.087,44.9,0.84,90,-0.905605,-0.671324,-0.329014,-0.878949,-0.028
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R3 trail 0.5R,1475,-0.690,-0.190,49.5,0.81,90,-0.820285,-0.883245,-0.430082,-0.655631,-0.185
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R4 EMA9 close,2425,-0.671,-0.171,23.5,0.51,149,-0.658041,-0.711467,-0.598016,-0.729270,-0.172
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R5 EMA9 after 1R,1475,-0.568,-0.068,48.9,0.84,90,-0.706495,-0.696713,-0.386868,-0.534991,-0.128
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R0 no trail,8620,-0.894,-0.394,44.4,0.80,529,-1.161895,-0.847072,-0.645419,-0.826223,-0.435
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R1 BE at 1R,8646,-0.925,-0.425,39.6,0.76,530,-1.148150,-0.827847,-0.782029,-0.891223,-0.415
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R2 trail 1R,8646,-0.956,-0.456,49.0,0.75,530,-1.168798,-0.878229,-0.837043,-0.802503,-0.467
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R3 trail 0.5R,8646,-0.923,-0.423,52.3,0.76,530,-1.093372,-0.858192,-0.796004,-0.928689,-0.388
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R4 EMA9 close,9778,-0.849,-0.349,26.5,0.52,600,-0.969633,-0.910531,-0.668257,-0.671270,-0.292
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R5 EMA9 after 1R,8646,-0.902,-0.402,51.6,0.77,530,-1.061779,-0.818828,-0.799715,-0.944357,-0.405
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R0 no trail,1120,0.004,0.504,35.4,1.00,69,1.193739,0.567371,-0.663067,-1.467019,0.570
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,1198,-0.026,0.474,28.3,0.99,73,0.846356,0.415381,-0.503670,-1.244974,0.391
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R2 trail 1R,1233,-0.281,0.219,45.5,0.91,76,0.547973,0.132158,-0.635529,-1.713399,0.160
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,1238,-0.523,-0.023,50.7,0.83,76,0.064538,-0.399015,-0.471130,-1.766007,0.007
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,2355,-0.627,-0.127,21.2,0.42,144,-0.635547,-0.670104,-0.544890,-0.645217,-0.111
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,1240,-0.351,0.149,50.1,0.89,76,0.013866,0.003013,-0.475572,-1.859254,0.091
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R0 no trail,1386,-0.213,0.287,35.1,0.95,85,0.214828,-0.566421,0.199659,-0.470937,0.442
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R1 BE at 1R,1445,-0.383,0.117,26.9,0.90,89,-0.270695,-0.700952,-0.045417,-0.285548,0.453
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R2 trail 1R,1467,-0.489,0.011,45.0,0.86,90,-0.861132,-0.776340,-0.006096,-0.652674,0.108
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R3 trail 0.5R,1470,-0.605,-0.105,49.7,0.83,90,-0.633349,-0.965727,-0.213852,-0.391586,0.006
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R4 EMA9 close,2425,-0.654,-0.154,23.5,0.52,149,-0.525869,-0.740053,-0.560443,-0.670924,-0.075
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,1470,-0.425,0.075,48.9,0.88,90,-0.415021,-0.721002,-0.121336,-0.213046,0.079
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R0 no trail,6423,-0.519,-0.019,28.0,0.92,394,-0.255503,-0.560785,-0.589628,-1.195857,-0.411
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R1 BE at 1R,6928,-0.720,-0.220,18.1,0.85,425,-0.329031,-0.944751,-0.701602,-1.476358,-0.350
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R2 trail 1R,7906,-1.118,-0.618,44.3,0.77,485,-1.399756,-1.132993,-0.785356,-1.046499,-0.659
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,8427,-1.071,-0.571,48.9,0.77,517,-1.293146,-1.065726,-0.821871,-1.026063,-0.519
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R4 EMA9 close,9778,-0.858,-0.358,24.4,0.55,600,-0.978367,-0.957824,-0.583098,-0.833652,-0.284
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,8479,-0.988,-0.488,47.8,0.79,520,-1.156013,-0.947662,-0.773090,-1.212547,-0.422
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R0 no trail,1156,-0.135,0.365,36.6,0.96,71,1.201016,0.456897,-0.802196,-1.801388,0.511
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,1232,-0.144,0.356,29.8,0.95,76,0.775434,0.375278,-0.595968,-1.804053,0.487
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,1235,-0.251,0.249,45.4,0.92,76,0.518313,0.209728,-0.649580,-1.701128,0.189
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,1238,-0.520,-0.020,50.7,0.83,76,0.064538,-0.389374,-0.475150,-1.766007,0.020
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,2355,-0.626,-0.126,21.2,0.42,144,-0.635547,-0.669058,-0.546193,-0.645217,-0.086
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,1240,-0.359,0.141,50.1,0.88,76,0.013866,-0.015669,-0.471684,-1.859254,0.119
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R0 no trail,1416,-0.255,0.245,37.0,0.94,87,-0.167689,-0.317590,-0.103882,-0.597821,0.127
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R1 BE at 1R,1468,-0.315,0.185,29.5,0.91,90,-0.541982,-0.487055,-0.047847,-0.327469,0.168
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R2 trail 1R,1469,-0.488,0.012,45.1,0.86,90,-0.627776,-0.802704,-0.027281,-0.642230,0.001
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,1471,-0.604,-0.104,49.7,0.83,90,-0.611447,-0.975909,-0.192380,-0.429839,-0.198
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R4 EMA9 close,2425,-0.651,-0.151,23.5,0.52,149,-0.558247,-0.735391,-0.546419,-0.681667,-0.112
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,1471,-0.458,0.042,48.9,0.87,90,-0.487721,-0.784741,-0.094619,-0.291278,0.077
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R0 no trail,7456,-0.627,-0.127,30.8,0.90,457,-0.652181,-0.531538,-0.576849,-1.111803,-0.239
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,7752,-0.823,-0.323,20.8,0.83,476,-0.828394,-0.832673,-0.735238,-1.079342,-0.361
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R2 trail 1R,8016,-1.067,-0.567,44.3,0.78,492,-1.324735,-1.036929,-0.846974,-0.874349,-0.660
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,8428,-1.062,-0.562,49.0,0.78,517,-1.295629,-1.060954,-0.797348,-0.996367,-0.501
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,9778,-0.855,-0.355,24.4,0.55,600,-0.978135,-0.947047,-0.587771,-0.826245,-0.317
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,8479,-0.972,-0.472,47.9,0.79,520,-1.125703,-0.901687,-0.812454,-1.191188,-0.498
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R0 no trail,995,-0.761,-0.261,46.0,0.84,61,0.334099,-0.533582,-0.807858,-2.987030,-0.240
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R1 BE at 1R,1016,-0.662,-0.162,44.6,0.86,62,0.423130,-0.365167,-0.813697,-2.854993,-0.408
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R2 trail 1R,1016,-0.604,-0.104,48.3,0.87,62,0.571754,-0.323358,-0.779460,-2.735156,0.010
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R3 trail 0.5R,1016,-0.612,-0.112,48.9,0.87,62,0.238837,-0.141581,-0.991745,-2.694149,0.039
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R4 EMA9 close,2355,-0.651,-0.151,21.2,0.40,144,-0.626035,-0.722734,-0.541909,-0.645217,-0.106
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R5 EMA9 after 1R,1016,-0.765,-0.265,48.8,0.83,62,0.176560,-0.320742,-1.139034,-2.840207,-0.334
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R0 no trail,1160,-0.266,0.234,46.6,0.95,71,-0.684298,-0.154421,-0.111968,-0.947106,0.201
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R1 BE at 1R,1176,-0.370,0.130,43.5,0.93,72,-0.666269,-0.274908,-0.226635,-1.043560,0.191
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R2 trail 1R,1176,-0.407,0.093,47.2,0.92,72,-0.480498,-0.275353,-0.377036,-1.072181,0.165
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R3 trail 0.5R,1176,-0.428,0.072,48.3,0.92,72,-0.529396,-0.353297,-0.307620,-1.098031,-0.086
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R4 EMA9 close,2425,-0.675,-0.175,23.5,0.50,149,-0.658041,-0.713008,-0.608027,-0.729270,-0.119
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R5 EMA9 after 1R,1176,-0.479,0.021,48.3,0.91,72,-0.297665,-0.463300,-0.360245,-1.124766,0.059
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R0 no trail,7524,-0.989,-0.489,55.4,0.81,462,-1.216814,-0.811166,-0.929323,-0.973603,-0.464
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R1 BE at 1R,7540,-1.007,-0.507,54.6,0.80,463,-1.205549,-0.834296,-0.988514,-0.953649,-0.474
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R2 trail 1R,7540,-1.021,-0.521,55.7,0.80,463,-1.201375,-0.853301,-1.025950,-0.930679,-0.493
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R3 trail 0.5R,7540,-1.041,-0.541,56.2,0.80,463,-1.209717,-0.898549,-1.043191,-0.902742,-0.503
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R4 EMA9 close,9778,-0.848,-0.348,26.5,0.52,600,-0.970667,-0.912605,-0.662770,-0.653559,-0.327
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R5 EMA9 after 1R,7540,-1.038,-0.538,56.2,0.80,463,-1.225829,-0.863450,-1.036511,-0.971649,-0.543
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R0 no trail,940,-0.339,0.161,43.2,0.93,58,1.102743,0.200125,-1.168105,-1.882953,0.250
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R1 BE at 1R,976,-0.281,0.219,40.6,0.94,60,1.069118,0.313895,-1.152611,-1.912298,0.032
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R2 trail 1R,999,-0.369,0.131,47.4,0.92,61,1.086248,0.151612,-1.134927,-2.090490,0.269
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R3 trail 0.5R,1007,-0.713,-0.213,48.1,0.85,62,0.420004,-0.275235,-1.222839,-2.492827,-0.118
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R4 EMA9 close,2355,-0.626,-0.126,21.2,0.42,144,-0.635547,-0.669314,-0.544890,-0.645217,-0.086
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,1009,-0.687,-0.187,48.0,0.85,62,0.351770,-0.135064,-1.264357,-2.736843,-0.161
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R0 no trail,1118,-0.186,0.314,44.8,0.97,69,0.882478,-0.601913,0.273512,-0.665324,0.605
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R1 BE at 1R,1145,-0.303,0.197,40.2,0.94,70,0.870612,-0.768514,0.211675,-0.814527,0.303
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R2 trail 1R,1156,-0.399,0.101,47.4,0.92,71,-0.378754,-0.575284,0.008304,-0.960112,0.219
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R3 trail 0.5R,1167,-0.297,0.203,48.5,0.94,72,-0.154804,-0.454412,0.064231,-0.900300,0.222
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R4 EMA9 close,2425,-0.658,-0.158,23.5,0.52,149,-0.525869,-0.741593,-0.570454,-0.670924,-0.090
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R5 EMA9 after 1R,1170,-0.303,0.197,48.2,0.94,72,0.265136,-0.505680,-0.016442,-0.814187,0.290
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R0 no trail,5255,-0.503,-0.003,37.6,0.94,322,-0.184545,-0.200621,-0.992986,-1.446121,-0.327
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R1 BE at 1R,5624,-0.667,-0.167,29.6,0.91,345,-0.244025,-0.721628,-0.940941,-1.295596,-0.241
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R2 trail 1R,6159,-0.920,-0.420,46.8,0.87,378,-0.816841,-1.092792,-0.642172,-1.614343,-0.591
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R3 trail 0.5R,6933,-1.121,-0.621,48.2,0.84,425,-1.155032,-1.098444,-1.079545,-1.219752,-0.576
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R4 EMA9 close,9778,-0.857,-0.357,24.4,0.55,600,-0.979401,-0.960622,-0.580792,-0.815942,-0.304
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R5 EMA9 after 1R,7135,-1.055,-0.555,48.1,0.85,438,-1.158639,-0.936891,-1.044815,-1.154393,-0.561
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R0 no trail,965,-0.424,0.076,43.0,0.92,59,0.975557,0.095850,-1.036680,-2.496195,-0.073
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R1 BE at 1R,997,-0.337,0.163,40.7,0.93,61,0.947197,0.242661,-1.009025,-2.432911,0.018
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R2 trail 1R,1002,-0.355,0.145,47.4,0.92,61,1.048557,0.236519,-1.149638,-2.271023,0.156
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R3 trail 0.5R,1007,-0.715,-0.215,48.1,0.85,62,0.442956,-0.284195,-1.222839,-2.492827,-0.075
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R4 EMA9 close,2355,-0.626,-0.126,21.2,0.42,144,-0.635547,-0.668203,-0.544890,-0.645217,-0.101
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,1009,-0.666,-0.166,48.0,0.86,62,0.351770,-0.096595,-1.258025,-2.736843,0.019
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R0 no trail,1135,-0.246,0.254,45.0,0.96,70,0.611810,-0.529112,0.041824,-0.631490,0.400
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R1 BE at 1R,1160,-0.350,0.150,40.5,0.93,71,0.672320,-0.675304,-0.029410,-0.780985,0.240
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R2 trail 1R,1163,-0.396,0.104,47.5,0.92,71,-0.196171,-0.527731,-0.111247,-0.919135,0.407
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R3 trail 0.5R,1169,-0.283,0.217,48.6,0.95,72,-0.082417,-0.454785,0.084980,-0.900300,0.306
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R4 EMA9 close,2425,-0.660,-0.160,23.5,0.52,149,-0.544759,-0.741593,-0.570454,-0.670924,-0.113
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R5 EMA9 after 1R,1171,-0.308,0.192,48.2,0.94,72,0.248220,-0.500088,-0.047312,-0.774379,0.288
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R0 no trail,5723,-0.552,-0.052,38.7,0.93,351,-0.328875,-0.323282,-0.809429,-1.631942,-0.193
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R1 BE at 1R,6029,-0.727,-0.227,31.0,0.90,370,-0.436247,-0.718963,-0.815802,-1.729011,-0.263
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R2 trail 1R,6264,-0.919,-0.419,46.7,0.87,384,-0.792225,-1.030342,-0.764403,-1.550038,-0.711
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R3 trail 0.5R,6935,-1.114,-0.614,48.2,0.84,425,-1.141561,-1.102843,-1.069498,-1.205146,-0.634
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R4 EMA9 close,9778,-0.854,-0.354,24.4,0.55,600,-0.975242,-0.956808,-0.577618,-0.829089,-0.282
+A0 09:30 carried,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,7135,-1.075,-0.575,48.1,0.85,438,-1.147979,-0.977924,-1.078858,-1.157216,-0.452
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R0 no trail,7128,-0.760,-0.260,23.6,0.78,437,-1.937300,-0.789011,-0.661746,-0.511004,-0.249
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,9157,-0.742,-0.242,16.8,0.72,562,-1.838221,-0.761445,-0.651878,-0.551179,-0.085
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R2 trail 1R,10684,-0.755,-0.255,41.2,0.73,655,-1.844747,-0.848760,-0.629087,-0.467564,-0.211
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,11114,-0.768,-0.268,48.1,0.73,682,-1.744959,-0.845284,-0.668070,-0.476604,-0.189
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,50263,-0.643,-0.143,18.3,0.36,3084,-0.827559,-0.708092,-0.551939,-0.529439,-0.119
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,11191,-0.689,-0.189,46.1,0.76,687,-1.624906,-0.722587,-0.635845,-0.394392,-0.111
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R0 no trail,6728,-0.834,-0.334,23.9,0.79,413,-1.485715,-0.860013,-0.717069,-0.818342,-0.235
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R1 BE at 1R,8521,-0.864,-0.364,16.9,0.73,523,-1.477755,-0.929557,-0.739866,-0.776612,-0.149
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R2 trail 1R,9877,-0.874,-0.374,42.6,0.74,606,-1.570955,-0.985797,-0.687492,-0.803845,-0.282
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R3 trail 0.5R,10232,-0.879,-0.379,48.1,0.75,628,-1.489143,-1.049115,-0.661011,-0.767281,-0.308
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R4 EMA9 close,33766,-0.648,-0.148,22.2,0.47,2072,-0.800045,-0.709248,-0.545732,-0.627051,-0.111
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,10282,-0.805,-0.305,46.3,0.77,631,-1.320024,-0.912995,-0.621292,-0.816371,-0.268
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R0 no trail,8653,-0.307,0.193,26.3,0.95,531,-0.541819,-0.496883,0.138214,-0.114785,-0.117
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R1 BE at 1R,10781,-0.444,0.056,18.6,0.90,661,-0.685752,-0.656135,0.044928,-0.230425,0.066
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R2 trail 1R,12470,-0.665,-0.165,45.6,0.86,765,-0.938096,-0.721324,-0.340492,-0.419450,-0.144
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,12994,-0.646,-0.146,49.8,0.87,797,-0.952060,-0.696938,-0.283176,-0.398834,0.006
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R4 EMA9 close,38264,-0.658,-0.158,24.8,0.62,2347,-0.779505,-0.690333,-0.455991,-0.573543,-0.078
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,13101,-0.526,-0.026,48.1,0.90,804,-0.765223,-0.568857,-0.261785,-0.251552,-0.027
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R0 no trail,8324,-0.708,-0.208,30.1,0.80,511,-1.919093,-0.711454,-0.622406,-0.521609,-0.094
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,9975,-0.699,-0.199,22.4,0.75,612,-1.787906,-0.731490,-0.595110,-0.535915,-0.023
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,10698,-0.725,-0.225,41.1,0.75,656,-1.798238,-0.804467,-0.592871,-0.498815,-0.166
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,11115,-0.762,-0.262,48.1,0.74,682,-1.725450,-0.840279,-0.662104,-0.472093,-0.177
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,50263,-0.646,-0.146,18.3,0.36,3084,-0.826103,-0.712525,-0.551401,-0.541092,-0.122
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,11192,-0.683,-0.183,46.1,0.77,687,-1.607371,-0.705944,-0.620666,-0.447519,-0.208
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R0 no trail,7812,-0.831,-0.331,30.5,0.80,479,-1.397200,-0.961250,-0.635364,-0.813594,-0.290
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R1 BE at 1R,9269,-0.833,-0.333,22.7,0.75,569,-1.371455,-0.958746,-0.644112,-0.811220,-0.233
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R2 trail 1R,9888,-0.877,-0.377,42.6,0.74,607,-1.568936,-0.992687,-0.685538,-0.812541,-0.268
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,10234,-0.880,-0.380,48.1,0.75,628,-1.489143,-1.053641,-0.658802,-0.766205,-0.325
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R4 EMA9 close,33766,-0.647,-0.147,22.2,0.47,2072,-0.797100,-0.712227,-0.542501,-0.618094,-0.103
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,10284,-0.797,-0.297,46.3,0.77,631,-1.304413,-0.912415,-0.613955,-0.787130,-0.250
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R0 no trail,10045,-0.311,0.189,32.7,0.95,616,-0.399196,-0.470885,-0.068819,-0.160099,0.289
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,11748,-0.478,0.022,24.3,0.90,721,-0.657730,-0.615231,-0.109777,-0.467652,0.012
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R2 trail 1R,12489,-0.606,-0.106,45.6,0.88,766,-0.849026,-0.663304,-0.299557,-0.418853,-0.151
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,12994,-0.638,-0.138,49.8,0.87,797,-0.942268,-0.687937,-0.268548,-0.417166,-0.099
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,38264,-0.653,-0.153,24.8,0.62,2347,-0.772248,-0.685822,-0.457601,-0.566984,-0.088
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,13101,-0.524,-0.024,48.1,0.90,804,-0.733736,-0.574698,-0.266861,-0.315408,0.000
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R0 no trail,2374,-1.104,-0.604,46.7,0.84,146,-2.757967,-1.550878,-0.185341,-1.274552,-0.998
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R1 BE at 1R,2383,-1.102,-0.602,46.4,0.83,146,-2.618125,-1.561853,-0.189081,-1.274552,-0.657
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R2 trail 1R,2393,-1.117,-0.617,46.8,0.83,147,-2.786424,-1.551710,-0.213506,-1.274552,-0.651
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R3 trail 0.5R,2426,-1.134,-0.634,46.7,0.83,149,-2.777342,-1.576681,-0.223540,-1.273040,-0.647
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R4 EMA9 close,50263,-0.643,-0.143,18.3,0.36,3084,-0.827559,-0.708176,-0.552314,-0.525164,-0.115
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,2456,-1.131,-0.631,46.7,0.83,151,-2.758057,-1.554268,-0.251595,-1.248460,-0.572
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R0 no trail,2366,-0.884,-0.384,49.3,0.89,145,-2.846338,-0.141238,-1.076172,-1.831007,-0.045
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R1 BE at 1R,2370,-0.892,-0.392,49.1,0.88,145,-2.846338,-0.156544,-1.077529,-1.834139,-0.206
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R2 trail 1R,2375,-0.889,-0.389,49.3,0.89,146,-2.846338,-0.168615,-1.058466,-1.833789,-0.638
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R3 trail 0.5R,2396,-0.927,-0.427,49.2,0.88,147,-2.866796,-0.163046,-1.142610,-1.890018,-0.432
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R4 EMA9 close,33766,-0.653,-0.153,22.2,0.47,2072,-0.807481,-0.710598,-0.554744,-0.629513,-0.111
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R5 EMA9 after 1R,2418,-0.893,-0.393,49.3,0.88,148,-2.836260,-0.142132,-1.097674,-1.870078,-0.596
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R0 no trail,4385,-0.517,-0.017,45.8,0.95,269,-1.687072,-0.477941,0.549239,0.997570,-0.416
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R1 BE at 1R,4527,-0.372,0.128,43.6,0.96,278,-1.612917,-0.039750,0.453642,0.967081,-0.033
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R2 trail 1R,4769,-0.493,0.007,48.9,0.95,293,-1.588061,-0.216715,0.241955,0.668262,-0.314
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R3 trail 0.5R,5088,-0.656,-0.156,49.0,0.93,312,-1.689799,-0.602112,0.288882,0.488705,-0.155
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R4 EMA9 close,38264,-0.656,-0.156,24.8,0.62,2347,-0.779297,-0.686276,-0.456120,-0.568610,-0.087
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R5 EMA9 after 1R,5289,-0.699,-0.199,48.8,0.93,324,-1.595424,-0.655387,0.079959,0.415023,-0.044
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R0 no trail,2376,-1.096,-0.596,46.7,0.84,146,-2.757967,-1.532594,-0.185341,-1.274552,-0.930
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R1 BE at 1R,2384,-1.091,-0.591,46.5,0.84,146,-2.618125,-1.537932,-0.189081,-1.274552,-0.735
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R2 trail 1R,2393,-1.104,-0.604,46.8,0.84,147,-2.786424,-1.522712,-0.213506,-1.274552,-0.892
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R3 trail 0.5R,2426,-1.134,-0.634,46.7,0.83,149,-2.777342,-1.576681,-0.223540,-1.273040,-0.790
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R4 EMA9 close,50263,-0.643,-0.143,18.3,0.36,3084,-0.827559,-0.708176,-0.552314,-0.525164,-0.117
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,2456,-1.131,-0.631,46.7,0.83,151,-2.758057,-1.554268,-0.251595,-1.248460,-0.673
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R0 no trail,2367,-0.899,-0.399,49.3,0.88,145,-2.846338,-0.141238,-1.101656,-1.870095,-0.547
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R1 BE at 1R,2371,-0.906,-0.406,49.1,0.88,145,-2.846338,-0.156544,-1.102984,-1.873070,-0.501
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R2 trail 1R,2376,-0.903,-0.403,49.3,0.88,146,-2.846338,-0.168615,-1.083892,-1.872722,-0.453
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R3 trail 0.5R,2396,-0.927,-0.427,49.2,0.88,147,-2.866796,-0.163046,-1.142610,-1.890018,-0.539
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R4 EMA9 close,33766,-0.653,-0.153,22.2,0.47,2072,-0.807481,-0.710598,-0.554744,-0.629513,-0.103
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R5 EMA9 after 1R,2418,-0.893,-0.393,49.3,0.88,148,-2.836260,-0.142132,-1.097674,-1.870078,-0.162
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R0 no trail,4459,-0.497,0.003,45.9,0.95,274,-1.644540,-0.441124,0.521529,0.980061,-0.200
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R1 BE at 1R,4596,-0.389,0.111,43.7,0.96,282,-1.578684,-0.093488,0.405262,0.961947,-0.016
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R2 trail 1R,4780,-0.473,0.027,48.9,0.95,293,-1.573660,-0.166555,0.237106,0.665843,-0.152
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R3 trail 0.5R,5088,-0.654,-0.154,48.9,0.93,312,-1.689111,-0.612939,0.309323,0.488705,-0.341
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R4 EMA9 close,38264,-0.656,-0.156,24.8,0.62,2347,-0.779297,-0.686276,-0.454807,-0.568610,-0.089
+A0 09:30 carried,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,5289,-0.685,-0.185,48.8,0.93,324,-1.587094,-0.643604,0.098976,0.453369,-0.099
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R0 no trail,1410,-0.328,0.172,36.6,0.91,87,0.251134,-0.048527,-0.460351,-1.755960,0.249
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R1 BE at 1R,1514,-0.444,0.056,29.6,0.86,93,-0.231268,-0.305745,-0.417029,-1.393005,0.058
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R2 trail 1R,1515,-0.422,0.078,44.8,0.86,93,0.038423,-0.276097,-0.532661,-1.159357,0.093
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R3 trail 0.5R,1517,-0.604,-0.104,50.6,0.80,93,-0.517025,-0.579610,-0.432929,-1.387248,-0.141
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R4 EMA9 close,3887,-0.658,-0.158,18.2,0.35,238,-0.661406,-0.733112,-0.539807,-0.614372,-0.112
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R5 EMA9 after 1R,1517,-0.551,-0.051,49.6,0.82,93,-0.466432,-0.418538,-0.549804,-1.258595,0.023
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R0 no trail,1739,-0.273,0.227,35.3,0.93,107,-0.919304,-0.135515,-0.257073,-0.457536,0.365
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R1 BE at 1R,1835,-0.360,0.140,28.0,0.90,113,-0.637721,-0.280050,-0.371211,-0.472356,0.217
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R2 trail 1R,1835,-0.506,-0.006,45.3,0.85,113,-0.748461,-0.533400,-0.398432,-0.590497,0.067
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R3 trail 0.5R,1836,-0.628,-0.128,49.7,0.82,113,-0.918303,-0.846257,-0.376100,-0.303889,-0.176
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R4 EMA9 close,3902,-0.668,-0.168,20.3,0.45,239,-0.682915,-0.761750,-0.511532,-0.683895,-0.139
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R5 EMA9 after 1R,1836,-0.532,-0.032,48.2,0.85,113,-0.766549,-0.661706,-0.416264,-0.157480,0.082
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R0 no trail,11058,-0.978,-0.478,38.4,0.78,678,-1.245082,-0.895015,-0.851161,-0.702645,-0.440
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R1 BE at 1R,11135,-1.005,-0.505,32.2,0.73,683,-1.177670,-1.014266,-0.849815,-0.824074,-0.444
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R2 trail 1R,11137,-1.012,-0.512,46.1,0.73,683,-1.211596,-1.058311,-0.842264,-0.626453,-0.482
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R3 trail 0.5R,11139,-0.999,-0.499,50.8,0.73,683,-1.174548,-1.044634,-0.832108,-0.707390,-0.492
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R4 EMA9 close,14410,-0.820,-0.320,22.7,0.50,884,-0.972046,-0.803917,-0.715317,-0.565605,-0.260
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R5 EMA9 after 1R,11139,-0.954,-0.454,48.5,0.74,683,-1.120020,-0.968289,-0.822078,-0.697840,-0.441
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R0 no trail,1336,0.143,0.643,34.6,1.04,82,0.752734,0.934962,-0.698061,-1.193684,0.752
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,1459,-0.099,0.401,26.7,0.97,90,0.098735,0.350337,-0.542957,-0.867565,0.513
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R2 trail 1R,1493,-0.322,0.178,43.9,0.90,92,0.253110,-0.099631,-0.586903,-0.971873,0.187
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,1506,-0.586,-0.086,50.3,0.81,92,-0.418913,-0.571282,-0.406205,-1.417297,-0.010
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,3886,-0.641,-0.141,18.1,0.37,238,-0.663411,-0.696544,-0.545429,-0.614372,-0.087
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,1507,-0.457,0.043,49.2,0.85,92,-0.434836,-0.237097,-0.535259,-1.252240,0.062
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R0 no trail,1687,-0.177,0.323,33.7,0.96,103,0.026030,-0.359895,0.042241,-0.290065,0.494
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R1 BE at 1R,1802,-0.400,0.100,25.4,0.89,111,-0.559956,-0.529624,-0.208086,-0.393545,0.315
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R2 trail 1R,1826,-0.499,0.001,45.1,0.86,112,-0.919944,-0.567644,-0.334465,-0.463964,0.062
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R3 trail 0.5R,1831,-0.624,-0.124,49.6,0.82,112,-0.943785,-0.912884,-0.323040,-0.134578,-0.053
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R4 EMA9 close,3902,-0.672,-0.172,20.3,0.45,239,-0.639569,-0.779552,-0.519907,-0.646779,-0.141
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,1830,-0.499,0.001,48.0,0.86,112,-0.690329,-0.702950,-0.342210,0.034144,0.143
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R0 no trail,8251,-0.652,-0.152,22.8,0.89,506,-0.490510,-0.720182,-0.664774,-0.952418,-0.404
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R1 BE at 1R,9193,-0.889,-0.389,13.7,0.79,564,-0.734950,-1.166778,-0.761978,-0.806031,-0.470
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R2 trail 1R,10620,-1.121,-0.621,42.6,0.72,652,-1.410912,-1.197130,-0.840344,-0.668949,-0.578
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,11002,-1.053,-0.553,48.5,0.73,675,-1.286996,-1.161369,-0.775419,-0.660313,-0.536
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R4 EMA9 close,14285,-0.816,-0.316,21.6,0.51,876,-0.938512,-0.832445,-0.663250,-0.721196,-0.243
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,10798,-0.971,-0.471,45.7,0.76,662,-1.157833,-1.042764,-0.753305,-0.707093,-0.401
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R0 no trail,1381,0.050,0.550,36.8,1.01,85,0.932202,0.569152,-0.552580,-1.124490,0.520
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,1492,-0.175,0.325,29.0,0.95,92,0.204802,0.188934,-0.545645,-0.962633,0.341
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,1495,-0.313,0.187,43.9,0.90,92,0.178663,-0.072604,-0.574374,-0.993532,0.263
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,1506,-0.590,-0.090,50.3,0.81,92,-0.418913,-0.577504,-0.409613,-1.417297,-0.147
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,3886,-0.647,-0.147,18.1,0.37,238,-0.663411,-0.713616,-0.537804,-0.612662,-0.125
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,1508,-0.471,0.029,49.3,0.85,93,-0.434836,-0.294423,-0.498083,-1.251056,-0.003
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R0 no trail,1732,-0.273,0.227,36.2,0.94,106,-0.452666,-0.311717,-0.184046,-0.284190,0.405
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R1 BE at 1R,1827,-0.360,0.140,28.2,0.90,112,-0.469712,-0.445936,-0.218534,-0.408023,0.360
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R2 trail 1R,1829,-0.507,-0.007,45.1,0.86,112,-0.788313,-0.627053,-0.300757,-0.494918,-0.058
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,1831,-0.625,-0.125,49.6,0.82,112,-0.943785,-0.923366,-0.312100,-0.127676,-0.063
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R4 EMA9 close,3902,-0.667,-0.167,20.3,0.45,239,-0.660336,-0.769364,-0.511192,-0.658973,-0.121
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,1831,-0.523,-0.023,48.1,0.85,112,-0.752131,-0.749276,-0.313332,-0.049567,-0.010
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R0 no trail,10094,-0.765,-0.265,27.8,0.86,619,-0.800028,-0.606525,-0.873776,-0.878001,-0.414
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,10512,-0.928,-0.428,18.2,0.77,645,-0.900761,-0.983661,-0.893502,-0.929377,-0.395
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R2 trail 1R,10735,-1.111,-0.611,42.6,0.72,659,-1.371617,-1.130574,-0.945089,-0.592534,-0.651
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,11005,-1.059,-0.559,48.5,0.73,675,-1.290429,-1.155621,-0.800786,-0.655633,-0.508
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,14332,-0.812,-0.312,21.6,0.51,879,-0.943764,-0.813435,-0.683588,-0.664052,-0.249
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,10884,-0.973,-0.473,45.7,0.76,668,-1.140239,-1.015547,-0.842654,-0.589908,-0.393
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R0 no trail,1141,-0.545,-0.045,46.1,0.89,70,-0.059861,-0.296785,-0.637028,-2.031834,0.045
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R1 BE at 1R,1168,-0.490,0.010,43.9,0.89,72,-0.179420,-0.155196,-0.666886,-1.985122,0.141
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R2 trail 1R,1168,-0.469,0.031,47.9,0.90,72,-0.175703,-0.096152,-0.629234,-2.197511,0.154
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R3 trail 0.5R,1168,-0.525,-0.025,48.9,0.88,72,-0.438786,-0.085678,-0.747962,-2.155571,-0.042
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R4 EMA9 close,3887,-0.658,-0.158,18.2,0.35,238,-0.661406,-0.732834,-0.538962,-0.619973,-0.121
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R5 EMA9 after 1R,1168,-0.710,-0.210,48.7,0.84,72,-0.495283,-0.282368,-0.965679,-2.325252,-0.149
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R0 no trail,1366,-0.336,0.164,45.5,0.94,84,-0.931241,-0.266031,-0.075324,-1.035558,0.200
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R1 BE at 1R,1398,-0.446,0.054,42.1,0.91,86,-0.802945,-0.461452,-0.173559,-0.974311,0.063
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R2 trail 1R,1398,-0.474,0.026,47.1,0.91,86,-0.799784,-0.440741,-0.337724,-0.803330,0.266
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R3 trail 0.5R,1398,-0.604,-0.104,48.1,0.88,86,-0.752701,-0.553321,-0.514415,-1.021941,0.005
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R4 EMA9 close,3902,-0.672,-0.172,20.3,0.45,239,-0.692498,-0.762326,-0.519557,-0.688349,-0.151
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R5 EMA9 after 1R,1399,-0.521,-0.021,48.0,0.90,86,-0.727688,-0.535664,-0.338179,-0.882993,0.070
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R0 no trail,9126,-1.075,-0.575,51.9,0.80,560,-1.341976,-0.877738,-1.024256,-0.924048,-0.586
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R1 BE at 1R,9175,-1.075,-0.575,50.0,0.80,563,-1.263143,-0.948684,-1.044915,-0.889604,-0.614
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R2 trail 1R,9175,-1.070,-0.570,53.1,0.80,563,-1.230177,-0.965164,-1.047686,-0.898186,-0.497
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R3 trail 0.5R,9176,-1.080,-0.580,54.1,0.80,563,-1.243965,-0.985320,-1.021106,-0.977480,-0.578
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R4 EMA9 close,14410,-0.821,-0.321,22.7,0.50,884,-0.973076,-0.804729,-0.716393,-0.565407,-0.282
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R5 EMA9 after 1R,9176,-1.078,-0.578,54.0,0.80,563,-1.246632,-0.985328,-1.001647,-1.003078,-0.557
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R0 no trail,1072,0.020,0.520,43.7,1.00,66,0.467021,0.795671,-0.958259,-1.128009,0.643
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R1 BE at 1R,1115,0.032,0.532,40.4,1.01,68,0.232941,0.827427,-0.903623,-1.193619,0.380
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R2 trail 1R,1147,-0.212,0.288,47.3,0.95,70,0.248034,0.373853,-0.817945,-1.758064,0.442
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R3 trail 0.5R,1160,-0.472,0.028,48.4,0.90,71,-0.325329,-0.045268,-0.731399,-1.983755,0.071
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R4 EMA9 close,3886,-0.641,-0.141,18.1,0.37,238,-0.663411,-0.696265,-0.544585,-0.619973,-0.142
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,1161,-0.591,-0.091,48.3,0.87,71,-0.446178,-0.089140,-0.943033,-2.188587,-0.330
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R0 no trail,1318,-0.312,0.188,43.4,0.94,81,-0.078253,-0.628047,0.234058,-0.813791,0.110
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R1 BE at 1R,1361,-0.402,0.098,38.9,0.92,83,0.006222,-0.774556,0.157690,-0.800190,0.246
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R2 trail 1R,1379,-0.450,0.050,46.8,0.91,85,-0.966273,-0.460699,-0.205722,-0.782818,0.109
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R3 trail 0.5R,1390,-0.547,-0.047,48.1,0.89,85,-0.776284,-0.614671,-0.305357,-0.837191,-0.124
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R4 EMA9 close,3902,-0.676,-0.176,20.3,0.45,239,-0.649152,-0.780128,-0.527931,-0.651233,-0.130
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R5 EMA9 after 1R,1391,-0.425,0.075,47.7,0.92,85,-0.568872,-0.557721,-0.137087,-0.616241,0.336
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R0 no trail,6362,-0.597,-0.097,32.8,0.92,390,-0.505914,-0.305817,-1.045190,-0.647149,-0.267
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R1 BE at 1R,7118,-0.734,-0.234,23.9,0.88,437,-0.572080,-0.799886,-0.943672,-0.407348,-0.428
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R2 trail 1R,8096,-1.000,-0.500,46.0,0.84,497,-0.821372,-1.167062,-0.928522,-1.297269,-0.506
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R3 trail 0.5R,8844,-1.107,-0.607,48.1,0.82,543,-1.179537,-1.133035,-0.996624,-1.076149,-0.700
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R4 EMA9 close,14285,-0.816,-0.316,21.6,0.51,876,-0.939100,-0.833263,-0.664155,-0.720996,-0.257
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R5 EMA9 after 1R,8693,-1.093,-0.593,47.8,0.82,533,-1.165934,-1.143035,-0.941807,-1.093844,-0.540
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R0 no trail,1106,-0.149,0.351,44.0,0.97,68,0.329793,0.412625,-0.795802,-1.397847,0.346
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R1 BE at 1R,1147,-0.127,0.373,40.9,0.97,70,0.111184,0.495452,-0.785901,-1.459253,0.075
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R2 trail 1R,1153,-0.248,0.252,47.4,0.95,71,0.089310,0.340713,-0.773098,-1.940474,0.319
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R3 trail 0.5R,1160,-0.479,0.021,48.4,0.90,71,-0.305387,-0.059403,-0.739758,-1.983755,-0.040
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R4 EMA9 close,3886,-0.649,-0.149,18.1,0.36,238,-0.663411,-0.710756,-0.544585,-0.619973,-0.132
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,1160,-0.606,-0.106,48.3,0.87,71,-0.446178,-0.145152,-0.901727,-2.188587,-0.280
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R0 no trail,1343,-0.391,0.109,43.6,0.93,82,-0.422422,-0.500017,-0.096052,-0.833590,0.383
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R1 BE at 1R,1387,-0.471,0.029,39.1,0.91,85,-0.272996,-0.631721,-0.184823,-0.819266,0.195
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R2 trail 1R,1389,-0.464,0.036,46.9,0.91,85,-0.873682,-0.442083,-0.291081,-0.804143,0.059
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R3 trail 0.5R,1392,-0.539,-0.039,48.1,0.90,85,-0.690323,-0.614671,-0.301621,-0.837191,0.020
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R4 EMA9 close,3902,-0.677,-0.177,20.3,0.45,239,-0.661268,-0.780128,-0.527931,-0.651233,-0.128
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R5 EMA9 after 1R,1394,-0.451,0.049,47.8,0.91,86,-0.567964,-0.549277,-0.229506,-0.616638,0.073
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R0 no trail,7383,-0.756,-0.256,34.6,0.90,453,-0.574287,-0.397254,-1.157615,-1.644448,-0.483
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R1 BE at 1R,7988,-0.895,-0.395,26.1,0.86,490,-0.736720,-0.774079,-1.069192,-1.461277,-0.449
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R2 trail 1R,8289,-0.979,-0.479,45.9,0.84,509,-0.781022,-1.131882,-0.952280,-1.274414,-0.688
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R3 trail 0.5R,8846,-1.102,-0.602,48.1,0.82,543,-1.178054,-1.129868,-0.979474,-1.087906,-0.575
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R4 EMA9 close,14317,-0.813,-0.313,21.6,0.51,878,-0.933301,-0.832542,-0.663629,-0.710002,-0.258
+A0 09:30 carried,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,8747,-1.098,-0.598,47.8,0.82,537,-1.139011,-1.131960,-0.985884,-1.166230,-0.391
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R0 no trail,8912,-0.753,-0.253,20.2,0.76,547,-1.894595,-0.754537,-0.667671,-0.632688,-0.142
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,12295,-0.755,-0.255,13.5,0.68,754,-1.869784,-0.768426,-0.668953,-0.633905,-0.130
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R2 trail 1R,14532,-0.751,-0.251,40.0,0.71,892,-1.754991,-0.829673,-0.636528,-0.590350,-0.137
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,15274,-0.748,-0.248,47.9,0.72,937,-1.611685,-0.824608,-0.645401,-0.590983,-0.176
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,128031,-0.641,-0.141,15.9,0.32,7855,-0.817648,-0.719211,-0.543435,-0.519405,-0.116
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,15396,-0.687,-0.187,44.8,0.74,945,-1.524903,-0.731237,-0.610276,-0.545593,-0.110
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R0 no trail,9065,-0.763,-0.263,19.4,0.78,556,-1.421676,-0.756746,-0.680273,-0.771422,-0.068
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R1 BE at 1R,12346,-0.775,-0.275,12.9,0.71,757,-1.406895,-0.807532,-0.685321,-0.723180,-0.077
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R2 trail 1R,14642,-0.780,-0.280,41.7,0.73,898,-1.501987,-0.842000,-0.675726,-0.658128,-0.142
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R3 trail 0.5R,15320,-0.716,-0.216,48.8,0.76,940,-1.232416,-0.827570,-0.601223,-0.566671,-0.133
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R4 EMA9 close,88691,-0.630,-0.130,19.5,0.44,5441,-0.764539,-0.699909,-0.537998,-0.548361,-0.089
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,15419,-0.684,-0.184,45.1,0.78,946,-1.117448,-0.728966,-0.602394,-0.646680,-0.132
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R0 no trail,13718,-0.354,0.146,18.6,0.93,842,-0.535468,-0.442566,-0.066957,-0.461721,0.083
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R1 BE at 1R,19104,-0.583,-0.083,11.9,0.83,1172,-0.769869,-0.664674,-0.337634,-0.549489,0.040
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R2 trail 1R,22471,-0.677,-0.177,43.9,0.83,1379,-0.943016,-0.748286,-0.384621,-0.549490,-0.117
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,23322,-0.658,-0.158,49.5,0.84,1431,-0.968086,-0.669362,-0.378385,-0.527737,-0.076
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R4 EMA9 close,110448,-0.642,-0.142,22.2,0.58,6776,-0.780419,-0.639944,-0.444598,-0.619880,-0.071
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,23520,-0.544,-0.044,45.1,0.87,1443,-0.753468,-0.565921,-0.313213,-0.549120,-0.010
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R0 no trail,10721,-0.738,-0.238,28.9,0.77,658,-1.831288,-0.768553,-0.652513,-0.596270,-0.146
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,13465,-0.729,-0.229,20.7,0.72,826,-1.823493,-0.746479,-0.654309,-0.586249,-0.109
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,14550,-0.729,-0.229,40.0,0.72,893,-1.705320,-0.803029,-0.614886,-0.584515,-0.119
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,15274,-0.744,-0.244,47.9,0.72,937,-1.603289,-0.820369,-0.642552,-0.586197,-0.146
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,128031,-0.643,-0.143,15.9,0.32,7855,-0.816375,-0.721232,-0.542230,-0.526124,-0.116
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,15396,-0.682,-0.182,44.8,0.75,945,-1.509398,-0.729025,-0.591074,-0.578905,-0.155
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R0 no trail,10940,-0.701,-0.201,29.2,0.81,671,-1.293939,-0.747974,-0.599857,-0.678141,-0.121
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R1 BE at 1R,13564,-0.742,-0.242,20.7,0.74,832,-1.273674,-0.809317,-0.631893,-0.701467,-0.153
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R2 trail 1R,14662,-0.765,-0.265,41.7,0.74,900,-1.476573,-0.829563,-0.652374,-0.664762,-0.183
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,15321,-0.711,-0.211,48.8,0.76,940,-1.229652,-0.821897,-0.589508,-0.580150,-0.128
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R4 EMA9 close,88691,-0.628,-0.128,19.6,0.44,5441,-0.763325,-0.699292,-0.536536,-0.538675,-0.088
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,15420,-0.668,-0.168,45.1,0.78,946,-1.109202,-0.713245,-0.587841,-0.619694,-0.085
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R0 no trail,16898,-0.406,0.094,29.9,0.92,1037,-0.479655,-0.472485,-0.226021,-0.561108,0.097
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,21072,-0.547,-0.047,20.8,0.86,1293,-0.694435,-0.611659,-0.334791,-0.580615,0.024
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R2 trail 1R,22514,-0.626,-0.126,43.9,0.84,1381,-0.844382,-0.709036,-0.363011,-0.511344,-0.136
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,23323,-0.652,-0.152,49.5,0.84,1431,-0.964637,-0.661953,-0.373476,-0.523559,-0.133
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,110448,-0.637,-0.137,22.2,0.59,6776,-0.771320,-0.633547,-0.445033,-0.614522,-0.065
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,23520,-0.517,-0.017,45.1,0.88,1443,-0.688911,-0.537323,-0.309642,-0.580580,0.072
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R0 no trail,2385,-1.004,-0.504,46.8,0.85,146,-2.262204,-1.447379,-0.173020,-1.165094,-0.412
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R1 BE at 1R,2393,-1.017,-0.517,46.5,0.85,147,-2.271177,-1.470039,-0.173020,-1.165094,-0.391
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R2 trail 1R,2407,-1.012,-0.512,46.9,0.85,148,-2.232742,-1.453706,-0.194131,-1.165094,-0.372
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R3 trail 0.5R,2441,-1.019,-0.519,46.7,0.85,150,-2.264552,-1.469536,-0.183614,-1.154064,-0.775
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R4 EMA9 close,128031,-0.641,-0.141,15.9,0.32,7855,-0.818868,-0.719249,-0.542851,-0.517890,-0.116
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,2473,-1.008,-0.508,46.8,0.85,152,-2.233458,-1.440146,-0.195529,-1.142912,-0.559
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R0 no trail,2387,-0.931,-0.431,48.8,0.88,146,-1.965445,-0.562001,-0.875778,-1.872896,-0.443
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R1 BE at 1R,2394,-0.945,-0.445,48.7,0.88,147,-2.061018,-0.582011,-0.868837,-1.872896,-0.675
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R2 trail 1R,2402,-0.939,-0.439,49.0,0.88,147,-2.007939,-0.598185,-0.846965,-1.878683,-0.542
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R3 trail 0.5R,2428,-0.957,-0.457,48.7,0.88,149,-1.931390,-0.569847,-0.915491,-1.961683,-0.526
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R4 EMA9 close,88691,-0.633,-0.133,19.6,0.44,5441,-0.767455,-0.701553,-0.542933,-0.553719,-0.091
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R5 EMA9 after 1R,2460,-0.928,-0.428,48.9,0.88,151,-1.924880,-0.579081,-0.864087,-1.855931,-0.425
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R0 no trail,4861,-0.273,0.227,44.2,0.97,298,-1.578883,-0.450510,1.351091,0.945787,0.061
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R1 BE at 1R,5174,-0.031,0.469,41.1,1.00,317,-1.138984,0.004159,1.219025,0.547583,0.336
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R2 trail 1R,5573,-0.262,0.238,49.3,0.97,342,-1.320611,-0.420887,1.159218,0.290792,0.197
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R3 trail 0.5R,6018,-0.450,0.050,49.9,0.95,369,-1.481022,-0.793172,1.084390,0.381490,-0.019
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R4 EMA9 close,110448,-0.642,-0.142,22.2,0.58,6776,-0.779512,-0.638972,-0.443066,-0.627684,-0.070
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R5 EMA9 after 1R,6250,-0.433,0.067,49.8,0.96,383,-1.431072,-0.778950,1.052282,0.357661,0.013
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R0 no trail,2390,-1.002,-0.502,46.8,0.85,147,-2.236973,-1.447956,-0.171543,-1.165094,-0.555
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R1 BE at 1R,2397,-1.012,-0.512,46.6,0.85,147,-2.246040,-1.465530,-0.171543,-1.165094,-0.663
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R2 trail 1R,2407,-1.009,-0.509,46.9,0.85,148,-2.211144,-1.450826,-0.192716,-1.165094,-0.504
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R3 trail 0.5R,2441,-1.018,-0.518,46.7,0.85,150,-2.249527,-1.469536,-0.183614,-1.154064,-0.813
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R4 EMA9 close,128031,-0.641,-0.141,15.9,0.32,7855,-0.818868,-0.719249,-0.542851,-0.517890,-0.118
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,2473,-1.008,-0.508,46.8,0.85,152,-2.233458,-1.440146,-0.195529,-1.142912,-0.550
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R0 no trail,2388,-0.930,-0.430,48.9,0.88,147,-1.965445,-0.562001,-0.875778,-1.857668,-0.360
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R1 BE at 1R,2395,-0.943,-0.443,48.7,0.88,147,-2.061018,-0.582011,-0.868837,-1.857668,-0.709
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R2 trail 1R,2403,-0.938,-0.438,49.0,0.88,147,-2.007939,-0.598185,-0.846965,-1.863434,-0.550
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R3 trail 0.5R,2428,-0.957,-0.457,48.7,0.88,149,-1.931390,-0.569847,-0.915491,-1.961683,-0.452
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R4 EMA9 close,88691,-0.633,-0.133,19.6,0.44,5441,-0.767455,-0.701553,-0.542933,-0.553719,-0.089
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R5 EMA9 after 1R,2460,-0.928,-0.428,48.9,0.88,151,-1.924880,-0.579081,-0.864087,-1.855931,-0.235
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R0 no trail,5025,-0.246,0.254,44.4,0.98,308,-1.524576,-0.479140,1.391806,0.979260,-0.120
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R1 BE at 1R,5322,-0.015,0.485,41.4,1.00,327,-1.097592,-0.062817,1.271489,0.641807,0.368
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R2 trail 1R,5596,-0.233,0.267,49.3,0.98,343,-1.267443,-0.390031,1.142238,0.333895,0.025
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R3 trail 0.5R,6020,-0.446,0.054,49.9,0.95,369,-1.477909,-0.785934,1.084880,0.381490,-0.027
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R4 EMA9 close,110448,-0.641,-0.141,22.2,0.58,6776,-0.779337,-0.638257,-0.442460,-0.627684,-0.068
+A0 09:30 carried,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,6250,-0.424,0.076,49.8,0.96,383,-1.426148,-0.774605,1.071626,0.373544,0.003
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R0 no trail,10102,-0.652,-0.152,47.8,0.66,620,-0.521140,-0.815441,-0.624286,-0.683209,-0.188
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R1 BE at 1R,10123,-0.688,-0.188,45.2,0.63,621,-0.546178,-0.867367,-0.659286,-0.707060,-0.181
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R2 trail 1R,10123,-0.682,-0.182,48.6,0.62,621,-0.540884,-0.865732,-0.663937,-0.650668,-0.212
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R3 trail 0.5R,10123,-0.659,-0.159,51.3,0.64,621,-0.540853,-0.827000,-0.636947,-0.597841,-0.136
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R4 EMA9 close,13230,-0.745,-0.245,19.5,0.27,812,-0.828045,-0.779531,-0.627926,-0.496947,-0.227
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R5 EMA9 after 1R,10123,-0.654,-0.154,50.8,0.64,621,-0.535016,-0.816470,-0.631667,-0.616481,-0.146
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R0 no trail,8724,-0.726,-0.226,49.5,0.71,535,-0.882660,-0.769311,-0.527417,-0.602601,-0.259
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R1 BE at 1R,8727,-0.755,-0.255,46.8,0.69,535,-0.915327,-0.792880,-0.543749,-0.681801,-0.193
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R2 trail 1R,8727,-0.766,-0.266,50.9,0.68,535,-0.923249,-0.794464,-0.553373,-0.741218,-0.248
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R3 trail 0.5R,8727,-0.750,-0.250,53.4,0.68,535,-0.872383,-0.806160,-0.544778,-0.734636,-0.269
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R4 EMA9 close,9952,-0.716,-0.216,25.3,0.41,611,-0.858376,-0.727319,-0.518257,-0.686732,-0.193
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R5 EMA9 after 1R,8727,-0.728,-0.228,52.9,0.69,535,-0.858969,-0.777771,-0.514689,-0.731345,-0.243
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R0 no trail,8620,-0.894,-0.394,44.4,0.80,529,-1.161895,-0.847072,-0.645419,-0.826223,-0.490
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R1 BE at 1R,8646,-0.925,-0.425,39.6,0.76,530,-1.148150,-0.827847,-0.782029,-0.891223,-0.447
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R2 trail 1R,8646,-0.956,-0.456,49.0,0.75,530,-1.168798,-0.878229,-0.837043,-0.802503,-0.457
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R3 trail 0.5R,8646,-0.923,-0.423,52.3,0.76,530,-1.093372,-0.858192,-0.796004,-0.928689,-0.507
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R4 EMA9 close,9778,-0.849,-0.349,26.5,0.52,600,-0.969633,-0.910531,-0.668257,-0.671270,-0.289
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R5 EMA9 after 1R,8646,-0.902,-0.402,51.6,0.77,530,-1.061779,-0.818828,-0.799715,-0.944357,-0.395
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R0 no trail,6097,-0.579,-0.079,30.0,0.84,374,-0.525757,-0.791506,-0.583645,0.048292,0.018
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,6701,-0.614,-0.114,21.0,0.78,411,-0.497996,-0.861264,-0.629390,-0.024398,-0.009
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R2 trail 1R,7545,-0.704,-0.204,41.9,0.74,463,-0.439188,-0.975609,-0.722152,-0.448013,-0.082
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,8280,-0.684,-0.184,49.6,0.74,508,-0.491856,-0.953591,-0.628621,-0.511073,-0.091
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,13227,-0.748,-0.248,18.1,0.32,811,-0.879275,-0.764796,-0.586920,-0.455228,-0.218
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,8430,-0.587,-0.087,48.4,0.78,517,-0.300264,-0.845028,-0.594794,-0.542349,-0.078
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R0 no trail,6003,-0.807,-0.307,28.7,0.82,368,-0.912663,-0.916546,-0.580021,-0.797488,-0.236
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R1 BE at 1R,6531,-0.878,-0.378,19.1,0.74,401,-1.074766,-0.980440,-0.520480,-1.023672,-0.171
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R2 trail 1R,7350,-0.968,-0.468,42.8,0.70,451,-1.186041,-1.033053,-0.721882,-0.847931,-0.430
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R3 trail 0.5R,8020,-0.865,-0.365,49.3,0.73,492,-1.077488,-0.916672,-0.589622,-0.845632,-0.346
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R4 EMA9 close,9950,-0.777,-0.277,22.7,0.42,610,-0.937264,-0.770566,-0.578316,-0.752290,-0.241
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,8084,-0.809,-0.309,48.2,0.75,496,-0.931813,-0.835661,-0.633515,-0.855411,-0.247
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R0 no trail,6423,-0.519,-0.019,28.0,0.92,394,-0.255503,-0.560785,-0.589628,-1.195857,-0.231
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R1 BE at 1R,6928,-0.720,-0.220,18.1,0.85,425,-0.329031,-0.944751,-0.701602,-1.476358,-0.277
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R2 trail 1R,7906,-1.118,-0.618,44.3,0.77,485,-1.399756,-1.132993,-0.785356,-1.046499,-0.663
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,8427,-1.071,-0.571,48.9,0.77,517,-1.293146,-1.065726,-0.821871,-1.026063,-0.568
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R4 EMA9 close,9778,-0.858,-0.358,24.4,0.55,600,-0.978367,-0.957824,-0.583098,-0.833652,-0.303
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,8479,-0.988,-0.488,47.8,0.79,520,-1.156013,-0.947662,-0.773090,-1.212547,-0.454
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R0 no trail,6940,-0.510,-0.010,33.2,0.85,426,-0.370124,-0.699954,-0.471590,-0.382598,0.054
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,7345,-0.608,-0.108,23.7,0.78,451,-0.424949,-0.890480,-0.563761,-0.316180,0.033
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,7614,-0.663,-0.163,42.0,0.75,467,-0.400906,-0.901892,-0.694151,-0.465918,-0.155
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,8280,-0.687,-0.187,49.6,0.74,508,-0.503492,-0.953589,-0.624982,-0.524361,-0.140
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,13227,-0.750,-0.250,18.1,0.31,811,-0.878773,-0.758649,-0.591298,-0.501536,-0.229
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,8430,-0.588,-0.088,48.4,0.78,517,-0.304038,-0.834957,-0.590630,-0.590872,-0.018
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R0 no trail,6808,-0.676,-0.176,31.8,0.84,418,-0.765681,-0.636946,-0.610020,-0.744213,-0.095
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R1 BE at 1R,7139,-0.812,-0.312,22.0,0.76,438,-1.061635,-0.746526,-0.596780,-0.950510,-0.276
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R2 trail 1R,7441,-0.938,-0.438,42.8,0.71,457,-1.140233,-1.003487,-0.714645,-0.791682,-0.313
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,8021,-0.873,-0.373,49.3,0.73,492,-1.075133,-0.908017,-0.623597,-0.860095,-0.328
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R4 EMA9 close,9950,-0.777,-0.277,22.7,0.42,610,-0.934565,-0.776242,-0.587816,-0.716955,-0.242
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,8085,-0.802,-0.302,48.2,0.75,496,-0.906849,-0.828577,-0.644292,-0.858902,-0.235
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R0 no trail,7456,-0.627,-0.127,30.8,0.90,457,-0.652181,-0.531538,-0.576849,-1.111803,-0.215
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,7752,-0.823,-0.323,20.8,0.83,476,-0.828394,-0.832673,-0.735238,-1.079342,-0.356
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R2 trail 1R,8016,-1.067,-0.567,44.3,0.78,492,-1.324735,-1.036929,-0.846974,-0.874349,-0.538
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,8428,-1.062,-0.562,49.0,0.78,517,-1.295629,-1.060954,-0.797348,-0.996367,-0.551
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,9778,-0.855,-0.355,24.4,0.55,600,-0.978135,-0.947047,-0.587771,-0.826245,-0.278
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,8479,-0.972,-0.472,47.9,0.79,520,-1.125703,-0.901687,-0.812454,-1.191188,-0.500
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R0 no trail,9543,-0.662,-0.162,52.8,0.68,585,-0.512502,-0.884605,-0.586460,-0.739668,-0.236
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R1 BE at 1R,9559,-0.666,-0.166,52.4,0.68,586,-0.515897,-0.893688,-0.593273,-0.703499,-0.152
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R2 trail 1R,9559,-0.665,-0.165,52.8,0.68,586,-0.516328,-0.889075,-0.591260,-0.715198,-0.194
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R3 trail 0.5R,9559,-0.661,-0.161,53.3,0.68,586,-0.511678,-0.882610,-0.590652,-0.718988,-0.223
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R4 EMA9 close,13230,-0.744,-0.244,19.5,0.27,812,-0.828285,-0.780269,-0.625411,-0.496221,-0.227
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R5 EMA9 after 1R,9559,-0.660,-0.160,53.3,0.68,586,-0.515019,-0.874375,-0.590027,-0.720642,-0.187
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R0 no trail,8192,-0.649,-0.149,56.7,0.76,503,-0.819686,-0.742537,-0.379165,-0.454040,-0.123
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R1 BE at 1R,8196,-0.648,-0.148,56.3,0.76,503,-0.816461,-0.742590,-0.374779,-0.472359,-0.123
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R2 trail 1R,8196,-0.644,-0.144,56.8,0.76,503,-0.814896,-0.735419,-0.373241,-0.467714,-0.168
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R3 trail 0.5R,8196,-0.648,-0.148,57.1,0.76,503,-0.825371,-0.734484,-0.366535,-0.490913,-0.197
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R4 EMA9 close,9952,-0.716,-0.216,25.4,0.41,611,-0.863136,-0.727184,-0.513622,-0.688006,-0.197
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R5 EMA9 after 1R,8196,-0.646,-0.146,57.1,0.76,503,-0.828686,-0.729317,-0.362761,-0.488314,-0.180
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R0 no trail,7524,-0.989,-0.489,55.4,0.81,462,-1.216814,-0.811166,-0.929323,-0.973603,-0.515
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R1 BE at 1R,7540,-1.007,-0.507,54.6,0.80,463,-1.205549,-0.834296,-0.988514,-0.953649,-0.506
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R2 trail 1R,7540,-1.021,-0.521,55.7,0.80,463,-1.201375,-0.853301,-1.025950,-0.930679,-0.630
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R3 trail 0.5R,7540,-1.041,-0.541,56.2,0.80,463,-1.209717,-0.898549,-1.043191,-0.902742,-0.586
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R4 EMA9 close,9778,-0.848,-0.348,26.5,0.52,600,-0.970667,-0.912605,-0.662770,-0.653559,-0.284
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R5 EMA9 after 1R,7540,-1.038,-0.538,56.2,0.80,463,-1.225829,-0.863450,-1.036511,-0.971649,-0.605
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R0 no trail,5455,-0.562,-0.062,35.2,0.86,335,-0.407728,-0.952808,-0.540964,0.364498,-0.099
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R1 BE at 1R,5999,-0.575,-0.075,27.4,0.83,368,-0.397166,-0.964644,-0.532637,0.159417,0.008
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R2 trail 1R,6592,-0.619,-0.119,44.8,0.81,404,-0.312607,-0.980695,-0.644064,-0.188037,-0.127
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R3 trail 0.5R,7482,-0.641,-0.141,49.0,0.81,459,-0.373116,-0.937114,-0.615142,-0.527927,-0.176
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R4 EMA9 close,13227,-0.748,-0.248,18.1,0.32,811,-0.879762,-0.765534,-0.585720,-0.453761,-0.219
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,7726,-0.577,-0.077,48.7,0.83,474,-0.239968,-0.905065,-0.555427,-0.599531,-0.090
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R0 no trail,5275,-0.731,-0.231,35.5,0.86,324,-0.691561,-1.068279,-0.484276,-0.366743,-0.017
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R1 BE at 1R,5727,-0.799,-0.299,26.9,0.81,351,-0.866226,-1.023345,-0.511930,-0.620408,-0.081
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R2 trail 1R,6266,-0.770,-0.270,45.6,0.81,384,-0.917418,-0.862592,-0.594455,-0.475122,-0.192
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R3 trail 0.5R,7173,-0.780,-0.280,49.2,0.81,440,-1.029906,-0.803455,-0.496346,-0.691457,-0.214
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R4 EMA9 close,9950,-0.778,-0.278,22.7,0.42,610,-0.942025,-0.770689,-0.576061,-0.753564,-0.236
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,London,R5 EMA9 after 1R,7334,-0.704,-0.204,48.8,0.83,450,-0.912710,-0.664222,-0.550795,-0.584459,-0.136
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R0 no trail,5255,-0.503,-0.003,37.6,0.94,322,-0.184545,-0.200621,-0.992986,-1.446121,-0.182
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R1 BE at 1R,5624,-0.667,-0.167,29.6,0.91,345,-0.244025,-0.721628,-0.940941,-1.295596,-0.445
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R2 trail 1R,6159,-0.920,-0.420,46.8,0.87,378,-0.816841,-1.092792,-0.642172,-1.614343,-0.514
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R3 trail 0.5R,6933,-1.121,-0.621,48.2,0.84,425,-1.155032,-1.098444,-1.079545,-1.219752,-0.639
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R4 EMA9 close,9778,-0.857,-0.357,24.4,0.55,600,-0.979401,-0.960622,-0.580792,-0.815942,-0.295
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T2 none,NY,R5 EMA9 after 1R,7135,-1.055,-0.555,48.1,0.85,438,-1.158639,-0.936891,-1.044815,-1.154393,-0.549
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R0 no trail,5922,-0.480,0.020,37.2,0.88,363,-0.205518,-0.864389,-0.510040,0.166719,-0.028
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R1 BE at 1R,6376,-0.559,-0.059,29.3,0.84,391,-0.252631,-1.029143,-0.541948,0.122596,-0.011
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R2 trail 1R,6676,-0.592,-0.092,44.9,0.82,410,-0.270472,-0.942489,-0.605025,-0.299078,-0.066
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R3 trail 0.5R,7484,-0.639,-0.139,49.0,0.81,459,-0.379417,-0.934258,-0.609095,-0.511439,-0.150
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R4 EMA9 close,13227,-0.747,-0.247,18.1,0.32,811,-0.877633,-0.762679,-0.582242,-0.480618,-0.214
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,7726,-0.584,-0.084,48.7,0.82,474,-0.237503,-0.917190,-0.550425,-0.664219,-0.160
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R0 no trail,5737,-0.581,-0.081,37.5,0.88,352,-0.736321,-0.762779,-0.338771,-0.124245,0.008
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R1 BE at 1R,6111,-0.692,-0.192,29.1,0.84,375,-0.894073,-0.779612,-0.436777,-0.480833,-0.094
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R2 trail 1R,6365,-0.769,-0.269,45.7,0.81,390,-0.898599,-0.830641,-0.633597,-0.523880,-0.240
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R3 trail 0.5R,7175,-0.790,-0.290,49.2,0.81,440,-1.032373,-0.808821,-0.507445,-0.742744,-0.212
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R4 EMA9 close,9950,-0.782,-0.282,22.7,0.41,610,-0.941136,-0.776451,-0.586251,-0.753025,-0.247
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,London,R5 EMA9 after 1R,7335,-0.715,-0.215,48.8,0.82,450,-0.890613,-0.668099,-0.566661,-0.724676,-0.193
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R0 no trail,5723,-0.552,-0.052,38.7,0.93,351,-0.328875,-0.323282,-0.809429,-1.631942,-0.357
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R1 BE at 1R,6029,-0.727,-0.227,31.0,0.90,370,-0.436247,-0.718963,-0.815802,-1.729011,-0.311
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R2 trail 1R,6264,-0.919,-0.419,46.7,0.87,384,-0.792225,-1.030342,-0.764403,-1.550038,-0.391
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R3 trail 0.5R,6935,-1.114,-0.614,48.2,0.84,425,-1.141561,-1.102843,-1.069498,-1.205146,-0.614
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R4 EMA9 close,9778,-0.854,-0.354,24.4,0.55,600,-0.975242,-0.956808,-0.577618,-0.829089,-0.266
+A2 session open,X1 EMA7/9 cross,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,7135,-1.075,-0.575,48.1,0.85,438,-1.147979,-0.977924,-1.078858,-1.157216,-0.546
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R0 no trail,8472,-0.848,-0.348,26.3,0.77,520,-1.567289,-0.539146,-0.778284,-0.114754,-0.349
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,10551,-0.826,-0.326,19.0,0.71,647,-1.545200,-0.521698,-0.736638,-0.278879,-0.183
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R2 trail 1R,12417,-0.881,-0.381,40.3,0.70,762,-1.527073,-0.678867,-0.762788,-0.353280,-0.267
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,13160,-0.893,-0.393,46.7,0.70,807,-1.474437,-0.723646,-0.774239,-0.370174,-0.344
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,60406,-0.715,-0.215,16.9,0.31,3706,-0.846012,-0.720039,-0.562417,-0.526539,-0.189
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,13243,-0.821,-0.321,44.9,0.73,812,-1.381209,-0.664080,-0.698473,-0.315979,-0.240
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R0 no trail,8236,-1.021,-0.521,25.4,0.76,505,-1.461653,-1.171068,-0.465074,-0.902943,-0.379
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R1 BE at 1R,10166,-1.071,-0.571,17.5,0.68,624,-1.431580,-1.213453,-0.610731,-0.992406,-0.378
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R2 trail 1R,11835,-1.069,-0.569,41.4,0.69,726,-1.498263,-1.214284,-0.558642,-0.910222,-0.411
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R3 trail 0.5R,12378,-1.044,-0.544,47.1,0.71,759,-1.405231,-1.217886,-0.577137,-0.808417,-0.439
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R4 EMA9 close,37389,-0.698,-0.198,21.3,0.45,2294,-0.791569,-0.725793,-0.540263,-0.635653,-0.154
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,12425,-0.948,-0.448,45.3,0.74,762,-1.253453,-1.056449,-0.557609,-0.857789,-0.411
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R0 no trail,8653,-0.307,0.193,26.3,0.95,531,-0.541819,-0.496883,0.138214,-0.114785,-0.116
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R1 BE at 1R,10781,-0.444,0.056,18.6,0.90,661,-0.685752,-0.656135,0.044928,-0.230425,0.093
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R2 trail 1R,12470,-0.665,-0.165,45.6,0.86,765,-0.938096,-0.721324,-0.340492,-0.419450,-0.199
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,12994,-0.646,-0.146,49.8,0.87,797,-0.952060,-0.696938,-0.283176,-0.398834,-0.035
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R4 EMA9 close,38264,-0.658,-0.158,24.8,0.62,2347,-0.779505,-0.690333,-0.455991,-0.573543,-0.087
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,13101,-0.526,-0.026,48.1,0.90,804,-0.765223,-0.568857,-0.261785,-0.251552,0.010
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R0 no trail,9778,-0.845,-0.345,31.1,0.76,600,-1.546131,-0.599489,-0.744198,-0.251231,-0.263
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,11474,-0.823,-0.323,23.6,0.72,704,-1.532818,-0.553062,-0.715299,-0.332410,-0.182
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,12438,-0.851,-0.351,40.2,0.71,763,-1.511245,-0.624877,-0.734299,-0.362115,-0.271
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,13162,-0.892,-0.392,46.7,0.70,807,-1.476054,-0.720366,-0.771304,-0.378839,-0.336
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,60406,-0.712,-0.212,16.9,0.31,3706,-0.844304,-0.716352,-0.559149,-0.520178,-0.187
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,13245,-0.816,-0.316,44.9,0.73,813,-1.382431,-0.644835,-0.692544,-0.347906,-0.308
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R0 no trail,9427,-0.940,-0.440,31.2,0.78,578,-1.316227,-1.120927,-0.442108,-0.852617,-0.338
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R1 BE at 1R,11009,-0.990,-0.490,22.6,0.71,675,-1.357882,-1.142676,-0.537547,-0.866732,-0.333
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R2 trail 1R,11848,-1.036,-0.536,41.4,0.70,727,-1.427677,-1.170852,-0.551166,-0.937240,-0.424
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,12379,-1.041,-0.541,47.1,0.71,759,-1.401288,-1.212522,-0.572515,-0.820241,-0.424
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R4 EMA9 close,37389,-0.696,-0.196,21.3,0.45,2294,-0.785958,-0.728035,-0.536767,-0.635396,-0.159
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,12426,-0.945,-0.445,45.3,0.74,762,-1.221818,-1.066760,-0.572267,-0.854148,-0.379
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R0 no trail,10045,-0.311,0.189,32.7,0.95,616,-0.399196,-0.470885,-0.068819,-0.160099,0.220
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,11748,-0.478,0.022,24.3,0.90,721,-0.657730,-0.615231,-0.109777,-0.467652,0.042
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R2 trail 1R,12489,-0.606,-0.106,45.6,0.88,766,-0.849026,-0.663304,-0.299557,-0.418853,-0.100
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,12994,-0.638,-0.138,49.8,0.87,797,-0.942268,-0.687937,-0.268548,-0.417166,-0.045
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,38264,-0.653,-0.153,24.8,0.62,2347,-0.772248,-0.685822,-0.457601,-0.566984,-0.097
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,13101,-0.524,-0.024,48.1,0.90,804,-0.733736,-0.574698,-0.266861,-0.315408,0.003
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R0 no trail,5121,-0.857,-0.357,39.4,0.83,314,-1.423159,-0.454150,-0.871838,0.010174,-0.375
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R1 BE at 1R,5528,-0.851,-0.351,34.6,0.82,339,-1.455881,-0.493676,-0.745018,-0.053076,-0.495
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R2 trail 1R,6071,-0.871,-0.371,44.5,0.81,372,-1.497320,-0.524878,-0.731007,-0.061776,-0.340
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R3 trail 0.5R,6518,-0.893,-0.393,46.3,0.81,400,-1.429256,-0.619554,-0.786602,-0.062434,-0.387
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R4 EMA9 close,60406,-0.715,-0.215,16.9,0.31,3706,-0.845635,-0.720288,-0.562097,-0.525744,-0.188
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,6635,-0.851,-0.351,46.4,0.81,407,-1.386893,-0.593114,-0.743131,0.007733,-0.419
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R0 no trail,4770,-1.065,-0.565,40.8,0.83,293,-1.144149,-1.224812,-0.749472,-1.098251,-0.537
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R1 BE at 1R,5031,-1.106,-0.606,36.7,0.81,309,-1.312522,-1.297190,-0.503423,-1.385483,-0.622
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R2 trail 1R,5408,-1.059,-0.559,45.6,0.82,332,-1.347234,-1.185364,-0.475338,-1.179857,-0.452
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R3 trail 0.5R,5858,-1.089,-0.589,46.7,0.81,359,-1.275558,-1.266670,-0.642632,-1.020962,-0.622
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R4 EMA9 close,37389,-0.695,-0.195,21.4,0.45,2294,-0.789595,-0.725489,-0.526848,-0.645797,-0.151
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R5 EMA9 after 1R,5958,-1.001,-0.501,46.3,0.83,366,-1.186776,-1.164077,-0.559910,-0.981452,-0.510
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R0 no trail,4385,-0.517,-0.017,45.8,0.95,269,-1.687072,-0.477941,0.549239,0.997570,-0.063
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R1 BE at 1R,4527,-0.372,0.128,43.6,0.96,278,-1.612917,-0.039750,0.453642,0.967081,-0.269
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R2 trail 1R,4769,-0.493,0.007,48.9,0.95,293,-1.588061,-0.216715,0.241955,0.668262,-0.534
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R3 trail 0.5R,5088,-0.656,-0.156,49.0,0.93,312,-1.689799,-0.602112,0.288882,0.488705,-0.258
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R4 EMA9 close,38264,-0.656,-0.156,24.8,0.62,2347,-0.779297,-0.686276,-0.456120,-0.568610,-0.086
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R5 EMA9 after 1R,5289,-0.699,-0.199,48.8,0.93,324,-1.595424,-0.655387,0.079959,0.415023,-0.274
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R0 no trail,5363,-0.854,-0.354,39.6,0.83,329,-1.395127,-0.450775,-0.861612,-0.180978,-0.477
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R1 BE at 1R,5728,-0.842,-0.342,35.2,0.82,351,-1.434094,-0.445661,-0.798798,-0.073740,-0.301
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R2 trail 1R,6086,-0.867,-0.367,44.5,0.81,373,-1.470481,-0.496721,-0.758376,-0.142971,-0.352
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R3 trail 0.5R,6518,-0.895,-0.395,46.3,0.80,400,-1.425544,-0.619516,-0.784893,-0.111296,-0.340
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R4 EMA9 close,60406,-0.714,-0.214,16.9,0.31,3706,-0.845663,-0.719252,-0.561848,-0.525744,-0.189
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,6635,-0.851,-0.351,46.4,0.81,407,-1.378214,-0.584070,-0.743408,-0.061689,-0.347
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R0 no trail,4912,-1.069,-0.569,41.2,0.83,301,-1.125022,-1.202366,-0.764520,-1.274837,-0.536
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R1 BE at 1R,5152,-1.100,-0.600,37.2,0.81,316,-1.302811,-1.269325,-0.548109,-1.326509,-0.556
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R2 trail 1R,5433,-1.059,-0.559,45.6,0.82,333,-1.323792,-1.189920,-0.515976,-1.135982,-0.528
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R3 trail 0.5R,5858,-1.084,-0.584,46.7,0.81,359,-1.255517,-1.267668,-0.645403,-1.024201,-0.526
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R4 EMA9 close,37389,-0.695,-0.195,21.4,0.45,2294,-0.789527,-0.724483,-0.528071,-0.645024,-0.142
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R5 EMA9 after 1R,5958,-0.994,-0.494,46.3,0.83,366,-1.151965,-1.169077,-0.560059,-1.022064,-0.509
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R0 no trail,4459,-0.497,0.003,45.9,0.95,274,-1.644540,-0.441124,0.521529,0.980061,-0.089
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R1 BE at 1R,4596,-0.389,0.111,43.7,0.96,282,-1.578684,-0.093488,0.405262,0.961947,-0.278
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R2 trail 1R,4780,-0.473,0.027,48.9,0.95,293,-1.573660,-0.166555,0.237106,0.665843,0.038
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R3 trail 0.5R,5088,-0.654,-0.154,48.9,0.93,312,-1.689111,-0.612939,0.309323,0.488705,-0.000
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R4 EMA9 close,38264,-0.656,-0.156,24.8,0.62,2347,-0.779297,-0.686276,-0.454807,-0.568610,-0.101
+A2 session open,X1 EMA7/9 cross,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,5289,-0.685,-0.185,48.8,0.93,324,-1.587094,-0.643604,0.098976,0.453369,-0.038
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R0 no trail,12224,-0.711,-0.211,47.6,0.66,750,-0.691545,-0.855928,-0.605316,-0.594382,-0.207
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R1 BE at 1R,12288,-0.762,-0.262,43.8,0.61,754,-0.715178,-0.923450,-0.676390,-0.622274,-0.237
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R2 trail 1R,12289,-0.756,-0.256,49.1,0.61,754,-0.716249,-0.909921,-0.685290,-0.568939,-0.267
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R3 trail 0.5R,12290,-0.728,-0.228,52.9,0.62,754,-0.710984,-0.875253,-0.639124,-0.535147,-0.200
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R4 EMA9 close,20677,-0.753,-0.253,16.7,0.24,1269,-0.855413,-0.789779,-0.586302,-0.450919,-0.239
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,Asia,R5 EMA9 after 1R,12290,-0.722,-0.222,51.7,0.63,754,-0.717379,-0.871789,-0.635544,-0.459318,-0.207
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R0 no trail,11155,-0.748,-0.248,47.0,0.73,684,-0.884788,-0.823258,-0.556094,-0.613229,-0.230
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R1 BE at 1R,11186,-0.771,-0.271,42.9,0.69,686,-0.916837,-0.866460,-0.541456,-0.651476,-0.204
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R2 trail 1R,11186,-0.793,-0.293,49.8,0.68,686,-0.931235,-0.913295,-0.548220,-0.662398,-0.234
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R3 trail 0.5R,11186,-0.778,-0.278,53.9,0.68,686,-0.887514,-0.901729,-0.574834,-0.606030,-0.239
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R4 EMA9 close,15230,-0.740,-0.240,20.6,0.37,934,-0.880568,-0.759032,-0.552317,-0.628818,-0.231
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,London,R5 EMA9 after 1R,11186,-0.761,-0.261,52.2,0.69,686,-0.873642,-0.869784,-0.544904,-0.668094,-0.259
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R0 no trail,11058,-0.978,-0.478,38.4,0.78,678,-1.245082,-0.895015,-0.851161,-0.702645,-0.549
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R1 BE at 1R,11135,-1.005,-0.505,32.2,0.73,683,-1.177670,-1.014266,-0.849815,-0.824074,-0.516
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R2 trail 1R,11137,-1.012,-0.512,46.1,0.73,683,-1.211596,-1.058311,-0.842264,-0.626453,-0.484
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R3 trail 0.5R,11139,-0.999,-0.499,50.8,0.73,683,-1.174548,-1.044634,-0.832108,-0.707390,-0.433
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R4 EMA9 close,14410,-0.820,-0.320,22.7,0.50,884,-0.972046,-0.803917,-0.715317,-0.565605,-0.264
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T1 VWAP,NY,R5 EMA9 after 1R,11139,-0.954,-0.454,48.5,0.74,683,-1.120020,-0.968289,-0.822078,-0.697840,-0.454
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R0 no trail,7243,-0.711,-0.211,26.9,0.80,444,-0.882987,-0.793286,-0.637480,-0.185312,-0.100
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,8232,-0.858,-0.358,17.5,0.68,505,-0.948626,-0.954890,-0.844080,-0.339774,-0.245
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R2 trail 1R,9291,-0.812,-0.312,40.7,0.68,570,-0.705694,-1.069727,-0.734967,-0.499774,-0.266
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,10086,-0.783,-0.283,48.9,0.69,619,-0.758532,-1.031780,-0.619979,-0.567688,-0.158
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,20438,-0.758,-0.258,15.4,0.26,1254,-0.883441,-0.780466,-0.577679,-0.415551,-0.231
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,9884,-0.680,-0.180,46.8,0.73,606,-0.599664,-0.902395,-0.606772,-0.401462,-0.195
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R0 no trail,7573,-0.764,-0.264,25.5,0.81,465,-0.939770,-0.782124,-0.592557,-0.723804,-0.069
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R1 BE at 1R,8489,-0.847,-0.347,16.4,0.73,521,-1.089539,-1.054775,-0.446792,-0.740046,-0.121
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R2 trail 1R,9707,-0.951,-0.451,41.7,0.68,596,-1.198481,-1.096084,-0.635777,-0.799628,-0.302
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R3 trail 0.5R,10386,-0.862,-0.362,49.2,0.71,637,-1.051561,-0.995532,-0.593981,-0.686396,-0.267
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R4 EMA9 close,15091,-0.775,-0.275,18.9,0.36,926,-0.936513,-0.784288,-0.568581,-0.660743,-0.215
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,10129,-0.821,-0.321,46.5,0.72,621,-0.931790,-0.920474,-0.636527,-0.743367,-0.280
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R0 no trail,8251,-0.652,-0.152,22.8,0.89,506,-0.490510,-0.720182,-0.664774,-0.952418,-0.295
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R1 BE at 1R,9193,-0.889,-0.389,13.7,0.79,564,-0.734950,-1.166778,-0.761978,-0.806031,-0.453
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R2 trail 1R,10620,-1.121,-0.621,42.6,0.72,652,-1.410912,-1.197130,-0.840344,-0.668949,-0.545
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,11002,-1.053,-0.553,48.5,0.73,675,-1.286996,-1.161369,-0.775419,-0.660313,-0.469
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R4 EMA9 close,14285,-0.816,-0.316,21.6,0.51,876,-0.938512,-0.832445,-0.663250,-0.721196,-0.254
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,10798,-0.971,-0.471,45.7,0.76,662,-1.157833,-1.042764,-0.753305,-0.707093,-0.378
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R0 no trail,8623,-0.654,-0.154,31.1,0.80,529,-0.637992,-0.724604,-0.590860,-0.677612,-0.157
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,9175,-0.779,-0.279,21.3,0.71,563,-0.739279,-0.905766,-0.740513,-0.598500,-0.206
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,9416,-0.775,-0.275,40.7,0.69,578,-0.611766,-1.012612,-0.729173,-0.560061,-0.159
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,10086,-0.785,-0.285,48.9,0.69,619,-0.756162,-1.038863,-0.619672,-0.577194,-0.196
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,20471,-0.761,-0.261,15.3,0.25,1256,-0.884950,-0.779894,-0.575797,-0.457932,-0.239
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,9979,-0.689,-0.189,46.7,0.73,612,-0.574804,-0.922947,-0.619101,-0.448166,-0.152
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R0 no trail,9063,-0.642,-0.142,30.0,0.83,556,-0.712360,-0.565300,-0.609814,-0.792325,-0.036
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R1 BE at 1R,9570,-0.832,-0.332,20.1,0.73,587,-1.079903,-0.874285,-0.586777,-0.775611,-0.171
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R2 trail 1R,9837,-0.921,-0.421,41.7,0.69,603,-1.144273,-1.026257,-0.654308,-0.803407,-0.314
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,10387,-0.858,-0.358,49.2,0.71,637,-1.047428,-0.981960,-0.598801,-0.693365,-0.187
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R4 EMA9 close,15117,-0.773,-0.273,19.0,0.36,927,-0.939369,-0.781917,-0.562186,-0.658973,-0.236
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,10212,-0.809,-0.309,46.6,0.73,627,-0.936614,-0.894677,-0.608598,-0.775558,-0.251
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R0 no trail,10094,-0.765,-0.265,27.8,0.86,619,-0.800028,-0.606525,-0.873776,-0.878001,-0.392
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,10512,-0.928,-0.428,18.2,0.77,645,-0.900761,-0.983661,-0.893502,-0.929377,-0.415
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R2 trail 1R,10735,-1.111,-0.611,42.6,0.72,659,-1.371617,-1.130574,-0.945089,-0.592534,-0.646
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,11005,-1.059,-0.559,48.5,0.73,675,-1.290429,-1.155621,-0.800786,-0.655633,-0.469
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,14332,-0.812,-0.312,21.6,0.51,879,-0.943764,-0.813435,-0.683588,-0.664052,-0.256
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,10884,-0.973,-0.473,45.7,0.76,668,-1.140239,-1.015547,-0.842654,-0.589908,-0.453
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R0 no trail,11331,-0.683,-0.183,53.9,0.70,695,-0.685367,-0.818821,-0.520175,-0.663375,-0.200
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R1 BE at 1R,11370,-0.685,-0.185,53.0,0.69,698,-0.695085,-0.824987,-0.534048,-0.573922,-0.207
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R2 trail 1R,11370,-0.681,-0.181,53.9,0.69,698,-0.690925,-0.822891,-0.528882,-0.567612,-0.200
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R3 trail 0.5R,11371,-0.683,-0.183,54.9,0.69,698,-0.695954,-0.813331,-0.534602,-0.590043,-0.181
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R4 EMA9 close,20677,-0.753,-0.253,16.7,0.24,1269,-0.855335,-0.789345,-0.584590,-0.448080,-0.237
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,Asia,R5 EMA9 after 1R,11371,-0.680,-0.180,54.8,0.69,698,-0.699994,-0.803157,-0.535595,-0.569316,-0.226
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R0 no trail,10183,-0.706,-0.206,55.7,0.76,625,-0.860249,-0.829990,-0.420247,-0.543853,-0.157
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R1 BE at 1R,10212,-0.714,-0.214,54.6,0.76,627,-0.869187,-0.817337,-0.432725,-0.615116,-0.239
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R2 trail 1R,10212,-0.710,-0.210,55.8,0.76,627,-0.872462,-0.806152,-0.425366,-0.623141,-0.223
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R3 trail 0.5R,10212,-0.715,-0.215,56.9,0.76,627,-0.881400,-0.823054,-0.408372,-0.632524,-0.185
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R4 EMA9 close,15230,-0.740,-0.240,20.7,0.37,934,-0.881963,-0.756286,-0.552767,-0.634604,-0.213
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,London,R5 EMA9 after 1R,10212,-0.710,-0.210,56.7,0.76,627,-0.878737,-0.809762,-0.409188,-0.632210,-0.200
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R0 no trail,9126,-1.075,-0.575,51.9,0.80,560,-1.341976,-0.877738,-1.024256,-0.924048,-0.645
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R1 BE at 1R,9175,-1.075,-0.575,50.0,0.80,563,-1.263143,-0.948684,-1.044915,-0.889604,-0.634
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R2 trail 1R,9175,-1.070,-0.570,53.1,0.80,563,-1.230177,-0.965164,-1.047686,-0.898186,-0.561
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R3 trail 0.5R,9176,-1.080,-0.580,54.1,0.80,563,-1.243965,-0.985320,-1.021106,-0.977480,-0.596
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R4 EMA9 close,14410,-0.821,-0.321,22.7,0.50,884,-0.973076,-0.804729,-0.716393,-0.565407,-0.268
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T1 VWAP,NY,R5 EMA9 after 1R,9176,-1.078,-0.578,54.0,0.80,563,-1.246632,-0.985328,-1.001647,-1.003078,-0.675
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R0 no trail,6376,-0.608,-0.108,32.6,0.85,391,-0.748923,-0.763183,-0.513515,0.162482,-0.090
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R1 BE at 1R,7184,-0.697,-0.197,24.2,0.79,441,-0.840247,-0.822960,-0.584607,-0.145657,-0.170
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R2 trail 1R,8055,-0.654,-0.154,44.1,0.79,494,-0.593094,-0.897984,-0.537978,-0.369069,-0.150
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R3 trail 0.5R,9060,-0.699,-0.199,48.8,0.78,556,-0.695060,-0.940664,-0.496538,-0.539810,-0.157
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R4 EMA9 close,20438,-0.757,-0.257,15.4,0.26,1254,-0.883363,-0.779728,-0.575949,-0.412164,-0.228
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,8859,-0.595,-0.095,48.4,0.81,543,-0.560525,-0.785556,-0.437406,-0.555796,-0.069
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R0 no trail,6516,-0.807,-0.307,32.1,0.83,400,-1.013549,-1.073316,-0.387222,-0.455179,-0.244
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R1 BE at 1R,7337,-0.923,-0.423,23.6,0.77,450,-1.134887,-1.276753,-0.400558,-0.578275,-0.239
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R2 trail 1R,8270,-0.906,-0.406,44.3,0.76,507,-1.109807,-1.064123,-0.611356,-0.626630,-0.292
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R3 trail 0.5R,9229,-0.880,-0.380,48.7,0.77,566,-1.116534,-0.936775,-0.569000,-0.843228,-0.340
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R4 EMA9 close,15091,-0.775,-0.275,18.9,0.36,926,-0.937917,-0.781697,-0.571318,-0.666633,-0.235
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,London,R5 EMA9 after 1R,8995,-0.806,-0.306,47.9,0.79,552,-0.984737,-0.792855,-0.627424,-0.795186,-0.206
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R0 no trail,6362,-0.597,-0.097,32.8,0.92,390,-0.505914,-0.305817,-1.045190,-0.647149,-0.381
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R1 BE at 1R,7118,-0.734,-0.234,23.9,0.88,437,-0.572080,-0.799886,-0.943672,-0.407348,-0.515
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R2 trail 1R,8096,-1.000,-0.500,46.0,0.84,497,-0.821372,-1.167062,-0.928522,-1.297269,-0.583
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R3 trail 0.5R,8844,-1.107,-0.607,48.1,0.82,543,-1.179537,-1.133035,-0.996624,-1.076149,-0.636
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R4 EMA9 close,14285,-0.816,-0.316,21.6,0.51,876,-0.939100,-0.833263,-0.664155,-0.720996,-0.239
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T2 none,NY,R5 EMA9 after 1R,8693,-1.093,-0.593,47.8,0.82,533,-1.165934,-1.143035,-0.941807,-1.093844,-0.506
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R0 no trail,7265,-0.500,-0.000,35.3,0.87,446,-0.550902,-0.608163,-0.372968,-0.403890,-0.001
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R1 BE at 1R,7928,-0.613,-0.113,26.9,0.81,486,-0.682478,-0.743771,-0.474633,-0.427695,-0.016
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R2 trail 1R,8224,-0.615,-0.115,44.2,0.80,505,-0.558255,-0.820272,-0.493318,-0.482483,-0.027
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R3 trail 0.5R,9061,-0.701,-0.201,48.8,0.78,556,-0.692915,-0.950139,-0.491248,-0.549421,-0.124
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R4 EMA9 close,20464,-0.759,-0.259,15.3,0.26,1255,-0.883760,-0.779724,-0.575232,-0.433108,-0.234
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,8947,-0.605,-0.105,48.3,0.81,549,-0.542959,-0.781526,-0.482679,-0.587439,-0.121
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R0 no trail,7485,-0.749,-0.249,34.5,0.84,459,-0.926645,-0.906978,-0.482373,-0.472380,-0.207
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R1 BE at 1R,8120,-0.900,-0.400,25.9,0.77,498,-1.118863,-1.075869,-0.517628,-0.798276,-0.368
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R2 trail 1R,8461,-0.907,-0.407,44.3,0.76,519,-1.083798,-1.020762,-0.661772,-0.717359,-0.378
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R3 trail 0.5R,9232,-0.885,-0.385,48.8,0.77,566,-1.119262,-0.923728,-0.589534,-0.874997,-0.343
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R4 EMA9 close,15107,-0.776,-0.276,18.9,0.36,927,-0.936373,-0.784911,-0.574221,-0.663796,-0.240
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,London,R5 EMA9 after 1R,9062,-0.818,-0.318,48.0,0.79,556,-0.979992,-0.805501,-0.646279,-0.848990,-0.337
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R0 no trail,7383,-0.756,-0.256,34.6,0.90,453,-0.574287,-0.397254,-1.157615,-1.644448,-0.508
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R1 BE at 1R,7988,-0.895,-0.395,26.1,0.86,490,-0.736720,-0.774079,-1.069192,-1.461277,-0.609
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R2 trail 1R,8289,-0.979,-0.479,45.9,0.84,509,-0.781022,-1.131882,-0.952280,-1.274414,-0.553
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R3 trail 0.5R,8846,-1.102,-0.602,48.1,0.82,543,-1.178054,-1.129868,-0.979474,-1.087906,-0.644
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R4 EMA9 close,14317,-0.813,-0.313,21.6,0.51,878,-0.933301,-0.832542,-0.663629,-0.710002,-0.227
+A2 session open,X2 close back over EMA9,15,P0 fade 2SD,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,8747,-1.098,-0.598,47.8,0.82,537,-1.139011,-1.131960,-0.985884,-1.166230,-0.607
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R0 no trail,10868,-0.734,-0.234,22.7,0.77,667,-1.478318,-0.432174,-0.670862,-0.275488,-0.162
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R1 BE at 1R,15111,-0.771,-0.271,15.0,0.69,927,-1.514948,-0.554963,-0.670161,-0.344784,-0.100
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R2 trail 1R,18269,-0.814,-0.314,39.6,0.69,1121,-1.422030,-0.703187,-0.697173,-0.450868,-0.149
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R3 trail 0.5R,19415,-0.791,-0.291,47.3,0.70,1191,-1.396388,-0.662362,-0.676084,-0.427508,-0.211
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R4 EMA9 close,162399,-0.706,-0.206,15.3,0.29,9963,-0.854843,-0.710528,-0.548644,-0.502463,-0.182
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,Asia,R5 EMA9 after 1R,19624,-0.722,-0.222,44.1,0.73,1204,-1.275100,-0.587367,-0.635986,-0.359272,-0.187
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R0 no trail,11933,-0.930,-0.430,20.5,0.75,732,-1.282821,-1.032897,-0.625217,-0.778112,-0.360
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R1 BE at 1R,16450,-0.941,-0.441,13.0,0.66,1009,-1.252018,-1.059802,-0.688432,-0.749936,-0.195
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R2 trail 1R,19727,-0.950,-0.450,40.3,0.68,1210,-1.308807,-1.092349,-0.660771,-0.675464,-0.330
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R3 trail 0.5R,20682,-0.905,-0.405,47.4,0.71,1269,-1.210621,-1.047909,-0.640070,-0.630175,-0.293
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R4 EMA9 close,107787,-0.690,-0.190,18.9,0.42,6613,-0.786322,-0.729307,-0.536718,-0.556607,-0.138
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,London,R5 EMA9 after 1R,20794,-0.823,-0.323,43.7,0.74,1276,-1.069942,-0.917030,-0.601058,-0.672358,-0.287
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R0 no trail,13718,-0.354,0.146,18.6,0.93,842,-0.535468,-0.442566,-0.066957,-0.461721,-0.043
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R1 BE at 1R,19104,-0.583,-0.083,11.9,0.83,1172,-0.769869,-0.664674,-0.337634,-0.549489,-0.043
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R2 trail 1R,22471,-0.677,-0.177,43.9,0.83,1379,-0.943016,-0.748286,-0.384621,-0.549490,-0.091
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R3 trail 0.5R,23322,-0.658,-0.158,49.5,0.84,1431,-0.968086,-0.669362,-0.378385,-0.527737,-0.072
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R4 EMA9 close,110448,-0.642,-0.142,22.2,0.58,6776,-0.780419,-0.639944,-0.444598,-0.619880,-0.064
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T2 none,NY,R5 EMA9 after 1R,23520,-0.544,-0.044,45.1,0.87,1443,-0.753468,-0.565921,-0.313213,-0.549120,0.040
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R0 no trail,13203,-0.740,-0.240,30.1,0.77,810,-1.431956,-0.544081,-0.649269,-0.364826,-0.206
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R1 BE at 1R,16714,-0.749,-0.249,21.7,0.72,1025,-1.484725,-0.555406,-0.634596,-0.390267,-0.126
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R2 trail 1R,18309,-0.790,-0.290,39.5,0.70,1123,-1.394762,-0.668839,-0.676927,-0.447307,-0.247
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R3 trail 0.5R,19416,-0.793,-0.293,47.3,0.70,1191,-1.402877,-0.664815,-0.672887,-0.436616,-0.202
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R4 EMA9 close,162399,-0.705,-0.205,15.3,0.29,9963,-0.853778,-0.709713,-0.545753,-0.502161,-0.181
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,Asia,R5 EMA9 after 1R,19625,-0.715,-0.215,44.1,0.74,1204,-1.264068,-0.574047,-0.627042,-0.381574,-0.204
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R0 no trail,14362,-0.838,-0.338,29.3,0.78,881,-1.075540,-0.999941,-0.570845,-0.745163,-0.317
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R1 BE at 1R,18053,-0.881,-0.381,20.4,0.70,1108,-1.125952,-1.027683,-0.641029,-0.720531,-0.239
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R2 trail 1R,19758,-0.919,-0.419,40.3,0.69,1212,-1.230574,-1.074094,-0.639293,-0.685871,-0.301
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R3 trail 0.5R,20688,-0.904,-0.404,47.4,0.71,1269,-1.198173,-1.048997,-0.642041,-0.632785,-0.277
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R4 EMA9 close,107787,-0.688,-0.188,18.9,0.42,6613,-0.782829,-0.728749,-0.533866,-0.556333,-0.140
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,London,R5 EMA9 after 1R,20799,-0.806,-0.306,43.7,0.75,1276,-1.013409,-0.915398,-0.592546,-0.680876,-0.264
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R0 no trail,16898,-0.406,0.094,29.9,0.92,1037,-0.479655,-0.472485,-0.226021,-0.561108,0.096
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R1 BE at 1R,21072,-0.547,-0.047,20.8,0.86,1293,-0.694435,-0.611659,-0.334791,-0.580615,0.063
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R2 trail 1R,22514,-0.626,-0.126,43.9,0.84,1381,-0.844382,-0.709036,-0.363011,-0.511344,-0.083
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R3 trail 0.5R,23323,-0.652,-0.152,49.5,0.84,1431,-0.964637,-0.661953,-0.373476,-0.523559,-0.059
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R4 EMA9 close,110448,-0.637,-0.137,22.2,0.59,6776,-0.771320,-0.633547,-0.445033,-0.614522,-0.069
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S1 reversal extreme,T3 3R,NY,R5 EMA9 after 1R,23520,-0.517,-0.017,45.1,0.88,1443,-0.688911,-0.537323,-0.309642,-0.580580,0.051
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R0 no trail,5568,-0.826,-0.326,38.4,0.84,342,-1.227408,-0.559975,-0.891247,-0.001617,-0.447
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R1 BE at 1R,6162,-0.809,-0.309,33.1,0.82,378,-1.317252,-0.538140,-0.688007,-0.207343,-0.373
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R2 trail 1R,6841,-0.750,-0.250,45.1,0.83,420,-1.295889,-0.501864,-0.591090,-0.035343,-0.293
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R3 trail 0.5R,7336,-0.831,-0.331,46.8,0.82,450,-1.225347,-0.715854,-0.683343,-0.179184,-0.300
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R4 EMA9 close,162399,-0.706,-0.206,15.3,0.29,9963,-0.854991,-0.710793,-0.547682,-0.502243,-0.180
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,Asia,R5 EMA9 after 1R,7494,-0.816,-0.316,46.7,0.82,460,-1.143263,-0.717324,-0.697778,-0.267909,-0.375
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R0 no trail,5412,-1.003,-0.503,39.2,0.84,332,-0.833549,-1.066354,-1.080995,-1.215836,-0.508
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R1 BE at 1R,5927,-1.044,-0.544,34.3,0.82,364,-1.089031,-1.186118,-0.720585,-1.357118,-0.474
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R2 trail 1R,6506,-0.951,-0.451,46.1,0.83,399,-0.971947,-1.157728,-0.657051,-1.031156,-0.541
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R3 trail 0.5R,6969,-0.958,-0.458,47.4,0.83,428,-0.942735,-1.079349,-0.862139,-0.869631,-0.431
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R4 EMA9 close,107786,-0.689,-0.189,18.9,0.42,6613,-0.785769,-0.728955,-0.533708,-0.563327,-0.149
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,London,R5 EMA9 after 1R,7131,-0.906,-0.406,47.2,0.84,437,-0.849768,-1.007586,-0.878754,-0.844125,-0.468
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R0 no trail,4861,-0.273,0.227,44.2,0.97,298,-1.578883,-0.450510,1.351091,0.945787,0.176
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R1 BE at 1R,5174,-0.031,0.469,41.1,1.00,317,-1.138984,0.004159,1.219025,0.547583,0.389
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R2 trail 1R,5573,-0.262,0.238,49.3,0.97,342,-1.320611,-0.420887,1.159218,0.290792,0.169
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R3 trail 0.5R,6018,-0.450,0.050,49.9,0.95,369,-1.481022,-0.793172,1.084390,0.381490,-0.041
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R4 EMA9 close,110448,-0.642,-0.142,22.2,0.58,6776,-0.779512,-0.638972,-0.443066,-0.627684,-0.068
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T2 none,NY,R5 EMA9 after 1R,6250,-0.433,0.067,49.8,0.96,383,-1.431072,-0.778950,1.052282,0.357661,0.213
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R0 no trail,5903,-0.815,-0.315,39.0,0.84,362,-1.214334,-0.521723,-0.864208,-0.220903,-0.362
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R1 BE at 1R,6427,-0.792,-0.292,34.0,0.83,394,-1.295479,-0.465508,-0.725901,-0.297878,-0.274
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R2 trail 1R,6859,-0.732,-0.232,45.1,0.84,421,-1.268351,-0.463223,-0.592462,-0.066647,-0.242
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R3 trail 0.5R,7337,-0.830,-0.330,46.8,0.82,450,-1.222673,-0.712783,-0.681188,-0.199466,-0.360
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R4 EMA9 close,162399,-0.706,-0.206,15.3,0.29,9963,-0.854610,-0.710175,-0.547783,-0.504372,-0.178
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,Asia,R5 EMA9 after 1R,7494,-0.814,-0.314,46.7,0.82,460,-1.139043,-0.706455,-0.699745,-0.305702,-0.354
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R0 no trail,5703,-0.991,-0.491,40.0,0.84,350,-0.795636,-1.075546,-1.046588,-1.299696,-0.399
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R1 BE at 1R,6160,-1.003,-0.503,35.3,0.82,378,-1.016435,-1.130311,-0.744031,-1.306620,-0.487
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R2 trail 1R,6540,-0.918,-0.418,46.1,0.84,401,-0.899622,-1.148599,-0.671295,-0.915600,-0.327
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R3 trail 0.5R,6970,-0.947,-0.447,47.4,0.83,428,-0.933076,-1.075501,-0.844941,-0.848726,-0.477
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R4 EMA9 close,107786,-0.689,-0.189,18.9,0.42,6613,-0.785971,-0.729208,-0.533952,-0.561356,-0.140
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,London,R5 EMA9 after 1R,7131,-0.900,-0.400,47.3,0.84,437,-0.819442,-1.018597,-0.885726,-0.835460,-0.349
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R0 no trail,5025,-0.246,0.254,44.4,0.98,308,-1.524576,-0.479140,1.391806,0.979260,0.133
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R1 BE at 1R,5322,-0.015,0.485,41.4,1.00,327,-1.097592,-0.062817,1.271489,0.641807,0.472
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R2 trail 1R,5596,-0.233,0.267,49.3,0.98,343,-1.267443,-0.390031,1.142238,0.333895,0.114
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R3 trail 0.5R,6020,-0.446,0.054,49.9,0.95,369,-1.477909,-0.785934,1.084880,0.381490,0.129
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R4 EMA9 close,110448,-0.641,-0.141,22.2,0.58,6776,-0.779337,-0.638257,-0.442460,-0.627684,-0.070
+A2 session open,X2 close back over EMA9,15,P1 pullback on the VWAP side,S2 3SD,T3 3R,NY,R5 EMA9 after 1R,6250,-0.424,0.076,49.8,0.96,383,-1.426148,-0.774605,1.071626,0.373544,0.152

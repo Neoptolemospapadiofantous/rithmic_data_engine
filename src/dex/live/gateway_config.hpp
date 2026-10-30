@@ -70,6 +70,12 @@ struct RiskConfig {
     int64_t daily_stop_micro = -1'500'000;       // −$1.50
     int64_t total_stop_micro = -2'500'000;       // −$2.50
     int leverage = 5;
+    // Position stop (2026-10-29: 1.25 AVAX rode −$0.50 with both loss stops far away). 0 = off. When the open
+    // position's unrealised loss (at the touch vs the exchange's avg entry) is ≤ position_stop, or it has been held
+    // position_max_hold_s, the engine cancels all, flattens reduce-only and pulls quotes for position_cooldown_s.
+    int64_t position_stop_micro = 0;
+    int64_t position_max_hold_s = 0;
+    int64_t position_cooldown_s = 900;
 };
 
 struct GatewayConfig {
@@ -216,7 +222,8 @@ inline GatewayConfig parse_config(const nlohmann::json& j, Mode cli_mode, int64_
     static const std::set<std::string> top = {"mode", "host", "chain_id", "account_index", "api_key_index", "key_file",
         "arming_file", "no_deploy_file", "state_dir", "market", "max_txs_per_batch", "rate_budget_per_min", "risk", "engine"};
     static const std::set<std::string> riskk = {"max_markets", "quote_usd", "max_order_usd", "max_position_quotes",
-        "max_gross_usd", "daily_stop_usd", "total_stop_usd", "leverage"};
+        "max_gross_usd", "daily_stop_usd", "total_stop_usd", "leverage", "position_stop_usd", "position_max_hold_s",
+        "position_cooldown_s"};
     for (auto& [k, v] : j.items()) if (!top.count(k)) throw ConfigError("unknown config key '" + k + "'");
     GatewayConfig c;
     try {
@@ -248,6 +255,9 @@ inline GatewayConfig parse_config(const nlohmann::json& j, Mode cli_mode, int64_
             c.risk.daily_stop_micro = usd("daily_stop_usd", c.risk.daily_stop_micro);
             c.risk.total_stop_micro = usd("total_stop_usd", c.risk.total_stop_micro);
             c.risk.leverage = r.value("leverage", c.risk.leverage);
+            c.risk.position_stop_micro = usd("position_stop_usd", c.risk.position_stop_micro);
+            c.risk.position_max_hold_s = r.value("position_max_hold_s", c.risk.position_max_hold_s);
+            c.risk.position_cooldown_s = r.value("position_cooldown_s", c.risk.position_cooldown_s);
         }
     } catch (const nlohmann::json::exception& e) {
         throw ConfigError(std::string("config: ") + e.what());
@@ -261,6 +271,9 @@ inline GatewayConfig parse_config(const nlohmann::json& j, Mode cli_mode, int64_
     if (c.rate_budget_per_min < 1 || c.rate_budget_per_min > 60) throw ConfigError("rate_budget_per_min must be 1..60");
     if (c.risk.max_markets != 1) throw ConfigError("the pilot runs exactly 1 market");
     if (c.risk.daily_stop_micro >= 0 || c.risk.total_stop_micro >= 0) throw ConfigError("loss stops must be negative");
+    if (c.risk.position_stop_micro > 0) throw ConfigError("position_stop_usd must be negative (0 = off)");
+    if (c.risk.position_max_hold_s < 0 || c.risk.position_max_hold_s > 7 * 86'400) throw ConfigError("position_max_hold_s must be 0..604800");
+    if (c.risk.position_cooldown_s < 0 || c.risk.position_cooldown_s > 86'400) throw ConfigError("position_cooldown_s must be 0..86400");
     // 2026-10-28: pilot cap raised 5 → 20 (founder: "$200 × 20"). The exchange's IMF must still equal risk.leverage or the
     // engine halts (halt: leverage); the gross ≤ leverage × equity check in risk.hpp is what the cap actually bounds.
     if (c.risk.leverage < 1 || c.risk.leverage > 20) throw ConfigError("leverage must be 1..20");

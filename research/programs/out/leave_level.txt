@@ -1,0 +1,698 @@
+Leave-a-level entry (VWAP / ±1 / ±2 SD, EMA 7/9 agrees) — NQ 1m, 2010-07 → 2026-10-23. Cost 1.50. ATR 307. signals 386766
+CSV: anchor,level,leave,filter,stop,target,session,n,net,raw,win,pf,per_yr,e1015,e1620,e2124,e2526,twin
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,901,-1.633,-0.133,43.1,0.91,55,-7.173789,-2.597595,-0.344192,1.812281,-0.560
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,987,-2.384,-0.884,42.1,0.89,61,-6.201233,-1.187382,-1.769053,-6.819899,-0.977
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,1153,-1.357,0.143,49.6,0.95,71,-4.499033,-0.472857,0.316588,4.364194,-0.470
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,844,-0.744,0.756,36.6,0.96,52,-11.597252,-0.421713,0.170342,2.223786,0.909
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,939,-2.888,-1.388,36.7,0.88,58,-8.106804,-1.863407,-1.807321,-7.396482,-2.038
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,1109,-1.300,0.200,37.5,0.96,68,-5.000385,1.697715,-1.446924,3.641829,0.211
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,883,-0.479,1.021,21.9,0.97,54,-9.071360,0.363334,-0.746508,2.841585,-0.506
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,962,-2.459,-0.959,23.3,0.88,59,-9.081727,-2.267738,-0.657707,-5.452914,-1.980
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,1059,-1.975,-0.475,21.7,0.93,65,-5.647364,-1.415476,1.625549,0.011874,-0.739
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,863,-0.943,0.557,46.6,0.95,53,-7.451739,-2.169206,0.908273,2.426987,0.697
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,961,-2.349,-0.849,44.4,0.89,59,-6.153392,-0.427453,-2.010449,-8.259759,-0.477
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,1304,-2.446,-0.946,44.1,0.89,80,-5.378905,-0.677432,-2.349267,4.094755,-2.241
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,821,0.089,1.589,39.1,1.00,50,-8.903580,0.647859,0.279216,3.014408,1.116
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,930,-1.015,0.485,39.5,0.96,57,-5.001220,1.253241,-1.792663,-4.266517,-0.366
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,1337,-3.151,-1.651,33.7,0.88,82,-5.347769,-2.196385,-4.056696,6.988752,-1.457
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,867,0.981,2.481,25.5,1.05,53,-8.334318,2.302423,1.159116,1.787278,2.999
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,949,-2.067,-0.567,25.6,0.90,58,-7.360162,-0.925360,-1.026964,-6.626529,-0.400
+A0 09:30 carried,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,1270,-2.171,-0.671,16.3,0.90,78,-6.034858,-0.521048,-1.048086,5.827800,-0.435
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,20,-8.208,-6.708,35.0,0.39,1,,,,,-11.082
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,27,-17.092,-15.592,37.0,0.39,2,,,,,-14.263
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,606,-2.380,-0.880,44.1,0.93,37,-6.918672,-3.686803,3.111711,6.667801,-1.038
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,19,-14.663,-13.163,15.8,0.27,1,,,,,-13.513
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,26,-18.923,-17.423,26.9,0.42,2,,,,,-11.383
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,599,-3.121,-1.621,37.2,0.92,37,-7.342254,-1.838639,-1.053417,4.056236,0.110
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,18,-14.480,-12.980,5.6,0.28,1,,,,,-12.918
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,25,-10.346,-8.846,12.0,0.55,2,,,,,-3.633
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,564,-1.349,0.151,25.4,0.96,35,-5.247128,-1.539434,1.292022,8.826830,0.601
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,20,-4.692,-3.192,35.0,0.53,1,,,,,-3.308
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,28,-14.503,-13.003,28.6,0.40,2,,,,,-11.316
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,649,-3.884,-2.384,31.9,0.85,40,-9.224064,-1.117869,-1.267702,1.688447,-0.631
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,19,-6.357,-4.857,21.1,0.52,1,,,,,-6.005
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,27,-7.170,-5.670,33.3,0.70,2,,,,,-11.706
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,670,-4.509,-3.009,30.6,0.83,41,-5.567020,-3.563628,-5.519645,-0.281856,-4.334
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,18,-4.209,-2.709,5.6,0.57,1,,,,,-6.781
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,26,-2.588,-1.088,7.7,0.82,2,,,,,2.903
+A0 09:30 carried,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,625,-3.215,-1.715,13.0,0.85,38,-9.466682,3.114837,-4.460002,5.494654,-2.345
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,520,1.951,3.451,66.2,1.17,32,-1.244464,-1.697043,6.905288,7.297253,4.160
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,645,-2.290,-0.790,58.3,0.86,40,-2.793294,-4.547874,0.565870,-1.625163,-1.162
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,2316,-1.941,-0.441,63.0,0.90,142,-4.390075,-3.894518,1.091882,8.032195,-0.577
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,451,4.826,6.326,42.4,1.22,28,-4.097208,4.249679,6.190193,9.126583,6.022
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,587,-1.261,0.239,39.7,0.95,36,-4.803271,-4.705794,2.196296,3.592729,-1.285
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,1894,-2.504,-1.004,38.1,0.93,116,-2.041991,-4.826887,-0.296814,-2.495990,-1.173
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,455,5.220,6.720,32.1,1.27,28,-4.052328,3.721940,5.704636,14.869709,6.431
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,589,0.122,1.622,29.5,1.01,36,-2.015690,-3.635953,3.705603,5.219761,0.920
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,1829,-0.625,0.875,23.6,0.98,112,1.698349,-7.730284,0.939009,13.053986,-0.125
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,531,1.603,3.103,66.1,1.13,33,-1.729604,-2.413326,7.068224,7.413365,2.912
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,655,-2.264,-0.764,59.2,0.86,40,-0.327083,-4.451220,0.154543,-2.360748,-0.786
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,2569,-2.515,-1.015,61.2,0.85,158,-4.506135,-1.152313,-3.193921,3.592401,-1.104
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,475,3.596,5.096,40.6,1.16,29,-1.983913,1.001879,6.707702,10.097846,6.699
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,607,-1.324,0.176,39.7,0.95,37,-0.655749,-3.800163,0.888339,0.685621,-1.448
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,2370,-2.330,-0.830,37.0,0.92,145,-3.773506,-0.680363,-3.959209,3.168587,-0.915
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,486,5.198,6.698,30.9,1.29,30,-3.920923,3.794543,6.881978,12.749594,5.881
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,607,1.345,2.845,30.1,1.06,37,0.254653,-1.875365,3.668996,7.203417,1.562
+A0 09:30 carried,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,2336,-1.041,0.459,20.2,0.96,143,-0.764505,-3.052080,-1.736086,8.505731,-0.000
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,22,-2.162,-0.662,45.5,0.80,1,,,,,-1.076
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,25,-14.046,-12.546,48.0,0.38,2,,,,,-14.453
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,968,-1.237,0.263,60.8,0.95,59,-4.614403,-6.939132,5.767192,16.048927,1.112
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,19,26.580,28.080,26.3,2.36,1,,,,,30.258
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,24,-19.025,-17.525,29.2,0.46,1,,,,,-18.143
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,840,-2.840,-1.340,38.8,0.93,52,-4.866062,-7.859331,5.388890,1.283696,-0.349
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,19,10.044,11.544,26.3,1.62,1,,,,,15.307
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,23,-4.295,-2.795,17.4,0.87,1,,,,,-0.095
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,812,-1.770,-0.270,25.4,0.95,50,-2.621542,-11.083187,6.184350,18.734615,0.546
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,25,-2.946,-1.446,40.0,0.72,2,,,,,1.494
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,27,-9.629,-8.129,44.4,0.47,2,,,,,-9.156
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1013,-2.385,-0.885,51.3,0.88,62,-4.146196,-1.515332,-3.433383,5.736855,0.080
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,22,4.154,5.654,18.2,1.24,1,,,,,9.159
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,25,-9.912,-8.412,36.0,0.62,2,,,,,-14.560
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,951,-2.573,-1.073,33.9,0.91,58,-6.074201,-0.461231,-2.098196,2.466998,2.261
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,22,6.239,7.739,13.6,1.43,1,,,,,9.088
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,23,8.863,10.363,21.7,1.38,1,,,,,7.991
+A0 09:30 carried,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,911,-2.504,-1.004,12.8,0.88,56,-6.581733,-1.876136,-0.380173,6.305829,-2.030
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,1547,0.994,2.494,46.3,1.07,95,-3.438572,1.497035,0.941030,2.091730,2.891
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,1567,-0.448,1.052,45.9,0.98,96,-3.311194,-2.085904,2.591973,-2.976649,1.244
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,5464,-2.169,-0.669,54.0,0.89,335,-1.547722,-2.771851,-2.785678,-0.180881,-0.455
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,1471,1.210,2.710,40.6,1.07,90,-3.537134,2.169978,0.555296,2.246731,2.766
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,1478,-1.280,0.220,38.2,0.94,91,-3.085099,-2.709342,1.050953,-2.624383,-0.365
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,4686,0.040,1.540,36.7,1.00,287,2.354737,-1.310480,-1.193959,-0.424950,1.425
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,1544,2.731,4.231,26.3,1.20,95,-6.507877,4.672754,0.531380,7.508210,4.119
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1550,-1.882,-0.382,23.5,0.89,95,-3.366565,-2.838016,0.789291,-6.584858,-0.856
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,4630,-0.836,0.664,17.8,0.96,284,0.644883,0.359339,-4.177879,-0.337948,-0.193
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,1522,0.798,2.298,48.8,1.05,93,-2.077949,1.027456,0.274939,3.176535,2.108
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,1550,-0.475,1.025,47.5,0.98,95,-4.807824,-1.525726,2.268918,-3.282676,1.619
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,6072,-1.951,-0.451,49.6,0.90,373,-1.152148,-2.457391,-3.008829,0.310911,-0.424
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,1468,1.418,2.918,41.6,1.08,90,-3.658657,1.959249,0.846948,3.730804,3.174
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,1494,-0.818,0.682,39.0,0.96,92,-5.355276,-1.472194,1.250971,-2.506844,0.207
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,5775,-1.005,0.495,35.3,0.96,354,0.967644,-2.604627,-2.412783,1.779436,0.495
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,1525,3.092,4.592,29.0,1.21,94,-2.484716,4.895411,-0.028141,8.300795,3.685
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,1556,-1.946,-0.446,25.2,0.90,95,-5.715127,-2.160170,0.369827,-7.026752,-0.152
+A0 09:30 carried,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,5670,-0.137,1.363,14.2,0.99,348,0.609158,0.677788,-2.848378,2.932926,0.409
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,7,18.511,20.011,71.4,2.48,0,,,,,15.238
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,9,-3.714,-2.214,44.4,0.83,1,,,,,-6.505
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,1400,-1.990,-0.490,53.1,0.91,86,-2.592869,-2.522896,-0.229575,-3.214183,1.421
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,7,14.197,15.697,57.1,1.93,0,,,,,11.353
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,7,-12.916,-11.416,28.6,0.56,0,,,,,-21.188
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,1286,1.851,3.351,36.2,1.05,79,4.130865,3.400757,0.766790,-11.000211,5.989
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,6,30.893,32.393,33.3,3.05,0,,,,,14.467
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,8,-9.991,-8.491,12.5,0.59,0,,,,,-0.612
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1254,-1.496,0.004,15.1,0.95,77,2.537525,-1.550387,-5.346144,-5.980774,2.565
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,7,20.144,21.644,71.4,2.86,0,,,,,17.981
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,9,-0.512,0.988,44.4,0.97,1,,,,,2.163
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1443,-1.905,-0.405,47.7,0.91,89,-2.748613,-2.489081,-0.172595,-1.601511,1.182
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,7,14.567,16.067,57.1,2.03,0,,,,,20.819
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,7,2.585,4.085,42.9,1.13,0,,,,,1.748
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,1392,0.370,1.870,35.2,1.01,85,1.549541,-0.384771,1.581501,-6.357187,2.966
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,6,29.216,30.716,33.3,2.75,0,,,,,37.732
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,8,-6.389,-4.889,12.5,0.69,0,,,,,-6.973
+A0 09:30 carried,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,1366,-0.250,1.250,11.1,0.99,84,2.912247,-1.921598,-1.853244,-2.526335,3.118
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,764,-0.581,0.919,63.2,0.95,47,0.084573,-0.991177,0.548566,-1.817004,1.692
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,1002,-1.169,0.331,62.5,0.92,61,-4.041407,-2.057766,0.210943,-0.014650,-0.153
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,8801,-2.309,-0.809,65.8,0.84,540,-1.920187,-2.858936,-2.047418,-2.544104,-0.823
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,691,2.415,3.915,42.0,1.12,42,-4.317285,4.607882,1.725771,-0.585898,3.702
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,909,-2.468,-0.968,37.4,0.90,56,-4.210897,-0.852533,-3.359770,-4.852263,-0.936
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,5760,0.884,2.384,37.5,1.03,353,2.852427,0.284675,-2.027293,4.550757,1.957
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,701,3.773,5.273,29.5,1.22,43,-7.245399,7.036615,1.668959,2.419759,6.049
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,922,-3.131,-1.631,25.8,0.85,57,-8.735348,-2.847540,-2.874082,-1.228671,0.153
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,5911,1.322,2.822,20.8,1.05,363,1.552219,1.482629,0.959237,0.881067,1.554
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,759,-0.193,1.307,64.3,0.98,47,0.940152,-0.532123,-0.400055,0.683871,0.883
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,997,-1.134,0.366,63.0,0.92,61,-2.817999,-1.481048,-0.673486,-0.006629,0.541
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,9447,-2.199,-0.699,63.0,0.84,580,-1.818577,-2.467679,-1.938299,-3.596790,-0.635
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,701,2.711,4.211,42.7,1.14,43,-4.886874,4.232021,0.904339,5.371957,3.513
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,931,-1.634,-0.134,37.9,0.93,57,-6.511238,-0.537911,-1.810705,-1.805219,-0.088
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,7868,0.175,1.675,36.7,1.01,483,2.843853,0.122454,-3.028683,-0.278411,0.836
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,705,4.526,6.026,31.1,1.26,43,-4.717506,7.921408,1.177888,4.333283,3.979
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,953,-3.201,-1.701,26.1,0.85,58,-8.867881,-2.576859,-2.804601,-2.618886,-0.664
+A0 09:30 carried,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,7824,1.299,2.799,16.8,1.06,480,2.481226,1.300742,-0.483095,2.277417,1.353
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,9,10.422,11.922,55.6,3.50,1,,,,,13.327
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,13,-6.414,-4.914,61.5,0.68,1,,,,,-2.981
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,2783,-1.693,-0.193,64.1,0.89,171,-1.590403,-2.172223,-0.435534,-4.502291,1.221
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,9,-11.467,-9.967,33.3,0.47,1,,,,,-13.216
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,10,-8.270,-6.770,40.0,0.74,1,,,,,-0.971
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,2010,2.871,4.371,37.3,1.07,123,5.581677,2.103120,0.156581,3.613857,4.859
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,8,3.108,4.608,12.5,1.14,0,,,,,9.650
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,10,-21.923,-20.423,20.0,0.31,1,,,,,-17.188
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1945,1.373,2.873,18.5,1.05,119,0.590568,2.776536,3.379415,-6.946756,3.896
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,9,10.148,11.648,55.6,3.28,1,,,,,15.106
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,13,-0.180,1.320,53.8,0.99,1,,,,,2.406
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,2865,-1.900,-0.400,59.9,0.87,176,-1.811344,-1.919749,-0.999159,-5.262928,0.723
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,9,-14.511,-13.011,33.3,0.33,1,,,,,-20.783
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,11,5.867,7.367,36.4,1.28,1,,,,,13.158
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,2381,2.736,4.236,37.0,1.10,146,6.689245,1.482384,-0.770200,3.110675,6.209
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,8,0.814,2.314,12.5,1.03,0,,,,,2.276
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,12,4.508,6.008,25.0,1.31,1,,,,,11.092
+A0 09:30 carried,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,2309,1.400,2.900,13.4,1.07,142,4.467239,0.301153,-0.056374,-2.004829,3.137
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,1746,-1.761,-0.261,43.4,0.88,107,-3.755676,-2.508456,-2.285412,4.030040,-0.064
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,1903,-1.957,-0.457,44.5,0.89,117,-5.070039,-2.604555,-1.584431,0.859958,-0.061
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,5676,-2.237,-0.737,55.9,0.86,348,-1.699303,-2.484012,-2.392926,-3.119137,-0.245
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,1677,-1.898,-0.398,37.3,0.89,103,-3.438841,-2.475756,-2.405315,2.880972,-0.769
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,1813,-2.517,-1.017,36.6,0.88,111,-4.639053,-3.337714,-2.088153,0.101829,-1.128
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,4897,-0.753,0.747,35.6,0.97,300,-0.715059,0.442641,-0.930411,-5.207547,0.815
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,1770,-1.628,-0.128,24.1,0.89,109,-5.252365,-2.466719,-1.167944,2.146580,-0.497
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1912,-1.599,-0.099,23.3,0.90,117,-9.708705,-1.707554,-1.010117,0.930622,0.157
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,5218,-0.732,0.768,17.9,0.97,320,-0.889984,0.201895,-2.007189,0.153636,-0.345
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,1692,-1.546,-0.046,46.9,0.90,104,-4.258452,-2.492122,-1.129310,2.732984,0.060
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,1915,-2.757,-1.257,45.4,0.85,117,-2.236808,-3.025239,-3.290339,-0.005784,-1.464
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,6262,-1.938,-0.438,51.1,0.87,384,-1.564393,-2.298996,-2.117067,-1.551337,-0.494
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,1631,-1.947,-0.447,38.9,0.89,100,-6.050307,-2.998775,-1.102722,2.073922,-1.313
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,1846,-3.112,-1.612,36.7,0.85,113,-1.885295,-3.542693,-3.219523,-1.713352,-1.547
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,5971,-1.563,-0.063,34.4,0.93,366,-1.232247,-0.938482,-1.900983,-4.533054,-0.350
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,1709,-1.235,0.265,27.6,0.92,105,-7.032107,-2.108001,0.068379,1.434823,0.302
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,1938,-2.623,-1.123,23.5,0.86,119,-5.541855,-2.459468,-3.038044,-0.062301,-1.390
+A0 09:30 carried,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,6149,-1.402,0.098,14.1,0.92,377,-0.770764,-1.496507,-1.982196,-1.987462,-0.556
+A0 09:30 carried,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,292,-0.522,0.978,58.2,0.94,18,-3.297319,-2.779620,2.831747,12.336417,1.193
+A0 09:30 carried,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,287,-3.254,-1.754,32.4,0.89,18,-8.122284,-2.881975,7.489244,-14.284245,-1.638
+A0 09:30 carried,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,286,7.364,8.864,13.3,1.33,18,-4.358686,4.293631,21.931235,29.866212,6.872
+A0 09:30 carried,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,294,-1.084,0.416,53.4,0.88,18,-2.630510,-3.932971,1.775297,10.464146,1.115
+A0 09:30 carried,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,290,-1.070,0.430,34.5,0.95,18,-1.636912,1.062672,1.539118,-15.321707,-0.172
+A0 09:30 carried,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,291,2.553,4.053,8.9,1.15,18,-0.354835,2.723450,14.976279,-20.410100,4.332
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,874,-0.432,1.068,64.5,0.96,54,0.004894,-1.832244,0.552125,3.447897,1.925
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,1128,-1.948,-0.448,61.3,0.86,69,-2.187569,-1.302201,-3.840446,2.503267,-0.186
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,9716,-2.246,-0.746,64.9,0.80,596,-2.018776,-2.156252,-2.091970,-4.257179,-0.742
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,775,1.605,3.105,40.3,1.08,48,-2.893183,0.979683,1.521638,6.986271,4.002
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,1029,-4.286,-2.786,37.8,0.82,63,-0.329286,-3.995508,-7.594289,3.965853,-1.280
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,6830,-0.778,0.722,36.5,0.97,419,-0.395074,-0.189624,-0.354196,-6.690618,0.262
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,794,3.551,5.051,29.3,1.21,49,-0.741719,3.322901,4.718945,4.472543,4.922
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1053,-2.627,-1.127,27.5,0.87,65,-6.224299,-2.428315,-3.770047,3.765924,-1.163
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,7463,0.112,1.612,20.5,1.00,458,0.798932,0.415054,-0.700445,-1.484042,0.225
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,866,-0.509,0.991,65.2,0.95,53,-0.864065,-2.226802,1.294555,3.625340,0.822
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,1117,-2.014,-0.514,62.2,0.86,69,-1.752306,-0.699151,-4.946494,3.137881,-0.205
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,10190,-2.155,-0.655,62.1,0.80,625,-1.967682,-2.295714,-2.074087,-2.687348,-0.748
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,790,0.177,1.677,39.9,1.01,48,-7.046679,0.275540,1.230600,1.584686,2.284
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,1043,-4.243,-2.743,37.9,0.83,64,-0.856573,-3.793287,-7.641725,4.151109,-1.745
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,8921,-0.778,0.722,35.7,0.97,547,-0.099362,0.035465,-1.727425,-4.174138,0.879
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,806,3.293,4.793,30.4,1.19,49,-1.861701,3.238674,3.604362,5.800385,5.731
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,1063,-3.713,-2.213,27.8,0.83,65,-5.401840,-2.979825,-5.757752,2.664786,-1.701
+A0 09:30 carried,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,9169,-1.045,0.455,15.5,0.95,563,-0.248459,-1.140756,-2.269208,0.081735,-0.667
+A0 09:30 carried,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,1238,-2.780,-1.280,55.7,0.65,76,-3.213640,-2.009535,-3.548806,-1.685715,-0.947
+A0 09:30 carried,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,1114,-4.290,-2.790,31.9,0.87,68,-8.549277,-2.274741,-1.351246,-4.266412,-3.291
+A0 09:30 carried,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1135,-3.451,-1.951,12.4,0.86,70,-5.754949,-3.402861,-1.840700,1.367896,-4.867
+A0 09:30 carried,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1241,-2.762,-1.262,53.2,0.64,76,-3.167291,-1.967212,-3.940694,-0.433901,-1.461
+A0 09:30 carried,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,1171,-2.471,-0.971,33.3,0.90,72,-4.493859,1.070516,-3.355820,-6.618710,0.185
+A0 09:30 carried,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,1185,-4.681,-3.181,8.8,0.76,73,-6.828473,-2.792190,-4.167584,-5.463132,-5.700
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,1756,-1.112,0.388,42.7,0.92,108,-3.035100,-1.109732,-0.197940,-2.581654,0.374
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,1946,-2.718,-1.218,40.8,0.84,119,0.913514,-4.129447,-1.027308,-5.111773,-1.311
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,6319,-0.906,0.594,52.6,0.95,388,-2.760253,-0.878105,0.888630,2.108983,0.373
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,1698,-1.088,0.412,38.2,0.93,104,0.152884,-1.355890,0.077069,-3.550840,0.126
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,1866,-3.441,-1.941,35.4,0.82,114,-2.502087,-3.731910,-2.589452,-5.668658,-2.532
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,5403,0.107,1.607,37.0,1.00,331,-0.900061,-0.625111,0.660460,6.649527,0.767
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,1778,-0.163,1.337,23.3,0.99,109,3.430056,-0.309442,0.289932,-2.176405,1.216
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1985,-4.093,-2.593,21.5,0.75,122,-6.592603,-4.503787,-2.379677,-7.048866,-2.020
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,5518,0.648,2.148,19.0,1.03,339,-1.352359,1.286126,2.615343,0.704115,0.217
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,1676,-1.209,0.291,46.1,0.92,103,-3.374912,-1.031221,-0.537277,-2.546955,0.105
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,1862,-2.522,-1.022,43.5,0.86,114,1.997498,-4.050057,-0.954572,-4.667912,-0.334
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,7042,-1.129,0.371,48.2,0.93,432,-2.644804,-1.080919,0.482690,0.840961,0.442
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,1639,-1.622,-0.122,39.6,0.91,101,-1.070213,-1.592592,-1.291333,-2.745549,-0.587
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,1785,-3.215,-1.715,37.0,0.84,110,1.736691,-4.159369,-2.448047,-5.059779,-2.278
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,6721,-0.562,0.938,35.5,0.97,412,-0.960130,-1.125471,0.147404,1.605413,0.701
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,1707,0.881,2.381,27.1,1.06,105,3.104841,1.305288,0.496091,-0.722402,2.918
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,1902,-3.746,-2.246,24.1,0.79,117,-3.374597,-4.444662,-2.177833,-6.597879,-2.145
+A0 09:30 carried,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,6777,-0.104,1.396,15.2,0.99,416,-1.720054,0.095163,2.112158,-0.339494,0.799
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,2,-29.942,-28.442,50.0,0.07,0,,,,,-22.291
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,6,-2.668,-1.168,50.0,0.90,0,,,,,-0.548
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,1670,1.890,3.390,54.3,1.10,102,-0.055911,2.985419,4.669760,-1.261628,2.489
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,2,-4.819,-3.319,50.0,0.85,0,,,,,-17.967
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,6,-1.490,0.010,50.0,0.94,0,,,,,-4.816
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,1531,2.430,3.930,38.7,1.09,94,0.084824,1.563242,7.450418,2.604752,2.379
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,2,4.008,5.508,50.0,1.12,0,,,,,7.813
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,6,-12.166,-10.666,16.7,0.56,0,,,,,-20.331
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1530,4.760,6.260,20.1,1.22,94,-0.456017,8.353900,11.176890,-4.051494,2.269
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,2,-5.564,-4.064,50.0,0.30,0,,,,,-6.417
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,6,7.352,8.852,50.0,1.44,0,,,,,1.617
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1742,1.342,2.842,48.3,1.08,107,0.262303,2.253575,2.618214,-0.995703,1.906
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,2,19.558,21.058,50.0,3.46,0,,,,,20.931
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,6,9.560,11.060,50.0,1.57,0,,,,,11.753
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,1687,1.855,3.355,37.4,1.09,103,1.152155,1.323388,3.435044,2.742012,1.724
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,2,28.386,29.886,50.0,4.58,0,,,,,39.283
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,6,-2.146,-0.646,16.7,0.88,0,,,,,5.161
+A0 09:30 carried,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,1707,2.897,4.397,14.2,1.19,105,0.424763,4.755668,6.592871,-3.638514,0.621
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,725,-0.416,1.084,63.3,0.96,44,2.481334,-1.097889,2.346005,-5.833240,2.057
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,978,-1.453,0.047,59.9,0.90,60,-3.404859,-2.533371,0.703352,-2.456008,0.393
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,9296,-1.293,0.207,64.5,0.89,570,-2.334430,-0.751002,-0.733959,-0.892136,-0.036
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,661,0.499,1.999,39.9,1.03,41,3.165618,0.476080,2.540347,-6.851105,1.415
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,901,-0.702,0.798,41.0,0.97,55,-1.024438,0.520581,0.570329,-10.853634,0.178
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,6128,1.646,3.146,38.2,1.06,376,-0.941288,1.946322,2.730584,8.244019,2.628
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,679,2.574,4.074,27.4,1.15,42,7.203649,2.322523,3.197973,-0.981523,3.755
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,929,-0.474,1.026,30.8,0.98,57,-5.892786,-0.138540,2.660195,-8.840187,0.630
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,6560,2.001,3.501,21.2,1.09,402,-0.835036,2.188546,4.351558,6.001840,2.691
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,722,-0.191,1.309,64.3,0.98,44,2.891929,-0.855857,2.524673,-5.563686,1.137
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,981,-1.760,-0.260,60.6,0.88,60,-2.503045,-2.787511,0.104488,-3.115700,-0.520
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,9986,-1.444,0.056,61.6,0.88,613,-2.046254,-1.290350,-0.696343,-1.904674,-0.014
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,677,0.724,2.224,40.9,1.04,42,6.177356,0.602819,1.721332,-5.168800,3.435
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,916,-0.358,1.142,41.4,0.98,56,-0.448232,0.442707,0.352142,-6.826925,0.361
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,8286,-0.047,1.453,36.3,1.00,508,-0.037298,-0.493575,0.185091,1.116021,1.053
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,694,4.168,5.668,27.5,1.25,43,7.219778,5.006364,3.266845,-0.745922,6.738
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,941,0.144,1.644,31.9,1.01,58,-4.052778,0.786910,1.883919,-5.674093,2.089
+A0 09:30 carried,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,8496,0.520,2.020,16.3,1.03,521,-0.855176,1.132983,1.651959,0.283988,1.586
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,7,0.697,2.197,85.7,1.18,0,,,,,1.926
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,7,-2.898,-1.398,57.1,0.75,0,,,,,-5.608
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,2918,0.173,1.673,64.4,1.01,179,-1.210016,1.163922,1.034100,-1.079862,0.187
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,6,-1.091,0.409,33.3,0.93,0,,,,,4.450
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,7,-10.217,-8.717,28.6,0.53,0,,,,,-4.130
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,2174,4.168,5.668,39.2,1.14,133,-0.900092,4.331166,8.384237,10.584083,1.720
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,6,4.317,5.817,16.7,1.55,0,,,,,4.212
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,7,15.825,17.325,14.3,2.29,0,,,,,22.584
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,2169,4.643,6.143,22.0,1.19,133,-3.270162,7.843470,9.865309,6.491303,2.748
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,7,-1.160,0.340,85.7,0.80,0,,,,,1.831
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,7,-4.954,-3.454,57.1,0.64,0,,,,,0.588
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,3022,-0.105,1.395,59.8,0.99,185,-0.156463,-0.058730,0.999757,-3.288527,1.326
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,6,-2.366,-0.866,33.3,0.86,0,,,,,2.333
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,7,-13.173,-11.673,28.6,0.43,0,,,,,-9.873
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,2504,2.345,3.845,37.4,1.10,154,1.624815,1.027395,4.408441,3.855670,1.727
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,6,1.461,2.961,16.7,1.14,0,,,,,1.312
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,7,9.895,11.395,14.3,1.54,0,,,,,4.403
+A0 09:30 carried,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,2546,3.470,4.970,15.3,1.20,156,0.129625,4.668282,7.783848,-1.397498,1.448
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,1018,0.204,1.704,42.8,1.01,62,-1.800804,-0.791814,2.047678,1.177151,2.334
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,1208,-0.474,1.026,44.5,0.97,74,1.362696,-0.749166,1.352625,-6.406285,1.148
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,1610,-0.471,1.029,47.6,0.98,99,-4.505296,0.068870,6.159659,-7.129551,1.462
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,986,0.596,2.096,39.8,1.04,60,1.815298,-0.893462,3.123600,-0.068364,1.946
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,1169,0.081,1.581,40.8,1.00,72,1.227152,1.110271,0.472880,-6.700108,1.824
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,1563,-1.764,-0.264,37.6,0.93,96,-7.280315,-1.181122,5.750069,-5.774802,-1.313
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,1045,3.827,5.327,27.4,1.29,64,2.405621,2.376651,6.353024,4.702300,4.983
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1222,-1.834,-0.334,25.0,0.89,75,0.285260,-3.329360,1.841165,-8.116830,-1.196
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,1495,-0.196,1.304,23.1,0.99,92,-2.638792,-0.574367,6.153275,-9.154250,1.331
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,970,-0.254,1.246,45.9,0.98,60,-0.915396,-1.641198,2.198994,0.137097,1.020
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,1164,-1.140,0.360,47.3,0.94,71,-1.377969,-1.571557,1.720822,-8.189063,1.112
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,1807,-1.059,0.441,43.6,0.94,111,-2.833430,-0.674560,2.009033,-4.978718,-0.021
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,950,1.047,2.547,41.6,1.06,58,4.569066,-1.162826,4.697753,-0.487547,2.403
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,1134,-0.970,0.530,40.9,0.95,70,0.269479,-0.003718,0.427950,-11.372056,0.119
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,1918,-1.298,0.202,36.1,0.93,118,-3.275658,-1.257805,1.673742,-2.858751,0.283
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,1003,3.975,5.475,30.5,1.28,62,3.083620,2.185632,6.180578,7.238789,5.308
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,1189,-2.504,-1.004,27.1,0.86,73,-4.005511,-3.758287,1.964566,-9.311021,-1.467
+A0 09:30 carried,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,1845,-1.246,0.254,17.3,0.92,113,-3.665693,0.270265,1.792391,-7.534441,0.023
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,21,10.317,11.817,47.6,2.02,1,,,,,15.097
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,16,22.515,24.015,68.8,4.76,1,,,,,23.234
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,805,1.796,3.296,47.2,1.07,49,-5.348799,2.447356,16.059845,-16.265555,1.572
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,20,10.879,12.379,50.0,2.22,1,,,,,12.348
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,16,23.926,25.426,62.5,3.43,1,,,,,18.481
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,785,-1.281,0.219,41.3,0.95,48,-8.789261,-3.070819,14.428445,-14.468963,-2.418
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,20,22.966,24.466,40.0,3.85,1,,,,,19.859
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,14,29.298,30.798,64.3,6.34,1,,,,,32.849
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,754,0.461,1.961,30.2,1.02,46,-5.729804,0.342280,15.409871,-21.950327,-1.519
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,21,9.623,11.123,42.9,1.95,1,,,,,12.946
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,17,13.249,14.749,58.8,2.27,1,,,,,7.859
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,858,0.289,1.789,34.1,1.02,53,-4.235157,1.592674,8.523611,-12.844991,0.694
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,21,9.161,10.661,47.6,2.06,1,,,,,6.383
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,17,11.076,12.576,52.9,1.99,1,,,,,12.591
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,890,-0.862,0.638,36.4,0.95,55,-5.057185,-0.229529,5.364317,-6.087558,-0.087
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,19,18.878,20.378,31.6,3.33,1,,,,,20.962
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,16,12.234,13.734,43.8,2.28,1,,,,,12.315
+A0 09:30 carried,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,846,-1.620,-0.120,15.6,0.89,52,-5.579556,-0.260712,5.292736,-13.648979,-1.372
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,473,-2.435,-0.935,57.9,0.81,29,-6.832695,-1.345052,-2.754018,-4.138694,-0.886
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,565,-0.324,1.176,62.7,0.98,35,1.445523,1.793008,-2.197745,-5.854136,1.133
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,2488,-2.333,-0.833,59.9,0.86,153,-0.299167,-3.016116,-2.184121,-9.777113,-0.707
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,422,-0.080,1.420,39.8,1.00,26,-9.380275,1.720564,1.113609,-5.333402,0.667
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,522,-0.886,0.614,42.3,0.96,32,-4.058527,3.119376,-2.611052,-11.016587,0.570
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,2158,-3.367,-1.867,35.7,0.88,132,-2.375793,-2.391149,-2.220609,-16.848762,-2.759
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,429,5.730,7.230,29.6,1.33,26,-6.509979,9.399684,5.627361,-4.476774,4.837
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,535,-2.771,-1.271,31.4,0.86,33,-5.031705,-0.592829,-1.869609,-15.536332,-1.831
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,2140,-1.138,0.362,22.2,0.95,131,-0.302326,1.082223,-1.098614,-15.709078,-1.106
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,479,-2.388,-0.888,58.7,0.82,29,-7.062277,-1.558193,-2.245916,-3.316051,-0.611
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,568,-0.682,0.818,64.1,0.95,35,2.203680,0.049487,-1.360760,-5.182604,1.027
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,2718,-1.862,-0.362,59.6,0.87,167,-0.767905,-2.276687,-1.417438,-7.225015,-0.280
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,444,0.573,2.073,41.7,1.03,27,-9.440163,2.351959,2.128504,-5.210115,2.192
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,530,-0.348,1.152,43.4,0.98,33,1.932833,1.546027,-0.528462,-11.431832,-0.815
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,2548,-3.912,-2.412,34.7,0.84,156,-3.274201,-3.491459,-3.549076,-10.856336,-1.619
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,450,4.016,5.516,30.2,1.22,28,-7.438387,5.844981,6.431953,-2.595901,5.603
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,545,-3.961,-2.461,32.5,0.81,33,-2.447048,-3.719322,-1.410498,-17.176832,-3.418
+A0 09:30 carried,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,2544,-0.295,1.205,19.8,0.99,156,-0.636420,0.677252,1.497016,-10.937991,0.727
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,14,9.048,10.548,64.3,1.90,1,,,,,10.573
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,15,13.037,14.537,86.7,2.65,1,,,,,16.317
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,858,-0.622,0.878,57.5,0.97,53,3.620994,-1.227398,0.225793,-25.675793,0.415
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,13,10.671,12.171,61.5,1.58,1,,,,,15.598
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,13,19.118,20.618,69.2,2.43,1,,,,,17.009
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,766,-2.387,-0.887,40.1,0.93,47,1.462708,-3.851006,0.577217,-29.881205,-3.547
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,12,3.561,5.061,25.0,1.18,1,,,,,3.231
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,12,24.069,25.569,66.7,2.66,1,,,,,16.637
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,757,-0.233,1.267,30.3,0.99,46,0.224740,-0.227940,5.177336,-29.114813,-1.486
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,15,13.748,15.248,66.7,2.99,1,,,,,20.352
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,15,5.054,6.554,73.3,1.54,1,,,,,2.588
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,892,0.103,1.603,48.7,1.01,55,2.220306,0.717680,0.789961,-19.221495,0.289
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,15,13.424,14.924,66.7,2.34,1,,,,,10.961
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,14,7.571,9.071,57.1,1.54,1,,,,,6.831
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,839,-1.897,-0.397,35.4,0.91,51,-0.279513,-3.129791,-0.075579,-14.070082,-2.152
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,14,10.110,11.610,28.6,1.90,1,,,,,10.199
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,14,3.176,4.676,28.6,1.20,1,,,,,6.378
+A0 09:30 carried,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,814,1.217,2.717,18.2,1.07,50,0.664190,1.019115,6.287768,-21.100970,0.244
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,1850,-2.980,-1.480,48.3,0.69,113,-5.058429,-1.973976,-1.027963,0.512435,-1.174
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,963,-1.883,-0.383,51.5,0.85,59,-1.980073,-1.568064,-3.478596,2.653501,-0.530
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,1153,-1.357,0.143,49.6,0.95,71,-4.499033,-0.472857,0.316588,4.364194,1.190
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,1587,-3.253,-1.753,34.0,0.76,97,-5.311071,-2.625102,-0.731649,-1.969688,-1.233
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,850,-3.111,-1.611,33.2,0.83,52,-2.739905,-3.008714,-5.659565,3.136723,-1.903
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,1109,-1.300,0.200,37.5,0.96,68,-5.000385,1.697715,-1.446924,3.641829,-0.554
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,1509,-3.551,-2.051,16.8,0.70,93,-5.652807,-2.855901,-1.275880,-1.232293,-1.551
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,827,-3.204,-1.704,17.2,0.79,51,-1.013977,-5.350020,-4.347291,-0.502045,-0.687
+A2 session open,-2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,1059,-1.975,-0.475,21.7,0.93,65,-5.647364,-1.415476,1.625549,0.011874,1.234
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,2005,-2.841,-1.341,44.8,0.65,123,-4.404055,-1.849225,-1.317767,-2.415503,-1.321
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,1033,-1.251,0.249,46.7,0.87,63,-1.697831,-1.502631,-2.258685,6.606886,0.602
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,1304,-2.446,-0.946,44.1,0.89,80,-5.378905,-0.677432,-2.349267,4.094755,-1.049
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,1800,-2.382,-0.882,32.8,0.79,110,-3.647217,-1.605636,-0.624099,-4.830380,-0.588
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,974,-2.260,-0.760,32.6,0.83,60,-2.453474,-3.839743,-2.302522,6.802155,-0.438
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,1337,-3.151,-1.651,33.7,0.88,82,-5.347769,-2.196385,-4.056696,6.988752,-0.830
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,1748,-3.038,-1.538,14.0,0.68,107,-4.394158,-2.777282,-0.751305,-4.810608,-1.601
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,945,-1.607,-0.107,12.2,0.85,58,0.045390,-2.827977,-3.160478,2.162300,0.732
+A2 session open,-2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,1270,-2.171,-0.671,16.3,0.90,78,-6.034858,-0.521048,-1.048086,5.827800,-1.573
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,1151,-3.830,-2.330,45.7,0.66,71,-6.747769,-2.370354,-0.723560,2.876851,-1.546
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,619,-2.215,-0.715,48.9,0.85,38,-1.741854,-1.726346,-5.523446,2.419821,-0.552
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,606,-2.380,-0.880,44.1,0.93,37,-6.918672,-3.686803,3.111711,6.667801,-0.677
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,1011,-4.366,-2.866,32.4,0.71,62,-7.767767,-3.045472,-1.379421,4.654536,-1.700
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,559,-4.300,-2.800,32.7,0.79,34,-3.572024,-4.584765,-8.107630,4.047368,-1.269
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,599,-3.121,-1.621,37.2,0.92,37,-7.342254,-1.838639,-1.053417,4.056236,-0.723
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,974,-4.949,-3.449,15.6,0.62,60,-8.078333,-4.247855,-1.745741,5.026597,-1.403
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,552,-3.999,-2.499,18.8,0.77,34,-1.011566,-7.332388,-5.896806,-1.682342,-1.802
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,564,-1.349,0.151,25.4,0.96,35,-5.247128,-1.539434,1.292022,8.826830,2.804
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,1187,-3.533,-2.033,39.3,0.62,73,-5.654472,-2.280967,-1.160981,-0.665731,-1.522
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,638,-1.180,0.320,40.8,0.89,39,-1.856389,-1.292096,-2.317343,7.883366,1.027
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,649,-3.884,-2.384,31.9,0.85,40,-9.224064,-1.117869,-1.267702,1.688447,-1.027
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,1080,-3.134,-1.634,30.1,0.73,66,-5.822507,-1.796521,-0.807575,1.028281,-0.496
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,603,-3.226,-1.726,30.7,0.76,37,-3.771073,-4.824580,-3.535927,8.552159,-0.734
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,670,-4.509,-3.009,30.6,0.83,41,-5.567020,-3.563628,-5.519645,-0.281856,-2.558
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,1043,-4.229,-2.729,10.2,0.56,64,-6.315338,-3.607472,-1.906383,-0.317660,-1.510
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,583,-1.514,-0.014,11.3,0.86,36,-0.412445,-3.570627,-2.096340,3.410278,0.260
+A2 session open,-2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,625,-3.215,-1.715,13.0,0.85,38,-9.466682,3.114837,-4.460002,5.494654,0.803
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,2794,-2.153,-0.653,56.3,0.68,171,-3.503095,-1.459156,-1.362408,-1.229394,-0.687
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,2068,-1.719,-0.219,60.9,0.81,127,-3.268853,0.273054,-2.608176,-1.306355,-0.238
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,2316,-1.941,-0.441,63.0,0.90,142,-4.390075,-3.894518,1.091882,8.032195,-0.354
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,2209,-1.507,-0.007,36.2,0.89,136,-1.711556,-0.199887,-1.976924,-3.504922,0.333
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,1702,-2.268,-0.768,35.4,0.87,104,-2.314180,-0.790033,-5.406731,2.212678,0.119
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,1894,-2.504,-1.004,38.1,0.93,116,-2.041991,-4.826887,-0.296814,-2.495990,-2.311
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,2181,-2.541,-1.041,20.0,0.78,134,-2.877940,-2.648155,-1.659875,-3.649001,-0.741
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1656,-3.493,-1.993,18.2,0.77,102,-3.252747,-3.010244,-5.183071,-0.774713,-1.472
+A2 session open,-2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,1829,-0.625,0.875,23.6,0.98,112,1.698349,-7.730284,0.939009,13.053986,-0.692
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,2985,-1.933,-0.433,55.2,0.67,183,-3.431960,-1.281791,-1.289454,-0.138423,-0.238
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,2284,-1.927,-0.427,57.8,0.74,140,-2.539753,-0.720090,-2.487371,-2.977333,-1.000
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,2569,-2.515,-1.015,61.2,0.85,158,-4.506135,-1.152313,-3.193921,3.592401,-1.958
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,2555,-0.651,0.849,36.3,0.95,157,-1.691460,1.333241,-1.563929,-0.479082,0.454
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,2044,-1.785,-0.285,34.8,0.88,125,-2.335237,-1.174040,-2.657445,0.529747,-0.358
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,2370,-2.330,-0.830,37.0,0.92,145,-3.773506,-0.680363,-3.959209,3.168587,-2.002
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,2549,-1.563,-0.063,18.3,0.84,156,-2.255097,-0.155802,-1.551892,-3.833066,-0.337
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,2032,-3.421,-1.921,14.7,0.72,125,-2.567013,-3.479161,-4.364159,-2.666599,-1.752
+A2 session open,-2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,2336,-1.041,0.459,20.2,0.96,143,-0.764505,-3.052080,-1.736086,8.505731,-0.062
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,1202,-2.538,-1.038,53.5,0.71,74,-5.559157,-0.709302,-0.591422,-2.162386,-0.098
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,923,-2.344,-0.844,56.4,0.82,57,-6.028496,1.253056,-2.932171,-0.973638,-0.392
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,968,-1.237,0.263,60.8,0.95,59,-4.614403,-6.939132,5.767192,16.048927,1.472
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,996,-2.657,-1.157,34.0,0.83,61,-4.516315,-0.996401,-2.575114,0.365086,0.631
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,786,-4.495,-2.995,33.5,0.80,48,-5.885741,-0.968194,-8.491911,-0.170751,-0.961
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,840,-2.840,-1.340,38.8,0.93,52,-4.866062,-7.859331,5.388890,1.283696,0.647
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,977,-4.689,-3.189,17.1,0.64,60,-6.361731,-3.872691,-4.097388,-0.923945,-2.353
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,770,-4.038,-2.538,20.1,0.79,47,-4.051117,-2.894718,-6.695943,0.438910,-2.205
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,812,-1.770,-0.270,25.4,0.95,50,-2.621542,-11.083187,6.184350,18.734615,1.517
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,1229,-2.362,-0.862,48.0,0.67,75,-5.248425,-0.677628,-0.776528,-0.835763,-0.385
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,945,-2.722,-1.222,47.6,0.72,58,-4.921969,-0.028425,-3.191258,-4.133516,-1.019
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1013,-2.385,-0.885,51.3,0.88,62,-4.146196,-1.515332,-3.433383,5.736855,-0.195
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,1067,-2.082,-0.582,32.2,0.82,65,-5.056282,-0.622748,-1.143426,3.205122,0.036
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,851,-3.289,-1.789,31.4,0.77,52,-4.739241,-1.916759,-3.925436,-1.732461,-1.266
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,951,-2.573,-1.073,33.9,0.91,58,-6.074201,-0.461231,-2.098196,2.466998,-1.025
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,1046,-3.546,-2.046,11.4,0.63,64,-5.292547,-2.582002,-2.425162,-3.426835,-1.053
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,833,-4.051,-2.551,10.3,0.66,51,-3.923501,-4.052718,-4.949046,-1.191377,-2.477
+A2 session open,-2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,911,-2.504,-1.004,12.8,0.88,56,-6.581733,-1.876136,-0.380173,6.305829,0.875
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,9943,-2.263,-0.763,52.6,0.68,610,-2.771883,-1.953098,-2.495881,-0.110893,-0.704
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,7576,-2.645,-1.145,54.3,0.73,465,-3.578558,-2.317723,-1.279894,-3.708272,-1.095
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,5464,-2.169,-0.669,54.0,0.89,335,-1.547722,-2.771851,-2.785678,-0.180881,-0.885
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,7207,-1.760,-0.260,34.5,0.86,442,-2.600809,-1.066082,-2.131642,-0.179524,-0.177
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,6071,-2.452,-0.952,34.1,0.84,372,-2.925265,-2.210985,-1.714132,-3.671564,-0.843
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,4686,0.040,1.540,36.7,1.00,287,2.354737,-1.310480,-1.193959,-0.424950,1.718
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,6990,-1.685,-0.185,14.2,0.83,429,-3.799114,-0.655720,-0.978748,-0.455833,-0.275
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,5899,-2.655,-1.155,13.8,0.79,362,-2.260757,-3.971908,-0.556891,-5.677832,-1.276
+A2 session open,-1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,4630,-0.836,0.664,17.8,0.96,284,0.644883,0.359339,-4.177879,-0.337948,-0.169
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,10732,-2.215,-0.715,49.4,0.67,658,-2.776824,-1.807327,-2.397476,-0.611991,-0.653
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,8278,-2.287,-0.787,50.4,0.74,508,-3.222471,-1.773416,-1.337325,-2.913156,-0.615
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,6072,-1.951,-0.451,49.6,0.90,373,-1.152148,-2.457391,-3.008829,0.310911,-0.362
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,8640,-1.795,-0.295,33.9,0.83,530,-2.607548,-1.255188,-2.179428,0.033912,-0.475
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,7330,-2.039,-0.539,33.9,0.84,450,-2.690956,-1.432538,-1.680782,-2.878890,-0.542
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,5775,-1.005,0.495,35.3,0.96,354,0.967644,-2.604627,-2.412783,1.779436,0.187
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,8339,-1.522,-0.022,12.0,0.82,512,-3.415298,-0.837288,-1.053175,0.223323,0.044
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,7151,-2.510,-1.010,10.8,0.76,439,-2.473816,-2.947161,-1.425695,-4.412496,-0.957
+A2 session open,-1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,5670,-0.137,1.363,14.2,0.99,348,0.609158,0.677788,-2.848378,2.932926,0.971
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,3437,-2.083,-0.583,53.5,0.72,211,-3.340684,-0.985658,-2.459605,2.665035,0.082
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,3102,-3.118,-1.618,52.9,0.72,190,-4.578120,-3.189771,-0.403435,-2.985207,-1.134
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,1400,-1.990,-0.490,53.1,0.91,86,-2.592869,-2.522896,-0.229575,-3.214183,0.916
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,2694,-2.996,-1.496,31.6,0.78,165,-5.862561,-0.978339,-2.641454,1.725509,-0.913
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,2618,-2.858,-1.358,34.2,0.83,161,-3.978626,-3.311572,-0.071466,-3.775505,-0.887
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,1286,1.851,3.351,36.2,1.05,79,4.130865,3.400757,0.766790,-11.000211,4.733
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,2562,-2.687,-1.187,10.5,0.76,157,-5.948521,-0.077651,-2.195162,1.576400,0.320
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,2514,-2.252,-0.752,14.2,0.83,154,-2.703503,-4.915178,2.424921,-3.547654,-1.267
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1254,-1.496,0.004,15.1,0.95,77,2.537525,-1.550387,-5.346144,-5.980774,0.984
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,3539,-2.093,-0.593,49.1,0.70,217,-3.278189,-1.042391,-2.292033,1.328249,-0.179
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,3200,-2.688,-1.188,48.1,0.72,196,-4.130064,-1.983393,-1.170375,-1.989000,-1.030
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1443,-1.905,-0.405,47.7,0.91,89,-2.748613,-2.489081,-0.172595,-1.601511,0.351
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,2946,-2.654,-1.154,32.0,0.76,181,-5.561354,-0.896496,-2.539626,3.150453,-0.558
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,2898,-2.655,-1.155,33.4,0.80,178,-3.856772,-2.242057,-1.310454,-2.274441,-0.903
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,1392,0.370,1.870,35.2,1.01,85,1.549541,-0.384771,1.581501,-6.357187,2.639
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,2802,-2.432,-0.932,8.1,0.73,172,-5.347450,-0.698717,-2.030699,2.712589,-0.204
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,2803,-2.341,-0.841,10.0,0.78,172,-3.295673,-3.209401,0.605970,-3.393747,-0.287
+A2 session open,-1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,1366,-0.250,1.250,11.1,0.99,84,2.912247,-1.921598,-1.853244,-2.526335,1.551
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,13421,-2.278,-0.778,55.4,0.58,823,-3.011957,-2.053507,-1.954672,-1.227020,-0.627
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,11766,-2.173,-0.673,60.9,0.68,722,-3.433323,-1.503811,-1.596992,-1.325023,-0.467
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,8801,-2.309,-0.809,65.8,0.84,540,-1.920187,-2.858936,-2.047418,-2.544104,-0.581
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,8028,-1.765,-0.265,35.3,0.87,493,-3.213779,-1.294822,-1.377202,-0.070733,-0.217
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,7409,-2.062,-0.562,35.7,0.88,455,-2.775976,-1.904392,-1.382236,-2.033736,-0.607
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,5760,0.884,2.384,37.5,1.03,353,2.852427,0.284675,-2.027293,4.550757,2.457
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,8128,-1.211,0.289,16.4,0.89,499,-2.758359,0.436925,-1.633396,-0.829239,0.298
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,7534,-2.608,-1.108,15.4,0.81,462,-3.216944,-2.922024,-1.789545,-1.683101,-0.718
+A2 session open,-1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,5911,1.322,2.822,20.8,1.05,363,1.552219,1.482629,0.959237,0.881067,1.497
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,14248,-2.305,-0.805,53.2,0.56,874,-3.122936,-1.953134,-1.957081,-1.650173,-0.754
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,12684,-2.033,-0.533,58.3,0.68,778,-3.231727,-1.192603,-1.574221,-1.698046,-0.398
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,9447,-2.199,-0.699,63.0,0.84,580,-1.818577,-2.467679,-1.938299,-3.596790,-0.913
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,10270,-1.918,-0.418,34.6,0.83,630,-3.037535,-1.951070,-1.047215,-1.738030,-0.450
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,9953,-1.636,-0.136,35.0,0.88,611,-2.627570,-0.862271,-1.560643,-1.151856,-0.287
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,7868,0.175,1.675,36.7,1.01,483,2.843853,0.122454,-3.028683,-0.278411,0.879
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,10144,-1.226,0.274,13.3,0.87,622,-2.863094,0.062699,-1.478008,-0.504196,0.283
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,9954,-2.104,-0.604,12.3,0.81,611,-3.320269,-1.586474,-1.267513,-2.194189,-0.663
+A2 session open,-1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,7824,1.299,2.799,16.8,1.06,480,2.481226,1.300742,-0.483095,2.277417,1.313
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,4808,-2.523,-1.023,54.4,0.57,295,-3.240774,-2.403695,-2.173321,-0.988368,-0.386
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,4838,-2.460,-0.960,59.8,0.69,297,-4.089855,-1.876349,-1.376429,-0.771106,-0.675
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,2783,-1.693,-0.193,64.1,0.89,171,-1.590403,-2.172223,-0.435534,-4.502291,1.542
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,3163,-3.729,-2.229,31.5,0.76,194,-6.579087,-2.949076,-2.305213,-0.617265,-0.849
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,3346,-2.954,-1.454,35.1,0.84,205,-4.134065,-2.942931,-1.825223,-1.487340,-0.896
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,2010,2.871,4.371,37.3,1.07,123,5.581677,2.103120,0.156581,3.613857,7.614
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,3076,-3.240,-1.740,11.8,0.73,189,-5.834026,-1.757976,-2.130299,-2.738884,-1.038
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,3236,-2.670,-1.170,16.3,0.82,199,-4.144502,-3.217895,-0.956762,0.085570,-1.172
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1945,1.373,2.873,18.5,1.05,119,0.590568,2.776536,3.379415,-6.946756,5.201
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,4916,-2.364,-0.864,51.5,0.57,302,-3.347313,-2.011848,-1.913429,-1.063830,-0.335
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,4957,-2.256,-0.756,56.0,0.69,304,-3.733215,-1.263713,-1.650077,-1.208183,-0.354
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,2865,-1.900,-0.400,59.9,0.87,176,-1.811344,-1.919749,-0.999159,-5.262928,0.149
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,3627,-3.084,-1.584,32.1,0.75,223,-5.715894,-2.539255,-1.598390,-1.500565,-0.695
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,3947,-2.009,-0.509,34.3,0.86,242,-3.682178,-1.053086,-1.608684,0.240438,-0.099
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,2381,2.736,4.236,37.0,1.10,146,6.689245,1.482384,-0.770200,3.110675,6.296
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,3547,-2.816,-1.316,8.7,0.70,218,-5.387115,-1.624151,-1.888386,-1.832126,-0.447
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,3853,-2.361,-0.861,11.5,0.79,236,-3.623513,-1.876963,-1.461576,-1.783091,-0.264
+A2 session open,-1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,2309,1.400,2.900,13.4,1.07,142,4.467239,0.301153,-0.056374,-2.004829,3.887
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,11020,-2.322,-0.822,52.3,0.62,676,-2.948196,-2.053950,-1.847671,-1.801467,-0.880
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,8511,-2.146,-0.646,56.9,0.72,522,-2.303180,-2.086129,-2.105334,-1.729784,-0.547
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,5676,-2.237,-0.737,55.9,0.86,348,-1.699303,-2.484012,-2.392926,-3.119137,-0.592
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,8200,-1.958,-0.458,33.6,0.83,503,-3.355531,-1.289369,-1.279136,-1.680218,-0.655
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,6907,-2.089,-0.589,34.4,0.85,424,-1.202506,-2.787029,-2.113919,-3.175997,-0.656
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,4897,-0.753,0.747,35.6,0.97,300,-0.715059,0.442641,-0.930411,-5.207547,0.053
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,8501,-1.604,-0.104,14.7,0.83,522,-3.341488,-1.059204,-0.632611,-0.457035,-0.657
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,7185,-2.617,-1.117,13.6,0.78,441,-2.588813,-2.832979,-1.669627,-4.850836,-1.181
+A2 session open,VWAP,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,5218,-0.732,0.768,17.9,0.97,320,-0.889984,0.201895,-2.007189,0.153636,-0.778
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,11806,-2.240,-0.740,49.4,0.62,724,-3.010651,-2.027598,-1.656412,-1.342755,-0.742
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,9179,-1.957,-0.457,52.8,0.73,563,-2.137712,-2.022981,-1.697437,-1.634544,-0.367
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,6262,-1.938,-0.438,51.1,0.87,384,-1.564393,-2.298996,-2.117067,-1.551337,-0.416
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,9618,-2.233,-0.733,32.9,0.78,590,-3.668362,-1.894172,-1.751332,-0.386818,-0.722
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,8184,-1.940,-0.440,33.9,0.84,502,-1.389900,-2.338048,-1.791511,-3.106433,-0.518
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,5971,-1.563,-0.063,34.4,0.93,366,-1.232247,-0.938482,-1.900983,-4.533054,-0.124
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,9722,-1.722,-0.222,12.4,0.79,596,-3.351693,-1.508477,-0.753247,-0.332068,-0.451
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,8280,-2.072,-0.572,11.1,0.79,508,-2.297474,-2.144759,-1.100687,-3.894057,-0.480
+A2 session open,VWAP,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,6149,-1.402,0.098,14.1,0.92,377,-0.770764,-1.496507,-1.982196,-1.987462,-0.719
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,1063,-2.437,-0.937,42.3,0.38,65,-2.879614,-1.959596,-1.995693,-2.570038,-1.170
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,770,-2.017,-0.517,54.3,0.58,47,-1.899227,-2.680662,-1.033391,-2.303746,-1.256
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,292,-0.522,0.978,58.2,0.94,18,-3.297319,-2.779620,2.831747,12.336417,-0.561
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,926,-2.284,-0.784,32.1,0.81,57,-2.934968,-2.321746,-0.702546,-2.496454,-1.756
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,716,-2.059,-0.559,33.4,0.86,44,1.086280,-6.737186,-0.931242,-4.591656,-0.060
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,287,-3.254,-1.754,32.4,0.89,18,-8.122284,-2.881975,7.489244,-14.284245,-4.811
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,931,-1.429,0.071,10.8,0.85,57,-3.169289,-1.374721,-0.095009,7.540438,0.414
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,728,-3.940,-2.440,10.2,0.67,45,-1.440856,-8.008263,-3.150827,-3.959311,-2.344
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,286,7.364,8.864,13.3,1.33,18,-4.358686,4.293631,21.931235,29.866212,6.917
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,1064,-2.576,-1.076,40.0,0.34,65,-3.001220,-1.996582,-2.651162,-1.490153,-1.411
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,773,-2.271,-0.771,50.3,0.52,47,-2.116866,-2.909609,-1.191800,-3.192604,-0.850
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,294,-1.084,0.416,53.4,0.88,18,-2.630510,-3.932971,1.775297,10.464146,-1.188
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,945,-2.428,-0.928,31.5,0.77,58,-3.526906,-1.651239,-1.779632,-0.409415,-0.982
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,731,-1.922,-0.422,32.7,0.84,45,0.011241,-5.286782,-0.676668,-2.507583,-0.652
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,290,-1.070,0.430,34.5,0.95,18,-1.636912,1.062672,1.539118,-15.321707,-1.168
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,946,-1.355,0.145,10.0,0.85,58,-3.711395,-1.023339,0.099226,10.418973,-0.796
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,741,-3.899,-2.399,8.4,0.62,45,-2.540538,-7.065363,-2.821210,-1.162473,-2.687
+A2 session open,VWAP,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,291,2.553,4.053,8.9,1.15,18,-0.354835,2.723450,14.976279,-20.410100,1.194
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,15665,-2.267,-0.767,52.4,0.50,961,-2.926607,-2.123514,-1.816233,-1.499807,-0.621
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,14096,-2.076,-0.576,59.6,0.61,865,-2.212333,-2.097505,-2.006040,-1.662599,-0.574
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,9716,-2.246,-0.746,64.9,0.80,596,-2.018776,-2.156252,-2.091970,-4.257179,-0.761
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,10067,-1.992,-0.492,34.4,0.84,618,-3.096510,-1.382384,-1.961282,-0.749218,-0.850
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,9528,-2.272,-0.772,34.9,0.86,585,-1.918115,-3.114481,-1.804616,-1.960555,-0.575
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,6830,-0.778,0.722,36.5,0.97,419,-0.395074,-0.189624,-0.354196,-6.690618,-0.235
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,10555,-1.626,-0.126,15.7,0.84,648,-3.363448,-0.723335,-1.345789,-0.152759,-0.370
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,10097,-2.008,-0.508,15.8,0.85,619,-1.709433,-2.428717,-1.931589,-1.818233,-0.285
+A2 session open,VWAP,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,7463,0.112,1.612,20.5,1.00,458,0.798932,0.415054,-0.700445,-1.484042,0.748
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,16262,-2.263,-0.763,50.8,0.49,998,-2.935849,-2.169110,-1.773566,-1.468821,-0.719
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,14698,-1.991,-0.491,57.4,0.62,902,-2.099856,-2.122946,-1.855580,-1.493614,-0.391
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,10190,-2.155,-0.655,62.1,0.80,625,-1.967682,-2.295714,-2.074087,-2.687348,-0.663
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,12232,-2.061,-0.561,33.9,0.81,750,-3.553974,-1.824907,-1.648070,-0.079465,-0.751
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,12030,-2.229,-0.729,34.1,0.83,738,-2.013972,-2.885652,-1.584266,-2.626136,-0.800
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,8921,-0.778,0.722,35.7,0.97,547,-0.099362,0.035465,-1.727425,-4.174138,0.284
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,12399,-1.530,-0.030,13.2,0.83,761,-3.260016,-0.943726,-1.271267,0.605487,-0.317
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,12191,-1.936,-0.436,12.4,0.82,748,-1.742580,-2.644943,-1.275681,-2.106728,-0.478
+A2 session open,VWAP,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,9169,-1.045,0.455,15.5,0.95,563,-0.248459,-1.140756,-2.269208,0.081735,-1.122
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,2354,-2.405,-0.905,39.6,0.34,144,-3.200733,-2.002655,-2.114057,-1.079632,-0.718
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,2162,-1.808,-0.308,50.1,0.51,133,-1.737573,-1.734156,-1.827756,-2.387169,-0.386
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,1238,-2.780,-1.280,55.7,0.65,76,-3.213640,-2.009535,-3.548806,-1.685715,-0.403
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,1954,-1.367,0.133,33.9,0.89,120,-3.299040,-0.035732,-1.896018,2.731605,0.535
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,1856,-1.783,-0.283,33.5,0.88,114,0.026663,-3.075438,-3.518185,0.646864,-0.420
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,1114,-4.290,-2.790,31.9,0.87,68,-8.549277,-2.274741,-1.351246,-4.266412,-3.327
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,1981,-1.576,-0.076,10.6,0.85,122,-4.887009,0.068258,-1.490079,5.191333,-0.588
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,1890,-0.921,0.579,12.8,0.92,116,-0.117742,-1.920005,-2.424785,4.172272,0.437
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1135,-3.451,-1.951,12.4,0.86,70,-5.754949,-3.402861,-1.840700,1.367896,-4.143
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,2359,-2.278,-0.778,38.8,0.35,145,-3.188699,-1.825817,-1.876703,-0.967744,-0.521
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,2167,-1.959,-0.459,48.3,0.48,133,-1.984667,-1.855567,-1.896615,-2.460462,-0.037
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1241,-2.762,-1.262,53.2,0.64,76,-3.167291,-1.967212,-3.940694,-0.433901,-0.900
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,2022,-1.645,-0.145,33.6,0.85,124,-4.067657,-0.466512,-1.301726,2.102318,0.031
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,1941,-1.979,-0.479,32.8,0.85,119,-0.048059,-3.653623,-3.062463,-0.412012,-0.563
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,1171,-2.471,-0.971,33.3,0.90,72,-4.493859,1.070516,-3.355820,-6.618710,-3.054
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,2049,-1.391,0.109,9.3,0.85,126,-5.454135,0.739410,-1.115831,5.329224,0.011
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,1963,-1.681,-0.181,10.9,0.84,120,-1.292923,-2.819948,-2.965884,5.033522,0.224
+A2 session open,VWAP,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,1185,-4.681,-3.181,8.8,0.76,73,-6.828473,-2.792190,-4.167584,-5.463132,-4.677
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,10852,-2.241,-0.741,52.0,0.68,666,-3.008204,-2.157954,-1.436094,-1.757833,-0.598
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,8551,-2.300,-0.800,53.6,0.75,525,-2.772590,-2.149568,-1.739744,-2.469580,-0.746
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,6319,-0.906,0.594,52.6,0.95,388,-2.760253,-0.878105,0.888630,2.108983,0.601
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,8148,-1.889,-0.389,34.7,0.84,500,-3.257986,-1.186495,-1.323781,-1.801044,-0.552
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,6947,-1.765,-0.265,35.1,0.87,426,-2.001231,-1.029961,-1.669820,-3.982786,-0.444
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,5403,0.107,1.607,37.0,1.00,331,-0.900061,-0.625111,0.660460,6.649527,1.159
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,7679,-1.212,0.288,15.8,0.87,471,-2.688229,-0.213628,-1.130068,-0.385773,-0.252
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,6630,-2.171,-0.671,14.5,0.81,407,-2.476747,-2.056651,-1.689076,-2.916010,-0.659
+A2 session open,+1SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,5518,0.648,2.148,19.0,1.03,339,-1.352359,1.286126,2.615343,0.704115,0.894
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,11666,-2.205,-0.705,49.2,0.67,716,-3.119006,-2.050290,-1.393836,-1.652994,-0.570
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,9359,-2.295,-0.795,49.7,0.73,574,-2.911308,-1.969121,-1.748153,-2.606838,-0.716
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,7042,-1.129,0.371,48.2,0.93,432,-2.644804,-1.080919,0.482690,0.840961,0.364
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,9659,-1.973,-0.473,34.4,0.80,593,-3.452939,-1.289617,-1.455023,-1.908087,-0.521
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,8402,-2.119,-0.619,33.8,0.82,515,-2.538896,-1.491230,-2.112486,-2.908396,-0.705
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,6721,-0.562,0.938,35.5,0.97,412,-0.960130,-1.125471,0.147404,1.605413,0.755
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,9088,-1.665,-0.165,13.0,0.80,558,-2.893799,-1.280615,-1.242156,-0.974088,-0.691
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,7958,-2.462,-0.962,11.4,0.75,488,-3.584127,-1.758762,-1.922328,-2.556685,-1.138
+A2 session open,+1SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,6777,-0.104,1.396,15.2,0.99,416,-1.720054,0.095163,2.112158,-0.339494,0.674
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,3675,-2.036,-0.536,52.7,0.72,225,-3.207054,-1.182671,-1.625492,-0.398304,-0.709
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,3510,-2.621,-1.121,51.5,0.75,215,-3.177578,-2.456716,-1.843249,-2.710576,-0.939
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,1670,1.890,3.390,54.3,1.10,102,-0.055911,2.985419,4.669760,-1.261628,3.227
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,2968,-0.708,0.792,35.8,0.94,182,-2.370997,1.262134,-0.997876,-0.661659,-0.389
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,3052,-1.907,-0.407,35.8,0.87,187,-1.942090,-1.516434,-1.856828,-3.660586,-0.757
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,1531,2.430,3.930,38.7,1.09,94,0.084824,1.563242,7.450418,2.604752,1.368
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,2786,0.173,1.673,16.7,1.02,171,-1.660675,2.956050,-0.911671,0.406577,-0.385
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,2870,-1.861,-0.361,16.3,0.85,176,-2.137128,-1.339250,-1.401738,-4.315131,-1.024
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,1530,4.760,6.260,20.1,1.22,94,-0.456017,8.353900,11.176890,-4.051494,1.282
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,3773,-2.171,-0.671,48.4,0.68,231,-3.263436,-1.416052,-1.820485,-0.420669,-0.873
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,3633,-2.486,-0.986,46.7,0.74,223,-3.189074,-2.294311,-1.453956,-2.766074,-1.026
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,1742,1.342,2.842,48.3,1.08,107,0.262303,2.253575,2.618214,-0.995703,1.885
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,3201,-1.310,0.190,35.2,0.87,196,-2.257271,-0.090080,-1.969313,-0.215228,-0.813
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,3335,-1.868,-0.368,34.8,0.85,205,-2.500065,-1.348001,-1.063283,-3.600406,-0.705
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,1687,1.855,3.355,37.4,1.09,103,1.152155,1.323388,3.435044,2.742012,1.712
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,3037,-0.714,0.786,12.9,0.91,186,-1.878837,1.546301,-2.013453,-1.005394,-0.588
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,3162,-2.210,-0.710,12.3,0.78,194,-3.204780,-1.158478,-1.648345,-3.681739,-0.732
+A2 session open,+1SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,1707,2.897,4.397,14.2,1.19,105,0.424763,4.755668,6.592871,-3.638514,2.125
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,14178,-2.354,-0.854,54.7,0.56,870,-3.075701,-2.222614,-1.611491,-2.503304,-0.875
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,12491,-2.133,-0.633,60.7,0.67,766,-2.719318,-2.008508,-1.454731,-2.493714,-0.528
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,9296,-1.293,0.207,64.5,0.89,570,-2.334430,-0.751002,-0.733959,-0.892136,0.075
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,8714,-1.968,-0.468,34.8,0.85,535,-3.720337,-1.012169,-1.104017,-2.718116,-0.744
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,8058,-1.987,-0.487,35.6,0.88,494,-2.760381,-1.734123,-0.794548,-3.888242,-1.025
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,6128,1.646,3.146,38.2,1.06,376,-0.941288,1.946322,2.730584,8.244019,2.619
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,8706,-1.181,0.319,16.7,0.89,534,-3.799070,0.774308,-1.068732,-0.299089,-0.327
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,8111,-1.687,-0.187,16.8,0.87,498,-1.871217,-2.388469,-0.722952,-1.526161,-0.483
+A2 session open,+1SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,6560,2.001,3.501,21.2,1.09,402,-0.835036,2.188546,4.351558,6.001840,1.854
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,14946,-2.258,-0.758,53.1,0.56,917,-2.995591,-2.131120,-1.552695,-2.311412,-0.709
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,13439,-2.155,-0.655,58.1,0.66,824,-2.637307,-2.113202,-1.505342,-2.574803,-0.602
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,9986,-1.444,0.056,61.6,0.88,613,-2.046254,-1.290350,-0.696343,-1.904674,0.365
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,10941,-2.056,-0.556,34.4,0.81,671,-3.279894,-1.614731,-1.457966,-2.348835,-0.676
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,10590,-1.974,-0.474,34.7,0.85,650,-2.659951,-1.454580,-1.612048,-2.813963,-0.475
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,8286,-0.047,1.453,36.3,1.00,508,-0.037298,-0.493575,0.185091,1.116021,1.753
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,10663,-1.310,0.190,13.8,0.85,654,-3.449093,-0.247709,-0.863697,-0.833517,-0.495
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,10377,-1.930,-0.430,12.9,0.82,637,-2.259153,-2.162531,-1.135619,-2.629137,-0.570
+A2 session open,+1SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,8496,0.520,2.020,16.3,1.03,521,-0.855176,1.132983,1.651959,0.283988,0.422
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,4957,-2.288,-0.788,54.4,0.60,304,-3.416436,-1.398236,-2.053104,-1.920218,-1.224
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,5025,-2.505,-1.005,58.9,0.68,308,-3.076847,-2.147537,-2.051275,-3.097636,-1.148
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,2918,0.173,1.673,64.4,1.01,179,-1.210016,1.163922,1.034100,-1.079862,1.000
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,3426,-0.716,0.784,36.3,0.95,210,-1.962182,1.852562,-2.366954,-0.717410,-0.521
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,3620,-2.334,-0.834,36.0,0.86,222,-2.844255,-1.522061,-1.762825,-5.677543,-1.511
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,2174,4.168,5.668,39.2,1.14,133,-0.900092,4.331166,8.384237,10.584083,2.437
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,3280,-0.009,1.491,17.7,1.00,201,-2.129195,2.457012,-1.147312,2.315837,-0.574
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,3465,-1.943,-0.443,18.4,0.86,213,-1.870468,-1.799136,-2.142795,-2.143514,-0.556
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,2169,4.643,6.143,22.0,1.19,133,-3.270162,7.843470,9.865309,6.491303,4.138
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,5045,-2.162,-0.662,51.4,0.60,310,-3.335508,-1.396976,-1.834976,-1.405561,-0.842
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,5165,-2.533,-1.033,55.1,0.65,317,-2.905009,-2.554595,-1.875063,-3.136946,-0.950
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,3022,-0.105,1.395,59.8,0.99,185,-0.156463,-0.058730,0.999757,-3.288527,0.455
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,3840,-0.988,0.512,36.1,0.91,236,-2.124719,0.239062,-1.739173,0.830264,-0.251
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,4166,-2.315,-0.815,35.0,0.83,256,-2.921580,-1.808005,-1.916342,-3.462707,-1.636
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,2504,2.345,3.845,37.4,1.10,154,1.624815,1.027395,4.408441,3.855670,1.878
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,3675,-0.137,1.363,14.0,0.98,225,-1.771892,1.316272,-0.499188,1.137083,-0.031
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,4000,-2.176,-0.676,13.4,0.80,245,-2.255133,-2.023308,-2.037727,-3.000573,-1.075
+A2 session open,+1SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,2546,3.470,4.970,15.3,1.20,156,0.129625,4.668282,7.783848,-1.397498,1.360
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,Asia,2284,-2.076,-0.576,48.7,0.76,140,-2.477264,-1.438984,-1.586259,-3.471320,-0.516
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,London,1266,-2.173,-0.673,48.5,0.81,78,-1.381585,-2.603693,-3.179301,-0.774453,-0.501
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T1 next level,NY,1610,-0.471,1.029,47.6,0.98,99,-4.505296,0.068870,6.159659,-7.129551,1.070
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,Asia,1991,-1.274,0.226,36.1,0.89,122,-0.445655,-2.034651,-0.553387,-4.060789,-0.439
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,London,1152,-2.070,-0.570,34.5,0.87,71,-1.576059,-3.499903,-0.813036,-2.025192,-0.679
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T2 2R,NY,1563,-1.764,-0.264,37.6,0.93,96,-7.280315,-1.181122,5.750069,-5.774802,-1.728
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,1899,-2.081,-0.581,20.1,0.80,117,-2.285724,-1.096466,-2.265180,-3.923717,-1.540
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1136,-3.363,-1.863,16.3,0.75,70,-4.101370,-2.905808,-3.594784,-1.261939,-1.402
+A2 session open,+2SD,0.25 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,1495,-0.196,1.304,23.1,0.99,92,-2.638792,-0.574367,6.153275,-9.154250,0.830
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,2436,-2.267,-0.767,45.9,0.70,149,-2.243656,-2.371573,-1.634069,-3.735404,-0.809
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,London,1348,-2.196,-0.696,43.6,0.77,83,-1.807619,-3.435230,-1.589061,0.237198,-0.576
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T1 next level,NY,1807,-1.059,0.441,43.6,0.94,111,-2.833430,-0.674560,2.009033,-4.978718,0.710
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,2217,-1.558,-0.058,34.9,0.85,136,-0.588074,-1.760960,-1.703407,-4.529240,-0.935
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,London,1291,-1.801,-0.301,33.1,0.85,79,-1.501588,-2.836442,-0.742596,-1.538277,-0.404
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T2 2R,NY,1918,-1.298,0.202,36.1,0.93,118,-3.275658,-1.257805,1.673742,-2.858751,-0.131
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,2156,-2.507,-1.007,15.8,0.72,132,-2.207155,-2.621655,-2.490188,-3.339344,-0.987
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,1280,-2.024,-0.524,12.0,0.79,79,-3.380243,-2.426345,-0.127087,-0.360329,-0.305
+A2 session open,+2SD,0.25 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,1845,-1.246,0.254,17.3,0.92,113,-3.665693,0.270265,1.792391,-7.534441,0.628
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,1368,-1.549,-0.049,49.9,0.84,84,-2.346412,-0.501743,-0.702046,-2.509851,-0.247
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,780,-2.453,-0.953,46.5,0.83,48,-1.501406,-2.992531,-4.585478,1.581909,-1.370
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,805,1.796,3.296,47.2,1.07,49,-5.348799,2.447356,16.059845,-16.265555,2.735
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,1198,-0.714,0.786,38.4,0.94,73,-0.903535,-0.962373,1.248905,-3.734935,-0.650
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,719,-2.644,-1.144,35.0,0.85,44,-1.511467,-4.141199,-2.105670,-3.118666,-0.912
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,785,-1.281,0.219,41.3,0.95,48,-8.789261,-3.070819,14.428445,-14.468963,-2.446
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,1161,-1.165,0.335,23.1,0.89,71,-1.923483,-0.022608,-0.440034,-3.113342,-0.834
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,713,-3.933,-2.433,18.7,0.74,44,-3.282135,-3.771279,-7.085361,1.435964,-3.311
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,754,0.461,1.961,30.2,1.02,46,-5.729804,0.342280,15.409871,-21.950327,-0.788
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,1400,-2.215,-0.715,42.7,0.73,86,-2.262203,-2.344163,-0.648643,-5.787876,-0.651
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,798,-2.865,-1.365,36.1,0.74,49,-2.380841,-4.376164,-2.454233,1.267424,-1.528
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,858,0.289,1.789,34.1,1.02,53,-4.235157,1.592674,8.523611,-12.844991,1.741
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,1263,-1.257,0.243,35.0,0.88,77,-1.199904,-1.124868,-0.491392,-4.402119,-0.596
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,765,-2.412,-0.912,31.8,0.80,47,-1.868849,-3.147981,-2.147327,-2.337706,-1.040
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,890,-0.862,0.638,36.4,0.95,55,-5.057185,-0.229529,5.364317,-6.087558,0.140
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,1226,-2.039,-0.539,15.2,0.77,75,-1.817723,-2.382025,-1.559103,-3.377861,-1.698
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,749,-2.855,-1.355,9.7,0.71,46,-2.600625,-4.237054,-1.855376,-0.180189,-1.415
+A2 session open,+2SD,0.25 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,846,-1.620,-0.120,15.6,0.89,52,-5.579556,-0.260712,5.292736,-13.648979,-0.456
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,Asia,3269,-2.324,-0.824,54.4,0.65,201,-2.381874,-2.434041,-1.755785,-3.295683,-0.636
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,London,2390,-1.902,-0.402,59.5,0.77,147,-1.451732,-3.176149,-0.934683,-1.280858,-0.089
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T1 next level,NY,2488,-2.333,-0.833,59.9,0.86,153,-0.299167,-3.016116,-2.184121,-9.777113,-0.834
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,Asia,2658,-1.555,-0.055,36.8,0.88,163,-0.941235,-1.403698,-1.913228,-3.389390,-0.235
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,London,2004,-1.470,0.030,35.9,0.91,123,-0.031574,-3.086286,-1.305763,-0.577408,0.289
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T2 2R,NY,2158,-3.367,-1.867,35.7,0.88,132,-2.375793,-2.391149,-2.220609,-16.848762,-1.770
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,Asia,2588,-2.789,-1.289,19.6,0.74,159,-4.067699,-1.256485,-2.186463,-4.586428,-1.809
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,London,1955,-1.673,-0.173,19.3,0.87,120,0.107084,-2.592286,-2.662254,-1.147984,-0.396
+A2 session open,+2SD,0.50 SD,F0 none,S1 extreme at level,T3 none BE1R,NY,2140,-1.138,0.362,22.2,0.95,131,-0.302326,1.082223,-1.098614,-15.709078,-0.722
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,Asia,3457,-2.164,-0.664,54.0,0.64,212,-1.961076,-2.764313,-1.312646,-3.383205,-0.351
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,London,2561,-1.696,-0.196,58.2,0.76,157,-1.510742,-2.815598,-0.545830,-1.291725,-0.112
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T1 next level,NY,2718,-1.862,-0.362,59.6,0.87,167,-0.767905,-2.276687,-1.417438,-7.225015,-0.267
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,Asia,2966,-1.626,-0.126,36.1,0.86,182,-0.516463,-2.183657,-1.549566,-3.960450,-0.373
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,London,2327,-1.822,-0.322,35.2,0.87,143,-1.638473,-3.463271,0.197880,-2.227462,-0.214
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T2 2R,NY,2548,-3.912,-2.412,34.7,0.84,156,-3.274201,-3.491459,-3.549076,-10.856336,-1.368
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,Asia,2921,-2.725,-1.225,18.3,0.72,179,-3.150265,-2.516587,-1.821574,-4.500477,-1.060
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,London,2278,-1.445,0.055,17.1,0.87,140,-0.836613,-2.087926,-0.671946,-3.312955,-0.351
+A2 session open,+2SD,0.50 SD,F0 none,S2 level 0.25SD,T3 none BE1R,NY,2544,-0.295,1.205,19.8,0.99,156,-0.636420,0.677252,1.497016,-10.937991,1.127
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,Asia,1299,-1.830,-0.330,55.0,0.78,80,-2.749933,-1.541341,-0.012531,-2.895799,-0.554
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,London,903,-2.241,-0.741,56.8,0.81,55,-0.703089,-4.210029,-1.858253,-1.048038,-0.993
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T1 next level,NY,858,-0.622,0.878,57.5,0.97,53,3.620994,-1.227398,0.225793,-25.675793,0.724
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,Asia,1078,-1.126,0.374,40.1,0.92,66,-1.756197,-0.757541,-0.037898,-2.338869,-1.419
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,London,776,-0.459,1.041,38.3,0.97,48,1.738728,-1.866552,-0.597960,-2.569092,0.619
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T2 2R,NY,766,-2.387,-0.887,40.1,0.93,47,1.462708,-3.851006,0.577217,-29.881205,-5.092
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,Asia,1049,-0.956,0.544,24.9,0.92,64,-2.668814,2.418346,-1.027509,-4.886856,-1.578
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,London,762,-1.290,0.210,23.6,0.92,47,3.386105,-3.578041,-5.401384,4.447345,0.399
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S1 extreme at level,T3 none BE1R,NY,757,-0.233,1.267,30.3,0.99,46,0.224740,-0.227940,5.177336,-29.114813,-0.767
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,Asia,1318,-1.569,-0.069,49.8,0.77,81,-2.306584,-2.069026,1.425073,-4.230427,-0.206
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,London,921,-1.832,-0.332,49.0,0.79,57,-1.265765,-3.755453,-0.478595,-0.223107,0.024
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T1 next level,NY,892,0.103,1.603,48.7,1.01,55,2.220306,0.717680,0.789961,-19.221495,0.456
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,Asia,1135,-0.690,0.810,38.2,0.94,70,-0.674837,-0.938457,0.643140,-3.971906,-0.180
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,London,836,-1.519,-0.019,35.2,0.88,51,-0.330221,-3.803560,0.096707,-1.809289,-0.842
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T2 2R,NY,839,-1.897,-0.397,35.4,0.91,51,-0.279513,-3.129791,-0.075579,-14.070082,-2.066
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,Asia,1113,-1.020,0.480,17.4,0.88,68,-1.341511,-0.388266,-0.650269,-3.217657,-0.771
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,London,813,-1.031,0.469,12.8,0.90,50,2.575748,-3.939597,-1.303321,-1.125933,0.165
+A2 session open,+2SD,0.50 SD,F1 VWAP slope agrees,S2 level 0.25SD,T3 none BE1R,NY,814,1.217,2.717,18.2,1.07,50,0.664190,1.019115,6.287768,-21.100970,0.991

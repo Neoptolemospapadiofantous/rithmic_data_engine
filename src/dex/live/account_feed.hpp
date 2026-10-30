@@ -147,6 +147,7 @@ struct AcctPosition {
     int64_t base = 0;             // signed (sign × position)
     std::string imf;              // initial_margin_fraction, percent ("20.00" = 5×)
     bool market_known = false;
+    int64_t entry_px = 0;         // avg_entry_price as a price int (0 = not reported)
     std::string raw;              // the position text as sent (lets an UNCONFIGURED market's position be seen as non-zero)
     bool nonzero() const {
         if (market_known) return base != 0;
@@ -236,6 +237,8 @@ inline AcctPosition parse_position(const nlohmann::json& p, const Specs& specs) 
             r.base = jint(p, "sign", 1) < 0 ? -b : b;
             r.market_known = true;
         } catch (const SpecError&) {}
+        try { std::string e = jstr(p, "avg_entry_price"); if (!e.empty()) r.entry_px = it->second.price_int(e); }
+        catch (const SpecError&) {}
     }
     return r;
 }

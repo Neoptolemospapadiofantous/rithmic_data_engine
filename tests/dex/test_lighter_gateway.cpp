@@ -282,6 +282,17 @@ TEST(config_unknown_keys_and_mode_mismatch_are_refused) {
     c = base_cfg("offline", d);
     c["risk"] = {{"max_markets", 2}};
     ASSERT_THROWS(parse_config(c, Mode::Offline, wall_s()), ConfigError);
+    c = base_cfg("offline", d);
+    c["risk"] = {{"position_stop_usd", 0.3}};                                // a position stop must be a loss
+    ASSERT_THROWS(parse_config(c, Mode::Offline, wall_s()), ConfigError);
+    c["risk"] = {{"position_max_hold_s", -1}};
+    ASSERT_THROWS(parse_config(c, Mode::Offline, wall_s()), ConfigError);
+    c["risk"] = {{"position_stop_usd", -0.3}, {"position_max_hold_s", 1800}, {"position_cooldown_s", 900}};
+    GatewayConfig g = parse_config(c, Mode::Offline, wall_s());
+    ASSERT_EQ(g.risk.position_stop_micro, int64_t{-300'000});
+    ASSERT_EQ(g.risk.position_max_hold_s, int64_t{1800});
+    ASSERT_EQ(g.risk.position_cooldown_s, int64_t{900});
+    ASSERT_EQ(parse_config(base_cfg("offline", d), Mode::Offline, wall_s()).risk.position_stop_micro, int64_t{0});   // off by default
 }
 
 TEST(config_missing_arming_file_refuses_probe_and_live) {

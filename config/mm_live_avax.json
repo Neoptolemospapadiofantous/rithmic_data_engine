@@ -14,9 +14,12 @@
     "max_order_usd": 12,
     "max_position_quotes": 1,
     "max_gross_usd": 12,
-    "daily_stop_usd": -1.5,
-    "total_stop_usd": -2.5,
-    "leverage": 5
+    "daily_stop_usd": -0.75,
+    "total_stop_usd": -1.25,
+    "leverage": 5,
+    "position_stop_usd": -0.30,
+    "position_max_hold_s": 1800,
+    "position_cooldown_s": 900
   },
   "engine": {
     "market_spec": {

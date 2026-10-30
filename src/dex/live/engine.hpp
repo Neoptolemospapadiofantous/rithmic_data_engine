@@ -267,7 +267,9 @@ public:
         if (!acct) return refuse("account unavailable after cancel-all");
         int64_t pos = 0;
         for (const auto& p : acct->positions) {
-            if (p.market == cfg_.spec.market_index && p.market_known) { pos = p.base; imf_ = p.imf; have_imf_ = true; }
+            if (p.market == cfg_.spec.market_index && p.market_known) {
+                pos = p.base; imf_ = p.imf; have_imf_ = true; entry_px_ = p.entry_px; entry_pos_ = p.base;
+            }
         }
         tracker_.set_position(cfg_.spec.market_index, pos);
         exch_pos_ = pos;
@@ -1052,6 +1054,42 @@ private:
         if (!halts_.count("kill")) sticky_halt("kill", "KILL file present: cancel all, flatten, halted until a human resumes", now);
         flatten_requested_ = true;
     }
+    // Position stop: one stuck position must not ride a trend down until the account-level stops fire. Uses the
+    // exchange's avg entry only while the position still equals the one that entry was reported for (a fill since the
+    // last reconcile makes it stale until the next one); the hold clock starts when the position leaves 0 (or at start).
+    void position_stop_step(int64_t now) {
+        const RiskConfig& rc = d_.risk.config();
+        if (rc.position_stop_micro == 0 && rc.position_max_hold_s == 0) return;
+        int64_t pos = tracker_.position(mkt());
+        if (pos == 0) pos_since_ms_ = 0;
+        else if (pos_since_ms_ == 0) pos_since_ms_ = now;
+        if (halts_.count("position_stop")) {
+            if (pos == 0 && now >= pos_stop_until_ms_) set_condition("position_stop", false, false, Pull::None, "", now);
+            return;
+        }
+        if (pos == 0 || flatten_requested_ || !book_.valid()) return;
+        std::string why;
+        if (rc.position_stop_micro < 0 && entry_px_ > 0 && entry_pos_ == pos) {
+            int64_t scale = pow10i(cfg_.spec.price_decimals);
+            hl::Book hb = book_.top(1);
+            int64_t exit_px = std::llround((pos > 0 ? hb.bids[0].px : hb.asks[0].px) * double(scale));
+            int64_t unreal = int64_t(__int128(pos) * (exit_px - entry_px_) * kMicro / pow10i(cfg_.spec.size_decimals + cfg_.spec.price_decimals));
+            last_unreal_micro_ = unreal;
+            if (unreal <= rc.position_stop_micro)
+                why = "position " + fmt_base(pos) + " unrealised $" + usd(unreal) + " ≤ stop $" + usd(rc.position_stop_micro);
+        }
+        if (why.empty() && rc.position_max_hold_s > 0 && now - pos_since_ms_ >= rc.position_max_hold_s * 1000)
+            why = "position " + fmt_base(pos) + " held " + std::to_string((now - pos_since_ms_) / 60'000) + " min ≥ " +
+                  std::to_string(rc.position_max_hold_s / 60) + " min";
+        if (why.empty()) return;
+        pos_stop_until_ms_ = now + rc.position_cooldown_s * 1000;
+        ++position_stops_;
+        set_condition("position_stop", true, false, Pull::CancelAll,
+                      why + ": flatten, quotes off " + std::to_string(rc.position_cooldown_s / 60) + " min", now);
+        flatten_requested_ = true;
+        flatten_tries_ = 0;
+        flatten_gave_up_ = false;
+    }
     void flatten_step(int64_t now) {
         if (!flatten_requested_) return;
         int64_t pos = tracker_.position(mkt());
@@ -1309,7 +1347,7 @@ private:
             sticky_halt("capital_guard", "collateral $" + usd(collateral_) + " above max $" + usd(cfg_.max_collateral_micro), now);
         int64_t rest_pos = 0;
         for (const auto& p : acct->positions) {
-            if (p.market == mkt() && p.market_known) { rest_pos = p.base; imf_ = p.imf; have_imf_ = true; }
+            if (p.market == mkt() && p.market_known) { rest_pos = p.base; imf_ = p.imf; have_imf_ = true; entry_px_ = p.entry_px; entry_pos_ = p.base; }
             else if (p.market != mkt() && p.nonzero()) sticky_halt("unconfigured_position", "position in market " + std::to_string(p.market), now);
         }
         check_leverage(now);
@@ -1500,6 +1538,7 @@ private:
                           "no confirmed dead-man deadline at least 60 s ahead: quotes pulled", now);
         }
         flush_safety(now);
+        position_stop_step(now);
         flatten_step(now);
         if (cfg_.mode == Mode::Probe) probe_step(now);
         else { apply_bn_pull(now); quote(now); }
@@ -1646,6 +1685,8 @@ private:
         return {{"updated_ms", now}, {"label", cfg_.label}, {"mode", mode_name(cfg_.mode)}, {"run_id", run_id_},
                 {"market", cfg_.spec.symbol}, {"started", started_}, {"quoting", quoting_block(now).empty()},
                 {"quoting_block", quoting_block(now)}, {"halts", h},
+                {"position_stops", position_stops_}, {"unrealised_usd", double(last_unreal_micro_) / kMicro},
+                {"position_held_s", pos_since_ms_ ? (now - pos_since_ms_) / 1000 : 0},
                 {"position", format_decimal(tracker_.position(mkt()), cfg_.spec.size_decimals)},
                 {"exchange_position", format_decimal(exch_pos_, cfg_.spec.size_decimals)},
                 {"equity_usd", double(equity_) / kMicro}, {"collateral_usd", double(collateral_) / kMicro},
@@ -1722,6 +1763,8 @@ private:
     int64_t watermark_ = 0, last_trade_id_ = 0, rest_trade_cursor_ = 0;
     bool backfill_needed_ = false;
     int64_t exch_pos_ = 0, ws_pos_ = 0;
+    int64_t entry_px_ = 0, entry_pos_ = 0, pos_since_ms_ = 0, pos_stop_until_ms_ = 0, last_unreal_micro_ = 0;
+    int64_t position_stops_ = 0;
     bool have_exch_pos_ = false, have_ws_pos_ = false;
     std::string imf_;
     bool have_imf_ = false, leverage_ok_ = false;
